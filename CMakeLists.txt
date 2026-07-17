@@ -103,21 +103,45 @@ target_compile_options(trealla_objs PRIVATE -w)
 target_link_libraries(trealla_objs PUBLIC m Threads::Threads)
 
 # ---------------------------------------------------------------------------
+# Embed the bootstrap Prolog (src/insimul_boot.pl) as a C byte array so the ABI
+# has no on-disk runtime dependency. cmake/gen_boot.cmake writes a .c defining
+# insimul_boot_pl[] + insimul_boot_pl_len, which src/insimul.c fmemopen()s into
+# every KB at creation.
+# ---------------------------------------------------------------------------
+set(INSIMUL_BOOT_PL ${CMAKE_CURRENT_SOURCE_DIR}/src/insimul_boot.pl)
+set(INSIMUL_BOOT_C  ${CMAKE_CURRENT_BINARY_DIR}/insimul_boot.c)
+add_custom_command(
+  OUTPUT ${INSIMUL_BOOT_C}
+  COMMAND ${CMAKE_COMMAND}
+    -DIN=${INSIMUL_BOOT_PL}
+    -DOUT=${INSIMUL_BOOT_C}
+    -DVAR=insimul_boot_pl
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/gen_boot.cmake
+  DEPENDS ${INSIMUL_BOOT_PL} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/gen_boot.cmake
+  COMMENT "Embedding bootstrap Prolog: insimul_boot.pl"
+  VERBATIM
+)
+
+# ---------------------------------------------------------------------------
 # The insimul libraries. Both embed the Trealla objects (linking an OBJECT
 # library adds its objects to the archive/shared lib). Linking trealla_objs
 # PRIVATE keeps Trealla's internal include dir OUT of insimul's public interface
 # — consumers see only include/insimul.h. Consumers still need libm + pthread,
 # so those are re-exported as INTERFACE requirements.
 # ---------------------------------------------------------------------------
-add_library(insimul STATIC src/insimul.c)
+add_library(insimul STATIC src/insimul.c ${INSIMUL_BOOT_C})
 target_link_libraries(insimul PRIVATE trealla_objs)
 target_link_libraries(insimul INTERFACE m Threads::Threads)
 target_include_directories(insimul PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+# src/insimul.c needs Trealla's C API (trealla.h); it stays PRIVATE so it never
+# leaks into insimul's public include interface.
+target_include_directories(insimul PRIVATE ${TREALLA_DIR}/src)
 
-add_library(insimul_shared SHARED src/insimul.c)
+add_library(insimul_shared SHARED src/insimul.c ${INSIMUL_BOOT_C})
 target_link_libraries(insimul_shared PRIVATE trealla_objs)
 set_target_properties(insimul_shared PROPERTIES OUTPUT_NAME insimul)
 target_include_directories(insimul_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(insimul_shared PRIVATE ${TREALLA_DIR}/src)
 
 # ---------------------------------------------------------------------------
 # Tests.
@@ -129,3 +153,9 @@ target_link_libraries(insimul_smoke PRIVATE insimul)
 # The smoke test drives Trealla's C API directly, so it needs trealla.h.
 target_include_directories(insimul_smoke PRIVATE ${TREALLA_DIR}/src)
 add_test(NAME smoke COMMAND insimul_smoke)
+
+# The ABI test is a pure consumer of include/insimul.h (no trealla.h): it both
+# exercises US-LI2 and proves the opaque boundary compiles/links cleanly.
+add_executable(insimul_abi tests/abi.c)
+target_link_libraries(insimul_abi PRIVATE insimul)
+add_test(NAME abi COMMAND insimul_abi)
