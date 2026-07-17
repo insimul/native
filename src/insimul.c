@@ -46,6 +46,7 @@ void g_sigfn(int s) { (void)s; }
 struct insimul_kb {
     prolog *pl;
     char   *last_error;   /* NULL when the last op succeeded */
+    char   *snapshot;     /* last insimul_kb_snapshot image (owned by the KB) */
 };
 
 struct insimul_query {
@@ -248,6 +249,7 @@ void insimul_kb_destroy(insimul_kb *kb)
     if (!kb) return;
     pl_destroy(kb->pl);
     free(kb->last_error);
+    free(kb->snapshot);
     free(kb);
 }
 
@@ -387,4 +389,92 @@ void insimul_query_stop(insimul_query *q)
     for (size_t i = 0; i < q->count; i++) free(q->sols[i]);
     free(q->sols);
     free(q);
+}
+
+/* ------------------------------------------------------------ snapshot/restore */
+
+const char *insimul_kb_snapshot(insimul_kb *kb)
+{
+    if (!kb) return NULL;
+    set_error(kb, NULL);
+    free(kb->snapshot);
+    kb->snapshot = NULL;
+
+    /* Snapshot takes only a result-file path (no user arg), so it does not go
+     * through dispatch(); it drives '$insimul_snapshot'/1 directly. */
+    char res[1024];
+    if (make_temp(res, sizeof res) != 0) {
+        set_error(kb, "insimul: could not create temp file");
+        return NULL;
+    }
+    char *qres = malloc(2 + 2 * strlen(res) + 1);
+    size_t goalsz = strlen(res) * 2 + 64;
+    char *goal = malloc(goalsz);
+    char *out = NULL;
+
+    if (qres && goal) {
+        quote_atom(qres, res);
+        snprintf(goal, goalsz, "'$insimul_snapshot'(%s)", qres);
+        if (run_goal(kb->pl, goal) == 0) {
+            out = read_all(res);
+            if (!out) set_error(kb, "insimul: could not read result file");
+        } else {
+            set_error(kb, "insimul: engine failed to run snapshot goal");
+        }
+    } else {
+        set_error(kb, "insimul: out of memory");
+    }
+    remove(res);
+    free(qres);
+    free(goal);
+
+    const char *ret = NULL;
+    if (out) {
+        /* Line 1 is the status: "OK" (image follows from line 2) or "ERR <term>". */
+        char *nl = strchr(out, '\n');
+        const char *body = nl ? nl + 1 : "";
+        if (nl) *nl = '\0';
+        if (strcmp(out, "OK") == 0) {
+            kb->snapshot = strdup(body);
+            if (kb->snapshot) ret = kb->snapshot;
+            else set_error(kb, "insimul: out of memory");
+        } else if (strncmp(out, "ERR ", 4) == 0) {
+            set_error(kb, out + 4);
+        } else {
+            set_error(kb, out[0] ? out : "insimul: snapshot failed");
+        }
+        free(out);
+    }
+    return ret;
+}
+
+int insimul_kb_restore(insimul_kb *kb, const char *image)
+{
+    if (!kb) return -1;
+    set_error(kb, NULL);
+
+    /* Hand the image to '$insimul_restore' via a temp file, exactly like consult. */
+    char src[1024];
+    if (make_temp(src, sizeof src) != 0) {
+        set_error(kb, "insimul: could not create temp file");
+        return -1;
+    }
+    int rc = -1;
+    FILE *fp = fopen(src, "wb");
+    if (fp) {
+        if (image) fwrite(image, 1, strlen(image), fp);
+        fclose(fp);
+        char *out = dispatch(kb, "$insimul_restore", src);
+        if (out) {
+            char tag[16];
+            const char *text = first_record(out, tag, sizeof tag);
+            if (strcmp(tag, "OK") == 0) rc = 0;
+            else { set_error(kb, text && *text ? text : "insimul: restore failed"); rc = -1; }
+            free(out);
+        }
+    } else {
+        set_error(kb, "insimul: could not write temp file");
+    }
+    remove(src);
+    return rc;
 }

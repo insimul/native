@@ -172,3 +172,32 @@ target_link_libraries(insimul_conformance PRIVATE insimul)
 target_compile_definitions(insimul_conformance PRIVATE
   INSIMUL_CONFORMANCE_DEFAULT_DIR="${INSIMUL_CONFORMANCE_DEFAULT_DIR}")
 add_test(NAME conformance COMMAND insimul_conformance)
+
+# Snapshot/restore (US-LI4). The `snapshot` ctest is a pure consumer of insimul.h;
+# its golden fixture (an exact snapshot image) is baked as an absolute path so the
+# test finds it regardless of the ctest working directory.
+set(INSIMUL_SNAPSHOT_FIXTURE
+  "${CMAKE_CURRENT_SOURCE_DIR}/conformance/snapshots/basic.snapshot.pl")
+add_executable(insimul_snapshot tests/snapshot.c)
+target_link_libraries(insimul_snapshot PRIVATE insimul)
+target_compile_definitions(insimul_snapshot PRIVATE
+  INSIMUL_SNAPSHOT_FIXTURE="${INSIMUL_SNAPSHOT_FIXTURE}")
+add_test(NAME snapshot COMMAND insimul_snapshot)
+# The test reads/updates the fixture by relative path when INSIMUL_SNAPSHOT_UPDATE
+# is set; run it from the source dir so that path resolves.
+set_tests_properties(snapshot PROPERTIES
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+# snapshot_parse: cross-check the committed snapshot fixture against
+# insimul-runtime's real prolog-fact-parser.ts (the wrappers' parser), via node.
+# The shell driver degrades to a loud [SKIP] if node or the submodule parser is
+# absent (see tests/run_snapshot_parse.sh).
+get_filename_component(INSIMUL_FACT_PARSER_TS
+  "${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core/src/prolog/prolog-fact-parser.ts"
+  ABSOLUTE)
+add_test(NAME snapshot_parse COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_snapshot_parse.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/tests/verify_snapshot_ts.mjs
+       ${INSIMUL_SNAPSHOT_FIXTURE}
+       ${CMAKE_CURRENT_SOURCE_DIR}/conformance/snapshots/basic.snapshot.expected.json
+       ${INSIMUL_FACT_PARSER_TS})

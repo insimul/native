@@ -120,3 +120,80 @@
     ; Clauses = [T|Rest], '$consult_collect'(S, Rest) ).
 '$consult_assert'([]).
 '$consult_assert'([C|Cs]) :- assertz(C), '$consult_assert'(Cs).
+
+% --- snapshot / restore (US-LI4: the bridge to save.currentState.prologFacts) --
+%
+% A snapshot is the KB's dynamic clause set (every fact/rule the host consulted or
+% asserted) rendered as canonical Prolog text — one clause per line, terminated by
+% '.'. It is DETERMINISTIC: predicates are emitted in the standard order of their
+% Name/Arity indicators, and clauses within a predicate in assert order (clause/2's
+% order), so the same logical state always serializes byte-for-byte identically.
+% The bootstrap's own '$'-prefixed helpers are loaded static (not dynamic) and are
+% additionally filtered out, so they never leak into a snapshot.
+%
+% The text is written with quoted(true) + numbervars(true) after copy_term +
+% numbervars, so it is BOTH re-readable by this engine (restore) AND parseable by
+% the TypeScript prolog-fact-parser.ts (single-quoted atoms, A/B/C variables,
+% one clause per line ending in '.').
+
+% Dynamic user predicates, as a sorted (dedup'd, deterministic) N/A list.
+'$snap_preds'(Ps) :-
+    findall(N/A,
+      ( current_predicate(N/A),
+        \+ '$snap_internal'(N),
+        functor(H, N, A),
+        predicate_property(H, dynamic) ),
+      Ps0),
+    sort(Ps0, Ps).
+'$snap_internal'(N) :- atom(N), atom_chars(N, ['$'|_]).
+
+'$snap_write_all'(_, []).
+'$snap_write_all'(S, [P|Ps]) :- '$snap_write'(S, P), '$snap_write_all'(S, Ps).
+
+'$snap_write'(S, N/A) :-
+    functor(H, N, A),
+    forall(clause(H, B), '$snap_write_clause'(S, H, B)).
+
+% A fact (Body == true) writes just its head; a rule writes 'Head :- Body'. Vars
+% are numbervar'd on a COPY so the stored clause is untouched and names render as
+% A, B, C … deterministically.
+'$snap_write_clause'(S, H, true) :- !, '$snap_term'(S, H).
+'$snap_write_clause'(S, H, B) :- '$snap_term'(S, (H :- B)).
+'$snap_term'(S, T0) :-
+    copy_term(T0, T),
+    numbervars(T, 0, _),
+    write_term(S, T, [quoted(true), numbervars(true)]),
+    write(S, '.'), nl(S).
+
+% Build the whole image as an atom (so a mid-serialization error can be reported
+% cleanly, before any status byte is written to the result file).
+'$snap_image'(Img) :-
+    with_output_to(atom(Img),
+      ( current_output(S), '$snap_preds'(Ps), '$snap_write_all'(S, Ps) )).
+
+% Result file for snapshot: line 1 is the status ('OK' or 'ERR <term>'); on OK the
+% image text follows from line 2 on. (The other ops tag every record; snapshot's
+% payload is multi-line Prolog, so only the FIRST line is a tag.)
+'$insimul_snapshot'(ResFile) :-
+    catch('$snap_image'(Img), E, Err = E),
+    setup_call_cleanup(open(ResFile, write, S),
+      ( nonvar(Err)
+        -> '$err_atom'(Err, EA), write(S, 'ERR '), write(S, EA), nl(S)
+        ;  write(S, 'OK'), nl(S), write(S, Img) ),
+      close(S)).
+
+% Restore REPLACES the dynamic state: the image is parsed first (a malformed image
+% leaves the KB untouched), then every current dynamic user predicate is wiped, then
+% the image's clauses are asserted in file order (preserving clause order).
+'$snap_wipe' :-
+    '$snap_preds'(Ps), '$snap_wipe_'(Ps).
+'$snap_wipe_'([]).
+'$snap_wipe_'([N/A|Ps]) :- functor(H, N, A), retractall(H), '$snap_wipe_'(Ps).
+
+'$insimul_restore'(ResFile, SrcFile) :-
+    catch(
+      ( setup_call_cleanup(open(SrcFile, read, S), '$consult_collect'(S, Clauses), close(S)),
+        '$snap_wipe', '$consult_assert'(Clauses) ),
+      E, Err = E),
+    ( var(Err) -> Lines = ['OK'-''] ; '$err_atom'(Err, EA), Lines = ['ERR'-EA] ),
+    '$write_lines'(ResFile, Lines).

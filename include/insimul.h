@@ -104,6 +104,34 @@ const char *insimul_query_next(insimul_query *q);
 void insimul_query_stop(insimul_query *q);
 
 /*
+ * Snapshot the KB's dynamic state — every fact and rule the host consulted or
+ * asserted — as canonical Prolog program text, the bridge to a save file's
+ * currentState.prologFacts. Returns a NUL-terminated image string, or NULL on
+ * error (see insimul_last_error). The returned pointer is owned by the KB and
+ * valid until the next insimul_kb_snapshot on the same KB or its destruction;
+ * copy it to keep it.
+ *
+ * The image is DETERMINISTIC: the same logical state always serializes to
+ * byte-identical text (predicates in standard Name/Arity order, clauses in assert
+ * order), so two equal states produce equal snapshots. It is both re-readable by
+ * insimul_kb_restore and parseable by the wrappers' Prolog fact parser (one clause
+ * per line, single-quoted atoms, A/B/C variables). The bootstrap's own predicates
+ * are never included.
+ */
+const char *insimul_kb_snapshot(insimul_kb *kb);
+
+/*
+ * Restore a KB's dynamic state from a snapshot `image` (as produced by
+ * insimul_kb_snapshot). This REPLACES the current dynamic state: the image is
+ * parsed first (a malformed image is rejected with -1 and the KB left unchanged),
+ * then all existing dynamic user clauses are removed and the image's clauses
+ * loaded in order. Returns 0 on success, -1 on error (see insimul_last_error).
+ * A round-trip (snapshot then restore into a fresh KB) reproduces identical query
+ * results.
+ */
+int insimul_kb_restore(insimul_kb *kb, const char *image);
+
+/*
  * The last error message for this KB, or NULL if the most recent operation
  * succeeded. Owned by the KB; valid until the next ABI call on the KB.
  */

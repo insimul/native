@@ -17,9 +17,10 @@ This directory is being built up story-by-story (PRD `libinsimul-bootstrap`):
   smoke test that consults a KB and runs one query through the engine.
 - **US-LI2** — the C ABI (`insimul.h`): KB lifecycle, consult,
   assert/retract, and a JSON binding-set query iterator. See **The C ABI** below.
-- **US-LI3 (this story)** — pass the golden Prolog conformance corpus. See
+- **US-LI3** — pass the golden Prolog conformance corpus. See
   **Conformance suite** below.
-- US-LI4 — KB snapshot/restore for save files.
+- **US-LI4 (this story)** — KB snapshot/restore for save files. See
+  **Snapshot & restore** below.
 - US-LI5 — prebuilt-binary packaging + version stamping.
 
 ## Build & test
@@ -36,7 +37,7 @@ ctest --test-dir build --output-on-failure
 Artifacts land in `build/`: `libinsimul.a` (static) and `libinsimul.dylib` /
 `.so` / `.dll` (shared).
 
-Three ctest cases run:
+Five ctest cases run:
 
 - `smoke` (`tests/smoke.c`) — consults a 3-clause KB with a `grandparent/2` rule
   and checks that a query needing **unification + backtracking through that rule**
@@ -48,6 +49,12 @@ Three ctest cases run:
   opaque boundary compiles and links.
 - `conformance` (`tests/conformance.c`) — runs the golden Prolog corpus through
   the ABI and compares binding sets against the expected solutions. See below.
+- `snapshot` (`tests/snapshot.c`) — snapshot/restore round-trip, determinism, and
+  a golden fixture check. See **Snapshot & restore** below.
+- `snapshot_parse` — runs the committed snapshot fixture through
+  insimul-runtime's real `prolog-fact-parser.ts` (the wrappers' parser) via
+  `node`. It degrades to a loud `[SKIP]` if `node` or the submodule parser is
+  absent; the `snapshot` case still verifies the format byte-for-byte.
 
 ## The C ABI
 
@@ -166,6 +173,62 @@ the `log/1` user predicate in `assert-retract / asserta-prepends`: ISO reserves
 **static builtin predicate**, so `asserta(log(0))` would raise a
 `permission_error`. The rename preserves exactly the assert-ordering behavior the
 case tests.
+
+## Snapshot & restore
+
+`insimul_kb_snapshot` / `insimul_kb_restore` are the bridge between a KB's live
+dynamic state and a save file's `currentState.prologFacts`: snapshot serializes,
+restore rehydrates.
+
+```c
+const char *image = insimul_kb_snapshot(kb);   // owned by kb; copy to keep
+// ... persist `image` into the save file ...
+
+insimul_kb *fresh = insimul_kb_create();
+insimul_kb_consult(fresh, world_rules);        // rules/world from the export
+insimul_kb_restore(fresh, image);              // rehydrate the saved state
+```
+
+**Snapshot format.** The image is canonical Prolog program text — every fact and
+rule the host consulted or asserted (the bootstrap's own predicates are excluded),
+one clause per line ending in `.`:
+
+```prolog
+age(alice,30).
+friend(alice,pet(dog)).
+inventory(bob,[sword,shield,3]).
+knows(A,B):-likes(A,B).
+knows(A,B):-likes(A,C),knows(C,B).
+likes(alice,bob).
+person(alice).
+person(bob).
+score(carol,4.5).
+title(alice,'Grand Duchess').
+```
+
+It is **deterministic**: predicates are emitted in standard `Name/Arity` order and
+clauses within a predicate in assert order, so two equal states serialize to
+**byte-identical** text (the `snapshot` ctest asserts this). Facts write just the
+head; rules write `Head :- Body` with variables rendered `A, B, C, …`; atoms
+needing quotes use single quotes. The format is deliberately a subset that
+insimul-runtime's `prolog-fact-parser.ts` accepts — the `snapshot_parse` ctest
+runs that TypeScript parser over the committed fixture
+(`conformance/snapshots/basic.snapshot.pl`) and checks it against the fixture's
+expected-parse companion (see `conformance/snapshots/README.md`).
+
+**Restore replaces state.** `insimul_kb_restore` parses the image first (a
+malformed image is rejected with `-1` and the KB left untouched), then wipes all
+existing dynamic user clauses and loads the image's clauses in order — so a
+round-trip (`consult base → assert → snapshot → fresh KB → restore`) reproduces
+identical query results and re-snapshots to the identical image.
+
+```sh
+ctest --test-dir build -R 'snapshot' --output-on-failure
+```
+
+If the snapshot format ever changes legitimately, regenerate the golden fixture
+with `INSIMUL_SNAPSHOT_UPDATE=1 ./build/insimul_snapshot` (run from this
+directory) and re-run `snapshot_parse`.
 
 ## Engine build configuration
 

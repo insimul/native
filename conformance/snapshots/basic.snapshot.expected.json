@@ -1,0 +1,12 @@
+{
+  "description": "Expected result of parsing basic.snapshot.pl with insimul-runtime's prolog-fact-parser.ts (packages/core/src/prolog/prolog-fact-parser.ts). The .pl file is a byte-exact insimul_kb_snapshot() image; this pins that the wrappers' TS fact parser accepts the native snapshot format. Regenerate with: ctest -R snapshot (updates basic.snapshot.pl) then re-run snapshot_parse.",
+  "errors": 0,
+  "facts": 8,
+  "rules": 2,
+  "predicates": ["age/2", "friend/2", "inventory/2", "likes/2", "person/1", "person/1", "score/2", "title/2"],
+  "ruleHeads": ["knows/2", "knows/2"],
+  "spotChecks": {
+    "title.arg1": { "type": "string", "value": "Grand Duchess" },
+    "inventory.arg1": { "type": "list", "elements": ["sword", "shield", 3] }
+  }
+}

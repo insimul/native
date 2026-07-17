@@ -56,6 +56,27 @@
   documented, printed amendment (rename), never a silent skip — see its
   `AMENDMENTS` table.
 
+## Snapshot / restore format (US-LI4)
+- `insimul_kb_snapshot` serializes the **dynamic user clause set** only. Enumerate
+  it with `current_predicate(N/A)` + `predicate_property(H, dynamic)` and drop
+  `$`-prefixed names — the bootstrap's own predicates are loaded *static* (via
+  `pl_consult_fp`), so the dynamic filter already excludes them; the `$` filter is
+  belt-and-suspenders. `sort/2` the `N/A` list for deterministic predicate order;
+  `clause/2` preserves assert order within a predicate. Result: **byte-identical**
+  output for equal states (the `snapshot` ctest asserts it).
+- Write clauses with `copy_term` → `numbervars(T,0,_)` → `write_term(S,T,[quoted(true),
+  numbervars(true)])` so variables render as `A,B,C` (not `_G123`) and the text is
+  BOTH re-readable by restore AND parseable by the wrappers' `prolog-fact-parser.ts`.
+  The `snapshot_parse` ctest runs that real TS parser (via `node
+  --experimental-strip-types`, gracefully skipping if node/submodule absent) over
+  the committed golden fixture `conformance/snapshots/basic.snapshot.pl`.
+- Snapshot's result file is **not** the tagged SOL/OK/NONE channel: line 1 is the
+  status (`OK`/`ERR <term>`) and the image text follows (it is multi-line). Build
+  the image into an atom first (`with_output_to`) so a serialization error is
+  reported *before* any status byte is written. Restore reuses the transactional
+  consult loop but parses the image first, then `retractall`s every dynamic pred,
+  then asserts — so a bad image never destroys existing state.
+
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. `build/` is
   gitignored (holds fetched Trealla under `_deps/` and the generated
