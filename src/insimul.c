@@ -68,6 +68,33 @@ const char *insimul_last_error(insimul_kb *kb)
     return kb ? kb->last_error : NULL;
 }
 
+/* ----------------------------------------------------------------- version */
+
+/*
+ * Version stamp assembled at compile time from CMake-provided macros. Fallbacks
+ * keep the build honest if the header is compiled outside CMake (e.g. a quick
+ * standalone check): the string is still well-formed, just less specific.
+ */
+#ifndef INSIMUL_VERSION
+#define INSIMUL_VERSION "0.0.0"
+#endif
+#ifndef INSIMUL_GIT_SHA
+#define INSIMUL_GIT_SHA "unknown"
+#endif
+#ifndef INSIMUL_TREALLA_TAG
+#define INSIMUL_TREALLA_TAG "unknown"
+#endif
+#ifndef INSIMUL_TREALLA_COMMIT
+#define INSIMUL_TREALLA_COMMIT "unknown"
+#endif
+
+const char *insimul_version(void)
+{
+    return "insimul " INSIMUL_VERSION
+           " (git " INSIMUL_GIT_SHA
+           ", trealla " INSIMUL_TREALLA_TAG "/" INSIMUL_TREALLA_COMMIT ")";
+}
+
 /* --------------------------------------------------------------- temp files */
 
 /*

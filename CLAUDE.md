@@ -77,6 +77,20 @@
   consult loop but parses the image first, then `retractall`s every dynamic pred,
   then asserts — so a bad image never destroys existing state.
 
+## Versioning & packaging (US-LI5)
+- **Semver has ONE source of truth: the tracked `VERSION` file.** `CMakeLists.txt`
+  `file(STRINGS VERSION ...)` reads it into `project(... VERSION)` and compile defs;
+  `insimul_version()` (src/insimul.c) embeds it; `scripts/package.sh` stamps it. To
+  bump the version, edit `VERSION` only — do not hardcode it anywhere else.
+- `insimul_version()` is stamped from CMake compile defs (`INSIMUL_VERSION`,
+  `INSIMUL_GIT_SHA` via `git rev-parse --short HEAD` at configure time,
+  `INSIMUL_TREALLA_TAG`/`_COMMIT`). The `#ifndef` fallbacks in src/insimul.c only
+  fire for a non-CMake compile. Applied to BOTH `insimul` and `insimul_shared`.
+- `scripts/package.sh` builds `insimul_shared` and assembles `dist/<platform>/`
+  (shared lib + `insimul.h` + `VERSION`). Platform from `uname` → `macos-arm64`
+  etc. It reads the Trealla pin by `sed`-ing `CMakeLists.txt` (the authoritative
+  pin), so the stamp can't drift from what was built. `dist/` is gitignored.
+
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. `build/` is
   gitignored (holds fetched Trealla under `_deps/` and the generated

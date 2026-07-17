@@ -137,6 +137,21 @@ int insimul_kb_restore(insimul_kb *kb, const char *image);
  */
 const char *insimul_last_error(insimul_kb *kb);
 
+/*
+ * A stable version stamp for this build of libinsimul. Returns a static,
+ * NUL-terminated string (never NULL, never freed) of the form:
+ *
+ *   "insimul <semver> (git <sha>, trealla <tag>/<commit>)"
+ *
+ * where <semver> is the library's own version (VERSION file), <sha> is the
+ * short git commit it was built from ("unknown" if git was unavailable at
+ * configure time), and <tag>/<commit> is the pinned Trealla engine. This is
+ * the same information written to a package's VERSION file (see scripts/
+ * package.sh); the three engine wrappers surface it for diagnostics. No KB is
+ * required to call it.
+ */
+const char *insimul_version(void);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

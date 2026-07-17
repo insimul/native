@@ -19,9 +19,10 @@ This directory is being built up story-by-story (PRD `libinsimul-bootstrap`):
   assert/retract, and a JSON binding-set query iterator. See **The C ABI** below.
 - **US-LI3** — pass the golden Prolog conformance corpus. See
   **Conformance suite** below.
-- **US-LI4 (this story)** — KB snapshot/restore for save files. See
+- **US-LI4** — KB snapshot/restore for save files. See
   **Snapshot & restore** below.
-- US-LI5 — prebuilt-binary packaging + version stamping.
+- **US-LI5 (this story)** — prebuilt-binary packaging (`scripts/package.sh`) +
+  version stamping (`insimul_version()`). See **Packaging & versioning** below.
 
 ## Build & test
 
@@ -37,7 +38,7 @@ ctest --test-dir build --output-on-failure
 Artifacts land in `build/`: `libinsimul.a` (static) and `libinsimul.dylib` /
 `.so` / `.dll` (shared).
 
-Five ctest cases run:
+Six ctest cases run:
 
 - `smoke` (`tests/smoke.c`) — consults a 3-clause KB with a `grandparent/2` rule
   and checks that a query needing **unification + backtracking through that rule**
@@ -55,6 +56,9 @@ Five ctest cases run:
   insimul-runtime's real `prolog-fact-parser.ts` (the wrappers' parser) via
   `node`. It degrades to a loud `[SKIP]` if `node` or the submodule parser is
   absent; the `snapshot` case still verifies the format byte-for-byte.
+- `version` (`tests/version.c`) — a pure consumer of `insimul.h` that checks
+  `insimul_version()` embeds the semver from the `VERSION` file plus the git sha
+  and Trealla pin. See **Packaging & versioning** below.
 
 ## The C ABI
 
@@ -229,6 +233,50 @@ ctest --test-dir build -R 'snapshot' --output-on-failure
 If the snapshot format ever changes legitimately, regenerate the golden fixture
 with `INSIMUL_SNAPSHOT_UPDATE=1 ./build/insimul_snapshot` (run from this
 directory) and re-run `snapshot_parse`.
+
+## Packaging & versioning
+
+The library's semver lives in one place — the tracked `VERSION` file (currently
+`0.1.0`). `CMakeLists.txt` reads it, `insimul_version()` embeds it, and
+`scripts/package.sh` stamps it, so they never drift.
+
+**`insimul_version()`** returns a static string identifying the exact build:
+
+```
+insimul 0.1.0 (git 3c347ec, trealla v2.106.1/07de013677af760a8bca0594ae4b2bef158a3cde)
+```
+
+— the `insimul` semver, the short git sha the tree was built from (`unknown` for
+a non-git tarball build), and the pinned Trealla tag/commit. Wrappers log it on
+startup for provenance.
+
+**`scripts/package.sh`** produces a redistributable package for the current host:
+
+```sh
+scripts/package.sh                 # -> dist/<platform>/
+```
+
+`<platform>` is derived from `uname` (`macos-arm64`, `macos-x64`, `linux-x64`,
+`windows-x64`). Each package contains the **shared** library
+(`libinsimul.dylib`/`.so`/`insimul.dll`), the public header `insimul.h`, and a
+`VERSION` file:
+
+```
+insimul 0.1.0
+platform macos-arm64
+git 3c347ec
+trealla_tag v2.106.1
+trealla_commit 07de013677af760a8bca0594ae4b2bef158a3cde
+```
+
+The first line's semver matches `insimul_version()`, and the Trealla fields match
+the pin in `CMakeLists.txt` / `THIRD_PARTY.md` — a consumer can cross-check the
+binary it loaded against the file it shipped. `dist/` is gitignored.
+
+How the three engine plugins consume `dist/<platform>/` (Unity `Plugins/`
+P/Invoke, Unreal `ThirdParty` module, Godot GDExtension) is documented in
+[`docs/consuming.md`](docs/consuming.md) — layout only; the per-engine wrappers
+are their own PRDs' work.
 
 ## Engine build configuration
 

@@ -6,12 +6,36 @@
 # skeleton + a ctest smoke test that consults a KB and runs one query through
 # Trealla's C API; the stable insimul C ABI lands in US-LI2 (include/insimul.h).
 cmake_minimum_required(VERSION 3.24)
-project(insimul LANGUAGES C)
+
+# Single source of truth for the library's semver: the tracked VERSION file.
+# scripts/package.sh reads the same file, and insimul_version() embeds it (below)
+# so the C ABI, the packaged VERSION stamp, and CMake never drift.
+file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION INSIMUL_SEMVER LIMIT_COUNT 1)
+string(STRIP "${INSIMUL_SEMVER}" INSIMUL_SEMVER)
+
+project(insimul VERSION ${INSIMUL_SEMVER} LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
+# Short git sha of the source tree, resolved at configure time. "unknown" when
+# git is absent or this is not a checkout (a tarball build) — insimul_version()
+# still returns a well-formed stamp in that case.
+set(INSIMUL_GIT_SHA "unknown")
+find_package(Git QUIET)
+if(GIT_FOUND)
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} -C ${CMAKE_CURRENT_SOURCE_DIR} rev-parse --short HEAD
+    OUTPUT_VARIABLE _git_sha
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET
+    RESULT_VARIABLE _git_rc)
+  if(_git_rc EQUAL 0 AND _git_sha)
+    set(INSIMUL_GIT_SHA "${_git_sha}")
+  endif()
 endif()
 
 find_package(Threads REQUIRED)
@@ -143,6 +167,17 @@ set_target_properties(insimul_shared PROPERTIES OUTPUT_NAME insimul)
 target_include_directories(insimul_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(insimul_shared PRIVATE ${TREALLA_DIR}/src)
 
+# Version stamp (US-LI5). src/insimul.c bakes these into insimul_version(): the
+# library semver, the git sha, and the pinned Trealla tag/commit. Applied to both
+# libraries so a static- or shared-linked host reports the same stamp.
+set(INSIMUL_VERSION_DEFS
+  INSIMUL_VERSION="${INSIMUL_SEMVER}"
+  INSIMUL_GIT_SHA="${INSIMUL_GIT_SHA}"
+  INSIMUL_TREALLA_TAG="${TREALLA_GIT_TAG}"
+  INSIMUL_TREALLA_COMMIT="${TREALLA_GIT_COMMIT}")
+target_compile_definitions(insimul PRIVATE ${INSIMUL_VERSION_DEFS})
+target_compile_definitions(insimul_shared PRIVATE ${INSIMUL_VERSION_DEFS})
+
 # ---------------------------------------------------------------------------
 # Tests.
 # ---------------------------------------------------------------------------
@@ -201,3 +236,13 @@ add_test(NAME snapshot_parse COMMAND
        ${INSIMUL_SNAPSHOT_FIXTURE}
        ${CMAKE_CURRENT_SOURCE_DIR}/conformance/snapshots/basic.snapshot.expected.json
        ${INSIMUL_FACT_PARSER_TS})
+
+# Version stamp (US-LI5). A pure consumer of insimul.h: it asserts the semver
+# CMake read from the VERSION file is embedded in insimul_version() and that the
+# stamp is well-formed (git sha + Trealla pin present). The expected semver is
+# passed as a compile def so the test tracks the VERSION file with no edits.
+add_executable(insimul_version_test tests/version.c)
+target_link_libraries(insimul_version_test PRIVATE insimul)
+target_compile_definitions(insimul_version_test PRIVATE
+  EXPECT_SEMVER="${INSIMUL_SEMVER}")
+add_test(NAME version COMMAND insimul_version_test)
