@@ -1,0 +1,6 @@
+# CMake build tree (contains the fetched Trealla source under _deps/).
+build/
+build-*/
+
+# Packaging output (US-LI5).
+dist/

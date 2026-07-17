@@ -1,0 +1,131 @@
+# insimul-native — the shared native Prolog core (libinsimul).
+#
+# Builds a static + shared library `insimul` from src/, embedding a REAL
+# ISO-conforming Prolog engine: Trealla Prolog (pure C, MIT), vendored via
+# FetchContent at a pinned commit (see THIRD_PARTY.md). US-LI1 delivers the
+# skeleton + a ctest smoke test that consults a KB and runs one query through
+# Trealla's C API; the stable insimul C ABI lands in US-LI2 (include/insimul.h).
+cmake_minimum_required(VERSION 3.24)
+project(insimul LANGUAGES C)
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+endif()
+
+find_package(Threads REQUIRED)
+include(FetchContent)
+
+# ---------------------------------------------------------------------------
+# Vendored Trealla Prolog (MIT). Pinned — see THIRD_PARTY.md before bumping.
+# ---------------------------------------------------------------------------
+set(TREALLA_GIT_TAG "v2.106.1" CACHE STRING "Trealla tag (documented pin)")
+set(TREALLA_GIT_COMMIT "07de013677af760a8bca0594ae4b2bef158a3cde"
+    CACHE STRING "Trealla commit (the authoritative pin)")
+
+FetchContent_Declare(
+  trealla
+  GIT_REPOSITORY https://github.com/trealla-prolog/trealla.git
+  GIT_TAG        ${TREALLA_GIT_COMMIT}
+  GIT_SHALLOW    FALSE   # fetching an exact SHA is unreliable with shallow clones
+)
+# Trealla ships a Makefile, not a CMakeLists — MakeAvailable (CMake >= 3.28)
+# just populates ${trealla_SOURCE_DIR} and does NOT add_subdirectory().
+FetchContent_MakeAvailable(trealla)
+set(TREALLA_DIR ${trealla_SOURCE_DIR})
+
+# ---------------------------------------------------------------------------
+# Embed Trealla's Prolog standard library (library/*.pl) as C byte arrays.
+# Trealla's Makefile compiles a host tool `bin2c` and, for each library/x.pl,
+# writes "#include <stddef.h>" followed by bin2c's output into library/x.c.
+# bin2c derives the C symbol name from its PATH ARGUMENT, so it MUST be run as
+# `bin2c library/<name>.pl` from the Trealla root or the symbols won't match
+# the externs in src/library.c. cmake/gen_embed.cmake handles that.
+# ---------------------------------------------------------------------------
+add_executable(insimul_bin2c ${TREALLA_DIR}/util/bin2c.c)
+
+file(GLOB TREALLA_LIB_PL CONFIGURE_DEPENDS ${TREALLA_DIR}/library/*.pl)
+set(TREALLA_EMBED_DIR ${CMAKE_CURRENT_BINARY_DIR}/trealla_embed)
+file(MAKE_DIRECTORY ${TREALLA_EMBED_DIR})
+
+set(TREALLA_EMBED_SRC "")
+foreach(pl ${TREALLA_LIB_PL})
+  get_filename_component(name ${pl} NAME_WE)
+  set(out ${TREALLA_EMBED_DIR}/${name}.c)
+  add_custom_command(
+    OUTPUT ${out}
+    COMMAND ${CMAKE_COMMAND}
+      -DBIN2C=$<TARGET_FILE:insimul_bin2c>
+      -DTREALLA_DIR=${TREALLA_DIR}
+      -DPL_NAME=${name}
+      -DOUT=${out}
+      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/gen_embed.cmake
+    DEPENDS insimul_bin2c ${pl}
+    COMMENT "Embedding Trealla library: ${name}.pl"
+    VERBATIM
+  )
+  list(APPEND TREALLA_EMBED_SRC ${out})
+endforeach()
+
+# ---------------------------------------------------------------------------
+# Trealla sources compiled into an OBJECT library. Feature flags mirror a
+# minimal, dependency-light build validated on this machine:
+#   EMBED=1        embed the stdlib (no on-disk library path needed)
+#   USE_ISOCLINE=1 use Trealla's bundled line editor (no system libedit dep)
+#   USE_THREADS=1  required — src/bif_os.c uses pthread unconditionally
+#   (NO USE_FFI / USE_OPENSSL — those need libffi / openssl headers)
+# isocline builds as a single translation unit (isocline.c #includes the rest).
+# ---------------------------------------------------------------------------
+file(GLOB TREALLA_CORE_SRC CONFIGURE_DEPENDS ${TREALLA_DIR}/src/*.c)
+set(TREALLA_SRC
+  ${TREALLA_CORE_SRC}
+  ${TREALLA_DIR}/src/imath/imath.c
+  ${TREALLA_DIR}/src/imath/imrat.c
+  ${TREALLA_DIR}/src/sre/re.c
+  ${TREALLA_DIR}/src/isocline/src/isocline.c
+  ${TREALLA_EMBED_SRC}
+)
+
+add_library(trealla_objs OBJECT ${TREALLA_SRC})
+set_target_properties(trealla_objs PROPERTIES POSITION_INDEPENDENT_CODE ON)
+target_include_directories(trealla_objs PUBLIC ${TREALLA_DIR}/src)
+target_compile_definitions(trealla_objs PRIVATE
+  EMBED=1
+  USE_ISOCLINE=1
+  USE_THREADS=1
+  _GNU_SOURCE
+  VERSION="${TREALLA_GIT_TAG}"
+  DEFAULT_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/share/trealla/library"
+)
+# Vendored code: silence its warnings so the insimul build log stays readable.
+target_compile_options(trealla_objs PRIVATE -w)
+target_link_libraries(trealla_objs PUBLIC m Threads::Threads)
+
+# ---------------------------------------------------------------------------
+# The insimul libraries. Both embed the Trealla objects (linking an OBJECT
+# library adds its objects to the archive/shared lib). Linking trealla_objs
+# PRIVATE keeps Trealla's internal include dir OUT of insimul's public interface
+# — consumers see only include/insimul.h. Consumers still need libm + pthread,
+# so those are re-exported as INTERFACE requirements.
+# ---------------------------------------------------------------------------
+add_library(insimul STATIC src/insimul.c)
+target_link_libraries(insimul PRIVATE trealla_objs)
+target_link_libraries(insimul INTERFACE m Threads::Threads)
+target_include_directories(insimul PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_library(insimul_shared SHARED src/insimul.c)
+target_link_libraries(insimul_shared PRIVATE trealla_objs)
+set_target_properties(insimul_shared PROPERTIES OUTPUT_NAME insimul)
+target_include_directories(insimul_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# ---------------------------------------------------------------------------
+# Tests.
+# ---------------------------------------------------------------------------
+enable_testing()
+
+add_executable(insimul_smoke tests/smoke.c)
+target_link_libraries(insimul_smoke PRIVATE insimul)
+# The smoke test drives Trealla's C API directly, so it needs trealla.h.
+target_include_directories(insimul_smoke PRIVATE ${TREALLA_DIR}/src)
+add_test(NAME smoke COMMAND insimul_smoke)
