@@ -15,9 +15,10 @@ This directory is being built up story-by-story (PRD `libinsimul-bootstrap`):
 - **US-LI1** — project skeleton: CMake build of a static + shared `insimul`
   library, Trealla vendored at a pinned commit via FetchContent, and a ctest
   smoke test that consults a KB and runs one query through the engine.
-- **US-LI2 (this story)** — the C ABI (`insimul.h`): KB lifecycle, consult,
+- **US-LI2** — the C ABI (`insimul.h`): KB lifecycle, consult,
   assert/retract, and a JSON binding-set query iterator. See **The C ABI** below.
-- US-LI3 — pass the golden Prolog conformance corpus.
+- **US-LI3 (this story)** — pass the golden Prolog conformance corpus. See
+  **Conformance suite** below.
 - US-LI4 — KB snapshot/restore for save files.
 - US-LI5 — prebuilt-binary packaging + version stamping.
 
@@ -35,7 +36,7 @@ ctest --test-dir build --output-on-failure
 Artifacts land in `build/`: `libinsimul.a` (static) and `libinsimul.dylib` /
 `.so` / `.dll` (shared).
 
-Two ctest cases run:
+Three ctest cases run:
 
 - `smoke` (`tests/smoke.c`) — consults a 3-clause KB with a `grandparent/2` rule
   and checks that a query needing **unification + backtracking through that rule**
@@ -45,6 +46,8 @@ Two ctest cases run:
   assert/retract, the query iterator, and every error path) as a **pure consumer
   of `include/insimul.h`** — it never includes `trealla.h`, so it also proves the
   opaque boundary compiles and links.
+- `conformance` (`tests/conformance.c`) — runs the golden Prolog corpus through
+  the ABI and compares binding sets against the expected solutions. See below.
 
 ## The C ABI
 
@@ -107,6 +110,62 @@ bootstrap program (`src/insimul_boot.pl`, embedded as a C byte array by
 serializing solutions to JSON, catching exceptions — and reports back through a
 per-KB temp file. This keeps Trealla types out of `insimul.h` and avoids any
 process-global stdout/stderr redirection, preserving the one-KB-per-thread model.
+
+## Conformance suite
+
+The `conformance` ctest (`tests/conformance.c`) is the parity gate: it proves the
+native engine gives the **same answers as tau-prolog**, the platform's reference
+engine, over the golden query corpus authored by the core-extraction PRD.
+
+Each corpus file (`insimul-runtime/packages/core/conformance/prolog/*.json`) is a
+list of cases:
+
+```json
+{ "area": "unification",
+  "cases": [
+    { "name": "simple-fact-binding",
+      "kb": ["parent(tom, bob)."],
+      "query": "parent(tom, X)",
+      "expected": [{ "X": "bob" }] } ] }
+```
+
+For every case the harness creates a fresh KB, consults the `kb` clauses, runs
+`query` through the C ABI, and compares the collected [binding sets](#binding-set-json-format)
+against `expected`. Solutions are matched **in order** by default (Prolog's
+solution order is canonical); a case may set `"unordered": true` to request a
+multiset comparison instead. The harness prints a per-case `[PASS]`/`[FAIL]`
+table and a final `files / cases / passed / failed / amended` summary.
+
+Run it via ctest, or directly for the full table:
+
+```sh
+ctest --test-dir build -R conformance --output-on-failure
+./build/insimul_conformance          # prints the per-case table
+```
+
+The corpus directory is resolved from the `INSIMUL_CONFORMANCE_DIR` environment
+variable, falling back to the sibling `insimul-runtime` submodule (an absolute
+path baked in at configure time). Point the env var elsewhere to run a corpus
+from any checkout:
+
+```sh
+INSIMUL_CONFORMANCE_DIR=/path/to/conformance/prolog ./build/insimul_conformance
+```
+
+The harness **never passes vacuously**: a missing/unreadable corpus directory, a
+directory with no `*.json` files, an unparseable corpus file, or zero executed
+cases all exit non-zero. Nothing is silently skipped.
+
+**Documented amendments.** Where Trealla diverges from tau-prolog *and*
+tau-prolog is the ISO-correct one, the harness applies an explicit, printed
+textual amendment to the affected case rather than skipping it, and flags it for
+human review (see the `[AMEND]` lines, the `AMENDMENTS` table in
+`tests/conformance.c`, and `progress.txt`). The only current amendment renames
+the `log/1` user predicate in `assert-retract / asserta-prepends`: ISO reserves
+`log` as an *evaluable functor* only, but Trealla also registers `log/1` as a
+**static builtin predicate**, so `asserta(log(0))` would raise a
+`permission_error`. The rename preserves exactly the assert-ordering behavior the
+case tests.
 
 ## Engine build configuration
 

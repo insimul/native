@@ -37,6 +37,24 @@
 - Capture a term's text deterministically with
   `with_output_to(atom(A), (current_output(S), <write to S>))` — `string(...)`
   renders oddly when re-written.
+- **Create/destroy CYCLE hangs (process-global teardown).** A single
+  `pl_create` … `pl_destroy` is fine, but `create → destroy(the last KB) →
+  create` **deadlocks** the second full teardown. Trealla's `pl_destroy` calls
+  `g_destroy()` when `g_tpl_count` hits 0 (tears down the global symbol table);
+  re-`g_init`-ing it and tearing down again hangs. Mitigation for code that
+  creates many KBs over time (the conformance harness, and eventually the engine
+  plugins): keep **one long-lived KB open** so `g_tpl_count` never returns to 0 —
+  then per-KB create/destroy is safe. See `tests/conformance.c` (`keepalive`).
+  Flagged for human review in `progress.txt`; a real ABI-level fix (an internal
+  keepalive/refcount in `insimul.c`) is a candidate follow-up.
+- **Arithmetic functors are also STATIC builtin predicates.** Names like `log`,
+  `sin`, `max`, `gcd` are registered in `src/bif_functions.c` as `name/N`
+  predicates, not just evaluable functors. So a user KB that uses e.g. `log/1` as
+  a dynamic predicate hits `permission_error(modify, static_procedure, log/1)` on
+  `asserta`/`assertz` — ISO allows it (there `log` is an evaluable functor only)
+  and tau-prolog accepts it. The conformance harness handles this with a
+  documented, printed amendment (rename), never a silent skip — see its
+  `AMENDMENTS` table.
 
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. `build/` is

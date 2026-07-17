@@ -159,3 +159,16 @@ add_test(NAME smoke COMMAND insimul_smoke)
 add_executable(insimul_abi tests/abi.c)
 target_link_libraries(insimul_abi PRIVATE insimul)
 add_test(NAME abi COMMAND insimul_abi)
+
+# Conformance harness (US-LI3): drives the ABI over every golden corpus case
+# from insimul-runtime/packages/core/conformance/prolog. The default corpus dir
+# is baked as an absolute path to the sibling submodule; INSIMUL_CONFORMANCE_DIR
+# overrides it (so CI can point anywhere). Also a pure consumer of insimul.h.
+get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
+  "${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core/conformance/prolog"
+  ABSOLUTE)
+add_executable(insimul_conformance tests/conformance.c)
+target_link_libraries(insimul_conformance PRIVATE insimul)
+target_compile_definitions(insimul_conformance PRIVATE
+  INSIMUL_CONFORMANCE_DEFAULT_DIR="${INSIMUL_CONFORMANCE_DEFAULT_DIR}")
+add_test(NAME conformance COMMAND insimul_conformance)
