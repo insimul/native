@@ -285,6 +285,20 @@ P/Invoke, Unreal `ThirdParty` module, Godot GDExtension) is documented in
 [`docs/consuming.md`](docs/consuming.md) — layout only; the per-engine wrappers
 are their own PRDs' work.
 
+## Rust bindings
+
+`rust/` is a cargo workspace binding this ABI for the Rust server:
+`insimul-sys` (raw `extern "C"` + a `build.rs` that links the cmake-built
+`libinsimul.a`) and `insimul` (a safe `KnowledgeBase` with RAII handles,
+`Result`-returning operations, and decoded binding sets). Build **cmake first,
+then cargo**; see [`rust/README.md`](rust/README.md) for the crate layout, the
+test matrix, and the snapshot `op/3` caveat.
+
+```sh
+cmake -B build && cmake --build build   # produces libinsimul.a
+cd rust && cargo test
+```
+
 ## Engine build configuration
 
 Trealla ships a Makefile, not CMake. `CMakeLists.txt` compiles its sources
