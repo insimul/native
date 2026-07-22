@@ -1,0 +1,30 @@
+{
+  "area": "assert-retract",
+  "description": "Dynamic database mutation: assertz/asserta/retract effects must be visible to goals evaluated later in the same query. Each case declares its predicate dynamic in kb.",
+  "cases": [
+    {
+      "name": "assertz-visible-same-query",
+      "kb": [":- dynamic(seen/1)."],
+      "query": "assertz(seen(a)), assertz(seen(b)), seen(X)",
+      "expected": [{ "X": "a" }, { "X": "b" }]
+    },
+    {
+      "name": "retract-removes-clause",
+      "kb": [":- dynamic(item/1).", "item(a).", "item(b)."],
+      "query": "retract(item(a)), item(X)",
+      "expected": [{ "X": "b" }]
+    },
+    {
+      "name": "retract-then-assert-counter",
+      "kb": [":- dynamic(counter/1).", "counter(0)."],
+      "query": "retract(counter(0)), assertz(counter(1)), counter(X)",
+      "expected": [{ "X": 1 }]
+    },
+    {
+      "name": "asserta-prepends",
+      "kb": [":- dynamic(log/1)."],
+      "query": "assertz(log(1)), asserta(log(0)), log(X)",
+      "expected": [{ "X": 0 }, { "X": 1 }]
+    }
+  ]
+}

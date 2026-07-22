@@ -1,0 +1,50 @@
+{
+  "area": "backtracking",
+  "description": "Backtracking over multiple solutions: fact enumeration, rule-driven joins, conjunctions, and cross products.",
+  "cases": [
+    {
+      "name": "enumerate-facts",
+      "kb": ["color(red).", "color(green).", "color(blue)."],
+      "query": "color(X)",
+      "expected": [{ "X": "red" }, { "X": "green" }, { "X": "blue" }]
+    },
+    {
+      "name": "transitive-join-grandparent",
+      "kb": [
+        "parent(tom, bob).",
+        "parent(bob, ann).",
+        "grandparent(X, Z) :- parent(X, Y), parent(Y, Z)."
+      ],
+      "query": "grandparent(tom, G)",
+      "expected": [{ "G": "ann" }]
+    },
+    {
+      "name": "conjunction-multiple-solutions",
+      "kb": ["likes(sam, pizza).", "likes(sam, pasta).", "likes(joe, pizza)."],
+      "query": "likes(sam, F)",
+      "expected": [{ "F": "pizza" }, { "F": "pasta" }]
+    },
+    {
+      "name": "cross-product",
+      "kb": ["p(1).", "p(2).", "q(a).", "q(b)."],
+      "query": "p(X), q(Y)",
+      "expected": [
+        { "X": 1, "Y": "a" },
+        { "X": 1, "Y": "b" },
+        { "X": 2, "Y": "a" },
+        { "X": 2, "Y": "b" }
+      ]
+    },
+    {
+      "name": "chain-two-hops",
+      "kb": [
+        "edge(a, b).",
+        "edge(b, c).",
+        "edge(c, d).",
+        "two(X, Z) :- edge(X, Y), edge(Y, Z)."
+      ],
+      "query": "two(a, Z)",
+      "expected": [{ "Z": "c" }]
+    }
+  ]
+}

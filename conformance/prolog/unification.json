@@ -1,0 +1,48 @@
+{
+  "area": "unification",
+  "description": "Term unification: variable binding, ground matching, repeated variables, and structural (compound-term) unification.",
+  "cases": [
+    {
+      "name": "simple-fact-binding",
+      "kb": ["parent(tom, bob)."],
+      "query": "parent(tom, X)",
+      "expected": [{ "X": "bob" }]
+    },
+    {
+      "name": "two-variable-binding",
+      "kb": ["likes(sam, pizza)."],
+      "query": "likes(P, F)",
+      "expected": [{ "P": "sam", "F": "pizza" }]
+    },
+    {
+      "name": "ground-match-success",
+      "kb": ["color(sky, blue)."],
+      "query": "color(sky, blue)",
+      "expected": [{}]
+    },
+    {
+      "name": "ground-match-fail",
+      "kb": ["color(sky, blue)."],
+      "query": "color(sky, green)",
+      "expected": []
+    },
+    {
+      "name": "repeated-var-success",
+      "kb": ["same(X, X)."],
+      "query": "same(foo, foo)",
+      "expected": [{}]
+    },
+    {
+      "name": "repeated-var-fail",
+      "kb": ["same(X, X)."],
+      "query": "same(foo, bar)",
+      "expected": []
+    },
+    {
+      "name": "structural-decomposition",
+      "kb": ["point(p1, coord(1, 2))."],
+      "query": "point(p1, coord(X, Y))",
+      "expected": [{ "X": 1, "Y": 2 }]
+    }
+  ]
+}

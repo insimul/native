@@ -1,0 +1,57 @@
+{
+  "area": "arithmetic",
+  "description": "Arithmetic evaluation (is/2) and comparison operators (>, >=, =:=), including using a comparison to filter facts during backtracking.",
+  "cases": [
+    {
+      "name": "is-addition",
+      "kb": [],
+      "query": "X is 2 + 3",
+      "expected": [{ "X": 5 }]
+    },
+    {
+      "name": "is-multiplication",
+      "kb": [],
+      "query": "X is 6 * 7",
+      "expected": [{ "X": 42 }]
+    },
+    {
+      "name": "is-modulo",
+      "kb": [],
+      "query": "X is 10 mod 3",
+      "expected": [{ "X": 1 }]
+    },
+    {
+      "name": "is-max",
+      "kb": [],
+      "query": "X is max(4, 7)",
+      "expected": [{ "X": 7 }]
+    },
+    {
+      "name": "compare-greater-true",
+      "kb": [],
+      "query": "5 > 3",
+      "expected": [{}]
+    },
+    {
+      "name": "compare-greater-false",
+      "kb": [],
+      "query": "3 > 5",
+      "expected": []
+    },
+    {
+      "name": "arith-equal-evaluated",
+      "kb": [],
+      "query": "6 =:= 2 * 3",
+      "expected": [{}]
+    },
+    {
+      "name": "filter-by-comparison",
+      "kb": ["age(john, 35).", "age(bob, 12).", "age(mary, 28)."],
+      "query": "age(P, A), A >= 18",
+      "expected": [
+        { "P": "john", "A": 35 },
+        { "P": "mary", "A": 28 }
+      ]
+    }
+  ]
+}

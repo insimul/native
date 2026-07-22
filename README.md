@@ -128,8 +128,9 @@ The `conformance` ctest (`tests/conformance.c`) is the parity gate: it proves th
 native engine gives the **same answers as tau-prolog**, the platform's reference
 engine, over the golden query corpus authored by the core-extraction PRD.
 
-Each corpus file (`insimul-runtime/packages/core/conformance/prolog/*.json`) is a
-list of cases:
+Each corpus file (`conformance/prolog/*.json`, a vendored mirror of
+`insimul-runtime/packages/core/conformance/prolog` — see `conformance/VENDORED.md`)
+is a list of cases:
 
 ```json
 { "area": "unification",
@@ -155,9 +156,9 @@ ctest --test-dir build -R conformance --output-on-failure
 ```
 
 The corpus directory is resolved from the `INSIMUL_CONFORMANCE_DIR` environment
-variable, falling back to the sibling `insimul-runtime` submodule (an absolute
-path baked in at configure time). Point the env var elsewhere to run a corpus
-from any checkout:
+variable, falling back to the vendored `conformance/prolog` and then to the
+sibling `insimul-runtime` submodule (an absolute path baked in at configure
+time). Point the env var elsewhere to run a corpus from any checkout:
 
 ```sh
 INSIMUL_CONFORMANCE_DIR=/path/to/conformance/prolog ./build/insimul_conformance
@@ -166,6 +167,12 @@ INSIMUL_CONFORMANCE_DIR=/path/to/conformance/prolog ./build/insimul_conformance
 The harness **never passes vacuously**: a missing/unreadable corpus directory, a
 directory with no `*.json` files, an unparseable corpus file, or zero executed
 cases all exit non-zero. Nothing is silently skipped.
+
+**The Rust leg.** `rust/insimul/tests/conformance.rs` runs the same corpus through
+the safe Rust wrapper (`cargo test -p insimul --test conformance`), resolving the
+corpus the same way and reporting the same `files / cases / passed / failed /
+amended` summary — so a divergence between the C ABI and its Rust binding shows up
+as a differing count.
 
 **Documented amendments.** Where Trealla diverges from tau-prolog *and*
 tau-prolog is the ISO-correct one, the harness applies an explicit, printed

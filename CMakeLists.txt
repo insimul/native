@@ -195,13 +195,21 @@ add_executable(insimul_abi tests/abi.c)
 target_link_libraries(insimul_abi PRIVATE insimul)
 add_test(NAME abi COMMAND insimul_abi)
 
-# Conformance harness (US-LI3): drives the ABI over every golden corpus case
-# from insimul-runtime/packages/core/conformance/prolog. The default corpus dir
-# is baked as an absolute path to the sibling submodule; INSIMUL_CONFORMANCE_DIR
-# overrides it (so CI can point anywhere). Also a pure consumer of insimul.h.
-get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
-  "${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core/conformance/prolog"
-  ABSOLUTE)
+# Conformance harness (US-LI3): drives the ABI over every golden corpus case.
+# The default corpus dir is baked as an absolute path: the vendored mirror in
+# conformance/prolog (so a fresh standalone checkout has a corpus at all), else
+# the sibling insimul-runtime submodule for a monorepo layout.
+# INSIMUL_CONFORMANCE_DIR overrides it (so CI can point anywhere). The Rust gate
+# (rust/insimul/tests/conformance.rs) resolves the corpus the same way. Also a
+# pure consumer of insimul.h.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog")
+  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog" ABSOLUTE)
+else()
+  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core/conformance/prolog"
+    ABSOLUTE)
+endif()
 add_executable(insimul_conformance tests/conformance.c)
 target_link_libraries(insimul_conformance PRIVATE insimul)
 target_compile_definitions(insimul_conformance PRIVATE

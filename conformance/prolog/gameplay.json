@@ -1,0 +1,159 @@
+{
+  "area": "gameplay-predicates",
+  "description": "Realistic Insimul quest predicates whose shapes come from packages/core/src/prolog/predicate-schema.ts (quest/5, quest_objective/3, quest_reward/3, quest_prerequisite/2) plus derived gameplay rules (availability, difficulty projection, objective completion, reward gating). Each case is self-contained with the full quest knowledge base.",
+  "cases": [
+    {
+      "name": "quest-reward-lookup",
+      "kb": [
+        "quest(q1, 'Rescue the Merchant', main, easy, active).",
+        "quest(q2, 'Slay the Dragon', main, hard, locked).",
+        "quest(q3, 'Gather Herbs', side, easy, active).",
+        "quest_objective(q1, 0, reach_camp).",
+        "quest_objective(q1, 1, free_merchant).",
+        "quest_reward(q1, gold, 100).",
+        "quest_reward(q1, xp, 50).",
+        "quest_reward(q2, gold, 500).",
+        "quest_prerequisite(q2, q1).",
+        "completed(hero, q1, 0).",
+        "quest_available(Q) :- quest(Q, _, _, _, active).",
+        "quest_of_difficulty(D, Q) :- quest(Q, _, _, D, _).",
+        "objective_complete(Player, Q, Idx) :- completed(Player, Q, Idx).",
+        "high_value_quest(Q) :- quest_reward(Q, gold, G), G >= 200."
+      ],
+      "query": "quest_reward(q1, Type, Value)",
+      "expected": [
+        { "Type": "gold", "Value": 100 },
+        { "Type": "xp", "Value": 50 }
+      ]
+    },
+    {
+      "name": "available-quests-by-status",
+      "kb": [
+        "quest(q1, 'Rescue the Merchant', main, easy, active).",
+        "quest(q2, 'Slay the Dragon', main, hard, locked).",
+        "quest(q3, 'Gather Herbs', side, easy, active).",
+        "quest_objective(q1, 0, reach_camp).",
+        "quest_objective(q1, 1, free_merchant).",
+        "quest_reward(q1, gold, 100).",
+        "quest_reward(q1, xp, 50).",
+        "quest_reward(q2, gold, 500).",
+        "quest_prerequisite(q2, q1).",
+        "completed(hero, q1, 0).",
+        "quest_available(Q) :- quest(Q, _, _, _, active).",
+        "quest_of_difficulty(D, Q) :- quest(Q, _, _, D, _).",
+        "objective_complete(Player, Q, Idx) :- completed(Player, Q, Idx).",
+        "high_value_quest(Q) :- quest_reward(Q, gold, G), G >= 200."
+      ],
+      "query": "quest_available(Q)",
+      "expected": [{ "Q": "q1" }, { "Q": "q3" }]
+    },
+    {
+      "name": "quest-by-difficulty",
+      "kb": [
+        "quest(q1, 'Rescue the Merchant', main, easy, active).",
+        "quest(q2, 'Slay the Dragon', main, hard, locked).",
+        "quest(q3, 'Gather Herbs', side, easy, active).",
+        "quest_objective(q1, 0, reach_camp).",
+        "quest_objective(q1, 1, free_merchant).",
+        "quest_reward(q1, gold, 100).",
+        "quest_reward(q1, xp, 50).",
+        "quest_reward(q2, gold, 500).",
+        "quest_prerequisite(q2, q1).",
+        "completed(hero, q1, 0).",
+        "quest_available(Q) :- quest(Q, _, _, _, active).",
+        "quest_of_difficulty(D, Q) :- quest(Q, _, _, D, _).",
+        "objective_complete(Player, Q, Idx) :- completed(Player, Q, Idx).",
+        "high_value_quest(Q) :- quest_reward(Q, gold, G), G >= 200."
+      ],
+      "query": "quest_of_difficulty(hard, Q)",
+      "expected": [{ "Q": "q2" }]
+    },
+    {
+      "name": "quest-objectives",
+      "kb": [
+        "quest(q1, 'Rescue the Merchant', main, easy, active).",
+        "quest(q2, 'Slay the Dragon', main, hard, locked).",
+        "quest(q3, 'Gather Herbs', side, easy, active).",
+        "quest_objective(q1, 0, reach_camp).",
+        "quest_objective(q1, 1, free_merchant).",
+        "quest_reward(q1, gold, 100).",
+        "quest_reward(q1, xp, 50).",
+        "quest_reward(q2, gold, 500).",
+        "quest_prerequisite(q2, q1).",
+        "completed(hero, q1, 0).",
+        "quest_available(Q) :- quest(Q, _, _, _, active).",
+        "quest_of_difficulty(D, Q) :- quest(Q, _, _, D, _).",
+        "objective_complete(Player, Q, Idx) :- completed(Player, Q, Idx).",
+        "high_value_quest(Q) :- quest_reward(Q, gold, G), G >= 200."
+      ],
+      "query": "quest_objective(q1, Idx, Goal)",
+      "expected": [
+        { "Idx": 0, "Goal": "reach_camp" },
+        { "Idx": 1, "Goal": "free_merchant" }
+      ]
+    },
+    {
+      "name": "quest-prerequisite",
+      "kb": [
+        "quest(q1, 'Rescue the Merchant', main, easy, active).",
+        "quest(q2, 'Slay the Dragon', main, hard, locked).",
+        "quest(q3, 'Gather Herbs', side, easy, active).",
+        "quest_objective(q1, 0, reach_camp).",
+        "quest_objective(q1, 1, free_merchant).",
+        "quest_reward(q1, gold, 100).",
+        "quest_reward(q1, xp, 50).",
+        "quest_reward(q2, gold, 500).",
+        "quest_prerequisite(q2, q1).",
+        "completed(hero, q1, 0).",
+        "quest_available(Q) :- quest(Q, _, _, _, active).",
+        "quest_of_difficulty(D, Q) :- quest(Q, _, _, D, _).",
+        "objective_complete(Player, Q, Idx) :- completed(Player, Q, Idx).",
+        "high_value_quest(Q) :- quest_reward(Q, gold, G), G >= 200."
+      ],
+      "query": "quest_prerequisite(q2, P)",
+      "expected": [{ "P": "q1" }]
+    },
+    {
+      "name": "objective-complete-rule",
+      "kb": [
+        "quest(q1, 'Rescue the Merchant', main, easy, active).",
+        "quest(q2, 'Slay the Dragon', main, hard, locked).",
+        "quest(q3, 'Gather Herbs', side, easy, active).",
+        "quest_objective(q1, 0, reach_camp).",
+        "quest_objective(q1, 1, free_merchant).",
+        "quest_reward(q1, gold, 100).",
+        "quest_reward(q1, xp, 50).",
+        "quest_reward(q2, gold, 500).",
+        "quest_prerequisite(q2, q1).",
+        "completed(hero, q1, 0).",
+        "quest_available(Q) :- quest(Q, _, _, _, active).",
+        "quest_of_difficulty(D, Q) :- quest(Q, _, _, D, _).",
+        "objective_complete(Player, Q, Idx) :- completed(Player, Q, Idx).",
+        "high_value_quest(Q) :- quest_reward(Q, gold, G), G >= 200."
+      ],
+      "query": "objective_complete(hero, q1, Idx)",
+      "expected": [{ "Idx": 0 }]
+    },
+    {
+      "name": "high-value-quest-gating",
+      "kb": [
+        "quest(q1, 'Rescue the Merchant', main, easy, active).",
+        "quest(q2, 'Slay the Dragon', main, hard, locked).",
+        "quest(q3, 'Gather Herbs', side, easy, active).",
+        "quest_objective(q1, 0, reach_camp).",
+        "quest_objective(q1, 1, free_merchant).",
+        "quest_reward(q1, gold, 100).",
+        "quest_reward(q1, xp, 50).",
+        "quest_reward(q2, gold, 500).",
+        "quest_prerequisite(q2, q1).",
+        "completed(hero, q1, 0).",
+        "quest_available(Q) :- quest(Q, _, _, _, active).",
+        "quest_of_difficulty(D, Q) :- quest(Q, _, _, D, _).",
+        "objective_complete(Player, Q, Idx) :- completed(Player, Q, Idx).",
+        "high_value_quest(Q) :- quest_reward(Q, gold, G), G >= 200."
+      ],
+      "query": "high_value_quest(Q)",
+      "expected": [{ "Q": "q2" }]
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "area": "negation-as-failure",
+  "description": "Negation as failure (\\+/1): a negated goal succeeds exactly when the inner goal has no solution, including when used to filter inside a rule body.",
+  "cases": [
+    {
+      "name": "naf-true-goal-fails",
+      "kb": ["p(a)."],
+      "query": "\\+ p(a)",
+      "expected": []
+    },
+    {
+      "name": "naf-false-goal-succeeds",
+      "kb": ["p(a)."],
+      "query": "\\+ p(z)",
+      "expected": [{}]
+    },
+    {
+      "name": "naf-filter-in-rule",
+      "kb": [
+        "bird(tweety).",
+        "bird(pengu).",
+        "penguin(pengu).",
+        "can_fly(X) :- bird(X), \\+ penguin(X)."
+      ],
+      "query": "can_fly(X)",
+      "expected": [{ "X": "tweety" }]
+    },
+    {
+      "name": "naf-all-excluded",
+      "kb": [
+        "item(a).",
+        "blocked(a).",
+        "available(X) :- item(X), \\+ blocked(X)."
+      ],
+      "query": "available(X)",
+      "expected": []
+    }
+  ]
+}
