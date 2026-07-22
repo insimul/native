@@ -1,0 +1,15 @@
+[package]
+name = "insimul-sys"
+version = "0.1.0"
+description = "Raw FFI bindings to libinsimul's C ABI (include/insimul.h)"
+links = "insimul"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+# No dependencies on purpose: the ABI is 11 functions over `*const c_char` and
+# `c_int`, all reachable from `core::ffi`. See build.rs for why not bindgen.
+[dependencies]
+
+[dev-dependencies]

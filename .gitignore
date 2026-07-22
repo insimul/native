@@ -4,3 +4,6 @@ build-*/
 
 # Packaging output (US-LI5).
 dist/
+
+# Cargo build tree for the Rust bindings (US-FFI1).
+rust/target/
