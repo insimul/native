@@ -1,0 +1,15 @@
+[package]
+name = "insimul"
+version = "0.1.0"
+description = "Safe, idiomatic Rust API for libinsimul, the shared native Prolog core"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+insimul-sys = { path = "../insimul-sys", version = "0.1.0" }
+# `serde` is used for its traits only (hand-written visitors, no derive) so the
+# binding-set map keeps the ABI's variable order; `serde_json` does the parsing.
+serde = { version = "1", default-features = false, features = ["std"] }
+serde_json = "1"
