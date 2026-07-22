@@ -1,0 +1,42 @@
+{
+  "area": "lists",
+  "description": "List predicates from library(lists): membership enumeration/checks, length, and indexed access. Each case loads the library via a directive in kb.",
+  "cases": [
+    {
+      "name": "member-enumerate",
+      "kb": [":- use_module(library(lists))."],
+      "query": "member(X, [a, b, c])",
+      "expected": [{ "X": "a" }, { "X": "b" }, { "X": "c" }]
+    },
+    {
+      "name": "member-ground-succeeds",
+      "kb": [":- use_module(library(lists))."],
+      "query": "member(b, [a, b, c])",
+      "expected": [{}]
+    },
+    {
+      "name": "member-absent-fails",
+      "kb": [":- use_module(library(lists))."],
+      "query": "member(z, [a, b, c])",
+      "expected": []
+    },
+    {
+      "name": "length-of-list",
+      "kb": [":- use_module(library(lists))."],
+      "query": "length([a, b, c], N)",
+      "expected": [{ "N": 3 }]
+    },
+    {
+      "name": "nth0-first",
+      "kb": [":- use_module(library(lists))."],
+      "query": "nth0(0, [a, b, c], X)",
+      "expected": [{ "X": "a" }]
+    },
+    {
+      "name": "nth0-middle",
+      "kb": [":- use_module(library(lists))."],
+      "query": "nth0(1, [a, b, c], X)",
+      "expected": [{ "X": "b" }]
+    }
+  ]
+}

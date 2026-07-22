@@ -56,6 +56,23 @@
   documented, printed amendment (rename), never a silent skip — see its
   `AMENDMENTS` table.
 
+## The conformance corpus is VENDORED here
+- `conformance/prolog/*.json` is a mirror of `@insimul/core`'s
+  `packages/core/conformance/prolog` (the source of truth) — the same vendoring the
+  standalone engine repos do (`insimul-godot/conformance/`, unity, unreal). It is
+  what makes the parity gates runnable from a fresh checkout with no sibling
+  submodule. Re-copy it on a corpus change; see `conformance/VENDORED.md`.
+- **Every leg resolves the corpus the same way**: `INSIMUL_CONFORMANCE_DIR` (env) →
+  the vendored `conformance/prolog` → the sibling
+  `../insimul-runtime/packages/core/conformance/prolog`. That order is implemented
+  in `CMakeLists.txt` (baked as `INSIMUL_CONFORMANCE_DEFAULT_DIR`) and in
+  `rust/insimul/tests/conformance.rs`. Any new leg must follow it — and must
+  **hard-fail** on a missing/empty corpus rather than skip (no vacuous passes).
+- The `AMENDMENTS` tables in `tests/conformance.c` and `rust/insimul/tests/
+  conformance.rs` must stay in lockstep; both print an `[AMEND]` line and the same
+  `files / cases / passed / failed / amended` summary, so the C and Rust legs are
+  directly comparable (currently 7 files, 41 cases, 41 passed, 1 amended).
+
 ## Snapshot / restore format (US-LI4)
 - `insimul_kb_snapshot` serializes the **dynamic user clause set** only. Enumerate
   it with `current_predicate(N/A)` + `predicate_property(H, dynamic)` and drop
