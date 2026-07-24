@@ -1,0 +1,208 @@
+{
+  "area": "kinp-equivalence",
+  "description": "The KINP equivalence layer and its firewall (koine/specs/identity.md §4). Links between identifiers are assertions carrying confidence(_)/src(_) (§4.2); only same_as licenses fact transfer, so a fictional entity modeled on a real one is based_on and its in-fiction claims never reach the real entity (§4.3), and a based_on chain is never promoted to same_as by transitivity (§4.5). The rules in each kb mirror packages/core/src/identity/equivalence-predicates.ts verbatim; a native engine consults the same clauses. Bindings stay scalar — every id/3 column is projected through id_local/2 or id_namespace/2 (see README § 'KINP identifiers in the corpus').",
+  "cases": [
+    {
+      "name": "only-same-as-licenses-fact-transfer",
+      "kb": [
+        "equivalence_relation(same_as).",
+        "equivalence_relation(based_on).",
+        "equivalence_relation(part_of).",
+        "equivalence_relation(instance_of).",
+        "licenses_fact_transfer(same_as)."
+      ],
+      "query": "equivalence_relation(R), licenses_fact_transfer(R)",
+      "expected": [{ "R": "same_as" }]
+    },
+    {
+      "name": "equiv-link-normalizes-both-link-arities",
+      "kb": [
+        "same_as(id(ent, pinakes, 'napoleon-i'), id(ent, wikidata, q517), confidence(1.0), src('pinakes:anchor/wikidata')).",
+        "based_on(id(ent, 'insimul:world:alderforest', 'npc-renaud'), id(ent, pinakes, 'napoleon-i'), confidence(0.8)).",
+        ":- dynamic(same_as/3).",
+        ":- dynamic(based_on/4).",
+        "equiv_link(same_as, A, B, C, src(unattributed)) :- same_as(A, B, C).",
+        "equiv_link(same_as, A, B, C, S) :- same_as(A, B, C, S).",
+        "equiv_link(based_on, A, B, C, src(unattributed)) :- based_on(A, B, C).",
+        "equiv_link(based_on, A, B, C, S) :- based_on(A, B, C, S).",
+        "link(Rel, SrcTag) :- equiv_link(Rel, _, _, _, src(SrcTag))."
+      ],
+      "query": "link(Rel, SrcTag)",
+      "expected": [
+        { "Rel": "same_as", "SrcTag": "pinakes:anchor/wikidata" },
+        { "Rel": "based_on", "SrcTag": "unattributed" }
+      ]
+    },
+    {
+      "name": "link-confidence-is-read-without-string-surgery",
+      "kb": [
+        "based_on(id(ent, 'insimul:world:alderforest', 'npc-renaud'), id(ent, pinakes, 'napoleon-i'), confidence(0.8)).",
+        "equiv_link(based_on, A, B, C, src(unattributed)) :- based_on(A, B, C).",
+        "link_confidence(Rel, A, B, Conf) :- equiv_link(Rel, A, B, confidence(Conf), _).",
+        "renaud_confidence(C) :- link_confidence(based_on, id(ent, 'insimul:world:alderforest', 'npc-renaud'), id(ent, pinakes, 'napoleon-i'), C)."
+      ],
+      "query": "renaud_confidence(C)",
+      "expected": [{ "C": 0.8 }]
+    },
+    {
+      "name": "same-as-closure-is-symmetric-and-transitive",
+      "kb": [
+        "same_as(id(ent, analyzer, 'e-8842'), id(ent, pinakes, 'napoleon-i'), confidence(0.97)).",
+        "same_as(id(ent, pinakes, 'napoleon-i'), id(ent, wikidata, q517), confidence(1.0)).",
+        "equiv_link(same_as, A, B, C, src(unattributed)) :- same_as(A, B, C).",
+        "kinp_member(X, [X|_]).",
+        "kinp_member(X, [_|T]) :- kinp_member(X, T).",
+        "same_as_edge(A, B) :- equiv_link(same_as, A, B, _, _).",
+        "same_as_edge(A, B) :- equiv_link(same_as, B, A, _, _).",
+        "same_as_closure(A, B) :- same_as_reach(A, B, [A]).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, B), \\+ kinp_member(B, Seen).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, M), \\+ kinp_member(M, Seen), same_as_reach(M, B, [M|Seen]).",
+        "argos_same_as(NS, L) :- same_as_closure(id(ent, analyzer, 'e-8842'), X), id_namespace(X, NS), id_local(X, L).",
+        "id_namespace(id(_, N, _), N).",
+        "id_local(id(_, _, L), L)."
+      ],
+      "query": "argos_same_as(NS, L)",
+      "expected": [
+        { "NS": "pinakes", "L": "napoleon-i" },
+        { "NS": "wikidata", "L": "q517" }
+      ]
+    },
+    {
+      "name": "based-on-is-never-in-the-same-as-closure",
+      "kb": [
+        "based_on(id(ent, 'insimul:world:alderforest', 'npc-renaud'), id(ent, pinakes, 'napoleon-i'), confidence(0.8)).",
+        "same_as(id(ent, pinakes, 'napoleon-i'), id(ent, wikidata, q517), confidence(1.0)).",
+        "equiv_link(same_as, A, B, C, src(unattributed)) :- same_as(A, B, C).",
+        "kinp_member(X, [X|_]).",
+        "kinp_member(X, [_|T]) :- kinp_member(X, T).",
+        "same_as_edge(A, B) :- equiv_link(same_as, A, B, _, _).",
+        "same_as_edge(A, B) :- equiv_link(same_as, B, A, _, _).",
+        "same_as_closure(A, B) :- same_as_reach(A, B, [A]).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, B), \\+ kinp_member(B, Seen).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, M), \\+ kinp_member(M, Seen), same_as_reach(M, B, [M|Seen])."
+      ],
+      "query": "same_as_closure(id(ent, 'insimul:world:alderforest', 'npc-renaud'), id(ent, pinakes, 'napoleon-i'))",
+      "expected": []
+    },
+    {
+      "name": "inspired-by-traverses-based-on-lineage",
+      "kb": [
+        "based_on(id(ent, 'insimul:world:alderforest', 'npc-renaud'), id(ent, pinakes, 'napoleon-i'), confidence(0.8)).",
+        "based_on(id(ent, 'analyzer:local', 'e-8842'), id(ent, pinakes, 'napoleon-i'), confidence(0.93)).",
+        "equiv_link(based_on, A, B, C, src(unattributed)) :- based_on(A, B, C).",
+        "based_on_edge(A, B) :- equiv_link(based_on, A, B, _, _).",
+        "inspired_by(F, S) :- based_on_edge(F, S).",
+        "inspired_by(F, S) :- based_on_edge(F, M), inspired_by(M, S).",
+        "id_namespace(id(_, N, _), N).",
+        "id_local(id(_, _, L), L).",
+        "inspiration(FictionLocal, NS, L) :- inspired_by(F, S), id_local(F, FictionLocal), id_namespace(S, NS), id_local(S, L)."
+      ],
+      "query": "inspiration(FictionLocal, NS, L)",
+      "expected": [
+        { "FictionLocal": "npc-renaud", "NS": "pinakes", "L": "napoleon-i" },
+        { "FictionLocal": "e-8842", "NS": "pinakes", "L": "napoleon-i" }
+      ]
+    },
+    {
+      "name": "in-fiction-claims-do-not-reach-the-real-entity",
+      "kb": [
+        "based_on(id(ent, 'insimul:world:alderforest', 'npc-renaud'), id(ent, pinakes, 'napoleon-i'), confidence(0.8)).",
+        "same_as(id(ent, pinakes, 'napoleon-i'), id(ent, wikidata, q517), confidence(1.0)).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), fought, id(ent, 'insimul:world:alderforest', 'dragon-3'), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, pinakes, 'napoleon-i'), ruled, id(ent, pinakes, france), '@world'(id(world, pinakes, 'consensus-reality'))).",
+        "equiv_link(same_as, A, B, C, src(unattributed)) :- same_as(A, B, C).",
+        "kinp_member(X, [X|_]).",
+        "kinp_member(X, [_|T]) :- kinp_member(X, T).",
+        "same_as_edge(A, B) :- equiv_link(same_as, A, B, _, _).",
+        "same_as_edge(A, B) :- equiv_link(same_as, B, A, _, _).",
+        "same_as_closure(A, B) :- same_as_reach(A, B, [A]).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, B), \\+ kinp_member(B, Seen).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, M), \\+ kinp_member(M, Seen), same_as_reach(M, B, [M|Seen]).",
+        "fact_of(Id, P, O, W) :- claim(Id, P, O, '@world'(W)).",
+        "fact_of(Id, P, O, W) :- same_as_closure(Id, Other), claim(Other, P, O, '@world'(W)).",
+        "consensus_reality(id(world, pinakes, 'consensus-reality')).",
+        "real_fact(Id, P, O) :- consensus_reality(W), fact_of(Id, P, O, W).",
+        "id_local(id(_, _, L), L).",
+        "napoleon_fact(P, L) :- real_fact(id(ent, pinakes, 'napoleon-i'), P, O), id_local(O, L)."
+      ],
+      "query": "napoleon_fact(P, L)",
+      "expected": [{ "P": "ruled", "L": "france" }]
+    },
+    {
+      "name": "the-in-fiction-claim-does-not-transfer-in-any-world",
+      "kb": [
+        "based_on(id(ent, 'insimul:world:alderforest', 'npc-renaud'), id(ent, pinakes, 'napoleon-i'), confidence(0.8)).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), fought, id(ent, 'insimul:world:alderforest', 'dragon-3'), '@world'(id(world, insimul, alderforest))).",
+        "equiv_link(same_as, A, B, C, src(unattributed)) :- same_as(A, B, C).",
+        ":- dynamic(same_as/3).",
+        "kinp_member(X, [X|_]).",
+        "kinp_member(X, [_|T]) :- kinp_member(X, T).",
+        "same_as_edge(A, B) :- equiv_link(same_as, A, B, _, _).",
+        "same_as_edge(A, B) :- equiv_link(same_as, B, A, _, _).",
+        "same_as_closure(A, B) :- same_as_reach(A, B, [A]).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, B), \\+ kinp_member(B, Seen).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, M), \\+ kinp_member(M, Seen), same_as_reach(M, B, [M|Seen]).",
+        "fact_of(Id, P, O, W) :- claim(Id, P, O, '@world'(W)).",
+        "fact_of(Id, P, O, W) :- same_as_closure(Id, Other), claim(Other, P, O, '@world'(W))."
+      ],
+      "query": "fact_of(id(ent, pinakes, 'napoleon-i'), fought, _, _)",
+      "expected": []
+    },
+    {
+      "name": "firewalled-holds-for-a-lineage-without-same-as",
+      "kb": [
+        "based_on(id(ent, 'insimul:world:alderforest', 'npc-renaud'), id(ent, pinakes, 'napoleon-i'), confidence(0.8)).",
+        ":- dynamic(same_as/3).",
+        "equiv_link(same_as, A, B, C, src(unattributed)) :- same_as(A, B, C).",
+        "equiv_link(based_on, A, B, C, src(unattributed)) :- based_on(A, B, C).",
+        "kinp_member(X, [X|_]).",
+        "kinp_member(X, [_|T]) :- kinp_member(X, T).",
+        "same_as_edge(A, B) :- equiv_link(same_as, A, B, _, _).",
+        "same_as_edge(A, B) :- equiv_link(same_as, B, A, _, _).",
+        "same_as_closure(A, B) :- same_as_reach(A, B, [A]).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, B), \\+ kinp_member(B, Seen).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, M), \\+ kinp_member(M, Seen), same_as_reach(M, B, [M|Seen]).",
+        "based_on_edge(A, B) :- equiv_link(based_on, A, B, _, _).",
+        "inspired_by(F, S) :- based_on_edge(F, S).",
+        "inspired_by(F, S) :- based_on_edge(F, M), inspired_by(M, S).",
+        "firewalled(F, S) :- inspired_by(F, S), \\+ same_as_closure(F, S).",
+        "id_local(id(_, _, L), L).",
+        "firewalled_pair(FL, SL) :- firewalled(F, S), id_local(F, FL), id_local(S, SL)."
+      ],
+      "query": "firewalled_pair(FL, SL)",
+      "expected": [{ "FL": "npc-renaud", "SL": "napoleon-i" }]
+    },
+    {
+      "name": "provisional-local-is-usable-before-reconciliation",
+      "kb": [
+        "claim(id(ent, 'insimul:local', 'tmp-npc-42'), commands, id(ent, 'insimul:world:alderforest', 'army-of-ash'), '@world'(id(world, insimul, alderforest))).",
+        "fact_of(Id, P, O, W) :- claim(Id, P, O, '@world'(W)).",
+        "id_local(id(_, _, L), L).",
+        "provisional_fact(P, L) :- fact_of(id(ent, 'insimul:local', 'tmp-npc-42'), P, O, _), id_local(O, L)."
+      ],
+      "query": "provisional_fact(P, L)",
+      "expected": [{ "P": "commands", "L": "army-of-ash" }]
+    },
+    {
+      "name": "reconciling-a-provisional-local-adds-same-as-without-moving-its-claims",
+      "kb": [
+        "claim(id(ent, 'insimul:local', 'tmp-npc-42'), commands, id(ent, 'insimul:world:alderforest', 'army-of-ash'), '@world'(id(world, insimul, alderforest))).",
+        "same_as(id(ent, 'insimul:local', 'tmp-npc-42'), id(ent, 'insimul:world:alderforest', 'npc-renaud'), confidence(1.0), src('insimul:resolver/1')).",
+        "equiv_link(same_as, A, B, C, S) :- same_as(A, B, C, S).",
+        "kinp_member(X, [X|_]).",
+        "kinp_member(X, [_|T]) :- kinp_member(X, T).",
+        "same_as_edge(A, B) :- equiv_link(same_as, A, B, _, _).",
+        "same_as_edge(A, B) :- equiv_link(same_as, B, A, _, _).",
+        "same_as_closure(A, B) :- same_as_reach(A, B, [A]).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, B), \\+ kinp_member(B, Seen).",
+        "same_as_reach(A, B, Seen) :- same_as_edge(A, M), \\+ kinp_member(M, Seen), same_as_reach(M, B, [M|Seen]).",
+        "fact_of(Id, P, O, W) :- claim(Id, P, O, '@world'(W)).",
+        "fact_of(Id, P, O, W) :- same_as_closure(Id, Other), claim(Other, P, O, '@world'(W)).",
+        "id_local(id(_, _, L), L).",
+        "canonical_fact(P, L) :- fact_of(id(ent, 'insimul:world:alderforest', 'npc-renaud'), P, O, _), id_local(O, L)."
+      ],
+      "query": "canonical_fact(P, L)",
+      "expected": [{ "P": "commands", "L": "army-of-ash" }]
+    }
+  ]
+}

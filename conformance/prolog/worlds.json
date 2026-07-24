@@ -1,0 +1,199 @@
+{
+  "area": "kinp-worlds",
+  "description": "The KINP world model (koine/specs/identity.md §5) and the ratified explicit @world(W) context argument (§11 decision 3). Worlds form an inheritance chain — pinakes:world:consensus-reality ← insimul:world:<w> (editor canon) ← insimul:world:<w>#save-<id> (a playthrough) — and reasoning is relative to a world, resolving parent facts unless the world overrides them. The '#' of §5's playthrough spelling is percent-encoded per §3.1, so a playthrough's local id is '<w>%23save-<id>'. '@world' is a QUOTED atom used as a functor: '@' is a symbolic character, so a bare @world(W) would need a custom prefix operator, and a :- op/3 directive does not survive a KB snapshot. The rules in each kb mirror packages/core/src/identity/world-predicates.ts verbatim; a native engine consults the same clauses. Bindings stay scalar — every id/3 column is projected through id_local/2 (see README § 'KINP identifiers in the corpus').",
+  "cases": [
+    {
+      "name": "world-chain-ancestors",
+      "kb": [
+        "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
+        "world_parent(id(world, insimul, alderforest), id(world, pinakes, 'consensus-reality')).",
+        "world_ancestor(W, P) :- world_parent(W, P).",
+        "world_ancestor(W, A) :- world_parent(W, M), world_ancestor(M, A).",
+        "id_local(id(_, _, L), L).",
+        "playthrough_ancestor(L) :- world_ancestor(id(world, insimul, 'alderforest%23save-7f'), A), id_local(A, L)."
+      ],
+      "query": "playthrough_ancestor(L)",
+      "expected": [{ "L": "alderforest" }, { "L": "consensus-reality" }]
+    },
+    {
+      "name": "world-scope-is-the-world-then-its-ancestors",
+      "kb": [
+        "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
+        "world_parent(id(world, insimul, alderforest), id(world, pinakes, 'consensus-reality')).",
+        "world_ancestor(W, P) :- world_parent(W, P).",
+        "world_ancestor(W, A) :- world_parent(W, M), world_ancestor(M, A).",
+        "world_scope(W, W).",
+        "world_scope(W, A) :- world_ancestor(W, A).",
+        "id_local(id(_, _, L), L).",
+        "scope(L) :- world_scope(id(world, insimul, 'alderforest%23save-7f'), S), id_local(S, L)."
+      ],
+      "query": "scope(L)",
+      "expected": [
+        { "L": "alderforest%23save-7f" },
+        { "L": "alderforest" },
+        { "L": "consensus-reality" }
+      ]
+    },
+    {
+      "name": "playthrough-inherits-canon-facts",
+      "kb": [
+        "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', northkeep), '@world'(id(world, insimul, alderforest))).",
+        "claim_at(W, S, P, O) :- claim(S, P, O, '@world'(W)).",
+        "claim_defined(W, S, P) :- claim(S, P, _, '@world'(W)).",
+        "world_resolve(W, S, P, O) :- claim_at(W, S, P, O).",
+        "world_resolve(W, S, P, O) :- world_parent(W, Parent), world_resolve(Parent, S, P, O), \\+ claim_defined(W, S, P).",
+        "holds(S, P, O, '@world'(W)) :- world_resolve(W, S, P, O).",
+        "id_local(id(_, _, L), L).",
+        "renaud_holds(W, P, L) :- holds(id(ent, 'insimul:world:alderforest', 'npc-renaud'), P, O, '@world'(W)), id_local(O, L)."
+      ],
+      "query": "renaud_holds(id(world, insimul, 'alderforest%23save-7f'), P, L)",
+      "expected": [{ "P": "garrisons", "L": "northkeep" }]
+    },
+    {
+      "name": "playthrough-override-masks-the-inherited-value",
+      "kb": [
+        "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', northkeep), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), commands, id(ent, 'insimul:world:alderforest', 'army-of-ash'), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', 'northkeep-ruins'), '@world'(id(world, insimul, 'alderforest%23save-7f'))).",
+        "claim_at(W, S, P, O) :- claim(S, P, O, '@world'(W)).",
+        "claim_defined(W, S, P) :- claim(S, P, _, '@world'(W)).",
+        "world_resolve(W, S, P, O) :- claim_at(W, S, P, O).",
+        "world_resolve(W, S, P, O) :- world_parent(W, Parent), world_resolve(Parent, S, P, O), \\+ claim_defined(W, S, P).",
+        "holds(S, P, O, '@world'(W)) :- world_resolve(W, S, P, O).",
+        "id_local(id(_, _, L), L).",
+        "renaud_holds(W, P, L) :- holds(id(ent, 'insimul:world:alderforest', 'npc-renaud'), P, O, '@world'(W)), id_local(O, L)."
+      ],
+      "query": "renaud_holds(id(world, insimul, 'alderforest%23save-7f'), P, L)",
+      "expected": [
+        { "P": "garrisons", "L": "northkeep-ruins" },
+        { "P": "commands", "L": "army-of-ash" }
+      ]
+    },
+    {
+      "name": "canon-still-resolves-its-own-value-under-an-override",
+      "kb": [
+        "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', northkeep), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', 'northkeep-ruins'), '@world'(id(world, insimul, 'alderforest%23save-7f'))).",
+        "claim_at(W, S, P, O) :- claim(S, P, O, '@world'(W)).",
+        "claim_defined(W, S, P) :- claim(S, P, _, '@world'(W)).",
+        "world_resolve(W, S, P, O) :- claim_at(W, S, P, O).",
+        "world_resolve(W, S, P, O) :- world_parent(W, Parent), world_resolve(Parent, S, P, O), \\+ claim_defined(W, S, P).",
+        "holds(S, P, O, '@world'(W)) :- world_resolve(W, S, P, O).",
+        "id_local(id(_, _, L), L).",
+        "renaud_holds(W, P, L) :- holds(id(ent, 'insimul:world:alderforest', 'npc-renaud'), P, O, '@world'(W)), id_local(O, L)."
+      ],
+      "query": "renaud_holds(id(world, insimul, alderforest), garrisons, L)",
+      "expected": [{ "L": "northkeep" }]
+    },
+    {
+      "name": "the-override-is-never-written-back-as-a-canon-fact",
+      "kb": [
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', northkeep), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', 'northkeep-ruins'), '@world'(id(world, insimul, 'alderforest%23save-7f'))).",
+        "claim_at(W, S, P, O) :- claim(S, P, O, '@world'(W)).",
+        "id_local(id(_, _, L), L).",
+        "asserted_at(WL, L) :- claim_at(W, id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, O), id_local(W, WL), id_local(O, L)."
+      ],
+      "query": "asserted_at(WL, L)",
+      "expected": [
+        { "WL": "alderforest", "L": "northkeep" },
+        { "WL": "alderforest%23save-7f", "L": "northkeep-ruins" }
+      ]
+    },
+    {
+      "name": "holds-at-reports-the-world-a-resolved-fact-came-from",
+      "kb": [
+        "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', northkeep), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), commands, id(ent, 'insimul:world:alderforest', 'army-of-ash'), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', 'northkeep-ruins'), '@world'(id(world, insimul, 'alderforest%23save-7f'))).",
+        "claim_at(W, S, P, O) :- claim(S, P, O, '@world'(W)).",
+        "claim_defined(W, S, P) :- claim(S, P, _, '@world'(W)).",
+        "world_resolve_at(W, S, P, O, W) :- claim_at(W, S, P, O).",
+        "world_resolve_at(W, S, P, O, Source) :- world_parent(W, Parent), world_resolve_at(Parent, S, P, O, Source), \\+ claim_defined(W, S, P).",
+        "holds_at(S, P, O, '@world'(W), Source) :- world_resolve_at(W, S, P, O, Source).",
+        "id_local(id(_, _, L), L).",
+        "source_of(P, SL) :- holds_at(id(ent, 'insimul:world:alderforest', 'npc-renaud'), P, _, '@world'(id(world, insimul, 'alderforest%23save-7f')), Source), id_local(Source, SL)."
+      ],
+      "query": "source_of(P, SL)",
+      "expected": [
+        { "P": "garrisons", "SL": "alderforest%23save-7f" },
+        { "P": "commands", "SL": "alderforest" }
+      ]
+    },
+    {
+      "name": "overrides-is-checkable",
+      "kb": [
+        "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', northkeep), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), commands, id(ent, 'insimul:world:alderforest', 'army-of-ash'), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), garrisons, id(ent, 'insimul:world:alderforest', 'northkeep-ruins'), '@world'(id(world, insimul, 'alderforest%23save-7f'))).",
+        "claim_defined(W, S, P) :- claim(S, P, _, '@world'(W)).",
+        "world_defines(W, S, P) :- claim_defined(W, S, P).",
+        "world_defines(W, S, P) :- world_parent(W, Parent), world_defines(Parent, S, P).",
+        "overrides(W, S, P) :- claim_defined(W, S, P), world_parent(W, Parent), world_defines(Parent, S, P).",
+        "overridden(P) :- overrides(id(world, insimul, 'alderforest%23save-7f'), id(ent, 'insimul:world:alderforest', 'npc-renaud'), P)."
+      ],
+      "query": "overridden(P)",
+      "expected": [{ "P": "garrisons" }]
+    },
+    {
+      "name": "consensus-reality-never-sees-the-fictions-claims",
+      "kb": [
+        "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
+        "world_parent(id(world, insimul, alderforest), id(world, pinakes, 'consensus-reality')).",
+        "claim(id(ent, 'insimul:world:alderforest', 'npc-renaud'), fought, id(ent, 'insimul:world:alderforest', 'dragon-3'), '@world'(id(world, insimul, alderforest))).",
+        "claim(id(ent, pinakes, paris), located_in, id(ent, pinakes, france), '@world'(id(world, pinakes, 'consensus-reality'))).",
+        "claim_at(W, S, P, O) :- claim(S, P, O, '@world'(W)).",
+        "claim_defined(W, S, P) :- claim(S, P, _, '@world'(W)).",
+        "world_resolve(W, S, P, O) :- claim_at(W, S, P, O).",
+        "world_resolve(W, S, P, O) :- world_parent(W, Parent), world_resolve(Parent, S, P, O), \\+ claim_defined(W, S, P).",
+        "holds(S, P, O, '@world'(W)) :- world_resolve(W, S, P, O).",
+        "id_local(id(_, _, L), L).",
+        "real_world_fact(P, L) :- holds(_, P, O, '@world'(id(world, pinakes, 'consensus-reality'))), id_local(O, L)."
+      ],
+      "query": "real_world_fact(P, L)",
+      "expected": [{ "P": "located_in", "L": "france" }]
+    },
+    {
+      "name": "a-fiction-inherits-real-world-facts-only-when-the-chain-is-declared",
+      "kb": [
+        ":- dynamic(world_parent/2).",
+        "claim(id(ent, pinakes, paris), located_in, id(ent, pinakes, france), '@world'(id(world, pinakes, 'consensus-reality'))).",
+        "claim_at(W, S, P, O) :- claim(S, P, O, '@world'(W)).",
+        "claim_defined(W, S, P) :- claim(S, P, _, '@world'(W)).",
+        "world_resolve(W, S, P, O) :- claim_at(W, S, P, O).",
+        "world_resolve(W, S, P, O) :- world_parent(W, Parent), world_resolve(Parent, S, P, O), \\+ claim_defined(W, S, P).",
+        "holds(S, P, O, '@world'(W)) :- world_resolve(W, S, P, O)."
+      ],
+      "query": "holds(id(ent, pinakes, paris), located_in, _, '@world'(id(world, insimul, alderforest)))",
+      "expected": []
+    },
+    {
+      "name": "world-context-argument-is-read-without-string-surgery",
+      "kb": [
+        "world_context('@world'(W), W).",
+        "id_local(id(_, _, L), L).",
+        "context_local(L) :- world_context('@world'(id(world, insimul, 'alderforest%23save-7f')), W), id_local(W, L)."
+      ],
+      "query": "context_local(L)",
+      "expected": [{ "L": "alderforest%23save-7f" }]
+    },
+    {
+      "name": "playthrough-role-links-a-save-to-its-canon-world",
+      "kb": [
+        "world_role(id(world, insimul, 'alderforest%23save-7f'), playthrough).",
+        "world_role(id(world, insimul, alderforest), canon).",
+        "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
+        "playthrough_of(P, C) :- world_role(P, playthrough), world_parent(P, C).",
+        "id_local(id(_, _, L), L).",
+        "save_of(PL, CL) :- playthrough_of(P, C), id_local(P, PL), id_local(C, CL)."
+      ],
+      "query": "save_of(PL, CL)",
+      "expected": [{ "PL": "alderforest%23save-7f", "CL": "alderforest" }]
+    }
+  ]
+}

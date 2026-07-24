@@ -26,8 +26,14 @@
 - Drive/free a sub-query with `while (pl_redo(q)) {}` (redo frees it when
   exhausted). Do **not** call `pl_done` on an already-exhausted query.
 - `dynamic/1` does **not** exist as a runtime goal (only as a directive) — calling
-  it throws `existence_error`. You don't need it: `assertz/1` auto-creates an
-  undefined predicate as dynamic. `:- op/3` executed via `call/1` *does* affect
+  it throws `existence_error`. `assertz/1` auto-creates an undefined predicate as
+  dynamic, so you don't need it to *populate* one — but you do need it to declare
+  a predicate a KB only ever **calls** (the KINP corpus does this for `same_as/3`
+  and `world_parent/2`), or the call raises instead of failing. Because the
+  bootstrap consults via `read_term/3` + `call/1`, it must honor `:- dynamic`
+  itself: `'$declare_dynamic'/1` does `asserta(H), retract(H)` on a fresh head
+  (`asserta`, so the retract can only remove our placeholder, never a real clause
+  of an already-populated predicate). `:- op/3` executed via `call/1` *does* affect
   subsequent `read_term/3`, so a read-term consult loop honors custom operators.
 - Trealla's `consult/1` and loader print syntax errors to **C `stderr`** and can't
   be captured per-KB (fd redirection is racy and unreliable against Trealla).
@@ -71,7 +77,15 @@
 - The `AMENDMENTS` tables in `tests/conformance.c` and `rust/insimul/tests/
   conformance.rs` must stay in lockstep; both print an `[AMEND]` line and the same
   `files / cases / passed / failed / amended` summary, so the C and Rust legs are
-  directly comparable (currently 7 files, 41 cases, 41 passed, 1 amended).
+  directly comparable (currently 10 files, 76 cases, 76 passed, 1 amended).
+- The corpus carries the **KINP identity layer** (`identity.json`,
+  `equivalence.json`, `worlds.json`, and a rewritten `gameplay.json`): entity
+  atoms are CURIEs (`'insimul:ent:<id>'`, world-scoped
+  `'insimul:world:<w>:ent:<id>'`), and `kb`/`query` are no longer atom-only — they
+  contain compound terms (`id(ent, Ns, Local)`, `'@world'(W)`, `confidence(0.8)`).
+  A CURIE is always a **quoted atom**, never a term to decompose; a world's local
+  id may contain a percent escape (`alderforest%23save-7f`) that the engine must
+  leave undecoded. See `@insimul/core`'s `conformance/README.md`.
 
 ## Snapshot / restore format (US-LI4)
 - `insimul_kb_snapshot` serializes the **dynamic user clause set** only. Enumerate
