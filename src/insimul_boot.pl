@@ -116,8 +116,31 @@
 '$consult_collect'(S, Clauses) :-
     read_term(S, T, []),
     ( T == end_of_file -> Clauses = []
-    ; T = (:- D) -> ( catch(D, _, true) -> true ; true ), '$consult_collect'(S, Clauses)
+    ; T = (:- D) -> ( catch('$consult_directive'(D), _, true) -> true ; true ),
+                    '$consult_collect'(S, Clauses)
     ; Clauses = [T|Rest], '$consult_collect'(S, Rest) ).
+
+% Directives are normally just called. dynamic/1 is the exception: in Trealla it
+% exists only as a *loader* directive, so calling it as a goal throws
+% existence_error — a read_term consult loop has to honour it itself, or a KB
+% that declares a predicate it never asserts into (the KINP corpus does this for
+% same_as/3 and world_parent/2) raises existence_error on the first call instead
+% of failing, which is what the declaration exists to prevent.
+'$consult_directive'(dynamic(PI)) :- !, '$declare_dynamic'(PI).
+'$consult_directive'(D) :- call(D).
+
+% assertz/1 auto-creates an undefined predicate as dynamic, so asserting a
+% fresh-variable head and immediately retracting it leaves the predicate defined,
+% dynamic and clause-free — exactly what ':- dynamic(N/A).' means. asserta (not
+% assertz) puts our placeholder FIRST, so the following retract can only remove
+% that placeholder, never a real clause of an already-populated predicate.
+'$declare_dynamic'(V)      :- var(V), !, throw(error(instantiation_error, dynamic/1)).
+'$declare_dynamic'((A, B)) :- !, '$declare_dynamic'(A), '$declare_dynamic'(B).
+'$declare_dynamic'([])     :- !.
+'$declare_dynamic'([H|T])  :- !, '$declare_dynamic'(H), '$declare_dynamic'(T).
+'$declare_dynamic'(N/A)    :- !, functor(H, N, A), asserta(H), retract(H).
+'$declare_dynamic'(PI)     :- throw(error(type_error(predicate_indicator, PI), dynamic/1)).
+
 '$consult_assert'([]).
 '$consult_assert'([C|Cs]) :- assertz(C), '$consult_assert'(Cs).
 

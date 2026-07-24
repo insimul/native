@@ -61,6 +61,24 @@ int main(void)
     CHECK(rc == 0, "consult with :- op/3 directive");
     CHECK(collect(kb, "same(a === a)", sols, 16) == 1, "custom operator query succeeds");
 
+    /* ':- dynamic(N/A).' declares a predicate that has no clauses: calling it
+     * must FAIL, not raise existence_error. (Trealla has no runtime dynamic/1,
+     * so the bootstrap's consult loop honours the directive itself.) */
+    rc = insimul_kb_consult(kb,
+        ":- dynamic(unstocked/1).\n"
+        ":- dynamic((left/2, right/2)).\n"
+        "reachable(X) :- unstocked(X).\n");
+    CHECK(rc == 0, "consult with :- dynamic/1 directive");
+    CHECK(collect(kb, "reachable(_)", sols, 16) == 0,
+          "declared-but-empty predicate fails instead of raising");
+    CHECK(insimul_last_error(kb) == NULL, "no existence_error for a dynamic decl");
+    CHECK(collect(kb, "left(_, _)", sols, 16) == 0, "conjunctive dynamic decl (first)");
+    CHECK(collect(kb, "right(_, _)", sols, 16) == 0, "conjunctive dynamic decl (second)");
+    /* The declaration must not disturb clauses a predicate already has. */
+    rc = insimul_kb_consult(kb, ":- dynamic(parent/2).\n");
+    CHECK(rc == 0, "re-declaring a populated predicate consults cleanly");
+    CHECK(collect(kb, "parent(_, _)", sols, 16) == 2, "existing clauses survive the decl");
+
     /* Syntax error: reported, and nothing from that source is loaded. */
     rc = insimul_kb_consult(kb, "ok_before(1).\nbroken(2.\n");
     CHECK(rc == -1, "consult syntax error returns -1");

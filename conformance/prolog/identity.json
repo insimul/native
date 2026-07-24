@@ -1,0 +1,176 @@
+{
+  "area": "kinp-identity",
+  "description": "KINP identifiers as first-class Prolog terms (koine/specs/identity.md §3.3): id(Kind, Namespace, LocalId) accessors, the CURIE bridge from the sanitized Mongo _id atoms the ~72 collection predicates carry (packages/core/src/prolog/predicate-schema.ts), and world scoping (§3.4/§5) — a world-scoped entity's namespace IS its world's CURIE. The rules in each kb mirror packages/core/src/identity/identity-predicates.ts verbatim; a native engine consults the same clauses.",
+  "cases": [
+    {
+      "name": "id-accessors-decompose-the-canonical-term",
+      "kb": [
+        "id_kind(id(Kind, _, _), Kind).",
+        "id_namespace(id(_, Namespace, _), Namespace).",
+        "id_local(id(_, _, Local), Local).",
+        "renaud(id(ent, 'insimul:world:alderforest', 'npc-renaud')).",
+        "renaud_kind(K) :- renaud(Id), id_kind(Id, K).",
+        "renaud_namespace(N) :- renaud(Id), id_namespace(Id, N).",
+        "renaud_local(L) :- renaud(Id), id_local(Id, L)."
+      ],
+      "query": "renaud_kind(K), renaud_namespace(N), renaud_local(L)",
+      "expected": [
+        { "K": "ent", "N": "insimul:world:alderforest", "L": "npc-renaud" }
+      ]
+    },
+    {
+      "name": "well-formed-id-rejects-an-unknown-kind",
+      "kb": [
+        "kinp_kind(ent).",
+        "kinp_kind(claim).",
+        "kinp_kind(asset).",
+        "kinp_kind(world).",
+        "kinp_kind(agent).",
+        "kinp_kind(src).",
+        "well_formed_id(id(Kind, Namespace, Local)) :- kinp_kind(Kind), nonvar(Namespace), nonvar(Local)."
+      ],
+      "query": "well_formed_id(id(sprocket, insimul, 'npc-renaud'))",
+      "expected": []
+    },
+    {
+      "name": "well-formed-id-accepts-every-kind",
+      "kb": [
+        "kinp_kind(ent).",
+        "kinp_kind(claim).",
+        "kinp_kind(asset).",
+        "kinp_kind(world).",
+        "kinp_kind(agent).",
+        "kinp_kind(src).",
+        "well_formed_id(id(Kind, Namespace, Local)) :- kinp_kind(Kind), nonvar(Namespace), nonvar(Local).",
+        "sample_kind(K) :- kinp_kind(K), well_formed_id(id(K, insimul, x))."
+      ],
+      "query": "sample_kind(K)",
+      "expected": [
+        { "K": "ent" },
+        { "K": "claim" },
+        { "K": "asset" },
+        { "K": "world" },
+        { "K": "agent" },
+        { "K": "src" }
+      ]
+    },
+    {
+      "name": "legacy-id-atom-maps-to-its-curie",
+      "kb": [
+        "entity_id('npc-renaud', id(ent, 'insimul:world:alderforest', 'npc-renaud')).",
+        "entity_curie('npc-renaud', 'insimul:world:alderforest:ent:npc-renaud').",
+        "entity_id('507f1f77bcf86cd799439011', id(ent, 'insimul:world:alderforest', '507f1f77bcf86cd799439011')).",
+        "entity_curie('507f1f77bcf86cd799439011', 'insimul:world:alderforest:ent:507f1f77bcf86cd799439011').",
+        "person('npc-renaud').",
+        "person('507f1f77bcf86cd799439011')."
+      ],
+      "query": "person(A), entity_curie(A, C)",
+      "expected": [
+        { "A": "npc-renaud", "C": "insimul:world:alderforest:ent:npc-renaud" },
+        {
+          "A": "507f1f77bcf86cd799439011",
+          "C": "insimul:world:alderforest:ent:507f1f77bcf86cd799439011"
+        }
+      ]
+    },
+    {
+      "name": "entity-accessors-read-through-the-bridge",
+      "kb": [
+        "id_kind(id(Kind, _, _), Kind).",
+        "id_namespace(id(_, Namespace, _), Namespace).",
+        "id_local(id(_, _, Local), Local).",
+        "entity_id('npc-renaud', id(ent, 'insimul:world:alderforest', 'npc-renaud')).",
+        "entity_kind(Atom, Kind) :- entity_id(Atom, Id), id_kind(Id, Kind).",
+        "entity_namespace(Atom, NS) :- entity_id(Atom, Id), id_namespace(Id, NS).",
+        "entity_local(Atom, Local) :- entity_id(Atom, Id), id_local(Id, Local)."
+      ],
+      "query": "entity_kind('npc-renaud', K), entity_namespace('npc-renaud', N)",
+      "expected": [{ "K": "ent", "N": "insimul:world:alderforest" }]
+    },
+    {
+      "name": "world-scoped-entity-resolves-to-its-world",
+      "kb": [
+        "id_local(id(_, _, Local), Local).",
+        "curie(id(world, insimul, alderforest), 'insimul:world:alderforest').",
+        "curie(id(world, insimul, riverside), 'insimul:world:riverside').",
+        "id_world(id(ent, NS, _), WorldId) :- curie(WorldId, NS), WorldId = id(world, _, _).",
+        "entity_id('npc-renaud', id(ent, 'insimul:world:alderforest', 'npc-renaud')).",
+        "entity_world(Atom, WorldId) :- entity_id(Atom, Id), id_world(Id, WorldId).",
+        "entity_world_local(Atom, W) :- entity_world(Atom, WorldId), id_local(WorldId, W)."
+      ],
+      "query": "entity_world_local('npc-renaud', W)",
+      "expected": [{ "W": "alderforest" }]
+    },
+    {
+      "name": "global-entity-has-no-world",
+      "kb": [
+        "curie(id(world, insimul, alderforest), 'insimul:world:alderforest').",
+        "id_world(id(ent, NS, _), WorldId) :- curie(WorldId, NS), WorldId = id(world, _, _).",
+        "entity_id('lib-sword', id(ent, insimul, 'lib-sword')).",
+        "entity_world(Atom, WorldId) :- entity_id(Atom, Id), id_world(Id, WorldId).",
+        "worldless(A) :- entity_id(A, _), \\+ entity_world(A, _)."
+      ],
+      "query": "worldless(A)",
+      "expected": [{ "A": "lib-sword" }]
+    },
+    {
+      "name": "same-world-only-inside-one-world",
+      "kb": [
+        "curie(id(world, insimul, alderforest), 'insimul:world:alderforest').",
+        "curie(id(world, insimul, riverside), 'insimul:world:riverside').",
+        "id_world(id(ent, NS, _), WorldId) :- curie(WorldId, NS), WorldId = id(world, _, _).",
+        "same_world(A, B) :- id_world(A, W), id_world(B, W).",
+        "renaud(id(ent, 'insimul:world:alderforest', 'npc-renaud')).",
+        "dragon(id(ent, 'insimul:world:alderforest', 'dragon-3')).",
+        "mayor(id(ent, 'insimul:world:riverside', 'npc-mayor')).",
+        "co_located(a, d) :- renaud(R), dragon(D), same_world(R, D).",
+        "co_located(a, m) :- renaud(R), mayor(M), same_world(R, M)."
+      ],
+      "query": "co_located(a, X)",
+      "expected": [{ "X": "d" }]
+    },
+    {
+      "name": "entities-of-a-world-do-not-leak-across-worlds",
+      "kb": [
+        "id_local(id(_, _, Local), Local).",
+        "curie(id(world, insimul, alderforest), 'insimul:world:alderforest').",
+        "curie(id(world, insimul, riverside), 'insimul:world:riverside').",
+        "id_world(id(ent, NS, _), WorldId) :- curie(WorldId, NS), WorldId = id(world, _, _).",
+        "person(id(ent, 'insimul:world:alderforest', 'npc-renaud')).",
+        "person(id(ent, 'insimul:world:alderforest', 'npc-yvain')).",
+        "person(id(ent, 'insimul:world:riverside', 'npc-mayor')).",
+        "person_in_world(W, L) :- person(P), id_world(P, WorldId), id_local(WorldId, W), id_local(P, L)."
+      ],
+      "query": "person_in_world(riverside, L)",
+      "expected": [{ "L": "npc-mayor" }]
+    },
+    {
+      "name": "namespace-registry-names-the-minting-authority",
+      "kb": [
+        "kinp_namespace(pinakes, pinakes).",
+        "kinp_namespace(insimul, insimul).",
+        "kinp_namespace(analyzer, analyzer).",
+        "kinp_namespace(composer, composer).",
+        "kinp_namespace(orchestrator, orchestrator).",
+        "kinp_namespace(wikidata, external).",
+        "kinp_namespace(musicbrainz, external).",
+        "kinp_namespace(geonames, external).",
+        "external_namespace(N) :- kinp_namespace(N, external)."
+      ],
+      "query": "external_namespace(N)",
+      "expected": [{ "N": "wikidata" }, { "N": "musicbrainz" }, { "N": "geonames" }]
+    },
+    {
+      "name": "pinakes-and-insimul-identifiers-are-distinct-terms",
+      "kb": [
+        "id_namespace(id(_, Namespace, _), Namespace).",
+        "real_figure(id(ent, pinakes, 'napoleon-i')).",
+        "npc(id(ent, 'insimul:world:alderforest', 'npc-renaud')).",
+        "distinct :- real_figure(R), npc(N), R \\= N.",
+        "authority_of_real(A) :- real_figure(R), id_namespace(R, A)."
+      ],
+      "query": "distinct, authority_of_real(A)",
+      "expected": [{ "A": "pinakes" }]
+    }
+  ]
+}
