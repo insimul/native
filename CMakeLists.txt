@@ -357,6 +357,70 @@ target_compile_definitions(insimulcore_smoke PRIVATE
   EXPECT_CORE_COMMIT="${INSIMULCORE_BUNDLE_COMMIT}")
 add_test(NAME corebridge_smoke COMMAND insimulcore_smoke)
 
+# ---------------------------------------------------------------------------
+# corebridge_radiant (US-2): the evidence that moved with the bridge.
+#
+# insimul-godot's adoption proved libinsimulcore end to end by driving the shared
+# radiant conformance corpus through core's REAL TypeScript. That claim has to
+# stay true from here, so the gate itself was promoted alongside the library:
+# tests/radiant/radiant_bridge.cpp is a byte-for-byte copy of
+# insimul-godot/gdextension/test/test_radiant_bridge.cpp, and the three support
+# units beside it are byte-for-byte copies of that repo's std-only JSON/canonical/
+# sha256 helpers. Same comparison rules, same corpus, same MIN_CASES/REQUIRED_AREAS
+# floor — so "no behaviour difference" is a diff, not an argument
+# (conformance/RADIANT_PARITY.md).
+#
+# It is the only C++ in this repo; CXX is enabled here rather than in project()
+# so libinsimul itself keeps a pure-C toolchain requirement.
+# ---------------------------------------------------------------------------
+enable_language(CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Same resolution order the prolog corpus uses (env is applied by the driver
+# below): vendored mirror → the monorepo sibling. Empty is a CONFIGURE-time
+# error, so a checkout whose parity gate has nothing to run cannot be generated —
+# the rule cmake/wasm.cmake already applies to the prolog corpus.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance/radiant")
+  get_filename_component(INSIMUL_RADIANT_DEFAULT_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/conformance/radiant" ABSOLUTE)
+else()
+  get_filename_component(INSIMUL_RADIANT_DEFAULT_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core/conformance/radiant"
+    ABSOLUTE)
+endif()
+file(GLOB INSIMUL_RADIANT_CASES CONFIGURE_DEPENDS "${INSIMUL_RADIANT_DEFAULT_DIR}/*.json")
+if(NOT INSIMUL_RADIANT_CASES)
+  message(FATAL_ERROR
+    "no radiant conformance corpus under ${INSIMUL_RADIANT_DEFAULT_DIR} — the "
+    "corebridge_radiant gate would execute nothing. Restore conformance/radiant/ "
+    "(see conformance/VENDORED.md).")
+endif()
+
+add_executable(insimulcore_radiant
+  tests/radiant/radiant_bridge.cpp
+  tests/radiant/json_value.cpp
+  tests/radiant/canonical_json.cpp
+  tests/radiant/sha256.cpp)
+# A pure consumer of insimulcore.h — no quickjs.h, no insimul.h, no trealla.h.
+# Linking insimulcore pulls libinsimul in as an INTERFACE requirement, which is
+# the point: core's radiant algorithm is Prolog-driven and runs on the native
+# engine this repo builds, not on a wasm copy of it.
+target_link_libraries(insimulcore_radiant PRIVATE insimulcore)
+
+# `core` — the adopted implementation. Must match the corpus exactly.
+add_test(NAME corebridge_radiant COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_radiant.sh
+       $<TARGET_FILE:insimulcore_radiant> ${INSIMUL_RADIANT_DEFAULT_DIR} core)
+# `none` — the leg that emits nothing, kept because the gate file is byte-for-byte
+# godot's. Here it asserts a property of the CORPUS rather than of an engine: that
+# at least one case expects quests (`gain > 0`) and that every executed case is
+# classified. A corpus that expected nothing anywhere would make the `core` leg
+# above pass while proving nothing, and this is what catches that.
+add_test(NAME corebridge_radiant_none COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_radiant.sh
+       $<TARGET_FILE:insimulcore_radiant> ${INSIMUL_RADIANT_DEFAULT_DIR} none)
+
 # core_vendor: the sha256 drift guard over the vendored @insimul/core bundle —
 # the same discipline conformance/VENDORED.md applies to the corpus. It hashes
 # every vendored/adapter file against VENDORED.json, so a hand-edited bundle, a

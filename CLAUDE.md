@@ -68,6 +68,8 @@
   standalone engine repos do (`insimul-godot/conformance/`, unity, unreal). It is
   what makes the parity gates runnable from a fresh checkout with no sibling
   submodule. Re-copy it on a corpus change; see `conformance/VENDORED.md`.
+- `conformance/radiant/` is vendored the same way, for the **second** library —
+  see "libinsimulcore" below and `conformance/RADIANT_PARITY.md`.
 - **Every leg resolves the corpus the same way**: `INSIMUL_CONFORMANCE_DIR` (env) →
   the vendored `conformance/prolog` → the sibling
   `../insimul-runtime/packages/core/conformance/prolog`. That order is implemented
@@ -221,6 +223,21 @@
   by the root `CMakeLists.txt`. `corebridge_smoke` then asserts
   `insimul_core_version()` reports both, so a stale vendored tree is a red ctest
   rather than a mystery in a bug report.
+- **The evidence moves with the code.** Promoting the bridge promoted its gate:
+  `tests/radiant/` holds `radiant_bridge.cpp` + `json_value`/`canonical_json`/
+  `sha256` as **byte-for-byte copies** of insimul-godot's, and
+  `conformance/radiant/` mirrors the 5-file/11-case corpus (digests recorded in
+  `conformance/VENDORED.md`). Because the comparison code is literally the same
+  file, "the promotion changed no behaviour" is a `diff` of the two runs, not an
+  argument — both legs are byte-identical, recorded in
+  `conformance/RADIANT_PARITY.md`. Never tidy those copies (the `INSIMUL_GODOT_*`
+  guards stay); a copy you have edited is a copy you can no longer diff. They are
+  test support, **not** a contract — that rule is `insimulcore.h`'s.
+- **`enable_language(CXX)` is in the test section, not `project()`.** That gate is
+  the only C++ in the repo and nothing shipped is C++, so `project(... LANGUAGES C)`
+  stands and CXX is enabled next to `add_executable(insimulcore_radiant ...)`.
+  It sits below the `if(EMSCRIPTEN) ... return()` block, so the wasm build never
+  sees it.
 - `corebridge/vendor/core/` is **generated** — never hand-edit it.
   `corebridge/tools/vendor-core-bundle.mjs --check` (the `core_vendor` ctest)
   verifies a sha256 per file from `VENDORED.json`'s `files` map. It hashes the
@@ -253,4 +270,7 @@
   loud `[SKIP]` when node or the sibling `../insimul-runtime` submodule is
   absent, so it is vacuous in a standalone checkout and only really asserts in
   the monorepo layout. `core_vendor` does the same without `node`. Read their
-  output before trusting a green ctest summary.
+  output before trusting a green ctest summary. The exception that proves it:
+  `corebridge_radiant_none` also finishes in ~0.01s but is **not** a skip — it
+  boots no engine by design and still asserts 11 classified cases. Check the
+  output, not the clock.

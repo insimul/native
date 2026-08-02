@@ -74,6 +74,11 @@ You need **CMake ≥ 3.24** and a C toolchain. On the first configure, CMake dow
 Trealla at its pinned commit (so allow network access and a little extra time), then builds
 it directly into `libinsimul`.
 
+A **C++17** compiler is also needed, for exactly one target: the
+`corebridge_radiant` gate (`tests/radiant/`), which is a byte-for-byte copy of
+insimul-godot's. Nothing this repo *ships* is C++ — `project()` declares `C` and
+`CXX` is enabled only in the test section.
+
 ```sh
 cmake -B build
 cmake --build build
@@ -82,8 +87,7 @@ ctest --test-dir build --output-on-failure
 
 That produces `libinsimul.a` (static) and `libinsimul.dylib` / `.so` / `.dll` (shared) in
 `build/`, and runs the test suite. The same build also produces `libinsimulcore.a` /
-`libinsimulcore.dylib` beside them — see [below](#a-second-library-libinsimulcore). One of
-its tests is C++, so a **C++17** compiler is needed too; nothing this repo *ships* is C++.
+`libinsimulcore.dylib` beside them — see [below](#a-second-library-libinsimulcore).
 
 ### A minimal program
 
@@ -164,7 +168,10 @@ conformance cases** driven through core's real TypeScript on the native Trealla 
 repo builds, and a sha256 drift guard over the vendored bundle. The radiant gate is a
 byte-for-byte copy of Godot's, so "moving the bridge here changed nothing" is a `diff`
 rather than a claim — see
-[`conformance/RADIANT_PARITY.md`](conformance/RADIANT_PARITY.md).
+[`conformance/RADIANT_PARITY.md`](conformance/RADIANT_PARITY.md). A second leg runs the
+same corpus against an implementation that emits nothing, which is what stops the first
+from passing vacuously: at least one case must expect quests for that leg to classify
+correctly.
 
 ## Repository layout
 

@@ -1,0 +1,47 @@
+{
+  "area": "radiant-empty",
+  "description": "Empty results: a template whose preconditions have no joint solution is skipped, and a KB carrying no radiant templates generates nothing. Both yield an empty quest list (never an error).",
+  "cases": [
+    {
+      "name": "empty-unsatisfiable-precondition",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        "character_occupation(anne, herbalist)."
+      ],
+      "templates": [
+        "radiant_template(rt_fetch, [category(fetch), title('Gather Herbs for {giver}'), quest_type(gathering), difficulty(2)]).",
+        "radiant_precondition(rt_fetch, giver, character_occupation(Giver, herbalist)).",
+        "radiant_precondition(rt_fetch, item, item_category(Item, herb)).",
+        "radiant_objective(rt_fetch, collect(Item, 5)).",
+        "radiant_objective(rt_fetch, deliver(Item, Giver)).",
+        "radiant_reward(rt_fetch, gold, times(20, difficulty)).",
+        "radiant_reward(rt_fetch, experience, 25).",
+        "radiant_cooldown(rt_fetch, 3600).",
+        "radiant_exclusion(rt_fetch, radiant_generated(_, rt_fetch, _))."
+      ],
+      "seed": "contract",
+      "now": 0,
+      "expected": {
+        "quests": []
+      }
+    },
+    {
+      "name": "empty-no-templates",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        "character_occupation(anne, herbalist).",
+        "character_occupation(bob, herbalist).",
+        "item_category(sage, herb).",
+        "item_category(mint, herb)."
+      ],
+      "templates": [],
+      "seed": "contract",
+      "now": 0,
+      "expected": {
+        "quests": []
+      }
+    }
+  ]
+}

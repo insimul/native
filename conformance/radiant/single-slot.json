@@ -1,0 +1,131 @@
+{
+  "area": "radiant-single-slot",
+  "description": "Single-slot radiant fills: one candidate is deterministic regardless of seed; multiple candidates are canonically sorted then chosen by the seeded RNG, so the seed selects which candidate wins.",
+  "cases": [
+    {
+      "name": "single-slot-fill-one-candidate",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        "threat_species(wolves)."
+      ],
+      "templates": [
+        "radiant_template(rt_bounty, [category(bounty), title('Cull the {target}'), quest_type(bounty), difficulty(3)]).",
+        "radiant_precondition(rt_bounty, target, threat_species(Target)).",
+        "radiant_objective(rt_bounty, defeat(Target, 4)).",
+        "radiant_reward(rt_bounty, gold, per(target, 15)).",
+        "radiant_reward(rt_bounty, experience, times(10, difficulty)).",
+        "radiant_cooldown(rt_bounty, 7200)."
+      ],
+      "seed": "contract",
+      "now": 1000,
+      "expected": {
+        "quests": [
+          {
+            "questId": "radiant_rt_bounty_1000",
+            "templateId": "rt_bounty",
+            "content": [
+              "quest(radiant_rt_bounty_1000, 'Cull the wolves', bounty, 3, available).",
+              "quest_objective(radiant_rt_bounty_1000, 0, defeat(wolves, 4)).",
+              "quest_reward(radiant_rt_bounty_1000, experience, 30).",
+              "quest_reward(radiant_rt_bounty_1000, gold, 60)."
+            ],
+            "factsToAssert": [
+              "radiant_cooldown_until(rt_bounty, 8200).",
+              "radiant_generated(radiant_rt_bounty_1000, rt_bounty, 1000)."
+            ],
+            "factsToRetract": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "single-slot-fill-multi-candidate",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        "character_occupation(anne, herbalist).",
+        "character_occupation(bob, herbalist).",
+        "item_category(sage, herb).",
+        "item_category(mint, herb)."
+      ],
+      "templates": [
+        "radiant_template(rt_fetch, [category(fetch), title('Gather Herbs for {giver}'), quest_type(gathering), difficulty(2)]).",
+        "radiant_precondition(rt_fetch, giver, character_occupation(Giver, herbalist)).",
+        "radiant_precondition(rt_fetch, item, item_category(Item, herb)).",
+        "radiant_objective(rt_fetch, collect(Item, 5)).",
+        "radiant_objective(rt_fetch, deliver(Item, Giver)).",
+        "radiant_reward(rt_fetch, gold, times(20, difficulty)).",
+        "radiant_reward(rt_fetch, experience, 25).",
+        "radiant_cooldown(rt_fetch, 3600).",
+        "radiant_exclusion(rt_fetch, radiant_generated(_, rt_fetch, _))."
+      ],
+      "seed": "contract",
+      "now": 1000,
+      "expected": {
+        "quests": [
+          {
+            "questId": "radiant_rt_fetch_1000",
+            "templateId": "rt_fetch",
+            "content": [
+              "quest(radiant_rt_fetch_1000, 'Gather Herbs for anne', gathering, 2, available).",
+              "quest_objective(radiant_rt_fetch_1000, 0, collect(sage, 5)).",
+              "quest_objective(radiant_rt_fetch_1000, 1, deliver(sage, anne)).",
+              "quest_reward(radiant_rt_fetch_1000, experience, 25).",
+              "quest_reward(radiant_rt_fetch_1000, gold, 40)."
+            ],
+            "factsToAssert": [
+              "radiant_cooldown_until(rt_fetch, 4600).",
+              "radiant_generated(radiant_rt_fetch_1000, rt_fetch, 1000)."
+            ],
+            "factsToRetract": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "single-slot-fill-alt-seed",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        "character_occupation(anne, herbalist).",
+        "character_occupation(bob, herbalist).",
+        "item_category(sage, herb).",
+        "item_category(mint, herb)."
+      ],
+      "templates": [
+        "radiant_template(rt_fetch, [category(fetch), title('Gather Herbs for {giver}'), quest_type(gathering), difficulty(2)]).",
+        "radiant_precondition(rt_fetch, giver, character_occupation(Giver, herbalist)).",
+        "radiant_precondition(rt_fetch, item, item_category(Item, herb)).",
+        "radiant_objective(rt_fetch, collect(Item, 5)).",
+        "radiant_objective(rt_fetch, deliver(Item, Giver)).",
+        "radiant_reward(rt_fetch, gold, times(20, difficulty)).",
+        "radiant_reward(rt_fetch, experience, 25).",
+        "radiant_cooldown(rt_fetch, 3600).",
+        "radiant_exclusion(rt_fetch, radiant_generated(_, rt_fetch, _))."
+      ],
+      "seed": "zephyr",
+      "now": 1000,
+      "expected": {
+        "quests": [
+          {
+            "questId": "radiant_rt_fetch_1000",
+            "templateId": "rt_fetch",
+            "content": [
+              "quest(radiant_rt_fetch_1000, 'Gather Herbs for bob', gathering, 2, available).",
+              "quest_objective(radiant_rt_fetch_1000, 0, collect(sage, 5)).",
+              "quest_objective(radiant_rt_fetch_1000, 1, deliver(sage, bob)).",
+              "quest_reward(radiant_rt_fetch_1000, experience, 25).",
+              "quest_reward(radiant_rt_fetch_1000, gold, 40)."
+            ],
+            "factsToAssert": [
+              "radiant_cooldown_until(rt_fetch, 4600).",
+              "radiant_generated(radiant_rt_fetch_1000, rt_fetch, 1000)."
+            ],
+            "factsToRetract": []
+          }
+        ]
+      }
+    }
+  ]
+}

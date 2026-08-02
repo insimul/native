@@ -1,0 +1,109 @@
+{
+  "area": "radiant-exclusion-cooldown",
+  "description": "Suppression contracts: a radiant_exclusion goal that succeeds against the live KB suppresses the template; an active radiant_cooldown_until in the future suppresses it too; once the cooldown time has elapsed the template regenerates, retracting the stale cooldown fact before asserting the fresh one.",
+  "cases": [
+    {
+      "name": "exclusion-suppresses",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        "character_occupation(anne, herbalist).",
+        "character_occupation(bob, herbalist).",
+        "item_category(sage, herb).",
+        "item_category(mint, herb).",
+        "radiant_generated(radiant_rt_fetch_0, rt_fetch, 0)."
+      ],
+      "templates": [
+        "radiant_template(rt_fetch, [category(fetch), title('Gather Herbs for {giver}'), quest_type(gathering), difficulty(2)]).",
+        "radiant_precondition(rt_fetch, giver, character_occupation(Giver, herbalist)).",
+        "radiant_precondition(rt_fetch, item, item_category(Item, herb)).",
+        "radiant_objective(rt_fetch, collect(Item, 5)).",
+        "radiant_objective(rt_fetch, deliver(Item, Giver)).",
+        "radiant_reward(rt_fetch, gold, times(20, difficulty)).",
+        "radiant_reward(rt_fetch, experience, 25).",
+        "radiant_cooldown(rt_fetch, 3600).",
+        "radiant_exclusion(rt_fetch, radiant_generated(_, rt_fetch, _))."
+      ],
+      "seed": "contract",
+      "now": 1000,
+      "expected": {
+        "quests": []
+      }
+    },
+    {
+      "name": "cooldown-active-suppresses",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        "character_occupation(anne, herbalist).",
+        "character_occupation(bob, herbalist).",
+        "item_category(sage, herb).",
+        "item_category(mint, herb).",
+        "radiant_cooldown_until(rt_fetch, 5000)."
+      ],
+      "templates": [
+        "radiant_template(rt_fetch, [category(fetch), title('Gather Herbs for {giver}'), quest_type(gathering), difficulty(2)]).",
+        "radiant_precondition(rt_fetch, giver, character_occupation(Giver, herbalist)).",
+        "radiant_precondition(rt_fetch, item, item_category(Item, herb)).",
+        "radiant_objective(rt_fetch, collect(Item, 5)).",
+        "radiant_objective(rt_fetch, deliver(Item, Giver)).",
+        "radiant_reward(rt_fetch, gold, times(20, difficulty)).",
+        "radiant_reward(rt_fetch, experience, 25).",
+        "radiant_cooldown(rt_fetch, 3600).",
+        "radiant_exclusion(rt_fetch, radiant_generated(_, rt_fetch, _))."
+      ],
+      "seed": "contract",
+      "now": 1000,
+      "expected": {
+        "quests": []
+      }
+    },
+    {
+      "name": "cooldown-elapsed-regenerates",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        "character_occupation(anne, herbalist).",
+        "character_occupation(bob, herbalist).",
+        "item_category(sage, herb).",
+        "item_category(mint, herb).",
+        "radiant_cooldown_until(rt_fetch, 5000)."
+      ],
+      "templates": [
+        "radiant_template(rt_fetch, [category(fetch), title('Gather Herbs for {giver}'), quest_type(gathering), difficulty(2)]).",
+        "radiant_precondition(rt_fetch, giver, character_occupation(Giver, herbalist)).",
+        "radiant_precondition(rt_fetch, item, item_category(Item, herb)).",
+        "radiant_objective(rt_fetch, collect(Item, 5)).",
+        "radiant_objective(rt_fetch, deliver(Item, Giver)).",
+        "radiant_reward(rt_fetch, gold, times(20, difficulty)).",
+        "radiant_reward(rt_fetch, experience, 25).",
+        "radiant_cooldown(rt_fetch, 3600).",
+        "radiant_exclusion(rt_fetch, radiant_generated(_, rt_fetch, _))."
+      ],
+      "seed": "contract",
+      "now": 6000,
+      "expected": {
+        "quests": [
+          {
+            "questId": "radiant_rt_fetch_6000",
+            "templateId": "rt_fetch",
+            "content": [
+              "quest(radiant_rt_fetch_6000, 'Gather Herbs for anne', gathering, 2, available).",
+              "quest_objective(radiant_rt_fetch_6000, 0, collect(sage, 5)).",
+              "quest_objective(radiant_rt_fetch_6000, 1, deliver(sage, anne)).",
+              "quest_reward(radiant_rt_fetch_6000, experience, 25).",
+              "quest_reward(radiant_rt_fetch_6000, gold, 40)."
+            ],
+            "factsToAssert": [
+              "radiant_cooldown_until(rt_fetch, 9600).",
+              "radiant_generated(radiant_rt_fetch_6000, rt_fetch, 6000)."
+            ],
+            "factsToRetract": [
+              "radiant_cooldown_until(rt_fetch, 5000)."
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
