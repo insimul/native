@@ -1,7 +1,19 @@
-# Consuming libinsimul from the engine plugins
+# Consuming libinsimul
 
-`scripts/package.sh` produces `dist/<platform>/` with three files — the shared
-library, the public header, and a `VERSION` stamp:
+`scripts/package.sh` produces two package shapes from the **same engine build**,
+both stamped by the same `VERSION` file:
+
+| Consumer | Command | Output |
+|----------|---------|--------|
+| Unity / Unreal / Godot / Rust (native) | `scripts/package.sh` | `dist/<platform>/` |
+| A JS bundler or Node (browser) | `scripts/package.sh --target wasm` | `dist/wasm/` |
+
+`scripts/package.sh --target all` builds both.
+
+## Native — `dist/<platform>/`
+
+The native package is three files — the shared library, the public header, and a
+`VERSION` stamp:
 
 ```
 dist/macos-arm64/
@@ -101,6 +113,120 @@ addons/insimul/
 
 ---
 
+## Web / JS bundlers — `dist/wasm/`
+
+The browser runs the **same engine**, built for `wasm32` through Emscripten from
+the same `src/insimul.c` and the same pinned Trealla commit (see the README's
+*WebAssembly target*). `scripts/package.sh --target wasm` assembles it as an ES
+module package:
+
+```
+dist/wasm/
+  package.json          # "@insimul/prolog-wasm", type: module, exports map
+  index.mjs             # the entry point — exports["."]
+  insimul-api.mjs       # the hand-written ABI wrapper (handles, ownership)
+  insimul.mjs           # the generated Emscripten glue
+  insimul.wasm          # the engine — a separate file the glue FETCHES
+  VERSION               # semver + platform + git sha + Trealla pin
+  LICENSE
+```
+
+There is no build step and no dependency to install: `dependencies`,
+`peerDependencies` and `optionalDependencies` are all empty, deliberately. The
+dependency direction is one-way — this repo never depends on a JS consumer of
+it, and `tests/wasm_package_smoke.mjs` fails the package if that ever changes.
+
+Consume it as a local package (`npm pack` the directory, a `file:` dependency, a
+workspace, or a vendored copy — the same choice the engine repos make for
+`dist/<platform>/`):
+
+```js
+import loadInsimul from '@insimul/prolog-wasm';
+
+const insimul = await loadInsimul();          // instantiates the wasm module
+const kb = insimul.createKb();
+kb.consult(`parent(tom, bob).
+grandparent(X, Z) :- parent(X, Y), parent(Y, Z).`);
+
+for (const { Who } of kb.solutions('grandparent(tom, Who)')) console.log(Who);
+kb.destroy();
+```
+
+Subpath exports, for hosts that want the pieces rather than the entry point:
+
+| Specifier | What |
+|-----------|------|
+| `@insimul/prolog-wasm` | `index.mjs` — `loadInsimul()` as the default export, plus `Insimul`/`Kb`/`Query`/`InsimulError` |
+| `@insimul/prolog-wasm/api` | `insimul-api.mjs` — the wrapper alone; takes an Emscripten factory, so a host can instantiate the module its own way |
+| `@insimul/prolog-wasm/glue` | `insimul.mjs` — the raw Emscripten factory |
+| `@insimul/prolog-wasm/insimul.wasm` | the binary itself, for an asset pipeline that copies/fingerprints it |
+
+The ownership rules are the C ABI's, unchanged: handles must be released
+(`kb.destroy()`, `query.stop()` — `kb.solutions()` does it for you in a
+`finally`), and returned strings are copied at the call site because the KB or
+query still owns them. The README's *Ownership across the JS boundary* table is
+the full statement; `insimul-api.mjs`'s header repeats it next to the code.
+
+**One module instance is single-threaded**, on purpose: the wasm build is linked
+without `-pthread`, so an embedding page does **not** need `SharedArrayBuffer`
+and therefore does **not** need COOP/COEP headers. Run it in a Web Worker if a
+long query would otherwise block the frame.
+
+### How `insimul.wasm` is loaded — fetched, not inlined
+
+The glue is linked with `-sMODULARIZE -sEXPORT_ES6`, so it resolves the binary
+as `new URL('insimul.wasm', import.meta.url)` and `fetch`es it. Two consequences
+worth planning for:
+
+- **The `.wasm` must be served next to the `.mjs`**, or told where it is. Most
+  bundlers (Vite, webpack 5, Rollup with the URL plugin) recognise the
+  `new URL(..., import.meta.url)` pattern and emit the binary as an asset
+  automatically. If yours does not, copy `insimul.wasm` into your static
+  directory and point the loader at it:
+
+  ```js
+  import wasmUrl from '@insimul/prolog-wasm/insimul.wasm?url';   // Vite
+  const insimul = await loadInsimul({ locateFile: () => wasmUrl });
+  ```
+
+  `locateFile` is Emscripten's own hook and is passed straight through by
+  `loadInsimul(moduleOptions)`.
+- **CSP.** Instantiating WebAssembly needs `script-src 'wasm-unsafe-eval'` (older
+  Chrome accepted only `'unsafe-eval'`), and fetching the binary needs its origin
+  allowed by `connect-src` — `'self'` covers the same-origin case. A host that
+  forbids fetching the binary altogether (a strict sandboxed iframe, an offline
+  desktop bundle with no asset server) has one escape hatch: relink with
+  `-sSINGLE_FILE=1` in `cmake/wasm.cmake`, which base64-embeds the binary into
+  `insimul.mjs`. That is **not** the default because base64 costs ~33% on top of
+  the 2.0 MB binary and removes streaming compilation. This build does not read
+  `Module.wasmBinary`, so `locateFile` or `SINGLE_FILE` are the two options.
+
+Node works out of the box (`-sENVIRONMENT=web,worker,node`); there the glue reads
+the sibling file from disk instead of fetching it, which is how
+`tests/wasm_package_smoke.mjs` verifies the assembled package.
+
+### Size
+
+A Prolog engine in a browser bundle is a real cost, so the numbers are stated
+rather than implied (insimul 0.1.0, Emscripten 6.0.5, `-O2` Release):
+
+| File | Raw | gzip -9 | brotli -11 |
+|------|----:|--------:|-----------:|
+| `insimul.wasm` | 2,092,182 | 561,946 | 415,595 |
+| `insimul.mjs` | 104,426 | 28,662 | 25,550 |
+| `insimul-api.mjs` | 10,173 | 3,687 | 3,099 |
+| `index.mjs` | 1,985 | 999 | 805 |
+| **Total** | **2,208,766** (2.1 MB) | **595,294** (581 KB) | **445,049** (435 KB) |
+
+`npm pack` on the directory yields a **600 kB** tarball (7 files, 2.2 MB
+unpacked). So ~435 KB over the wire from a brotli-serving CDN, of which the
+binary is ~416 KB. It is a separate file, so it is cached independently of the app bundle
+and compiles while it streams. `scripts/package.sh --target wasm` reprints this
+table on every run — regenerate the numbers here from its output rather than
+guessing after a Trealla bump.
+
+---
+
 ## Version / provenance
 
 Every package carries `VERSION`, e.g.:
@@ -117,3 +243,11 @@ The first line matches the semver embedded in `insimul_version()` (the C ABI),
 and the Trealla fields match the pin in `CMakeLists.txt` / `THIRD_PARTY.md`. A
 wrapper that logs `insimul_version()` on startup gives support a single string
 identifying the exact engine build a save file was produced against.
+
+The wasm package carries the identical stamp with `platform wasm32-emscripten`,
+and `package.json`'s `version` is the same semver — so a browser host
+cross-checks its engine exactly as a Unity build does. Packaging asserts it
+rather than assuming it: `tests/wasm_package_smoke.mjs` reassembles
+`insimul <semver> (git <sha>, trealla <tag>/<commit>)` from the `VERSION` file
+and requires `insimul_version()` from the packaged binary to equal it byte for
+byte, so a stale `build-wasm/` tree cannot be shipped with a fresh stamp.

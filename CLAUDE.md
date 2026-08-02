@@ -131,6 +131,27 @@
   (shared lib + `insimul.h` + `VERSION`). Platform from `uname` → `macos-arm64`
   etc. It reads the Trealla pin by `sed`-ing `CMakeLists.txt` (the authoritative
   pin), so the stamp can't drift from what was built. `dist/` is gitignored.
+- **`--target wasm` is a sibling package, not a second mechanism** (US-3). The
+  same script, the same `write_stamp` helper (only the `platform` field differs:
+  `wasm32-emscripten`), so a browser host cross-checks its engine exactly as a
+  Unity build does. Default target stays `native` — the existing no-arg
+  invocation must keep behaving identically.
+- The wasm package's identity lives in the generated `package.json`
+  (`@insimul/prolog-wasm`, `type: module`, an `exports` map). Its `dependencies`
+  are **empty on purpose**: the dependency direction is one-way, nothing here
+  may depend on a JS consumer. Adding a file to the package means adding it to
+  BOTH `files` and (if importable) `exports` — `tests/wasm_package_smoke.mjs`
+  asserts every named path resolves.
+- `wasm/index.mjs` is the package entry (`exports["."]`). It imports
+  `./insimul.mjs`, the **generated** glue, so it only resolves once packaged
+  under `dist/wasm/`; inside the repo import `wasm/insimul-api.mjs` and pass it
+  the glue yourself (what `tests/wasm_*.mjs` do).
+- Packaging ends by running `tests/wasm_package_smoke.mjs` over the assembled
+  directory — layout, exports map, no-deps, a real query, and
+  `insimul_version()` **byte-equal** to the `VERSION` stamp (rebuilt from its
+  five fields), which is what makes shipping a stale `build-wasm/` a hard error.
+  It also prints the raw/gzip/brotli size table `docs/consuming.md` records;
+  regenerate those numbers from its output after any Trealla or Emscripten bump.
 
 ## The wasm target (US-1) — cross-build rules
 - **One CMakeLists, two toolchains.** `emcmake cmake` sets

@@ -26,10 +26,14 @@ This directory is being built up story-by-story (PRD `libinsimul-bootstrap`):
 - **US-1 (`libinsimul-wasm`)** — an Emscripten/wasm32 target so the browser runs
   the **same** engine as the native plugins and the Rust server. See
   **WebAssembly target** below.
-- **US-2 (`libinsimul-wasm`, this story)** — the wasm build passes the golden
-  conformance corpus and is diffed case-by-case against the native build. See
+- **US-2 (`libinsimul-wasm`)** — the wasm build passes the golden conformance
+  corpus and is diffed case-by-case against the native build. See
   **Native ⟷ wasm parity** below and
   [`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md).
+- **US-3 (`libinsimul-wasm`, this story)** — the wasm artifact packaged for a JS
+  bundler (`scripts/package.sh --target wasm` → `dist/wasm/`), same version stamp
+  as the native packages. See **Packaging & versioning** below and
+  [`docs/consuming.md`](docs/consuming.md).
 
 ## Build & test
 
@@ -88,6 +92,11 @@ build-wasm/
   insimul.mjs      ES-module glue  (~102 KB)
   insimul.wasm     the engine      (~2.0 MB)
 ```
+
+To hand those to a JS bundler, `scripts/package.sh --target wasm` assembles them
+into `dist/wasm/` with a `package.json` and the same `VERSION` stamp the native
+packages carry — see **Packaging & versioning** below and
+[`docs/consuming.md`](docs/consuming.md).
 
 ### Requirements
 
@@ -415,14 +424,17 @@ insimul 0.1.0 (git 3c347ec, trealla v2.106.1/07de013677af760a8bca0594ae4b2bef158
 a non-git tarball build), and the pinned Trealla tag/commit. Wrappers log it on
 startup for provenance.
 
-**`scripts/package.sh`** produces a redistributable package for the current host:
+**`scripts/package.sh`** produces a redistributable package from the current
+tree — two shapes, one script, one stamp:
 
 ```sh
-scripts/package.sh                 # -> dist/<platform>/
+scripts/package.sh                 # -> dist/<platform>/   native (default)
+scripts/package.sh --target wasm   # -> dist/wasm/         browser / bundler
+scripts/package.sh --target all    # -> both
 ```
 
 `<platform>` is derived from `uname` (`macos-arm64`, `macos-x64`, `linux-x64`,
-`windows-x64`). Each package contains the **shared** library
+`windows-x64`). Each native package contains the **shared** library
 (`libinsimul.dylib`/`.so`/`insimul.dll`), the public header `insimul.h`, and a
 `VERSION` file:
 
@@ -438,10 +450,31 @@ The first line's semver matches `insimul_version()`, and the Trealla fields matc
 the pin in `CMakeLists.txt` / `THIRD_PARTY.md` — a consumer can cross-check the
 binary it loaded against the file it shipped. `dist/` is gitignored.
 
-How the three engine plugins consume `dist/<platform>/` (Unity `Plugins/`
-P/Invoke, Unreal `ThirdParty` module, Godot GDExtension) is documented in
-[`docs/consuming.md`](docs/consuming.md) — layout only; the per-engine wrappers
-are their own PRDs' work.
+**The wasm package** (`dist/wasm/`) is the same engine and the same stamp
+(`platform wasm32-emscripten`) laid out for a JS bundler: `insimul.wasm`, the
+generated `insimul.mjs` glue, `wasm/insimul-api.mjs`, an `index.mjs` entry point,
+`LICENSE`, and a `package.json` (`@insimul/prolog-wasm`) whose `exports` map ties
+them together. It declares **no dependencies at all** — the direction stays
+one-way; nothing here depends on a JS consumer of it.
+
+```
+dist/wasm/  package.json  index.mjs  insimul-api.mjs  insimul.mjs
+            insimul.wasm  VERSION  LICENSE
+```
+
+Packaging ends by loading the assembled directory the way a bundler resolves it
+(`tests/wasm_package_smoke.mjs`, 38 checks): every file present, every `exports`
+target resolvable, no dependencies, `insimul_version()` byte-equal to the
+`VERSION` stamp, and a real `grandparent/2` query answered through the packaged
+entry point. It prints the size table too — currently **2,092,182 B raw /
+561,946 gzip / 415,595 brotli** for `insimul.wasm`, **2.1 MB / 581 KB / 435 KB**
+for the whole package. The binary is fetched as a sibling file, not inlined.
+
+How the engine plugins consume `dist/<platform>/` (Unity `Plugins/` P/Invoke,
+Unreal `ThirdParty` module, Godot GDExtension) and how a browser consumes
+`dist/wasm/` (bundler wiring, `locateFile`, CSP, the size table) are documented
+in [`docs/consuming.md`](docs/consuming.md) — layout only; the per-engine
+wrappers are their own PRDs' work.
 
 ## Rust bindings
 
