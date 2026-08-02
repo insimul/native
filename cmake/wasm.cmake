@@ -92,3 +92,27 @@ find_program(INSIMUL_NODE NAMES node nodejs REQUIRED
 add_test(NAME wasm_smoke
   COMMAND ${INSIMUL_NODE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/wasm_smoke.mjs
           $<TARGET_FILE:insimul_wasm>)
+
+# The wasm conformance leg (US-2): the SAME golden corpus the native `conformance`
+# ctest and the Rust gate drive, run through wasm/insimul-api.mjs — every file,
+# every case, no subset. It hard-fails on a missing/empty corpus or on executing
+# fewer cases than the corpus declares, so it cannot pass vacuously; the configure
+# -time check below refuses even to generate a build whose gate has no corpus.
+#
+# INSIMUL_CONFORMANCE_DEFAULT_DIR comes from CMakeLists.txt, so both legs resolve
+# the corpus identically; INSIMUL_CONFORMANCE_DIR still overrides at run time.
+file(GLOB INSIMUL_CORPUS_FILES "${INSIMUL_CONFORMANCE_DEFAULT_DIR}/*.json")
+list(LENGTH INSIMUL_CORPUS_FILES INSIMUL_CORPUS_FILE_COUNT)
+if(INSIMUL_CORPUS_FILE_COUNT EQUAL 0)
+  message(FATAL_ERROR
+    "wasm: no conformance corpus at ${INSIMUL_CONFORMANCE_DEFAULT_DIR}.\n"
+    "  The wasm build gates on the golden corpus; refusing to configure a build "
+    "whose parity test would have nothing to run.")
+endif()
+message(STATUS "wasm: conformance corpus ${INSIMUL_CONFORMANCE_DEFAULT_DIR} "
+               "(${INSIMUL_CORPUS_FILE_COUNT} files)")
+
+add_test(NAME wasm_conformance
+  COMMAND ${INSIMUL_NODE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/wasm_conformance.mjs
+          $<TARGET_FILE:insimul_wasm>
+          --corpus ${INSIMUL_CONFORMANCE_DEFAULT_DIR})

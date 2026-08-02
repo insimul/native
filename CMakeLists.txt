@@ -230,6 +230,21 @@ endif()
 # ---------------------------------------------------------------------------
 enable_testing()
 
+# Corpus location for every conformance leg (C, Rust, wasm). Resolved BEFORE the
+# EMSCRIPTEN branch below because the wasm leg needs it too: the default is the
+# vendored mirror in conformance/prolog (so a fresh standalone checkout has a
+# corpus at all), else the sibling insimul-runtime submodule for a monorepo
+# layout. INSIMUL_CONFORMANCE_DIR overrides it at run time (so CI can point
+# anywhere); rust/insimul/tests/conformance.rs resolves it the same way.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog")
+  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog" ABSOLUTE)
+else()
+  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core/conformance/prolog"
+    ABSOLUTE)
+endif()
+
 # The wasm (Emscripten) build has its own link target and its own node-driven
 # tests — see cmake/wasm.cmake and scripts/build_wasm.sh. Everything below this
 # point builds host executables, which a cross build cannot run, so the wasm
@@ -252,20 +267,8 @@ target_link_libraries(insimul_abi PRIVATE insimul)
 add_test(NAME abi COMMAND insimul_abi)
 
 # Conformance harness (US-LI3): drives the ABI over every golden corpus case.
-# The default corpus dir is baked as an absolute path: the vendored mirror in
-# conformance/prolog (so a fresh standalone checkout has a corpus at all), else
-# the sibling insimul-runtime submodule for a monorepo layout.
-# INSIMUL_CONFORMANCE_DIR overrides it (so CI can point anywhere). The Rust gate
-# (rust/insimul/tests/conformance.rs) resolves the corpus the same way. Also a
-# pure consumer of insimul.h.
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog")
-  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
-    "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog" ABSOLUTE)
-else()
-  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
-    "${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core/conformance/prolog"
-    ABSOLUTE)
-endif()
+# INSIMUL_CONFORMANCE_DEFAULT_DIR is resolved above (shared with the wasm leg).
+# Also a pure consumer of insimul.h.
 add_executable(insimul_conformance tests/conformance.c)
 target_link_libraries(insimul_conformance PRIVATE insimul)
 target_compile_definitions(insimul_conformance PRIVATE

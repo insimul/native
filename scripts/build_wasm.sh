@@ -10,6 +10,10 @@
 #   scripts/build_wasm.sh --no-test    # build only
 #   scripts/build_wasm.sh --build-dir build-wasm
 #
+# The test run is `wasm_smoke` + `wasm_conformance` — the latter drives the SAME
+# golden corpus the native ctest does, so the parity gate cannot rot unrun. To
+# compare the two builds case by case, use scripts/conformance_parity.sh.
+#
 # Output (build-wasm/):
 #   insimul.mjs    ES-module glue (a -sMODULARIZE factory; see wasm/insimul-api.mjs)
 #   insimul.wasm   the engine

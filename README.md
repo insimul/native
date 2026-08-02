@@ -23,9 +23,13 @@ This directory is being built up story-by-story (PRD `libinsimul-bootstrap`):
   **Snapshot & restore** below.
 - **US-LI5** — prebuilt-binary packaging (`scripts/package.sh`) +
   version stamping (`insimul_version()`). See **Packaging & versioning** below.
-- **US-1 (`libinsimul-wasm`, this story)** — an Emscripten/wasm32 target so the
-  browser runs the **same** engine as the native plugins and the Rust server.
-  See **WebAssembly target** below.
+- **US-1 (`libinsimul-wasm`)** — an Emscripten/wasm32 target so the browser runs
+  the **same** engine as the native plugins and the Rust server. See
+  **WebAssembly target** below.
+- **US-2 (`libinsimul-wasm`, this story)** — the wasm build passes the golden
+  conformance corpus and is diffed case-by-case against the native build. See
+  **Native ⟷ wasm parity** below and
+  [`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md).
 
 ## Build & test
 
@@ -168,13 +172,39 @@ which is MEMFS here — never a real disk).
 
 ### Wasm tests
 
-`ctest --test-dir build-wasm` runs `wasm_smoke` (`tests/wasm_smoke.mjs`, driven by
-`node`). It is the browser-side mirror of the `smoke` ctest — same `grandparent/2`
-KB, same "one query must succeed, one must fail" shape — and additionally calls
-**all twelve** entry points across the JS boundary, checks the snapshot image
-byte-for-byte against the canonical format, and exercises a create → destroy →
-create cycle. It exits non-zero if fewer than 18 checks ran, so a harness that
-silently does nothing cannot read as a pass.
+`ctest --test-dir build-wasm` (which `scripts/build_wasm.sh` runs for you) has two
+tests:
+
+- **`wasm_smoke`** (`tests/wasm_smoke.mjs`) — the browser-side mirror of the
+  `smoke` ctest: same `grandparent/2` KB, same "one query must succeed, one must
+  fail" shape. It additionally calls **all twelve** entry points across the JS
+  boundary, checks the snapshot image byte-for-byte against the canonical format,
+  and exercises a create → destroy → create cycle. It exits non-zero if fewer than
+  18 checks ran, so a harness that silently does nothing cannot read as a pass.
+- **`wasm_conformance`** (`tests/wasm_conformance.mjs`) — the **golden Prolog
+  conformance corpus**, the same vectors the native `conformance` ctest and the
+  Rust gate run: every file, every case, no subset. It drives them through
+  `wasm/insimul-api.mjs`, i.e. through the public ABI a browser consumer uses.
+
+Both legs currently report `10 files, 76 cases, 76 passed, 0 failed, 1 amended`.
+
+### Native ⟷ wasm parity
+
+Two harnesses can both agree with the corpus and still disagree with each other,
+so "both are green" is not the gate. `scripts/conformance_parity.sh` runs the
+native and wasm legs with `INSIMUL_CONFORMANCE_JSON` set — each writes one
+JSON-Lines record per case holding the **raw** string `insimul_query_next()`
+returned — and diffs them case by case:
+
+```sh
+scripts/conformance_parity.sh        # builds whatever leg is missing, then compares
+```
+
+It fails loudly if the wasm leg runs fewer cases than native, if the summary
+lines differ, or if any case record differs by a byte. Current result: **PASS,
+76/76 identical — no divergences**. See [`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md)
+for the full parity record, the non-vacuity gates (each verified by deliberately
+triggering it), and the one documented tau-vs-Trealla amendment.
 
 ## The C ABI
 
@@ -284,11 +314,23 @@ The harness **never passes vacuously**: a missing/unreadable corpus directory, a
 directory with no `*.json` files, an unparseable corpus file, or zero executed
 cases all exit non-zero. Nothing is silently skipped.
 
+Setting `INSIMUL_CONFORMANCE_JSON=<path>` additionally writes one JSON-Lines
+record per case — area, name, status, and the **raw** solution strings the ABI
+returned — which is the channel `scripts/conformance_parity.sh` uses to compare
+legs byte-for-byte.
+
 **The Rust leg.** `rust/insimul/tests/conformance.rs` runs the same corpus through
 the safe Rust wrapper (`cargo test -p insimul --test conformance`), resolving the
 corpus the same way and reporting the same `files / cases / passed / failed /
 amended` summary — so a divergence between the C ABI and its Rust binding shows up
 as a differing count.
+
+**The wasm leg.** `tests/wasm_conformance.mjs` runs the same corpus through the
+WebAssembly build (`ctest --test-dir build-wasm -R wasm_conformance`, which
+`scripts/build_wasm.sh` runs on every wasm build), and
+`scripts/conformance_parity.sh` diffs the native and wasm legs case by case on
+the raw solution text. See **Native ⟷ wasm parity** above and
+[`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md).
 
 **Documented amendments.** Where Trealla diverges from tau-prolog *and*
 tau-prolog is the ISO-correct one, the harness applies an explicit, printed

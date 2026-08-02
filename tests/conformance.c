@@ -22,6 +22,13 @@
  *
  * This file is a pure consumer of <insimul.h> (never <trealla.h>): it exercises
  * the ABI exactly as the engine wrappers will.
+ *
+ * CROSS-LEG PARITY (US-2). Setting INSIMUL_CONFORMANCE_JSON=<path> additionally
+ * writes one JSON-Lines record per case — area, name, status, and the RAW
+ * solution strings exactly as insimul_query_next() returned them. The wasm leg
+ * (tests/wasm_conformance.mjs) writes the same records in the same order, so
+ * scripts/conformance_parity.sh can diff native-vs-wasm case by case instead of
+ * merely observing that both legs are green. See conformance/WASM_PARITY.md.
  */
 
 #include "insimul.h"
@@ -292,6 +299,47 @@ static void jv_write(FILE *f, const jv *v) {
 }
 
 /* ------------------------------------------------------------------ *
+ * Optional per-case JSON-Lines dump — the cross-leg parity channel (US-2).
+ *
+ * Enabled by INSIMUL_CONFORMANCE_JSON. One line per case, emitted in corpus
+ * order, carrying the RAW solution strings the ABI produced (not our reparsed
+ * model), so a byte difference between the native and wasm engines shows up
+ * even when both legs still agree with `expected`.
+ * ------------------------------------------------------------------ */
+
+static FILE *g_dump = NULL;
+
+static void dump_str(const char *s) {
+    fputc('"', g_dump);
+    for (const unsigned char *p = (const unsigned char *)s; *p; p++) {
+        switch (*p) {
+            case '"':  fputs("\\\"", g_dump); break;
+            case '\\': fputs("\\\\", g_dump); break;
+            case '\n': fputs("\\n", g_dump);  break;
+            case '\r': fputs("\\r", g_dump);  break;
+            case '\t': fputs("\\t", g_dump);  break;
+            default:
+                if (*p < 0x20) fprintf(g_dump, "\\u%04x", *p);
+                else fputc((char)*p, g_dump);
+        }
+    }
+    fputc('"', g_dump);
+}
+
+static void dump_record(const char *area, const char *name, const char *status,
+                        int amended, char **raw, int nraw, const char *why) {
+    if (!g_dump) return;
+    fputs("{\"area\":", g_dump);   dump_str(area);
+    fputs(",\"name\":", g_dump);   dump_str(name);
+    fputs(",\"status\":", g_dump); dump_str(status);
+    fprintf(g_dump, ",\"amended\":%s,\"solutions\":[", amended ? "true" : "false");
+    for (int i = 0; i < nraw; i++) { if (i) fputc(',', g_dump); dump_str(raw[i]); }
+    fputc(']', g_dump);
+    if (why) { fputs(",\"error\":", g_dump); dump_str(why); }
+    fputs("}\n", g_dump);
+}
+
+/* ------------------------------------------------------------------ *
  * Documented corpus amendments.
  *
  * The corpus is authored against tau-prolog (the platform's reference engine).
@@ -411,6 +459,7 @@ static int run_case(const char *area, jv *c) {
 
     if (!jquery || jquery->t != JV_STR || !exp || exp->t != JV_ARR) {
         printf("  [FAIL] %s / %s — malformed case (missing query/expected)\n", area, name);
+        dump_record(area, name, "fail", 0, NULL, 0, "malformed case");
         g_fail++;
         return 0;
     }
@@ -418,6 +467,7 @@ static int run_case(const char *area, jv *c) {
     insimul_kb *k = insimul_kb_create();
     if (!k) {
         printf("  [FAIL] %s / %s — insimul_kb_create failed\n", area, name);
+        dump_record(area, name, "fail", 0, NULL, 0, "insimul_kb_create failed");
         g_fail++;
         return 0;
     }
@@ -444,6 +494,7 @@ static int run_case(const char *area, jv *c) {
     }
 
     jv **actual = NULL;
+    char **raw = NULL;   /* the ABI's own solution text, for the parity dump */
     int nact = 0;
     if (ok) {
         insimul_query *q = insimul_query_start(k, query);
@@ -456,6 +507,8 @@ static int run_case(const char *area, jv *c) {
                 int perr = 0;
                 jv *v = jparse(s, &perr);
                 actual = realloc(actual, sizeof(jv *) * (nact + 1));
+                raw = realloc(raw, sizeof(char *) * (nact + 1));
+                raw[nact] = strdup(s);
                 actual[nact++] = v;
                 if (perr) { ok = 0; why = "ABI returned unparseable JSON"; }
             }
@@ -481,8 +534,12 @@ static int run_case(const char *area, jv *c) {
         g_fail++;
     }
 
-    for (int i = 0; i < nact; i++) jv_free(actual[i]);
+    dump_record(area, name, match ? "pass" : "fail", amended, raw, nact,
+                ok ? NULL : (why ? why : "query error"));
+
+    for (int i = 0; i < nact; i++) { jv_free(actual[i]); free(raw[i]); }
     free(actual);
+    free(raw);
     free(query);
     insimul_kb_destroy(k);
     return match;
@@ -537,6 +594,19 @@ int main(void) {
     if (!dir || !*dir) dir = INSIMUL_CONFORMANCE_DEFAULT_DIR;
 
     printf("conformance corpus dir: %s\n", dir);
+
+    /* Cross-leg parity channel (see the file header). Failing to open the
+     * requested dump is a hard error — a parity run that silently produced no
+     * records would compare two empty files and read as agreement. */
+    const char *dump_path = getenv("INSIMUL_CONFORMANCE_JSON");
+    if (dump_path && *dump_path) {
+        g_dump = fopen(dump_path, "wb");
+        if (!g_dump) {
+            fprintf(stderr, "conformance: cannot write INSIMUL_CONFORMANCE_JSON=%s\n", dump_path);
+            return 2;
+        }
+        printf("conformance: writing per-case parity records to %s\n", dump_path);
+    }
 
     /*
      * Keepalive KB: held open for the whole run so the embedded engine's
@@ -603,6 +673,7 @@ int main(void) {
                "for human review.\n", g_amended);
 
     insimul_kb_destroy(keepalive);
+    if (g_dump) fclose(g_dump);
 
     if (io_err) {
         fprintf(stderr, "conformance: one or more corpus files failed to load.\n");

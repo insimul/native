@@ -236,17 +236,26 @@ export class Query {
   }
 
   /**
-   * The next binding set, or null when exhausted.
+   * The next solution as the ABI's own JSON TEXT, or null when exhausted.
    *
-   * insimul_query_next returns a JSON string the QUERY owns; it is invalidated
-   * by the following next()/stop(). We decode it here and hand back a plain
-   * object, so no borrowed pointer ever escapes this method.
+   * insimul_query_next returns a `const char *` the QUERY owns; it is
+   * invalidated by the following next()/stop(). We copy it into a JS string
+   * here, at the call site, so no borrowed pointer ever escapes this method.
+   *
+   * Most callers want next(); this exists for the conformance harness, which
+   * compares the engine's byte-level output against the native leg's.
    */
-  next() {
+  nextRaw() {
     if (this._handle === null) throw new InsimulError('query has been stopped');
     const ptr = this._insimul._fn.queryNext(this._handle);
     if (!ptr) return null;
-    return JSON.parse(this._insimul.module.UTF8ToString(ptr));
+    return this._insimul.module.UTF8ToString(ptr);
+  }
+
+  /** The next binding set as a plain object, or null when exhausted. */
+  next() {
+    const s = this.nextRaw();
+    return s === null ? null : JSON.parse(s);
   }
 
   /** Release the query handle. Idempotent. */

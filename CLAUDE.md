@@ -74,10 +74,20 @@
   in `CMakeLists.txt` (baked as `INSIMUL_CONFORMANCE_DEFAULT_DIR`) and in
   `rust/insimul/tests/conformance.rs`. Any new leg must follow it — and must
   **hard-fail** on a missing/empty corpus rather than skip (no vacuous passes).
-- The `AMENDMENTS` tables in `tests/conformance.c` and `rust/insimul/tests/
-  conformance.rs` must stay in lockstep; both print an `[AMEND]` line and the same
-  `files / cases / passed / failed / amended` summary, so the C and Rust legs are
+- The `AMENDMENTS` tables in `tests/conformance.c`, `rust/insimul/tests/
+  conformance.rs` and `tests/wasm_conformance.mjs` must stay in lockstep; all three
+  print an `[AMEND]` line and the same
+  `files / cases / passed / failed / amended` summary, so the legs are
   directly comparable (currently 10 files, 76 cases, 76 passed, 1 amended).
+- **Cross-leg parity is a diff, not two green checkmarks.** Every leg supports
+  `INSIMUL_CONFORMANCE_JSON=<path>`, writing one JSON-Lines record per case that
+  carries the **raw** `insimul_query_next()` strings (not a reparsed model).
+  `scripts/conformance_parity.sh` runs native + wasm that way and `diff`s the
+  records, so a difference in solution *order*, error wording or number
+  formatting fails even when both legs still satisfy `expected`. A new leg should
+  emit the same records. Result today: 76/76 byte-identical — see
+  `conformance/WASM_PARITY.md`, which is where any future divergence gets
+  documented (never skipped).
 - The corpus carries the **KINP identity layer** (`identity.json`,
   `equivalence.json`, `worlds.json`, and a rewritten `gameplay.json`): entity
   atoms are CURIEs (`'insimul:ent:<id>'`, world-scoped
@@ -149,6 +159,11 @@
 - `EXPORTED_FUNCTIONS` in `cmake/wasm.cmake` **is** the wasm ABI — the linker
   garbage-collects anything unnamed. Adding a function to `insimul.h` means
   adding it there too.
+- `INSIMUL_CONFORMANCE_DEFAULT_DIR` is resolved in `CMakeLists.txt` **above** the
+  `if(EMSCRIPTEN) ... return()` block, because the wasm conformance ctest needs it
+  too. `cmake/wasm.cmake` hard-errors at *configure* time if that directory holds
+  no `*.json`, so a wasm build whose parity gate has nothing to run cannot even be
+  generated.
 - `wasm/insimul-api.mjs` is the hand-written JS wrapper. It keeps `insimul.h`'s
   ownership rules: borrowed `const char *` are `UTF8ToString`'d at the call site
   and never stored; handles are owned by one JS object that nulls them on
