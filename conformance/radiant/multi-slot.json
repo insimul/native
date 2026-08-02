@@ -1,0 +1,50 @@
+{
+  "area": "radiant-multi-slot",
+  "description": "Multi-slot joins: preconditions solve as one conjunction with earlier slot variables in scope, so a later goal can constrain against an earlier binding (recipient must differ from giver). per(Slot, Unit) rewards multiply Unit by the numeric count paired with that slot in an objective (default 1).",
+  "cases": [
+    {
+      "name": "multi-slot-join",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        ":- dynamic(quest_active/2).",
+        "business_owner(anne, bakery).",
+        "business_owner(bob, forge).",
+        "person(anne).",
+        "person(bob).",
+        "person(cara).",
+        "item_category(bread, trade_good)."
+      ],
+      "templates": [
+        "radiant_template(rt_delivery, [category(delivery), title('Deliver to {recipient}'), quest_type(delivery), difficulty(1)]).",
+        "radiant_precondition(rt_delivery, giver, business_owner(Giver, _Shop)).",
+        "radiant_precondition(rt_delivery, item, item_category(Item, trade_good)).",
+        "radiant_precondition(rt_delivery, recipient, (person(Recipient), Recipient \\= Giver)).",
+        "radiant_objective(rt_delivery, deliver(Item, Recipient)).",
+        "radiant_reward(rt_delivery, gold, per(item, 5)).",
+        "radiant_cooldown(rt_delivery, 1800).",
+        "radiant_exclusion(rt_delivery, quest_active(_, rt_delivery))."
+      ],
+      "seed": "join7",
+      "now": 2000,
+      "expected": {
+        "quests": [
+          {
+            "questId": "radiant_rt_delivery_2000",
+            "templateId": "rt_delivery",
+            "content": [
+              "quest(radiant_rt_delivery_2000, 'Deliver to cara', delivery, 1, available).",
+              "quest_objective(radiant_rt_delivery_2000, 0, deliver(bread, cara)).",
+              "quest_reward(radiant_rt_delivery_2000, gold, 5)."
+            ],
+            "factsToAssert": [
+              "radiant_cooldown_until(rt_delivery, 3800).",
+              "radiant_generated(radiant_rt_delivery_2000, rt_delivery, 2000)."
+            ],
+            "factsToRetract": []
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,5 +1,17 @@
 # Consuming libinsimul
 
+This repo ships **two** libraries. Most of this document is about the first; the
+second has its own section further down.
+
+| Library | Header | What it is |
+|---|---|---|
+| `libinsimul` | `insimul.h` | the Prolog core — Trealla behind a C ABI |
+| `libinsimulcore` | `insimulcore.h` | `@insimul/core`'s TypeScript behind a C ABI ([Consuming libinsimulcore](#consuming-libinsimulcore)) |
+
+They are independent: separate ABIs, separate artifacts, either one usable
+without the other. The native package carries both; the wasm package carries only
+`libinsimul` (a browser host runs core as the TypeScript it already is).
+
 `scripts/package.sh` produces two package shapes from the **same engine build**,
 both stamped by the same `VERSION` file:
 
@@ -12,15 +24,20 @@ both stamped by the same `VERSION` file:
 
 ## Native — `dist/<platform>/`
 
-The native package is three files — the shared library, the public header, and a
-`VERSION` stamp:
+The native package is a shared library + public header per library, and one
+shared `VERSION` stamp:
 
 ```
 dist/macos-arm64/
   libinsimul.dylib      # or libinsimul.so (Linux), insimul.dll (Windows)
   insimul.h             # the stable C ABI (extern "C")
+  libinsimulcore.dylib  # the core bridge — see "Consuming libinsimulcore"
+  insimulcore.h
   VERSION               # semver + platform + git sha + Trealla pin
 ```
+
+A consumer that only needs Prolog takes the first two files and ignores the rest;
+nothing in `libinsimul` references `libinsimulcore`.
 
 `<platform>` is one of `macos-arm64`, `macos-x64`, `linux-x64`, `windows-x64`
 (iOS/Android come later — see the platform matrix in the README).
@@ -110,6 +127,155 @@ addons/insimul/
 - The GDExtension glue (`godot-cpp` or a thin C shim) `#include`s `insimul.h` and
   exposes `consult`/`query`/`assert`/`snapshot` to GDScript; the binding-set JSON
   is parsed with Godot's `JSON` class.
+
+---
+
+# Consuming libinsimulcore
+
+`libinsimulcore` is the **second** library this repo builds and ships. It is not
+a bigger `libinsimul`: it is `@insimul/core`'s TypeScript — the simulation's
+decision layer — running inside an embedded QuickJS behind its own C ABI,
+`insimulcore.h`. Behind that ABI the implementation can be replaced (a Rust port
+later) without any engine noticing.
+
+It lives here so all three engines bind **one** bridge. The corollary from
+`RUNTIME_CORE_ADOPTION.md` §4.5 is the whole point of the promotion:
+
+> **Do not invent a second mechanism.** If Unity needs core, it P/Invokes
+> `libinsimulcore`. If Unreal needs core, it links `libinsimulcore`. The bridge
+> is built once, not three times.
+
+```
+dist/macos-arm64/
+  libinsimul.dylib        # the Prolog core
+  insimul.h
+  libinsimulcore.dylib    # core's TypeScript behind a C ABI
+  insimulcore.h
+  VERSION
+```
+
+The two libraries are **independent artifacts with independent ABIs**. No
+`insimul_kb` handle ever crosses `insimulcore.h`, so nothing has to be
+initialised in a particular order and neither library has to be loaded for the
+other to work. `libinsimulcore.dylib` static-links `libinsimul` internally, which
+is what makes it loadable on its own — take it alone if core is all you need.
+
+The ABI is five functions and one opaque handle:
+
+```c
+insimul_core *insimul_core_create(void);
+void          insimul_core_destroy(insimul_core *core);
+const char   *insimul_core_call(insimul_core *core, const char *method, const char *args_json);
+const char   *insimul_core_last_error(const insimul_core *core);
+const char   *insimul_core_version(void);
+```
+
+**Three rules that apply to every host below**, and are the reason the same
+binary serves all of them:
+
+1. **Nothing per-frame crosses this boundary.** Every call marshals JSON in and
+   JSON out — fine at gameplay-event rate, fatal per frame. Core decides;
+   rendering, input, animation and physics stay engine-side.
+2. **One handle, one thread**, exactly like an `insimul_kb`. Creation costs a few
+   milliseconds (a JS runtime plus the bundle evaluating), so create **one per
+   game** and keep it.
+3. **The returned string is borrowed**, owned by the handle and valid only until
+   the next `insimul_core_call()` on that handle. Copy it into an engine string
+   before calling again. A `NULL` return means failure and
+   `insimul_core_last_error()` says why.
+
+Call `core.methods` at startup to enumerate the method table rather than
+hard-coding it; a bundle that lost the method you need should fail loudly at
+load, not silently return nothing at runtime.
+
+## Godot — GDExtension
+
+The reference consumer, and the one that is proven end to end. The extension
+links `libinsimulcore` (statically at build time, as GDExtension code links any
+C dependency) and wraps it in a `RefCounted` class; GDScript talks to that class
+in `Dictionary`s and never sees a C pointer.
+
+```
+gdextension/src/insimul_core.{h,cpp}   # RefCounted wrapper over the 5 functions
+addons/insimul/runtime/*.gd            # Dictionary -> JSON, the ONE translation point
+```
+
+- Hold the handle in the wrapper object; `insimul_core_destroy()` in its
+  destructor. One wrapper instance per handle, one handle per game.
+- Convert with Godot's `JSON.stringify` / `JSON.parse` at the GDScript boundary —
+  keeping engine types out of the C layer is what lets Unity and Unreal reuse it.
+- `insimul_core_call()` is synchronous (it drives the JS job queue until the
+  promise settles), so call it from gameplay events, not `_process`.
+
+## Unity — P/Invoke
+
+The same shape as `libinsimul`'s P/Invoke wrapper, with one extra care: the
+returned pointer is borrowed.
+
+```
+Assets/Insimul/
+  Plugins/
+    macOS/libinsimulcore.dylib      # base name is `insimulcore`
+    Linux/libinsimulcore.so
+    Windows/insimulcore.dll
+  Runtime/
+    InsimulCoreNative.cs            # [DllImport("insimulcore")] extern declarations
+```
+
+```csharp
+[DllImport("insimulcore", CallingConvention = CallingConvention.Cdecl)]
+private static extern IntPtr insimul_core_call(IntPtr core, string method, string argsJson);
+```
+
+- Declare the return type as `IntPtr` and read it with `Marshal.PtrToStringUTF8`.
+  Do **not** declare it as `string`: the default marshaler would try to free a
+  pointer the ABI owns.
+- Wrap the handle in a `SafeHandle` (or an `IDisposable` that is not resurrected)
+  so `insimul_core_destroy` runs exactly once, off the finalizer thread — the
+  handle is not thread-safe.
+- `libinsimulcore` is self-contained, so shipping it does **not** require also
+  shipping `libinsimul` unless the project P/Invokes the Prolog ABI too.
+
+## Unreal — ThirdParty module
+
+Same `ThirdParty` mechanism as `libinsimul`, listed as a second library (or a
+second module) rather than folded into the first:
+
+```
+Source/ThirdParty/InsimulCoreLibrary/
+  InsimulCoreLibrary.Build.cs
+  include/insimulcore.h
+  lib/
+    Mac/libinsimulcore.dylib
+    Linux/libinsimulcore.so
+    Win64/insimulcore.dll  insimulcore.lib
+  VERSION
+```
+
+- `extern "C"` in the header means no name-mangling work on the Unreal side;
+  `#include "insimulcore.h"` from a C++ runtime module directly.
+- Marshal with `FTCHARToUTF8` / `UTF8_TO_TCHAR` at the boundary and copy the
+  result into an `FString` before the next call — the borrowed-pointer rule.
+- Hold the handle on a `UGameInstanceSubsystem` (created once, destroyed with the
+  game instance) rather than on an actor.
+
+## Version / provenance
+
+`insimul_core_version()` returns
+
+```
+0.1.0 (quickjs 2025-04-26, core 443cce783eddea790d4a1f07b90018047ca36845)
+```
+
+— its own ABI version, the pinned QuickJS, and the `packages/core` commit the
+vendored bundle was built from. That last field is the one to quote in a bug
+report about core's *behaviour*, because it identifies the exact TypeScript that
+answered. All three come from the authoritative pins listed in `THIRD_PARTY.md`
+and are asserted by the `corebridge_smoke` ctest.
+
+Note this is **not** the `VERSION` file's semver: `libinsimulcore` versions its
+own ABI separately from `libinsimul`'s, because they are separate contracts that
+will move at different rates.
 
 ---
 

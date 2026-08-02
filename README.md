@@ -9,6 +9,9 @@ logic-programming queries — facts, rules, unification, backtracking — from i
 engine (Unity, Unreal, Godot), a Rust program, or a web page, without each of those
 platforms shipping its own half-built rules engine.
 
+This repo also builds a second, independent library — [`libinsimulcore`](#a-second-library-libinsimulcore),
+described below. It is a separate ABI and does not change anything above.
+
 ## The problem it solves
 
 Say your game's logic lives in Prolog — quest preconditions, dialogue rules, world facts.
@@ -71,6 +74,11 @@ You need **CMake ≥ 3.24** and a C toolchain. On the first configure, CMake dow
 Trealla at its pinned commit (so allow network access and a little extra time), then builds
 it directly into `libinsimul`.
 
+A **C++17** compiler is also needed, for exactly one target: the
+`corebridge_radiant` gate (`tests/radiant/`), which is a byte-for-byte copy of
+insimul-godot's. Nothing this repo *ships* is C++ — `project()` declares `C` and
+`CXX` is enabled only in the test section.
+
 ```sh
 cmake -B build
 cmake --build build
@@ -78,7 +86,8 @@ ctest --test-dir build --output-on-failure
 ```
 
 That produces `libinsimul.a` (static) and `libinsimul.dylib` / `.so` / `.dll` (shared) in
-`build/`, and runs the test suite.
+`build/`, and runs the test suite. The same build also produces `libinsimulcore.a` /
+`libinsimulcore.dylib` beside them — see [below](#a-second-library-libinsimulcore).
 
 ### A minimal program
 
@@ -139,11 +148,37 @@ for (const { Who } of kb.solutions('grandparent(tom, Who)')) console.log(Who);  
 kb.destroy();
 ```
 
+## A second library: libinsimulcore
+
+Everything above describes `libinsimul`. This repo builds one more library beside it:
+**`libinsimulcore`** — `@insimul/core`'s TypeScript running in an embedded QuickJS,
+behind its own C ABI ([`corebridge/include/insimulcore.h`](corebridge/include/insimulcore.h)),
+so Godot, Unity and Unreal bind one core bridge instead of forking three.
+
+Same repo, same CMake, same packaging — but a **separate ABI, deliberately not merged
+into `insimul.h`**. The only edge between the two is that `libinsimulcore` consumes
+`libinsimul`'s public ABI exactly as a game plugin does; no `insimul_kb` handle ever
+crosses `insimulcore.h`. Everything about it lives under
+[`corebridge/`](corebridge/README.md), and the linkage recipes for each engine are in
+[docs/consuming.md](docs/consuming.md).
+
+Its own tests run under the same `ctest` invocation as everything else: a smoke test
+that boots the bridge as a pure consumer of `insimulcore.h`, the **11 radiant
+conformance cases** driven through core's real TypeScript on the native Trealla this
+repo builds, and a sha256 drift guard over the vendored bundle. The radiant gate is a
+byte-for-byte copy of Godot's, so "moving the bridge here changed nothing" is a `diff`
+rather than a claim — see
+[`conformance/RADIANT_PARITY.md`](conformance/RADIANT_PARITY.md). A second leg runs the
+same corpus against an implementation that emits nothing, which is what stops the first
+from passing vacuously: at least one case must expect quests for that leg to classify
+correctly.
+
 ## Repository layout
 
 | Path | Contents |
 |---|---|
 | [`include/insimul.h`](include/insimul.h) | The stable C ABI — the entire public contract. |
+| [`corebridge/`](corebridge/) | The second library — `libinsimulcore`, its ABI, its vendored QuickJS and `@insimul/core` bundle. |
 | [`src/`](src/) | The implementation: `insimul.c` (the C layer) and `insimul_boot.pl` (the Prolog-side helper it drives). |
 | [`rust/`](rust/) | The Rust bindings — a `-sys` crate and a safe `insimul` crate. |
 | [`wasm/`](wasm/) | The hand-written JS wrapper for the WebAssembly build. |
@@ -178,5 +213,7 @@ libinsimul is licensed under **Apache-2.0** — see [`LICENSE`](LICENSE).
 
 The embedded Trealla Prolog engine and the components it bundles are permissively licensed
 (MIT / BSD-style) and redistributable in the prebuilt binaries. Pins and attributions are
-in [`THIRD_PARTY.md`](THIRD_PARTY.md).
-</content>
+in [`THIRD_PARTY.md`](THIRD_PARTY.md) — the Trealla commit for `libinsimul`, and QuickJS
+plus the generated `@insimul/core` bundle for `libinsimulcore`. Each pin has exactly one
+authoritative location, read by the build, so a version stamp cannot claim something other
+than what was compiled.

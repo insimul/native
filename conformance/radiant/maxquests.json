@@ -1,0 +1,137 @@
+{
+  "area": "radiant-maxquests",
+  "description": "Multiple templates in one tick: templates are processed in sorted TplId order, so maxQuests caps deterministically at the first N (rt_delivery precedes rt_fetch). With no cap both generate.",
+  "cases": [
+    {
+      "name": "maxquests-cap-across-templates",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        ":- dynamic(quest_active/2).",
+        "character_occupation(anne, herbalist).",
+        "character_occupation(bob, herbalist).",
+        "item_category(sage, herb).",
+        "item_category(mint, herb).",
+        "business_owner(anne, bakery).",
+        "business_owner(bob, forge).",
+        "person(anne).",
+        "person(bob).",
+        "person(cara).",
+        "item_category(bread, trade_good)."
+      ],
+      "templates": [
+        "radiant_template(rt_fetch, [category(fetch), title('Gather Herbs for {giver}'), quest_type(gathering), difficulty(2)]).",
+        "radiant_precondition(rt_fetch, giver, character_occupation(Giver, herbalist)).",
+        "radiant_precondition(rt_fetch, item, item_category(Item, herb)).",
+        "radiant_objective(rt_fetch, collect(Item, 5)).",
+        "radiant_objective(rt_fetch, deliver(Item, Giver)).",
+        "radiant_reward(rt_fetch, gold, times(20, difficulty)).",
+        "radiant_reward(rt_fetch, experience, 25).",
+        "radiant_cooldown(rt_fetch, 3600).",
+        "radiant_exclusion(rt_fetch, radiant_generated(_, rt_fetch, _)).",
+        "radiant_template(rt_delivery, [category(delivery), title('Deliver to {recipient}'), quest_type(delivery), difficulty(1)]).",
+        "radiant_precondition(rt_delivery, giver, business_owner(Giver, _Shop)).",
+        "radiant_precondition(rt_delivery, item, item_category(Item, trade_good)).",
+        "radiant_precondition(rt_delivery, recipient, (person(Recipient), Recipient \\= Giver)).",
+        "radiant_objective(rt_delivery, deliver(Item, Recipient)).",
+        "radiant_reward(rt_delivery, gold, per(item, 5)).",
+        "radiant_cooldown(rt_delivery, 1800).",
+        "radiant_exclusion(rt_delivery, quest_active(_, rt_delivery))."
+      ],
+      "seed": "cap",
+      "now": 0,
+      "maxQuests": 1,
+      "expected": {
+        "quests": [
+          {
+            "questId": "radiant_rt_delivery_0",
+            "templateId": "rt_delivery",
+            "content": [
+              "quest(radiant_rt_delivery_0, 'Deliver to bob', delivery, 1, available).",
+              "quest_objective(radiant_rt_delivery_0, 0, deliver(bread, bob)).",
+              "quest_reward(radiant_rt_delivery_0, gold, 5)."
+            ],
+            "factsToAssert": [
+              "radiant_cooldown_until(rt_delivery, 1800).",
+              "radiant_generated(radiant_rt_delivery_0, rt_delivery, 0)."
+            ],
+            "factsToRetract": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "two-templates-both-generate",
+      "kb": [
+        ":- dynamic(radiant_generated/3).",
+        ":- dynamic(radiant_cooldown_until/2).",
+        ":- dynamic(quest_active/2).",
+        "character_occupation(anne, herbalist).",
+        "character_occupation(bob, herbalist).",
+        "item_category(sage, herb).",
+        "item_category(mint, herb).",
+        "business_owner(anne, bakery).",
+        "business_owner(bob, forge).",
+        "person(anne).",
+        "person(bob).",
+        "person(cara).",
+        "item_category(bread, trade_good)."
+      ],
+      "templates": [
+        "radiant_template(rt_fetch, [category(fetch), title('Gather Herbs for {giver}'), quest_type(gathering), difficulty(2)]).",
+        "radiant_precondition(rt_fetch, giver, character_occupation(Giver, herbalist)).",
+        "radiant_precondition(rt_fetch, item, item_category(Item, herb)).",
+        "radiant_objective(rt_fetch, collect(Item, 5)).",
+        "radiant_objective(rt_fetch, deliver(Item, Giver)).",
+        "radiant_reward(rt_fetch, gold, times(20, difficulty)).",
+        "radiant_reward(rt_fetch, experience, 25).",
+        "radiant_cooldown(rt_fetch, 3600).",
+        "radiant_exclusion(rt_fetch, radiant_generated(_, rt_fetch, _)).",
+        "radiant_template(rt_delivery, [category(delivery), title('Deliver to {recipient}'), quest_type(delivery), difficulty(1)]).",
+        "radiant_precondition(rt_delivery, giver, business_owner(Giver, _Shop)).",
+        "radiant_precondition(rt_delivery, item, item_category(Item, trade_good)).",
+        "radiant_precondition(rt_delivery, recipient, (person(Recipient), Recipient \\= Giver)).",
+        "radiant_objective(rt_delivery, deliver(Item, Recipient)).",
+        "radiant_reward(rt_delivery, gold, per(item, 5)).",
+        "radiant_cooldown(rt_delivery, 1800).",
+        "radiant_exclusion(rt_delivery, quest_active(_, rt_delivery))."
+      ],
+      "seed": "cap",
+      "now": 0,
+      "expected": {
+        "quests": [
+          {
+            "questId": "radiant_rt_delivery_0",
+            "templateId": "rt_delivery",
+            "content": [
+              "quest(radiant_rt_delivery_0, 'Deliver to bob', delivery, 1, available).",
+              "quest_objective(radiant_rt_delivery_0, 0, deliver(bread, bob)).",
+              "quest_reward(radiant_rt_delivery_0, gold, 5)."
+            ],
+            "factsToAssert": [
+              "radiant_cooldown_until(rt_delivery, 1800).",
+              "radiant_generated(radiant_rt_delivery_0, rt_delivery, 0)."
+            ],
+            "factsToRetract": []
+          },
+          {
+            "questId": "radiant_rt_fetch_0",
+            "templateId": "rt_fetch",
+            "content": [
+              "quest(radiant_rt_fetch_0, 'Gather Herbs for anne', gathering, 2, available).",
+              "quest_objective(radiant_rt_fetch_0, 0, collect(mint, 5)).",
+              "quest_objective(radiant_rt_fetch_0, 1, deliver(mint, anne)).",
+              "quest_reward(radiant_rt_fetch_0, experience, 25).",
+              "quest_reward(radiant_rt_fetch_0, gold, 40)."
+            ],
+            "factsToAssert": [
+              "radiant_cooldown_until(rt_fetch, 3600).",
+              "radiant_generated(radiant_rt_fetch_0, rt_fetch, 0)."
+            ],
+            "factsToRetract": []
+          }
+        ]
+      }
+    }
+  ]
+}
