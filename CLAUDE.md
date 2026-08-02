@@ -238,6 +238,16 @@
   stands and CXX is enabled next to `add_executable(insimulcore_radiant ...)`.
   It sits below the `if(EMSCRIPTEN) ... return()` block, so the wasm build never
   sees it.
+- **The bundle is a function of its INPUTS, not of where core sits.** esbuild
+  labels each bundled module with its path *relative to the process cwd*, so the
+  artifact used to change bytes when core was reached by a different relative
+  path — and `--check --core`, which re-bundles and diffs, would then report
+  DRIFT on a perfectly correct tree. `bundle()` rewrites every label to a
+  canonical name (`@insimul/core/src/…`, `corebridge/js/…`) before writing.
+  Keep that: a gate that fires on a correct tree gets muted, and a muted gate is
+  the failure mode this repo keeps re-learning. It is also what makes this
+  bundle byte-identical to `insimul-godot`'s — previously true only because 104
+  *copied* the artifact rather than re-bundling it.
 - `corebridge/vendor/core/` is **generated** — never hand-edit it.
   `corebridge/tools/vendor-core-bundle.mjs --check` (the `core_vendor` ctest)
   verifies a sha256 per file from `VENDORED.json`'s `files` map. It hashes the

@@ -173,6 +173,29 @@ async function bundle(coreDir, outfile) {
     plugins: [adapterBoundary],
   });
 
+  // esbuild labels each bundled module with its path RELATIVE TO THE PROCESS
+  // CWD. That makes the artifact a function of where core happens to sit
+  // relative to this repo, not of its inputs: two correct checkouts at
+  // different depths produce byte-different bundles from identical sources, and
+  // `--check --core` — which re-bundles and diffs — then reports DRIFT that is
+  // not drift. A gate that fires on a correct tree is as bad as one that never
+  // fires. Rewrite each label to a canonical, layout-independent name.
+  const canonicalLabel = (p) => {
+    const abs = path.resolve(p);
+    if (abs.startsWith(`${core}${path.sep}`)) {
+      return `@insimul/core/${path.relative(core, abs).split(path.sep).join('/')}`;
+    }
+    if (abs.startsWith(`${JS_DIR}${path.sep}`)) {
+      return `corebridge/js/${path.basename(abs)}`;
+    }
+    return path.basename(abs);
+  };
+  let text = fs.readFileSync(outfile, 'utf8');
+  for (const key of Object.keys(result.metafile.inputs)) {
+    text = text.split(`// ${key}\n`).join(`// ${canonicalLabel(key)}\n`);
+  }
+  fs.writeFileSync(outfile, text);
+
   const inputs = Object.keys(result.metafile.inputs)
     .map((p) => path.resolve(p))
     .filter((p) => p.startsWith(core))

@@ -1,5 +1,5 @@
 (() => {
-  // gdextension/corebridge/js/host-prolog-engine.js
+  // corebridge/js/host-prolog-engine.js
   function collapseTerm(term) {
     if (term === null || term === void 0) return null;
     if (typeof term === "string" || typeof term === "number" || typeof term === "boolean") {
@@ -103,7 +103,7 @@
     return new NativePrologEngine(id);
   }
 
-  // ../../../../Development/insimul/babylon/packages/core/src/prolog/prolog-fact-parser.ts
+  // @insimul/core/src/prolog/prolog-fact-parser.ts
   function parsePrologFile(source) {
     const facts = [];
     const rules = [];
@@ -343,7 +343,7 @@
     }
   }
 
-  // ../../../../Development/insimul/babylon/packages/core/src/radiant/radiant-engine.ts
+  // @insimul/core/src/radiant/radiant-engine.ts
   async function generateRadiantQuests(kb, opts) {
     const program = Array.isArray(kb) ? kb.join("\n") : kb;
     const maxQuests = opts.maxQuests ?? Number.POSITIVE_INFINITY;
@@ -677,7 +677,7 @@
     };
   }
 
-  // ../../../../Development/insimul/babylon/packages/core/src/radiant/base-templates.ts
+  // @insimul/core/src/radiant/base-templates.ts
   var BASE_RADIANT_TEMPLATES = `% Insimul base radiant template pack (US-RQ5)
 %
 % A starter pack of genre-neutral radiant (procedural) quest templates. It uses
@@ -780,7 +780,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "rt_visit"
   ];
 
-  // ../../../../Development/insimul/babylon/packages/core/src/prolog/quest-hydrator.ts
+  // @insimul/core/src/prolog/quest-hydrator.ts
   function hydrateQuestFromProlog(quest) {
     const content = quest?.content;
     if (!content || typeof content !== "string") return quest;
@@ -1291,7 +1291,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return { type: "custom", description: goal };
   }
 
-  // ../../../../Development/insimul/babylon/packages/core/scripts/quest-golden-manifest.ts
+  // @insimul/core/scripts/quest-golden-manifest.ts
   function projectHydratedQuest(q) {
     const out = {};
     const put = (k, v) => {
@@ -1346,7 +1346,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return facts;
   }
 
-  // gdextension/corebridge/js/entry.js
+  // corebridge/js/entry.js
   var METHODS = {
     /**
      * `radiant.generate` — the first adopted slice (RUNTIME_CORE_ADOPTION.md §5).
