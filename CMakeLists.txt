@@ -226,6 +226,22 @@ if(NOT EMSCRIPTEN)
 endif()
 
 # ---------------------------------------------------------------------------
+# libinsimulcore — the SECOND library in this repo (tasklist 104). `@insimul/
+# core`'s TypeScript in an embedded QuickJS behind corebridge/include/
+# insimulcore.h, so Godot, Unity and Unreal bind one bridge instead of three.
+# Separate ABI, separate artifacts; it consumes libinsimul's public ABI exactly
+# as an engine plugin does. Everything about it lives in corebridge/.
+#
+# Skipped under Emscripten (the wasm target is libinsimul only — a browser host
+# runs core as the TypeScript it already is). Deliberately placed ABOVE the
+# EMSCRIPTEN `return()` below anyway, so the guard is stated here rather than
+# depending on statement order.
+# ---------------------------------------------------------------------------
+if(NOT EMSCRIPTEN)
+  add_subdirectory(corebridge)
+endif()
+
+# ---------------------------------------------------------------------------
 # Tests.
 # ---------------------------------------------------------------------------
 enable_testing()
@@ -313,3 +329,40 @@ target_link_libraries(insimul_version_test PRIVATE insimul)
 target_compile_definitions(insimul_version_test PRIVATE
   EXPECT_SEMVER="${INSIMUL_SEMVER}")
 add_test(NAME version COMMAND insimul_version_test)
+
+# ---------------------------------------------------------------------------
+# libinsimulcore tests (tasklist 104). corebridge/ is added above, native-only.
+# ---------------------------------------------------------------------------
+
+# The vendored core bundle's provenance, read straight out of the manifest the
+# vendoring tool writes — so the expectation tracks a re-vendor with no edits
+# here, and a bundle swapped in without its manifest fails the smoke test.
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/VENDORED.json
+     INSIMULCORE_VENDORED_JSON)
+string(REGEX MATCH "\"coreCommit\"[ \t]*:[ \t]*\"([^\"]*)\""
+       _ "${INSIMULCORE_VENDORED_JSON}")
+set(INSIMULCORE_BUNDLE_COMMIT "${CMAKE_MATCH_1}")
+if(NOT INSIMULCORE_BUNDLE_COMMIT)
+  message(FATAL_ERROR
+    "corebridge/vendor/core/VENDORED.json records no coreCommit — the bundle has no provenance")
+endif()
+
+# corebridge_smoke: a pure consumer of insimulcore.h (no quickjs.h, no insimul.h).
+# Boots the bridge, asserts the adopted surface, and cross-checks the version
+# stamp against the two pins CMake read out of the vendored tree.
+add_executable(insimulcore_smoke tests/corebridge_smoke.c)
+target_link_libraries(insimulcore_smoke PRIVATE insimulcore)
+target_compile_definitions(insimulcore_smoke PRIVATE
+  EXPECT_QUICKJS="${QUICKJS_VERSION}"
+  EXPECT_CORE_COMMIT="${INSIMULCORE_BUNDLE_COMMIT}")
+add_test(NAME corebridge_smoke COMMAND insimulcore_smoke)
+
+# core_vendor: the sha256 drift guard over the vendored @insimul/core bundle —
+# the same discipline conformance/VENDORED.md applies to the corpus. It hashes
+# every vendored/adapter file against VENDORED.json, so a hand-edited bundle, a
+# stale generated C array, or a js/ edit that was never re-bundled all fail here.
+# Needs node; run_core_vendor.sh degrades to a loud [SKIP] without it (read the
+# output — a check that prints [SKIP] asserted nothing).
+add_test(NAME core_vendor COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs)

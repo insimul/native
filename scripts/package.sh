@@ -14,6 +14,13 @@
 #   - the public header   (insimul.h)
 #   - a VERSION stamp     (semver + git sha + Trealla pin, one field per line)
 #
+# ...and, since tasklist 104 promoted the core bridge into this repo, the same
+# two files for the SECOND library beside them (libinsimulcore + insimulcore.h).
+# One package, two independent ABIs — a consumer that only needs Prolog ignores
+# the extra pair. The wasm package deliberately carries only libinsimul: a
+# browser host runs @insimul/core as the TypeScript it already is, so compiling a
+# JS engine to wasm to run JS would be circular.
+#
 # WASM (US-3) — the same engine for a JS bundler: the Emscripten glue, the
 # `.wasm` binary, the hand-written wrapper, an `index.mjs` entry point, a
 # `package.json` whose `exports` map ties them together, and the SAME VERSION
@@ -59,9 +66,9 @@ done
 os="$(uname -s)"
 arch="$(uname -m)"
 case "$os" in
-  Darwin)  plat_os="macos"; libname="libinsimul.dylib" ;;
-  Linux)   plat_os="linux"; libname="libinsimul.so" ;;
-  MINGW*|MSYS*|CYGWIN*) plat_os="windows"; libname="insimul.dll" ;;
+  Darwin)  plat_os="macos"; libname="libinsimul.dylib"; corelibname="libinsimulcore.dylib" ;;
+  Linux)   plat_os="linux"; libname="libinsimul.so";    corelibname="libinsimulcore.so" ;;
+  MINGW*|MSYS*|CYGWIN*) plat_os="windows"; libname="insimul.dll"; corelibname="insimulcore.dll" ;;
   *) echo "package: unsupported OS '$os'" >&2; exit 1 ;;
 esac
 case "$arch" in
@@ -109,18 +116,25 @@ command -v cmake >/dev/null 2>&1 || { echo "package: cmake not found on PATH" >&
 
 # ================================================================ native target
 package_native() {
-  echo "package: building shared library ($platform, insimul $semver)"
+  echo "package: building shared libraries ($platform, insimul $semver)"
   cmake -B "$build_dir" >/dev/null
-  cmake --build "$build_dir" --target insimul_shared -j >/dev/null
+  cmake --build "$build_dir" --target insimul_shared insimulcore_shared -j >/dev/null
 
   local lib_path="$build_dir/$libname"
-  [ -f "$lib_path" ] || { echo "package: built library not found at $lib_path" >&2; exit 1; }
+  local corelib_path="$build_dir/$corelibname"
+  for f in "$lib_path" "$corelib_path"; do
+    [ -f "$f" ] || { echo "package: built library not found at $f" >&2; exit 1; }
+  done
 
   local out="$out_root/$platform"
   rm -rf "$out"
   mkdir -p "$out"
   cp "$lib_path" "$out/$libname"
   cp include/insimul.h "$out/insimul.h"
+  # The second library and its ABI (tasklist 104). Independent of the first —
+  # it is packaged beside it, not inside it.
+  cp "$corelib_path" "$out/$corelibname"
+  cp corebridge/include/insimulcore.h "$out/insimulcore.h"
   write_stamp "$out" "$platform"
 
   echo "package: wrote $out/"

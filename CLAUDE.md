@@ -193,6 +193,43 @@
   image would blow it). `createKb()` opens the keepalive KB described in
   "Trealla gotchas" so create→destroy→create cycles are safe by default.
 
+## libinsimulcore — the SECOND library (corebridge/)
+- **Two libraries, two ABIs, one build. Do not merge them.** `libinsimul` is
+  Trealla behind `include/insimul.h`; `libinsimulcore` is `@insimul/core`'s
+  TypeScript in an embedded QuickJS behind `corebridge/include/insimulcore.h`.
+  The only edge between them is that the second *consumes the first's public
+  ABI* exactly as a game plugin does — `src/insimulcore.c` includes `insimul.h`,
+  never `trealla.h`, and **no `insimul_kb` handle ever crosses `insimulcore.h`**.
+  That last fact is what makes `insimulcore_shared` static-linking `libinsimul`
+  safe: a host that also loads `libinsimul.dylib` gets an independent engine
+  instance, not corrupted shared state.
+- `insimulcore.h` is the contract Godot, Unity and Unreal all bind. It was moved
+  here from `insimul-godot/gdextension/corebridge/` **byte-for-byte** and the two
+  copies must stay `diff`-identical until Godot repoints at this one (its own
+  tasklist). A header that forks between repos is the failure the promotion
+  exists to prevent — change it here first, never in an engine repo.
+- Everything corebridge-specific lives in `corebridge/CMakeLists.txt`, added from
+  the root under `if(NOT EMSCRIPTEN)`. It is **not** built for wasm: a browser
+  host runs core as the TypeScript it already is, so compiling a JS engine to
+  wasm to run JS would be circular. Artifacts are forced into `${CMAKE_BINARY_DIR}`
+  so `libinsimulcore.{a,dylib}` sit beside `libinsimul`'s — the engine repos'
+  gates probe `<native>/build/libinsimul.*` and expect that flat layout.
+- **Each vendored dependency has ONE authoritative pin location, and the build
+  reads it from there** (the rule Trealla's `TREALLA_GIT_COMMIT` already set):
+  QuickJS's is `corebridge/vendor/quickjs/VERSION` → `CONFIG_VERSION`; the core
+  bundle's is `coreCommit` in `corebridge/vendor/core/VENDORED.json`, regex'd out
+  by the root `CMakeLists.txt`. `corebridge_smoke` then asserts
+  `insimul_core_version()` reports both, so a stale vendored tree is a red ctest
+  rather than a mystery in a bug report.
+- `corebridge/vendor/core/` is **generated** — never hand-edit it.
+  `corebridge/tools/vendor-core-bundle.mjs --check` (the `core_vendor` ctest)
+  verifies a sha256 per file from `VENDORED.json`'s `files` map. It hashes the
+  **adapter inputs** (`corebridge/js/*.js`) as well as the generated outputs,
+  because editing `js/entry.js` without re-vendoring leaves the shipping library
+  running the old code while the source reads as the new — invisible to any
+  output-only check. Only `--check --core <packages/core>` can see core drifting
+  underneath the bundle; say so rather than implying the cheap check covers it.
+
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. `build/` is
   gitignored (holds fetched Trealla under `_deps/` and the generated
@@ -215,4 +252,5 @@
 - **A ctest that passes in 0.00s is a skip.** `snapshot_parse` degrades to a
   loud `[SKIP]` when node or the sibling `../insimul-runtime` submodule is
   absent, so it is vacuous in a standalone checkout and only really asserts in
-  the monorepo layout. Read its output before trusting a green ctest summary.
+  the monorepo layout. `core_vendor` does the same without `node`. Read their
+  output before trusting a green ctest summary.
