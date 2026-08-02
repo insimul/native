@@ -1,44 +1,75 @@
 # insimul-native (libinsimul)
 
-The shared **native Prolog core** for the Insimul engine plugins. It embeds a
-real, ISO-conforming Prolog engine — [Trealla Prolog](https://github.com/trealla-prolog/trealla)
-(pure C, MIT) — and exposes it through a stable C ABI (`include/insimul.h`) so the
-Unreal, Unity, and Godot plugins can share one engine instead of the three
-substring-matching fake fact-stores they ship today.
+> One real Prolog engine, one C interface, everywhere your game runs — native desktop,
+> the browser, and Rust — so every platform reasons over game logic identically.
 
-> Plan reference: `docs/PLATFORM_SPLIT_AND_ENGINE_PLUGINS.md` §3.1.
+`libinsimul` is a small C library that embeds a real, ISO-conforming Prolog engine and
+exposes it through one stable C interface. It is for anyone who wants to run genuine
+logic-programming queries — facts, rules, unification, backtracking — from inside a game
+engine (Unity, Unreal, Godot), a Rust program, or a web page, without each of those
+platforms shipping its own half-built rules engine.
 
-## Status
+## The problem it solves
 
-This directory is being built up story-by-story (PRD `libinsimul-bootstrap`):
+Say your game's logic lives in Prolog — quest preconditions, dialogue rules, world facts.
+Each engine you ship on then needs a way to *run* that logic. The tempting shortcut is a
+hand-rolled fact-store per engine that does substring or key lookups. Those look fine on
+`parent(tom, bob)` and fall apart the moment a rule needs real unification and
+backtracking:
 
-- **US-LI1** — project skeleton: CMake build of a static + shared `insimul`
-  library, Trealla vendored at a pinned commit via FetchContent, and a ctest
-  smoke test that consults a KB and runs one query through the engine.
-- **US-LI2** — the C ABI (`insimul.h`): KB lifecycle, consult,
-  assert/retract, and a JSON binding-set query iterator. See **The C ABI** below.
-- **US-LI3** — pass the golden Prolog conformance corpus. See
-  **Conformance suite** below.
-- **US-LI4** — KB snapshot/restore for save files. See
-  **Snapshot & restore** below.
-- **US-LI5** — prebuilt-binary packaging (`scripts/package.sh`) +
-  version stamping (`insimul_version()`). See **Packaging & versioning** below.
-- **US-1 (`libinsimul-wasm`)** — an Emscripten/wasm32 target so the browser runs
-  the **same** engine as the native plugins and the Rust server. See
-  **WebAssembly target** below.
-- **US-2 (`libinsimul-wasm`)** — the wasm build passes the golden conformance
-  corpus and is diffed case-by-case against the native build. See
-  **Native ⟷ wasm parity** below and
-  [`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md).
-- **US-3 (`libinsimul-wasm`, this story)** — the wasm artifact packaged for a JS
-  bundler (`scripts/package.sh --target wasm` → `dist/wasm/`), same version stamp
-  as the native packages. See **Packaging & versioning** below and
-  [`docs/consuming.md`](docs/consuming.md).
+```prolog
+grandparent(X, Z) :- parent(X, Y), parent(Y, Z).
+```
 
-## Build & test
+Answering `grandparent(tom, Who)` means chaining two `parent` facts through a shared
+variable `Y` — something a lookup table cannot do. And even if three teams each build a
+"good enough" engine, they will quietly disagree: different solution orders, different
+error messages, different edge cases. A save file produced on one engine can then load
+wrong on another.
 
-Requires **CMake ≥ 3.24** and a C toolchain. On first configure, CMake fetches
-Trealla from GitHub (needs network access), so allow a little extra time.
+`libinsimul` replaces all of that with **one** engine behind **one** interface:
+
+- A **real** Prolog engine — [Trealla Prolog](https://github.com/trealla-prolog/trealla)
+  (pure C, MIT-licensed), embedded and pinned to an exact commit.
+- A single, stable **C ABI** (`include/insimul.h`) that C, C++, C#, GDScript, Rust, and
+  JavaScript all bind to.
+- The **same** engine on native desktop *and* in the browser (compiled to WebAssembly),
+  so a query gives the same answer wherever it runs — and that sameness is enforced by a
+  cross-platform test suite, not just asserted.
+
+It is part of the [insimul](https://github.com/insimul) project — a system for building
+fictional worlds and games whose canonical state is held in Prolog — but the library
+stands on its own: if you need an embeddable Prolog engine with a clean C interface, you
+need nothing else from that project to use this one.
+
+## How it works
+
+The whole library revolves around two ideas.
+
+**A knowledge base (KB) is one Prolog world.** You create a KB, load facts and rules into
+it (`consult`), add or remove clauses at runtime (`assert` / `retract`), and ask questions
+(`query`). Each KB is completely independent — there is no shared global state — so a host
+can run many KBs, one per thread. That independence is a hard requirement for game engines
+and it is guaranteed by the interface.
+
+**The interface is a plain C ABI, and the engine hides behind it.** `include/insimul.h`
+exposes twelve `extern "C"` functions over two opaque handle types (`insimul_kb`,
+`insimul_query`). The header mentions no Trealla types at all — the engine is an
+implementation detail that could be swapped without breaking a single caller. Queries
+return their solutions as **JSON**, a shape every language can parse:
+
+```text
+{ "Var": <value>, ... }        one entry per named variable in your goal
+```
+
+so `grandparent(tom, W)` comes back as `{"W":"ann"}`. (The full mapping from Prolog terms
+to JSON is in [docs/c-abi.md](docs/c-abi.md).)
+
+## Getting started
+
+You need **CMake ≥ 3.24** and a C toolchain. On the first configure, CMake downloads
+Trealla at its pinned commit (so allow network access and a little extra time), then builds
+it directly into `libinsimul`.
 
 ```sh
 cmake -B build
@@ -46,488 +77,106 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Artifacts land in `build/`: `libinsimul.a` (static) and `libinsimul.dylib` /
-`.so` / `.dll` (shared).
+That produces `libinsimul.a` (static) and `libinsimul.dylib` / `.so` / `.dll` (shared) in
+`build/`, and runs the test suite.
 
-Six ctest cases run:
+### A minimal program
 
-- `smoke` (`tests/smoke.c`) — consults a 3-clause KB with a `grandparent/2` rule
-  and checks that a query needing **unification + backtracking through that rule**
-  succeeds while an unsatisfiable one fails (something a substring fact-store
-  cannot do). It drives Trealla's C API directly.
-- `abi` (`tests/abi.c`) — exercises the whole `insimul.h` ABI (create, consult,
-  assert/retract, the query iterator, and every error path) as a **pure consumer
-  of `include/insimul.h`** — it never includes `trealla.h`, so it also proves the
-  opaque boundary compiles and links.
-- `conformance` (`tests/conformance.c`) — runs the golden Prolog corpus through
-  the ABI and compares binding sets against the expected solutions. See below.
-- `snapshot` (`tests/snapshot.c`) — snapshot/restore round-trip, determinism, and
-  a golden fixture check. See **Snapshot & restore** below.
-- `snapshot_parse` — runs the committed snapshot fixture through
-  insimul-runtime's real `prolog-fact-parser.ts` (the wrappers' parser) via
-  `node`. It degrades to a loud `[SKIP]` if `node` or the submodule parser is
-  absent; the `snapshot` case still verifies the format byte-for-byte.
-- `version` (`tests/version.c`) — a pure consumer of `insimul.h` that checks
-  `insimul_version()` embeds the semver from the `VERSION` file plus the git sha
-  and Trealla pin. See **Packaging & versioning** below.
+```c
+#include "insimul.h"
+#include <stdio.h>
 
-## WebAssembly target
+int main(void) {
+    insimul_kb *kb = insimul_kb_create();
 
-The browser gets the **same engine**, not a second one. `libinsimul` also builds
-for `wasm32` through Emscripten, from the same `CMakeLists.txt`, the same
-`src/insimul.c`, and the same pinned Trealla commit — this is a build target, not
-a port. (The web runtime previously ran tau-prolog, a different implementation
-that demonstrably disagreed with Trealla on error wording and solution order.)
+    insimul_kb_consult(kb,
+        "parent(tom, bob).\n"
+        "parent(bob, ann).\n"
+        "grandparent(X, Z) :- parent(X, Y), parent(Y, Z).\n");
 
-```sh
-scripts/build_wasm.sh              # configure + build + run the wasm tests
-scripts/build_wasm.sh --no-test    # build only
+    insimul_query *q = insimul_query_start(kb, "grandparent(tom, Who)");
+    const char *solution;
+    while ((solution = insimul_query_next(q)) != NULL)
+        puts(solution);                 // prints: {"Who":"ann"}
+    insimul_query_stop(q);
+
+    insimul_kb_destroy(kb);
+    return 0;
+}
 ```
 
-It writes to **`build-wasm/`**, a separate tree, so `build/` and its native
-artifacts are never touched — the two builds coexist:
+Two rules of thumb: text you pass to `consult` is one or more full clauses, each ending in
+a `.`; text you pass to `assert`, `retract`, and `query_start` is a **single term with no
+trailing full stop**. Returned strings are owned by the library — copy anything you want
+to keep, and never free it. The full contract is in [docs/c-abi.md](docs/c-abi.md).
 
+### From other languages
+
+You do not have to call C directly. The same engine is available:
+
+- **Rust** — a safe, idiomatic `KnowledgeBase` crate with RAII handles and `Result`s. See
+  [rust/README.md](rust/README.md).
+- **JavaScript / the browser** — the identical engine compiled to WebAssembly, published
+  as an ES-module package. See [docs/webassembly.md](docs/webassembly.md).
+
+```rust
+// Rust
+let mut kb = KnowledgeBase::new()?;
+kb.consult("parent(tom, bob).\nparent(bob, ann).\n")?;
+kb.assert_fact("grandparent(X, Z) :- parent(X, Y), parent(Y, Z)")?;
+for solution in kb.query("grandparent(tom, Who)")? {
+    println!("{:?}", solution?.get("Who"));   // Some(Atom("ann"))
+}
 ```
-build-wasm/
-  insimul.mjs      ES-module glue  (~102 KB)
-  insimul.wasm     the engine      (~2.0 MB)
-```
-
-To hand those to a JS bundler, `scripts/package.sh --target wasm` assembles them
-into `dist/wasm/` with a `package.json` and the same `VERSION` stamp the native
-packages carry — see **Packaging & versioning** below and
-[`docs/consuming.md`](docs/consuming.md).
-
-### Requirements
-
-**Emscripten ≥ 3.1.50** on `PATH` (developed and verified against emsdk
-**6.0.5**). The floor is what first shipped a stable `EXPORT_ES6` +
-`EXPORTED_RUNTIME_METHODS` spelling; anything newer works.
-
-```sh
-git clone https://github.com/emscripten-core/emsdk && cd emsdk
-./emsdk install latest && ./emsdk activate latest && source ./emsdk_env.sh
-```
-
-`scripts/build_wasm.sh` sources `$EMSDK/emsdk_env.sh` or `~/emsdk/emsdk_env.sh`
-automatically when `emcc` is not already on `PATH`. Build-time network access is
-unchanged: the only fetch is the existing Trealla `FetchContent` clone at the pin
-in [`THIRD_PARTY.md`](./THIRD_PARTY.md), which this story did **not** bump.
-
-### Using it from JS
-
-All twelve `insimul.h` entry points are exported (`cmake/wasm.cmake` names them
-explicitly — that list *is* the wasm ABI). `wasm/insimul-api.mjs` is a small
-hand-written, engine-agnostic wrapper that turns them into JS objects:
 
 ```js
-import createInsimul from './build-wasm/insimul.mjs';   // generated glue
-import { loadInsimul } from './wasm/insimul-api.mjs';   // this repo
-
-const insimul = await loadInsimul(createInsimul);
+// Browser / Node
+const insimul = await loadInsimul();
 const kb = insimul.createKb();
 kb.consult(`parent(tom, bob).
-parent(bob, ann).
 grandparent(X, Z) :- parent(X, Y), parent(Y, Z).`);
-
 for (const { Who } of kb.solutions('grandparent(tom, Who)')) console.log(Who);  // ann
 kb.destroy();
 ```
 
-### Ownership across the JS boundary
-
-WebAssembly has no destructors and no finalizers to lean on, so every pointer the
-ABI hands out is owned explicitly. Three kinds cross the boundary:
-
-| What | Owner | Rule |
-|------|-------|------|
-| **Handles** — `insimul_kb *`, `insimul_query *` (plain integers in JS) | the caller | Must be released with `insimul_kb_destroy` / `insimul_query_stop`, or the module's heap grows forever. `Kb`/`Query` own exactly one handle, null it on release, and throw on use-after-free. |
-| **Borrowed strings** — from `insimul_query_next`, `insimul_last_error`, `insimul_kb_snapshot` | the KB/query they came from | Invalidated by the next call on that object. The wrapper `UTF8ToString`s them into JS strings *at the call site* and never stores the pointer — insimul.h's "callers copy anything they need to keep; they never free a returned pointer". |
-| **Argument strings** going in | the caller | `malloc`'d on the wasm heap and freed in a `finally`. The wrapper deliberately avoids `ccall(..., 'string', ...)`, which copies onto the wasm **stack** — a snapshot image or a large consult source would blow it. |
-
-**The query iterator** is the case the ABI's C shape makes trickiest: `query()`
-returns a stepped pointer, and each `next()` returns a borrowed JSON string that
-the *following* step invalidates. `kb.solutions(goal)` is the safe form — a
-generator wrapped in `try/finally`, so the handle is stopped even if the consumer
-`break`s out of the loop or throws mid-iteration. Reach for the raw `kb.query()`
-only when you need to interleave stepping with other work, and stop it yourself.
-
-**One hidden KB.** Trealla tears down its process-global symbol table when the
-last Prolog instance is destroyed, and re-initialising it afterwards deadlocks
-(see `CLAUDE.md`, "Trealla gotchas"). `Insimul.createKb()` therefore opens one
-internal keepalive KB on first use and never destroys it, so a host can create and
-destroy KBs freely — which a browser will do constantly. It costs one empty KB.
-
-### Wasm build profile
-
-Two deliberate differences from the native build, both in `cmake/wasm.cmake`:
-
-- **Single-threaded** (`USE_THREADS` off). `-pthread` in wasm means
-  `SharedArrayBuffer`, which means every embedding page has to serve COOP/COEP
-  headers. That cost is not worth pushing onto browser consumers, and it matches
-  upstream Trealla's own wasm profile (its Makefile sets `NOTHREADS=1` for WASI).
-  Emscripten's libc supplies the pthread stubs the few unconditional call sites
-  need. The ABI's one-KB-per-thread contract is unaffected — there is one thread.
-- **`posix_spawnp` is stubbed** (`src/insimul_wasm_stubs.c`) to return `ENOSYS`.
-  Trealla's `process_create/3` needs it and a wasm module cannot fork. It is a
-  real, failing implementation rather than
-  `-sERROR_ON_UNDEFINED_SYMBOLS=0`, so the link stays honest about any *future*
-  missing symbol.
-
-Link settings worth knowing: `-sSTACK_SIZE=8388608` (Trealla recurses deeply;
-the 64 KB Emscripten default overflows on ordinary goals), `-sALLOW_MEMORY_GROWTH`,
-and `-sFORCE_FILESYSTEM` (the C↔Prolog channel writes a temp file under `/tmp`,
-which is MEMFS here — never a real disk).
-
-### Wasm tests
-
-`ctest --test-dir build-wasm` (which `scripts/build_wasm.sh` runs for you) has two
-tests:
-
-- **`wasm_smoke`** (`tests/wasm_smoke.mjs`) — the browser-side mirror of the
-  `smoke` ctest: same `grandparent/2` KB, same "one query must succeed, one must
-  fail" shape. It additionally calls **all twelve** entry points across the JS
-  boundary, checks the snapshot image byte-for-byte against the canonical format,
-  and exercises a create → destroy → create cycle. It exits non-zero if fewer than
-  18 checks ran, so a harness that silently does nothing cannot read as a pass.
-- **`wasm_conformance`** (`tests/wasm_conformance.mjs`) — the **golden Prolog
-  conformance corpus**, the same vectors the native `conformance` ctest and the
-  Rust gate run: every file, every case, no subset. It drives them through
-  `wasm/insimul-api.mjs`, i.e. through the public ABI a browser consumer uses.
-
-Both legs currently report `10 files, 76 cases, 76 passed, 0 failed, 1 amended`.
-
-### Native ⟷ wasm parity
-
-Two harnesses can both agree with the corpus and still disagree with each other,
-so "both are green" is not the gate. `scripts/conformance_parity.sh` runs the
-native and wasm legs with `INSIMUL_CONFORMANCE_JSON` set — each writes one
-JSON-Lines record per case holding the **raw** string `insimul_query_next()`
-returned — and diffs them case by case:
-
-```sh
-scripts/conformance_parity.sh        # builds whatever leg is missing, then compares
-```
-
-It fails loudly if the wasm leg runs fewer cases than native, if the summary
-lines differ, or if any case record differs by a byte. Current result: **PASS,
-76/76 identical — no divergences**. See [`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md)
-for the full parity record, the non-vacuity gates (each verified by deliberately
-triggering it), and the one documented tau-vs-Trealla amendment.
-
-## The C ABI
-
-`include/insimul.h` is the stable, engine-agnostic surface the Unity, Unreal, and
-Godot wrappers link against. It leaks no Trealla types (the engine is an
-implementation detail), and every KB is independent — no shared global state — so
-a host may run one KB per thread.
-
-```c
-insimul_kb *kb = insimul_kb_create();
-insimul_kb_consult(kb,
-    "parent(tom, bob).\n"
-    "parent(bob, ann).\n"
-    "grandparent(X, Z) :- parent(X, Y), parent(Y, Z).\n");   // -> 0
-insimul_kb_assert(kb, "parent(ann, zoe)");                    // no trailing '.'
-
-insimul_query *q = insimul_query_start(kb, "grandparent(tom, W)");
-const char *sol;                       // NULL query => error, see insimul_last_error
-while ((sol = insimul_query_next(q)) != NULL)
-    puts(sol);                         // {"W":"ann"}
-insimul_query_stop(q);
-insimul_kb_destroy(kb);
-```
-
-Program text passed to `consult` is one or more clauses/directives (each with its
-own full stop). Terms passed to `assert`/`retract` and goals passed to
-`query_start` are **single terms without a trailing full stop**. Each function's
-return codes and string-ownership rules are documented in `include/insimul.h`.
-
-### Binding-set JSON format
-
-`insimul_query_next` returns each solution as a JSON object — the exact shape the
-C#/C++/GDScript wrappers parse:
-
-```
-{ "Var": <value>, ... }        one entry per named goal variable
-```
-
-with Prolog terms mapped as:
-
-| Prolog term          | JSON                                        |
-|----------------------|---------------------------------------------|
-| atom                 | string — `"foo"`                            |
-| integer / float      | number — `42`, `4.5`                         |
-| list                 | array — `["wine", 3]` (empty list is `[]`)  |
-| compound `f(A, ...)` | `{"functor":"f","args":[ <value>, ... ]}`   |
-| unbound variable     | `null`                                      |
-
-A goal that succeeds with no named variables yields `{}`; a goal that simply
-fails yields no solutions (the first `insimul_query_next` returns `NULL`, and
-`insimul_last_error` stays clear). Variables whose source name begins with `_`
-are omitted. The `abi` test asserts these exact strings, and the
-`insimul_boot.pl` helper is what produces them.
-
-### How it works (implementation note)
-
-The C layer never walks Trealla term structures. Each KB consults a fixed
-bootstrap program (`src/insimul_boot.pl`, embedded as a C byte array by
-`cmake/gen_boot.cmake`) that does the Prolog-side work — running a goal,
-serializing solutions to JSON, catching exceptions — and reports back through a
-per-KB temp file. This keeps Trealla types out of `insimul.h` and avoids any
-process-global stdout/stderr redirection, preserving the one-KB-per-thread model.
-
-## Conformance suite
-
-The `conformance` ctest (`tests/conformance.c`) is the parity gate: it proves the
-native engine gives the **same answers as tau-prolog**, the platform's reference
-engine, over the golden query corpus authored by the core-extraction PRD.
-
-Each corpus file (`conformance/prolog/*.json`, a vendored mirror of
-`insimul-runtime/packages/core/conformance/prolog` — see `conformance/VENDORED.md`)
-is a list of cases:
-
-```json
-{ "area": "unification",
-  "cases": [
-    { "name": "simple-fact-binding",
-      "kb": ["parent(tom, bob)."],
-      "query": "parent(tom, X)",
-      "expected": [{ "X": "bob" }] } ] }
-```
-
-For every case the harness creates a fresh KB, consults the `kb` clauses, runs
-`query` through the C ABI, and compares the collected [binding sets](#binding-set-json-format)
-against `expected`. Solutions are matched **in order** by default (Prolog's
-solution order is canonical); a case may set `"unordered": true` to request a
-multiset comparison instead. The harness prints a per-case `[PASS]`/`[FAIL]`
-table and a final `files / cases / passed / failed / amended` summary.
-
-Run it via ctest, or directly for the full table:
-
-```sh
-ctest --test-dir build -R conformance --output-on-failure
-./build/insimul_conformance          # prints the per-case table
-```
-
-The corpus directory is resolved from the `INSIMUL_CONFORMANCE_DIR` environment
-variable, falling back to the vendored `conformance/prolog` and then to the
-sibling `insimul-runtime` submodule (an absolute path baked in at configure
-time). Point the env var elsewhere to run a corpus from any checkout:
-
-```sh
-INSIMUL_CONFORMANCE_DIR=/path/to/conformance/prolog ./build/insimul_conformance
-```
-
-The harness **never passes vacuously**: a missing/unreadable corpus directory, a
-directory with no `*.json` files, an unparseable corpus file, or zero executed
-cases all exit non-zero. Nothing is silently skipped.
-
-Setting `INSIMUL_CONFORMANCE_JSON=<path>` additionally writes one JSON-Lines
-record per case — area, name, status, and the **raw** solution strings the ABI
-returned — which is the channel `scripts/conformance_parity.sh` uses to compare
-legs byte-for-byte.
-
-**The Rust leg.** `rust/insimul/tests/conformance.rs` runs the same corpus through
-the safe Rust wrapper (`cargo test -p insimul --test conformance`), resolving the
-corpus the same way and reporting the same `files / cases / passed / failed /
-amended` summary — so a divergence between the C ABI and its Rust binding shows up
-as a differing count.
-
-**The wasm leg.** `tests/wasm_conformance.mjs` runs the same corpus through the
-WebAssembly build (`ctest --test-dir build-wasm -R wasm_conformance`, which
-`scripts/build_wasm.sh` runs on every wasm build), and
-`scripts/conformance_parity.sh` diffs the native and wasm legs case by case on
-the raw solution text. See **Native ⟷ wasm parity** above and
-[`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md).
-
-**Documented amendments.** Where Trealla diverges from tau-prolog *and*
-tau-prolog is the ISO-correct one, the harness applies an explicit, printed
-textual amendment to the affected case rather than skipping it, and flags it for
-human review (see the `[AMEND]` lines, the `AMENDMENTS` table in
-`tests/conformance.c`, and `progress.txt`). The only current amendment renames
-the `log/1` user predicate in `assert-retract / asserta-prepends`: ISO reserves
-`log` as an *evaluable functor* only, but Trealla also registers `log/1` as a
-**static builtin predicate**, so `asserta(log(0))` would raise a
-`permission_error`. The rename preserves exactly the assert-ordering behavior the
-case tests.
-
-## Snapshot & restore
-
-`insimul_kb_snapshot` / `insimul_kb_restore` are the bridge between a KB's live
-dynamic state and a save file's `currentState.prologFacts`: snapshot serializes,
-restore rehydrates.
-
-```c
-const char *image = insimul_kb_snapshot(kb);   // owned by kb; copy to keep
-// ... persist `image` into the save file ...
-
-insimul_kb *fresh = insimul_kb_create();
-insimul_kb_consult(fresh, world_rules);        // rules/world from the export
-insimul_kb_restore(fresh, image);              // rehydrate the saved state
-```
-
-**Snapshot format.** The image is canonical Prolog program text — every fact and
-rule the host consulted or asserted (the bootstrap's own predicates are excluded),
-one clause per line ending in `.`:
-
-```prolog
-age(alice,30).
-friend(alice,pet(dog)).
-inventory(bob,[sword,shield,3]).
-knows(A,B):-likes(A,B).
-knows(A,B):-likes(A,C),knows(C,B).
-likes(alice,bob).
-person(alice).
-person(bob).
-score(carol,4.5).
-title(alice,'Grand Duchess').
-```
-
-It is **deterministic**: predicates are emitted in standard `Name/Arity` order and
-clauses within a predicate in assert order, so two equal states serialize to
-**byte-identical** text (the `snapshot` ctest asserts this). Facts write just the
-head; rules write `Head :- Body` with variables rendered `A, B, C, …`; atoms
-needing quotes use single quotes. The format is deliberately a subset that
-insimul-runtime's `prolog-fact-parser.ts` accepts — the `snapshot_parse` ctest
-runs that TypeScript parser over the committed fixture
-(`conformance/snapshots/basic.snapshot.pl`) and checks it against the fixture's
-expected-parse companion (see `conformance/snapshots/README.md`).
-
-**Restore replaces state.** `insimul_kb_restore` parses the image first (a
-malformed image is rejected with `-1` and the KB left untouched), then wipes all
-existing dynamic user clauses and loads the image's clauses in order — so a
-round-trip (`consult base → assert → snapshot → fresh KB → restore`) reproduces
-identical query results and re-snapshots to the identical image.
-
-```sh
-ctest --test-dir build -R 'snapshot' --output-on-failure
-```
-
-If the snapshot format ever changes legitimately, regenerate the golden fixture
-with `INSIMUL_SNAPSHOT_UPDATE=1 ./build/insimul_snapshot` (run from this
-directory) and re-run `snapshot_parse`.
-
-## Packaging & versioning
-
-The library's semver lives in one place — the tracked `VERSION` file (currently
-`0.1.0`). `CMakeLists.txt` reads it, `insimul_version()` embeds it, and
-`scripts/package.sh` stamps it, so they never drift.
-
-**`insimul_version()`** returns a static string identifying the exact build:
-
-```
-insimul 0.1.0 (git 3c347ec, trealla v2.106.1/07de013677af760a8bca0594ae4b2bef158a3cde)
-```
-
-— the `insimul` semver, the short git sha the tree was built from (`unknown` for
-a non-git tarball build), and the pinned Trealla tag/commit. Wrappers log it on
-startup for provenance.
-
-**`scripts/package.sh`** produces a redistributable package from the current
-tree — two shapes, one script, one stamp:
-
-```sh
-scripts/package.sh                 # -> dist/<platform>/   native (default)
-scripts/package.sh --target wasm   # -> dist/wasm/         browser / bundler
-scripts/package.sh --target all    # -> both
-```
-
-`<platform>` is derived from `uname` (`macos-arm64`, `macos-x64`, `linux-x64`,
-`windows-x64`). Each native package contains the **shared** library
-(`libinsimul.dylib`/`.so`/`insimul.dll`), the public header `insimul.h`, and a
-`VERSION` file:
-
-```
-insimul 0.1.0
-platform macos-arm64
-git 3c347ec
-trealla_tag v2.106.1
-trealla_commit 07de013677af760a8bca0594ae4b2bef158a3cde
-```
-
-The first line's semver matches `insimul_version()`, and the Trealla fields match
-the pin in `CMakeLists.txt` / `THIRD_PARTY.md` — a consumer can cross-check the
-binary it loaded against the file it shipped. `dist/` is gitignored.
-
-**The wasm package** (`dist/wasm/`) is the same engine and the same stamp
-(`platform wasm32-emscripten`) laid out for a JS bundler: `insimul.wasm`, the
-generated `insimul.mjs` glue, `wasm/insimul-api.mjs`, an `index.mjs` entry point,
-`LICENSE`, and a `package.json` (`@insimul/prolog-wasm`) whose `exports` map ties
-them together. It declares **no dependencies at all** — the direction stays
-one-way; nothing here depends on a JS consumer of it.
-
-```
-dist/wasm/  package.json  index.mjs  insimul-api.mjs  insimul.mjs
-            insimul.wasm  VERSION  LICENSE
-```
-
-Packaging ends by loading the assembled directory the way a bundler resolves it
-(`tests/wasm_package_smoke.mjs`, 38 checks): every file present, every `exports`
-target resolvable, no dependencies, `insimul_version()` byte-equal to the
-`VERSION` stamp, and a real `grandparent/2` query answered through the packaged
-entry point. It prints the size table too — currently **2,092,182 B raw /
-561,946 gzip / 415,595 brotli** for `insimul.wasm`, **2.1 MB / 581 KB / 435 KB**
-for the whole package. The binary is fetched as a sibling file, not inlined.
-
-How the engine plugins consume `dist/<platform>/` (Unity `Plugins/` P/Invoke,
-Unreal `ThirdParty` module, Godot GDExtension) and how a browser consumes
-`dist/wasm/` (bundler wiring, `locateFile`, CSP, the size table) are documented
-in [`docs/consuming.md`](docs/consuming.md) — layout only; the per-engine
-wrappers are their own PRDs' work.
-
-## Rust bindings
-
-`rust/` is a cargo workspace binding this ABI for the Rust server:
-`insimul-sys` (raw `extern "C"` + a `build.rs` that links the cmake-built
-`libinsimul.a`) and `insimul` (a safe `KnowledgeBase` with RAII handles,
-`Result`-returning operations, and decoded binding sets). Build **cmake first,
-then cargo**; see [`rust/README.md`](rust/README.md) for the crate layout, the
-test matrix, and the snapshot `op/3` caveat.
-
-```sh
-cmake -B build && cmake --build build   # produces libinsimul.a
-cd rust && cargo test
-```
-
-## Engine build configuration
-
-Trealla ships a Makefile, not CMake. `CMakeLists.txt` compiles its sources
-directly into an `insimul` library with a minimal, dependency-light feature set
-validated on macOS:
-
-| Flag            | Setting | Why |
-|-----------------|---------|-----|
-| `EMBED`         | on      | Trealla's Prolog stdlib is embedded as C byte arrays (via its `bin2c` host tool), so no on-disk library path is needed at runtime. |
-| `USE_ISOCLINE`  | on      | Uses Trealla's **bundled** line editor — avoids a system `libedit`/`readline` dependency, which keeps the build portable across CI. |
-| `USE_THREADS`   | on      | Required: `src/bif_os.c` calls `pthread_self()` unconditionally. **Off in the wasm build** — see **WebAssembly target** above. |
-| `USE_FFI`       | off     | Would need `libffi` headers; not used by the runtime. |
-| `USE_OPENSSL`   | off     | Would need OpenSSL headers; not used by the runtime. |
-
-`libinsimul` links only `libm` + pthreads (just `libm` on wasm).
-
-## Thread model
-
-**One KB instance is owned by one thread; there is no shared global mutable
-state across KB instances.** This is a hard requirement for Unity/Unreal usage
-and is preserved by the ABI (US-LI2 onward). The wasm build satisfies it
-trivially: it is single-threaded, one module instance running N KBs.
-
-## Target platform matrix
-
-First-class targets (build + test in CI):
-
-| Platform          | Arch        | Status |
-|-------------------|-------------|--------|
-| macOS             | arm64, x64  | supported (this machine: arm64) |
-| Linux             | x64         | supported (isocline + pthreads; no system libedit needed) |
-| Windows           | x64         | supported (MSVC/MinGW; isocline avoids readline) |
-| Browser / Node    | wasm32      | supported via Emscripten — `scripts/build_wasm.sh`; see **WebAssembly target** |
-
-Later (post-bootstrap): iOS (arm64) and Android (arm64-v8a) — cross-compiled from
-the same sources; deferred until the desktop matrix is proven.
-
-## Vendored dependencies
-
-See [`THIRD_PARTY.md`](./THIRD_PARTY.md) for the Trealla pin (repository, commit,
-tag) and license notes.
+## Repository layout
+
+| Path | Contents |
+|---|---|
+| [`include/insimul.h`](include/insimul.h) | The stable C ABI — the entire public contract. |
+| [`src/`](src/) | The implementation: `insimul.c` (the C layer) and `insimul_boot.pl` (the Prolog-side helper it drives). |
+| [`rust/`](rust/) | The Rust bindings — a `-sys` crate and a safe `insimul` crate. |
+| [`wasm/`](wasm/) | The hand-written JS wrapper for the WebAssembly build. |
+| [`conformance/`](conformance/) | The shared Prolog test corpus and the cross-platform parity records. |
+| [`tests/`](tests/) | The C and JS test executables run by ctest. |
+| [`scripts/`](scripts/) | Build (`build_wasm.sh`), package (`package.sh`), and parity (`conformance_parity.sh`) helpers. |
+| [`docs/`](docs/) | The guides linked below. |
+| [`CMakeLists.txt`](CMakeLists.txt) · [`cmake/`](cmake/) | The build, including the wasm cross-build (`cmake/wasm.cmake`). |
+
+## Going deeper
+
+The core README stops here on purpose; each topic has a focused guide:
+
+- **[The C ABI](docs/c-abi.md)** — every function, the binding-set JSON format, and how the
+  library keeps engine types out of the interface.
+- **[The WebAssembly target](docs/webassembly.md)** — building for the browser, the JS
+  wrapper's ownership rules, and why it is the same engine as native.
+- **[Snapshot & restore](docs/snapshots.md)** — saving a KB to disk and loading it back, the
+  deterministic text format, and the one operator-declaration gotcha.
+- **[The conformance suite](docs/conformance.md)** — how the library proves it gives the
+  *same* answers across C, Rust, and WebAssembly, byte for byte.
+- **[Packaging & versioning](docs/packaging.md)** — producing redistributable packages and
+  the single-source-of-truth version stamp.
+- **[Consuming the library](docs/consuming.md)** — the file layout each game engine (Unity,
+  Unreal, Godot) and each JS bundler expects.
+- **[Build configuration & platforms](docs/build-configuration.md)** — engine feature flags,
+  the thread model, and the supported-platform matrix.
+
+## License
+
+libinsimul is licensed under **Apache-2.0** — see [`LICENSE`](LICENSE).
+
+The embedded Trealla Prolog engine and the components it bundles are permissively licensed
+(MIT / BSD-style) and redistributable in the prebuilt binaries. Pins and attributions are
+in [`THIRD_PARTY.md`](THIRD_PARTY.md).
+</content>
