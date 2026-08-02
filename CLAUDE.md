@@ -74,10 +74,20 @@
   in `CMakeLists.txt` (baked as `INSIMUL_CONFORMANCE_DEFAULT_DIR`) and in
   `rust/insimul/tests/conformance.rs`. Any new leg must follow it — and must
   **hard-fail** on a missing/empty corpus rather than skip (no vacuous passes).
-- The `AMENDMENTS` tables in `tests/conformance.c` and `rust/insimul/tests/
-  conformance.rs` must stay in lockstep; both print an `[AMEND]` line and the same
-  `files / cases / passed / failed / amended` summary, so the C and Rust legs are
+- The `AMENDMENTS` tables in `tests/conformance.c`, `rust/insimul/tests/
+  conformance.rs` and `tests/wasm_conformance.mjs` must stay in lockstep; all three
+  print an `[AMEND]` line and the same
+  `files / cases / passed / failed / amended` summary, so the legs are
   directly comparable (currently 10 files, 76 cases, 76 passed, 1 amended).
+- **Cross-leg parity is a diff, not two green checkmarks.** Every leg supports
+  `INSIMUL_CONFORMANCE_JSON=<path>`, writing one JSON-Lines record per case that
+  carries the **raw** `insimul_query_next()` strings (not a reparsed model).
+  `scripts/conformance_parity.sh` runs native + wasm that way and `diff`s the
+  records, so a difference in solution *order*, error wording or number
+  formatting fails even when both legs still satisfy `expected`. A new leg should
+  emit the same records. Result today: 76/76 byte-identical — see
+  `conformance/WASM_PARITY.md`, which is where any future divergence gets
+  documented (never skipped).
 - The corpus carries the **KINP identity layer** (`identity.json`,
   `equivalence.json`, `worlds.json`, and a rewritten `gameplay.json`): entity
   atoms are CURIEs (`'insimul:ent:<id>'`, world-scoped
@@ -121,8 +131,88 @@
   (shared lib + `insimul.h` + `VERSION`). Platform from `uname` → `macos-arm64`
   etc. It reads the Trealla pin by `sed`-ing `CMakeLists.txt` (the authoritative
   pin), so the stamp can't drift from what was built. `dist/` is gitignored.
+- **`--target wasm` is a sibling package, not a second mechanism** (US-3). The
+  same script, the same `write_stamp` helper (only the `platform` field differs:
+  `wasm32-emscripten`), so a browser host cross-checks its engine exactly as a
+  Unity build does. Default target stays `native` — the existing no-arg
+  invocation must keep behaving identically.
+- The wasm package's identity lives in the generated `package.json`
+  (`@insimul/prolog-wasm`, `type: module`, an `exports` map). Its `dependencies`
+  are **empty on purpose**: the dependency direction is one-way, nothing here
+  may depend on a JS consumer. Adding a file to the package means adding it to
+  BOTH `files` and (if importable) `exports` — `tests/wasm_package_smoke.mjs`
+  asserts every named path resolves.
+- `wasm/index.mjs` is the package entry (`exports["."]`). It imports
+  `./insimul.mjs`, the **generated** glue, so it only resolves once packaged
+  under `dist/wasm/`; inside the repo import `wasm/insimul-api.mjs` and pass it
+  the glue yourself (what `tests/wasm_*.mjs` do).
+- Packaging ends by running `tests/wasm_package_smoke.mjs` over the assembled
+  directory — layout, exports map, no-deps, a real query, and
+  `insimul_version()` **byte-equal** to the `VERSION` stamp (rebuilt from its
+  five fields), which is what makes shipping a stale `build-wasm/` a hard error.
+  It also prints the raw/gzip/brotli size table `docs/consuming.md` records;
+  regenerate those numbers from its output after any Trealla or Emscripten bump.
+
+## The wasm target (US-1) — cross-build rules
+- **One CMakeLists, two toolchains.** `emcmake cmake` sets
+  `CMAKE_SYSTEM_NAME=Emscripten`, so `if(EMSCRIPTEN)` is the switch. Everything
+  wasm-specific lives in **`cmake/wasm.cmake`**, `include()`d after
+  `enable_testing()` followed by a top-level `return()` — the native test
+  executables below that point are host binaries a cross build cannot run. Keep
+  new wasm surface in that file, not scattered through `CMakeLists.txt`.
+- **Host build-tools must not be cross-compiled.** `bin2c` has to *run* during
+  the build, so under `CMAKE_CROSSCOMPILING` it is compiled at configure time
+  with `find_program(... cc clang gcc)` + `execute_process`, not
+  `add_executable` (which emcc would turn into a .js). Same trap applies to any
+  future generator tool. `find_program` works on host paths because
+  Emscripten.cmake sets `CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH`.
+- **The wasm build is single-threaded on purpose.** `-pthread` in wasm ⇒
+  SharedArrayBuffer ⇒ COOP/COEP headers on every embedding page. Upstream
+  Trealla does the same (`NOTHREADS=1` for its WASI target); `USE_THREADS`
+  defaults to 0 in `src/internal.h` and Emscripten's libc supplies the stubs.
+- **`posix_spawnp` is the only symbol Emscripten's libc lacks** (Trealla's
+  `process_create/3`). Stubbed to `ENOSYS` in `src/insimul_wasm_stubs.c` —
+  deliberately NOT `-sERROR_ON_UNDEFINED_SYMBOLS=0`, which would silently turn
+  every future missing symbol into a runtime abort.
+- Link flags that are not optional: `-sSTACK_SIZE=8388608` (Trealla recurses
+  deeply; the 64KB default overflows on ordinary goals) and `-sFORCE_FILESYSTEM=1`
+  (the C↔Prolog channel `mkstemp`s under `/tmp`, which is MEMFS here).
+- `EXPORTED_FUNCTIONS` in `cmake/wasm.cmake` **is** the wasm ABI — the linker
+  garbage-collects anything unnamed. Adding a function to `insimul.h` means
+  adding it there too.
+- `INSIMUL_CONFORMANCE_DEFAULT_DIR` is resolved in `CMakeLists.txt` **above** the
+  `if(EMSCRIPTEN) ... return()` block, because the wasm conformance ctest needs it
+  too. `cmake/wasm.cmake` hard-errors at *configure* time if that directory holds
+  no `*.json`, so a wasm build whose parity gate has nothing to run cannot even be
+  generated.
+- `wasm/insimul-api.mjs` is the hand-written JS wrapper. It keeps `insimul.h`'s
+  ownership rules: borrowed `const char *` are `UTF8ToString`'d at the call site
+  and never stored; handles are owned by one JS object that nulls them on
+  release; argument strings are `malloc`/`free`d rather than `ccall`'s
+  `'string'` marshalling (which copies onto the wasm **stack** — a snapshot
+  image would blow it). `createKb()` opens the keepalive KB described in
+  "Trealla gotchas" so create→destroy→create cycles are safe by default.
 
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. `build/` is
   gitignored (holds fetched Trealla under `_deps/` and the generated
   `insimul_boot.c`). `src/insimul_boot.pl` is the tracked source of truth.
+- Wasm: `scripts/build_wasm.sh` (configure via `emcmake` → build → `ctest`) into
+  `build-wasm/`, which is gitignored by the `build-*/` rule. It never touches
+  `build/`; the two trees coexist and both must stay green.
+- **The full gate list**, cheapest-to-fail first — run all five before calling a
+  change green: (1) `cmake -B build && cmake --build build && ctest --test-dir
+  build`, (2) `scripts/build_wasm.sh`, (3) `scripts/conformance_parity.sh`,
+  (4) `scripts/package.sh` and `scripts/package.sh --target wasm`, (5) `cargo
+  test --manifest-path rust/Cargo.toml`. Gate 3 is the highest-signal one: it
+  diffs the **raw** ABI strings across legs, so it catches divergence that each
+  leg's own `expected` check would happily pass.
+- **Run every gate from the repo root.** `cmake -B build` invoked from a
+  subdirectory fails with "source directory ... does not appear to contain
+  CMakeLists.txt", which in a summarized CI log is indistinguishable from a real
+  compile failure. Prefer `cargo test --manifest-path rust/Cargo.toml` over
+  `cd rust && cargo test` so the working directory never drifts.
+- **A ctest that passes in 0.00s is a skip.** `snapshot_parse` degrades to a
+  loud `[SKIP]` when node or the sibling `../insimul-runtime` submodule is
+  absent, so it is vacuous in a standalone checkout and only really asserts in
+  the monorepo layout. Read its output before trusting a green ctest summary.

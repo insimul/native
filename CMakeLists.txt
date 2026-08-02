@@ -38,7 +38,25 @@ if(GIT_FOUND)
   endif()
 endif()
 
-find_package(Threads REQUIRED)
+# ---------------------------------------------------------------------------
+# Threading profile. Native builds are threaded (one KB per thread is part of
+# the ABI's contract). The Emscripten/wasm build is deliberately SINGLE-threaded:
+# -pthread in wasm means SharedArrayBuffer, which means every embedding page has
+# to serve COOP/COEP headers. That is a cost we will not push onto browser
+# consumers, and it matches upstream Trealla's own wasm profile (its Makefile
+# sets NOTHREADS=1 for the WASI target). Trealla's USE_THREADS defaults to 0
+# (src/internal.h), and Emscripten's libc supplies the pthread stubs the few
+# unconditional call sites need.
+# ---------------------------------------------------------------------------
+if(EMSCRIPTEN)
+  set(INSIMUL_THREAD_LIBS "")
+  set(INSIMUL_TREALLA_THREAD_DEFS "")
+else()
+  find_package(Threads REQUIRED)
+  set(INSIMUL_THREAD_LIBS Threads::Threads)
+  set(INSIMUL_TREALLA_THREAD_DEFS USE_THREADS=1)
+endif()
+
 include(FetchContent)
 
 # ---------------------------------------------------------------------------
@@ -67,7 +85,29 @@ set(TREALLA_DIR ${trealla_SOURCE_DIR})
 # `bin2c library/<name>.pl` from the Trealla root or the symbols won't match
 # the externs in src/library.c. cmake/gen_embed.cmake handles that.
 # ---------------------------------------------------------------------------
-add_executable(insimul_bin2c ${TREALLA_DIR}/util/bin2c.c)
+#
+# bin2c is a BUILD-time tool — it has to run on the machine doing the build. In
+# a cross build (wasm) an `add_executable` would be compiled by emcc and could
+# not be exec'd, so compile it at configure time with the HOST compiler instead.
+# `cc` is found on the host because Emscripten.cmake sets
+# CMAKE_FIND_ROOT_PATH_MODE_PROGRAM to BOTH.
+if(CMAKE_CROSSCOMPILING)
+  find_program(INSIMUL_HOST_CC NAMES cc clang gcc REQUIRED
+               DOC "Host C compiler used to build the bin2c build-tool")
+  set(INSIMUL_BIN2C ${CMAKE_CURRENT_BINARY_DIR}/host-bin2c)
+  execute_process(
+    COMMAND ${INSIMUL_HOST_CC} -O2 -o ${INSIMUL_BIN2C} ${TREALLA_DIR}/util/bin2c.c
+    RESULT_VARIABLE _bin2c_rc
+    ERROR_VARIABLE  _bin2c_err)
+  if(NOT _bin2c_rc EQUAL 0)
+    message(FATAL_ERROR "failed to build host bin2c with ${INSIMUL_HOST_CC}:\n${_bin2c_err}")
+  endif()
+  set(INSIMUL_BIN2C_DEP "")
+else()
+  add_executable(insimul_bin2c ${TREALLA_DIR}/util/bin2c.c)
+  set(INSIMUL_BIN2C $<TARGET_FILE:insimul_bin2c>)
+  set(INSIMUL_BIN2C_DEP insimul_bin2c)
+endif()
 
 file(GLOB TREALLA_LIB_PL CONFIGURE_DEPENDS ${TREALLA_DIR}/library/*.pl)
 set(TREALLA_EMBED_DIR ${CMAKE_CURRENT_BINARY_DIR}/trealla_embed)
@@ -80,12 +120,12 @@ foreach(pl ${TREALLA_LIB_PL})
   add_custom_command(
     OUTPUT ${out}
     COMMAND ${CMAKE_COMMAND}
-      -DBIN2C=$<TARGET_FILE:insimul_bin2c>
+      -DBIN2C=${INSIMUL_BIN2C}
       -DTREALLA_DIR=${TREALLA_DIR}
       -DPL_NAME=${name}
       -DOUT=${out}
       -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/gen_embed.cmake
-    DEPENDS insimul_bin2c ${pl}
+    DEPENDS ${INSIMUL_BIN2C_DEP} ${pl}
     COMMENT "Embedding Trealla library: ${name}.pl"
     VERBATIM
   )
@@ -117,14 +157,14 @@ target_include_directories(trealla_objs PUBLIC ${TREALLA_DIR}/src)
 target_compile_definitions(trealla_objs PRIVATE
   EMBED=1
   USE_ISOCLINE=1
-  USE_THREADS=1
+  ${INSIMUL_TREALLA_THREAD_DEFS}
   _GNU_SOURCE
   VERSION="${TREALLA_GIT_TAG}"
   DEFAULT_LIBRARY_PATH="${CMAKE_INSTALL_PREFIX}/share/trealla/library"
 )
 # Vendored code: silence its warnings so the insimul build log stays readable.
 target_compile_options(trealla_objs PRIVATE -w)
-target_link_libraries(trealla_objs PUBLIC m Threads::Threads)
+target_link_libraries(trealla_objs PUBLIC m ${INSIMUL_THREAD_LIBS})
 
 # ---------------------------------------------------------------------------
 # Embed the bootstrap Prolog (src/insimul_boot.pl) as a C byte array so the ABI
@@ -155,17 +195,22 @@ add_custom_command(
 # ---------------------------------------------------------------------------
 add_library(insimul STATIC src/insimul.c ${INSIMUL_BOOT_C})
 target_link_libraries(insimul PRIVATE trealla_objs)
-target_link_libraries(insimul INTERFACE m Threads::Threads)
+target_link_libraries(insimul INTERFACE m ${INSIMUL_THREAD_LIBS})
 target_include_directories(insimul PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 # src/insimul.c needs Trealla's C API (trealla.h); it stays PRIVATE so it never
 # leaks into insimul's public include interface.
 target_include_directories(insimul PRIVATE ${TREALLA_DIR}/src)
 
-add_library(insimul_shared SHARED src/insimul.c ${INSIMUL_BOOT_C})
-target_link_libraries(insimul_shared PRIVATE trealla_objs)
-set_target_properties(insimul_shared PROPERTIES OUTPUT_NAME insimul)
-target_include_directories(insimul_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-target_include_directories(insimul_shared PRIVATE ${TREALLA_DIR}/src)
+# A SHARED library is a native-host concept — under Emscripten it would emit a
+# dynamic-linking SIDE_MODULE, which is not what a browser consumer wants (that
+# is the wasm module below). Skip it in the cross build.
+if(NOT EMSCRIPTEN)
+  add_library(insimul_shared SHARED src/insimul.c ${INSIMUL_BOOT_C})
+  target_link_libraries(insimul_shared PRIVATE trealla_objs)
+  set_target_properties(insimul_shared PROPERTIES OUTPUT_NAME insimul)
+  target_include_directories(insimul_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+  target_include_directories(insimul_shared PRIVATE ${TREALLA_DIR}/src)
+endif()
 
 # Version stamp (US-LI5). src/insimul.c bakes these into insimul_version(): the
 # library semver, the git sha, and the pinned Trealla tag/commit. Applied to both
@@ -176,12 +221,38 @@ set(INSIMUL_VERSION_DEFS
   INSIMUL_TREALLA_TAG="${TREALLA_GIT_TAG}"
   INSIMUL_TREALLA_COMMIT="${TREALLA_GIT_COMMIT}")
 target_compile_definitions(insimul PRIVATE ${INSIMUL_VERSION_DEFS})
-target_compile_definitions(insimul_shared PRIVATE ${INSIMUL_VERSION_DEFS})
+if(NOT EMSCRIPTEN)
+  target_compile_definitions(insimul_shared PRIVATE ${INSIMUL_VERSION_DEFS})
+endif()
 
 # ---------------------------------------------------------------------------
 # Tests.
 # ---------------------------------------------------------------------------
 enable_testing()
+
+# Corpus location for every conformance leg (C, Rust, wasm). Resolved BEFORE the
+# EMSCRIPTEN branch below because the wasm leg needs it too: the default is the
+# vendored mirror in conformance/prolog (so a fresh standalone checkout has a
+# corpus at all), else the sibling insimul-runtime submodule for a monorepo
+# layout. INSIMUL_CONFORMANCE_DIR overrides it at run time (so CI can point
+# anywhere); rust/insimul/tests/conformance.rs resolves it the same way.
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog")
+  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog" ABSOLUTE)
+else()
+  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
+    "${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core/conformance/prolog"
+    ABSOLUTE)
+endif()
+
+# The wasm (Emscripten) build has its own link target and its own node-driven
+# tests — see cmake/wasm.cmake and scripts/build_wasm.sh. Everything below this
+# point builds host executables, which a cross build cannot run, so the wasm
+# configuration stops here.
+if(EMSCRIPTEN)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/wasm.cmake)
+  return()
+endif()
 
 add_executable(insimul_smoke tests/smoke.c)
 target_link_libraries(insimul_smoke PRIVATE insimul)
@@ -196,20 +267,8 @@ target_link_libraries(insimul_abi PRIVATE insimul)
 add_test(NAME abi COMMAND insimul_abi)
 
 # Conformance harness (US-LI3): drives the ABI over every golden corpus case.
-# The default corpus dir is baked as an absolute path: the vendored mirror in
-# conformance/prolog (so a fresh standalone checkout has a corpus at all), else
-# the sibling insimul-runtime submodule for a monorepo layout.
-# INSIMUL_CONFORMANCE_DIR overrides it (so CI can point anywhere). The Rust gate
-# (rust/insimul/tests/conformance.rs) resolves the corpus the same way. Also a
-# pure consumer of insimul.h.
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog")
-  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
-    "${CMAKE_CURRENT_SOURCE_DIR}/conformance/prolog" ABSOLUTE)
-else()
-  get_filename_component(INSIMUL_CONFORMANCE_DEFAULT_DIR
-    "${CMAKE_CURRENT_SOURCE_DIR}/../insimul-runtime/packages/core/conformance/prolog"
-    ABSOLUTE)
-endif()
+# INSIMUL_CONFORMANCE_DEFAULT_DIR is resolved above (shared with the wasm leg).
+# Also a pure consumer of insimul.h.
 add_executable(insimul_conformance tests/conformance.c)
 target_link_libraries(insimul_conformance PRIVATE insimul)
 target_compile_definitions(insimul_conformance PRIVATE

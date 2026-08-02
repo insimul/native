@@ -21,8 +21,19 @@ This directory is being built up story-by-story (PRD `libinsimul-bootstrap`):
   **Conformance suite** below.
 - **US-LI4** — KB snapshot/restore for save files. See
   **Snapshot & restore** below.
-- **US-LI5 (this story)** — prebuilt-binary packaging (`scripts/package.sh`) +
+- **US-LI5** — prebuilt-binary packaging (`scripts/package.sh`) +
   version stamping (`insimul_version()`). See **Packaging & versioning** below.
+- **US-1 (`libinsimul-wasm`)** — an Emscripten/wasm32 target so the browser runs
+  the **same** engine as the native plugins and the Rust server. See
+  **WebAssembly target** below.
+- **US-2 (`libinsimul-wasm`)** — the wasm build passes the golden conformance
+  corpus and is diffed case-by-case against the native build. See
+  **Native ⟷ wasm parity** below and
+  [`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md).
+- **US-3 (`libinsimul-wasm`, this story)** — the wasm artifact packaged for a JS
+  bundler (`scripts/package.sh --target wasm` → `dist/wasm/`), same version stamp
+  as the native packages. See **Packaging & versioning** below and
+  [`docs/consuming.md`](docs/consuming.md).
 
 ## Build & test
 
@@ -59,6 +70,150 @@ Six ctest cases run:
 - `version` (`tests/version.c`) — a pure consumer of `insimul.h` that checks
   `insimul_version()` embeds the semver from the `VERSION` file plus the git sha
   and Trealla pin. See **Packaging & versioning** below.
+
+## WebAssembly target
+
+The browser gets the **same engine**, not a second one. `libinsimul` also builds
+for `wasm32` through Emscripten, from the same `CMakeLists.txt`, the same
+`src/insimul.c`, and the same pinned Trealla commit — this is a build target, not
+a port. (The web runtime previously ran tau-prolog, a different implementation
+that demonstrably disagreed with Trealla on error wording and solution order.)
+
+```sh
+scripts/build_wasm.sh              # configure + build + run the wasm tests
+scripts/build_wasm.sh --no-test    # build only
+```
+
+It writes to **`build-wasm/`**, a separate tree, so `build/` and its native
+artifacts are never touched — the two builds coexist:
+
+```
+build-wasm/
+  insimul.mjs      ES-module glue  (~102 KB)
+  insimul.wasm     the engine      (~2.0 MB)
+```
+
+To hand those to a JS bundler, `scripts/package.sh --target wasm` assembles them
+into `dist/wasm/` with a `package.json` and the same `VERSION` stamp the native
+packages carry — see **Packaging & versioning** below and
+[`docs/consuming.md`](docs/consuming.md).
+
+### Requirements
+
+**Emscripten ≥ 3.1.50** on `PATH` (developed and verified against emsdk
+**6.0.5**). The floor is what first shipped a stable `EXPORT_ES6` +
+`EXPORTED_RUNTIME_METHODS` spelling; anything newer works.
+
+```sh
+git clone https://github.com/emscripten-core/emsdk && cd emsdk
+./emsdk install latest && ./emsdk activate latest && source ./emsdk_env.sh
+```
+
+`scripts/build_wasm.sh` sources `$EMSDK/emsdk_env.sh` or `~/emsdk/emsdk_env.sh`
+automatically when `emcc` is not already on `PATH`. Build-time network access is
+unchanged: the only fetch is the existing Trealla `FetchContent` clone at the pin
+in [`THIRD_PARTY.md`](./THIRD_PARTY.md), which this story did **not** bump.
+
+### Using it from JS
+
+All twelve `insimul.h` entry points are exported (`cmake/wasm.cmake` names them
+explicitly — that list *is* the wasm ABI). `wasm/insimul-api.mjs` is a small
+hand-written, engine-agnostic wrapper that turns them into JS objects:
+
+```js
+import createInsimul from './build-wasm/insimul.mjs';   // generated glue
+import { loadInsimul } from './wasm/insimul-api.mjs';   // this repo
+
+const insimul = await loadInsimul(createInsimul);
+const kb = insimul.createKb();
+kb.consult(`parent(tom, bob).
+parent(bob, ann).
+grandparent(X, Z) :- parent(X, Y), parent(Y, Z).`);
+
+for (const { Who } of kb.solutions('grandparent(tom, Who)')) console.log(Who);  // ann
+kb.destroy();
+```
+
+### Ownership across the JS boundary
+
+WebAssembly has no destructors and no finalizers to lean on, so every pointer the
+ABI hands out is owned explicitly. Three kinds cross the boundary:
+
+| What | Owner | Rule |
+|------|-------|------|
+| **Handles** — `insimul_kb *`, `insimul_query *` (plain integers in JS) | the caller | Must be released with `insimul_kb_destroy` / `insimul_query_stop`, or the module's heap grows forever. `Kb`/`Query` own exactly one handle, null it on release, and throw on use-after-free. |
+| **Borrowed strings** — from `insimul_query_next`, `insimul_last_error`, `insimul_kb_snapshot` | the KB/query they came from | Invalidated by the next call on that object. The wrapper `UTF8ToString`s them into JS strings *at the call site* and never stores the pointer — insimul.h's "callers copy anything they need to keep; they never free a returned pointer". |
+| **Argument strings** going in | the caller | `malloc`'d on the wasm heap and freed in a `finally`. The wrapper deliberately avoids `ccall(..., 'string', ...)`, which copies onto the wasm **stack** — a snapshot image or a large consult source would blow it. |
+
+**The query iterator** is the case the ABI's C shape makes trickiest: `query()`
+returns a stepped pointer, and each `next()` returns a borrowed JSON string that
+the *following* step invalidates. `kb.solutions(goal)` is the safe form — a
+generator wrapped in `try/finally`, so the handle is stopped even if the consumer
+`break`s out of the loop or throws mid-iteration. Reach for the raw `kb.query()`
+only when you need to interleave stepping with other work, and stop it yourself.
+
+**One hidden KB.** Trealla tears down its process-global symbol table when the
+last Prolog instance is destroyed, and re-initialising it afterwards deadlocks
+(see `CLAUDE.md`, "Trealla gotchas"). `Insimul.createKb()` therefore opens one
+internal keepalive KB on first use and never destroys it, so a host can create and
+destroy KBs freely — which a browser will do constantly. It costs one empty KB.
+
+### Wasm build profile
+
+Two deliberate differences from the native build, both in `cmake/wasm.cmake`:
+
+- **Single-threaded** (`USE_THREADS` off). `-pthread` in wasm means
+  `SharedArrayBuffer`, which means every embedding page has to serve COOP/COEP
+  headers. That cost is not worth pushing onto browser consumers, and it matches
+  upstream Trealla's own wasm profile (its Makefile sets `NOTHREADS=1` for WASI).
+  Emscripten's libc supplies the pthread stubs the few unconditional call sites
+  need. The ABI's one-KB-per-thread contract is unaffected — there is one thread.
+- **`posix_spawnp` is stubbed** (`src/insimul_wasm_stubs.c`) to return `ENOSYS`.
+  Trealla's `process_create/3` needs it and a wasm module cannot fork. It is a
+  real, failing implementation rather than
+  `-sERROR_ON_UNDEFINED_SYMBOLS=0`, so the link stays honest about any *future*
+  missing symbol.
+
+Link settings worth knowing: `-sSTACK_SIZE=8388608` (Trealla recurses deeply;
+the 64 KB Emscripten default overflows on ordinary goals), `-sALLOW_MEMORY_GROWTH`,
+and `-sFORCE_FILESYSTEM` (the C↔Prolog channel writes a temp file under `/tmp`,
+which is MEMFS here — never a real disk).
+
+### Wasm tests
+
+`ctest --test-dir build-wasm` (which `scripts/build_wasm.sh` runs for you) has two
+tests:
+
+- **`wasm_smoke`** (`tests/wasm_smoke.mjs`) — the browser-side mirror of the
+  `smoke` ctest: same `grandparent/2` KB, same "one query must succeed, one must
+  fail" shape. It additionally calls **all twelve** entry points across the JS
+  boundary, checks the snapshot image byte-for-byte against the canonical format,
+  and exercises a create → destroy → create cycle. It exits non-zero if fewer than
+  18 checks ran, so a harness that silently does nothing cannot read as a pass.
+- **`wasm_conformance`** (`tests/wasm_conformance.mjs`) — the **golden Prolog
+  conformance corpus**, the same vectors the native `conformance` ctest and the
+  Rust gate run: every file, every case, no subset. It drives them through
+  `wasm/insimul-api.mjs`, i.e. through the public ABI a browser consumer uses.
+
+Both legs currently report `10 files, 76 cases, 76 passed, 0 failed, 1 amended`.
+
+### Native ⟷ wasm parity
+
+Two harnesses can both agree with the corpus and still disagree with each other,
+so "both are green" is not the gate. `scripts/conformance_parity.sh` runs the
+native and wasm legs with `INSIMUL_CONFORMANCE_JSON` set — each writes one
+JSON-Lines record per case holding the **raw** string `insimul_query_next()`
+returned — and diffs them case by case:
+
+```sh
+scripts/conformance_parity.sh        # builds whatever leg is missing, then compares
+```
+
+It fails loudly if the wasm leg runs fewer cases than native, if the summary
+lines differ, or if any case record differs by a byte. Current result: **PASS,
+76/76 identical — no divergences**. See [`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md)
+for the full parity record, the non-vacuity gates (each verified by deliberately
+triggering it), and the one documented tau-vs-Trealla amendment.
 
 ## The C ABI
 
@@ -168,11 +323,23 @@ The harness **never passes vacuously**: a missing/unreadable corpus directory, a
 directory with no `*.json` files, an unparseable corpus file, or zero executed
 cases all exit non-zero. Nothing is silently skipped.
 
+Setting `INSIMUL_CONFORMANCE_JSON=<path>` additionally writes one JSON-Lines
+record per case — area, name, status, and the **raw** solution strings the ABI
+returned — which is the channel `scripts/conformance_parity.sh` uses to compare
+legs byte-for-byte.
+
 **The Rust leg.** `rust/insimul/tests/conformance.rs` runs the same corpus through
 the safe Rust wrapper (`cargo test -p insimul --test conformance`), resolving the
 corpus the same way and reporting the same `files / cases / passed / failed /
 amended` summary — so a divergence between the C ABI and its Rust binding shows up
 as a differing count.
+
+**The wasm leg.** `tests/wasm_conformance.mjs` runs the same corpus through the
+WebAssembly build (`ctest --test-dir build-wasm -R wasm_conformance`, which
+`scripts/build_wasm.sh` runs on every wasm build), and
+`scripts/conformance_parity.sh` diffs the native and wasm legs case by case on
+the raw solution text. See **Native ⟷ wasm parity** above and
+[`conformance/WASM_PARITY.md`](conformance/WASM_PARITY.md).
 
 **Documented amendments.** Where Trealla diverges from tau-prolog *and*
 tau-prolog is the ISO-correct one, the harness applies an explicit, printed
@@ -257,14 +424,17 @@ insimul 0.1.0 (git 3c347ec, trealla v2.106.1/07de013677af760a8bca0594ae4b2bef158
 a non-git tarball build), and the pinned Trealla tag/commit. Wrappers log it on
 startup for provenance.
 
-**`scripts/package.sh`** produces a redistributable package for the current host:
+**`scripts/package.sh`** produces a redistributable package from the current
+tree — two shapes, one script, one stamp:
 
 ```sh
-scripts/package.sh                 # -> dist/<platform>/
+scripts/package.sh                 # -> dist/<platform>/   native (default)
+scripts/package.sh --target wasm   # -> dist/wasm/         browser / bundler
+scripts/package.sh --target all    # -> both
 ```
 
 `<platform>` is derived from `uname` (`macos-arm64`, `macos-x64`, `linux-x64`,
-`windows-x64`). Each package contains the **shared** library
+`windows-x64`). Each native package contains the **shared** library
 (`libinsimul.dylib`/`.so`/`insimul.dll`), the public header `insimul.h`, and a
 `VERSION` file:
 
@@ -280,10 +450,31 @@ The first line's semver matches `insimul_version()`, and the Trealla fields matc
 the pin in `CMakeLists.txt` / `THIRD_PARTY.md` — a consumer can cross-check the
 binary it loaded against the file it shipped. `dist/` is gitignored.
 
-How the three engine plugins consume `dist/<platform>/` (Unity `Plugins/`
-P/Invoke, Unreal `ThirdParty` module, Godot GDExtension) is documented in
-[`docs/consuming.md`](docs/consuming.md) — layout only; the per-engine wrappers
-are their own PRDs' work.
+**The wasm package** (`dist/wasm/`) is the same engine and the same stamp
+(`platform wasm32-emscripten`) laid out for a JS bundler: `insimul.wasm`, the
+generated `insimul.mjs` glue, `wasm/insimul-api.mjs`, an `index.mjs` entry point,
+`LICENSE`, and a `package.json` (`@insimul/prolog-wasm`) whose `exports` map ties
+them together. It declares **no dependencies at all** — the direction stays
+one-way; nothing here depends on a JS consumer of it.
+
+```
+dist/wasm/  package.json  index.mjs  insimul-api.mjs  insimul.mjs
+            insimul.wasm  VERSION  LICENSE
+```
+
+Packaging ends by loading the assembled directory the way a bundler resolves it
+(`tests/wasm_package_smoke.mjs`, 38 checks): every file present, every `exports`
+target resolvable, no dependencies, `insimul_version()` byte-equal to the
+`VERSION` stamp, and a real `grandparent/2` query answered through the packaged
+entry point. It prints the size table too — currently **2,092,182 B raw /
+561,946 gzip / 415,595 brotli** for `insimul.wasm`, **2.1 MB / 581 KB / 435 KB**
+for the whole package. The binary is fetched as a sibling file, not inlined.
+
+How the engine plugins consume `dist/<platform>/` (Unity `Plugins/` P/Invoke,
+Unreal `ThirdParty` module, Godot GDExtension) and how a browser consumes
+`dist/wasm/` (bundler wiring, `locateFile`, CSP, the size table) are documented
+in [`docs/consuming.md`](docs/consuming.md) — layout only; the per-engine
+wrappers are their own PRDs' work.
 
 ## Rust bindings
 
@@ -309,17 +500,18 @@ validated on macOS:
 |-----------------|---------|-----|
 | `EMBED`         | on      | Trealla's Prolog stdlib is embedded as C byte arrays (via its `bin2c` host tool), so no on-disk library path is needed at runtime. |
 | `USE_ISOCLINE`  | on      | Uses Trealla's **bundled** line editor — avoids a system `libedit`/`readline` dependency, which keeps the build portable across CI. |
-| `USE_THREADS`   | on      | Required: `src/bif_os.c` calls `pthread_self()` unconditionally. |
+| `USE_THREADS`   | on      | Required: `src/bif_os.c` calls `pthread_self()` unconditionally. **Off in the wasm build** — see **WebAssembly target** above. |
 | `USE_FFI`       | off     | Would need `libffi` headers; not used by the runtime. |
 | `USE_OPENSSL`   | off     | Would need OpenSSL headers; not used by the runtime. |
 
-`libinsimul` links only `libm` + pthreads.
+`libinsimul` links only `libm` + pthreads (just `libm` on wasm).
 
 ## Thread model
 
 **One KB instance is owned by one thread; there is no shared global mutable
 state across KB instances.** This is a hard requirement for Unity/Unreal usage
-and is preserved by the ABI (US-LI2 onward).
+and is preserved by the ABI (US-LI2 onward). The wasm build satisfies it
+trivially: it is single-threaded, one module instance running N KBs.
 
 ## Target platform matrix
 
@@ -330,6 +522,7 @@ First-class targets (build + test in CI):
 | macOS             | arm64, x64  | supported (this machine: arm64) |
 | Linux             | x64         | supported (isocline + pthreads; no system libedit needed) |
 | Windows           | x64         | supported (MSVC/MinGW; isocline avoids readline) |
+| Browser / Node    | wasm32      | supported via Emscripten — `scripts/build_wasm.sh`; see **WebAssembly target** |
 
 Later (post-bootstrap): iOS (arm64) and Android (arm64-v8a) — cross-compiled from
 the same sources; deferred until the desktop matrix is proven.
