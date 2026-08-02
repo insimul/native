@@ -122,7 +122,45 @@
   etc. It reads the Trealla pin by `sed`-ing `CMakeLists.txt` (the authoritative
   pin), so the stamp can't drift from what was built. `dist/` is gitignored.
 
+## The wasm target (US-1) — cross-build rules
+- **One CMakeLists, two toolchains.** `emcmake cmake` sets
+  `CMAKE_SYSTEM_NAME=Emscripten`, so `if(EMSCRIPTEN)` is the switch. Everything
+  wasm-specific lives in **`cmake/wasm.cmake`**, `include()`d after
+  `enable_testing()` followed by a top-level `return()` — the native test
+  executables below that point are host binaries a cross build cannot run. Keep
+  new wasm surface in that file, not scattered through `CMakeLists.txt`.
+- **Host build-tools must not be cross-compiled.** `bin2c` has to *run* during
+  the build, so under `CMAKE_CROSSCOMPILING` it is compiled at configure time
+  with `find_program(... cc clang gcc)` + `execute_process`, not
+  `add_executable` (which emcc would turn into a .js). Same trap applies to any
+  future generator tool. `find_program` works on host paths because
+  Emscripten.cmake sets `CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH`.
+- **The wasm build is single-threaded on purpose.** `-pthread` in wasm ⇒
+  SharedArrayBuffer ⇒ COOP/COEP headers on every embedding page. Upstream
+  Trealla does the same (`NOTHREADS=1` for its WASI target); `USE_THREADS`
+  defaults to 0 in `src/internal.h` and Emscripten's libc supplies the stubs.
+- **`posix_spawnp` is the only symbol Emscripten's libc lacks** (Trealla's
+  `process_create/3`). Stubbed to `ENOSYS` in `src/insimul_wasm_stubs.c` —
+  deliberately NOT `-sERROR_ON_UNDEFINED_SYMBOLS=0`, which would silently turn
+  every future missing symbol into a runtime abort.
+- Link flags that are not optional: `-sSTACK_SIZE=8388608` (Trealla recurses
+  deeply; the 64KB default overflows on ordinary goals) and `-sFORCE_FILESYSTEM=1`
+  (the C↔Prolog channel `mkstemp`s under `/tmp`, which is MEMFS here).
+- `EXPORTED_FUNCTIONS` in `cmake/wasm.cmake` **is** the wasm ABI — the linker
+  garbage-collects anything unnamed. Adding a function to `insimul.h` means
+  adding it there too.
+- `wasm/insimul-api.mjs` is the hand-written JS wrapper. It keeps `insimul.h`'s
+  ownership rules: borrowed `const char *` are `UTF8ToString`'d at the call site
+  and never stored; handles are owned by one JS object that nulls them on
+  release; argument strings are `malloc`/`free`d rather than `ccall`'s
+  `'string'` marshalling (which copies onto the wasm **stack** — a snapshot
+  image would blow it). `createKb()` opens the keepalive KB described in
+  "Trealla gotchas" so create→destroy→create cycles are safe by default.
+
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. `build/` is
   gitignored (holds fetched Trealla under `_deps/` and the generated
   `insimul_boot.c`). `src/insimul_boot.pl` is the tracked source of truth.
+- Wasm: `scripts/build_wasm.sh` (configure via `emcmake` → build → `ctest`) into
+  `build-wasm/`, which is gitignored by the `build-*/` rule. It never touches
+  `build/`; the two trees coexist and both must stay green.
