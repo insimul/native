@@ -200,3 +200,19 @@
 - Wasm: `scripts/build_wasm.sh` (configure via `emcmake` → build → `ctest`) into
   `build-wasm/`, which is gitignored by the `build-*/` rule. It never touches
   `build/`; the two trees coexist and both must stay green.
+- **The full gate list**, cheapest-to-fail first — run all five before calling a
+  change green: (1) `cmake -B build && cmake --build build && ctest --test-dir
+  build`, (2) `scripts/build_wasm.sh`, (3) `scripts/conformance_parity.sh`,
+  (4) `scripts/package.sh` and `scripts/package.sh --target wasm`, (5) `cargo
+  test --manifest-path rust/Cargo.toml`. Gate 3 is the highest-signal one: it
+  diffs the **raw** ABI strings across legs, so it catches divergence that each
+  leg's own `expected` check would happily pass.
+- **Run every gate from the repo root.** `cmake -B build` invoked from a
+  subdirectory fails with "source directory ... does not appear to contain
+  CMakeLists.txt", which in a summarized CI log is indistinguishable from a real
+  compile failure. Prefer `cargo test --manifest-path rust/Cargo.toml` over
+  `cd rust && cargo test` so the working directory never drifts.
+- **A ctest that passes in 0.00s is a skip.** `snapshot_parse` degrades to a
+  loud `[SKIP]` when node or the sibling `../insimul-runtime` submodule is
+  absent, so it is vacuous in a standalone checkout and only really asserts in
+  the monorepo layout. Read its output before trusting a green ctest summary.
