@@ -56,7 +56,7 @@ can run many KBs, one per thread. That independence is a hard requirement for ga
 and it is guaranteed by the interface.
 
 **The interface is a plain C ABI, and the engine hides behind it.** `include/insimul.h`
-exposes twelve `extern "C"` functions over two opaque handle types (`insimul_kb`,
+exposes thirteen `extern "C"` functions over two opaque handle types (`insimul_kb`,
 `insimul_query`). The header mentions no Trealla types at all — the engine is an
 implementation detail that could be swapped without breaking a single caller. Queries
 return their solutions as **JSON**, a shape every language can parse:

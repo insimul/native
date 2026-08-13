@@ -1,7 +1,7 @@
 //! The safe wrapper's behaviour: consult, query, assert, retract, and the way
 //! ABI failures surface as `Result::Err` rather than status codes.
 
-use insimul::{Bindings, Error, KnowledgeBase, Term};
+use insimul::{Bindings, Error, ErrorClass, KnowledgeBase, Term};
 
 const FAMILY: &str = "\
 parent(tom, bob).
@@ -39,13 +39,15 @@ fn consult_rejects_a_syntax_error_without_loading_anything() {
     let err = kb
         .consult("good(one).\nbroken(2.\n")
         .expect_err("a syntax error should not load");
-    assert!(matches!(err, Error::Prolog(_)), "unexpected error: {err:?}");
+    assert!(matches!(err, Error::Prolog { .. }), "unexpected error: {err:?}");
 
     // Transactional: the clause that *did* parse must not have survived — the
     // predicate was never created, so asking about it is an existence error.
     let err = kb.query("good(one)").expect_err("good/1 should not exist");
+    // Branch on the ISO CLASS, never on the message: the text is the engine's
+    // rendering and changes with the engine, the class does not (US-2, L-08).
     assert!(
-        matches!(&err, Error::Prolog(m) if m.contains("existence_error")),
+        matches!(&err, Error::Prolog { class: ErrorClass::Existence, .. }),
         "unexpected error: {err:?}"
     );
 
@@ -171,12 +173,12 @@ fn a_failing_goal_surfaces_as_an_error() {
     let err = kb
         .query("foo(bar")
         .expect_err("unbalanced goal should fail");
-    assert!(matches!(err, Error::Prolog(_)), "unexpected error: {err:?}");
+    assert!(matches!(err, Error::Prolog { .. }), "unexpected error: {err:?}");
 
     let err = kb
         .query("X is foo + 1")
         .expect_err("type error should fail");
-    assert!(matches!(err, Error::Prolog(_)), "unexpected error: {err:?}");
+    assert!(matches!(err, Error::Prolog { .. }), "unexpected error: {err:?}");
 
     // The KB survives a failed goal.
     assert!(kb.holds("true").unwrap());
@@ -208,5 +210,8 @@ fn bindings_compare_by_content_not_order() {
 fn version_is_stamped() {
     let stamp = insimul::version();
     assert!(stamp.starts_with("insimul "), "unexpected stamp: {stamp}");
-    assert!(stamp.contains("trealla "), "unexpected stamp: {stamp}");
+    // The engine is a FIELD, and its identity is that field's value. Asserting
+    // the vendor's name here would make an engine swap a red test in the wrong
+    // repository, which is the coupling US-2 removed (leak L-02).
+    assert!(stamp.contains("engine "), "unexpected stamp: {stamp}");
 }

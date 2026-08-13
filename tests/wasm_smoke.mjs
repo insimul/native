@@ -57,8 +57,12 @@ const createInsimul = (await import(pathToFileURL(gluePath).href)).default;
 // ------------------------------------------------------------ 1. insimul_version
 const insimul = await loadInsimul(createInsimul);
 const version = insimul.version();
+// The engine field is checked as a SCHEMA — `engine <name>/<version>/<commit>`
+// — never for a vendor's name, so swapping the engine changes this stamp's
+// values and not this assertion (US-2, leak L-02).
 checkThat('insimul_version() is a well-formed stamp',
-  /^insimul \d+\.\d+\.\d+ \(git \S+, trealla \S+\)$/.test(version), version);
+  /^insimul \d+\.\d+\.\d+ \(git \S+, engine [^/\s]+\/[^/\s]+\/[^/\s]+\)$/.test(version),
+  version);
 
 // ---------------------------------------- 2/3. insimul_kb_create / kb_consult
 const kb = insimul.createKb();
@@ -100,12 +104,14 @@ check('retracting it again reports "no clause matched" (0 solutions, not an erro
   kb.retract('parent(ann, zoe)'), false);
 check('and the derived solution is gone', [...kb.solutions('grandparent(bob, Who)')], []);
 
-// ------------------------------------------------------ 9. insimul_last_error
+// ------------------- 9. insimul_last_error / insimul_last_error_class
 let syntaxErr = null;
 try { kb.consult('this is not( prolog'); } catch (e) { syntaxErr = e; }
 checkThat('a syntax error throws with insimul_last_error() text',
   syntaxErr instanceof InsimulError && syntaxErr.message.length > 0,
   String(syntaxErr));
+// The class is the portable half — branch on this, never on the message.
+check('insimul_last_error_class() reports the ISO class', syntaxErr?.class, 'syntax_error');
 check('and nothing from the bad source was loaded',
   [...kb.solutions('grandparent(tom, Who)')].map((s) => s.Who), ['ann']);
 
@@ -135,9 +141,9 @@ let threwAfterDestroy = false;
 try { kb.consult('a.'); } catch (e) { threwAfterDestroy = e instanceof InsimulError; }
 checkThat('using a destroyed KB is rejected', threwAfterDestroy);
 
-// Create/destroy CYCLE — the keepalive KB inside Insimul.createKb() is what
-// makes this safe (Trealla deadlocks tearing down its global symbol table and
-// re-initialising it). A browser host will do this constantly.
+// Create/destroy CYCLE — safe because libinsimul holds its own engine instance
+// open (leak L-01, fixed in US-2); no keepalive KB is opened on the JS side any
+// more. A browser host does this constantly.
 const cycled = insimul.createKb();
 cycled.assert('lives(again)');
 check('a KB created after the previous one was destroyed still works',
@@ -150,8 +156,8 @@ if (failures > 0) {
   console.error('wasm_smoke: FAIL');
   process.exit(1);
 }
-if (checks < 18) {
+if (checks < 19) {
   console.error(`wasm_smoke: only ${checks} checks ran — refusing to pass vacuously.`);
   process.exit(2);
 }
-console.log('wasm_smoke: PASS — all twelve insimul.h entry points callable from JS');
+console.log('wasm_smoke: PASS — all thirteen insimul.h entry points callable from JS');

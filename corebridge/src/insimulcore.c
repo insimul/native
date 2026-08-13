@@ -100,24 +100,14 @@ struct insimul_core {
 	JSContext *ctx;
 
 	/*
-	 * A KB that exists only to keep libinsimul's live-KB count above zero.
-	 *
-	 * WORKAROUND for a libinsimul defect found by tasklist 100 US-2, the first
-	 * story to link the library rather than syntax-gate against it: once every
-	 * KB has been destroyed, the NEXT insimul_kb_create() returns a handle that
-	 * crashes on use (SIGTRAP inside the engine). Reproduced in 20 lines with no
-	 * Godot, no QuickJS and no core involved — create, use, destroy, create, use.
-	 * It looks like a global engine bootstrap that is torn down with the last KB
-	 * and does not survive re-initialisation.
-	 *
-	 * It matters here because a radiant tick builds a THROWAWAY KB and releases
-	 * it (packages/core/src/radiant/radiant-engine.ts), so a game that ticks the
-	 * director would hit this on its second tick. Holding one KB open for the
-	 * lifetime of the handle costs a few KB and makes the pattern safe.
-	 *
-	 * Remove this once libinsimul is fixed — see RUNTIME_CORE_ADOPTION.md §6.7.
+	 * (The keepalive KB that used to live here is gone. Tasklist 100 US-2 found
+	 * that once every KB had been destroyed the next insimul_kb_create()
+	 * returned a handle that crashed on use — which mattered because a radiant
+	 * tick builds a THROWAWAY KB, so a game ticking the director hit it on the
+	 * second tick. Tasklist 251 US-2 fixed that inside libinsimul, which holds
+	 * its own engine instance open; see docs/ABI_ENGINE_LEAK_AUDIT.md leak L-01
+	 * and the `abi_neutral_runtime` ctest that now cycles KBs with none held.)
 	 */
-	insimul_kb *keepalive;
 
 	/* Prolog KBs owned by this runtime; the JS side addresses them by index. */
 	insimul_kb **kbs;
@@ -291,13 +281,6 @@ insimul_core *insimul_core_create(void) {
 	if (!core) return NULL;
 	set_last_error(core, "");
 
-	/* Open before anything else, closed last — see the `keepalive` comment. */
-	core->keepalive = insimul_kb_create();
-	if (!core->keepalive) {
-		insimul_core_destroy(core);
-		return NULL;
-	}
-
 	core->rt = JS_NewRuntime();
 	if (!core->rt) {
 		insimul_core_destroy(core);
@@ -345,7 +328,6 @@ void insimul_core_destroy(insimul_core *core) {
 		if (core->kbs[i]) insimul_kb_destroy(core->kbs[i]);
 	}
 	free(core->kbs);
-	if (core->keepalive) insimul_kb_destroy(core->keepalive);
 	if (core->ctx) JS_FreeContext(core->ctx);
 	if (core->rt) JS_FreeRuntime(core->rt);
 	free(core->last_error);

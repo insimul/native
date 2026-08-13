@@ -15,12 +15,17 @@ it, so they never drift. **To bump the version, edit `VERSION` only.**
 exact build:
 
 ```
-insimul 0.1.0 (git 3c347ec, trealla v2.106.1/07de013677af760a8bca0594ae4b2bef158a3cde)
+insimul 0.1.0 (git 3c347ec, engine trealla/v2.106.1/07de013677af760a8bca0594ae4b2bef158a3cde)
 ```
 
 — the `insimul` semver, the short git sha the tree was built from (`unknown` for a non-git
-tarball build), and the pinned Trealla tag/commit. Wrappers log it on startup, so support
-can identify the precise engine a save file was produced against from a single string.
+tarball build), and the embedded Prolog engine as `<name>/<version>/<commit>`. Wrappers log
+it on startup, so support can identify the precise engine a save file was produced against
+from a single string.
+
+The engine's identity is a **value** in that string, never part of its shape (US-2, leak
+L-02 in [ABI_ENGINE_LEAK_AUDIT.md](ABI_ENGINE_LEAK_AUDIT.md)): swapping the engine changes
+what those three fields say and nothing about how a consumer parses them.
 
 ## Building a package
 
@@ -46,13 +51,21 @@ file:
 insimul 0.1.0
 platform macos-arm64
 git 3c347ec
+engine_name trealla
+engine_version v2.106.1
+engine_commit 07de013677af760a8bca0594ae4b2bef158a3cde
 trealla_tag v2.106.1
 trealla_commit 07de013677af760a8bca0594ae4b2bef158a3cde
 ```
 
-The first line's semver matches `insimul_version()`, and the Trealla fields match the pin
-in `CMakeLists.txt` / [../THIRD_PARTY.md](../THIRD_PARTY.md) — so a consumer can cross-check
-the binary it loaded against the file it shipped.
+The first line's semver matches `insimul_version()`, and the `engine_*` fields match the
+pin in `CMakeLists.txt` / [../THIRD_PARTY.md](../THIRD_PARTY.md) — so a consumer can
+cross-check the binary it loaded against the file it shipped.
+
+`trealla_tag` / `trealla_commit` are **deprecated aliases** of `engine_version` /
+`engine_commit`, kept so a consumer that already vendored the old keys (babylon's
+`prolog-wasm` vendor test reads `trealla_commit`) survives one more re-vendor. New readers
+use the `engine_*` keys; `tests/wasm_package_smoke.mjs` asserts the aliases never drift.
 
 ### The wasm package — `dist/wasm/`
 

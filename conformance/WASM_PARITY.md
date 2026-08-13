@@ -1,16 +1,20 @@
-# wasm ⟷ native conformance parity
+# three-leg conformance parity (native ⟷ wasm ⟷ Rust)
 
-**Status: no divergences.** The Emscripten/wasm32 build and the native build
-produce **byte-identical** results on all **76** cases of the golden Prolog
-corpus — same pass/fail, same solution count, same solution *text* from
+**Status: no divergences.** The native build, the Emscripten/wasm32 build and the
+Rust wrapper produce **byte-identical** results on all **76** cases of the golden
+Prolog corpus — same pass/fail, same solution count, same solution *text* from
 `insimul_query_next()`, in the same order.
 
 | leg | command | result |
 |---|---|---|
 | native (C ABI) | `ctest --test-dir build -R conformance` | 10 files, 76 cases, 76 passed, 0 failed, 1 amended |
-| Rust wrapper | `cd rust && cargo test` | same corpus, green |
+| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 10 files, 76 cases, 76 passed, 0 failed, 1 amended |
 | **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 10 files, 76 cases, 76 passed, 0 failed, 1 amended |
-| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 76/76 records identical |
+| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 76/76 records identical on all three |
+
+(The Rust leg joined the diff in tasklist 251 US-2. It was always run, but its
+records were not compared, so only two of the three legs were actually diffed —
+and the two that were share the same C code.)
 
 This is the evidence that swapping tau-prolog for this build in the web runtime
 does not change behaviour: it is the *same engine source* (`src/insimul.c` +
@@ -23,20 +27,24 @@ Two harnesses can both agree with `expected` and still disagree with each other
 — on the order of an `unordered` case, on error wording, or on number
 formatting. So the gate is not "both passed". Both legs write one JSON-Lines
 record per case (`INSIMUL_CONFORMANCE_JSON=<path>`) holding the **raw** string
-`insimul_query_next()` returned, before any reparsing:
+`insimul_query_next()` returned, before any reparsing. The Rust leg reaches those
+strings through `KnowledgeBase::solve_raw`, which exists for this and returns the
+undecoded JSON rather than `Bindings`:
 
 ```jsonl
 {"area":"unification","name":"ground-match-success","status":"pass","amended":false,"solutions":["{}"]}
 {"area":"gameplay-predicates","name":"available-quests-by-status","status":"pass","amended":false,"solutions":["{\"Q\":\"q1\"}","{\"Q\":\"q3\"}"]}
 ```
 
-`scripts/conformance_parity.sh` runs both legs and `diff`s those files. A single
-differing byte fails the script and prints the offending case.
+`scripts/conformance_parity.sh` runs all three legs and `diff`s each against
+native. A single differing byte fails the script and prints the offending case. A
+missing toolchain is a hard failure, not a silent skip — `--no-rust` is how you
+say "not this time" out loud.
 
 ## What runs, and how it cannot rot
 
 - `tests/wasm_conformance.mjs` drives the corpus through `wasm/insimul-api.mjs`
-  — i.e. through the twelve `insimul.h` entry points a browser consumer uses,
+  — i.e. through the thirteen `insimul.h` entry points a browser consumer uses,
   not through some test-only shortcut.
 - It is registered as the **`wasm_conformance` ctest** in `cmake/wasm.cmake`, so
   `scripts/build_wasm.sh` — the one command that builds the wasm target — runs

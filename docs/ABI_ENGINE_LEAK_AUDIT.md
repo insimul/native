@@ -8,6 +8,12 @@ This is US-1 of tasklist 251. It answers one question: **if the Prolog engine un
 `insimul.h` were replaced tomorrow, what would break?** Not "what might" — what *does*,
 with the file, the line, and the recorded output.
 
+> **US-2 has since closed every row.** §1–§4 below are the audit as written, at the ABI it
+> audited (12 functions); [§5](#5-what-us-2-did--the-disposition-of-every-finding) records
+> what was done about each finding and which gate now holds it. Read §5 first if you want
+> today's state; read §1 for the evidence. Line numbers and quoted behaviour are as of the
+> audit, so several no longer reproduce — that is the point.
+
 Everything below is a finding with an ID, evidence, and one of three verdicts:
 
 | Verdict | Meaning | Who acts |
@@ -519,7 +525,53 @@ Three things keep this from being a clean bill of health:
 3. **`previousSnapshots` and `worldSnapshot`** (`save_file.cpp:222-312`) are *world*
    snapshots — JSON entity documents — not KB images. Checked; unrelated; no Prolog text.
 
-## 5. What US-2 has to do
+## 5. What US-2 did — the disposition of every finding
+
+US-2 is **done**. Every INSULATE row is either removed from the ABI or wrapped behind a
+vendor-neutral shape, and every ENGINE row is now *named in `include/insimul.h`* under
+"NOT PROMISED" instead of being an unstated assumption. The table below is the audit's
+ledger closing; §6 is the original to-do list it was written against.
+
+| # | Verdict | What US-2 did | Where the gate is |
+|---|---|---|---|
+| L-01 | INSULATE | `insimul.c` opens ONE internal engine instance on the first `insimul_kb_create` and never closes it, so `create → destroy(last) → create` works. The hand-rolled keepalives are deleted from `rust/insimul-sys`, `rust/insimul`, `wasm/insimul-api.mjs`, `corebridge/src/insimulcore.c`, `tests/conformance.c` and `tests/snapshot.c`. | `abi_neutral_runtime` cycles KBs with none held, under a ctest `TIMEOUT` (the old failure spins, it does not crash) |
+| L-02 | INSULATE | The stamp is `insimul <semver> (git <sha>, engine <name>/<version>/<commit>)`. The vendor is a VALUE. `package.sh` writes `engine_name`/`engine_version`/`engine_commit`, with `trealla_*` kept as deprecated aliases for one re-vendor. | `version`, `abi_neutrality`, `wasm_package_smoke` (the alias may not drift) |
+| L-03 | INSULATE | `insimul_boot.pl` pins `double_quotes = chars` and `unknown = error` explicitly. They are insimul's decisions now, inherited by any engine. | `abi_neutral_runtime` |
+| L-04 | ISO | Documented in the header as PROMISED, together with the warning the Unity adapter needs: "raised" is not a synonym for "undefined" — branch on the class. | header + `abi_neutral_runtime` |
+| L-05 | ENGINE | Named in the header under NOT PROMISED ("whether integers are bounded"), and L-06's shape means an unbounded integer at least crosses the ABI losslessly. | header + `abi_neutral_runtime` (`bounded` is asserted false) |
+| L-06 | INSULATE | Integers beyond ±(2⁵³−1) are `{"bigint":"<digits>"}`; `inf`/`nan` floats are `{"float":…}` rather than invalid JSON. `rust/insimul` decodes both (`Term::BigInt`) instead of silently rounding to `f64`. The implementation-defined type of `Int ÷ Int` stays the engine's and is named as such. | `abi_neutral_runtime`, rust unit tests |
+| L-07 | ENGINE | Named in the header under NOT PROMISED, spelled out: type-before-value ordering, `compare(O, 1.0, 0)` is `<`, and the failure mode ("the JSON still looks well formed"). Not insulatable without re-implementing the term order. | header + `abi_neutral_runtime` asserts `compare(O, 1.0, 0)` and `msort([1,2.0,a],L)` — a swap turns them RED instead of silently reordering answers |
+| L-08 | INSULATE | New `insimul_last_error_class()` returns the ISO 7.12.2 class; the text is demoted to detail, in the header, in `docs/c-abi.md`, in the Rust `Error::Prolog { class, message }`, and in JS `InsimulError.class`. | `abi_neutral_runtime` (7 classes), rust `api`/`snapshot` tests now match on class, `wasm_smoke` |
+| L-09 | ENGINE | Unchanged and now harmless: the Trealla-only atom lives *inside* the detail text, and nothing branches on it. | — |
+| L-10 | INSULATE | `'$err_norm'/3` replaces an internal or unbound error context with the ABI call that raised, so a host is never told its syntax error happened in `read_term_from_atom/3`. | `abi_neutral_runtime` asserts the text names no bootstrap predicate |
+| L-11 | ENGINE | Named in the header under NOT PROMISED; the corpus `AMENDMENTS` table (three legs, printed every run) stays the visible evidence. | `conformance` on all three legs + `abi_neutral_runtime` |
+| L-12 | INSULATE | SPECIFIED: a directive that raises **or fails** fails the whole load, with the reason. It used to be swallowed by `catch(_, _, true)`. | `abi_neutral_runtime` |
+| L-13 | INSULATE | `'$ij_esc'/2` escapes `\b`, `\f` and every remaining C0 control as `\u00XX`, so the binding set is RFC 8259 JSON. NUL truncation is documented as an ABI property. | `abi_neutral_runtime` |
+| L-14 | ENGINE→ours | The cons functor is NORMALISED to `"."` whatever the engine calls it internally, so the name a host decodes is insimul's. | `abi_neutral_runtime` |
+| L-15 | INSULATE | `'$guard'/2` walks every host term (goal, asserted clause, retracted term, consulted clause, directive) and refuses any `$`-prefixed name with `permission_error(access, private_procedure, N/A)`. The prefix is a boundary now. | `abi_neutral_runtime` (8 refusals, incl. the stdout-writing helper) |
+| L-16 | INSULATE + ENGINE | The writer's option list is complete and explicit, the flag it depends on is pinned (L-03), and the header now says plainly: **the image is interchange/debug, not a save format** — the persisted form is the structured fact list. The engine remainder (operator spacing, float re-rendering, bignums a bounded engine cannot read) is named in the header. | `snapshot` (byte-identical golden), `snapshot_parse` |
+| L-17 | ENGINE | The header's false claim is gone. It now says multi-threaded use is UNPROVEN and why, instead of asserting an answer no test supports. | header |
+| L-18 | ENGINE | Named in the header under NOT PROMISED: only what the conformance corpus exercises is guaranteed to survive a swap. | header |
+| L-19 | ISO | Unchanged; already documented. | header |
+
+The ENGINE rows are gated in `tests/neutrality.c` rather than in the corpus: `conformance/
+prolog` is a vendored mirror of `@insimul/core`'s, so a case added here would fork it (see
+`conformance/VENDORED.md`). The gate lives in a file this repo owns and says out loud that
+it is asserting behaviour the header does **not** promise, so a swap makes it red instead
+of quietly changing answers.
+
+**What the narrowing cost:** nothing in the corpus. 76/76 cases stay byte-identical across
+the C, wasm **and Rust** legs — the Rust leg now emits the same JSON-Lines parity records
+as the other two, so `scripts/conformance_parity.sh` diffs three legs instead of two.
+
+**What still has to happen outside this repo:** the two vendored copies of `insimul.h`
+(`unreal/Source/ThirdParty/InsimulLibrary/include/`, `godot/gdextension/vendor/insimul/`)
+are now behind this one and must be re-vendored, not re-derived — a hand-written copy is
+how one of them ended up with every return code inverted. The keepalive workarounds in
+`server/rust/insimul-server`, `godot`'s bridge copy and `babylon`'s vendored
+`insimul-api.mjs` are now redundant (harmless, just unnecessary).
+
+## 6. What US-2 had to do (the original to-do list)
 
 In blast-radius order:
 

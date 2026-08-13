@@ -213,13 +213,20 @@ if(NOT EMSCRIPTEN)
 endif()
 
 # Version stamp (US-LI5). src/insimul.c bakes these into insimul_version(): the
-# library semver, the git sha, and the pinned Trealla tag/commit. Applied to both
-# libraries so a static- or shared-linked host reports the same stamp.
+# library semver, the git sha, and the embedded engine's identity. Applied to
+# both libraries so a static- or shared-linked host reports the same stamp.
+#
+# The engine is passed as name/version/commit — three VALUES (US-2, leak L-02).
+# The vendor's name appears here, where the pin lives, and never in the ABI's
+# schema: swapping the engine edits these three lines and nothing a consumer
+# parses. The pin itself stays authoritative in TREALLA_GIT_TAG/COMMIT above.
+set(INSIMUL_ENGINE_NAME "trealla" CACHE STRING "Embedded Prolog engine name")
 set(INSIMUL_VERSION_DEFS
   INSIMUL_VERSION="${INSIMUL_SEMVER}"
   INSIMUL_GIT_SHA="${INSIMUL_GIT_SHA}"
-  INSIMUL_TREALLA_TAG="${TREALLA_GIT_TAG}"
-  INSIMUL_TREALLA_COMMIT="${TREALLA_GIT_COMMIT}")
+  INSIMUL_ENGINE_NAME="${INSIMUL_ENGINE_NAME}"
+  INSIMUL_ENGINE_VERSION="${TREALLA_GIT_TAG}"
+  INSIMUL_ENGINE_COMMIT="${TREALLA_GIT_COMMIT}")
 target_compile_definitions(insimul PRIVATE ${INSIMUL_VERSION_DEFS})
 if(NOT EMSCRIPTEN)
   target_compile_definitions(insimul_shared PRIVATE ${INSIMUL_VERSION_DEFS})
@@ -282,6 +289,27 @@ add_executable(insimul_abi tests/abi.c)
 target_link_libraries(insimul_abi PRIVATE insimul)
 add_test(NAME abi COMMAND insimul_abi)
 
+# ABI neutrality (US-2), in two halves.
+#
+# abi_neutral_runtime — the behaviours US-2 moved off the engine's defaults and
+# onto this ABI's promises: classified errors, pinned flags, RFC 8259 escaping,
+# lossless big integers, a normalised cons functor, refused reserved names,
+# specified directive failure, and the create/destroy cycle that used to spin.
+# TIMEOUT is not decoration: a regression of the internal keepalive (leak L-01)
+# does not crash, it burns CPU forever, so the gate has to be a clock.
+add_executable(insimul_neutrality tests/neutrality.c)
+target_link_libraries(insimul_neutrality PRIVATE insimul)
+add_test(NAME abi_neutral_runtime COMMAND insimul_neutrality)
+set_tests_properties(abi_neutral_runtime PROPERTIES TIMEOUT 120)
+
+# abi_neutrality — the source half: the header names no vendor and a
+# vendor-shaped consumer does not compile. It runs each check against a
+# deliberately broken fixture too, so the gate is proven able to fail.
+add_test(NAME abi_neutrality COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_abi_neutrality.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}
+       ${CMAKE_C_COMPILER})
+
 # Conformance harness (US-LI3): drives the ABI over every golden corpus case.
 # INSIMUL_CONFORMANCE_DEFAULT_DIR is resolved above (shared with the wasm leg).
 # Also a pure consumer of insimul.h.
@@ -322,7 +350,7 @@ add_test(NAME snapshot_parse COMMAND
 
 # Version stamp (US-LI5). A pure consumer of insimul.h: it asserts the semver
 # CMake read from the VERSION file is embedded in insimul_version() and that the
-# stamp is well-formed (git sha + Trealla pin present). The expected semver is
+# stamp is well-formed (git sha + engine field present). The expected semver is
 # passed as a compile def so the test tracks the VERSION file with no edits.
 add_executable(insimul_version_test tests/version.c)
 target_link_libraries(insimul_version_test PRIVATE insimul)

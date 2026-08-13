@@ -136,9 +136,18 @@ const insimul = await mod.default();
 // insimul_version() is the ABI's own stamp. Rebuilding it from the VERSION file
 // proves the shipped text describes the shipped BINARY, not a stale tree.
 const expectedVersion =
-  `insimul ${stamp.insimul} (git ${stamp.git}, trealla ${stamp.trealla_tag}/${stamp.trealla_commit})`;
+  `insimul ${stamp.insimul} (git ${stamp.git}, `
+  + `engine ${stamp.engine_name}/${stamp.engine_version}/${stamp.engine_commit})`;
 check('insimul_version() from the packaged binary matches the VERSION file',
   insimul.version(), expectedVersion);
+
+// The deprecated trealla_* keys exist only so an already-vendored consumer
+// survives one more re-vendor. They must never drift from the engine_* keys
+// they alias — a stale alias would be worse than no alias.
+check('the deprecated trealla_tag alias still matches engine_version',
+  stamp.trealla_tag, stamp.engine_version);
+check('the deprecated trealla_commit alias still matches engine_commit',
+  stamp.trealla_commit, stamp.engine_commit);
 
 /* ------------------------------------- 5. it actually answers a Prolog goal */
 const kb = insimul.createKb();

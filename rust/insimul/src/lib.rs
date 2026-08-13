@@ -34,7 +34,7 @@
 mod error;
 mod term;
 
-pub use error::{Error, Result};
+pub use error::{Error, ErrorClass, Result};
 pub use term::{Bindings, Term};
 
 use core::ffi::CStr;
@@ -79,10 +79,10 @@ impl KnowledgeBase {
     /// [`Error::EngineInit`] if the Prolog engine or its bootstrap could not
     /// initialize.
     pub fn new() -> Result<Self> {
-        // The engine tears down its global state when the last KB dies and
-        // deadlocks if it is ever brought back up, so pin it open first.
-        insimul_sys::ensure_engine_keepalive();
-
+        // No keepalive dance: libinsimul holds its own engine instance open, so
+        // KBs may be created and destroyed in any order (leak L-01, fixed in
+        // US-2). `insimul_sys::ensure_engine_keepalive()` is now a no-op.
+        //
         // SAFETY: no arguments; NULL is the documented failure signal.
         let kb = unsafe { insimul_sys::insimul_kb_create() };
         if kb.is_null() {
@@ -167,6 +167,26 @@ impl KnowledgeBase {
         self.query(goal)?.collect()
     }
 
+    /// Every solution of `goal` as the RAW binding-set JSON the ABI returned,
+    /// undecoded.
+    ///
+    /// This exists for cross-leg parity checking: comparing decoded
+    /// [`Bindings`] would hide a difference in number formatting, escaping or
+    /// solution order that the C and wasm legs would still show. The
+    /// conformance harness dumps these strings so all three legs can be diffed
+    /// byte for byte (`scripts/conformance_parity.sh`).
+    ///
+    /// # Errors
+    /// As [`KnowledgeBase::query`], plus [`Error::NotUtf8`].
+    pub fn solve_raw(&self, goal: &str) -> Result<Vec<String>> {
+        let mut q = self.query(goal)?;
+        let mut out = Vec::new();
+        while let Some(json) = q.next_raw()? {
+            out.push(json);
+        }
+        Ok(out)
+    }
+
     /// Whether `goal` has at least one solution.
     ///
     /// # Errors
@@ -217,11 +237,12 @@ impl KnowledgeBase {
         }
     }
 
-    /// The KB's current error message, as an [`Error::Prolog`].
+    /// The KB's current error, as an [`Error::Prolog`]: the ISO class to branch
+    /// on plus the engine's message as detail.
     fn last_error(&self) -> Error {
         // SAFETY: live handle; NULL means "no error recorded".
         let msg = unsafe { insimul_sys::insimul_last_error(self.kb) };
-        let msg = if msg.is_null() {
+        let message = if msg.is_null() {
             "operation failed without a message".to_owned()
         } else {
             // SAFETY: NUL-terminated and owned by the KB; copied before any
@@ -230,7 +251,15 @@ impl KnowledgeBase {
                 .to_string_lossy()
                 .into_owned()
         };
-        Error::Prolog(msg)
+        // SAFETY: same handle, same lifetime as the message above.
+        let cls = unsafe { insimul_sys::insimul_last_error_class(self.kb) };
+        let class = if cls.is_null() {
+            ErrorClass::System
+        } else {
+            // SAFETY: NUL-terminated, owned by the KB, copied immediately.
+            ErrorClass::from_abi(&unsafe { CStr::from_ptr(cls) }.to_string_lossy())
+        };
+        Error::Prolog { class, message }
     }
 }
 
@@ -257,6 +286,26 @@ pub struct Query<'kb> {
     q: *mut insimul_sys::insimul_query,
     /// Ties the query to its KB and keeps this type `!Send`/`!Sync`.
     _kb: PhantomData<&'kb KnowledgeBase>,
+}
+
+impl Query<'_> {
+    /// The next solution as the raw binding-set JSON string, or `None` when the
+    /// solutions are exhausted. See [`KnowledgeBase::solve_raw`].
+    ///
+    /// # Errors
+    /// [`Error::NotUtf8`] if the ABI returned text that is not UTF-8.
+    pub fn next_raw(&mut self) -> Result<Option<String>> {
+        // SAFETY: live handle; NULL means the solutions are exhausted.
+        let json = unsafe { insimul_sys::insimul_query_next(self.q) };
+        if json.is_null() {
+            return Ok(None);
+        }
+        // SAFETY: NUL-terminated, owned by the query, copied before returning.
+        unsafe { CStr::from_ptr(json) }
+            .to_str()
+            .map(|s| Some(s.to_owned()))
+            .map_err(|_| Error::NotUtf8)
+    }
 }
 
 impl Iterator for Query<'_> {

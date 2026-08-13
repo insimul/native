@@ -33,7 +33,7 @@ dist/macos-arm64/
   insimul.h             # the stable C ABI (extern "C")
   libinsimulcore.dylib  # the core bridge — see "Consuming libinsimulcore"
   insimulcore.h
-  VERSION               # semver + platform + git sha + Trealla pin
+  VERSION               # semver + platform + git sha + engine pin
 ```
 
 A consumer that only needs Prolog takes the first two files and ignores the rest;
@@ -293,7 +293,7 @@ dist/wasm/
   insimul-api.mjs       # the hand-written ABI wrapper (handles, ownership)
   insimul.mjs           # the generated Emscripten glue
   insimul.wasm          # the engine — a separate file the glue FETCHES
-  VERSION               # semver + platform + git sha + Trealla pin
+  VERSION               # semver + platform + git sha + engine pin
   LICENSE
 ```
 
@@ -378,11 +378,11 @@ rather than implied (insimul 0.1.0, Emscripten 6.0.5, `-O2` Release):
 
 | File | Raw | gzip -9 | brotli -11 |
 |------|----:|--------:|-----------:|
-| `insimul.wasm` | 2,092,182 | 561,946 | 415,595 |
-| `insimul.mjs` | 104,426 | 28,662 | 25,550 |
-| `insimul-api.mjs` | 10,173 | 3,687 | 3,099 |
+| `insimul.wasm` | 2,101,956 | 565,691 | 418,507 |
+| `insimul.mjs` | 104,532 | 28,679 | 25,562 |
+| `insimul-api.mjs` | 10,658 | 3,886 | 3,272 |
 | `index.mjs` | 1,985 | 999 | 805 |
-| **Total** | **2,208,766** (2.1 MB) | **595,294** (581 KB) | **445,049** (435 KB) |
+| **Total** | **2,219,131** (2.1 MB) | **599,255** (585 KB) | **448,146** (438 KB) |
 
 `npm pack` on the directory yields a **600 kB** tarball (7 files, 2.2 MB
 unpacked). So ~435 KB over the wire from a brotli-serving CDN, of which the
@@ -401,12 +401,16 @@ Every package carries `VERSION`, e.g.:
 insimul 0.1.0
 platform macos-arm64
 git 3c347ec
+engine_name trealla
+engine_version v2.106.1
+engine_commit 07de013677af760a8bca0594ae4b2bef158a3cde
 trealla_tag v2.106.1
 trealla_commit 07de013677af760a8bca0594ae4b2bef158a3cde
 ```
 
 The first line matches the semver embedded in `insimul_version()` (the C ABI),
-and the Trealla fields match the pin in `CMakeLists.txt` / `THIRD_PARTY.md`. A
+and the `engine_*` fields match the pin in `CMakeLists.txt` / `THIRD_PARTY.md`
+(`trealla_*` are deprecated aliases of the last two, kept for one re-vendor). A
 wrapper that logs `insimul_version()` on startup gives support a single string
 identifying the exact engine build a save file was produced against.
 
@@ -414,6 +418,6 @@ The wasm package carries the identical stamp with `platform wasm32-emscripten`,
 and `package.json`'s `version` is the same semver — so a browser host
 cross-checks its engine exactly as a Unity build does. Packaging asserts it
 rather than assuming it: `tests/wasm_package_smoke.mjs` reassembles
-`insimul <semver> (git <sha>, trealla <tag>/<commit>)` from the `VERSION` file
+`insimul <semver> (git <sha>, engine <name>/<version>/<commit>)` from the `VERSION` file
 and requires `insimul_version()` from the packaged binary to equal it byte for
 byte, so a stale `build-wasm/` tree cannot be shipped with a fresh stamp.

@@ -6,7 +6,7 @@
  * `tests/conformance.c` (native C ABI) and `rust/insimul/tests/conformance.rs`
  * (Rust wrapper) run. It drives the SAME vendored corpus — every file, every
  * case, no subset — through `wasm/insimul-api.mjs`, i.e. through exactly the
- * twelve insimul.h entry points a browser consumer will use.
+ * thirteen insimul.h entry points a browser consumer will use.
  *
  *   node tests/wasm_conformance.mjs <path-to-built/insimul.mjs> [--corpus DIR]
  *
@@ -208,10 +208,8 @@ const declaredCases = corpus.reduce((n, f) => n + f.cases.length, 0);
  * ------------------------------------------------------------------ */
 if (!existsSync(gluePath)) die(`wasm glue not found: ${gluePath} (run scripts/build_wasm.sh)`);
 const createInsimul = (await import(pathToFileURL(gluePath).href)).default;
-// Insimul.createKb() opens its own never-destroyed keepalive KB, which is what
-// makes the per-case create/destroy cycle below safe (Trealla deadlocks when
-// its process-global symbol table is torn down and re-initialised — see
-// CLAUDE.md "Trealla gotchas"). The C leg does this explicitly in main().
+// The per-case create/destroy cycle below needs no keepalive on either leg:
+// libinsimul keeps its own engine instance open (leak L-01, fixed in US-2).
 const insimul = await loadInsimul(createInsimul);
 
 let pass = 0, fail = 0, cases = 0, amendedCount = 0;

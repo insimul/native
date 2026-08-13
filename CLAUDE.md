@@ -1,12 +1,51 @@
 # insimul-native — conventions for the native Prolog core
 
 ## The ABI boundary is opaque
-- `include/insimul.h` must **never** include Trealla headers or expose Trealla
-  types. It is the contract three engine wrappers (C#/C++/GDScript) parse. The
-  `abi` ctest includes *only* `insimul.h` to keep us honest — keep it that way.
+- `include/insimul.h` must **never** include Trealla headers, expose Trealla
+  types, **or name a vendor** — not in a type, a macro or a format string. It is
+  the contract three engine wrappers (C#/C++/GDScript) parse. Two ctests hold
+  it: `abi` includes *only* `insimul.h` (no engine TYPE is reachable), and
+  `abi_neutrality` (tests/run_abi_neutrality.sh) greps the header for vendor
+  names and compiles a consumer that tries `#include "trealla.h"` — **each check
+  also runs against a deliberately broken fixture and must fail it**. Keep that
+  negative control when you touch the script; a gate that cannot fail is the
+  failure mode this repo keeps re-learning.
+- **The ABI's promises are written down in the header** (US-2): what a swap must
+  reproduce (ISO semantics, the pinned `double_quotes`/`unknown` flags, the
+  binding-set JSON byte for byte, an ISO error class on every failure, reserved
+  `$` names) and what it may NOT (numeric term ordering, bounded-ness, the
+  library set, arithmetic-functor names as predicates, error TEXT). Adding
+  behaviour means adding it to one of those two lists.
+  `docs/ABI_ENGINE_LEAK_AUDIT.md` §5 is the ledger of what each of the 19
+  findings became.
 - `src/insimul.c` is the only unit that includes `trealla.h`. It talks to Trealla
   through the **public** C API (`pl_create`, `pl_consult_fp`, `pl_query`/`pl_redo`,
   `set_quiet`, `get_status`), never internal headers.
+
+## Engine neutrality lives in the bootstrap (US-2)
+- **Flags the output depends on are PINNED, never inherited**: `insimul_boot.pl`
+  sets `double_quotes = chars` and `unknown = error` at load. Changing either is
+  changing the ABI, not a build detail.
+- **Errors cross as `ERR <class> <term>`**: `'$err_lines'/3` is the single place
+  an exception becomes a record. It classifies with `'$err_class'/2` (ISO
+  7.12.2's ten names + `unknown`) and normalises the error CONTEXT with
+  `'$err_norm'/3`, so a host is never told its syntax error happened inside
+  `read_term_from_atom/3`. C splits the class off in `split_err`/
+  `set_error_record`; `insimul_last_error_class()` exposes it. Never make a
+  consumer string-match `insimul_last_error()`.
+- **`$`-prefixed names are a boundary, not a convention**: `'$guard'/2` walks
+  every host term (query goal, asserted/retracted term, consulted clause and
+  directive) and throws `permission_error(access, private_procedure, N/A)`.
+  Before US-2, `'$ij_str'(user_output, hi)` from an ordinary goal printed to the
+  process's stdout.
+- **A directive that raises OR fails fails the whole consult** (`'$run_directive'/2`).
+  It used to be swallowed by `catch(_, _, true)`, so a misspelled
+  `:- set_prolog_flag(...)` loaded "successfully".
+- **The binding-set JSON is RFC 8259 and lossless**: `'$ij_esc'/2` escapes every
+  C0 control; integers past 2^53-1 become `{"bigint":"<digits>"}`; `inf`/`nan`
+  become `{"float":…}`; the cons functor is normalised to `"."` whatever the
+  engine calls it. Five wrappers parse this — extend the shape in the header,
+  `docs/c-abi.md`, `rust/insimul/src/term.rs` and `tests/neutrality.c` together.
 
 ## The C layer does not walk Prolog terms — the bootstrap does
 - All term work (running goals, JSON-serializing solutions, catching exceptions,
@@ -43,16 +82,20 @@
 - Capture a term's text deterministically with
   `with_output_to(atom(A), (current_output(S), <write to S>))` — `string(...)`
   renders oddly when re-written.
-- **Create/destroy CYCLE hangs (process-global teardown).** A single
-  `pl_create` … `pl_destroy` is fine, but `create → destroy(the last KB) →
-  create` **deadlocks** the second full teardown. Trealla's `pl_destroy` calls
-  `g_destroy()` when `g_tpl_count` hits 0 (tears down the global symbol table);
-  re-`g_init`-ing it and tearing down again hangs. Mitigation for code that
-  creates many KBs over time (the conformance harness, and eventually the engine
-  plugins): keep **one long-lived KB open** so `g_tpl_count` never returns to 0 —
-  then per-KB create/destroy is safe. See `tests/conformance.c` (`keepalive`).
-  Flagged for human review in `progress.txt`; a real ABI-level fix (an internal
-  keepalive/refcount in `insimul.c`) is a candidate follow-up.
+- **Create/destroy CYCLE hangs (process-global teardown) — FIXED IN `insimul.c`,
+  do not re-add a keepalive.** `create → destroy(the last KB) → create` used to
+  spin forever: `pl_destroy` calls `g_destroy()` when `g_tpl_count` hits 0 and
+  re-`g_init`-ing then tearing down again never returns. US-2 moved the fix
+  inside the library: `ensure_keepalive()` opens one engine instance on the
+  first `insimul_kb_create` and never closes it. Every hand-rolled keepalive in
+  this repo is gone; `abi_neutral_runtime` cycles KBs with none held, under a
+  ctest `TIMEOUT` (the failure spins, so a clock is the only gate that catches
+  it).
+  **The internal instance must be BOOTSTRAPPED, not a bare `pl_create()`.** With
+  a bare one, the third KB creation dies with SIGTRAP — the same crash
+  `corebridge` independently hit and worked around. Keeping `g_tpl_count` above
+  zero is necessary but not sufficient; consulting the bootstrap in that first
+  instance is what makes it safe.
 - **Arithmetic functors are also STATIC builtin predicates.** Names like `log`,
   `sin`, `max`, `gcd` are registered in `src/bif_functions.c` as `name/N`
   predicates, not just evaluable functors. So a user KB that uses e.g. `log/1` as
@@ -81,15 +124,17 @@
   print an `[AMEND]` line and the same
   `files / cases / passed / failed / amended` summary, so the legs are
   directly comparable (currently 10 files, 76 cases, 76 passed, 1 amended).
-- **Cross-leg parity is a diff, not two green checkmarks.** Every leg supports
+- **Cross-leg parity is a diff, not three green checkmarks.** Every leg supports
   `INSIMUL_CONFORMANCE_JSON=<path>`, writing one JSON-Lines record per case that
-  carries the **raw** `insimul_query_next()` strings (not a reparsed model).
-  `scripts/conformance_parity.sh` runs native + wasm that way and `diff`s the
-  records, so a difference in solution *order*, error wording or number
-  formatting fails even when both legs still satisfy `expected`. A new leg should
-  emit the same records. Result today: 76/76 byte-identical — see
-  `conformance/WASM_PARITY.md`, which is where any future divergence gets
-  documented (never skipped).
+  carries the **raw** `insimul_query_next()` strings (not a reparsed model — the
+  Rust leg uses `KnowledgeBase::solve_raw`, which exists for exactly this).
+  `scripts/conformance_parity.sh` runs native + wasm + **rust** that way and
+  `diff`s the records against native, so a difference in solution *order*, error
+  wording or number formatting fails even when every leg still satisfies
+  `expected`. A missing toolchain is a hard failure, not a skip (`--no-rust`
+  makes skipping explicit). A new leg should emit the same records. Result
+  today: 76/76 byte-identical on all three — see `conformance/WASM_PARITY.md`,
+  which is where any future divergence gets documented (never skipped).
 - The corpus carries the **KINP identity layer** (`identity.json`,
   `equivalence.json`, `worlds.json`, and a rewritten `gameplay.json`): entity
   atoms are CURIEs (`'insimul:ent:<id>'`, world-scoped
@@ -121,13 +166,22 @@
   then asserts — so a bad image never destroys existing state.
 
 ## Versioning & packaging (US-LI5)
+- **The version stamp names the engine as a VALUE, never a field.**
+  `insimul <semver> (git <sha>, engine <name>/<version>/<commit>)`, and the
+  package `VERSION` uses `engine_name`/`engine_version`/`engine_commit`
+  (`trealla_*` survive as deprecated aliases for one re-vendor, asserted equal by
+  `wasm_package_smoke`). A test that asserts the vendor's name here turns an
+  engine swap into a red test in someone else's repository — that was leak L-02.
 - **Semver has ONE source of truth: the tracked `VERSION` file.** `CMakeLists.txt`
   `file(STRINGS VERSION ...)` reads it into `project(... VERSION)` and compile defs;
   `insimul_version()` (src/insimul.c) embeds it; `scripts/package.sh` stamps it. To
-  bump the version, edit `VERSION` only — do not hardcode it anywhere else.
+  bump the version, edit `VERSION` only — do not hardcode it anywhere else. The
+  engine pin has the same rule: `TREALLA_GIT_TAG`/`_COMMIT` +
+  `INSIMUL_ENGINE_NAME` in `CMakeLists.txt` are authoritative and every stamp is
+  read from there.
 - `insimul_version()` is stamped from CMake compile defs (`INSIMUL_VERSION`,
   `INSIMUL_GIT_SHA` via `git rev-parse --short HEAD` at configure time,
-  `INSIMUL_TREALLA_TAG`/`_COMMIT`). The `#ifndef` fallbacks in src/insimul.c only
+  `INSIMUL_ENGINE_NAME`/`_VERSION`/`_COMMIT`). The `#ifndef` fallbacks in src/insimul.c only
   fire for a non-CMake compile. Applied to BOTH `insimul` and `insimul_shared`.
 - `scripts/package.sh` builds `insimul_shared` and assembles `dist/<platform>/`
   (shared lib + `insimul.h` + `VERSION`). Platform from `uname` → `macos-arm64`
@@ -192,8 +246,9 @@
   and never stored; handles are owned by one JS object that nulls them on
   release; argument strings are `malloc`/`free`d rather than `ccall`'s
   `'string'` marshalling (which copies onto the wasm **stack** — a snapshot
-  image would blow it). `createKb()` opens the keepalive KB described in
-  "Trealla gotchas" so create→destroy→create cycles are safe by default.
+  image would blow it). `createKb()` no longer opens a keepalive KB — the
+  library owns that now (see "Trealla gotchas") — and `InsimulError` carries
+  `.class`, the ISO error class, alongside `.message`.
 
 ## libinsimulcore — the SECOND library (corebridge/)
 - **Two libraries, two ABIs, one build. Do not merge them.** `libinsimul` is
