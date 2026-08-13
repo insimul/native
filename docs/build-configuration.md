@@ -23,6 +23,24 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
+### Which engine (`INSIMUL_ENGINE`)
+
+The tree builds **two** Prolog engines behind the same twelve functions, chosen at
+configure time. `trealla` is the default and the only one that ships; `swipl` exists for
+decision D20's measurement spike and is *located*, not vendored — so it needs a prefix
+built by `scripts/build_swipl.sh` and it is not offline-buildable:
+
+```sh
+scripts/build_swipl.sh                              # prints <prefix>
+cmake -B build-swipl-native -DINSIMUL_ENGINE=swipl -DINSIMUL_SWIPL_ROOT=<prefix>
+```
+
+Only `src/engine_<name>.c` differs between the two — `src/insimul.c` names no engine and
+talks to the three-function port in `src/insimul_engine.h`. See
+[SWIPL_SPIKE.md](SWIPL_SPIKE.md) for the gaps that selection has, and note that the
+`smoke` ctest (which drives the vendored engine's own C API, not the ABI) is not built
+under it.
+
 Artifacts land in `build/`: `libinsimul.a` (static) and `libinsimul.dylib` / `.so` /
 `insimul.dll` (shared). `build/` is gitignored.
 

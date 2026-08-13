@@ -22,6 +22,39 @@
   through the **public** C API (`pl_create`, `pl_consult_fp`, `pl_query`/`pl_redo`,
   `set_quiet`, `get_status`), never internal headers.
 
+## Two engines, one tree: the engine PORT (tasklist 250)
+- **`src/insimul.c` names no engine.** It talks to `src/insimul_engine.h` — three
+  functions (`insimul_engine_open/close/run`) — and one `src/engine_<name>.c`
+  implements them. `engine_trealla.c` is the default; `engine_swipl.c` is the D20
+  spike's second engine. Pick with `-DINSIMUL_ENGINE=trealla|swipl`. The port is
+  three functions because the C layer never walks terms: an engine only has to
+  load a program and run a ground goal, and everything a host sees is produced by
+  `insimul_boot.pl` on top of that. Adding engine surface means adding it to the
+  port, not to `insimul.c`.
+- `ctest -R abi_neutrality` check C enforces the shape: an engine header is
+  reachable ONLY from `src/engine_*.c`, and `src/insimul.c` includes none. Both
+  halves keep a negative control.
+- **Behaviours `insimul.h` lists as NOT PROMISED are declared by the BUILD.**
+  `INSIMUL_ENGINE_ROWS` in `CMakeLists.txt` (numeric term ordering, whether
+  arithmetic functor names are also static predicates) is compiled into
+  `tests/neutrality.c`, which reads them as properties. The vendor's name stays
+  where the pin lives and out of the tests (leak L-02) — and the row still goes
+  red if an engine changes behaviour without CMake being updated.
+- **The snapshot set is a LEDGER, not a probe.** `'$snap_owns'/2` records every
+  predicate the ABI created (assert, consult, restore, `:- dynamic`), and
+  `'$snap_preds'/1` snapshots that. Asking `current_predicate/1 +
+  predicate_property(dynamic)` instead only works on an engine whose instance
+  starts empty; on one shared database it dragged the system's own dynamic
+  predicates into the image. Never go back to the probe.
+- SWI is **located, not vendored**: `scripts/build_swipl.sh` holds the pin and the
+  configure flags and writes `INSIMUL_SWIPL_PIN` into the prefix, which
+  `cmake/swipl.cmake` reads into the version stamp. That is a spike shape, not a
+  shipping shape — see `docs/SWIPL_SPIKE.md` §"G-10".
+- Every place SWI could not implement the ABI cleanly is a NUMBERED GAP in
+  `docs/SWIPL_SPIKE.md` §3. The one that is a correctness difference rather than
+  packaging is **G-05: `op/3` is not KB-scoped in SWI**, so one world's operators
+  reach another world's source.
+
 ## Engine neutrality lives in the bootstrap (US-2)
 - **Flags the output depends on are PINNED, never inherited**: `insimul_boot.pl`
   sets `double_quotes = chars` and `unknown = error` at load. Changing either is

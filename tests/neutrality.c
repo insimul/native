@@ -15,6 +15,28 @@
 #include <stdio.h>
 #include <string.h>
 
+/*
+ * THE ENGINE ROWS ARE DECLARED BY THE BUILD, NOT BY THIS FILE.
+ *
+ * insimul.h's "NOT PROMISED" list names behaviours a swap is allowed to change.
+ * A test cannot assert one without knowing which engine it got — and it must not
+ * learn that by naming a vendor (that was leak L-02: a test that asserts the
+ * vendor's name turns an engine swap into a red test in someone else's repo).
+ * So the build states the BEHAVIOUR, as a property, next to the engine selection
+ * that decides it (CMakeLists.txt, INSIMUL_ENGINE_ROWS). This file only reads it.
+ *
+ * A gate is still a gate: if the selected engine changes one of these without
+ * CMakeLists.txt being updated in the same commit, this test goes red — which is
+ * exactly what these rows exist for. The defaults below are for a non-CMake
+ * compile only.
+ */
+#ifndef INSIMUL_ENGINE_TYPE_FIRST_ORDER
+#define INSIMUL_ENGINE_TYPE_FIRST_ORDER 1
+#endif
+#ifndef INSIMUL_ENGINE_ARITH_NAMES_ARE_STATIC
+#define INSIMUL_ENGINE_ARITH_NAMES_ARE_STATIC 1
+#endif
+
 static int failures = 0;
 
 #define CHECK(cond, msg) do { \
@@ -99,7 +121,12 @@ int main(void)
     check_eq(raises(kb, "X is 1 // 0"), "evaluation_error", "division by zero -> evaluation_error");
     check_eq(raises(kb, "foo(bar"), "syntax_error", "unbalanced goal -> syntax_error");
     check_eq(raises(kb, "throw(a_ball)"), "unknown", "a non-error/2 throw -> unknown");
-    check_eq(raises(kb, "atom_length(1, _X)"), "type_error", "type_error from a builtin");
+    /* A type error raised by a BUILTIN (not by is/2) still arrives classified.
+     * The culprit is a compound where text is required, which is a type error on
+     * any conforming engine — `atom_length(1, _)` is NOT, because engines differ
+     * on whether a number counts as text, and that difference is the engine's
+     * (tasklist 250 found this checking leniency rather than classification). */
+    check_eq(raises(kb, "atom_length(f(x), _X)"), "type_error", "type_error from a builtin");
 
     /* The class must be cleared by a successful call, exactly like the text. */
     (void)first(kb, "still_here(1)", buf, sizeof buf);
@@ -188,25 +215,41 @@ int main(void)
      * of @insimul/core's, and a case added here would fork it. */
     printf("ENGINE rows (not promised; gated so a swap is loud)\n");
 
-    /* L-07: standard order of terms is TYPE-first, not ISO 7.2.1's by-value.
-     * This is the one that silently reorders answers — sort/2, msort/2,
-     * setof/3 and @</2 over mixed numerics all inherit it. */
-    check_eq(first(kb, "compare(O, 1.0, 0)", buf, sizeof buf), "{\"O\":\"<\"}",
-             "compare(O, 1.0, 0) is `<` (type-first ordering, contra ISO 7.2.1)");
-    check_eq(first(kb, "msort([1, 2.0, a], L)", buf, sizeof buf),
-             "{\"L\":[2.0,1,\"a\"]}",
-             "msort puts every float before every integer");
+    /* L-07: is the standard order of terms TYPE-first, or ISO 7.2.1's by-value?
+     * This is the one that silently reorders answers — sort/2, msort/2, setof/3
+     * and @</2 over mixed numerics all inherit it. */
+    if (INSIMUL_ENGINE_TYPE_FIRST_ORDER) {
+        check_eq(first(kb, "compare(O, 1.0, 0)", buf, sizeof buf), "{\"O\":\"<\"}",
+                 "compare(O, 1.0, 0) is `<` (type-first ordering, contra ISO 7.2.1)");
+        check_eq(first(kb, "msort([1, 2.0, a], L)", buf, sizeof buf),
+                 "{\"L\":[2.0,1,\"a\"]}",
+                 "msort puts every float before every integer");
+    } else {
+        check_eq(first(kb, "compare(O, 1.0, 0)", buf, sizeof buf), "{\"O\":\">\"}",
+                 "compare(O, 1.0, 0) is `>` (by-value ordering, ISO 7.2.1)");
+        check_eq(first(kb, "msort([1, 2.0, a], L)", buf, sizeof buf),
+                 "{\"L\":[1,2.0,\"a\"]}",
+                 "msort orders mixed numerics by value");
+    }
 
     /* L-05: integers are unbounded here. A bounded engine raises on the same
      * goal instead of answering — which changes which programs RUN. */
     check_eq(first(kb, "current_prolog_flag(bounded, F)", buf, sizeof buf),
              "{\"F\":\"false\"}", "integers are unbounded");
 
-    /* L-11: an arithmetic functor name is also a static predicate here, so it
-     * cannot be used as a dynamic predicate. ISO reserves those names only as
-     * evaluable functors; this is the corpus's one documented AMENDMENT. */
-    check_eq(raises(kb, "asserta(log(0))"), "permission_error",
-             "asserta over the arithmetic functor name log/1 is refused");
+    /* L-11: is an arithmetic functor name ALSO a static predicate? Where it is,
+     * a KB cannot use log/1 as a dynamic predicate. ISO reserves those names
+     * only as evaluable functors; this is the corpus's one documented AMENDMENT
+     * (tests/conformance.c AMENDMENTS), which an engine that allows it does not
+     * need. */
+    if (INSIMUL_ENGINE_ARITH_NAMES_ARE_STATIC) {
+        check_eq(raises(kb, "asserta(log(0))"), "permission_error",
+                 "asserta over the arithmetic functor name log/1 is refused");
+    } else {
+        CHECK(insimul_kb_assert(kb, "log(0)") == 0,
+              "asserta over the arithmetic functor name log/1 is allowed");
+        (void)insimul_kb_retract(kb, "log(0)");
+    }
 
     /* --- L-02: the version stamp's schema names no vendor ----------------- */
     printf("L-02 version schema\n");

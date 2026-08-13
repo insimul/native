@@ -161,13 +161,20 @@
     ( nonvar(E), E = error(F, C), '$err_ctx_internal'(C) -> E2 = error(F, Op) ; E2 = E ).
 '$err_ctx_internal'(C) :- var(C), !.
 '$err_ctx_internal'(N/_) :- atom(N), '$internal_ctx_name'(N), !.
-'$err_ctx_internal'(C) :- compound(C), functor(C, N, _), '$internal_name'(N), !.
+'$err_ctx_internal'(C) :- compound(C), functor(C, N, _), '$internal_ctx_name'(N), !.
 '$err_ctx_internal'(C) :- atom(C), '$internal_ctx_name'(C).
 '$internal_ctx_name'(N) :- '$internal_name'(N), !.
 '$internal_ctx_name'(read_term_from_atom).
 '$internal_ctx_name'(read_term).
 '$internal_ctx_name'(clause).
 '$internal_ctx_name'(retract).
+% Some engines blame the TRANSPORT rather than a predicate: a syntax error comes
+% back as error(syntax_error(_), string("<the text we passed>", Pos)) or
+% stream(...). That is this library's channel, not the host's call — the host
+% asked insimul_query_start, and the character offset is into a buffer it never
+% saw. Normalise those the same way (tasklist 250 found it on the second engine).
+'$internal_ctx_name'(string).
+'$internal_ctx_name'(stream).
 '$internal_name'(N) :- atom(N), atom_chars(N, ['$'|_]).
 
 % The one place an exception becomes a record. Every op routes through here, so
@@ -226,7 +233,7 @@
     catch(
       ( read_term_from_atom(GoalAtom, Fact, []),
         '$guard'(Fact, insimul_kb_assert),
-        assertz(Fact), Lines = ['OK'-''] ),
+        assertz(Fact), '$own'(Fact), Lines = ['OK'-''] ),
       E, '$err_lines'(E, insimul_kb_assert, Lines)),
     '$write_lines'(ResFile, Lines).
 
@@ -288,15 +295,15 @@
 % dynamic and clause-free — exactly what ':- dynamic(N/A).' means. asserta (not
 % assertz) puts our placeholder FIRST, so the following retract can only remove
 % that placeholder, never a real clause of an already-populated predicate.
-'$declare_dynamic'(V)      :- var(V), !, throw(error(instantiation_error, dynamic/1)).
+'$declare_dynamic'(V)      :- var(V), !, throw(error(instantiation_error, (dynamic)/1)).
 '$declare_dynamic'((A, B)) :- !, '$declare_dynamic'(A), '$declare_dynamic'(B).
 '$declare_dynamic'([])     :- !.
 '$declare_dynamic'([H|T])  :- !, '$declare_dynamic'(H), '$declare_dynamic'(T).
-'$declare_dynamic'(N/A)    :- !, functor(H, N, A), asserta(H), retract(H).
-'$declare_dynamic'(PI)     :- throw(error(type_error(predicate_indicator, PI), dynamic/1)).
+'$declare_dynamic'(N/A)    :- !, functor(H, N, A), asserta(H), retract(H), '$own_na'(N, A).
+'$declare_dynamic'(PI)     :- throw(error(type_error(predicate_indicator, PI), (dynamic)/1)).
 
 '$consult_assert'([]).
-'$consult_assert'([C|Cs]) :- assertz(C), '$consult_assert'(Cs).
+'$consult_assert'([C|Cs]) :- assertz(C), '$own'(C), '$consult_assert'(Cs).
 
 % --- snapshot / restore (US-LI4: the bridge to save.currentState.prologFacts) --
 %
@@ -313,10 +320,29 @@
 % the TypeScript prolog-fact-parser.ts (single-quoted atoms, A/B/C variables,
 % one clause per line ending in '.').
 
-% Dynamic user predicates, as a sorted (dedup'd, deterministic) N/A list.
+% The predicates THIS ABI created, as a sorted (dedup'd, deterministic) N/A list.
+%
+% This is a LEDGER, not a probe. It used to be "every dynamic predicate that is
+% visible and not '$'-named", which is the same set on an engine whose instance
+% starts empty — and a wildly different one on an engine with a single shared
+% database, where the KB can see the system's own dynamic predicates. On the
+% second engine (tasklist 250) that spilled file_search_path/2, prolog_file_type/2
+% and their system:-qualified bodies straight into the snapshot image, and the
+% restore of that image was then refused for mentioning a reserved name. The
+% ledger asks the question insimul.h actually documents — "what did the host put
+% in?" — instead of asking the engine what it happens to call dynamic.
+%
+% '$snap_owns'/2 is '$'-named, so it is filtered out of its own answer, is
+% refused to host terms by '$guard'/2, and never appears in an image.
+:- dynamic('$snap_owns'/2).
+
+'$own'(C) :- ( C = (H :- _) -> true ; H = C ), '$own_head'(H).
+'$own_head'(H) :- ( callable(H) -> functor(H, N, A), '$own_na'(N, A) ; true ).
+'$own_na'(N, A) :- ( '$snap_owns'(N, A) -> true ; assertz('$snap_owns'(N, A)) ).
+
 '$snap_preds'(Ps) :-
     findall(N/A,
-      ( current_predicate(N/A),
+      ( '$snap_owns'(N, A),
         \+ '$internal_name'(N),
         functor(H, N, A),
         predicate_property(H, dynamic) ),

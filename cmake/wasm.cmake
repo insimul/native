@@ -43,14 +43,19 @@ list(JOIN INSIMUL_WASM_EXPORTS "," INSIMUL_WASM_EXPORTS_CSV)
 set(INSIMUL_WASM_RUNTIME_METHODS "ccall,cwrap,UTF8ToString,stringToNewUTF8,lengthBytesUTF8")
 
 # ------------------------------------------------------------------- the target
+# INSIMUL_ENGINE_SRC is the selected engine's port (src/engine_<name>.c) — the
+# same one the native libraries compile. The wasm target only ever sees the
+# vendored engine: cmake/swipl.cmake is native-only, and a browser build of the
+# second engine is its own story (tasklist 250 US-2), not this file's business.
 add_executable(insimul_wasm
   src/insimul.c
+  ${INSIMUL_ENGINE_SRC}
   src/insimul_wasm_stubs.c   # posix_spawnp — see the file header
   ${INSIMUL_BOOT_C})
-target_link_libraries(insimul_wasm PRIVATE trealla_objs)
+target_link_libraries(insimul_wasm PRIVATE ${INSIMUL_ENGINE_LINK})
 target_include_directories(insimul_wasm PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${TREALLA_DIR}/src)
+  ${INSIMUL_ENGINE_INCLUDE})
 target_compile_definitions(insimul_wasm PRIVATE ${INSIMUL_VERSION_DEFS})
 
 # `insimul.mjs` (the glue) + `insimul.wasm` (the binary), side by side.

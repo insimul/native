@@ -207,6 +207,10 @@ The core README stops here on purpose; each topic has a focused guide:
   Unreal, Godot) and each JS bundler expects.
 - **[Build configuration & platforms](docs/build-configuration.md)** — engine feature flags,
   the thread model, and the supported-platform matrix.
+- **[The SWI-Prolog spike](docs/SWIPL_SPIKE.md)** — a *second* Prolog engine built behind
+  the same twelve functions (`-DINSIMUL_ENGINE=swipl`), how to reproduce that build, and
+  every place the ABI could not be implemented over it cleanly. Evidence for decision D20;
+  it decides nothing.
 - **[Engine-leak audit of the C ABI](docs/ABI_ENGINE_LEAK_AUDIT.md)** — every place the
   Prolog engine underneath is still visible through the ABI, with a verdict per finding
   and the probe that witnesses each one.

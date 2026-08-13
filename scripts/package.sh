@@ -90,7 +90,11 @@ if git_sha="$(git -C "$root" rev-parse --short HEAD 2>/dev/null)"; then :; else 
 # are engine_name/engine_version/engine_commit — neutral, so a future engine
 # changes these values and not a consumer's parser (US-2, L-02).
 engine_pin="vendor/trealla/VENDORED.json"
-engine_name="$(sed -n 's/.*INSIMUL_ENGINE_NAME "\([^"]*\)".*/\1/p' CMakeLists.txt | head -n1)"
+# The engine NAME is the build's default engine selection (INSIMUL_ENGINE),
+# which is what a packaged build embeds. Since tasklist 250 there are two
+# selections in one tree; packaging only ever ships the vendored default, so the
+# default is what is read — not INSIMUL_ENGINE_NAME, which is now derived from it.
+engine_name="$(sed -n 's/^set(INSIMUL_ENGINE "\([^"]*\)" CACHE STRING.*/\1/p' CMakeLists.txt | head -n1)"
 engine_version="$(sed -n 's/.*"tag"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$engine_pin" | head -n1)"
 engine_commit="$(sed -n 's/.*"commit"[[:space:]]*:[[:space:]]*"\([0-9a-f]*\)".*/\1/p' "$engine_pin" | head -n1)"
 [ -n "$engine_name" ]    || engine_name="unknown"

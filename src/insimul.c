@@ -1,21 +1,25 @@
 /*
- * insimul.c — libinsimul implementation.
+ * insimul.c — libinsimul implementation, engine-agnostic.
  *
- * Design: the C layer never walks Trealla term structures. Each KB consults a
- * fixed bootstrap program (src/insimul_boot.pl, embedded as insimul_boot_pl[])
- * that exposes '$insimul_query/2', '$insimul_assert/2', '$insimul_retract/2' and
- * '$insimul_consult/2'. We hand those helpers the caller's goal/source as text
- * and a temp result-file path; they run the operation and write records to the
- * file (SOL/ERR/OK/NONE — see insimul_boot.pl). We read the file back and turn
- * it into the ABI's return values / JSON solution strings.
+ * Design: the C layer never walks Prolog term structures and never names an
+ * engine. Each KB opens ONE instance of the internal engine port
+ * (src/insimul_engine.h) with a fixed bootstrap program consulted into it
+ * (src/insimul_boot.pl, embedded as insimul_boot_pl[]), which exposes
+ * '$insimul_query'/2, '$insimul_assert'/2, '$insimul_retract'/2,
+ * '$insimul_consult'/2, '$insimul_snapshot'/1 and '$insimul_restore'/2. We hand
+ * those helpers the caller's goal/source as text and a temp result-file path;
+ * they run the operation and write records to the file (SOL/ERR/OK/NONE — see
+ * insimul_boot.pl). We read the file back and turn it into the ABI's return
+ * values / JSON solution strings.
  *
  * This keeps everything per-KB (no process stdout/stderr redirection, no global
- * mutable state) so a host can run one KB per thread, and keeps Trealla types
- * out of include/insimul.h entirely.
+ * mutable state) so a host can run one KB per thread, and it is why swapping the
+ * Prolog engine is one new file under src/ — engine_trealla.c or engine_swipl.c
+ * — rather than a rewrite of this one.
  */
 
 #include "insimul.h"
-#include "trealla.h"
+#include "insimul_engine.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,27 +29,11 @@
 #include <windows.h>
 #include <io.h>
 #else
-#include <pthread.h>
 #include <unistd.h>
 #endif
 
-/* The bootstrap Prolog, embedded by cmake/gen_boot.cmake. */
-extern const unsigned char insimul_boot_pl[];
-extern const unsigned long insimul_boot_pl_len;
-
-/*
- * Two globals Trealla normally defines in its CLI main (tpl.c), which we do not
- * compile into a library. Without them, linking against the embedded Trealla
- * objects fails: g_envp is read by process_create/3 (bif_os.c); g_sigfn is the
- * toplevel's SIGINT handler. A library has no interactive toplevel and its
- * consumers never spawn processes, so an empty env and a no-op handler suffice.
- */
-static char *insimul_empty_env[] = { NULL };
-char **g_envp = insimul_empty_env;
-void g_sigfn(int s) { (void)s; }
-
 struct insimul_kb {
-    prolog *pl;
+    insimul_engine *eng;
     char   *last_error;   /* NULL when the last op succeeded */
     char   *error_class;  /* ISO class of last_error, NULL when it is NULL */
     char   *snapshot;     /* last insimul_kb_snapshot image (owned by the KB) */
@@ -204,7 +192,7 @@ static char *read_all(const char *path)
 /*
  * Wrap `s` as a single-quoted Prolog atom into `dst` (which must hold at least
  * 2 + 2*len + 1 bytes). Backslash, single quote and the common control chars are
- * escaped so the atom round-trips exactly through Trealla's reader.
+ * escaped so the atom round-trips exactly through the engine's reader.
  */
 static void quote_atom(char *dst, const char *s)
 {
@@ -228,18 +216,11 @@ static void quote_atom(char *dst, const char *s)
 /* --------------------------------------------------------------- run a goal */
 
 /*
- * Run a self-contained goal (our dispatch helpers always succeed and report via
- * the result file). Returns 0 if the goal ran, -1 on a hard engine error (which
- * only happens if the bootstrap is missing — an internal invariant break).
+ * Running a dispatch goal is the ONE thing this file asks of the engine (see
+ * src/insimul_engine.h): the helpers always succeed and report through the
+ * result file, so a -1 here means the bootstrap is missing, not that the user's
+ * goal failed.
  */
-static int run_goal(prolog *pl, const char *goal)
-{
-    pl_sub_query *q = NULL;
-    int ok = pl_query(pl, goal, &q, 0);
-    /* Drive backtracking to exhaustion; pl_redo frees the sub-query when done. */
-    if (q) while (pl_redo(q)) { }
-    return ok ? 0 : -1;
-}
 
 /*
  * Build "'<pred>'('<resfile>','<arg>')", run it, and return the result file
@@ -268,7 +249,7 @@ static char *dispatch(insimul_kb *kb, const char *pred, const char *arg)
         quote_atom(qarg, arg);
         /* pred is a literal like "$insimul_query"; quote it as an atom too. */
         snprintf(goal, need + 4, "'%s'(%s,%s)", pred, qres, qarg);
-        if (run_goal(kb->pl, goal) == 0) {
+        if (insimul_engine_run(kb->eng, goal) == 0) {
             out = read_all(res);
             if (!out) set_error(kb, "insimul: could not read result file");
         } else {
@@ -311,87 +292,22 @@ static const char *first_record(char *buf, char *tag, size_t tagsz)
 
 /* ------------------------------------------------------------- KB lifecycle */
 
-/*
- * The engine keepalive (leak L-01).
- *
- * The embedded engine keeps PROCESS-GLOBAL state (its symbol table) and tears it
- * down when the last engine instance is destroyed; bringing it back up and
- * tearing it down a second time never returns — it spins, so it does not even
- * show as a blocked thread. That made insimul_kb_destroy's real contract "never
- * destroy your last KB", and seven places across five repositories discovered
- * that by hand and each opened a hidden KB of their own.
- *
- * It belongs here. libinsimul opens one engine instance the first time a KB is
- * created and never closes it, so the global refcount never returns to zero and
- * insimul_kb_destroy means exactly what insimul.h says it means. It costs one
- * empty engine instance per process, is created once (thread-safe), and is
- * deliberately leaked: there is no ABI call after which it would be safe to free.
- *
- * A host that never creates a KB never pays for it.
- */
-static prolog *g_keepalive = NULL;
-
-static void keepalive_init(void)
-{
-    g_keepalive = pl_create();
-    if (!g_keepalive) return;
-    set_quiet(g_keepalive);
-    /* Bootstrapped exactly like a real KB: the first instance to load a program
-     * initializes engine state the later ones then share, so a bare pl_create()
-     * here is not equivalent (it leaves the process crashing on the third KB). */
-    FILE *fp = fmemopen((void *)insimul_boot_pl, (size_t)insimul_boot_pl_len, "r");
-    if (fp) {
-        pl_consult_fp(g_keepalive, fp, "insimul_boot");
-        fclose(fp);
-    }
-}
-
-#ifdef _WIN32
-static INIT_ONCE g_keepalive_once = INIT_ONCE_STATIC_INIT;
-static BOOL CALLBACK keepalive_once_cb(PINIT_ONCE o, PVOID p, PVOID *c)
-{
-    (void)o; (void)p; (void)c;
-    keepalive_init();
-    return TRUE;
-}
-static void ensure_keepalive(void)
-{
-    InitOnceExecuteOnce(&g_keepalive_once, keepalive_once_cb, NULL, NULL);
-}
-#else
-static pthread_once_t g_keepalive_once = PTHREAD_ONCE_INIT;
-static void ensure_keepalive(void)
-{
-    pthread_once(&g_keepalive_once, keepalive_init);
-}
-#endif
-
 insimul_kb *insimul_kb_create(void)
 {
     insimul_kb *kb = calloc(1, sizeof *kb);
     if (!kb) return NULL;
 
-    ensure_keepalive();   /* before the first pl_create, and only once */
-
-    kb->pl = pl_create();
-    if (!kb->pl) { free(kb); return NULL; }
-    set_quiet(kb->pl);   /* no interactive toplevel banners */
-
-    FILE *fp = fmemopen((void *)insimul_boot_pl, (size_t)insimul_boot_pl_len, "r");
-    if (!fp || !pl_consult_fp(kb->pl, fp, "insimul_boot")) {
-        if (fp) fclose(fp);
-        pl_destroy(kb->pl);
-        free(kb);
-        return NULL;
-    }
-    fclose(fp);
+    /* The port brings the engine up (once, process-wide, however that engine
+     * needs it) and hands back an instance with insimul_boot.pl consulted. */
+    kb->eng = insimul_engine_open();
+    if (!kb->eng) { free(kb); return NULL; }
     return kb;
 }
 
 void insimul_kb_destroy(insimul_kb *kb)
 {
     if (!kb) return;
-    pl_destroy(kb->pl);
+    insimul_engine_close(kb->eng);
     free(kb->last_error);
     free(kb->error_class);
     free(kb->snapshot);
@@ -560,7 +476,7 @@ const char *insimul_kb_snapshot(insimul_kb *kb)
     if (qres && goal) {
         quote_atom(qres, res);
         snprintf(goal, goalsz, "'$insimul_snapshot'(%s)", qres);
-        if (run_goal(kb->pl, goal) == 0) {
+        if (insimul_engine_run(kb->eng, goal) == 0) {
             out = read_all(res);
             if (!out) set_error(kb, "insimul: could not read result file");
         } else {
