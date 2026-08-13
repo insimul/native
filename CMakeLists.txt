@@ -60,6 +60,27 @@ else()
 endif()
 
 # ---------------------------------------------------------------------------
+# WHICH ENGINE (tasklist 250 — the D20 spike).
+#
+# Two engines build from ONE source tree, behind ONE ABI, chosen at configure
+# time. That is the whole point: `trealla` vs `swipl` compares two ENGINES at a
+# fixed 12-function interface, not two vendors' APIs against each other. Only
+# src/engine_<name>.c changes; src/insimul.c, src/insimul_boot.pl, the tests and
+# the packaging are shared, so a difference in the numbers is a difference in the
+# engine.
+#
+# trealla — vendored, the default, what ships today.
+# swipl   — LOCATED, not vendored: pass -DINSIMUL_SWIPL_ROOT=<prefix> from
+#           scripts/build_swipl.sh. See cmake/swipl.cmake and docs/SWIPL_SPIKE.md.
+# ---------------------------------------------------------------------------
+set(INSIMUL_ENGINE "trealla" CACHE STRING "Prolog engine to embed: trealla | swipl")
+set_property(CACHE INSIMUL_ENGINE PROPERTY STRINGS trealla swipl)
+if(NOT INSIMUL_ENGINE STREQUAL "trealla" AND NOT INSIMUL_ENGINE STREQUAL "swipl")
+  message(FATAL_ERROR "INSIMUL_ENGINE must be 'trealla' or 'swipl', got '${INSIMUL_ENGINE}'")
+endif()
+message(STATUS "insimul: embedding engine '${INSIMUL_ENGINE}'")
+
+# ---------------------------------------------------------------------------
 # Vendored Trealla Prolog (MIT — docs/TREALLA_LICENSE_FINDING.md records how
 # that was resolved from the license TEXT, not from a classifier).
 #
@@ -94,6 +115,10 @@ message(STATUS "Trealla: vendored ${TREALLA_GIT_TAG} (${TREALLA_GIT_COMMIT}) fro
 # the externs in src/library.c. cmake/gen_embed.cmake handles that.
 # ---------------------------------------------------------------------------
 #
+# Everything from here to the bootstrap embedding is Trealla's build; the swipl
+# selection skips it entirely and links a library it did not build.
+if(INSIMUL_ENGINE STREQUAL "trealla")
+
 # bin2c is a BUILD-time tool — it has to run on the machine doing the build. In
 # a cross build (wasm) an `add_executable` would be compiled by emcc and could
 # not be exec'd, so compile it at configure time with the HOST compiler instead.
@@ -174,6 +199,17 @@ target_compile_definitions(trealla_objs PRIVATE
 target_compile_options(trealla_objs PRIVATE -w)
 target_link_libraries(trealla_objs PUBLIC m ${INSIMUL_THREAD_LIBS})
 
+set(INSIMUL_ENGINE_SRC     ${CMAKE_CURRENT_SOURCE_DIR}/src/engine_trealla.c)
+set(INSIMUL_ENGINE_INCLUDE ${TREALLA_DIR}/src)
+set(INSIMUL_ENGINE_LINK    trealla_objs)
+set(INSIMUL_ENGINE_DEFS    "")
+set(INSIMUL_ENGINE_VERSION_VALUE "${TREALLA_GIT_TAG}")
+set(INSIMUL_ENGINE_COMMIT_VALUE  "${TREALLA_GIT_COMMIT}")
+
+else()
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/swipl.cmake)
+endif()
+
 # ---------------------------------------------------------------------------
 # Embed the bootstrap Prolog (src/insimul_boot.pl) as a C byte array so the ABI
 # has no on-disk runtime dependency. cmake/gen_boot.cmake writes a .c defining
@@ -201,23 +237,29 @@ add_custom_command(
 # — consumers see only include/insimul.h. Consumers still need libm + pthread,
 # so those are re-exported as INTERFACE requirements.
 # ---------------------------------------------------------------------------
-add_library(insimul STATIC src/insimul.c ${INSIMUL_BOOT_C})
-target_link_libraries(insimul PRIVATE trealla_objs)
+add_library(insimul STATIC src/insimul.c ${INSIMUL_ENGINE_SRC} ${INSIMUL_BOOT_C})
+target_link_libraries(insimul PRIVATE ${INSIMUL_ENGINE_LINK})
 target_link_libraries(insimul INTERFACE m ${INSIMUL_THREAD_LIBS})
 target_include_directories(insimul PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-# src/insimul.c needs Trealla's C API (trealla.h); it stays PRIVATE so it never
-# leaks into insimul's public include interface.
-target_include_directories(insimul PRIVATE ${TREALLA_DIR}/src)
+# Only src/engine_<name>.c needs the engine's own C API header; it stays PRIVATE
+# so it never leaks into insimul's public include interface.
+target_include_directories(insimul PRIVATE ${INSIMUL_ENGINE_INCLUDE})
+if(INSIMUL_ENGINE_DEFS)
+  target_compile_definitions(insimul PRIVATE ${INSIMUL_ENGINE_DEFS})
+endif()
 
 # A SHARED library is a native-host concept — under Emscripten it would emit a
 # dynamic-linking SIDE_MODULE, which is not what a browser consumer wants (that
 # is the wasm module below). Skip it in the cross build.
 if(NOT EMSCRIPTEN)
-  add_library(insimul_shared SHARED src/insimul.c ${INSIMUL_BOOT_C})
-  target_link_libraries(insimul_shared PRIVATE trealla_objs)
+  add_library(insimul_shared SHARED src/insimul.c ${INSIMUL_ENGINE_SRC} ${INSIMUL_BOOT_C})
+  target_link_libraries(insimul_shared PRIVATE ${INSIMUL_ENGINE_LINK})
   set_target_properties(insimul_shared PROPERTIES OUTPUT_NAME insimul)
   target_include_directories(insimul_shared PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
-  target_include_directories(insimul_shared PRIVATE ${TREALLA_DIR}/src)
+  target_include_directories(insimul_shared PRIVATE ${INSIMUL_ENGINE_INCLUDE})
+  if(INSIMUL_ENGINE_DEFS)
+    target_compile_definitions(insimul_shared PRIVATE ${INSIMUL_ENGINE_DEFS})
+  endif()
 endif()
 
 # Version stamp (US-LI5). src/insimul.c bakes these into insimul_version(): the
@@ -226,20 +268,61 @@ endif()
 #
 # The engine is passed as name/version/commit — three VALUES (US-2, leak L-02).
 # The vendor's name appears here, where the pin lives, and never in the ABI's
-# schema: swapping the engine edits these three lines and nothing a consumer
-# parses. The pin itself stays authoritative in vendor/trealla/VENDORED.json,
-# which the block above reads into TREALLA_GIT_TAG/COMMIT.
-set(INSIMUL_ENGINE_NAME "trealla" CACHE STRING "Embedded Prolog engine name")
+# schema: swapping the engine changes what these say and nothing a consumer
+# parses. All three are DERIVED from the INSIMUL_ENGINE selection above, so the
+# stamp cannot name an engine other than the one that was compiled — the same
+# rule vendor/trealla/VENDORED.json and INSIMUL_SWIPL_PIN enforce for the commit.
+# FORCE, because a build directory reconfigured onto the other engine must not
+# keep the previous selection's name in its cache.
+set(INSIMUL_ENGINE_NAME "${INSIMUL_ENGINE}" CACHE STRING "Embedded Prolog engine name" FORCE)
 set(INSIMUL_VERSION_DEFS
   INSIMUL_VERSION="${INSIMUL_SEMVER}"
   INSIMUL_GIT_SHA="${INSIMUL_GIT_SHA}"
   INSIMUL_ENGINE_NAME="${INSIMUL_ENGINE_NAME}"
-  INSIMUL_ENGINE_VERSION="${TREALLA_GIT_TAG}"
-  INSIMUL_ENGINE_COMMIT="${TREALLA_GIT_COMMIT}")
+  INSIMUL_ENGINE_VERSION="${INSIMUL_ENGINE_VERSION_VALUE}"
+  INSIMUL_ENGINE_COMMIT="${INSIMUL_ENGINE_COMMIT_VALUE}")
 target_compile_definitions(insimul PRIVATE ${INSIMUL_VERSION_DEFS})
 if(NOT EMSCRIPTEN)
   target_compile_definitions(insimul_shared PRIVATE ${INSIMUL_VERSION_DEFS})
 endif()
+
+# ---------------------------------------------------------------------------
+# How a NON-CMAKE consumer links this build tree: build/insimul-link.txt.
+#
+# `libinsimul.a` is self-contained for one engine selection and not for the
+# other: the vendored engine is compiled INTO the archive, while a located
+# engine is a separate shared library the archive only references (gap G-02).
+# rust/insimul-sys/build.rs links `libinsimul.a` directly and cannot see CMake's
+# link interface, so the build WRITES that interface down and build.rs replays
+# it. The file names the engine as a VALUE on one line and is otherwise a list
+# of link directives — build.rs itself stays engine-neutral (leak L-02).
+#
+#   engine=<name>      which selection produced this tree
+#   search=<dir>       add to the library search path
+#   lib=<name>         link this library
+#   rpath=<dir>        the shared engine's install name is @rpath-relative
+#   runtime=<dir>      a tree the engine READS at run time and a host must
+#                      therefore ship (gap G-02). An engine that compiles its
+#                      Prolog library in emits no such line — which is itself
+#                      the finding scripts/measure.sh reports as size.
+# ---------------------------------------------------------------------------
+set(INSIMUL_LINK_MANIFEST "engine=${INSIMUL_ENGINE}\n")
+foreach(_link_item IN LISTS INSIMUL_ENGINE_LINK)
+  # A CMake target (the vendored engine's object library) needs nothing here:
+  # its objects are already inside libinsimul.a. A PATH is a real file a
+  # consumer has to find at link and load time.
+  if(EXISTS "${_link_item}" AND NOT IS_DIRECTORY "${_link_item}")
+    get_filename_component(_link_dir  "${_link_item}" DIRECTORY)
+    get_filename_component(_link_name "${_link_item}" NAME_WE)
+    string(REGEX REPLACE "^lib" "" _link_name "${_link_name}")
+    string(APPEND INSIMUL_LINK_MANIFEST
+           "search=${_link_dir}\nlib=${_link_name}\nrpath=${_link_dir}\n")
+  endif()
+endforeach()
+if(INSIMUL_ENGINE_RUNTIME_DIR)
+  string(APPEND INSIMUL_LINK_MANIFEST "runtime=${INSIMUL_ENGINE_RUNTIME_DIR}\n")
+endif()
+file(WRITE ${CMAKE_BINARY_DIR}/insimul-link.txt "${INSIMUL_LINK_MANIFEST}")
 
 # ---------------------------------------------------------------------------
 # libinsimulcore — the SECOND library in this repo (tasklist 104). `@insimul/
@@ -286,11 +369,16 @@ if(EMSCRIPTEN)
   return()
 endif()
 
-add_executable(insimul_smoke tests/smoke.c)
-target_link_libraries(insimul_smoke PRIVATE insimul)
-# The smoke test drives Trealla's C API directly, so it needs trealla.h.
-target_include_directories(insimul_smoke PRIVATE ${TREALLA_DIR}/src)
-add_test(NAME smoke COMMAND insimul_smoke)
+# smoke drives the VENDORED ENGINE's own C API (not the insimul ABI), so it is
+# the one test that is engine-specific by construction. Under INSIMUL_ENGINE=swipl
+# it is not built; the engine-neutral gates below cover that selection, and
+# docs/SWIPL_SPIKE.md records this as the one gate the second engine does not run.
+if(INSIMUL_ENGINE STREQUAL "trealla")
+  add_executable(insimul_smoke tests/smoke.c)
+  target_link_libraries(insimul_smoke PRIVATE insimul)
+  target_include_directories(insimul_smoke PRIVATE ${TREALLA_DIR}/src)
+  add_test(NAME smoke COMMAND insimul_smoke)
+endif()
 
 # The ABI test is a pure consumer of include/insimul.h (no trealla.h): it both
 # exercises US-LI2 and proves the opaque boundary compiles/links cleanly.
@@ -306,8 +394,23 @@ add_test(NAME abi COMMAND insimul_abi)
 # specified directive failure, and the create/destroy cycle that used to spin.
 # TIMEOUT is not decoration: a regression of the internal keepalive (leak L-01)
 # does not crash, it burns CPU forever, so the gate has to be a clock.
+# The "ENGINE rows" — the behaviours insimul.h lists as NOT PROMISED — are
+# declared HERE, beside the engine selection that decides them, and read by the
+# test as plain properties. The vendor's name stays in this file (where the pin
+# already lives) and out of the test (leak L-02). Getting one wrong is a red
+# test, which is the whole point of those rows.
+if(INSIMUL_ENGINE STREQUAL "trealla")
+  set(INSIMUL_ENGINE_ROWS
+    INSIMUL_ENGINE_TYPE_FIRST_ORDER=1        # sorts every float before every integer
+    INSIMUL_ENGINE_ARITH_NAMES_ARE_STATIC=1) # log/1 etc. are builtin predicates too
+else()
+  set(INSIMUL_ENGINE_ROWS
+    INSIMUL_ENGINE_TYPE_FIRST_ORDER=0        # ISO 7.2.1 by-value numeric ordering
+    INSIMUL_ENGINE_ARITH_NAMES_ARE_STATIC=0) # log/1 may be an ordinary predicate
+endif()
 add_executable(insimul_neutrality tests/neutrality.c)
 target_link_libraries(insimul_neutrality PRIVATE insimul)
+target_compile_definitions(insimul_neutrality PRIVATE ${INSIMUL_ENGINE_ROWS})
 add_test(NAME abi_neutral_runtime COMMAND insimul_neutrality)
 set_tests_properties(abi_neutral_runtime PROPERTIES TIMEOUT 120)
 
@@ -376,6 +479,21 @@ target_link_libraries(insimul_version_test PRIVATE insimul)
 target_compile_definitions(insimul_version_test PRIVATE
   EXPECT_SEMVER="${INSIMUL_SEMVER}")
 add_test(NAME version COMMAND insimul_version_test)
+
+# ---------------------------------------------------------------------------
+# The measurement harness (tasklist 250 US-3) — NOT a ctest.
+#
+# insimul_bench produces the figures docs/SWIPL_MEASUREMENT.md publishes; it is
+# driven by scripts/measure.sh, which runs it once per process (a cold engine
+# start is measurable only once per process) and against the committed world in
+# bench/world/. It is deliberately not registered with ctest: a benchmark's
+# wall clock is not a pass/fail gate, and making `ctest` time depend on the host
+# is how gates get muted. It IS built by the default build, so it cannot rot.
+# Like every test here it is a pure consumer of include/insimul.h, which is what
+# makes the same binary measure both engine selections.
+# ---------------------------------------------------------------------------
+add_executable(insimul_bench tests/bench.c)
+target_link_libraries(insimul_bench PRIVATE insimul)
 
 # ---------------------------------------------------------------------------
 # libinsimulcore tests (tasklist 104). corebridge/ is added above, native-only.

@@ -43,15 +43,29 @@ list(JOIN INSIMUL_WASM_EXPORTS "," INSIMUL_WASM_EXPORTS_CSV)
 set(INSIMUL_WASM_RUNTIME_METHODS "ccall,cwrap,UTF8ToString,stringToNewUTF8,lengthBytesUTF8")
 
 # ------------------------------------------------------------------- the target
+# INSIMUL_ENGINE_SRC is the selected engine's port (src/engine_<name>.c) — the
+# same one the native libraries compile, and the only file that differs between
+# the two engine selections. BOTH engines build for wasm (tasklist 250 US-2):
+# the default vendored one, and the spike's second engine located through
+# cmake/swipl.cmake. Nothing below names either of them; what an engine needs
+# beyond its objects arrives as INSIMUL_ENGINE_WASM_* variables that its own
+# cmake module set.
 add_executable(insimul_wasm
   src/insimul.c
+  ${INSIMUL_ENGINE_SRC}
   src/insimul_wasm_stubs.c   # posix_spawnp — see the file header
   ${INSIMUL_BOOT_C})
-target_link_libraries(insimul_wasm PRIVATE trealla_objs)
+target_link_libraries(insimul_wasm PRIVATE ${INSIMUL_ENGINE_LINK})
 target_include_directories(insimul_wasm PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/include
-  ${TREALLA_DIR}/src)
+  ${INSIMUL_ENGINE_INCLUDE})
 target_compile_definitions(insimul_wasm PRIVATE ${INSIMUL_VERSION_DEFS})
+# What the engine's port needs to know about the engine (the native library
+# targets in CMakeLists.txt apply the same list). The default engine sets none,
+# which is why this was missing until a second one needed it.
+if(INSIMUL_ENGINE_DEFS)
+  target_compile_definitions(insimul_wasm PRIVATE ${INSIMUL_ENGINE_DEFS})
+endif()
 
 # `insimul.mjs` (the glue) + `insimul.wasm` (the binary), side by side.
 set_target_properties(insimul_wasm PROPERTIES
@@ -80,6 +94,30 @@ target_link_options(insimul_wasm PRIVATE
   "-sEXPORTED_FUNCTIONS=${INSIMUL_WASM_EXPORTS_CSV}"
   "-sEXPORTED_RUNTIME_METHODS=${INSIMUL_WASM_RUNTIME_METHODS}"
 )
+
+# Engine-supplied link options (e.g. an Emscripten port the engine's core needs).
+if(INSIMUL_ENGINE_WASM_LINK_OPTIONS)
+  target_link_options(insimul_wasm PRIVATE ${INSIMUL_ENGINE_WASM_LINK_OPTIONS})
+endif()
+
+# An engine whose Prolog library is NOT compiled into its objects has to ship it
+# as file-system bytes: --preload-file bakes the tree into a sibling .data file
+# that the glue fetches and mounts at ${_mount} before main() runs. The default
+# engine embeds its library in the binary and sets nothing here; the second one
+# (US-2) mounts boot.prc + library/ — the browser form of the "not
+# self-contained" gap, and a payload US-3 counts in the transferred bytes.
+if(INSIMUL_ENGINE_WASM_PRELOAD_DIR)
+  set(_mount "${INSIMUL_ENGINE_WASM_PRELOAD_MOUNT}")
+  if(NOT _mount)
+    set(_mount "/engine")
+  endif()
+  message(STATUS "wasm: preloading engine home ${INSIMUL_ENGINE_WASM_PRELOAD_DIR} at ${_mount}")
+  target_link_options(insimul_wasm PRIVATE
+    "SHELL:--preload-file ${INSIMUL_ENGINE_WASM_PRELOAD_DIR}@${_mount}")
+  # The .data image is a build INPUT, not a by-product: re-link when it changes.
+  set_property(TARGET insimul_wasm APPEND PROPERTY
+               LINK_DEPENDS ${INSIMUL_ENGINE_WASM_PRELOAD_DIR})
+endif()
 
 # ---------------------------------------------------------------------- tests
 #

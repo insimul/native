@@ -22,6 +22,100 @@
   through the **public** C API (`pl_create`, `pl_consult_fp`, `pl_query`/`pl_redo`,
   `set_quiet`, `get_status`), never internal headers.
 
+## Two engines, one tree: the engine PORT (tasklist 250)
+- **`src/insimul.c` names no engine.** It talks to `src/insimul_engine.h` — three
+  functions (`insimul_engine_open/close/run`) — and one `src/engine_<name>.c`
+  implements them. `engine_trealla.c` is the default; `engine_swipl.c` is the D20
+  spike's second engine. Pick with `-DINSIMUL_ENGINE=trealla|swipl`. The port is
+  three functions because the C layer never walks terms: an engine only has to
+  load a program and run a ground goal, and everything a host sees is produced by
+  `insimul_boot.pl` on top of that. Adding engine surface means adding it to the
+  port, not to `insimul.c`.
+- `ctest -R abi_neutrality` check C enforces the shape: an engine header is
+  reachable ONLY from `src/engine_*.c`, and `src/insimul.c` includes none. Both
+  halves keep a negative control.
+- **Behaviours `insimul.h` lists as NOT PROMISED are declared by the BUILD.**
+  `INSIMUL_ENGINE_ROWS` in `CMakeLists.txt` (numeric term ordering, whether
+  arithmetic functor names are also static predicates) is compiled into
+  `tests/neutrality.c`, which reads them as properties. The vendor's name stays
+  where the pin lives and out of the tests (leak L-02) — and the row still goes
+  red if an engine changes behaviour without CMake being updated.
+- **The snapshot set is a LEDGER, not a probe.** `'$snap_owns'/2` records every
+  predicate the ABI created (assert, consult, restore, `:- dynamic`), and
+  `'$snap_preds'/1` snapshots that. Asking `current_predicate/1 +
+  predicate_property(dynamic)` instead only works on an engine whose instance
+  starts empty; on one shared database it dragged the system's own dynamic
+  predicates into the image. Never go back to the probe.
+- SWI is **located, not vendored**: `scripts/build_swipl.sh` holds the pin and the
+  configure flags and writes `INSIMUL_SWIPL_PIN` into the prefix, which
+  `cmake/swipl.cmake` reads into the version stamp. That is a spike shape, not a
+  shipping shape — see `docs/SWIPL_SPIKE.md` §"G-10". `--target wasm` produces a
+  SECOND, differently-shaped prefix (`lib/libswipl.a` + `include/` + `home/`);
+  the pin file's `target=` says which, and `cmake/swipl.cmake` refuses the wrong
+  one rather than link a host build into a wasm module.
+- **`cmake/wasm.cmake` names no engine.** Anything an engine needs beyond its
+  objects reaches the wasm link as `INSIMUL_ENGINE_WASM_LINK_OPTIONS` and
+  `INSIMUL_ENGINE_WASM_PRELOAD_DIR`/`_MOUNT`, set by that engine's own cmake
+  module. An engine whose Prolog library is not compiled in ships it as an
+  Emscripten `--preload-file` image, which makes the browser payload THREE files
+  — and a data package is resolved relative to the PAGE, so every JS caller must
+  pass `locateFile` (`tests/wasm_*.mjs`, `scripts/wasm_payload.mjs` do).
+  `node scripts/wasm_payload.mjs <build-dir>` is the one place payload bytes get
+  quoted: it counts every file and refuses to print a partial total.
+- Every place SWI could not implement the ABI cleanly is a NUMBERED GAP in
+  `docs/SWIPL_SPIKE.md` §3. The one that is a correctness difference rather than
+  packaging is **G-05: `op/3` is not KB-scoped in SWI**, so one world's operators
+  reach another world's source.
+- **The spike's ANSWER is `docs/SWIPL_MEASUREMENT.md`, and it is a NO** — SWI
+  missed the bar on size alone (2.55x shipped natively, 2.33x over the wire) and
+  beat the incumbent on startup, on memory, and matched it byte for byte on all
+  76 corpus cases on all three legs. Trealla stays; `chief/252` stays parked.
+  Do not re-derive that verdict from the tables — and do not quote a figure from
+  it without `scripts/measure.sh` having produced it.
+
+## Measuring the two engines (US-3)
+- **`scripts/measure.sh` is the one command**, and it REGENERATES the doc: the
+  tables in `docs/SWIPL_MEASUREMENT.md` live between
+  `<!-- BEGIN/END GENERATED: <id> -->` markers that `scripts/measure_report.mjs`
+  splices. Prose around them was written against the run in
+  `bench/results/measurements.json`; a re-run that moves a figure materially
+  makes the prose wrong, and fixing the prose is part of re-running.
+- **The world is a COMMITTED fixture, not something the benchmark invents.**
+  `bench/world/` (6 files, 1,630 clauses, 143,807 bytes) + `QUERIES.txt`, both
+  generated deterministically by `bench/world/generate.mjs` (fixed LCG, no
+  clock). `measure.sh` runs `generate.mjs --check` BEFORE it times anything, so
+  a mutated world fails the measurement instead of silently changing what every
+  published figure describes.
+- **Two cross-checks make the comparison legitimate, and both are hard errors**:
+  every record carries its own `insimul_version()` stamp, which the reporter
+  matches against the tree it was told to measure (measuring the wrong build
+  tree is the easiest mistake here and the hardest to see in a finished table),
+  and every leg of both engines must report the SAME solution total for the same
+  world. One harness per leg, shared by both engines: `tests/bench.c` (built by
+  the default build, deliberately NOT a ctest — a benchmark's wall clock is not
+  a gate), `rust/insimul/examples/bench.rs`, `scripts/wasm_bench.mjs`.
+- **Size means TOTAL BYTES SHIPPED, never the library file.** With SWI,
+  `libinsimul.a` is 40 KB against 3.3 MB and its `.wasm` is smaller than
+  Trealla's — because its Prolog library is a 6.5 MB home tree / 2.7 MB `.data`
+  image beside it. The build states that itself: `INSIMUL_ENGINE_RUNTIME_DIR`
+  (set in the engine's own cmake module) becomes a `runtime=` line in
+  `<build>/insimul-link.txt`, so `measure.sh` sizes "everything shipped" without
+  naming an engine.
+- **`<build>/insimul-link.txt` is how a NON-CMAKE consumer links this tree.**
+  `rust/insimul-sys/build.rs` replays it (`search=`/`lib=`), and
+  `rust/insimul/build.rs` replays the `rpath=` line — a build script's
+  `rustc-link-arg` only reaches its OWN package's targets, and the binaries that
+  must start (tests, examples) are the wrapper crate's. Without it every Rust
+  binary on a located engine dies in dyld before `main`. Point the Rust leg at
+  the other engine with `INSIMUL_LIB_DIR=<build-dir>`.
+- **A loaded host inflates the SLOWER engine most** (more phases to be
+  descheduled in): at load 18 on this 14-CPU host Trealla's wasm `create` read
+  244 ms instead of 86 ms while no SWI figure moved. The load average is
+  recorded in the published provenance table and `measure.sh` warns when it is
+  above the CPU count. Also: the first process of a run pays cold file cache
+  (SWI's first `create` ~12 ms vs a ~7 ms median), which is why nothing here is
+  ever measured with one sample.
+
 ## Engine neutrality lives in the bootstrap (US-2)
 - **Flags the output depends on are PINNED, never inherited**: `insimul_boot.pl`
   sets `double_quotes = chars` and `unknown = error` at load. Changing either is

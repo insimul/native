@@ -13,6 +13,7 @@
  * ctest runs it for you (`wasm_smoke`); see cmake/wasm.cmake.
  */
 
+import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { loadInsimul, InsimulError } from '../wasm/insimul-api.mjs';
 
@@ -54,8 +55,14 @@ grandparent(X, Z) :- parent(X, Y), parent(Y, Z).
 
 const createInsimul = (await import(pathToFileURL(gluePath).href)).default;
 
+// Resolve every sibling payload (the .wasm, and the preload .data image an
+// engine that does not compile its Prolog library in needs) next to the GLUE,
+// not next to the process's cwd — Emscripten's default for a data package is a
+// bare relative name, so without this the test only runs from the build dir.
+const locateFile = (path) => join(dirname(resolve(gluePath)), path);
+
 // ------------------------------------------------------------ 1. insimul_version
-const insimul = await loadInsimul(createInsimul);
+const insimul = await loadInsimul(createInsimul, { locateFile });
 const version = insimul.version();
 // The engine field is checked as a SCHEMA — `engine <name>/<version>/<commit>`
 // — never for a vendor's name, so swapping the engine changes this stamp's

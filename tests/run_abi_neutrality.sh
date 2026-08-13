@@ -10,6 +10,9 @@
 #   B. a deliberately vendor-shaped consumer does not compile: the engine's own
 #      headers are not on the ABI's public include path, so `#include
 #      "trealla.h"` from a consumer built the documented way fails.
+#   C. inside the library, an engine header is reachable only from an engine PORT
+#      (src/engine_<name>.c); src/insimul.c, which holds every ABI decision, sees
+#      none. Tasklist 250 made this two-sided so it survives a second engine.
 #
 # Every check runs TWICE — once against the real tree, which must pass, and once
 # against a deliberately broken fixture, which must FAIL. A gate that cannot
@@ -89,14 +92,57 @@ else
     head -n1 "$tmp/vendor.err" | sed 's/^/       /'
 fi
 
-# C. ------------------------------------------- one translation unit sees the engine
-printf 'C. only src/insimul.c includes the engine header\n'
-including="$(grep -rl '#include "trealla.h"' "$src/src" "$src/include" 2>/dev/null | sed "s|^$src/||" | sort)"
-if [ "$including" = "src/insimul.c" ]; then
-    ok "src/insimul.c is the only unit that includes the engine header"
+# C. ------------------------------- only the engine PORTS see an engine header
+#
+# US-2 phrased this as "src/insimul.c is the only unit that includes trealla.h".
+# Tasklist 250 (the SWI spike) made the boundary explicit instead of incidental:
+# src/insimul.c holds every ABI decision and names NO engine, and each engine is
+# one port file, src/engine_<name>.c, implementing src/insimul_engine.h. So the
+# invariant is now two-sided and survives a second engine:
+#
+#   * every file under src/ that includes an engine header is a src/engine_*.c;
+#   * src/insimul.c includes none of them.
+#
+# That is what makes "swap the engine" a new file rather than an edit to the ABI.
+printf 'C. only the engine ports (src/engine_*.c) include an engine header\n'
+
+# The engine headers any port in this tree may reach for.
+engine_hdrs='trealla\.h|SWI-Prolog\.h'
+
+engine_includers() {   # <dir> -> the files in it that include an engine header
+    grep -rlE "^[[:space:]]*#include[[:space:]]*[<\"]($engine_hdrs)[>\"]" \
+        "$1/src" "$1/include" 2>/dev/null | sed "s|^$1/||" | sort
+}
+
+including="$(engine_includers "$src")"
+stray="$(printf '%s\n' "$including" | grep -v '^src/engine_[a-z0-9_]*\.c$' || true)"
+if [ -z "$including" ]; then
+    bad "no file includes an engine header at all — the port is not wired up"
+elif [ -n "$stray" ]; then
+    bad "these are not engine ports but include an engine header: $(printf '%s ' $stray)"
 else
-    bad "expected only src/insimul.c to include trealla.h, got: ${including:-<none>}"
+    ok "the only units that include an engine header are: $(printf '%s ' $including)"
 fi
+
+# The half that actually protects the ABI layer: insimul.c must stay engine-blind.
+if printf '%s\n' "$including" | grep -qx 'src/insimul.c'; then
+    bad "src/insimul.c includes an engine header — the ABI layer is not engine-blind"
+else
+    ok "src/insimul.c includes no engine header"
+fi
+
+# Negative control: a tree where the ABI layer reaches for the engine must FAIL.
+mkdir -p "$tmp/broken/src" "$tmp/broken/include"
+cp "$src/include/insimul.h" "$tmp/broken/include/"
+printf '#include "insimul.h"\n#include "trealla.h"\n' > "$tmp/broken/src/insimul.c"
+cp "$src/src/engine_trealla.c" "$tmp/broken/src/" 2>/dev/null || true
+broken_includes="$(engine_includers "$tmp/broken")"
+if printf '%s\n' "$broken_includes" | grep -qx 'src/insimul.c'; then
+    ok "negative control: the check FAILS an ABI layer that includes the engine header"
+else
+    bad "negative control: a leaking src/insimul.c passed — check C cannot fail"
+fi
+
 
 if [ "$fails" -eq 0 ]; then
     printf 'abi_neutrality: PASS\n'

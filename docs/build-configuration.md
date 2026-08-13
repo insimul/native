@@ -23,8 +23,40 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
+### Which engine (`INSIMUL_ENGINE`)
+
+The tree builds **two** Prolog engines behind the same twelve functions, chosen at
+configure time. `trealla` is the default and the only one that ships; `swipl` exists for
+decision D20's measurement spike and is *located*, not vendored — so it needs a prefix
+built by `scripts/build_swipl.sh` and it is not offline-buildable:
+
+```sh
+scripts/build_swipl.sh                              # prints <prefix>
+cmake -B build-swipl-native -DINSIMUL_ENGINE=swipl -DINSIMUL_SWIPL_ROOT=<prefix>
+```
+
+Both engines also build for **wasm** (the prefix layout differs, so the two are not
+interchangeable and `cmake/swipl.cmake` refuses the wrong one):
+
+```sh
+scripts/build_swipl.sh --target wasm                # prints <wasm prefix>
+scripts/build_wasm.sh --engine swipl --swipl-root <wasm prefix> \
+                      --build-dir build-wasm-swipl
+```
+
+Only `src/engine_<name>.c` differs between the two — `src/insimul.c` names no engine and
+talks to the three-function port in `src/insimul_engine.h`. See
+[SWIPL_SPIKE.md](SWIPL_SPIKE.md) for the gaps that selection has, and note that the
+`smoke` ctest (which drives the vendored engine's own C API, not the ABI) is not built
+under it. `node scripts/wasm_payload.mjs <build-dir>` prints what a page downloads for
+either wasm build — every payload file, raw/gzip/brotli, stamped with the engine the
+module reports, and `scripts/measure.sh` compares the two engines on all three legs and
+regenerates [SWIPL_MEASUREMENT.md](SWIPL_MEASUREMENT.md) (which carries D20's verdict).
+
 Artifacts land in `build/`: `libinsimul.a` (static) and `libinsimul.dylib` / `.so` /
-`insimul.dll` (shared). `build/` is gitignored.
+`insimul.dll` (shared), plus `insimul-link.txt` — the link interface a non-CMake consumer
+needs, which is how `rust/insimul-sys/build.rs` links a build whose engine is a separate
+shared library rather than one compiled into the archive. `build/` is gitignored.
 
 ## The native test suite
 

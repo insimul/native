@@ -1,0 +1,63 @@
+{
+  "world": "alderforest (KINP shapes; see bench/world/README.md)",
+  "generator": "bench/world/generate.mjs",
+  "scale": {
+    "npcs": 120,
+    "quests": 90,
+    "items": 80,
+    "locations": 36,
+    "factions": 8,
+    "aliases": 70
+  },
+  "consultOrder": [
+    "world.pl",
+    "places.pl",
+    "entities.pl",
+    "quests.pl",
+    "items.pl",
+    "rules.pl"
+  ],
+  "files": [
+    {
+      "name": "world.pl",
+      "bytes": 1040,
+      "sha256": "3775e415ab08d36419cded6666003101e07be0d4d7a78ac0a50c7aa5b5fd8bd7",
+      "clauses": 14
+    },
+    {
+      "name": "places.pl",
+      "bytes": 11632,
+      "sha256": "d558c672ab2c3121b2f52273b90147ac7078703cb4d7da7b73b9b94b416d5c7e",
+      "clauses": 118
+    },
+    {
+      "name": "entities.pl",
+      "bytes": 51647,
+      "sha256": "d259943e152abaccde9b4a67834f2294912d7663fef2f81d4d599afaf50c4469",
+      "clauses": 605
+    },
+    {
+      "name": "quests.pl",
+      "bytes": 56326,
+      "sha256": "28a4adb8a04b635aef785798ebcf0243e62a1830ae1c4e0d865434ae4186594b",
+      "clauses": 645
+    },
+    {
+      "name": "items.pl",
+      "bytes": 21760,
+      "sha256": "fa5515343e35b9c72513105f505f8783a53d9c313ef4cd8257e92a2c832d7a5e",
+      "clauses": 232
+    },
+    {
+      "name": "rules.pl",
+      "bytes": 1402,
+      "sha256": "ca891244dbab8a476d9604efbf174bd7f5a39c864856176d082342f1fd5363f0",
+      "clauses": 16
+    }
+  ],
+  "totals": {
+    "files": 6,
+    "bytes": 143807,
+    "clauses": 1630
+  }
+}
