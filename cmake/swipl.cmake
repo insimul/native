@@ -10,6 +10,8 @@
 # Sets, for the caller:
 #   INSIMUL_ENGINE_SRC / _INCLUDE / _LINK / _DEFS   — how to compile the port
 #   INSIMUL_ENGINE_VERSION_VALUE / _COMMIT_VALUE    — the version stamp's values
+#   INSIMUL_ENGINE_RUNTIME_DIR                      — a tree the engine reads at
+#                                                     RUN time, so a host ships it
 #   INSIMUL_ENGINE_WASM_LINK_OPTIONS                — extra link options (wasm)
 #   INSIMUL_ENGINE_WASM_PRELOAD_DIR / _MOUNT        — a directory the wasm target
 #                                                     must ship inside the module
@@ -148,6 +150,10 @@ else()
   set(INSIMUL_ENGINE_INCLUDE ${INSIMUL_SWIPL_HOME_DIR}/include)
   set(INSIMUL_ENGINE_LINK    ${INSIMUL_SWIPL_LIB})
   set(INSIMUL_ENGINE_DEFS    INSIMUL_SWIPL_HOME="${INSIMUL_SWIPL_HOME_DIR}")
+  # The home tree is read at RUN time, so it is part of what a host ships (gap
+  # G-02). Declaring it here — beside the engine that needs it — is what lets
+  # scripts/measure.sh size "everything shipped" without naming an engine.
+  set(INSIMUL_ENGINE_RUNTIME_DIR "${INSIMUL_SWIPL_HOME_DIR}")
 endif()
 
 # PLVERSION is MMmmpp as an integer (100001 -> 10.0.1).

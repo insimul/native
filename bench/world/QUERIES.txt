@@ -1,0 +1,18 @@
+# The goals every leg runs against the loaded world, exhausted to the last
+# solution. ONE source of truth: tests/bench.c (native + wasm via the same file),
+# rust/insimul/examples/bench.rs and scripts/wasm_bench.mjs all read this file,
+# so "the same work" is a fact rather than three copies that drifted.
+# Lines starting with '#' and blank lines are ignored. No trailing full stop —
+# insimul_query_start() takes a goal, not a clause.
+quest_available(L)
+quest_of_difficulty(hard, L)
+quest_payout(L, T)
+staffed(F, C)
+veteran(L)
+giver_of(Q, N)
+resident(L, N)
+nested_in(A, B)
+carrier(I, N)
+confident_alias(A, B)
+rich_item(L, V)
+world_view(W, S)

@@ -287,6 +287,44 @@ if(NOT EMSCRIPTEN)
 endif()
 
 # ---------------------------------------------------------------------------
+# How a NON-CMAKE consumer links this build tree: build/insimul-link.txt.
+#
+# `libinsimul.a` is self-contained for one engine selection and not for the
+# other: the vendored engine is compiled INTO the archive, while a located
+# engine is a separate shared library the archive only references (gap G-02).
+# rust/insimul-sys/build.rs links `libinsimul.a` directly and cannot see CMake's
+# link interface, so the build WRITES that interface down and build.rs replays
+# it. The file names the engine as a VALUE on one line and is otherwise a list
+# of link directives — build.rs itself stays engine-neutral (leak L-02).
+#
+#   engine=<name>      which selection produced this tree
+#   search=<dir>       add to the library search path
+#   lib=<name>         link this library
+#   rpath=<dir>        the shared engine's install name is @rpath-relative
+#   runtime=<dir>      a tree the engine READS at run time and a host must
+#                      therefore ship (gap G-02). An engine that compiles its
+#                      Prolog library in emits no such line — which is itself
+#                      the finding scripts/measure.sh reports as size.
+# ---------------------------------------------------------------------------
+set(INSIMUL_LINK_MANIFEST "engine=${INSIMUL_ENGINE}\n")
+foreach(_link_item IN LISTS INSIMUL_ENGINE_LINK)
+  # A CMake target (the vendored engine's object library) needs nothing here:
+  # its objects are already inside libinsimul.a. A PATH is a real file a
+  # consumer has to find at link and load time.
+  if(EXISTS "${_link_item}" AND NOT IS_DIRECTORY "${_link_item}")
+    get_filename_component(_link_dir  "${_link_item}" DIRECTORY)
+    get_filename_component(_link_name "${_link_item}" NAME_WE)
+    string(REGEX REPLACE "^lib" "" _link_name "${_link_name}")
+    string(APPEND INSIMUL_LINK_MANIFEST
+           "search=${_link_dir}\nlib=${_link_name}\nrpath=${_link_dir}\n")
+  endif()
+endforeach()
+if(INSIMUL_ENGINE_RUNTIME_DIR)
+  string(APPEND INSIMUL_LINK_MANIFEST "runtime=${INSIMUL_ENGINE_RUNTIME_DIR}\n")
+endif()
+file(WRITE ${CMAKE_BINARY_DIR}/insimul-link.txt "${INSIMUL_LINK_MANIFEST}")
+
+# ---------------------------------------------------------------------------
 # libinsimulcore — the SECOND library in this repo (tasklist 104). `@insimul/
 # core`'s TypeScript in an embedded QuickJS behind corebridge/include/
 # insimulcore.h, so Godot, Unity and Unreal bind one bridge instead of three.
@@ -441,6 +479,21 @@ target_link_libraries(insimul_version_test PRIVATE insimul)
 target_compile_definitions(insimul_version_test PRIVATE
   EXPECT_SEMVER="${INSIMUL_SEMVER}")
 add_test(NAME version COMMAND insimul_version_test)
+
+# ---------------------------------------------------------------------------
+# The measurement harness (tasklist 250 US-3) — NOT a ctest.
+#
+# insimul_bench produces the figures docs/SWIPL_MEASUREMENT.md publishes; it is
+# driven by scripts/measure.sh, which runs it once per process (a cold engine
+# start is measurable only once per process) and against the committed world in
+# bench/world/. It is deliberately not registered with ctest: a benchmark's
+# wall clock is not a pass/fail gate, and making `ctest` time depend on the host
+# is how gates get muted. It IS built by the default build, so it cannot rot.
+# Like every test here it is a pure consumer of include/insimul.h, which is what
+# makes the same binary measure both engine selections.
+# ---------------------------------------------------------------------------
+add_executable(insimul_bench tests/bench.c)
+target_link_libraries(insimul_bench PRIVATE insimul)
 
 # ---------------------------------------------------------------------------
 # libinsimulcore tests (tasklist 104). corebridge/ is added above, native-only.

@@ -212,6 +212,11 @@ The core README stops here on purpose; each topic has a focused guide:
   on wasm**, how to reproduce both builds, the browser payload each engine costs, and
   every place the ABI could not be implemented over it cleanly. Evidence for decision D20;
   it decides nothing.
+- **[SWI-Prolog vs Trealla, measured](docs/SWIPL_MEASUREMENT.md)** — the spike's answer:
+  size, startup and resident memory for both engines on all three legs (native, Rust,
+  wasm), the 76-case corpus compared **byte for byte** engine-against-engine, and a plain
+  verdict. Regenerate the whole thing with `scripts/measure.sh`; the world it measures is
+  the committed fixture in [`bench/world/`](bench/world/README.md).
 - **[Engine-leak audit of the C ABI](docs/ABI_ENGINE_LEAK_AUDIT.md)** — every place the
   Prolog engine underneath is still visible through the ABI, with a verdict per finding
   and the probe that witnesses each one.

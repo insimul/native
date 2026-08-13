@@ -5,8 +5,9 @@ US-2's deliverable: **how the second engine is built and wired — on the native
 embed target (§1–§2) and on the WASM target (§4)** — and **every place the C ABI
 could not be implemented over SWI-Prolog without a workaround** (§3). The
 measurement — binary size, startup, memory, and the 76/76 corpus on each leg —
-is US-3's, and lands in its own artifact. The verdict is US-3's too; nothing
-here decides anything.
+is US-3's, and lands in its own artifact —
+[`docs/SWIPL_MEASUREMENT.md`](SWIPL_MEASUREMENT.md), which also carries the
+verdict. Nothing here decides anything.
 
 > The spike is allowed to say no. Nothing in this file is an argument for
 > migrating. It is the evidence a decision needs, written down while it is still
@@ -396,10 +397,18 @@ Taken on this host at the pins above; US-3 re-runs all of it as measurement.
   properties, so the test still goes red if an engine changes one — without the
   test ever naming a vendor (leak L-02).
 
-## 6. Scope note
+## 6. Scope note, and where the verdict is
 
 US-1 is the native embed target, US-2 the WASM one (§4). **The numbers are
 US-3's**: the sizes in §4 are the payload capture that story asked US-2 to hand
 over, not a comparison — startup, resident memory, the Rust leg and the
 per-case byte-identity of the corpus are not claimed here, and neither is any
 verdict.
+
+US-3 landed them in **[`docs/SWIPL_MEASUREMENT.md`](SWIPL_MEASUREMENT.md)**,
+which is regenerable with `scripts/measure.sh`. Its verdict, in one line:
+**no — SWI-Prolog did not meet the bar on every leg**, missing on size alone
+(2.55× shipped natively, 2.33× over the wire) while beating the incumbent on
+startup, on resident memory, and matching it byte for byte on all 76 conformance
+cases on all three legs. The gaps this section numbers are what that verdict
+weighs beside the numbers — G-05, G-09 and G-10/G-14 in particular.

@@ -50,10 +50,13 @@ talks to the three-function port in `src/insimul_engine.h`. See
 `smoke` ctest (which drives the vendored engine's own C API, not the ABI) is not built
 under it. `node scripts/wasm_payload.mjs <build-dir>` prints what a page downloads for
 either wasm build — every payload file, raw/gzip/brotli, stamped with the engine the
-module reports.
+module reports, and `scripts/measure.sh` compares the two engines on all three legs and
+regenerates [SWIPL_MEASUREMENT.md](SWIPL_MEASUREMENT.md) (which carries D20's verdict).
 
 Artifacts land in `build/`: `libinsimul.a` (static) and `libinsimul.dylib` / `.so` /
-`insimul.dll` (shared). `build/` is gitignored.
+`insimul.dll` (shared), plus `insimul-link.txt` — the link interface a non-CMake consumer
+needs, which is how `rust/insimul-sys/build.rs` links a build whose engine is a separate
+shared library rather than one compiled into the archive. `build/` is gitignored.
 
 ## The native test suite
 

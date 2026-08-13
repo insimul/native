@@ -1,0 +1,874 @@
+{
+  "generatedBy": "scripts/measure.sh -> scripts/measure_report.mjs",
+  "host": {
+    "uname": "Darwin 25.5.0 arm64",
+    "cc": "Apple clang version 17.0.0 (clang-1700.6.3.2)",
+    "cmake": "cmake version 4.4.0",
+    "node": "v22.22.2",
+    "cargo": "cargo 1.97.0 (c980f4866 2026-06-30)",
+    "emcc": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271)",
+    "repeat": 9,
+    "cpus": 14,
+    "loadAverage1min": "3.92",
+    "swiplRoot": "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-swipl/install",
+    "swiplWasmRoot": "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-swipl/install-wasm"
+  },
+  "world": {
+    "files": 6,
+    "bytes": 143807,
+    "clauses": 1630,
+    "description": "alderforest (KINP shapes; see bench/world/README.md)",
+    "consultOrder": [
+      "world.pl",
+      "places.pl",
+      "entities.pl",
+      "quests.pl",
+      "items.pl",
+      "rules.pl"
+    ]
+  },
+  "solutions": 720,
+  "engines": {
+    "trealla": {
+      "name": "trealla",
+      "version": "v2.106.1",
+      "commit": "07de013677af760a8bca0594ae4b2bef158a3cde"
+    },
+    "swipl": {
+      "name": "swipl",
+      "version": "10.0.1",
+      "commit": "e58621a91ab7dd530e1e8185ed518f63d851c414"
+    }
+  },
+  "sizes": {
+    "trealla": {
+      "staticLib": {
+        "bytes": 3328576,
+        "files": 1
+      },
+      "sharedLib": {
+        "bytes": 2579536,
+        "files": 1
+      },
+      "runtime": {
+        "bytes": 0,
+        "files": 0
+      },
+      "shippedShared": {
+        "bytes": 2579536,
+        "files": 1
+      },
+      "runtimePaths": [],
+      "wasmPayload": {
+        "buildDir": "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-wasm",
+        "version": "insimul 0.1.0 (git a0a5e9e, engine trealla/v2.106.1/07de013677af760a8bca0594ae4b2bef158a3cde)",
+        "files": [
+          {
+            "name": "insimul.mjs",
+            "raw": 104532,
+            "gzip": 28679,
+            "brotli": 25562
+          },
+          {
+            "name": "insimul.wasm",
+            "raw": 2103621,
+            "gzip": 566555,
+            "brotli": 418854
+          }
+        ],
+        "total": {
+          "name": "TOTAL",
+          "raw": 2208153,
+          "gzip": 595234,
+          "brotli": 444416
+        }
+      },
+      "rustBinary": 3036960
+    },
+    "swipl": {
+      "staticLib": {
+        "bytes": 40912,
+        "files": 1
+      },
+      "sharedLib": {
+        "bytes": 86272,
+        "files": 1
+      },
+      "runtime": {
+        "bytes": 6484509,
+        "files": 358
+      },
+      "shippedShared": {
+        "bytes": 6570781,
+        "files": 359
+      },
+      "runtimePaths": [
+        "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-swipl/install/lib/swipl/lib/arm64-darwin/libswipl.dylib",
+        "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-swipl/install/lib/swipl"
+      ],
+      "wasmPayload": {
+        "buildDir": "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-wasm-swipl",
+        "version": "insimul 0.1.0 (git a0a5e9e, engine swipl/10.0.1/e58621a91ab7dd530e1e8185ed518f63d851c414)",
+        "files": [
+          {
+            "name": "insimul.mjs",
+            "raw": 92899,
+            "gzip": 24632,
+            "brotli": 21670
+          },
+          {
+            "name": "insimul.wasm",
+            "raw": 1323635,
+            "gzip": 539633,
+            "brotli": 433235
+          },
+          {
+            "name": "insimul.data",
+            "raw": 2697756,
+            "gzip": 722286,
+            "brotli": 579947
+          }
+        ],
+        "total": {
+          "name": "TOTAL",
+          "raw": 4114290,
+          "gzip": 1286551,
+          "brotli": 1034852
+        }
+      },
+      "rustBinary": 534256
+    }
+  },
+  "timings": {
+    "native": {
+      "trealla": {
+        "ms": {
+          "create": {
+            "median": 55.598,
+            "min": 54.615,
+            "samples": [
+              58.631,
+              55.967,
+              56.856,
+              56.177,
+              54.615,
+              55.106,
+              55.598,
+              55.156,
+              55.372
+            ]
+          },
+          "consult": {
+            "median": 30.299,
+            "min": 29.274,
+            "samples": [
+              31.284,
+              30.647,
+              30.843,
+              29.498,
+              29.768,
+              30.299,
+              30.235,
+              29.274,
+              30.518
+            ]
+          },
+          "query": {
+            "median": 21.18,
+            "min": 20.609,
+            "samples": [
+              23.575,
+              47.842,
+              21.184,
+              21.18,
+              20.733,
+              20.609,
+              20.756,
+              21.513,
+              21.09
+            ]
+          }
+        },
+        "rss": {
+          "start": {
+            "median": 1671168,
+            "min": 1671168,
+            "samples": [
+              1671168,
+              1671168,
+              1671168,
+              1671168,
+              1671168,
+              1671168,
+              1671168,
+              1671168,
+              1671168
+            ]
+          },
+          "created": {
+            "median": 9093120,
+            "min": 9060352,
+            "samples": [
+              9109504,
+              9076736,
+              9175040,
+              9093120,
+              9060352,
+              9060352,
+              9093120,
+              9076736,
+              9093120
+            ]
+          },
+          "consulted": {
+            "median": 18644992,
+            "min": 18644992,
+            "samples": [
+              18644992,
+              18677760,
+              18710528,
+              18661376,
+              18644992,
+              18661376,
+              18644992,
+              18644992,
+              18644992
+            ]
+          },
+          "queried": {
+            "median": 19054592,
+            "min": 19005440,
+            "samples": [
+              19005440,
+              19054592,
+              19136512,
+              19070976,
+              19120128,
+              19070976,
+              19054592,
+              19005440,
+              19021824
+            ]
+          },
+          "peak": {
+            "median": 19054592,
+            "min": 19005440,
+            "samples": [
+              19005440,
+              19054592,
+              19136512,
+              19070976,
+              19120128,
+              19070976,
+              19054592,
+              19005440,
+              19021824
+            ]
+          }
+        },
+        "samples": 9
+      },
+      "swipl": {
+        "ms": {
+          "create": {
+            "median": 7.09,
+            "min": 6.936,
+            "samples": [
+              11.591,
+              6.982,
+              7.084,
+              6.936,
+              7.09,
+              7.009,
+              7.169,
+              7.287,
+              7.299
+            ]
+          },
+          "consult": {
+            "median": 8.548,
+            "min": 8.402,
+            "samples": [
+              8.702,
+              8.402,
+              8.432,
+              8.962,
+              8.548,
+              8.533,
+              8.934,
+              8.902,
+              8.489
+            ]
+          },
+          "query": {
+            "median": 9.724,
+            "min": 9.556,
+            "samples": [
+              9.807,
+              9.596,
+              10.031,
+              9.724,
+              10.022,
+              9.592,
+              10.16,
+              9.556,
+              9.654
+            ]
+          }
+        },
+        "rss": {
+          "start": {
+            "median": 6193152,
+            "min": 6193152,
+            "samples": [
+              6193152,
+              6193152,
+              6193152,
+              6193152,
+              6193152,
+              6193152,
+              6193152,
+              6193152,
+              6225920
+            ]
+          },
+          "created": {
+            "median": 11616256,
+            "min": 11534336,
+            "samples": [
+              11616256,
+              11616256,
+              11534336,
+              11698176,
+              11583488,
+              11599872,
+              11632640,
+              11649024,
+              11632640
+            ]
+          },
+          "consulted": {
+            "median": 12304384,
+            "min": 12255232,
+            "samples": [
+              12304384,
+              12304384,
+              12255232,
+              12517376,
+              12271616,
+              12288000,
+              12435456,
+              12369920,
+              12320768
+            ]
+          },
+          "queried": {
+            "median": 12664832,
+            "min": 12632064,
+            "samples": [
+              12664832,
+              12664832,
+              12632064,
+              12828672,
+              12664832,
+              12648448,
+              12763136,
+              12697600,
+              12713984
+            ]
+          },
+          "peak": {
+            "median": 12664832,
+            "min": 12632064,
+            "samples": [
+              12664832,
+              12664832,
+              12632064,
+              12828672,
+              12664832,
+              12648448,
+              12763136,
+              12697600,
+              12713984
+            ]
+          }
+        },
+        "samples": 9
+      }
+    },
+    "rust": {
+      "trealla": {
+        "ms": {
+          "create": {
+            "median": 54.925,
+            "min": 54.186,
+            "samples": [
+              57.543,
+              57.663,
+              54.979,
+              54.186,
+              54.925,
+              54.439,
+              54.791,
+              55.041,
+              54.718
+            ]
+          },
+          "consult": {
+            "median": 29.828,
+            "min": 29.037,
+            "samples": [
+              30.443,
+              31.957,
+              29.037,
+              29.356,
+              29.555,
+              29.828,
+              29.287,
+              30.035,
+              30.974
+            ]
+          },
+          "query": {
+            "median": 20.8,
+            "min": 20.661,
+            "samples": [
+              21.377,
+              21.383,
+              20.661,
+              20.676,
+              20.783,
+              20.836,
+              22,
+              20.762,
+              20.8
+            ]
+          }
+        },
+        "rss": {
+          "peak": {
+            "median": 22593536,
+            "min": 22478848,
+            "samples": [
+              22577152,
+              22953984,
+              22478848,
+              22593536,
+              22511616,
+              22593536,
+              22626304,
+              22626304,
+              22626304
+            ]
+          }
+        },
+        "samples": 9
+      },
+      "swipl": {
+        "ms": {
+          "create": {
+            "median": 6.716,
+            "min": 6.475,
+            "samples": [
+              12.275,
+              8.01,
+              6.939,
+              7.12,
+              6.603,
+              6.683,
+              6.716,
+              6.479,
+              6.475
+            ]
+          },
+          "consult": {
+            "median": 8.205,
+            "min": 8.037,
+            "samples": [
+              10.656,
+              9.017,
+              8.297,
+              8.269,
+              8.167,
+              8.205,
+              8.08,
+              8.037,
+              8.079
+            ]
+          },
+          "query": {
+            "median": 9.36,
+            "min": 9.17,
+            "samples": [
+              11.217,
+              9.768,
+              9.722,
+              9.412,
+              9.223,
+              9.17,
+              9.36,
+              9.283,
+              9.305
+            ]
+          }
+        },
+        "rss": {
+          "peak": {
+            "median": 13287424,
+            "min": 13221888,
+            "samples": [
+              13221888,
+              13303808,
+              13287424,
+              13271040,
+              13303808,
+              13320192,
+              13336576,
+              13271040,
+              13287424
+            ]
+          }
+        },
+        "samples": 9
+      }
+    },
+    "wasm": {
+      "trealla": {
+        "ms": {
+          "instantiate": {
+            "median": 7.875,
+            "min": 7.613,
+            "samples": [
+              12.684,
+              7.613,
+              7.741,
+              7.67,
+              7.789,
+              8.821,
+              7.875,
+              8.212,
+              8.424
+            ]
+          },
+          "create": {
+            "median": 85.938,
+            "min": 83.141,
+            "samples": [
+              94.131,
+              85.863,
+              85.938,
+              83.141,
+              86.547,
+              84.757,
+              89.898,
+              83.182,
+              88.067
+            ]
+          },
+          "consult": {
+            "median": 45.189,
+            "min": 43.416,
+            "samples": [
+              45.828,
+              43.416,
+              45.189,
+              44.055,
+              43.74,
+              43.457,
+              46.076,
+              46.334,
+              45.42
+            ]
+          },
+          "query": {
+            "median": 27.839,
+            "min": 27.289,
+            "samples": [
+              27.545,
+              27.289,
+              27.754,
+              28.32,
+              27.839,
+              28.039,
+              29.448,
+              27.64,
+              29.337
+            ]
+          }
+        },
+        "rss": {
+          "start": {
+            "median": 38633472,
+            "min": 38518784,
+            "samples": [
+              38633472,
+              38715392,
+              38715392,
+              38551552,
+              38617088,
+              38518784,
+              38797312,
+              38830080,
+              38617088
+            ]
+          },
+          "instantiated": {
+            "median": 49577984,
+            "min": 49414144,
+            "samples": [
+              49545216,
+              49627136,
+              49610752,
+              49446912,
+              49545216,
+              49414144,
+              49676288,
+              49758208,
+              49577984
+            ]
+          },
+          "created": {
+            "median": 97402880,
+            "min": 94896128,
+            "samples": [
+              94896128,
+              95993856,
+              97452032,
+              96092160,
+              97517568,
+              97632256,
+              95682560,
+              98369536,
+              97402880
+            ]
+          },
+          "consulted": {
+            "median": 104316928,
+            "min": 101662720,
+            "samples": [
+              101662720,
+              103350272,
+              104316928,
+              104169472,
+              105398272,
+              105086976,
+              103530496,
+              106233856,
+              104366080
+            ]
+          },
+          "queried": {
+            "median": 106135552,
+            "min": 103464960,
+            "samples": [
+              103464960,
+              105332736,
+              106086400,
+              106168320,
+              107380736,
+              107020288,
+              105349120,
+              107970560,
+              106135552
+            ]
+          }
+        },
+        "samples": 9
+      },
+      "swipl": {
+        "ms": {
+          "instantiate": {
+            "median": 10.657,
+            "min": 10.39,
+            "samples": [
+              12.355,
+              10.543,
+              11.089,
+              10.905,
+              10.657,
+              10.488,
+              11.059,
+              10.391,
+              10.39
+            ]
+          },
+          "create": {
+            "median": 36.54,
+            "min": 36.248,
+            "samples": [
+              39.154,
+              36.54,
+              37.116,
+              36.708,
+              36.248,
+              36.425,
+              36.409,
+              36.986,
+              36.485
+            ]
+          },
+          "consult": {
+            "median": 17.676,
+            "min": 17.265,
+            "samples": [
+              17.598,
+              17.849,
+              17.265,
+              17.551,
+              17.76,
+              17.676,
+              17.756,
+              18.038,
+              17.301
+            ]
+          },
+          "query": {
+            "median": 15.246,
+            "min": 14.815,
+            "samples": [
+              15.617,
+              15.253,
+              14.844,
+              14.815,
+              15.706,
+              15.173,
+              15.246,
+              14.912,
+              16.096
+            ]
+          }
+        },
+        "rss": {
+          "start": {
+            "median": 38584320,
+            "min": 38502400,
+            "samples": [
+              38764544,
+              38584320,
+              38518784,
+              38535168,
+              38502400,
+              38584320,
+              38699008,
+              38682624,
+              38502400
+            ]
+          },
+          "instantiated": {
+            "median": 55066624,
+            "min": 54919168,
+            "samples": [
+              55050240,
+              55099392,
+              55066624,
+              55181312,
+              55033856,
+              55050240,
+              55099392,
+              55164928,
+              54919168
+            ]
+          },
+          "created": {
+            "median": 95305728,
+            "min": 94715904,
+            "samples": [
+              94994432,
+              95305728,
+              95305728,
+              96550912,
+              96452608,
+              95977472,
+              94781440,
+              95535104,
+              94715904
+            ]
+          },
+          "consulted": {
+            "median": 99008512,
+            "min": 98844672,
+            "samples": [
+              98844672,
+              99008512,
+              98992128,
+              101203968,
+              100974592,
+              100843520,
+              98959360,
+              99319808,
+              98893824
+            ]
+          },
+          "queried": {
+            "median": 118718464,
+            "min": 118177792,
+            "samples": [
+              118177792,
+              119324672,
+              118636544,
+              120520704,
+              120586240,
+              120963072,
+              118718464,
+              118620160,
+              118456320
+            ]
+          }
+        },
+        "samples": 9
+      }
+    }
+  },
+  "conformance": {
+    "engineVsEngine": {
+      "native": {
+        "comparable": true,
+        "cases": 76,
+        "identical": 76,
+        "divergent": []
+      },
+      "rust": {
+        "comparable": true,
+        "cases": 76,
+        "identical": 76,
+        "divergent": []
+      },
+      "wasm": {
+        "comparable": true,
+        "cases": 76,
+        "identical": 76,
+        "divergent": []
+      }
+    },
+    "legVsLeg": {
+      "trealla": {
+        "rust": {
+          "comparable": true,
+          "cases": 76,
+          "identical": 76,
+          "divergent": []
+        },
+        "wasm": {
+          "comparable": true,
+          "cases": 76,
+          "identical": 76,
+          "divergent": []
+        }
+      },
+      "swipl": {
+        "rust": {
+          "comparable": true,
+          "cases": 76,
+          "identical": 76,
+          "divergent": []
+        },
+        "wasm": {
+          "comparable": true,
+          "cases": 76,
+          "identical": 76,
+          "divergent": []
+        }
+      }
+    }
+  }
+}

@@ -63,6 +63,8 @@ fn main() {
     println!("cargo:rustc-link-search=native={}", staged_dir.display());
     println!("cargo:rustc-link-lib=static=insimul");
 
+    replay_link_manifest(&lib_dir);
+
     // libinsimul embeds Trealla, which needs libm and pthreads (CMakeLists marks
     // both INTERFACE requirements of the `insimul` target). On macOS both live in
     // libSystem and are linked implicitly.
@@ -75,6 +77,45 @@ fn main() {
     println!("cargo:root={}", root.display());
     println!("cargo:lib_dir={}", lib_dir.display());
     println!("cargo:include={}", root.join("include").display());
+}
+
+
+/// Replay `<build-dir>/insimul-link.txt`, the link interface CMake wrote down.
+///
+/// `libinsimul.a` is self-contained for one engine selection and not for
+/// another: an engine compiled INTO the archive needs nothing here, while an
+/// engine the archive merely references is a shared library this crate has to
+/// find at link time and the loader has to find at run time. Cargo cannot read
+/// CMake's link interface, so the build tree states it in a two-token-per-line
+/// file and this function replays it.
+///
+/// This function names no engine on purpose (leak L-02): the vendor appears in
+/// the generated file as a value, never in code that would have to be edited to
+/// swap engines. A build tree without the file is fine — it predates this or
+/// needs nothing.
+fn replay_link_manifest(lib_dir: &Path) {
+    let manifest = lib_dir.join("insimul-link.txt");
+    println!("cargo:rerun-if-changed={}", manifest.display());
+    let Ok(text) = fs::read_to_string(&manifest) else { return };
+
+    for line in text.lines() {
+        let Some((key, value)) = line.split_once('=') else { continue };
+        let value = value.trim();
+        if value.is_empty() {
+            continue;
+        }
+        match key.trim() {
+            "search" => println!("cargo:rustc-link-search=native={value}"),
+            "lib" => println!("cargo:rustc-link-lib=dylib={value}"),
+            // The engine's install name is @rpath-relative, so a test binary
+            // that links it will not START without this.
+            "rpath" => println!("cargo:rustc-link-arg=-Wl,-rpath,{value}"),
+            // `engine=` is provenance for a human reading the file; nothing to
+            // replay, and NOT a cargo:warning — a build that is working
+            // correctly must not print one.
+            _ => {}
+        }
+    }
 }
 
 const LIB_FILE: &str = "libinsimul.a";

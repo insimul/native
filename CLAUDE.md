@@ -66,6 +66,55 @@
   `docs/SWIPL_SPIKE.md` §3. The one that is a correctness difference rather than
   packaging is **G-05: `op/3` is not KB-scoped in SWI**, so one world's operators
   reach another world's source.
+- **The spike's ANSWER is `docs/SWIPL_MEASUREMENT.md`, and it is a NO** — SWI
+  missed the bar on size alone (2.55x shipped natively, 2.33x over the wire) and
+  beat the incumbent on startup, on memory, and matched it byte for byte on all
+  76 corpus cases on all three legs. Trealla stays; `chief/252` stays parked.
+  Do not re-derive that verdict from the tables — and do not quote a figure from
+  it without `scripts/measure.sh` having produced it.
+
+## Measuring the two engines (US-3)
+- **`scripts/measure.sh` is the one command**, and it REGENERATES the doc: the
+  tables in `docs/SWIPL_MEASUREMENT.md` live between
+  `<!-- BEGIN/END GENERATED: <id> -->` markers that `scripts/measure_report.mjs`
+  splices. Prose around them was written against the run in
+  `bench/results/measurements.json`; a re-run that moves a figure materially
+  makes the prose wrong, and fixing the prose is part of re-running.
+- **The world is a COMMITTED fixture, not something the benchmark invents.**
+  `bench/world/` (6 files, 1,630 clauses, 143,807 bytes) + `QUERIES.txt`, both
+  generated deterministically by `bench/world/generate.mjs` (fixed LCG, no
+  clock). `measure.sh` runs `generate.mjs --check` BEFORE it times anything, so
+  a mutated world fails the measurement instead of silently changing what every
+  published figure describes.
+- **Two cross-checks make the comparison legitimate, and both are hard errors**:
+  every record carries its own `insimul_version()` stamp, which the reporter
+  matches against the tree it was told to measure (measuring the wrong build
+  tree is the easiest mistake here and the hardest to see in a finished table),
+  and every leg of both engines must report the SAME solution total for the same
+  world. One harness per leg, shared by both engines: `tests/bench.c` (built by
+  the default build, deliberately NOT a ctest — a benchmark's wall clock is not
+  a gate), `rust/insimul/examples/bench.rs`, `scripts/wasm_bench.mjs`.
+- **Size means TOTAL BYTES SHIPPED, never the library file.** With SWI,
+  `libinsimul.a` is 40 KB against 3.3 MB and its `.wasm` is smaller than
+  Trealla's — because its Prolog library is a 6.5 MB home tree / 2.7 MB `.data`
+  image beside it. The build states that itself: `INSIMUL_ENGINE_RUNTIME_DIR`
+  (set in the engine's own cmake module) becomes a `runtime=` line in
+  `<build>/insimul-link.txt`, so `measure.sh` sizes "everything shipped" without
+  naming an engine.
+- **`<build>/insimul-link.txt` is how a NON-CMAKE consumer links this tree.**
+  `rust/insimul-sys/build.rs` replays it (`search=`/`lib=`), and
+  `rust/insimul/build.rs` replays the `rpath=` line — a build script's
+  `rustc-link-arg` only reaches its OWN package's targets, and the binaries that
+  must start (tests, examples) are the wrapper crate's. Without it every Rust
+  binary on a located engine dies in dyld before `main`. Point the Rust leg at
+  the other engine with `INSIMUL_LIB_DIR=<build-dir>`.
+- **A loaded host inflates the SLOWER engine most** (more phases to be
+  descheduled in): at load 18 on this 14-CPU host Trealla's wasm `create` read
+  244 ms instead of 86 ms while no SWI figure moved. The load average is
+  recorded in the published provenance table and `measure.sh` warns when it is
+  above the CPU count. Also: the first process of a run pays cold file cache
+  (SWI's first `create` ~12 ms vs a ~7 ms median), which is why nothing here is
+  ever measured with one sample.
 
 ## Engine neutrality lives in the bootstrap (US-2)
 - **Flags the output depends on are PINNED, never inherited**: `insimul_boot.pl`
