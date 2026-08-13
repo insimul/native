@@ -80,34 +80,35 @@ extern "C" {
 
     /// Last error message for this KB, or NULL if the most recent operation
     /// succeeded. Owned by the KB; valid until the next call on it.
+    ///
+    /// This is human-readable DETAIL — the engine's own rendering of the caught
+    /// exception. Branch on [`insimul_last_error_class`] instead.
     pub fn insimul_last_error(kb: *mut insimul_kb) -> *const c_char;
 
+    /// The ISO error class of that message (`"type_error"`, `"syntax_error"`,
+    /// …), or NULL if the most recent operation succeeded. Same ownership and
+    /// lifetime as [`insimul_last_error`]. Drawn from ISO/IEC 13211-1 7.12.2's
+    /// fixed vocabulary, so it is the same token on any conforming engine.
+    pub fn insimul_last_error_class(kb: *mut insimul_kb) -> *const c_char;
+
     /// Static version stamp for this build, e.g.
-    /// `"insimul 0.1.0 (git abc1234, trealla v2.106.1/07de013…)"`. Never NULL.
+    /// `"insimul 0.1.0 (git abc1234, engine trealla/v2.106.1/07de013…)"`. The
+    /// engine's identity is a value in that string, never part of its shape.
+    /// Never NULL.
     pub fn insimul_version() -> *const c_char;
 }
 
-/// Keep the Prolog engine's process-global state alive for the lifetime of the
-/// process.
+/// No longer necessary: **libinsimul keeps its own engine instance alive** and
+/// [`insimul_kb_create`]/[`insimul_kb_destroy`] may now be called in any order,
+/// any number of times, including destroying every KB and creating another.
 ///
-/// The embedded engine tears down its global symbol table when the *last* KB is
-/// destroyed, and re-initializing it afterwards deadlocks on the next teardown
-/// (see `CLAUDE.md`, "Trealla gotchas"). Any process that creates KBs in more
-/// than one batch — a test binary, the server's request handlers — must
-/// therefore hold one KB open forever. Call this before the first
-/// [`insimul_kb_create`]; it leaks exactly one KB, once, and is thread-safe and
-/// idempotent.
-pub fn ensure_engine_keepalive() {
-    use std::sync::Once;
-    static KEEPALIVE: Once = Once::new();
-    KEEPALIVE.call_once(|| {
-        // SAFETY: no arguments, and the returned handle is intentionally never
-        // destroyed. A NULL return means the engine could not initialize at
-        // all, which the caller's own create will report.
-        let kb = unsafe { insimul_kb_create() };
-        assert!(!kb.is_null(), "insimul: engine failed to initialize");
-        // The handle is deliberately leaked; it is never touched again, so it
-        // stays sound to create/use other KBs from other threads.
-        let _ = kb;
-    });
-}
+/// This used to leak one KB on purpose, because the embedded engine tore down
+/// its process-global symbol table when the last KB died and spun forever if it
+/// was ever brought back up. That was an engine detail leaking through the ABI,
+/// and seven places across five repositories each worked around it by hand
+/// (`docs/ABI_ENGINE_LEAK_AUDIT.md`, leak L-01); US-2 moved the fix into
+/// `insimul_kb_create` where it belongs.
+///
+/// Kept as a no-op so existing callers keep compiling. New code should not call
+/// it, and it will be removed in a future release.
+pub fn ensure_engine_keepalive() {}

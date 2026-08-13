@@ -84,22 +84,35 @@ semver="$(head -n1 VERSION | tr -d '[:space:]')"
 
 if git_sha="$(git -C "$root" rev-parse --short HEAD 2>/dev/null)"; then :; else git_sha="unknown"; fi
 
-# Read the authoritative Trealla pin straight from CMakeLists.txt (same source
-# the build compiles against), so the stamp can never drift from what was built.
-trealla_tag="$(sed -n 's/.*TREALLA_GIT_TAG "\([^"]*\)".*/\1/p' CMakeLists.txt | head -n1)"
-trealla_commit="$(sed -n 's/.*TREALLA_GIT_COMMIT "\([0-9a-f]*\)".*/\1/p' CMakeLists.txt | head -n1)"
-[ -n "$trealla_tag" ]    || trealla_tag="unknown"
-[ -n "$trealla_commit" ] || trealla_commit="unknown"
+# Read the authoritative engine pin straight from the vendor drop that the build
+# compiles — vendor/trealla/VENDORED.json, the same file CMakeLists.txt reads
+# (US-3) — so the stamp can never drift from what was built. The stamp's KEYS
+# are engine_name/engine_version/engine_commit — neutral, so a future engine
+# changes these values and not a consumer's parser (US-2, L-02).
+engine_pin="vendor/trealla/VENDORED.json"
+engine_name="$(sed -n 's/.*INSIMUL_ENGINE_NAME "\([^"]*\)".*/\1/p' CMakeLists.txt | head -n1)"
+engine_version="$(sed -n 's/.*"tag"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$engine_pin" | head -n1)"
+engine_commit="$(sed -n 's/.*"commit"[[:space:]]*:[[:space:]]*"\([0-9a-f]*\)".*/\1/p' "$engine_pin" | head -n1)"
+[ -n "$engine_name" ]    || engine_name="unknown"
+[ -n "$engine_version" ] || engine_version="unknown"
+[ -n "$engine_commit" ]  || engine_commit="unknown"
 
 # The one stamp writer both targets use — `platform` is the only field that
 # differs, so a wasm package is cross-checked exactly like a macos-arm64 one.
+# The trealla_* keys are DEPRECATED aliases of engine_version/engine_commit,
+# kept so already-vendored consumers (babylon's prolog-wasm vendor test reads
+# trealla_commit) keep working across one re-vendor. New readers use the engine_*
+# keys; tests/wasm_package_smoke.mjs asserts the alias never drifts from them.
 write_stamp() {  # write_stamp <outdir> <platform-label>
   cat > "$1/VERSION" <<EOF
 insimul $semver
 platform $2
 git $git_sha
-trealla_tag $trealla_tag
-trealla_commit $trealla_commit
+engine_name $engine_name
+engine_version $engine_version
+engine_commit $engine_commit
+trealla_tag $engine_version
+trealla_commit $engine_commit
 EOF
 }
 

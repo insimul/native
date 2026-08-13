@@ -1,0 +1,29 @@
+{
+  "name": "trealla",
+  "description": "Trealla Prolog — the ISO Prolog engine libinsimul embeds. Vendored (committed) source drop, unmodified.",
+  "repository": "https://github.com/trealla-prolog/trealla",
+  "commit": "07de013677af760a8bca0594ae4b2bef158a3cde",
+  "tag": "v2.106.1",
+  "vendoredOn": "2026-08-12",
+  "license": "MIT",
+  "licenseFile": "LICENSE",
+  "licenseFinding": "../../docs/TREALLA_LICENSE_FINDING.md",
+  "subset": [
+    "src/",
+    "library/",
+    "util/bin2c.c",
+    "LICENSE",
+    "ATTRIBUTION"
+  ],
+  "omitted": [
+    "tests/", "samples/", "docs/", "man/", "Makefile", "tpl.c",
+    "README.md", "_config.yml", "trealla.png", ".github/"
+  ],
+  "gitObjects": {
+    "ATTRIBUTION": "e883ce6ca9aedb678ef891e20254590279b08fe6",
+    "LICENSE": "d31f9ac3ff88c4e3092d85b67a1a96aa4971c2e2",
+    "library": "f0e32347fd2e5813e100a581d6ff4635a212284e",
+    "src": "33804986bb686ff8cc3ce3c8f7228baac6d56ead",
+    "util": "ea4ceb103bc21137a34bbaf880b566e78e14618d"
+  }
+}

@@ -9,10 +9,13 @@ debugging a build.
 ## Requirements
 
 - **CMake ≥ 3.24** and a C11 toolchain (the library is C11, no C++ required to build it).
-- **Network access on first configure.** CMake fetches Trealla from GitHub at the pinned
-  commit via `FetchContent`, so the first configure needs the network and a little extra
-  time. Trealla is *not* committed into this tree; the commit SHA in `CMakeLists.txt` /
-  [../THIRD_PARTY.md](../THIRD_PARTY.md) is the single source of truth for the pin.
+- **No network access, ever.** Trealla's source is *committed* under `vendor/trealla/`
+  at a pinned commit, so a clean checkout configures and builds offline. The pin lives in
+  `vendor/trealla/VENDORED.json` and CMake reads it from there — one authoritative
+  location; see [../THIRD_PARTY.md](../THIRD_PARTY.md). The `trealla_vendor` ctest
+  recomputes the vendored tree's upstream git object ids, so the committed bytes are
+  provably upstream's at that commit, and fails if a `FetchContent` of the engine ever
+  comes back.
 
 ```sh
 cmake -B build

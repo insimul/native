@@ -3,7 +3,7 @@
  * running on the Emscripten/WebAssembly build.
  *
  * This is hand-written and engine-agnostic: it takes an already-instantiated
- * Emscripten module (the generated `insimul.mjs` glue) and turns the twelve raw
+ * Emscripten module (the generated `insimul.mjs` glue) and turns the thirteen raw
  * C entry points into JS objects that cannot leak. It contains no Prolog
  * knowledge and no Trealla knowledge — same opacity rule as insimul.h.
  *
@@ -61,11 +61,20 @@ export async function loadInsimul(moduleFactory, moduleOptions = {}) {
   return new Insimul(await moduleFactory(moduleOptions));
 }
 
-/** Thrown when the ABI reports failure; `.message` is insimul_last_error(). */
+/**
+ * Thrown when the ABI reports failure.
+ *
+ * `.message` is insimul_last_error() — human-readable DETAIL whose wording is
+ * the engine's. `.class` is insimul_last_error_class(), one of ISO 13211-1
+ * 7.12.2's fixed error-class names (`'type_error'`, `'existence_error'`,
+ * `'syntax_error'`, …) or `'unknown'`. Branch on `.class`; never string-match
+ * `.message`.
+ */
 export class InsimulError extends Error {
-  constructor(message) {
+  constructor(message, errorClass = null) {
     super(message);
     this.name = 'InsimulError';
+    this.class = errorClass;
   }
 }
 
@@ -73,7 +82,6 @@ export class Insimul {
   /** @param {object} module an instantiated Emscripten module. */
   constructor(module) {
     this.module = module;
-    this._keepalive = null;
 
     const c = (name, ret, args) => module.cwrap(name, ret, args);
     this._fn = {
@@ -88,31 +96,28 @@ export class Insimul {
       kbSnapshot: c('insimul_kb_snapshot', 'number', ['number']),
       kbRestore:  c('insimul_kb_restore',  'number', ['number', 'number']),
       lastError:  c('insimul_last_error',  'number', ['number']),
+      lastErrorClass: c('insimul_last_error_class', 'number', ['number']),
       version:    c('insimul_version',     'number', []),
     };
   }
 
-  /** The build stamp: "insimul <semver> (git <sha>, trealla <tag>/<commit>)". */
+  /**
+   * The build stamp: "insimul <semver> (git <sha>, engine <name>/<version>/<commit>)".
+   * The engine's identity is that field's VALUE, never part of the shape.
+   */
   version() {
     return this.module.UTF8ToString(this._fn.version());
   }
 
   /**
-   * Create a knowledge base.
+   * Create a knowledge base. KBs may be created and destroyed in any order,
+   * including destroying every one and creating another.
    *
-   * Note the hidden first KB: Trealla tears down its process-global symbol
-   * table when the LAST prolog instance is destroyed, and re-initialising it
-   * afterwards deadlocks (see CLAUDE.md "Trealla gotchas"). So the first
-   * createKb() also opens an internal keepalive KB that is never destroyed,
-   * which keeps that global refcount above zero for the life of the module.
-   * Callers can then create and destroy KBs freely. It costs one empty KB.
+   * (This used to open a hidden keepalive KB of its own, because the engine
+   * tore down process-global state with the last KB and then crashed or spun.
+   * libinsimul owns that now — see docs/ABI_ENGINE_LEAK_AUDIT.md leak L-01.)
    */
   createKb() {
-    if (this._keepalive === null) {
-      const ka = this._fn.kbCreate();
-      if (!ka) throw new InsimulError('insimul_kb_create() failed (keepalive)');
-      this._keepalive = ka;
-    }
     const handle = this._fn.kbCreate();
     if (!handle) throw new InsimulError('insimul_kb_create() failed');
     return new Kb(this, handle);
@@ -151,8 +156,19 @@ export class Kb {
     return ptr ? this._insimul.module.UTF8ToString(ptr) : null;
   }
 
+  /** insimul_last_error_class(kb) — its ISO error class, or null. */
+  lastErrorClass() {
+    const ptr = this._insimul._fn.lastErrorClass(this._h());
+    return ptr ? this._insimul.module.UTF8ToString(ptr) : null;
+  }
+
+  /** The error for the most recent failure, carrying class + message. */
+  _error(fallback) {
+    return new InsimulError(this.lastError() ?? fallback, this.lastErrorClass());
+  }
+
   _check(rc) {
-    if (rc !== 0) throw new InsimulError(this.lastError() ?? 'unknown insimul error');
+    if (rc !== 0) throw this._error('unknown insimul error');
     return rc;
   }
 
@@ -177,7 +193,7 @@ export class Kb {
   retract(fact) {
     const { _fn } = this._insimul;
     const rc = this._insimul._withCString(fact, (p) => _fn.kbRetract(this._h(), p));
-    if (rc < 0) throw new InsimulError(this.lastError() ?? 'unknown insimul error');
+    if (rc < 0) throw this._error('unknown insimul error');
     return rc === 0;
   }
 
@@ -188,7 +204,7 @@ export class Kb {
   query(goal) {
     const { _fn } = this._insimul;
     const q = this._insimul._withCString(goal, (p) => _fn.queryStart(this._h(), p));
-    if (!q) throw new InsimulError(this.lastError() ?? 'query failed to start');
+    if (!q) throw this._error('query failed to start');
     return new Query(this._insimul, q);
   }
 
@@ -209,7 +225,7 @@ export class Kb {
   /** Serialize the dynamic clause set as canonical Prolog text. */
   snapshot() {
     const ptr = this._insimul._fn.kbSnapshot(this._h());
-    if (!ptr) throw new InsimulError(this.lastError() ?? 'snapshot failed');
+    if (!ptr) throw this._error('snapshot failed');
     // Copy now: the KB owns this buffer and reuses it on the next snapshot.
     return this._insimul.module.UTF8ToString(ptr);
   }

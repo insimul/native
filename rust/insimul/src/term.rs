@@ -6,6 +6,8 @@
 //! { "Var": <value>, ... }        one entry per named goal variable
 //!   atom            -> "foo"
 //!   integer / float -> 42 / 3.14
+//!   big integer     -> {"bigint":"<decimal digits>"}   (beyond 2^53-1)
+//!   inf / nan       -> {"float":"inf"|"-inf"|"nan"}
 //!   list            -> [ <value>, ... ]      (the empty list is [])
 //!   compound f(A..) -> {"functor":"f","args":[ <value>, ... ]}
 //!   unbound var     -> null
@@ -30,6 +32,15 @@ pub enum Term {
     Atom(String),
     /// An integer.
     Int(i64),
+    /// An integer too large for `i64` — the ABI's `{"bigint":"…"}` shape, kept
+    /// as its exact decimal text.
+    ///
+    /// The core emits this instead of a JSON number for any integer beyond
+    /// 2^53-1, because a JSON number is a double to every consumer and would
+    /// silently round. This crate used to do exactly that rounding; keeping the
+    /// digits means a caller can hand them to a bignum library, or refuse, but
+    /// never silently gets a wrong number (leak L-06).
+    BigInt(String),
     /// A float.
     Float(f64),
     /// A proper list, e.g. `[a, 1, f(x)]`.
@@ -124,9 +135,10 @@ impl<'de> Visitor<'de> for TermVisitor {
     }
 
     fn visit_u64<E: de::Error>(self, v: u64) -> Result<Term, E> {
-        // Integers beyond i64 can only come from a bignum; keep them as a float
-        // rather than failing the whole solution.
-        Ok(i64::try_from(v).map_or_else(|_| Term::Float(v as f64), Term::Int))
+        // The core emits anything beyond 2^53-1 as {"bigint":"…"}, so a u64 that
+        // does not fit an i64 should be unreachable; keep the digits rather than
+        // rounding to a float if it ever happens.
+        Ok(i64::try_from(v).map_or_else(|_| Term::BigInt(v.to_string()), Term::Int))
     }
 
     fn visit_f64<E: de::Error>(self, v: f64) -> Result<Term, E> {
@@ -154,7 +166,24 @@ impl<'de> Visitor<'de> for TermVisitor {
             match key.as_str() {
                 "functor" => functor = Some(map.next_value()?),
                 "args" => args = Some(map.next_value()?),
-                other => return Err(de::Error::unknown_field(other, &["functor", "args"])),
+                // The two tagged scalars. They are single-key objects, so
+                // returning here cannot lose a sibling field.
+                "bigint" => return Ok(Term::BigInt(map.next_value()?)),
+                "float" => {
+                    let tag: String = map.next_value()?;
+                    return match tag.as_str() {
+                        "inf" => Ok(Term::Float(f64::INFINITY)),
+                        "-inf" => Ok(Term::Float(f64::NEG_INFINITY)),
+                        "nan" => Ok(Term::Float(f64::NAN)),
+                        other => Err(de::Error::unknown_variant(other, &["inf", "-inf", "nan"])),
+                    };
+                }
+                other => {
+                    return Err(de::Error::unknown_field(
+                        other,
+                        &["functor", "args", "bigint", "float"],
+                    ))
+                }
             }
         }
         match (functor, args) {

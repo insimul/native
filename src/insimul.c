@@ -25,6 +25,7 @@
 #include <windows.h>
 #include <io.h>
 #else
+#include <pthread.h>
 #include <unistd.h>
 #endif
 
@@ -46,6 +47,7 @@ void g_sigfn(int s) { (void)s; }
 struct insimul_kb {
     prolog *pl;
     char   *last_error;   /* NULL when the last op succeeded */
+    char   *error_class;  /* ISO class of last_error, NULL when it is NULL */
     char   *snapshot;     /* last insimul_kb_snapshot image (owned by the KB) */
 };
 
@@ -57,15 +59,62 @@ struct insimul_query {
 
 /* ------------------------------------------------------------------ errors */
 
-static void set_error(insimul_kb *kb, const char *msg)
+/*
+ * Record an error. `cls` is the ISO error class the bootstrap classified it as
+ * (see '$err_class'/2), or NULL when the failure is the ABI's own (out of
+ * memory, temp file) rather than a Prolog exception — those get "system_error",
+ * because to a host they are exactly that.
+ */
+static void set_error_class(insimul_kb *kb, const char *msg, const char *cls)
 {
     free(kb->last_error);
+    free(kb->error_class);
     kb->last_error = msg ? strdup(msg) : NULL;
+    kb->error_class = msg ? strdup(cls ? cls : "system_error") : NULL;
+}
+
+static void set_error(insimul_kb *kb, const char *msg)
+{
+    set_error_class(kb, msg, NULL);
+}
+
+/*
+ * Split an "ERR" record's text — "<class> <term>" as written by '$err_lines'/3 —
+ * into its class (copied into `cls`) and the term text (returned). A record
+ * without a class token is reported as-is with a system_error class; that can
+ * only happen if the bootstrap and this file disagree, which the abi/neutrality
+ * tests would catch first.
+ */
+static const char *split_err(const char *text, char *cls, size_t clssz)
+{
+    cls[0] = '\0';
+    if (!text) return NULL;
+    const char *sp = strchr(text, ' ');
+    if (!sp) return text;
+    size_t n = (size_t)(sp - text);
+    if (n >= clssz) n = clssz - 1;
+    memcpy(cls, text, n);
+    cls[n] = '\0';
+    return sp + 1;
+}
+
+/* Record an ERR record's text (class + term) on the KB. */
+static void set_error_record(insimul_kb *kb, const char *text)
+{
+    char cls[32];
+    const char *msg = split_err(text, cls, sizeof cls);
+    set_error_class(kb, msg && *msg ? msg : "insimul: operation failed",
+                    cls[0] ? cls : NULL);
 }
 
 const char *insimul_last_error(insimul_kb *kb)
 {
     return kb ? kb->last_error : NULL;
+}
+
+const char *insimul_last_error_class(insimul_kb *kb)
+{
+    return kb ? kb->error_class : NULL;
 }
 
 /* ----------------------------------------------------------------- version */
@@ -81,18 +130,29 @@ const char *insimul_last_error(insimul_kb *kb)
 #ifndef INSIMUL_GIT_SHA
 #define INSIMUL_GIT_SHA "unknown"
 #endif
-#ifndef INSIMUL_TREALLA_TAG
-#define INSIMUL_TREALLA_TAG "unknown"
+/*
+ * The engine's identity is a VALUE here, never part of the schema: the stamp
+ * reads "engine <name>/<version>/<commit>" whatever engine is underneath, so
+ * swapping it changes what the field says and not what consumers parse (leak
+ * L-02). scripts/package.sh writes the same three fields into a package's
+ * VERSION file under engine_name / engine_version / engine_commit.
+ */
+#ifndef INSIMUL_ENGINE_NAME
+#define INSIMUL_ENGINE_NAME "unknown"
 #endif
-#ifndef INSIMUL_TREALLA_COMMIT
-#define INSIMUL_TREALLA_COMMIT "unknown"
+#ifndef INSIMUL_ENGINE_VERSION
+#define INSIMUL_ENGINE_VERSION "unknown"
+#endif
+#ifndef INSIMUL_ENGINE_COMMIT
+#define INSIMUL_ENGINE_COMMIT "unknown"
 #endif
 
 const char *insimul_version(void)
 {
     return "insimul " INSIMUL_VERSION
            " (git " INSIMUL_GIT_SHA
-           ", trealla " INSIMUL_TREALLA_TAG "/" INSIMUL_TREALLA_COMMIT ")";
+           ", engine " INSIMUL_ENGINE_NAME "/" INSIMUL_ENGINE_VERSION
+           "/" INSIMUL_ENGINE_COMMIT ")";
 }
 
 /* --------------------------------------------------------------- temp files */
@@ -251,10 +311,67 @@ static const char *first_record(char *buf, char *tag, size_t tagsz)
 
 /* ------------------------------------------------------------- KB lifecycle */
 
+/*
+ * The engine keepalive (leak L-01).
+ *
+ * The embedded engine keeps PROCESS-GLOBAL state (its symbol table) and tears it
+ * down when the last engine instance is destroyed; bringing it back up and
+ * tearing it down a second time never returns — it spins, so it does not even
+ * show as a blocked thread. That made insimul_kb_destroy's real contract "never
+ * destroy your last KB", and seven places across five repositories discovered
+ * that by hand and each opened a hidden KB of their own.
+ *
+ * It belongs here. libinsimul opens one engine instance the first time a KB is
+ * created and never closes it, so the global refcount never returns to zero and
+ * insimul_kb_destroy means exactly what insimul.h says it means. It costs one
+ * empty engine instance per process, is created once (thread-safe), and is
+ * deliberately leaked: there is no ABI call after which it would be safe to free.
+ *
+ * A host that never creates a KB never pays for it.
+ */
+static prolog *g_keepalive = NULL;
+
+static void keepalive_init(void)
+{
+    g_keepalive = pl_create();
+    if (!g_keepalive) return;
+    set_quiet(g_keepalive);
+    /* Bootstrapped exactly like a real KB: the first instance to load a program
+     * initializes engine state the later ones then share, so a bare pl_create()
+     * here is not equivalent (it leaves the process crashing on the third KB). */
+    FILE *fp = fmemopen((void *)insimul_boot_pl, (size_t)insimul_boot_pl_len, "r");
+    if (fp) {
+        pl_consult_fp(g_keepalive, fp, "insimul_boot");
+        fclose(fp);
+    }
+}
+
+#ifdef _WIN32
+static INIT_ONCE g_keepalive_once = INIT_ONCE_STATIC_INIT;
+static BOOL CALLBACK keepalive_once_cb(PINIT_ONCE o, PVOID p, PVOID *c)
+{
+    (void)o; (void)p; (void)c;
+    keepalive_init();
+    return TRUE;
+}
+static void ensure_keepalive(void)
+{
+    InitOnceExecuteOnce(&g_keepalive_once, keepalive_once_cb, NULL, NULL);
+}
+#else
+static pthread_once_t g_keepalive_once = PTHREAD_ONCE_INIT;
+static void ensure_keepalive(void)
+{
+    pthread_once(&g_keepalive_once, keepalive_init);
+}
+#endif
+
 insimul_kb *insimul_kb_create(void)
 {
     insimul_kb *kb = calloc(1, sizeof *kb);
     if (!kb) return NULL;
+
+    ensure_keepalive();   /* before the first pl_create, and only once */
 
     kb->pl = pl_create();
     if (!kb->pl) { free(kb); return NULL; }
@@ -276,6 +393,7 @@ void insimul_kb_destroy(insimul_kb *kb)
     if (!kb) return;
     pl_destroy(kb->pl);
     free(kb->last_error);
+    free(kb->error_class);
     free(kb->snapshot);
     free(kb);
 }
@@ -303,7 +421,7 @@ int insimul_kb_consult(insimul_kb *kb, const char *source)
             char tag[16];
             const char *text = first_record(out, tag, sizeof tag);
             if (strcmp(tag, "OK") == 0) rc = 0;
-            else { set_error(kb, text && *text ? text : "insimul: consult failed"); rc = -1; }
+            else { set_error_record(kb, text); rc = -1; }
             free(out);
         }
     } else {
@@ -324,7 +442,7 @@ int insimul_kb_assert(insimul_kb *kb, const char *fact)
     char tag[16];
     const char *text = first_record(out, tag, sizeof tag);
     int rc = (strcmp(tag, "OK") == 0) ? 0
-           : (set_error(kb, text && *text ? text : "insimul: assert failed"), -1);
+           : (set_error_record(kb, text), -1);
     free(out);
     return rc;
 }
@@ -340,7 +458,7 @@ int insimul_kb_retract(insimul_kb *kb, const char *fact)
     int rc;
     if (strcmp(tag, "OK") == 0)        rc = 0;
     else if (strcmp(tag, "NONE") == 0) rc = 1;
-    else { set_error(kb, text && *text ? text : "insimul: retract failed"); rc = -1; }
+    else { set_error_record(kb, text); rc = -1; }
     free(out);
     return rc;
 }
@@ -376,7 +494,7 @@ insimul_query *insimul_query_start(insimul_kb *kb, const char *goal)
             if (!sols[count]) { had_err = 1; break; }
             count++;
         } else if (strncmp(line, "ERR ", 4) == 0) {
-            set_error(kb, line + 4);
+            set_error_record(kb, line + 4);
             had_err = 1;
             break;
         }
@@ -466,7 +584,7 @@ const char *insimul_kb_snapshot(insimul_kb *kb)
             if (kb->snapshot) ret = kb->snapshot;
             else set_error(kb, "insimul: out of memory");
         } else if (strncmp(out, "ERR ", 4) == 0) {
-            set_error(kb, out + 4);
+            set_error_record(kb, out + 4);
         } else {
             set_error(kb, out[0] ? out : "insimul: snapshot failed");
         }
@@ -496,7 +614,7 @@ int insimul_kb_restore(insimul_kb *kb, const char *image)
             char tag[16];
             const char *text = first_record(out, tag, sizeof tag);
             if (strcmp(tag, "OK") == 0) rc = 0;
-            else { set_error(kb, text && *text ? text : "insimul: restore failed"); rc = -1; }
+            else { set_error_record(kb, text); rc = -1; }
             free(out);
         }
     } else {

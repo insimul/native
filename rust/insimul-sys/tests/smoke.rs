@@ -41,8 +41,6 @@ unsafe fn last_error(kb: *mut insimul_kb) -> String {
 
 #[test]
 fn ffi_round_trips_a_program_and_a_query() {
-    ensure_engine_keepalive();
-
     unsafe {
         let kb = insimul_kb_create();
         assert!(!kb.is_null(), "insimul_kb_create returned NULL");
@@ -91,8 +89,6 @@ fn ffi_round_trips_a_program_and_a_query() {
 
 #[test]
 fn snapshot_restores_into_a_fresh_kb() {
-    ensure_engine_keepalive();
-
     unsafe {
         let a = insimul_kb_create();
         assert!(!a.is_null());
@@ -125,13 +121,12 @@ fn version_stamp_is_well_formed() {
         .to_str()
         .unwrap();
     assert!(stamp.starts_with("insimul "), "unexpected stamp: {stamp}");
-    assert!(stamp.contains("trealla "), "unexpected stamp: {stamp}");
+    // `engine <name>/<version>/<commit>` — the field, not the vendor in it.
+    assert!(stamp.contains("engine "), "unexpected stamp: {stamp}");
 }
 
 #[test]
 fn errors_are_reported_not_thrown() {
-    ensure_engine_keepalive();
-
     unsafe {
         let kb = insimul_kb_create();
         assert!(!kb.is_null());

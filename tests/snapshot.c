@@ -15,8 +15,8 @@
  *   - restore REPLACES state (a stray fact is wiped) and rejects a malformed image
  *     without mutating the KB (last_error set, state preserved).
  *
- * A keepalive KB is held for the whole run because Trealla deadlocks on a full
- * teardown-then-reinit cycle — see insimul-native/CLAUDE.md and tests/conformance.c.
+ * No keepalive KB is needed: libinsimul holds its own engine instance open, so
+ * KBs may be created and destroyed in any order (US-2, leak L-01).
  */
 
 #include "insimul.h"
@@ -122,11 +122,6 @@ static void compare_kbs(insimul_kb *a, insimul_kb *b)
 
 int main(void)
 {
-    /* Keepalive: keep the engine's process-global state alive across per-KB
-     * create/destroy (Trealla teardown-reinit deadlock). See CLAUDE.md. */
-    insimul_kb *keepalive = insimul_kb_create();
-    if (!keepalive) { fprintf(stderr, "snapshot: keepalive create failed\n"); return 2; }
-
     /* --- build the fixture KB and snapshot it ----------------------------- */
     insimul_kb *kb = insimul_kb_create();
     CHECK(kb != NULL, "create source KB");
@@ -199,7 +194,6 @@ int main(void)
     free(fixture);
     insimul_kb_destroy(kb2);
     insimul_kb_destroy(kb);
-    insimul_kb_destroy(keepalive);
 
     /* NULL-safety of the new entry points. */
     CHECK(insimul_kb_snapshot(NULL) == NULL, "snapshot(NULL) is NULL-safe");

@@ -22,9 +22,18 @@
 //! cases, an unparseable file, or a case whose query errors is a hard failure,
 //! so this gate cannot pass vacuously. `wrong_expectation_fails_the_gate` pins
 //! that non-vacuity in the suite itself.
+//!
+//! CROSS-LEG PARITY. Setting `INSIMUL_CONFORMANCE_JSON=<path>` additionally
+//! writes one JSON-Lines record per case — area, name, status, and the RAW
+//! solution strings exactly as `insimul_query_next()` returned them (via
+//! `KnowledgeBase::solve_raw`, NOT the decoded `Bindings`, so a difference in
+//! number formatting or escaping still shows). The C and wasm legs write the
+//! same records in the same order, so `scripts/conformance_parity.sh` diffs all
+//! three byte for byte instead of merely observing that each is green.
 
 use insimul::{Bindings, KnowledgeBase};
 use serde_json::Value;
+use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
 
 /// Documented corpus amendments — kept in lockstep with the `AMENDMENTS` table
@@ -65,6 +74,63 @@ struct Case {
 enum Outcome {
     Pass,
     Fail(String),
+}
+
+// ------------------------------------------------------------------ //
+// The parity dump (INSIMUL_CONFORMANCE_JSON).
+//
+// Byte-for-byte the same record shape as tests/conformance.c's dump_record()
+// and tests/wasm_conformance.mjs's — same key order, same escaping rules — or
+// the diff in scripts/conformance_parity.sh would report a difference that is
+// only about the harness.
+// ------------------------------------------------------------------ //
+
+fn dump_str(out: &mut String, s: &str) {
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if (c as u32) < 0x20 => {
+                let _ = write!(out, "\\u{:04x}", c as u32);
+            }
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+}
+
+fn dump_record(
+    out: &mut String,
+    area: &str,
+    name: &str,
+    status: &str,
+    amended: bool,
+    raw: &[String],
+    why: Option<&str>,
+) {
+    out.push_str("{\"area\":");
+    dump_str(out, area);
+    out.push_str(",\"name\":");
+    dump_str(out, name);
+    out.push_str(",\"status\":");
+    dump_str(out, status);
+    let _ = write!(out, ",\"amended\":{amended},\"solutions\":[");
+    for (i, r) in raw.iter().enumerate() {
+        if i > 0 {
+            out.push(',');
+        }
+        dump_str(out, r);
+    }
+    out.push(']');
+    if let Some(why) = why {
+        out.push_str(",\"error\":");
+        dump_str(out, why);
+    }
+    out.push_str("}\n");
 }
 
 // ------------------------------------------------------------------ //
@@ -256,25 +322,57 @@ fn solutions_match(expected: &[Bindings], actual: &[Bindings]) -> bool {
 }
 
 /// Run one case in a fresh KB (cases are isolated from each other).
-fn run_case(case: &Case) -> Outcome {
-    let solve = || -> insimul::Result<Vec<Bindings>> {
+///
+/// Returns the outcome and the RAW solution strings the ABI produced, which the
+/// parity dump records verbatim.
+fn run_case(case: &Case) -> (Outcome, Vec<String>) {
+    let solve = || -> insimul::Result<Vec<String>> {
         let mut kb = KnowledgeBase::new()?;
         if let Some(source) = &case.source {
             kb.consult(source)?;
         }
-        kb.solve(&case.query)
+        kb.solve_raw(&case.query)
     };
 
-    match solve() {
-        Err(e) => Outcome::Fail(format!(
-            "query error: {e}\n         query:    {}\n         expected: {:?}",
-            case.query, case.expected
-        )),
-        Ok(actual) if solutions_match(&case.expected, &actual) => Outcome::Pass,
-        Ok(actual) => Outcome::Fail(format!(
-            "query:    {}\n         expected: {:?}  (unordered)\n         actual:   {:?}",
-            case.query, case.expected, actual
-        )),
+    let raw = match solve() {
+        Err(e) => {
+            return (
+                Outcome::Fail(format!(
+                    "query error: {e}\n         query:    {}\n         expected: {:?}",
+                    case.query, case.expected
+                )),
+                Vec::new(),
+            )
+        }
+        Ok(raw) => raw,
+    };
+
+    // Decode the same strings the dump records, so the two can never disagree.
+    let decoded: std::result::Result<Vec<Bindings>, _> =
+        raw.iter().map(|j| serde_json::from_str::<Bindings>(j)).collect();
+    let actual = match decoded {
+        Err(e) => {
+            return (
+                Outcome::Fail(format!(
+                    "binding set did not decode: {e}\n         query:    {}",
+                    case.query
+                )),
+                raw,
+            )
+        }
+        Ok(a) => a,
+    };
+
+    if solutions_match(&case.expected, &actual) {
+        (Outcome::Pass, raw)
+    } else {
+        (
+            Outcome::Fail(format!(
+                "query:    {}\n         expected: {:?}  (unordered)\n         actual:   {:?}",
+                case.query, case.expected, actual
+            )),
+            raw,
+        )
     }
 }
 
@@ -290,6 +388,8 @@ fn prolog_corpus_passes() {
     let files = corpus_files(&dir);
     let (mut passed, mut failed, mut cases, mut amended) = (0, 0, 0, 0);
     let mut failures = Vec::new();
+    let dump_path = std::env::var_os("INSIMUL_CONFORMANCE_JSON");
+    let mut dump = String::new();
 
     for path in &files {
         let file_cases = parse_file(path);
@@ -309,15 +409,32 @@ fn prolog_corpus_passes() {
                     amend_reason(&case.area, &case.name)
                 );
             }
-            match run_case(case) {
+            let (outcome, raw) = run_case(case);
+            match outcome {
                 Outcome::Pass => {
                     passed += 1;
                     println!("  [PASS] {} / {}", case.area, case.name);
+                    if dump_path.is_some() {
+                        dump_record(
+                            &mut dump, &case.area, &case.name, "pass", case.amended, &raw, None,
+                        );
+                    }
                 }
                 Outcome::Fail(why) => {
                     failed += 1;
                     println!("  [FAIL] {} / {}\n         {why}", case.area, case.name);
                     failures.push(format!("{} / {}", case.area, case.name));
+                    if dump_path.is_some() {
+                        dump_record(
+                            &mut dump,
+                            &case.area,
+                            &case.name,
+                            "fail",
+                            case.amended,
+                            &raw,
+                            Some(&why),
+                        );
+                    }
                 }
             }
         }
@@ -334,6 +451,15 @@ fn prolog_corpus_passes() {
              [AMEND] lines above, conformance.rs, and progress.txt) — flagged for \
              human review."
         );
+    }
+
+    if let Some(path) = &dump_path {
+        std::fs::write(path, &dump).unwrap_or_else(|e| {
+            panic!(
+                "conformance: could not write the parity dump {}: {e}",
+                Path::new(path).display()
+            )
+        });
     }
 
     assert!(cases > 0, "conformance: zero cases executed");
@@ -369,7 +495,7 @@ fn wrong_expectation_fails_the_gate() {
 
     assert!(
         matches!(
-            run_case(&scratch(0, r#"[{ "X": "bob" }]"#)[0]),
+            run_case(&scratch(0, r#"[{ "X": "bob" }]"#)[0]).0,
             Outcome::Pass
         ),
         "the truthful scratch case must pass"
@@ -386,7 +512,7 @@ fn wrong_expectation_fails_the_gate() {
     .enumerate()
     {
         assert!(
-            matches!(run_case(&scratch(tag + 1, wrong)[0]), Outcome::Fail(_)),
+            matches!(run_case(&scratch(tag + 1, wrong)[0]).0, Outcome::Fail(_)),
             "expected `{wrong}` must FAIL the gate"
         );
     }

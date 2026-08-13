@@ -1,7 +1,7 @@
 //! `snapshot()` / `restore()` — the save-file path: serialize a KB's dynamic
 //! state, rehydrate it into a fresh KB, and get the same answers back.
 
-use insimul::{Error, KnowledgeBase, Term};
+use insimul::{Error, ErrorClass, KnowledgeBase, Term};
 
 const WORLD: &str = "\
 person(alice).
@@ -129,7 +129,7 @@ fn a_malformed_image_leaves_the_kb_untouched() {
     let err = kb
         .restore("person(dave).\nbroken(oops.\n")
         .expect_err("a syntax error should not load");
-    assert!(matches!(err, Error::Prolog(_)), "unexpected error: {err:?}");
+    assert!(matches!(err, Error::Prolog { .. }), "unexpected error: {err:?}");
 
     // Rejected before anything was discarded: the old state is intact and the
     // clause that *did* parse never landed.
@@ -157,7 +157,7 @@ fn operator_directives_are_not_captured_by_a_snapshot() {
         .restore(&image)
         .expect_err("operator notation must not parse without the op/3");
     assert!(
-        matches!(&err, Error::Prolog(m) if m.contains("syntax_error")),
+        matches!(&err, Error::Prolog { class: ErrorClass::Syntax, .. }),
         "unexpected error: {err:?}"
     );
 

@@ -30,6 +30,7 @@ set(INSIMUL_WASM_EXPORTS
   _insimul_kb_snapshot
   _insimul_kb_restore
   _insimul_last_error
+  _insimul_last_error_class
   _insimul_version
   _malloc
   _free)

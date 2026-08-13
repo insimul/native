@@ -609,21 +609,13 @@ int main(void) {
     }
 
     /*
-     * Keepalive KB: held open for the whole run so the embedded engine's
-     * process-global state (Trealla's g_tpl_count / global symbol table) is
-     * initialized exactly once and never torn down between cases. Trealla
-     * deadlocks on a full teardown-then-reinit cycle (create -> destroy the
-     * last KB -> create again), so per-case KBs can be freely created and
-     * destroyed as long as one reference outlives the loop. See
-     * insimul-native/CLAUDE.md "Trealla gotchas". This is test-side only; it
-     * does not alter the ABI.
+     * No keepalive KB. This harness used to hold one open for the whole run,
+     * because destroying the last KB tore down the engine's process-global
+     * state and creating another then spun forever. US-2 moved that fix inside
+     * libinsimul (see insimul_kb_create), so a per-case create/destroy is safe
+     * on its own — and this leg running without a keepalive is part of how that
+     * is proven.
      */
-    insimul_kb *keepalive = insimul_kb_create();
-    if (!keepalive) {
-        fprintf(stderr, "conformance: could not create the keepalive KB.\n");
-        return 2;
-    }
-
     DIR *d = opendir(dir);
     if (!d) {
         fprintf(stderr,
@@ -672,7 +664,6 @@ int main(void) {
                "[AMEND] lines above, conformance.c, and progress.txt) — flagged "
                "for human review.\n", g_amended);
 
-    insimul_kb_destroy(keepalive);
     if (g_dump) fclose(g_dump);
 
     if (io_err) {

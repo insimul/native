@@ -39,13 +39,13 @@ git clone https://github.com/emscripten-core/emsdk && cd emsdk
 ```
 
 `scripts/build_wasm.sh` sources `$EMSDK/emsdk_env.sh` or `~/emsdk/emsdk_env.sh`
-automatically when `emcc` is not already on `PATH`. The only build-time network fetch is
-the same Trealla `FetchContent` clone the native build does, at the pin in
-[../THIRD_PARTY.md](../THIRD_PARTY.md).
+automatically when `emcc` is not already on `PATH`. There is **no** build-time network
+fetch: the wasm leg compiles the same committed `vendor/trealla/` source the native build
+does, at the pin in [../THIRD_PARTY.md](../THIRD_PARTY.md).
 
 ## Using it from JS
 
-All twelve `insimul.h` entry points are exported (`cmake/wasm.cmake` names them
+All thirteen `insimul.h` entry points are exported (`cmake/wasm.cmake` names them
 explicitly — that list *is* the wasm ABI). `wasm/insimul-api.mjs` is a small hand-written,
 engine-agnostic wrapper that turns those raw functions into JS objects:
 
@@ -85,11 +85,11 @@ step invalidates. `kb.solutions(goal)` is the safe form — a generator wrapped 
 throws mid-iteration. Reach for the raw `kb.query()` only when you need to interleave
 stepping with other work, and stop it yourself.
 
-**One hidden KB.** Trealla tears down its process-global symbol table when the last Prolog
-instance is destroyed, and re-initialising it afterwards deadlocks (see the "Trealla
-gotchas" note in the repo's `CLAUDE.md`). `insimul.createKb()` therefore opens one internal
-keepalive KB on first use and never destroys it, so a host can create and destroy KBs
-freely — which a browser will do constantly. It costs one empty KB.
+**No hidden KB any more.** `insimul.createKb()` used to open an internal keepalive KB,
+because the engine tore down its process-global symbol table with the last Prolog instance
+and then spun on the next teardown. libinsimul owns that now (leak L-01 in
+[ABI_ENGINE_LEAK_AUDIT.md](ABI_ENGINE_LEAK_AUDIT.md)), so a host can create and destroy
+KBs freely — which a browser does constantly — with nothing on the JS side arranging it.
 
 ## The wasm build profile
 
@@ -117,7 +117,7 @@ here — never a real disk).
 
 - **`wasm_smoke`** (`tests/wasm_smoke.mjs`) — the browser-side mirror of the native `smoke`
   test: same `grandparent/2` KB, same "one query must succeed, one must fail" shape. It
-  additionally calls **all twelve** entry points across the JS boundary, checks the
+  additionally calls **all thirteen** entry points across the JS boundary, checks the
   snapshot image byte-for-byte against the canonical format, and exercises a
   create → destroy → create cycle. It exits non-zero if fewer than 18 checks ran, so a
   harness that silently does nothing cannot read as a pass.

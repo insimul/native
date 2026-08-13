@@ -56,7 +56,7 @@ can run many KBs, one per thread. That independence is a hard requirement for ga
 and it is guaranteed by the interface.
 
 **The interface is a plain C ABI, and the engine hides behind it.** `include/insimul.h`
-exposes twelve `extern "C"` functions over two opaque handle types (`insimul_kb`,
+exposes thirteen `extern "C"` functions over two opaque handle types (`insimul_kb`,
 `insimul_query`). The header mentions no Trealla types at all — the engine is an
 implementation detail that could be swapped without breaking a single caller. Queries
 return their solutions as **JSON**, a shape every language can parse:
@@ -70,9 +70,9 @@ to JSON is in [docs/c-abi.md](docs/c-abi.md).)
 
 ## Getting started
 
-You need **CMake ≥ 3.24** and a C toolchain. On the first configure, CMake downloads
-Trealla at its pinned commit (so allow network access and a little extra time), then builds
-it directly into `libinsimul`.
+You need **CMake ≥ 3.24** and a C toolchain. Nothing is downloaded: Trealla's source is
+committed under `vendor/trealla/` at its pinned commit and builds directly into
+`libinsimul`, so a clean checkout builds offline.
 
 A **C++17** compiler is also needed, for exactly one target: the
 `corebridge_radiant` gate (`tests/radiant/`), which is a byte-for-byte copy of
@@ -182,6 +182,7 @@ correctly.
 | [`src/`](src/) | The implementation: `insimul.c` (the C layer) and `insimul_boot.pl` (the Prolog-side helper it drives). |
 | [`rust/`](rust/) | The Rust bindings — a `-sys` crate and a safe `insimul` crate. |
 | [`wasm/`](wasm/) | The hand-written JS wrapper for the WebAssembly build. |
+| [`vendor/trealla/`](vendor/trealla/VENDORED.md) | The Prolog engine's source, committed unmodified at a pinned commit — the build fetches nothing. Never hand-edit. |
 | [`conformance/`](conformance/) | The shared Prolog test corpus and the cross-platform parity records. |
 | [`tests/`](tests/) | The C and JS test executables run by ctest. |
 | [`scripts/`](scripts/) | Build (`build_wasm.sh`), package (`package.sh`), and parity (`conformance_parity.sh`) helpers. |
@@ -206,14 +207,24 @@ The core README stops here on purpose; each topic has a focused guide:
   Unreal, Godot) and each JS bundler expects.
 - **[Build configuration & platforms](docs/build-configuration.md)** — engine feature flags,
   the thread model, and the supported-platform matrix.
+- **[Engine-leak audit of the C ABI](docs/ABI_ENGINE_LEAK_AUDIT.md)** — every place the
+  Prolog engine underneath is still visible through the ABI, with a verdict per finding
+  and the probe that witnesses each one.
+- **[Trealla's license, resolved](docs/TREALLA_LICENSE_FINDING.md)** — what the engine's
+  license actually is (SPDX `MIT`), read from the text at the pinned commit because
+  GitHub's API cannot classify it, plus the exact `NOTICE` text to ship.
 
 ## License
 
 libinsimul is licensed under **Apache-2.0** — see [`LICENSE`](LICENSE).
 
-The embedded Trealla Prolog engine and the components it bundles are permissively licensed
-(MIT / BSD-style) and redistributable in the prebuilt binaries. Pins and attributions are
-in [`THIRD_PARTY.md`](THIRD_PARTY.md) — the Trealla commit for `libinsimul`, and QuickJS
+The embedded Trealla Prolog engine is **MIT** and the components it bundles are MIT,
+BSD-2-Clause and Unlicense — all redistributable in the prebuilt binaries. That was
+resolved by reading the license texts in the pinned source, not by trusting a classifier
+(GitHub's API reports `NOASSERTION` for Trealla and is wrong):
+[`docs/TREALLA_LICENSE_FINDING.md`](docs/TREALLA_LICENSE_FINDING.md) records the finding
+and carries the exact `NOTICE` text to ship. Pins and attributions are in
+[`THIRD_PARTY.md`](THIRD_PARTY.md) — the Trealla commit for `libinsimul`, and QuickJS
 plus the generated `@insimul/core` bundle for `libinsimulcore`. Each pin has exactly one
 authoritative location, read by the build, so a version stamp cannot claim something other
 than what was compiled.

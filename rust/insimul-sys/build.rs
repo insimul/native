@@ -1,7 +1,7 @@
 //! Locate the cmake-built libinsimul and link it into the -sys crate.
 //!
 //! WHY NOT BINDGEN: `include/insimul.h` is a deliberately tiny, opaque contract
-//! (two opaque structs, eleven `extern "C"` functions, all parameters
+//! (two opaque structs, thirteen `extern "C"` functions, all parameters
 //! `*const c_char`/`c_int`). Hand-writing it keeps this crate dependency-free —
 //! no libclang on the build host, no 60-crate build-dep tree — which matters
 //! because the server track builds this on CI runners and in containers.
