@@ -26,9 +26,9 @@
 #   If emcc is not on PATH this script sources $EMSDK/emsdk_env.sh or
 #   ~/emsdk/emsdk_env.sh when either exists.
 #
-# The only network access is the existing Trealla FetchContent clone (shared
-# with the native build tree's pin — see THIRD_PARTY.md). Nothing else is
-# downloaded at build time.
+# NO network access at build time: the engine source is committed under
+# vendor/trealla/ at the pin in vendor/trealla/VENDORED.json (US-3), the same
+# drop the native build compiles. See THIRD_PARTY.md.
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -378,18 +378,20 @@ rather than implied (insimul 0.1.0, Emscripten 6.0.5, `-O2` Release):
 
 | File | Raw | gzip -9 | brotli -11 |
 |------|----:|--------:|-----------:|
-| `insimul.wasm` | 2,101,956 | 565,691 | 418,507 |
+| `insimul.wasm` | 2,101,838 | 565,657 | 418,446 |
 | `insimul.mjs` | 104,532 | 28,679 | 25,562 |
-| `insimul-api.mjs` | 10,658 | 3,886 | 3,272 |
+| `insimul-api.mjs` | 10,660 | 3,886 | 3,271 |
 | `index.mjs` | 1,985 | 999 | 805 |
-| **Total** | **2,219,131** (2.1 MB) | **599,255** (585 KB) | **448,146** (438 KB) |
+| **Total** | **2,219,015** (2.1 MB) | **599,221** (585 KB) | **448,084** (438 KB) |
 
 `npm pack` on the directory yields a **600 kB** tarball (7 files, 2.2 MB
 unpacked). So ~435 KB over the wire from a brotli-serving CDN, of which the
 binary is ~416 KB. It is a separate file, so it is cached independently of the app bundle
 and compiles while it streams. `scripts/package.sh --target wasm` reprints this
 table on every run — regenerate the numbers here from its output rather than
-guessing after a Trealla bump.
+guessing after a Trealla bump. Expect small (~100 byte) drift from the build
+tree's absolute path alone: Emscripten bakes source paths into the binary, so
+these are the shape of the cost, not a byte-for-byte contract.
 
 ---
 

@@ -1,10 +1,12 @@
 # insimul-native — the shared native Prolog core (libinsimul).
 #
 # Builds a static + shared library `insimul` from src/, embedding a REAL
-# ISO-conforming Prolog engine: Trealla Prolog (pure C, MIT), vendored via
-# FetchContent at a pinned commit (see THIRD_PARTY.md). US-LI1 delivers the
-# skeleton + a ctest smoke test that consults a KB and runs one query through
-# Trealla's C API; the stable insimul C ABI lands in US-LI2 (include/insimul.h).
+# ISO-conforming Prolog engine: Trealla Prolog (pure C, MIT — see
+# docs/TREALLA_LICENSE_FINDING.md), whose source is COMMITTED under
+# vendor/trealla/ at a pinned commit (see THIRD_PARTY.md). The build performs
+# NO network fetch. US-LI1 delivers the skeleton + a ctest smoke test that
+# consults a KB and runs one query through Trealla's C API; the stable insimul
+# C ABI lands in US-LI2 (include/insimul.h).
 cmake_minimum_required(VERSION 3.24)
 
 # Single source of truth for the library's semver: the tracked VERSION file.
@@ -57,25 +59,31 @@ else()
   set(INSIMUL_TREALLA_THREAD_DEFS USE_THREADS=1)
 endif()
 
-include(FetchContent)
-
 # ---------------------------------------------------------------------------
-# Vendored Trealla Prolog (MIT). Pinned — see THIRD_PARTY.md before bumping.
+# Vendored Trealla Prolog (MIT — docs/TREALLA_LICENSE_FINDING.md records how
+# that was resolved from the license TEXT, not from a classifier).
+#
+# The source is COMMITTED under vendor/trealla/, not fetched: libinsimul is
+# layer zero for four engine runtimes, the Rust server and every save file, and
+# a build of it must not depend on an upstream single-maintainer repository
+# staying reachable or unchanged. There is no FetchContent here on purpose —
+# `trealla_vendor` (tests/run_trealla_vendor.sh) fails if one comes back.
+#
+# THE PIN LIVES WITH THE DROP: vendor/trealla/VENDORED.json is the one
+# authoritative location, exactly as QuickJS's VERSION and the core bundle's
+# coreCommit are, and the build READS it from there — so the version stamp can
+# never name a commit other than the bytes that were compiled.
 # ---------------------------------------------------------------------------
-set(TREALLA_GIT_TAG "v2.106.1" CACHE STRING "Trealla tag (documented pin)")
-set(TREALLA_GIT_COMMIT "07de013677af760a8bca0594ae4b2bef158a3cde"
-    CACHE STRING "Trealla commit (the authoritative pin)")
-
-FetchContent_Declare(
-  trealla
-  GIT_REPOSITORY https://github.com/trealla-prolog/trealla.git
-  GIT_TAG        ${TREALLA_GIT_COMMIT}
-  GIT_SHALLOW    FALSE   # fetching an exact SHA is unreliable with shallow clones
-)
-# Trealla ships a Makefile, not a CMakeLists — MakeAvailable (CMake >= 3.28)
-# just populates ${trealla_SOURCE_DIR} and does NOT add_subdirectory().
-FetchContent_MakeAvailable(trealla)
-set(TREALLA_DIR ${trealla_SOURCE_DIR})
+set(TREALLA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/trealla)
+if(NOT EXISTS ${TREALLA_DIR}/VENDORED.json)
+  message(FATAL_ERROR
+    "Vendored Trealla source is missing: ${TREALLA_DIR}/VENDORED.json not found.\n"
+    "It is committed to this repository; a clean checkout has it.")
+endif()
+file(READ ${TREALLA_DIR}/VENDORED.json INSIMUL_TREALLA_VENDORED)
+string(JSON TREALLA_GIT_COMMIT GET "${INSIMUL_TREALLA_VENDORED}" commit)
+string(JSON TREALLA_GIT_TAG    GET "${INSIMUL_TREALLA_VENDORED}" tag)
+message(STATUS "Trealla: vendored ${TREALLA_GIT_TAG} (${TREALLA_GIT_COMMIT}) from ${TREALLA_DIR}")
 
 # ---------------------------------------------------------------------------
 # Embed Trealla's Prolog standard library (library/*.pl) as C byte arrays.
@@ -219,7 +227,8 @@ endif()
 # The engine is passed as name/version/commit — three VALUES (US-2, leak L-02).
 # The vendor's name appears here, where the pin lives, and never in the ABI's
 # schema: swapping the engine edits these three lines and nothing a consumer
-# parses. The pin itself stays authoritative in TREALLA_GIT_TAG/COMMIT above.
+# parses. The pin itself stays authoritative in vendor/trealla/VENDORED.json,
+# which the block above reads into TREALLA_GIT_TAG/COMMIT.
 set(INSIMUL_ENGINE_NAME "trealla" CACHE STRING "Embedded Prolog engine name")
 set(INSIMUL_VERSION_DEFS
   INSIMUL_VERSION="${INSIMUL_SEMVER}"
@@ -309,6 +318,16 @@ add_test(NAME abi_neutrality COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_abi_neutrality.sh
        ${CMAKE_CURRENT_SOURCE_DIR}
        ${CMAKE_C_COMPILER})
+
+# trealla_vendor — the engine source under vendor/trealla/ IS upstream's source
+# at the pinned commit (recomputed git object ids, offline), the pin the build
+# used is the pin in VENDORED.json, and no network fetch of the engine has crept
+# back in. Runs against tampered fixtures too, so the gate is proven able to fail.
+add_test(NAME trealla_vendor COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_trealla_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}
+       ${TREALLA_GIT_COMMIT}
+       ${TREALLA_GIT_TAG})
 
 # Conformance harness (US-LI3): drives the ABI over every golden corpus case.
 # INSIMUL_CONFORMANCE_DEFAULT_DIR is resolved above (shared with the wasm leg).

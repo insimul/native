@@ -4,7 +4,7 @@ This repository builds **two** libraries, and each vendors its own dependency:
 
 | Library | Header | Vendors |
 |---|---|---|
-| `libinsimul` | `include/insimul.h` | Trealla Prolog (fetched at a pinned commit) |
+| `libinsimul` | `include/insimul.h` | Trealla Prolog (committed under `vendor/trealla/` at a pinned commit) |
 | `libinsimulcore` | `corebridge/include/insimulcore.h` | QuickJS + a generated `@insimul/core` bundle (both committed) |
 
 Everything below is permissively licensed (MIT / BSD-style / Apache-2.0) and
@@ -16,7 +16,7 @@ there** — so a stamp can never claim something other than what was compiled:
 
 | Dependency | Pin lives in | Reported by |
 |---|---|---|
-| Trealla | `TREALLA_GIT_COMMIT` in `CMakeLists.txt` | `insimul_version()` |
+| Trealla | `commit` in `vendor/trealla/VENDORED.json` | `insimul_version()` |
 | QuickJS | `corebridge/vendor/quickjs/VERSION` | `insimul_core_version()` |
 | `@insimul/core` bundle | `coreCommit` in `corebridge/vendor/core/VENDORED.json` | `insimul_core_version()` |
 
@@ -25,15 +25,32 @@ there** — so a stamp can never claim something other than what was compiled:
 - **Repository:** https://github.com/trealla-prolog/trealla
 - **Pinned commit:** `07de013677af760a8bca0594ae4b2bef158a3cde`
 - **Tag at pin:** `v2.106.1`
-- **License:** MIT — Copyright (c) 2020 Andrew George Davison
-- **How it's vendored:** CMake `FetchContent` clones the repository at the pinned
-  commit at configure time (see `CMakeLists.txt`). It is **not** committed into
-  this tree; the commit SHA is the single source of truth for the pin.
+- **License:** **MIT** (SPDX `MIT`) — Copyright (c) 2020 Andrew George Davison.
+  Resolved by reading the license text at the pinned commit, not from a
+  classifier: GitHub's API reports `NOASSERTION` for this repository. The
+  evidence, the bundled components' licenses, and the exact `NOTICE` text to
+  ship are in [`docs/TREALLA_LICENSE_FINDING.md`](docs/TREALLA_LICENSE_FINDING.md).
+- **How it's vendored:** a source drop, **unmodified**, committed under
+  `vendor/trealla/` — `src/`, `library/`, `util/bin2c.c`, `LICENSE` and
+  `ATTRIBUTION` (upstream's `tests/`, `samples/`, `docs/`, `man/` and `Makefile`
+  are omitted; this build does not use them). **The build performs no network
+  fetch.** libinsimul is layer zero for four engine runtimes, the Rust server
+  and every save file; a build of it must not depend on an upstream
+  single-maintainer repository staying reachable or unchanged.
+- **How you know it is really upstream's source:** `vendor/trealla/VENDORED.json`
+  records the *git object id* of every vendored path, taken from upstream's tree
+  at the pinned commit. The `trealla_vendor` ctest recomputes those ids offline
+  (`git write-tree` over a throwaway index) and compares — so the bytes on disk
+  are tied to a commit in `trealla-prolog/trealla`, not merely to a hash we
+  invented. It also fails if the recorded pin drifts from the pin the build used,
+  or if a `FetchContent` of the engine reappears. Each check is run against a
+  tampered fixture too, so the gate is proven able to fail.
 
-To bump: change `TREALLA_GIT_COMMIT` (and `TREALLA_GIT_TAG` for documentation) in
-`CMakeLists.txt`, re-run the build + conformance suite, and record the change
-here. Because this PRD's `autoMerge` is off, a human reviews toolchain/pin
-changes before merge.
+To bump: replace the files under `vendor/trealla/` from a fresh checkout of the
+new commit, update `commit`/`tag`/`gitObjects` in `vendor/trealla/VENDORED.json`
+together, re-run the build + conformance suite, re-check the license text (§8 of
+the license finding), and record the change here. Because this PRD's `autoMerge`
+is off, a human reviews toolchain/pin changes before merge.
 
 ### Components bundled inside Trealla
 
@@ -44,13 +61,21 @@ Trealla itself vendors these; they are compiled as part of `libinsimul`:
 - **isocline** (`src/isocline/`) — line editor, by Daan Leijen. MIT license.
   Used instead of system `libedit`/`readline` for portability.
 - **Prolog standard library** (`library/*.pl`) — Prolog-Commons / SWI-Prolog
-  derived predicates; see Trealla's `ATTRIBUTION` file. Redistributed with
-  attribution (BSD-2-Clause style terms per the original authors: Mark Thom,
-  Jan Wielemaker, Richard O'Keefe, University of Amsterdam).
+  derived predicates; see Trealla's `ATTRIBUTION` file. **BSD-2-Clause**
+  (verified: two clauses, no "no endorsement" clause) — Mark Thom,
+  Jan Wielemaker, Richard O'Keefe, University of Amsterdam / VU University
+  Amsterdam / SWI-Prolog Solutions b.v. Its clause 2 requires the notice be
+  reproduced in the documentation shipped with a binary, and these predicates
+  are embedded in every `libinsimul` artifact — so this one is a real
+  obligation on every engine plugin, not a formality.
 - **mini regex** (`src/sre/`) — small regex module inspired by Rob Pike's code.
+  **Unlicense** (public-domain dedication), *not* MIT.
 
-Full license texts live in the fetched Trealla source tree (`LICENSE`,
-`ATTRIBUTION`) under `build/_deps/trealla-src/` after configuring.
+Full license texts are committed with the source: `vendor/trealla/LICENSE`,
+`vendor/trealla/ATTRIBUTION`, `vendor/trealla/src/imath/LICENSE`,
+`vendor/trealla/src/isocline/LICENSE`, `vendor/trealla/src/sre/LICENSE`. Every
+identifier above was read out of those files at the pinned commit — see
+[`docs/TREALLA_LICENSE_FINDING.md`](docs/TREALLA_LICENSE_FINDING.md).
 
 ## QuickJS — the JS engine inside `libinsimulcore`
 

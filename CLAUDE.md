@@ -105,6 +105,30 @@
   documented, printed amendment (rename), never a silent skip — see its
   `AMENDMENTS` table.
 
+## The engine source is VENDORED here (US-3)
+- **Trealla is committed under `vendor/trealla/`, not fetched.** libinsimul is
+  layer zero — four engine runtimes, the Rust server and every save file sit on
+  it — so its build must not depend on an upstream single-maintainer repo staying
+  reachable. There is no `FetchContent` for the engine and none may come back;
+  `trealla_vendor` fails on one. The drop is `src/`, `library/`, `util/bin2c.c`,
+  `LICENSE`, `ATTRIBUTION` — upstream's `tests/`/`samples/`/`docs/`/`Makefile` are
+  omitted. **Never hand-edit it**; see `vendor/trealla/VENDORED.md` to re-vendor.
+- **Provenance is proven with git's own object ids, not a hash we invented.**
+  `VENDORED.json`'s `gitObjects` holds upstream's tree/blob id for each vendored
+  path at the pin; `tests/run_trealla_vendor.sh` recomputes them offline with
+  `git write-tree` over a throwaway index (config-isolated, so nobody's
+  `core.autocrlf` can make the gate lie). That ties the bytes on disk to a commit
+  in `trealla-prolog/trealla`, and it catches an ADDED file — which a
+  hash-per-listed-file manifest silently would not. Both negative controls (a
+  tampered byte, an extra file) are part of the test.
+- **The engine's license is RESOLVED, in writing:** `docs/TREALLA_LICENSE_FINDING.md`
+  — SPDX `MIT`, read from the text, with the bundled components (imath MIT,
+  isocline MIT, `sre` **Unlicense**, the Prolog library **BSD-2-Clause**) and the
+  exact `NOTICE` stanza to ship. GitHub's API says `NOASSERTION` for Trealla and
+  is wrong; cite the finding instead of re-asking a classifier. Re-read the text
+  on every pin bump (§8 of that doc) — a `NOTICE` written against an unverified
+  claim is the bug that survives going public.
+
 ## The conformance corpus is VENDORED here
 - `conformance/prolog/*.json` is a mirror of `@insimul/core`'s
   `packages/core/conformance/prolog` (the source of truth) — the same vendoring the
@@ -176,9 +200,12 @@
   `file(STRINGS VERSION ...)` reads it into `project(... VERSION)` and compile defs;
   `insimul_version()` (src/insimul.c) embeds it; `scripts/package.sh` stamps it. To
   bump the version, edit `VERSION` only — do not hardcode it anywhere else. The
-  engine pin has the same rule: `TREALLA_GIT_TAG`/`_COMMIT` +
-  `INSIMUL_ENGINE_NAME` in `CMakeLists.txt` are authoritative and every stamp is
-  read from there.
+  engine pin has the same rule, but it lives with the DROP (US-3):
+  `commit`/`tag` in `vendor/trealla/VENDORED.json` are authoritative —
+  `CMakeLists.txt` reads them into `TREALLA_GIT_TAG`/`_COMMIT` and
+  `scripts/package.sh` reads the same file, so a stamp can never name a commit
+  other than the bytes compiled. Only `INSIMUL_ENGINE_NAME` still lives in
+  `CMakeLists.txt`.
 - `insimul_version()` is stamped from CMake compile defs (`INSIMUL_VERSION`,
   `INSIMUL_GIT_SHA` via `git rev-parse --short HEAD` at configure time,
   `INSIMUL_ENGINE_NAME`/`_VERSION`/`_COMMIT`). The `#ifndef` fallbacks in src/insimul.c only
@@ -272,10 +299,11 @@
   so `libinsimulcore.{a,dylib}` sit beside `libinsimul`'s — the engine repos'
   gates probe `<native>/build/libinsimul.*` and expect that flat layout.
 - **Each vendored dependency has ONE authoritative pin location, and the build
-  reads it from there** (the rule Trealla's `TREALLA_GIT_COMMIT` already set):
-  QuickJS's is `corebridge/vendor/quickjs/VERSION` → `CONFIG_VERSION`; the core
-  bundle's is `coreCommit` in `corebridge/vendor/core/VENDORED.json`, regex'd out
-  by the root `CMakeLists.txt`. `corebridge_smoke` then asserts
+  reads it from there**: Trealla's is `commit`/`tag` in
+  `vendor/trealla/VENDORED.json`, read by the root `CMakeLists.txt` via
+  `string(JSON ...)`; QuickJS's is `corebridge/vendor/quickjs/VERSION` →
+  `CONFIG_VERSION`; the core bundle's is `coreCommit` in
+  `corebridge/vendor/core/VENDORED.json`, regex'd out by the root `CMakeLists.txt`. `corebridge_smoke` then asserts
   `insimul_core_version()` reports both, so a stale vendored tree is a red ctest
   rather than a mystery in a bug report.
 - **The evidence moves with the code.** Promoting the bridge promoted its gate:
@@ -313,9 +341,10 @@
   underneath the bundle; say so rather than implying the cheap check covers it.
 
 ## Build
-- `cmake -B build && cmake --build build && ctest --test-dir build`. `build/` is
-  gitignored (holds fetched Trealla under `_deps/` and the generated
-  `insimul_boot.c`). `src/insimul_boot.pl` is the tracked source of truth.
+- `cmake -B build && cmake --build build && ctest --test-dir build`. **It needs no
+  network** — the engine source is committed (see "The engine source is VENDORED"
+  below). `build/` is gitignored (holds the generated `insimul_boot.c`).
+  `src/insimul_boot.pl` is the tracked source of truth.
 - Wasm: `scripts/build_wasm.sh` (configure via `emcmake` → build → `ctest`) into
   `build-wasm/`, which is gitignored by the `build-*/` rule. It never touches
   `build/`; the two trees coexist and both must stay green.

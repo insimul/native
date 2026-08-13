@@ -39,9 +39,9 @@ git clone https://github.com/emscripten-core/emsdk && cd emsdk
 ```
 
 `scripts/build_wasm.sh` sources `$EMSDK/emsdk_env.sh` or `~/emsdk/emsdk_env.sh`
-automatically when `emcc` is not already on `PATH`. The only build-time network fetch is
-the same Trealla `FetchContent` clone the native build does, at the pin in
-[../THIRD_PARTY.md](../THIRD_PARTY.md).
+automatically when `emcc` is not already on `PATH`. There is **no** build-time network
+fetch: the wasm leg compiles the same committed `vendor/trealla/` source the native build
+does, at the pin in [../THIRD_PARTY.md](../THIRD_PARTY.md).
 
 ## Using it from JS
 
