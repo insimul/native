@@ -16,7 +16,10 @@ Everything the library offers is exposed through one header, `include/insimul.h`
 - **It leaks no engine types.** The header includes no Trealla headers and mentions no
   Trealla types. The Prolog engine is an implementation detail behind the boundary, so it
   can be swapped later without breaking anything that links this contract. (The `abi` test
-  includes *only* `insimul.h` to keep that promise honest.)
+  includes *only* `insimul.h` to keep that promise honest.) *No type* is a lower bar than
+  *no behaviour*: [ABI_ENGINE_LEAK_AUDIT.md](ABI_ENGINE_LEAK_AUDIT.md) inventories what
+  still shows through — solution order, error text, number marshalling, the snapshot
+  image — with a verdict for each.
 - **Every language can bind to it.** C, C++, C#, GDScript, Rust, and JavaScript all speak
   plain C. There is one surface to learn and one surface to keep stable.
 
