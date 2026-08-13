@@ -35,11 +35,22 @@ scripts/build_swipl.sh                              # prints <prefix>
 cmake -B build-swipl-native -DINSIMUL_ENGINE=swipl -DINSIMUL_SWIPL_ROOT=<prefix>
 ```
 
+Both engines also build for **wasm** (the prefix layout differs, so the two are not
+interchangeable and `cmake/swipl.cmake` refuses the wrong one):
+
+```sh
+scripts/build_swipl.sh --target wasm                # prints <wasm prefix>
+scripts/build_wasm.sh --engine swipl --swipl-root <wasm prefix> \
+                      --build-dir build-wasm-swipl
+```
+
 Only `src/engine_<name>.c` differs between the two — `src/insimul.c` names no engine and
 talks to the three-function port in `src/insimul_engine.h`. See
 [SWIPL_SPIKE.md](SWIPL_SPIKE.md) for the gaps that selection has, and note that the
 `smoke` ctest (which drives the vendored engine's own C API, not the ABI) is not built
-under it.
+under it. `node scripts/wasm_payload.mjs <build-dir>` prints what a page downloads for
+either wasm build — every payload file, raw/gzip/brotli, stamped with the engine the
+module reports.
 
 Artifacts land in `build/`: `libinsimul.a` (static) and `libinsimul.dylib` / `.so` /
 `insimul.dll` (shared). `build/` is gitignored.

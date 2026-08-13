@@ -208,9 +208,12 @@ const declaredCases = corpus.reduce((n, f) => n + f.cases.length, 0);
  * ------------------------------------------------------------------ */
 if (!existsSync(gluePath)) die(`wasm glue not found: ${gluePath} (run scripts/build_wasm.sh)`);
 const createInsimul = (await import(pathToFileURL(gluePath).href)).default;
+// Sibling payloads (.wasm, and an engine's preload .data image) live beside the
+// GLUE; Emscripten would otherwise look for a data package relative to cwd.
+const locateFile = (path) => join(dirname(resolve(gluePath)), path);
 // The per-case create/destroy cycle below needs no keepalive on either leg:
 // libinsimul keeps its own engine instance open (leak L-01, fixed in US-2).
-const insimul = await loadInsimul(createInsimul);
+const insimul = await loadInsimul(createInsimul, { locateFile });
 
 let pass = 0, fail = 0, cases = 0, amendedCount = 0;
 

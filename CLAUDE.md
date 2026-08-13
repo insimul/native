@@ -49,7 +49,19 @@
 - SWI is **located, not vendored**: `scripts/build_swipl.sh` holds the pin and the
   configure flags and writes `INSIMUL_SWIPL_PIN` into the prefix, which
   `cmake/swipl.cmake` reads into the version stamp. That is a spike shape, not a
-  shipping shape — see `docs/SWIPL_SPIKE.md` §"G-10".
+  shipping shape — see `docs/SWIPL_SPIKE.md` §"G-10". `--target wasm` produces a
+  SECOND, differently-shaped prefix (`lib/libswipl.a` + `include/` + `home/`);
+  the pin file's `target=` says which, and `cmake/swipl.cmake` refuses the wrong
+  one rather than link a host build into a wasm module.
+- **`cmake/wasm.cmake` names no engine.** Anything an engine needs beyond its
+  objects reaches the wasm link as `INSIMUL_ENGINE_WASM_LINK_OPTIONS` and
+  `INSIMUL_ENGINE_WASM_PRELOAD_DIR`/`_MOUNT`, set by that engine's own cmake
+  module. An engine whose Prolog library is not compiled in ships it as an
+  Emscripten `--preload-file` image, which makes the browser payload THREE files
+  — and a data package is resolved relative to the PAGE, so every JS caller must
+  pass `locateFile` (`tests/wasm_*.mjs`, `scripts/wasm_payload.mjs` do).
+  `node scripts/wasm_payload.mjs <build-dir>` is the one place payload bytes get
+  quoted: it counts every file and refuses to print a partial total.
 - Every place SWI could not implement the ABI cleanly is a NUMBERED GAP in
   `docs/SWIPL_SPIKE.md` §3. The one that is a correctness difference rather than
   packaging is **G-05: `op/3` is not KB-scoped in SWI**, so one world's operators

@@ -1,8 +1,9 @@
 # The SWI-Prolog spike — building a second engine behind the same C ABI
 
-Tasklist `chief/250`, phase 1 of decision **D20**. This document is US-1's
-deliverable: **how the second engine is built and wired**, and **every place the
-C ABI could not be implemented over SWI-Prolog without a workaround**. The
+Tasklist `chief/250`, phase 1 of decision **D20**. This document is US-1's and
+US-2's deliverable: **how the second engine is built and wired — on the native
+embed target (§1–§2) and on the WASM target (§4)** — and **every place the C ABI
+could not be implemented over SWI-Prolog without a workaround** (§3). The
 measurement — binary size, startup, memory, and the 76/76 corpus on each leg —
 is US-3's, and lands in its own artifact. The verdict is US-3's too; nothing
 here decides anything.
@@ -209,7 +210,167 @@ construction and is not built when `INSIMUL_ENGINE=swipl`. Every other gate runs
 on both selections. This is named here rather than left as a silent difference in
 a test count.
 
-## 4. What did NOT need a gap (recorded because it is the surprising half)
+### G-13 — SWI's wasm library set is coupled to its PACKAGES, so the home tree ships source
+Upstream's Emscripten branch adds `library/wasm.pl` and `library/dom.pl` to the
+library unconditionally (`src/CMakeLists.txt`, `if(EMSCRIPTEN)`), and both
+`use_module(library(uri))` — which lives in the **clib package**. With
+`SWIPL_PACKAGES=OFF` (the same "smallest honest embedding" profile as the native
+leg, §2) the `.qlf` compile of the whole library therefore dies:
+
+```
+ERROR: library/wasm.pl:58: source_sink `library(uri)' does not exist
+ERROR: -g qlf_make: Unknown procedure: wasm:uri_is_global/1
+make: *** [wasm_preload] Error 2
+```
+
+So the wasm profile sets `INSTALL_QLF=OFF INSTALL_PROLOG_SRC=ON` and the preload
+image carries **Prolog source**, not compiled `.qlf`. The alternative is to build
+SWI's own wasm package set (`clpqr plunit chr clib http semweb pcre` — the
+"fairly comprehensive" profile the D20 brief quotes), which is a larger payload
+than the one being measured, not a smaller one. Either way it is a real cost and
+US-3 pays it in startup time.
+
+### G-14 — the wasm build is NOT offline
+`libinsimul` is layer zero and its own build fetches nothing (that is why Trealla
+is committed under `vendor/`). SWI's core — not one of its packages — requires
+**zlib**, and on Emscripten that arrives as a *port*: `embuilder build zlib`
+downloads `github.com/madler/zlib` the first time. `scripts/build_swipl.sh
+--target wasm` runs it explicitly and passes the resulting `libz.a`/`include` to
+SWI's `find_package(ZLIB)` (which otherwise fails outright), so the dependency is
+visible in the script rather than discovered by a failing CI job. A migration
+would have to answer it — vendor zlib, or accept a network dependency in the
+browser build.
+
+### G-15 — a cross build ships the HOST engine's ABI stamp, and SWI warns on every start
+`home/ABI` is produced by `swipl --abi-version`, and in a cross build that swipl
+is the **native friend** (upstream `src/CMakeLists.txt`:
+`COMMAND ${PROG_SWIPL_FOR_BOOT} --abi-version > ${SWIPL_ABI_FILE}`). The host and
+the wasm engine disagree — this profile has `MULTI_THREADED` and `USE_SIGNALS`
+off, so the foreign-predicate signature differs:
+
+```
+host friend   swipl-abi-2-68-dddc10dc-a5b83da7
+wasm engine   swipl-abi-2-68-cda581d4-a5b83da7
+```
+
+The consequence is not cosmetic: every `PL_initialise` printed
+
+```
+WARNING: Invalid SWI-Prolog home directory /swipl: ABI mismatch
+```
+
+**on the process's stderr** — which the ABI's whole error design forbids (errors
+cross as `ERR <class> <term>` records on the per-KB channel, never as process
+output a host cannot attribute), and which would also land in the middle of
+US-3's startup measurement. `scripts/build_swipl.sh --target wasm` therefore
+overwrites `home/ABI` with the stamp the **wasm** engine reports (read by running
+the cross-built `swipl.js` under node) and prints the substitution. It fixes the
+file rather than muting the check, and it recurs on every pin bump.
+
+### G-16 — the browser payload is THREE files, and the consumer has to locate them
+Trealla's Prolog library is compiled into the binary, so the wasm package is
+`insimul.mjs` + `insimul.wasm`. SWI's home tree cannot be (G-02), so it rides
+along as an Emscripten `--preload-file` image — a third file, `insimul.data`,
+which the glue fetches and mounts at `/swipl` before `main()`. Two things follow
+for consumers, and neither is invisible:
+
+- Emscripten resolves a data package **relative to the page**, not to the module,
+  unless the caller passes `locateFile`. Every harness here now does
+  (`tests/wasm_smoke.mjs`, `tests/wasm_conformance.mjs`,
+  `scripts/wasm_payload.mjs`) — before that, the tests only passed when run with
+  the build directory as the working directory.
+- `@insimul/prolog-wasm`'s `files`/`exports` map, the CSP and offline-packaging
+  advice in `docs/consuming.md`, and Babylon's vendored copy all enumerate the
+  payload file by file. A third file is a change to each of them.
+
+### G-17 — a wasm build needs a NATIVE build of the same pin first
+`boot.prc` and the library `INDEX.pl` are compiled **by a Prolog**, so SWI's cross
+build wants `SWIPL_NATIVE_FRIEND=<a native build tree>`. `scripts/build_swipl.sh
+--target wasm` builds one if it is not there, which means the browser artifact
+costs a host toolchain plus a host SWI build in CI. Trealla's wasm build needs no
+host Prolog at all: `emcmake cmake` over the same committed sources is the whole
+story.
+
+## 4. The WASM leg (US-2)
+
+**Result: SWI-Prolog builds for wasm behind the same twelve functions, loads, and
+answers.** Both wasm ctests pass on the second engine — `wasm_smoke` (all
+thirteen entry points across the JS boundary) and `wasm_conformance`
+(`10 files, 76 cases, 76 passed, 0 failed, 1 amended`, the same line the default
+engine prints). Nothing in `src/engine_swipl.c` had to change for the browser
+target; the port that came out of US-1 cross-compiled as written.
+
+### Reproducing it
+
+```sh
+scripts/build_swipl.sh --target wasm                 # prints <prefix>
+scripts/build_wasm.sh --engine swipl --swipl-root <prefix> \
+                      --build-dir build-wasm-swipl
+```
+
+The first command holds the whole recipe (the pin from §2, the wasm flag profile,
+the zlib port, the native friend, the ABI stamp fix) and assembles a prefix with
+a fixed layout — `lib/libswipl.a`, `include/`, `home/` — which is what
+`cmake/swipl.cmake`'s `if(EMSCRIPTEN)` branch reads. It refuses a prefix whose
+`INSIMUL_SWIPL_PIN` does not say `target=wasm`, so a host build cannot be linked
+into a wasm module by mistake. The second command is the ordinary
+`scripts/build_wasm.sh` with two new options; **the no-argument invocation is
+unchanged in every respect** and still builds the default engine into
+`build-wasm/`.
+
+`cmake/wasm.cmake` names no engine. What an engine needs beyond its objects
+arrives as `INSIMUL_ENGINE_WASM_LINK_OPTIONS` (here `-sUSE_ZLIB=1`) and
+`INSIMUL_ENGINE_WASM_PRELOAD_DIR`/`_MOUNT` (here the home tree at `/swipl`), both
+set by the engine's own cmake module. It also gained
+`target_compile_definitions(... ${INSIMUL_ENGINE_DEFS})`, which the native
+library targets always had and the wasm target never needed until an engine had
+something to say (without it, `--home=` was empty and SWI exited with
+`ERROR: Could not find SWI-Prolog home directory`).
+
+Host: `Darwin 25.5.0 arm64`, Emscripten 6.0.5, CMake 4.4. Wall clock on this
+host: ~2 min for the SWI wasm engine once the native friend exists, ~5 s to
+link `libinsimul` against it.
+
+### The payload, captured for US-3
+
+`node scripts/wasm_payload.mjs <build-dir>` reports every payload file a page
+downloads, raw and as a CDN transfers it, and stamps the table with what
+`insimul_version()` says the module is — so a size can never be quoted without
+the engine it belongs to. Taken on the builds above:
+
+| engine | file | raw | gzip -9 | brotli -11 |
+|---|---|---:|---:|---:|
+| trealla v2.106.1 | `insimul.mjs` | 104,532 | 28,679 | 25,562 |
+| | `insimul.wasm` | 2,103,621 | 566,556 | 418,998 |
+| | **TOTAL** | **2,208,153** | **595,235** | **444,560** |
+| swipl 10.0.1 | `insimul.mjs` | 92,899 | 24,632 | 21,670 |
+| | `insimul.wasm` | 1,323,635 | 539,635 | 433,837 |
+| | `insimul.data` | 2,697,756 | 722,286 | 579,829 |
+| | **TOTAL** | **4,114,290** | **1,286,553** | **1,035,336** |
+
+SWI's *binary* is smaller (1.3 MB against 2.1 MB) because its Prolog library is
+**not in it** — the 2.7 MB `.data` image is that library. Comparing
+`insimul.wasm` alone would therefore report the opposite of the truth, which is
+why the tool refuses to print a row set it cannot fully account for. Over the
+wire the honest figures are the totals: **~1,011 KB brotli against ~434 KB**,
+2.3×. US-3 owns what that means.
+
+### What "loads in the browser harness" means here, exactly
+
+The Babylon runtime lives in a **sibling repository** and is not in this
+worktree, so it was not run. What was run is the harness that guards what
+Babylon vendors: `wasm/insimul-api.mjs` — the same hand-written wrapper that
+repository copies — driven by `tests/wasm_smoke.mjs` and
+`tests/wasm_conformance.mjs`, unmodified, against the SWI module.
+
+The spike engine is deliberately **not** packaged: `scripts/package.sh --target
+wasm` still assembles `@insimul/prolog-wasm` from the default engine only.
+Publishing a package built on an engine that is neither vendored (G-10) nor
+adopted would be the migration shipping itself ahead of its own decision. Doing
+it later means the `.data` file entering `files`/`exports` and the pin moving out
+of `vendor/trealla/VENDORED.json` — G-16 and G-10, priced.
+
+## 5. What did NOT need a gap (recorded because it is the surprising half)
 
 Taken on this host at the pins above; US-3 re-runs all of it as measurement.
 
@@ -235,9 +396,10 @@ Taken on this host at the pins above; US-3 re-runs all of it as measurement.
   properties, so the test still goes red if an engine changes one — without the
   test ever naming a vendor (leak L-02).
 
-## 5. Scope note
+## 6. Scope note
 
-US-1 is the native embed target only. The WASM leg is US-2 and the numbers are
-US-3; neither is claimed here. `cmake/wasm.cmake` compiles the selected engine's
-port like every other target, but `cmake/swipl.cmake` is native-only, so a wasm
-build of SWI is not configurable from this story's work alone.
+US-1 is the native embed target, US-2 the WASM one (§4). **The numbers are
+US-3's**: the sizes in §4 are the payload capture that story asked US-2 to hand
+over, not a comparison — startup, resident memory, the Rust leg and the
+per-case byte-identity of the corpus are not claimed here, and neither is any
+verdict.
