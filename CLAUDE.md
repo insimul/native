@@ -500,6 +500,34 @@
   archive` copy of it** — a closed pack, a closed-repo import, an escaping
   `#include`, a `git =` crate and a `FetchContent` — which must all be named,
   and the same tree must go green again when they are reverted.
+- **`NOTICE` is a gate's data file, not a document.** `scripts/check-attribution.mjs`
+  (`ctest -R attribution`) reads the `Key: value` lines in each `### stanza` and
+  fails on a crate `rust/Cargo.lock` resolves with no stanza, a stanza whose SPDX
+  disagrees with the crate's own metadata, a `Pinned-Version` the lock has moved
+  past, or an unresolved license with no `Resolution-Owner`. Adding a dependency
+  or vendoring a directory means adding a stanza; the prose around them is for
+  humans and is not checked.
+- **A `NOTICE` pin is checked against the ONE location the BUILD reads it from.**
+  `Pin-Source: vendor/trealla/VENDORED.json#commit` (or `…/quickjs/VERSION`, or
+  `…/core/VENDORED.json#coreCommit`) — the same three authoritative pins the
+  version stamps use. An attribution naming a different drop than the bytes
+  compiled is the failure the stamp discipline exists to prevent, one level up.
+- **The trademark policy is LINKED, and both halves are enforced.** It is
+  authored once in the contract repo; `missing-policy-link` fails when a file
+  `docs/pre-open/status.json`'s `trademarkPolicy.linkedFrom` names stops carrying
+  the URL, and `forked-policy` fails if a `TRADEMARK.md` ever appears here. Five
+  copies of a policy is five policies. **`TRADEMARK.md` is therefore deliberately
+  NOT in this repo's required-artifact list** — the artifact it owes is a link.
+- **The status record is written by the tasklist that does NOT perform the
+  irreversible steps**, so `docs/pre-open/status.json` marking `history-rewrite`
+  or `visibility-flip` as `done`/`performedByTasklist: true` can only be a
+  mistake or a lie, and the gate refuses it. That is check D's fifth injection —
+  the record a future agent would point at when asked whether the flip was
+  reviewed.
+- **Every manifest must declare the repository's own SPDX** (`manifest-license`,
+  over every `Cargo.toml`, every `package.json` and the `"license"` line
+  `scripts/package.sh` stamps). `rust/Cargo.toml` said `MIT` while `LICENSE` was
+  Apache-2.0 until US-3; a redistributor reads the manifest, not the LICENSE.
 
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. **It needs no
