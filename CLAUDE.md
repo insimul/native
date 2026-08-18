@@ -470,6 +470,36 @@
   rule fires on a synthetic positive), then the real audit, then a throwaway
   repository with a planted key — deleted in the NEXT commit — which the gate
   must FAIL, and a real `git filter-repo` run over it that must come back clean.
+- **The TREE has its own two audits, and they are a gate, not a report.**
+  `scripts/check-open-boundary.mjs` + `open-boundary.rules.json` answer the
+  content and dependency halves of the checklist over the tracked set
+  (`git ls-files`, because that is what a clone publishes), and `ctest -R
+  open_boundary` runs them. It has **no `--check` flag on purpose**: any
+  unresolved finding exits non-zero, always — a gate with opt-in enforcement is
+  one forgotten argument away from a green job that checks nothing. Its path
+  rules are the SAME rules as the history scan's, and the self-test fails if the
+  two files drift apart.
+- **"Nothing is reachable" is a claim about FOUR surfaces here, not one.** Core
+  closes its graph with npm alone; this tree needs JS (declared set is *empty* —
+  there is no `package.json`, so every bare specifier is a finding), Rust
+  (`Cargo.toml` tables — cargo refuses a `use` of an undeclared crate, so the
+  manifests are the graph), C (`#include` must resolve inside the repository),
+  and **the build itself** (`build-time-fetch`: a dependency the build downloads
+  is one no import graph can see). Adding a language to this repo means adding
+  its surface there.
+- **A rule that fires on correct code gets fixed, never allowed.** The C rule
+  first flagged any `..` in an `#include` and hit seven upstream isocline
+  includes that stay inside the tree; the fix was to resolve the path and ask
+  whether it escapes the REPOSITORY. Seven allowances would have papered over a
+  wrong rule with seven holes. Conversely `check-pack-provenance.mjs`'s own
+  `PROVENANCE_SELF_FILES` must be honoured when you reach for `inspectPackText`
+  directly — the exemption comes with the detector.
+- `ctest -R open_boundary` proves it can fail the same way `history_scan` does:
+  55 self-test checks (a positive AND a near miss per rule, plus real-CLI exit
+  statuses), then the real tree, then **five violations injected into a `git
+  archive` copy of it** — a closed pack, a closed-repo import, an escaping
+  `#include`, a `git =` crate and a `FetchContent` — which must all be named,
+  and the same tree must go green again when they are reverted.
 
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. **It needs no

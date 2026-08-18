@@ -609,3 +609,18 @@ add_test(NAME core_vendor COMMAND
 add_test(NAME history_scan COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_history_scan.sh
        ${CMAKE_CURRENT_SOURCE_DIR})
+
+# open_boundary: the PRE-OPEN CONTENT + DEPENDENCY audits (US-2, tasklist
+# 242-pre-open-native). `history_scan` above audits the 30-odd commits behind
+# this tree, once, because history is written once. These two audits are
+# properties of the TREE — no closed genre/language pack or generation heuristic
+# is vendored, and nothing from the closed insimul-backend / insimul-web is
+# imported or reachable — so they must hold at every future commit, and the
+# commit that breaks one will not be the commit that is thinking about
+# open-sourcing. run_open_boundary.sh falsifies the gate against a synthetic
+# positive per rule, audits this tree, and then injects five real violations into
+# a copy of it and fails if the gate does not catch every one. Needs node;
+# degrades to a loud [SKIP] without it (read the output).
+add_test(NAME open_boundary COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_open_boundary.sh
+       ${CMAKE_CURRENT_SOURCE_DIR})
