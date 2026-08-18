@@ -92,8 +92,8 @@ re-apply:
 
 ### §1.3 What was scanned
 
-Every blob reachable from all branches, all tags and HEAD — **32 commits, 417
-blobs, all 417 read as text**. No blob was skipped: nothing in this history is
+Every blob reachable from all branches, all tags and HEAD — **33 commits, 428
+blobs, all 428 read as text**, the audit's own artifacts included. No blob was skipped: nothing in this history is
 binary, and nothing is over the 4 MB cap (the largest is
 `corebridge/vendor/quickjs/quickjs.c` at 1.7 MB, which *is* scanned). That is a
 stronger coverage statement than core could make — core had to skip a 2.1 MB
@@ -101,17 +101,29 @@ vendored wasm module — and it is worth stating precisely, because a skipped fi
 that goes uncounted reads as a file that was checked.
 
 The report necessarily records its **parent** commit as `repository.head`: a file
-cannot contain the id of the commit that introduces it. Re-running the scan with
-the audit's own artifacts in history yields more blobs and the *same* findings
-(the scan is a fixed point over itself). `history-scrub.sh` demands exact
-equality before it will rewrite anything — at flip time, staleness is the whole
-risk, and re-running the scan takes a second.
+cannot contain the id of the commit that introduces it. The committed report is
+therefore the run taken *after* the scanner, rules, plan and this page landed —
+11 more blobs than the tree had before them, and the **same 61 findings**, so the
+scan is a fixed point over itself. `history-scrub.sh` demands exact equality
+before it will rewrite anything: at flip time staleness is the whole risk, and
+re-running the scan takes a second.
 
-Unreachable objects (an amended commit's orphan, a dropped stash) are out of
-scope by design: `git push` and `git clone` do not transfer them, so the
-visibility flip does not publish them, and `filter-repo` expels them from the
-rewritten repository regardless. `--all-objects` scans them anyway when you want
-to know what is sitting in a particular local clone.
+That re-run is also where this audit stopped being theoretical about itself. The
+first draft of `tests/history_scan_selftest.mjs` wrote two of its fixtures out
+plainly — a connection string with an inline password, and a comment that spelled
+out the three keys of the pack skeleton — and the scan came back with **one scrub
+finding and one review finding, in the test that exists to prove the scanner
+works**. Both were rewritten to assemble their fixtures at run time and the
+commit was amended, so neither blob was ever pushed. The alternative — exempting
+the file by name, which is what core does for its own test — was available and
+declined: an exemption is permanent, a `+` is not.
+
+Unreachable objects (an amended commit's orphan — including the two just
+described — a dropped stash) are out of scope by design: `git push` and
+`git clone` do not transfer them, so the visibility flip does not publish them,
+and `filter-repo` expels them from the rewritten repository regardless.
+`--all-objects` scans them anyway when you want to know what is sitting in a
+particular local clone.
 
 **Rule classes.** Inherited from core: cloud and vendor credentials (AWS, GitHub,
 Anthropic, OpenAI, Google, Slack, Stripe, npm), inline private-key blocks, JWTs,
@@ -205,9 +217,15 @@ Two footguns the script disarms rather than documents:
   repository across all of history*. The script counts active entries and omits
   `--invert-paths` entirely when there are none. One careless copy-paste in the
   other direction is an irreversible rewrite.
-- **A stale report.** The script refuses to proceed if `repository.head` in the
-  committed report is not the repository's current HEAD. A plan verified against a
-  history that has since grown is a plan for a different repository.
+- **A stale report.** The script refuses to **rewrite** if `repository.head` in
+  the committed report is not the repository's current HEAD — a plan verified
+  against a history that has since grown is a plan for a different repository. In
+  plan-only mode it says so loudly and continues, because the report is stale by
+  one commit from the instant it is committed (it cannot contain the id of the
+  commit that adds it), and printing a plan changes nothing. The audit itself is
+  re-run against the *current* history at step 1 either way, so the facts on
+  screen are always fresh; what the staleness check gates is the irreversible
+  act.
 
 Print the plan — this changes nothing:
 

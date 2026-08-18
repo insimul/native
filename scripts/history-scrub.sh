@@ -26,14 +26,17 @@
 #
 # ── WHAT IT DOES, IN ORDER ───────────────────────────────────────────────────
 #
-#   0. Refuses to rewrite when the plan has no active rule and no active path —
-#      a filter-repo run that purges nothing still invalidates every clone.
-#   1. Re-runs the audit and refuses to continue on an unclassified finding.
-#   2. Refuses to continue if the audit report is stale — i.e. if HEAD has moved
-#      since the report was recorded. A scrub plan verified against a history
-#      that has since grown is a plan for a different repository.
-#   3. Proves, against the real blobs, that the committed plan purges every
+#   1. Re-runs the audit and refuses to continue on an unclassified finding, and
+#      proves against the real blobs that the committed plan purges every
 #      scrub-classified finding (`--verify-scrub`).
+#   2. Refuses to REWRITE when the plan has no active rule and no active path —
+#      a filter-repo run that purges nothing still invalidates every clone.
+#   3. Refuses to REWRITE against a stale report — i.e. if HEAD has moved since
+#      the report was recorded. A scrub plan verified against a history that has
+#      since grown is a plan for a different repository. In plan-only mode this
+#      is a loud warning rather than an error: printing a plan changes nothing,
+#      and the committed report is stale by one commit the moment it is
+#      committed (it cannot contain the id of the commit that adds it).
 #   4. Prints the exact invocation.
 #   5. Only with BOTH flags and a typed confirmation: runs it.
 
@@ -55,30 +58,12 @@ for arg in "$@"; do
   esac
 done
 
-# ── 1 & 3. the audit, and proof the plan works ───────────────────────────────
+# ── 1. the audit, and proof the plan works ───────────────────────────────────
 
 echo "history-scrub: re-running the audit and verifying the plan…"
 node "${HERE}/history-scan.mjs" --repo "${REPO}" --check --verify-scrub
 
-# ── 2. is the report the one that was reviewed? ──────────────────────────────
-
-if [[ ! -f "${REPORT}" ]]; then
-  echo "history-scrub: no report at ${REPORT}. Run: node scripts/history-scan.mjs --check --verify-scrub --report docs/pre-open/history-scan.json" >&2
-  exit 1
-fi
-RECORDED_HEAD="$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).repository.head)" "${REPORT}")"
-ACTUAL_HEAD="$(git -C "${REPO}" rev-parse HEAD)"
-if [[ "${RECORDED_HEAD}" != "${ACTUAL_HEAD}" ]]; then
-  echo "history-scrub: the audit report is STALE." >&2
-  echo "  reviewed at HEAD ${RECORDED_HEAD}" >&2
-  echo "  repository is at ${ACTUAL_HEAD}" >&2
-  echo "  Commits landed since the audit. Re-run it, re-review the findings, and re-verify the plan" >&2
-  echo "  before rewriting:" >&2
-  echo "    node scripts/history-scan.mjs --check --verify-scrub --report docs/pre-open/history-scan.json" >&2
-  exit 1
-fi
-
-# ── 0. is there anything to scrub at all? ────────────────────────────────────
+# ── 2. is there anything to scrub at all? ────────────────────────────────────
 #
 # Counted from the plan files, not from the report, because the plan is what
 # would actually be handed to filter-repo. Comments and blank lines do not count.
@@ -113,6 +98,33 @@ EMPTY
     exit 1
   fi
   exit 0
+fi
+
+# ── 3. is the report the one that was reviewed? ──────────────────────────────
+
+if [[ ! -f "${REPORT}" ]]; then
+  echo "history-scrub: no report at ${REPORT}. Run: node scripts/history-scan.mjs --check --verify-scrub --report docs/pre-open/history-scan.json" >&2
+  exit 1
+fi
+RECORDED_HEAD="$(node -e "process.stdout.write(JSON.parse(require('fs').readFileSync(process.argv[1],'utf8')).repository.head)" "${REPORT}")"
+ACTUAL_HEAD="$(git -C "${REPO}" rev-parse HEAD)"
+if [[ "${RECORDED_HEAD}" != "${ACTUAL_HEAD}" ]]; then
+  echo "history-scrub: the audit report is STALE." >&2
+  echo "  reviewed at HEAD ${RECORDED_HEAD}" >&2
+  echo "  repository is at ${ACTUAL_HEAD}" >&2
+  echo "  Commits landed since the audit. Re-run it, re-review the findings, and re-verify the plan" >&2
+  echo "  before rewriting:" >&2
+  echo "    node scripts/history-scan.mjs --check --verify-scrub --report docs/pre-open/history-scan.json" >&2
+  # Step 1 above already re-ran the audit against the CURRENT history and
+  # refused to get this far on an unclassified finding, so plan-only mode is
+  # reading fresh facts either way — and the committed report is stale by one
+  # commit from the instant it is committed. The rewrite is the irreversible
+  # act, so the rewrite is what this blocks.
+  if [[ "${EXECUTE}" -eq 1 ]]; then
+    echo "history-scrub: --execute refused — re-record the report first." >&2
+    exit 1
+  fi
+  echo "history-scrub: continuing in plan-only mode; nothing is changed." >&2
 fi
 
 # ── 4. the exact invocation ──────────────────────────────────────────────────

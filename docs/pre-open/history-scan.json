@@ -3,8 +3,8 @@
   "rules": "scripts/history-scan.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "head": "25d1338c0b98914ae09eaceac9c04abe4063f362",
-    "commits": 32,
+    "head": "11a8a5b493b3cc74d2ed84cf5e765c9f318d570f",
+    "commits": 33,
     "refs": [
       "refs/heads/chief/242-pre-open-native",
       "refs/heads/main",
@@ -14,8 +14,8 @@
     "scope": "every object reachable from all refs and HEAD"
   },
   "coverage": {
-    "blobs": 417,
-    "textBlobs": 417,
+    "blobs": 428,
+    "textBlobs": 428,
     "skippedBinary": [],
     "skippedOversize": []
   },
