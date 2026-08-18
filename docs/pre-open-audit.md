@@ -1,7 +1,8 @@
 # Pre-open audit — `insimul-native`
 
-*Status: §1–§2 complete (history scrub audited and rewrite prepared, not
-executed; content + dependency audits clean and gated) · opened 2026-08-17 ·
+*Status: §1–§3 complete (history scrub audited and rewrite prepared, not
+executed; content + dependency audits clean and gated; LICENSE/NOTICE/CONTRIBUTING
+written and gated, trademark policy linked) · opened 2026-08-17 ·
 tasklist `242-pre-open-native`*
 
 | Checklist item | State |
@@ -9,7 +10,8 @@ tasklist `242-pre-open-native`*
 | History scrub | audited; rewrite **prepared, not executed** — §1 |
 | Content audit | **clean, and gated** — §2.2 |
 | Dependency audit | **clean, and gated** — §2.3 |
-| LICENSE / NOTICE / CONTRIBUTING · trademark + conformance policy link | US-3 |
+| LICENSE / NOTICE / CONTRIBUTING | **written, and gated** — §3 |
+| Trademark + conformance policy | **linked, not forked** — §3.4 |
 | `git filter-repo` rewrite | **human-gated**; prepared and proven — §1.5 |
 | `gh repo edit … --visibility public` | **human-gated, out of scope for every tasklist** |
 
@@ -572,3 +574,209 @@ the two gates that degrade to a loud `[SKIP]` without node or the sibling
 `../insimul-runtime` submodule, and this is a standalone worktree.
 `open_boundary` is not one of those — it asserted 55 self-test checks, the real
 tree, and a live injection into a copy of it.
+
+---
+
+## §3 LICENSE · NOTICE · CONTRIBUTING · the policy link — **written, and gated**
+
+> - [ ] **License + NOTICE files** (Apache-2.0 + third-party attributions incl.
+>       Trealla) in every open repo; **CONTRIBUTING + CLA/DCO decision made**.
+> - [ ] **Trademark/conformance policy** published alongside the spec.
+
+Two checklist items, and they read like paperwork. Paperwork is exactly the kind
+of thing that is done once, congratulated, and then quietly falsified by the next
+re-vendor — **a NOTICE is only true on the day it is written unless something
+keeps it true**. So this section's deliverable is not four files; it is four
+files plus a gate that fails when one of them stops being true, and a
+demonstration that the gate can fail.
+
+### §3.1 The blocking precondition was already met
+
+`OPEN_SOURCE_STRATEGY.md` marks the license item **blocked** on Trealla's
+license: `gh api` returns `NOASSERTION`, while three project documents assert
+MIT. A NOTICE written against an unverified license claim is the one bug that
+survives the repository going public and cannot be un-shipped.
+
+That block was lifted before this tasklist ran, by
+`chief/251-prolog-c-abi-insulation` US-3 (decision D20):
+[`docs/TREALLA_LICENSE_FINDING.md`](TREALLA_LICENSE_FINDING.md) resolves it to
+SPDX **`MIT`** by reading `vendor/trealla/LICENSE` **at the pinned commit** and
+comparing it mechanically to the SPDX reference body — case- and
+whitespace-normalised, identical, missing only the title line and with the
+notice prefixed by the project name, which is the most likely reason the
+classifier abstains. The same document resolves the four components bundled
+*inside* Trealla from their own texts, and it produced two corrections: `sre` is
+the **Unlicense**, not MIT (it had been listed with no license at all), and the
+Prolog standard library is **BSD-2-Clause** — two clauses, no "no endorsement"
+third clause.
+
+So `NOTICE` is written against a finding, not against a claim. §8 of that
+document says what to redo at the next pin bump, and `trealla_vendor` makes step
+1 un-skippable: it recomputes the vendored tree's git object ids, so a re-vendor
+that changed `LICENSE` cannot pass with the old manifest.
+
+**Do not re-litigate this by asking another classifier.** Any downstream tool
+that reads GitHub's API rather than the file will also report `NOASSERTION`.
+Expect it; cite the finding.
+
+### §3.2 What `NOTICE` covers, and why it is split four ways
+
+Twenty-two stanzas. The sections are not decoration — the distinction between them
+is the whole point:
+
+| § | What it holds | Why it is separate |
+|---|---|---|
+| §1 | 9 components **compiled into or shipped as bytes** by this repository | These licenses' conditions bind anyone who ships `libinsimul`, `libinsimulcore`, `insimul.wasm` or a plugin linking one |
+| §2 | 2 things **reachable but not redistributed** — SWI-Prolog and the Emscripten SDK | No obligation today. Recorded so that the day one ships, somebody resolves it *first* |
+| §3 | 11 **Cargo crates** the Rust wrapper resolves | None reaches a C/C++/GDScript/browser consumer, and none is redistributed here |
+| §4 | What this repository claims **about itself** | License, contributions, the name, and where the pins live |
+| §5 | **Full license texts** — MIT, BSD-2-Clause, Unlicense | MIT and BSD-2-Clause both require the permission notice itself to travel, not a mention of the license's name |
+
+Three things in there are worth reading rather than skimming:
+
+- **The BSD-2-Clause obligation is live, and it is inherited.** The Prolog
+  standard library is embedded in *every* `libinsimul` artifact as C byte arrays
+  (`cmake/gen_embed.cmake`), and clause 2 asks that the notice be reproduced "in
+  the documentation and/or other materials provided with the distribution".
+  Shipping the binary alone does not discharge it. §5.2 discharges it here;
+  every engine plugin and game that redistributes an artifact inherits the same
+  duty. That inheritance is an **open item with an owner**
+  (`plugin-notice-inheritance`) — those repositories' notices have not been
+  checked against this list, and the obligation exists today, independently of
+  the flip.
+- **Most crates in §3 carry no copyright notice at all.** The dtolnay/serde
+  `LICENSE-MIT` files are the bare permission text. Where that is so, the
+  `Copyright` field says exactly that and names the declared authors. Inventing
+  a notice for a file that has none would be a fabrication in a document whose
+  entire value is that it is not one.
+- **`unicode-ident` is `(MIT OR Apache-2.0) AND Unicode-3.0`** — the only
+  compound identifier here, and the `AND` is not a choice. It is build-time only
+  and this repository redistributes nothing built from it, so it binds nobody
+  here; the line exists so that whoever *does* ship a Rust binary learns it from
+  a NOTICE rather than from an audit.
+
+### §3.3 The gate: `scripts/check-attribution.mjs`
+
+DERIVED from `insimul/core`@`b37837b`'s checker of the same name — the third time
+this tasklist has inherited rather than reinvented. The NOTICE parser, the
+status-record validator, the human-gate rules and the "no allow list, the data
+file IS the decision" doctrine are core's. Five divergences, all forced by this
+being a C/Rust tree, are listed in the script's header; two of them are the
+interesting ones:
+
+- **The declared-dependency surface is Cargo, not npm.** There is no
+  `package.json` here, so "every declared dependency has a stanza" reads against
+  `rust/Cargo.lock` — the set that actually gets compiled, and tracked.
+  Core's license-drift rule reads `node_modules`; this one reads the Cargo
+  registry source cache, and **says out loud** in its summary when a crate was
+  not there to compare against. A check that silently degrades to nothing is the
+  failure mode this repository keeps writing tests about.
+- **`pin-drift` — the attribution is checked against the pin the BUILD reads.**
+  CLAUDE.md's rule is that every vendored dependency has exactly one
+  authoritative pin location. A stanza may name its pin *and* that location
+  (`Pin-Source: vendor/trealla/VENDORED.json#commit`), and the two must agree.
+  Three pins are checked this way: Trealla's commit, QuickJS's version, and the
+  `@insimul/core` bundle's `coreCommit`. An attribution naming a different drop
+  than the bytes compiled is the same class of bug the version stamp exists to
+  prevent.
+
+The other rules: `missing-artifact` (with a byte floor, because a file
+containing the word TODO satisfies "the file exists"), `missing-attribution`,
+`stale-attribution` (including a `Pinned-Version` that no longer matches the
+lock — a lock bump re-opens the license question, which is the only reason to
+record a version), `license-drift`, `unresolved-license` (allowed to exist, not
+allowed to be unowned), `unattributed-vendor`, `dangling-derived-path`,
+`repository-license`, `manifest-license`, and the status-record family.
+
+**One real defect this found on the existing tree:** `rust/Cargo.toml` declared
+`license = "MIT"` while `LICENSE` is Apache-2.0. A redistributor reads the
+manifest, not the LICENSE file, so that was a false statement to exactly the
+audience `NOTICE` is written for. Fixed here, and `manifest-license` is the rule
+that keeps it fixed — it reads every `Cargo.toml`, every `package.json` and the
+`"license"` line `scripts/package.sh` stamps into the generated wasm package.
+
+### §3.4 The trademark policy is LINKED, and both halves are enforced
+
+The policy — what you may call "Insimul", and what "Insimul-compatible" requires
+— is authored **once**, in the contract repository:
+[Trademark and conformance-mark policy](https://github.com/insimul/core/blob/main/TRADEMARK.md).
+
+This repository links it. It does not fork it, and *cannot* silently start to:
+
+- `missing-policy-link` fails if any file `docs/pre-open/status.json`'s
+  `trademarkPolicy.linkedFrom` names stops containing the URL. Today that is
+  `README.md`, `CONTRIBUTING.md` and this file.
+- `forked-policy` fails if a `TRADEMARK.md` (or a `docs/trademark*.md`) ever
+  appears in the tracked set.
+
+Why linked and not copied: this repository is one of the things the mark is
+claimed *over*, not the place the claim is defined. The conformance corpus here
+is a vendored **mirror** of core's (`conformance/VENDORED.md`), so a
+certification claim names a version of core's contract. Five copies of a policy
+is five policies, and the first time one of them is edited the mark means five
+different things.
+
+What the gate **cannot** see: whether the linked document still says what this
+repository believes it says. The link is verified as a string; core's copy can
+change underneath it. That is the cost of not forking, and it is the cheaper
+cost — a stale link is visible to any reader, a divergent fork is not. The URL
+itself is an **open item** (`public-repository-names-unconfirmed`): nothing can
+verify it while the repositories are private, and the project's own documents
+are not yet consistent about the public names (core's policy and status record
+say `insimul/core`; core's `package.json` says `insimul/runtime` with core at
+`packages/core`; `rust/Cargo.toml` says `insimul/insimul-native`). A link that
+404s in a public README is the first thing a reader hits.
+
+### §3.5 CONTRIBUTING and the CLA/DCO decision
+
+**DCO 1.1 sign-off (`git commit -s`). No CLA.** Decided 2026-08-17 by
+`241-pre-open-core` US-3 and adopted here **unchanged** — a contributor working
+across the contract repository and the native core should not discover that the
+two ask for different things. The reasoning is recorded in `CONTRIBUTING.md` and
+machine-readably in `docs/pre-open/status.json` (`contributorAgreement`), which
+the gate checks is a *decision* rather than a TODO: it must have a decision
+string free of TODO/TBD language, an ISO date, and a rationale.
+
+The trade is stated rather than discovered: relicensing later would require every
+contributor's consent. Enforcement is scheduled, not silently omitted —
+`dco-enforcement-at-flip` is an open item with an owner, because enforcing
+sign-off today would fail every commit in this repository's single-org pre-flip
+history for no benefit, and because **this repository has no
+`.github/workflows` at all**, so enabling it means adding one.
+
+`CONTRIBUTING.md` is otherwise this repository's own: the five gates and what
+each protects, the ABI-opacity rule, the vendored-engine rule, "guards are
+falsified before they are believed", and "a rule that fires on correct code is a
+wrong rule, not an allowance opportunity" — the lesson §2.4 paid for.
+
+### §3.6 The gate is proven to fail
+
+`ctest -R attribution` runs `tests/run_attribution.sh`, the same five-check shape
+as `open_boundary`:
+
+| Check | What it does |
+|---|---|
+| A | **Falsify first** — `tests/attribution_selftest.mjs` fires every rule at a synthetic positive *and* at a near miss, and asserts the fixture table covers the required-artifact list, the required status items and the human-gated pair, so a new rule cannot ship unexercised |
+| B | The real tree passes: exit 0, every stanza accounted for |
+| C | The committed report (`docs/pre-open/attribution.json`) still describes this tree |
+| D | **Live injection into a copy of the real tracked tree** — the policy forked into a local `TRADEMARK.md`, a crate stanza deleted from `NOTICE`, a pin edited to name a different commit, a manifest relicensed, and `visibility-flip` flipped to `done`/`performedByTasklist: true`. All five must be named and the copy must go green again when they are reverted |
+| E | The gate is **wired**: `CMakeLists.txt` still runs it. A gate nobody calls is a file, not a check |
+
+Check D's last injection is the one worth naming. The status record is written
+by the tasklist that does **not** perform the irreversible steps, so
+`"state": "done"` on `visibility-flip` can only be a mistake or a lie — and it is
+the exact record a future agent would point at when asked whether the flip had
+been reviewed. The gate refuses it.
+
+### §3.7 What this section cannot see
+
+- **Whether a stanza's prose is true.** The `Key: value` lines are checked; the
+  paragraphs are a human reading.
+- **Whether a file was copied from somewhere with no attribution at all.**
+  Nothing in a tree announces that it was pasted. This is the same blind spot
+  §2.5 names for content, and it does not scale to every future commit.
+- **A transitive dependency's own bundled third-party code.** The crates in §3
+  are read at their own metadata; what *they* vendor is not walked.
+- **Whether an obligation legally attaches.** That is a question for counsel.
+  The open items are where the ones worth asking about are recorded, each with
+  an owner.

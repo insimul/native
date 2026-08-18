@@ -1,0 +1,560 @@
+libinsimul / libinsimulcore (`insimul-native`)
+Copyright 2026 Overpowered Inc.
+
+This product includes software developed by third parties. Apache-2.0 §4(d)
+requires that a NOTICE travelling with this work be reproduced in every
+redistribution of it, and this is that file: what is here, from whom, and under
+what terms.
+
+**This repository is layer zero.** Four engine plugins (Godot, Unity, Unreal and
+the browser), a Rust server and every save file sit on `libinsimul`, and what it
+compiles in, it compiles into all of them. So the obligations recorded below are
+not this repository's alone — a game that ships an engine plugin ships the same
+bytes and inherits the same duties. §1 exists to make that inheritance
+checkable rather than archaeological.
+
+It covers four different kinds of thing, and the distinction is the whole point
+of splitting the sections:
+
+  §1  is COMPILED INTO or SHIPPED AS bytes by this repository. Those licenses'
+      redistribution conditions bind anyone who ships a copy of `libinsimul`,
+      `libinsimulcore`, `insimul.wasm` or a plugin that links one. Their full
+      texts are in §5, because MIT, BSD-2-Clause and the Unlicense all require
+      the permission notice itself to travel, not merely a mention of the
+      license's name.
+  §2  is REACHABLE FROM THIS TREE BUT NOT REDISTRIBUTED — an optional engine
+      this repository can be built against but never vendors, and the
+      cross-compiler. Nothing here imposes an obligation today. It is recorded
+      so that the day one of them ships, somebody has to resolve it first
+      instead of discovering the question after the fact.
+  §3  is DECLARED as a Cargo dependency of the Rust wrapper. None of it reaches
+      a C, C++ or GDScript consumer, and none of it is redistributed here.
+      Listed in full so that "what does this pull in" has one answer a reader
+      can check against `rust/Cargo.lock`.
+  §4  says what this repository claims about ITSELF, and where.
+
+**Every license identifier here was read out of the license text at the pinned
+version, never taken from a classifier.** GitHub's licensing API returns
+`NOASSERTION` for Trealla Prolog — that is SPDX for *"no determination was
+made"*, not a finding of "no license", and it is wrong in the sense that
+matters. The determination is written up, with the evidence, in
+[`docs/TREALLA_LICENSE_FINDING.md`](docs/TREALLA_LICENSE_FINDING.md). Do not
+re-litigate it by asking another classifier; re-resolve it only against a new
+pin's own license text.
+
+`scripts/check-attribution.mjs` enforces this file: every crate the lockfile
+resolves needs a stanza, every stanza needs a real crate or a real path, every
+vendored directory needs an attribution, an SPDX identifier that disagrees with
+the crate itself fails, a stanza whose pin disagrees with the ONE location the
+build reads that pin from fails, and an unresolved license fails unless
+somebody's name is on resolving it. Run it with
+`node scripts/check-attribution.mjs .`, or as the `attribution` ctest. The
+`Key: value` lines in each stanza are what it reads; the prose is for humans.
+
+Vendoring a directory, bumping a pin or adding a crate means adding or updating
+a stanza here. The gate will tell you if you forget.
+
+===============================================================================
+§1  REDISTRIBUTED IN EVERY COPY OF THIS SOFTWARE
+===============================================================================
+
+### libinsimul and libinsimulcore
+
+SPDX-License-Identifier: Apache-2.0
+Copyright: Copyright 2026 Overpowered Inc.
+Upstream: this repository
+License-Text: LICENSE (beside this file)
+
+First-party, and listed anyway: they are the *carriers*. Everything else in §1
+is inside one of them. `libinsimul` is the Prolog core behind
+`include/insimul.h`; `libinsimulcore` is `@insimul/core`'s TypeScript running in
+an embedded QuickJS behind `corebridge/include/insimulcore.h`. Both are built
+from this tree by `scripts/package.sh`, which stamps a `VERSION` naming the
+engine and the pins each artifact was built from.
+
+### Trealla Prolog
+
+SPDX-License-Identifier: MIT
+Copyright: Trealla Prolog Copyright (c) 2020 Andrew George Davison <andrew.davison@gmail.com>
+Upstream: https://github.com/trealla-prolog/trealla
+Vendored-Path: vendor/trealla
+Pinned-Commit: 07de013677af760a8bca0594ae4b2bef158a3cde
+Pin-Source: vendor/trealla/VENDORED.json#commit
+Redistributed-In: libinsimul.a, libinsimul.dylib, insimul.wasm (compiled in)
+License-Text: §5.1
+
+The Prolog engine itself, committed under `vendor/trealla/` at the pin above
+(tag `v2.106.1`) and compiled into every artifact this repository produces. The
+source is **vendored, not fetched**: libinsimul is layer zero, and a build of it
+must not depend on an upstream single-maintainer repository staying reachable.
+
+**GitHub's API reports `NOASSERTION` for this repository and is not evidence
+either way.** The identifier above was resolved on 2026-08-12 by reading
+`vendor/trealla/LICENSE` at the pinned commit and comparing it mechanically to
+the SPDX MIT reference body, case- and whitespace-normalised: it is the MIT
+license word for word, missing only the title line, with the copyright notice
+prefixed by the project name — which is the most likely reason the classifier
+abstains. See [`docs/TREALLA_LICENSE_FINDING.md`](docs/TREALLA_LICENSE_FINDING.md)
+§2–§3 for the text and the comparison, and §8 for what to redo at the next pin
+bump.
+
+That the bytes on disk really are upstream's is a separate question with its own
+answer: `vendor/trealla/VENDORED.json` records upstream's git object id for
+every vendored path, and the `trealla_vendor` ctest recomputes them offline.
+
+### imath
+
+SPDX-License-Identifier: MIT
+Copyright: IMath is Copyright (c) 2002-2009 Michael J. Fromberger
+Upstream: bundled inside Trealla (`src/imath/`)
+Vendored-Path: vendor/trealla/src/imath
+Redistributed-In: libinsimul.a, libinsimul.dylib, insimul.wasm (compiled in)
+License-Text: §5.1
+
+Arbitrary-precision integer and rational arithmetic — Prolog's unbounded
+integers, and therefore the reason the ABI's binding-set JSON has a `bigint`
+form at all.
+
+### isocline
+
+SPDX-License-Identifier: MIT
+Copyright: Copyright (c) 2021 Daan Leijen
+Upstream: bundled inside Trealla (`src/isocline/`)
+Vendored-Path: vendor/trealla/src/isocline
+Redistributed-In: libinsimul.a, libinsimul.dylib, insimul.wasm (compiled in)
+License-Text: §5.1
+
+A line editor, used by Trealla instead of `libedit`/`readline` for portability.
+`libinsimul` exposes no REPL and a wasm build has no terminal to edit a line in,
+so parts of it are dead code in the artifacts shipped here — it is attributed
+regardless. Over-attribution costs a paragraph; under-attribution is a license
+violation, and "we think the linker dropped it" is not a defence anyone should
+have to make.
+
+### mini regex (sre)
+
+SPDX-License-Identifier: Unlicense
+Copyright: public-domain dedication — no copyright is asserted
+Upstream: bundled inside Trealla (`src/sre/`)
+Vendored-Path: vendor/trealla/src/sre
+Redistributed-In: libinsimul.a, libinsimul.dylib, insimul.wasm (compiled in)
+License-Text: §5.3
+
+A small regex module inspired by Rob Pike's code. **The Unlicense, not MIT** —
+`THIRD_PARTY.md` once described it with no license at all, and a NOTICE that
+called it MIT would be a false statement about someone else's work. A
+public-domain dedication imposes nothing on us; it is recorded because being
+right about it is free.
+
+### Prolog standard library
+
+SPDX-License-Identifier: BSD-2-Clause
+Copyright: Copyright (c) 2018-2021, Mark Thom
+  Copyright (c) 2002-2020, University of Amsterdam, VU University Amsterdam,
+  SWI-Prolog Solutions b.v.
+  Authors: Mark Thom, Jan Wielemaker, Richard O'Keefe
+Upstream: bundled inside Trealla (`library/*.pl`, see vendor/trealla/ATTRIBUTION)
+Vendored-Path: vendor/trealla/library
+Redistributed-In: libinsimul.a, libinsimul.dylib, insimul.wasm (embedded as C byte arrays)
+License-Text: §5.2
+
+Prolog-Commons / SWI-Prolog derived predicates. `cmake/gen_embed.cmake` turns
+them into C byte arrays, so they are inside the binary rather than beside it.
+
+**This one carries a live obligation rather than a formality.** BSD-2-Clause's
+second clause asks that the notice be reproduced "in the documentation and/or
+other materials provided with the distribution", so shipping the binary alone
+does not discharge it — §5.2 is how this repository discharges it, and **every
+engine plugin, game or server that redistributes a `libinsimul` artifact
+inherits the same duty**. Verified to be two clauses, with no "no endorsement"
+third clause: BSD-2, not BSD-3. Its disclaimer says "COPYRIGHT OWNER" where the
+SPDX reference says "COPYRIGHT HOLDER" — one word, no operative effect, and
+`BSD-2-Clause` remains the identifier.
+
+### QuickJS
+
+SPDX-License-Identifier: MIT
+Copyright: Copyright (c) 2017-2021 Fabrice Bellard
+  Copyright (c) 2017-2021 Charlie Gordon
+Upstream: https://bellard.org/quickjs/
+Vendored-Path: corebridge/vendor/quickjs
+Pinned-Version: 2025-04-26
+Pin-Source: corebridge/vendor/quickjs/VERSION
+Redistributed-In: libinsimulcore.a, libinsimulcore.dylib (compiled in)
+License-Text: §5.1
+
+The JavaScript engine inside `libinsimulcore`, so that `@insimul/core`'s
+TypeScript runs behind a C ABI instead of being re-implemented in C. A source
+drop, unmodified, committed rather than fetched — a game developer who unzips an
+engine plugin into their project cannot be asked to run a network fetch. Only
+the engine core is taken: `quickjs-libc` is deliberately excluded, so the
+embedded runtime has no filesystem, process or network access at all.
+
+### @insimul/core bundle
+
+SPDX-License-Identifier: Apache-2.0
+Copyright: Copyright 2026 Overpowered Inc.
+Upstream: @insimul/core (`packages/core`) — first-party, the same TypeScript the
+  web runtime executes
+Vendored-Path: corebridge/vendor/core
+Pinned-Commit: 247adfa23e394c65650b9813d882516c0fe25d1a
+Pin-Source: corebridge/vendor/core/VENDORED.json#coreCommit
+Redistributed-In: libinsimulcore.a, libinsimulcore.dylib (embedded as a C byte array)
+License-Text: LICENSE (beside this file)
+
+A **generated build artifact**, not third-party source: `@insimul/core` bundled
+to a single script by `corebridge/tools/vendor-core-bundle.mjs` (esbuild) and
+embedded as a C array. It sits under `vendor/` because that is where generated
+drops live, and it is attributed here because a reader who finds a `vendor/`
+directory is entitled to know whose code is in it. Zero lines of core are
+re-implemented in this repository, which is the entire reason `libinsimulcore`
+exists.
+
+### Emscripten runtime
+
+SPDX-License-Identifier: MIT
+Copyright: Copyright (c) 2010-2014 Emscripten authors, see AUTHORS file
+Upstream: https://github.com/emscripten-core/emscripten
+Redistributed-In: dist/wasm/insimul.mjs (generated by scripts/package.sh --target wasm)
+License-Text: §5.1
+
+`insimul.mjs` is Emscripten's generated glue — machine-emitted, and containing
+Emscripten's own runtime support code (the heap views, the syscall shims, the
+`FS` layer this repository's `mkstemp`-based C↔Prolog channel runs on). It is
+not committed here; it is produced by the wasm build and **shipped in the
+`@insimul/prolog-wasm` package**, which is why it is a §1 item and not a §2 one.
+
+Emscripten offers its work under **two** licenses, MIT and the University of
+Illinois/NCSA Open Source License; the project's own LICENSE file says so in its
+first two lines, and MIT is elected here. Read from that file on 2026-08-17.
+GitHub's API reports `NOASSERTION` for this repository too, for the ordinary
+reason that a dual-license file matches neither reference text.
+
+===============================================================================
+§2  REACHABLE FROM THIS TREE, NOT REDISTRIBUTED
+===============================================================================
+
+Nothing in this section is committed here and nothing in it is shipped by this
+repository today. Each is recorded because the tree contains the machinery to
+build against it, and the moment somebody does that and ships the result, an
+obligation attaches that nobody will think to go looking for.
+
+### SWI-Prolog
+
+SPDX-License-Identifier: NOASSERTION
+Resolution-Owner: Insimul maintainers — read the license text at the pin in
+  scripts/build_swipl.sh and resolve it BEFORE any artifact built with
+  -DINSIMUL_ENGINE=swipl is distributed; tracked in
+  docs/pre-open/status.json (`swipl-license-unresolved`)
+Upstream: https://github.com/SWI-Prolog/swipl-devel
+
+`src/engine_swipl.c` is the second implementation of the three-function engine
+port (`src/insimul_engine.h`), written for decision **D20**'s measurement spike.
+SWI is **located, not vendored**: `scripts/build_swipl.sh` holds a pin and
+builds into a prefix outside this tree, and `cmake/swipl.cmake` reads that
+prefix. No SWI byte is committed here, the default build is Trealla, and the
+spike's answer was **no** — `docs/SWIPL_MEASUREMENT.md`, 2.55× the shipped size.
+
+So there is no obligation today and this stanza asserts no identifier. What it
+does is put a name on the question: SWI-Prolog's own licensing is not a single
+identifier (its core and its libraries have historically been offered under
+different terms, including copyleft ones), so a build that links it is a
+different license conversation from anything in §1, and it must be had from the
+source text before, not after, shipping.
+
+### Emscripten SDK
+
+SPDX-License-Identifier: MIT
+Copyright: Copyright (c) 2010-2014 Emscripten authors, see AUTHORS file
+Upstream: https://github.com/emscripten-core/emscripten
+
+The cross-compiler `scripts/build_wasm.sh` invokes. A compiler is not
+redistributed by what it compiles, so this is a tooling note, not an obligation
+— but the runtime support code it *emits* is, and that is the §1 stanza above.
+Same file read, same election of MIT, same date.
+
+===============================================================================
+§3  DECLARED DEPENDENCIES — the Rust wrapper only
+===============================================================================
+
+`rust/` is a safe wrapper over the C ABI: `insimul-sys` (raw FFI, **no
+dependencies at all** — the ABI is a handful of functions over `*const c_char`)
+and `insimul` (the idiomatic API). Two direct dependencies, `serde` and
+`serde_json`, which pull in nine more. That is the entire external surface of
+this repository, and the reason `scripts/check-open-boundary.mjs` can claim the
+dependency graph is *closed* rather than merely deny-listed
+(`docs/pre-open-audit.md` §2.3).
+
+**None of this is redistributed by this repository.** A C, C++, GDScript or
+browser consumer of `libinsimul` resolves none of it; a Rust consumer resolves
+it themselves, from crates.io, under these crates' own terms. Nine of the eleven
+are build-time only (proc macros and their support crates), reached only when
+`serde_derive` runs. Every version below is the one `rust/Cargo.lock` resolves,
+and `scripts/check-attribution.mjs` fails if that stops being true — because a
+lock bump re-opens the license question, which is the only reason to record a
+version at all.
+
+A note on the copyright lines: most of these crates' `LICENSE-MIT` files carry
+**no copyright notice at all** — they are the bare permission text. Where that
+is so, the `Copyright` field names the crate's declared authors and says which
+it is. Inventing a notice for a file that has none would be a fabrication in a
+document whose entire value is that it is not one.
+
+### serde
+
+Package: serde
+Pinned-Version: 1.0.229
+SPDX-License-Identifier: MIT OR Apache-2.0
+Copyright: no copyright notice in the crate's LICENSE-MIT; authors: Erick
+  Tryzelaar <erick.tryzelaar@gmail.com>, David Tolnay <dtolnay@gmail.com>
+Upstream: https://github.com/serde-rs/serde
+Role: direct dependency of `insimul` — traits only. The binding-set decoder uses
+  hand-written visitors, no derive, so the ABI's variable ORDER survives into
+  the Rust map type.
+License-Text: §5.1
+
+### serde_core
+
+Package: serde_core
+Pinned-Version: 1.0.229
+SPDX-License-Identifier: MIT OR Apache-2.0
+Copyright: no copyright notice in the crate's LICENSE-MIT; authors: Erick
+  Tryzelaar <erick.tryzelaar@gmail.com>, David Tolnay <dtolnay@gmail.com>
+Upstream: https://github.com/serde-rs/serde
+Role: transitive — serde's own core, split out upstream
+License-Text: §5.1
+
+### serde_derive
+
+Package: serde_derive
+Pinned-Version: 1.0.229
+SPDX-License-Identifier: MIT OR Apache-2.0
+Copyright: no copyright notice in the crate's LICENSE-MIT; authors: Erick
+  Tryzelaar <erick.tryzelaar@gmail.com>, David Tolnay <dtolnay@gmail.com>
+Upstream: https://github.com/serde-rs/serde
+Role: transitive, build-time — a proc macro. Reached through serde_json; this
+  repository writes no `#[derive(Deserialize)]`.
+License-Text: §5.1
+
+### serde_json
+
+Package: serde_json
+Pinned-Version: 1.0.151
+SPDX-License-Identifier: MIT OR Apache-2.0
+Copyright: no copyright notice in the crate's LICENSE-MIT; authors: Erick
+  Tryzelaar <erick.tryzelaar@gmail.com>, David Tolnay <dtolnay@gmail.com>
+Upstream: https://github.com/serde-rs/json
+Role: direct dependency of `insimul` — parses the ABI's binding-set JSON, the
+  one document five wrappers all have to read the same way
+License-Text: §5.1
+
+### itoa
+
+Package: itoa
+Pinned-Version: 1.0.18
+SPDX-License-Identifier: MIT OR Apache-2.0
+Copyright: no copyright notice in the crate's LICENSE-MIT; author: David Tolnay
+  <dtolnay@gmail.com>
+Upstream: https://github.com/dtolnay/itoa
+Role: transitive — integer formatting inside serde_json
+License-Text: §5.1
+
+### zmij
+
+Package: zmij
+Pinned-Version: 1.0.23
+SPDX-License-Identifier: MIT
+Copyright: no copyright notice in the crate's LICENSE-MIT; author: David Tolnay
+  <dtolnay@gmail.com>
+Upstream: https://github.com/dtolnay/zmij
+Role: transitive — float formatting inside serde_json
+License-Text: §5.1
+
+**MIT only.** Every other crate in this section offers a choice of MIT or
+Apache-2.0; this one offers MIT alone, which is worth noticing rather than
+skimming past — a downstream that needs an Apache-2.0 patent grant from its
+whole graph does not get one here.
+
+### memchr
+
+Package: memchr
+Pinned-Version: 2.8.3
+SPDX-License-Identifier: Unlicense OR MIT
+Copyright: Copyright (c) 2015 Andrew Gallant
+Upstream: https://github.com/BurntSushi/memchr
+Role: transitive — substring search inside serde_json's parser
+License-Text: §5.1 (MIT), §5.3 (Unlicense)
+
+### proc-macro2
+
+Package: proc-macro2
+Pinned-Version: 1.0.107
+SPDX-License-Identifier: MIT OR Apache-2.0
+Copyright: no copyright notice in the crate's LICENSE-MIT; authors: David Tolnay
+  <dtolnay@gmail.com>, Alex Crichton <alex@alexcrichton.com>
+Upstream: https://github.com/dtolnay/proc-macro2
+Role: transitive, build-time — proc-macro support for serde_derive
+License-Text: §5.1
+
+### quote
+
+Package: quote
+Pinned-Version: 1.0.47
+SPDX-License-Identifier: MIT OR Apache-2.0
+Copyright: no copyright notice in the crate's LICENSE-MIT; author: David Tolnay
+  <dtolnay@gmail.com>
+Upstream: https://github.com/dtolnay/quote
+Role: transitive, build-time — proc-macro support for serde_derive
+License-Text: §5.1
+
+### syn
+
+Package: syn
+Pinned-Version: 3.0.3
+SPDX-License-Identifier: MIT OR Apache-2.0
+Copyright: no copyright notice in the crate's LICENSE-MIT; author: David Tolnay
+  <dtolnay@gmail.com>
+Upstream: https://github.com/dtolnay/syn
+Role: transitive, build-time — proc-macro support for serde_derive
+License-Text: §5.1
+
+### unicode-ident
+
+Package: unicode-ident
+Pinned-Version: 1.0.24
+SPDX-License-Identifier: (MIT OR Apache-2.0) AND Unicode-3.0
+Copyright: no copyright notice in the crate's LICENSE-MIT; author: David Tolnay
+  <dtolnay@gmail.com>. The Unicode data tables are Copyright (c) 1991-2023
+  Unicode, Inc.
+Upstream: https://github.com/dtolnay/unicode-ident
+Role: transitive, build-time — identifier classification inside syn
+License-Text: §5.1, plus the Unicode License V3 (see below)
+
+**The only compound identifier in this file, and the only term whose text is not
+reproduced in §5.** The `AND Unicode-3.0` is not a choice: it attaches to the
+Unicode character data tables the crate embeds, in addition to whichever of MIT
+or Apache-2.0 is elected for the crate's own code. Its text is `LICENSE-UNICODE`
+in the crate. This repository redistributes neither the crate nor anything built
+from it, so the term binds nobody here — but anyone shipping a Rust binary built
+from `rust/` must carry that text, and this line is so that they find out from a
+NOTICE rather than from an audit.
+
+===============================================================================
+§4  WHAT THIS REPOSITORY CLAIMS ABOUT ITSELF
+===============================================================================
+
+- **License:** Apache-2.0, in [`LICENSE`](LICENSE). `scripts/check-attribution.mjs`
+  asserts that every manifest in the tree — the Cargo workspace, the generated
+  wasm `package.json` — declares that same identifier. A manifest that disagrees
+  with the LICENSE file is a false statement to exactly the audience this file
+  is written for; `rust/Cargo.toml` said `MIT` until US-3 of
+  `242-pre-open-native` fixed it, which is why the rule exists.
+- **Contributions:** [`CONTRIBUTING.md`](CONTRIBUTING.md) — DCO 1.1 sign-off, no
+  CLA, the same decision `insimul/core` recorded on 2026-08-17.
+- **The name:** the trademark and conformance-mark policy is authored ONCE, in
+  the contract repository, and **linked** from here — never forked. See
+  [`CONTRIBUTING.md`](CONTRIBUTING.md) and
+  [`docs/pre-open/status.json`](docs/pre-open/status.json)
+  (`trademarkPolicy`), which records the link and which files carry it.
+- **Pins and provenance:** [`THIRD_PARTY.md`](THIRD_PARTY.md) says where each
+  pin lives and how the vendored bytes are tied to an upstream commit. This
+  file says who owns them and under what terms; that file says how you know the
+  bytes are really theirs. Neither replaces the other.
+
+===============================================================================
+§5  FULL LICENSE TEXTS
+===============================================================================
+
+MIT, BSD-2-Clause and the Unlicense all travel with every copy, so the texts are
+reproduced here rather than cited by name. This repository's own license —
+Apache-2.0 — is in the `LICENSE` file beside this one. The full texts as
+committed with the vendored source are `vendor/trealla/LICENSE`,
+`vendor/trealla/ATTRIBUTION`, `vendor/trealla/src/imath/LICENSE`,
+`vendor/trealla/src/isocline/LICENSE`, `vendor/trealla/src/sre/LICENSE` and
+`corebridge/vendor/quickjs/LICENSE`.
+
+-------------------------------------------------------------------------------
+§5.1  MIT License
+-------------------------------------------------------------------------------
+
+Applies to — Trealla Prolog, imath, isocline, QuickJS, the Emscripten runtime,
+and every crate in §3 for which MIT is elected. The copyright notice for each is
+in its stanza above; the permission notice follows once.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+-------------------------------------------------------------------------------
+§5.2  BSD 2-Clause License
+-------------------------------------------------------------------------------
+
+Applies to — the Prolog standard library embedded in every `libinsimul`
+artifact. Copyright holders and authors are named in its stanza above. **Clause
+2 is why this section exists**: a binary shipped without it is a binary shipped
+in breach, and that duty passes to every engine plugin and game that
+redistributes one.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+-------------------------------------------------------------------------------
+§5.3  The Unlicense
+-------------------------------------------------------------------------------
+
+Applies to — mini regex (`src/sre` inside Trealla), and to memchr where the
+Unlicense is elected.
+
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means.
+
+In jurisdictions that recognize copyright laws, the author or authors of this
+software dedicate any and all copyright interest in the software to the public
+domain. We make this dedication for the benefit of the public at large and to
+the detriment of our heirs and successors. We intend this dedication to be an
+overt act of relinquishment in perpetuity of all present and future rights to
+this software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>

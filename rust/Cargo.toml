@@ -4,6 +4,6 @@ members = ["insimul-sys", "insimul"]
 
 [workspace.package]
 edition = "2021"
-license = "MIT"
+license = "Apache-2.0"
 repository = "https://github.com/insimul/insimul-native"
 rust-version = "1.74"

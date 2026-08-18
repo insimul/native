@@ -224,17 +224,39 @@ The core README stops here on purpose; each topic has a focused guide:
   license actually is (SPDX `MIT`), read from the text at the pinned commit because
   GitHub's API cannot classify it, plus the exact `NOTICE` text to ship.
 
-## License
+## License, attribution and the name
 
 libinsimul is licensed under **Apache-2.0** — see [`LICENSE`](LICENSE).
+
+**[`NOTICE`](NOTICE) is the attribution that has to travel with every copy** (Apache-2.0
+§4(d)): what is compiled into these binaries, from whom, under what terms, and the full
+MIT / BSD-2-Clause / Unlicense texts that require the permission notice itself to be
+reproduced rather than merely named. This repository is layer zero — four engine plugins,
+a Rust server and every save file sit on it — so **the obligations in `NOTICE` §1 are
+inherited by anything that ships a `libinsimul` artifact**, not discharged here on its
+behalf. The BSD-2-Clause one is live rather than a formality: the Prolog standard library
+is embedded in every artifact, and its clause 2 asks for the notice in the documentation
+shipped alongside.
 
 The embedded Trealla Prolog engine is **MIT** and the components it bundles are MIT,
 BSD-2-Clause and Unlicense — all redistributable in the prebuilt binaries. That was
 resolved by reading the license texts in the pinned source, not by trusting a classifier
 (GitHub's API reports `NOASSERTION` for Trealla and is wrong):
-[`docs/TREALLA_LICENSE_FINDING.md`](docs/TREALLA_LICENSE_FINDING.md) records the finding
-and carries the exact `NOTICE` text to ship. Pins and attributions are in
-[`THIRD_PARTY.md`](THIRD_PARTY.md) — the Trealla commit for `libinsimul`, and QuickJS
-plus the generated `@insimul/core` bundle for `libinsimulcore`. Each pin has exactly one
-authoritative location, read by the build, so a version stamp cannot claim something other
-than what was compiled.
+[`docs/TREALLA_LICENSE_FINDING.md`](docs/TREALLA_LICENSE_FINDING.md) records the finding.
+Pins and provenance are in [`THIRD_PARTY.md`](THIRD_PARTY.md) — the Trealla commit for
+`libinsimul`, and QuickJS plus the generated `@insimul/core` bundle for `libinsimulcore`.
+Each pin has exactly one authoritative location, read by the build, so a version stamp
+cannot claim something other than what was compiled — and the `attribution` ctest checks
+each `NOTICE` stanza's pin against that location, so an attribution cannot name a
+different drop than the bytes shipped.
+
+**The code is open; the name is not the code.** The trademark and conformance-mark policy
+— what you may call "Insimul", and what "Insimul-compatible" requires — is authored once,
+in the contract repository, and linked from here rather than copied:
+**[Trademark and conformance-mark policy](https://github.com/insimul/core/blob/main/TRADEMARK.md)**.
+A copy of it in this tree is a gate failure, not a contribution.
+
+Contributions: [`CONTRIBUTING.md`](CONTRIBUTING.md) — DCO 1.1 sign-off, no CLA. The
+pre-open checklist this repository was measured against, item by item, is
+[`docs/pre-open-audit.md`](docs/pre-open-audit.md) and
+[`docs/pre-open/status.json`](docs/pre-open/status.json).

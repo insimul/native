@@ -1,5 +1,13 @@
 # Third-party components
 
+> **[`NOTICE`](NOTICE) is the legal artifact; this file is the engineering one.**
+> `NOTICE` says who owns each component and under what terms, and reproduces the
+> license texts that have to travel with every copy (Apache-2.0 §4(d)). This file
+> says where each pin lives, how the vendored bytes are tied to an upstream
+> commit, and how to bump one. Neither replaces the other, and the `attribution`
+> ctest checks that every stanza in `NOTICE` names the same pin the build reads
+> from the locations below.
+
 This repository builds **two** libraries, and each vendors its own dependency:
 
 | Library | Header | Vendors |

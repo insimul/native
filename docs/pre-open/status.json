@@ -1,0 +1,168 @@
+{
+  "repository": "insimul-native (libinsimul + libinsimulcore)",
+  "checklist": "docs/explanation/OPEN_SOURCE_STRATEGY.md — \"Pre-open checklist (mandatory before any repo goes public)\"",
+  "tasklist": "242-pre-open-native",
+  "updated": "2026-08-17",
+  "prose": "docs/pre-open-audit.md",
+  "validatedBy": "scripts/check-attribution.mjs — the `attribution` ctest (tests/run_attribution.sh), which falsifies the gate before trusting it",
+  "inheritedFrom": {
+    "repository": "@insimul/core",
+    "commit": "b37837b",
+    "tasklist": "241-pre-open-core",
+    "note": "Core was the probe and went first. The audit METHOD, the pattern set, the status-record shape and the CLA/DCO decision are core's; this repository instantiates them rather than inventing a second judgement, LINKS the trademark policy rather than forking it, and records its divergences in each script's header. A second secret scanner is a second thing to keep correct, and the half nobody re-reads is the half that reports clean."
+  },
+  "summary": "Every agent-runnable item on the checklist is done and, where it is a property of the tree rather than of one moment, gated as a ctest. The two IRREVERSIBLE steps — the git filter-repo history rewrite and the visibility flip — are prepared, proven, and left for a human to execute together at flip time. No tasklist performs either, and this record exists partly so that no future one can claim it did. This repository is also a SUBMODULE, pinned by the superproject and by each engine repo, which makes the rewrite's blast radius wider here than it was for core.",
+  "items": [
+    {
+      "id": "backend-extraction",
+      "checklistItem": "Backend extraction is a hard wall. No generator/pipeline code reachable from an open repo.",
+      "state": "gated",
+      "evidence": "docs/pre-open-audit.md §2.3 — the dependency audit is closed across FOUR surfaces, not deny-listed: JS (68 bare specifiers across 16 files against an EMPTY declared set — there is no package.json, so every one is a finding a human classified), Rust (3 dependencies across 3 manifests, every registry crate on `allowedCrates`), C (724 #includes across 133 files, zero of which resolve outside the repository), and the BUILD itself (19 files, zero fetches in CMakeLists.txt or cmake/**). Before US-2 the strings naming the closed backend and web repositories appeared nowhere in the tracked tree. Enforced by scripts/check-open-boundary.mjs, run by the `open_boundary` ctest.",
+      "tasklist": "242-pre-open-native US-2",
+      "humanGated": false,
+      "performedByTasklist": true,
+      "notes": "The fourth surface is this repository's addition to core's method. A dependency the build DOWNLOADS is one no import graph can see — and libinsimul is layer zero, so what it compiles must be what is committed."
+    },
+    {
+      "id": "history-scrub",
+      "checklistItem": "History scrub. git filter-repo each open repo to purge secrets, API keys, and closed world-pack content from history, not just HEAD.",
+      "state": "done",
+      "evidence": "docs/pre-open-audit.md §1 and docs/pre-open/history-scan.json — every blob reachable from every ref scanned (33 commits, 428 blobs, ALL of them read as text: nothing binary, nothing over the size cap, so there is no unread remainder). 61 findings, 0 scrub, 0 unresolved. No secret, API key, token, private key, closed pack, committed build output or binary artifact has ever been committed here. Re-run: `node scripts/history-scan.mjs --check --verify-scrub --report docs/pre-open/history-scan.json`.",
+      "tasklist": "242-pre-open-native US-1",
+      "humanGated": false,
+      "performedByTasklist": true,
+      "notes": "This item is the AUDIT. Executing the rewrite is the separate `history-rewrite` item below, and it is human-gated. All 61 findings are two content-boundary rules over four things — the 39 vendored engine .pl files, the ABI bootstrap, one golden snapshot fixture and the committed benchmark world — each classified keep with a reason and a date."
+    },
+    {
+      "id": "content-audit",
+      "checklistItem": "Content audit. Confirm no closed genre/language packs or generation heuristics are vendored into an open repo; only contract-level base predicates ship.",
+      "state": "gated",
+      "evidence": "docs/pre-open-audit.md §2.2 and docs/pre-open/open-boundary.json — 299 tracked files, 57 content findings, all classified keep, 0 unresolved. No data/insimul/** (it has never existed here), 0 pack documents by structure, 0 pack archives, 0 committed binaries, 0 committed build output. The 47 .pl files are four groups, each with a written reason: the vendored Trealla library, the ABI bootstrap, one snapshot fixture, and the deterministic benchmark world.",
+      "tasklist": "242-pre-open-native US-2",
+      "humanGated": false,
+      "performedByTasklist": true,
+      "notes": "Weakest joint, restated at each repo's flip: a curated table pasted into a source file under an innocent name is invisible to any structural detector. §2.2's near-miss review — the benchmark world, the vendored conformance corpora, core's bundled base templates, the located SWI prefix — is a human reading, not a scan."
+    },
+    {
+      "id": "dependency-audit",
+      "checklistItem": "Dependency audit. No insimul-backend / insimul-web imports in any open repo (enforce with a CI check, cf. the cross-submodule-import ban).",
+      "state": "gated",
+      "evidence": "docs/pre-open-audit.md §2.3 — clean, and closed as a graph rather than merely deny-listed. This repository has no .github/workflows; its CI surface is the five gates in CLAUDE.md, so the enforcement is a ctest (`open_boundary`), and check E of its driver fails if the add_test disappears.",
+      "tasklist": "242-pre-open-native US-2",
+      "humanGated": false,
+      "performedByTasklist": true,
+      "notes": "PROVEN TO FAIL twice per run: 55 self-test checks (a positive AND a near miss per rule), then five real violations injected into a copy of the real tracked tree — a closed pack, a closed-repo import, an escaping #include, a git= crate and a FetchContent — all five named, exit 1, and exit 0 again when reverted."
+    },
+    {
+      "id": "license-notice-contributing",
+      "checklistItem": "License + NOTICE files (Apache-2.0 + third-party attributions incl. Trealla) in every open repo; CONTRIBUTING + CLA/DCO decision made.",
+      "state": "gated",
+      "evidence": "LICENSE (Apache-2.0, present since before this tasklist), NOTICE (22 stanzas: the nine things compiled into or shipped as bytes by this repository, two reachable-but-not-redistributed, eleven Cargo crates the lockfile resolves, and the full MIT / BSD-2-Clause / Unlicense texts that must travel with a copy — 6 vendored directories attributed, 3 pins checked against the location the build reads them from, 11 SPDX identifiers compared against the crates' own metadata), CONTRIBUTING.md, and the DCO decision recorded under `contributorAgreement` below. Enforced by scripts/check-attribution.mjs via the `attribution` ctest; falsified by tests/attribution_selftest.mjs and by a live injection into a copy of the real tree.",
+      "tasklist": "242-pre-open-native US-3",
+      "humanGated": false,
+      "performedByTasklist": true,
+      "notes": "OPEN_SOURCE_STRATEGY.md marks this item blocked on resolving Trealla's license (GitHub's API says NOASSERTION). The block was LIFTED before this tasklist ran: Trealla is SPDX MIT, resolved 2026-08-12 by reading vendor/trealla/LICENSE at the pinned commit and comparing it mechanically to the SPDX reference body — docs/TREALLA_LICENSE_FINDING.md. The NOTICE is written against that finding, not against a claim, and the gate now checks each stanza's pin against the ONE location the BUILD reads that pin from, so an attribution can never name a different drop than the bytes compiled. One real defect fixed here: rust/Cargo.toml declared `license = \"MIT\"` while LICENSE is Apache-2.0."
+    },
+    {
+      "id": "trademark-conformance-policy",
+      "checklistItem": "Trademark/conformance policy published alongside the spec.",
+      "state": "done",
+      "evidence": "LINKED, not forked — see `trademarkPolicy` below. The policy is authored once, in the contract repository, and reached from README.md, CONTRIBUTING.md and docs/pre-open-audit.md §3. scripts/check-attribution.mjs enforces BOTH halves: `missing-policy-link` fails if a file this record claims links the policy does not, and `forked-policy` fails if a TRADEMARK.md ever appears in this tree.",
+      "tasklist": "242-pre-open-native US-3",
+      "humanGated": false,
+      "performedByTasklist": true,
+      "notes": "This repository is not the spec — the conformance corpus here is a vendored MIRROR of core's, so a certification claim is about core's contract version, not about libinsimul. Forking the policy would make the mark mean two different things the first time either copy was edited."
+    },
+    {
+      "id": "history-rewrite",
+      "checklistItem": "Execute the prepared git filter-repo rewrite (the second half of the History scrub item).",
+      "state": "prepared-human-gated",
+      "evidence": "scripts/history-scrub.sh (plan-only by default), scripts/history-scrub.replacements.txt and scripts/history-scrub.paths.txt. The plan purges nothing because the audit found nothing to purge, and the script REFUSES --execute in that state rather than rewrite every commit id for no reason. It also refuses a stale report and a non-bare repository, and omits --invert-paths entirely when the paths file is empty (filter-repo reads an empty paths file as `delete the whole tree across all of history`). The machinery is exercised anyway: check D of the `history_scan` ctest runs a REAL filter-repo over a throwaway repository with a planted key and rescans it clean.",
+      "tasklist": "242-pre-open-native US-1 prepared it",
+      "humanGated": true,
+      "performedByTasklist": false,
+      "notes": "Irreversible, and wider here than in core: this repository is a SUBMODULE. Every commit id from the first rewritten commit onward changes, so every clone, branch, PR and every superproject/engine-repo submodule pin dies at once, with no rebase path back. Run it immediately before the visibility flip, in one sitting, by a human — see `submodule-pins-break-at-rewrite` in the open items."
+    },
+    {
+      "id": "visibility-flip",
+      "checklistItem": "Make the repository public.",
+      "state": "not-started",
+      "evidence": "Deliberately not performed. Everything in this record exists to be reviewed BEFORE this step, by a human who then runs it.",
+      "tasklist": "none — out of scope for every tasklist",
+      "humanGated": true,
+      "performedByTasklist": false,
+      "notes": "There is no undo. A repository that has been public for one minute has been cloned, cached and indexed; making it private again removes the link, not the copies. Clear the open items below first, and note that this repository is sequenced in the SECOND wave, after core."
+    }
+  ],
+  "openItems": [
+    {
+      "id": "swipl-license-unresolved",
+      "summary": "src/engine_swipl.c and cmake/swipl.cmake can build libinsimul against SWI-Prolog instead of Trealla (-DINSIMUL_ENGINE=swipl). No SWI byte is committed here — it is LOCATED, not vendored — the default build is Trealla, and decision D20 answered the spike NO (docs/SWIPL_MEASUREMENT.md). So nothing is redistributed and no obligation attaches today. But SWI-Prolog's licensing is not a single identifier, and a distributed artifact built with that flag is a different license conversation from every stanza in NOTICE §1. NOTICE §2 records SPDX NOASSERTION rather than guessing.",
+      "owner": "Insimul maintainers — read the license text at the pin in scripts/build_swipl.sh and resolve it BEFORE any artifact built with -DINSIMUL_ENGINE=swipl is distributed",
+      "raisedBy": "242-pre-open-native US-3",
+      "blocksFlip": false,
+      "state": "unresolved"
+    },
+    {
+      "id": "plugin-notice-inheritance",
+      "summary": "The Prolog standard library embedded in every libinsimul artifact is BSD-2-Clause, and its clause 2 asks that the notice be reproduced in the documentation or other materials provided with the distribution. Shipping the binary alone does not discharge it. NOTICE §5.2 discharges it HERE — but every engine plugin (Godot, Unity, Unreal, the browser package) and every game that redistributes a libinsimul artifact inherits the same duty, and those repositories' third-party notices have not been checked against this list. This obligation exists today, independently of the flip.",
+      "owner": "Insimul maintainers — audit each engine plugin's third-party notices against NOTICE §1 before the next plugin release",
+      "raisedBy": "242-pre-open-native US-3",
+      "blocksFlip": false,
+      "state": "unresolved"
+    },
+    {
+      "id": "public-repository-names-unconfirmed",
+      "summary": "Two URLs in this tree name a public repository that does not exist yet, and the project's own documents are not consistent about the names. The trademark policy is linked as https://github.com/insimul/core/blob/main/TRADEMARK.md — the repository core's own policy and status record call themselves — while core's package.json declares its git repository as github.com/insimul/runtime with core at packages/core. rust/Cargo.toml declares repository = https://github.com/insimul/insimul-native. Nothing can verify any of them while the repositories are private, and a link that 404s in a public README is the first thing a reader hits.",
+      "owner": "Insimul maintainers — confirm the public repository names at flip time and correct the policy link and the Cargo repository field together",
+      "raisedBy": "242-pre-open-native US-3",
+      "blocksFlip": false,
+      "state": "unresolved"
+    },
+    {
+      "id": "submodule-pins-break-at-rewrite",
+      "summary": "This repository is consumed as a git SUBMODULE by the superproject and by each engine repository. The prepared filter-repo rewrite changes every commit id from the first rewritten commit onward, so every one of those pins points at a commit that no longer exists — a failure mode core did not have. Today the plan purges nothing and the script refuses to run, so the item is dormant; it becomes live the moment a future audit finds something to scrub.",
+      "owner": "Insimul maintainers — if the rewrite is ever executed, re-point every superproject and engine-repo submodule pin in the same sitting",
+      "raisedBy": "242-pre-open-native US-3",
+      "blocksFlip": false,
+      "state": "scheduled"
+    },
+    {
+      "id": "dco-enforcement-at-flip",
+      "summary": "The DCO decision is recorded and CONTRIBUTING.md asks for `git commit -s`, but no CI job enforces sign-off yet — and this repository has no .github/workflows at all, so enabling it means adding one. Enforcing it today would fail every commit in this repository's single-org pre-flip history for no benefit. Switch it on as part of the flip, when the first outside contribution becomes possible.",
+      "owner": "Insimul maintainers — enable at flip time, consistently with core's identical item",
+      "raisedBy": "242-pre-open-native US-3, mirroring 241-pre-open-core US-3",
+      "blocksFlip": false,
+      "state": "scheduled"
+    }
+  ],
+  "contributorAgreement": {
+    "decision": "DCO 1.1 sign-off (git commit -s). No CLA.",
+    "decidedOn": "2026-08-17",
+    "decidedBy": "241-pre-open-core US-3; adopted unchanged by 242-pre-open-native US-3, recorded for maintainer review at flip time",
+    "rationale": "Apache-2.0 already grants inbound what the project needs outbound: §5 makes a contribution licensed under the same terms as the work, patent grant included, which is the reason Apache-2.0 was chosen over MIT in the first place. A CLA buys exactly one thing beyond that — the right to relicense contributions unilaterally — and this project's commercial position is the closed generation backend, not the ability to relicense the engine substrate. A CLA is also a documented adoption tax on precisely the people this repository opens for: implementers writing or porting a runtime against a C ABI. And a DCO is enforceable mechanically by a CI check, whereas a CLA needs a bot and a legal record somebody has to operate. Adopting core's decision unchanged is itself part of the reasoning: a contributor working across the contract repository and the native core should not discover that the two ask for different things.",
+    "consequences": "Relicensing insimul-native later would require every contributor's consent. That is the price of the decision, stated rather than discovered.",
+    "revisitIf": "The project wants to relicense or commercially dual-license the native core; or a contributor's employer requires a signed agreement, which is handled per-contribution rather than by making everyone sign one.",
+    "recordedIn": "CONTRIBUTING.md"
+  },
+  "trademarkPolicy": {
+    "authoredIn": "@insimul/core",
+    "path": "TRADEMARK.md",
+    "url": "https://github.com/insimul/core/blob/main/TRADEMARK.md",
+    "version": "1.0 · 2026-08-17",
+    "forkedHere": false,
+    "linkedFrom": [
+      "README.md",
+      "CONTRIBUTING.md",
+      "docs/pre-open-audit.md"
+    ],
+    "rationale": "The policy is about the CONTRACT — the conformance corpus, the predicate schema, and the version a certification names are all core's. This repository vendors a mirror of that corpus and implements against it, so it is one of the things the mark is claimed over, not the place the claim is defined. Five copies of a trademark policy is five policies, and the first time one of them is edited the mark means five different things.",
+    "enforcement": "scripts/check-attribution.mjs: `missing-policy-link` fails if any file listed above stops containing the URL; `forked-policy` fails if a TRADEMARK.md (or a docs/trademark*.md) ever appears in the tracked set. Both are exercised against synthetic positives in tests/attribution_selftest.mjs and against the real tree in tests/run_attribution.sh check D.",
+    "cannotCheck": "That the linked document still says what this repository believes it says. The link is verified as a string, and core's copy can change underneath it. That is the cost of not forking, and it is the cheaper cost — a stale link is visible to any reader, a divergent fork is not.",
+    "openItem": "public-repository-names-unconfirmed"
+  },
+  "humanGatedSteps": [
+    "The git filter-repo history rewrite (`history-rewrite` above) — prepared and proven by 242-pre-open-native US-1, executed by a human at flip time, together with re-pointing every submodule pin.",
+    "The visibility flip (`visibility-flip` above) — performed by no tasklist, ever."
+  ]
+}

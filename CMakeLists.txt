@@ -624,3 +624,22 @@ add_test(NAME history_scan COMMAND
 add_test(NAME open_boundary COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_open_boundary.sh
        ${CMAKE_CURRENT_SOURCE_DIR})
+
+# attribution: the PRE-OPEN LICENSING + POLICY gate (US-3, tasklist
+# 242-pre-open-native). The two checklist items the content/dependency audit does
+# not answer — Apache-2.0 LICENSE + a NOTICE carrying every third-party
+# attribution (Trealla included, resolved from its own license text rather than
+# from a classifier), CONTRIBUTING with the CLA/DCO decision MADE, and the
+# trademark/conformance policy LINKED from the contract repo rather than forked
+# into a divergent copy here. They read like paperwork, which is exactly why they
+# are a gate: a NOTICE is only true on the day it is written unless something
+# keeps it true, and the things that falsify it — a re-vendor, a lock bump, a
+# tasklist marking an irreversible step done — all look like ordinary commits.
+# Each NOTICE stanza's pin is checked against the ONE location the BUILD reads
+# that pin from. run_attribution.sh falsifies the gate rule by rule first, then
+# audits this tree, then injects five real violations into a copy of it and fails
+# if the gate does not name every one. Needs node; degrades to a loud [SKIP]
+# without it (read the output).
+add_test(NAME attribution COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_attribution.sh
+       ${CMAKE_CURRENT_SOURCE_DIR})
