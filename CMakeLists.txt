@@ -595,3 +595,17 @@ add_test(NAME corebridge_radiant_none COMMAND
 add_test(NAME core_vendor COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs)
+
+# history_scan: the PRE-OPEN history audit (US-1, tasklist 242-pre-open-native).
+# Every other gate in this file reads the working tree; this one reads the 32
+# commits behind it, because `git clone` publishes all of them and deleting a
+# secret in a later commit hides it from exactly nobody. It falsifies the scanner
+# against a synthetic positive per rule FIRST, then audits this repository, then
+# runs the whole thing against a throwaway repository with a planted secret — and
+# fails if that one passes. Needs node; run_history_scan.sh degrades to a loud
+# [SKIP] without it (read the output — a check that prints [SKIP] asserted
+# nothing, and this is the one standing between us and a permanent public
+# history).
+add_test(NAME history_scan COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_history_scan.sh
+       ${CMAKE_CURRENT_SOURCE_DIR})

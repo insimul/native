@@ -1,0 +1,1212 @@
+{
+  "tool": "scripts/history-scan.mjs",
+  "rules": "scripts/history-scan.rules.json",
+  "rulesVersion": 1,
+  "repository": {
+    "head": "25d1338c0b98914ae09eaceac9c04abe4063f362",
+    "commits": 32,
+    "refs": [
+      "refs/heads/chief/242-pre-open-native",
+      "refs/heads/main",
+      "refs/remotes/origin/HEAD",
+      "refs/remotes/origin/main"
+    ],
+    "scope": "every object reachable from all refs and HEAD"
+  },
+  "coverage": {
+    "blobs": 417,
+    "textBlobs": 417,
+    "skippedBinary": [],
+    "skippedOversize": []
+  },
+  "summary": {
+    "findings": 61,
+    "scrub": 0,
+    "keep": 61,
+    "review": 0,
+    "unresolved": 0,
+    "unusedAllowances": 0
+  },
+  "unusedAllowances": [],
+  "findings": [
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/entities.pl",
+      "blob": "6c28cb67cb3a7010fabcd46582c169c5c9dbeb30",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/entities.pl",
+      "blob": "6c28cb67cb3a7010fabcd46582c169c5c9dbeb30",
+      "line": null,
+      "match": null,
+      "reason": "The measured benchmark world (6 .pl files, 1,630 clauses), GENERATED IN THE OPEN by bench/world/generate.mjs — a fixed LCG, no clock, and its whole vocabulary (24 given names, 10 surnames, 10 roles, 8 factions, 10 quest titles) is literal in the generator, which is committed beside it. Nothing here was copied from a closed pack; `node bench/world/generate.mjs --check` reproduces the committed bytes from the committed source, which is the strongest form this argument can take. It is a fixture for docs/SWIPL_MEASUREMENT.md, not authoring content.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/generate.mjs",
+      "blob": "b10755b58d0a096f80ebc54292b775200b1e500e",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/items.pl",
+      "blob": "dd55f48cde0cc24e90a1fd7f1ef2e390f2fd5556",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/items.pl",
+      "blob": "dd55f48cde0cc24e90a1fd7f1ef2e390f2fd5556",
+      "line": null,
+      "match": null,
+      "reason": "The measured benchmark world (6 .pl files, 1,630 clauses), GENERATED IN THE OPEN by bench/world/generate.mjs — a fixed LCG, no clock, and its whole vocabulary (24 given names, 10 surnames, 10 roles, 8 factions, 10 quest titles) is literal in the generator, which is committed beside it. Nothing here was copied from a closed pack; `node bench/world/generate.mjs --check` reproduces the committed bytes from the committed source, which is the strongest form this argument can take. It is a fixture for docs/SWIPL_MEASUREMENT.md, not authoring content.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/MANIFEST.json",
+      "blob": "365417d02415edfca4da085ded24f74d7ae19a40",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/places.pl",
+      "blob": "c8caf4f31cc9fc23e28331785a38a8b1657be13d",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/places.pl",
+      "blob": "c8caf4f31cc9fc23e28331785a38a8b1657be13d",
+      "line": null,
+      "match": null,
+      "reason": "The measured benchmark world (6 .pl files, 1,630 clauses), GENERATED IN THE OPEN by bench/world/generate.mjs — a fixed LCG, no clock, and its whole vocabulary (24 given names, 10 surnames, 10 roles, 8 factions, 10 quest titles) is literal in the generator, which is committed beside it. Nothing here was copied from a closed pack; `node bench/world/generate.mjs --check` reproduces the committed bytes from the committed source, which is the strongest form this argument can take. It is a fixture for docs/SWIPL_MEASUREMENT.md, not authoring content.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/QUERIES.txt",
+      "blob": "5b216218ee31912220adb2931547eb9e39d41f1b",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/quests.pl",
+      "blob": "84e70dbdd519fa8624c641bff7047088367e3b65",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/quests.pl",
+      "blob": "84e70dbdd519fa8624c641bff7047088367e3b65",
+      "line": null,
+      "match": null,
+      "reason": "The measured benchmark world (6 .pl files, 1,630 clauses), GENERATED IN THE OPEN by bench/world/generate.mjs — a fixed LCG, no clock, and its whole vocabulary (24 given names, 10 surnames, 10 roles, 8 factions, 10 quest titles) is literal in the generator, which is committed beside it. Nothing here was copied from a closed pack; `node bench/world/generate.mjs --check` reproduces the committed bytes from the committed source, which is the strongest form this argument can take. It is a fixture for docs/SWIPL_MEASUREMENT.md, not authoring content.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/README.md",
+      "blob": "e533d6bb4b536085963af5fa2b13a9072dca9f2b",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/rules.pl",
+      "blob": "cd4e41fd045d04a8ad7cd79948ee195a3f7b00ea",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/rules.pl",
+      "blob": "cd4e41fd045d04a8ad7cd79948ee195a3f7b00ea",
+      "line": null,
+      "match": null,
+      "reason": "The measured benchmark world (6 .pl files, 1,630 clauses), GENERATED IN THE OPEN by bench/world/generate.mjs — a fixed LCG, no clock, and its whole vocabulary (24 given names, 10 surnames, 10 roles, 8 factions, 10 quest titles) is literal in the generator, which is committed beside it. Nothing here was copied from a closed pack; `node bench/world/generate.mjs --check` reproduces the committed bytes from the committed source, which is the strongest form this argument can take. It is a fixture for docs/SWIPL_MEASUREMENT.md, not authoring content.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "world-content-tree",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/world.pl",
+      "blob": "ee2674f74f6f71592db35edd8fca1ca5c0a6276f",
+      "line": null,
+      "match": null,
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "bench/world/world.pl",
+      "blob": "ee2674f74f6f71592db35edd8fca1ca5c0a6276f",
+      "line": null,
+      "match": null,
+      "reason": "The measured benchmark world (6 .pl files, 1,630 clauses), GENERATED IN THE OPEN by bench/world/generate.mjs — a fixed LCG, no clock, and its whole vocabulary (24 given names, 10 surnames, 10 roles, 8 factions, 10 quest titles) is literal in the generator, which is committed beside it. Nothing here was copied from a closed pack; `node bench/world/generate.mjs --check` reproduces the committed bytes from the committed source, which is the strongest form this argument can take. It is a fixture for docs/SWIPL_MEASUREMENT.md, not authoring content.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "502af48fe5480e73bf3fc88099bcb386a52e0075",
+          "date": "2026-08-13T16:06:39-05:00",
+          "subject": "feat: US-3 - MEASURE both engines on all three legs and publish the comparison"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "conformance/snapshots/basic.snapshot.pl",
+      "blob": "23bf5c63503d3e14f28777f61ba737d26ce75df0",
+      "line": null,
+      "match": null,
+      "reason": "The golden snapshot image the `snapshot_parse` ctest parses with the wrappers' real prolog-fact-parser.ts. Six clauses of throwaway fixture data (parent/2, likes/2) chosen to exercise quoting and variable rendering. Contract-level by construction: the file exists to pin the snapshot FORMAT, which is part of the published ABI.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "90a70a92137fe0159d4f99f09939d153c50adc2e",
+          "date": "2026-07-16T20:10:34-05:00",
+          "subject": "feat: US-LI4 - KB snapshot/restore for save files"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "src/insimul_boot.pl",
+      "blob": "02ee0eb2c4804bf53ff7502568530afd80bfe061",
+      "line": null,
+      "match": null,
+      "reason": "The ABI bootstrap — the Prolog that IS libinsimul's C layer (running goals, serialising the binding-set JSON, classifying ISO errors, snapshotting). Every promise include/insimul.h makes is implemented here. It is engine plumbing, the open half of the content boundary by definition: a runtime cannot be shown conformant against an ABI whose implementation it cannot read. No genre bundle, no language corpus, no generation heuristic. Five blobs = five revisions of the same file.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "90a70a92137fe0159d4f99f09939d153c50adc2e",
+          "date": "2026-07-16T20:10:34-05:00",
+          "subject": "feat: US-LI4 - KB snapshot/restore for save files"
+        },
+        {
+          "commit": "b9728848d0ae7602c90b8cdf2133540fe5c00bf9",
+          "date": "2026-07-23T21:52:10-05:00",
+          "subject": "feat: US-1 - Re-vendor the KINP-atom corpus and keep tau⇄Trealla parity green with no vacuous skips"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "src/insimul_boot.pl",
+      "blob": "55f251225b9fca423c862cc9085f1290f75bfb09",
+      "line": null,
+      "match": null,
+      "reason": "The ABI bootstrap — the Prolog that IS libinsimul's C layer (running goals, serialising the binding-set JSON, classifying ISO errors, snapshotting). Every promise include/insimul.h makes is implemented here. It is engine plumbing, the open half of the content boundary by definition: a runtime cannot be shown conformant against an ABI whose implementation it cannot read. No genre bundle, no language corpus, no generation heuristic. Five blobs = five revisions of the same file.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "392d6f8830a531e22b7500f58b14222a4f230ef5",
+          "date": "2026-08-12T23:46:23-05:00",
+          "subject": "feat: US-2 - Narrow the ABI to ISO semantics + JSON binding sets, and prove the narrowing"
+        },
+        {
+          "commit": "76b8dec346609378dc8db74668c1f9893bcd162e",
+          "date": "2026-08-13T15:08:08-05:00",
+          "subject": "feat: US-1 - Build SWI-Prolog behind the existing C ABI for the native embed target"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "src/insimul_boot.pl",
+      "blob": "b48f7b5c73ebb527d6eb65f5f63dc7d12b4e4e68",
+      "line": null,
+      "match": null,
+      "reason": "The ABI bootstrap — the Prolog that IS libinsimul's C layer (running goals, serialising the binding-set JSON, classifying ISO errors, snapshotting). Every promise include/insimul.h makes is implemented here. It is engine plumbing, the open half of the content boundary by definition: a runtime cannot be shown conformant against an ABI whose implementation it cannot read. No genre bundle, no language corpus, no generation heuristic. Five blobs = five revisions of the same file.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "76b8dec346609378dc8db74668c1f9893bcd162e",
+          "date": "2026-08-13T15:08:08-05:00",
+          "subject": "feat: US-1 - Build SWI-Prolog behind the existing C ABI for the native embed target"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "src/insimul_boot.pl",
+      "blob": "c17b9df59516267bc89abdd92e501079777618c0",
+      "line": null,
+      "match": null,
+      "reason": "The ABI bootstrap — the Prolog that IS libinsimul's C layer (running goals, serialising the binding-set JSON, classifying ISO errors, snapshotting). Every promise include/insimul.h makes is implemented here. It is engine plumbing, the open half of the content boundary by definition: a runtime cannot be shown conformant against an ABI whose implementation it cannot read. No genre bundle, no language corpus, no generation heuristic. Five blobs = five revisions of the same file.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "f7eca5f8e16322a3fa55ea23479f41d497f9359a",
+          "date": "2026-07-16T19:30:37-05:00",
+          "subject": "feat: US-LI2 - The C ABI: KB lifecycle, consult, assert/retract, query iterator"
+        },
+        {
+          "commit": "90a70a92137fe0159d4f99f09939d153c50adc2e",
+          "date": "2026-07-16T20:10:34-05:00",
+          "subject": "feat: US-LI4 - KB snapshot/restore for save files"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "src/insimul_boot.pl",
+      "blob": "c6040f89d38b51a2189a3bfbcb85c4d6385f174c",
+      "line": null,
+      "match": null,
+      "reason": "The ABI bootstrap — the Prolog that IS libinsimul's C layer (running goals, serialising the binding-set JSON, classifying ISO errors, snapshotting). Every promise include/insimul.h makes is implemented here. It is engine plumbing, the open half of the content boundary by definition: a runtime cannot be shown conformant against an ABI whose implementation it cannot read. No genre bundle, no language corpus, no generation heuristic. Five blobs = five revisions of the same file.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "b9728848d0ae7602c90b8cdf2133540fe5c00bf9",
+          "date": "2026-07-23T21:52:10-05:00",
+          "subject": "feat: US-1 - Re-vendor the KINP-atom corpus and keep tau⇄Trealla parity green with no vacuous skips"
+        },
+        {
+          "commit": "392d6f8830a531e22b7500f58b14222a4f230ef5",
+          "date": "2026-08-12T23:46:23-05:00",
+          "subject": "feat: US-2 - Narrow the ABI to ISO semantics + JSON binding sets, and prove the narrowing"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/abnf.pl",
+      "blob": "037e7aa0a570d6b78341fa86a6d93412682e0232",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/aggregate.pl",
+      "blob": "ff6630ad767544bb312599b13e4267a74e252b0a",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/arithmetic.pl",
+      "blob": "ab529d9c919441d52034e529f5dd690e7384e232",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/assoc.pl",
+      "blob": "b4efcdb856357821952e3044d30169fea4d52655",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/atts.pl",
+      "blob": "bca0c4205ce48869ae0cb6a029203c854ebc645c",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/builtins.pl",
+      "blob": "a0d67e7ef8ae696e961f3606a0667fbd5076311b",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/charsio.pl",
+      "blob": "461371d7158154d416affcf1ed8dd3a020f5b230",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/clpb.pl",
+      "blob": "544df301c4afa495db358314f77e86f77dac14ef",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/clpz.pl",
+      "blob": "35b16aa80952464b8dd87e821a726191882f01b5",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/concurrent.pl",
+      "blob": "14ec574071e85e772a3259d6a0a53e1619e3150f",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/curl.pl",
+      "blob": "7da313ab96ea4d57db9a45a50acf3a4d59849027",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/dcgs.pl",
+      "blob": "f5dfcc41bc784fa65358f745395c9b25973447e1",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/debug.pl",
+      "blob": "812bd44a20b1892e61da70d4fc31b8620f8a0111",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/dif.pl",
+      "blob": "c344e1d750b3189931f12f3f1d8f13f62d07c814",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/error.pl",
+      "blob": "93426a09e6240071f98eff3eaac9a8ffaf4abd0a",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/format.pl",
+      "blob": "0c6fa2db9beaebb0c6b614f87e72119aa84b8a60",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/freeze.pl",
+      "blob": "7f397d8c950dbdb727d63688ba6534d1e0ed629a",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/gensym.pl",
+      "blob": "272e68bdc1ee9ddec1888c0051473d9f6a28ba9b",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/gsl.pl",
+      "blob": "9956c0c6e7fc1a6b6a90b1e2f0d11fb146984f1e",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/http.pl",
+      "blob": "0e9be5d6acb7b929586909887d1a06d6e21ae803",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/iso_ext.pl",
+      "blob": "2301eb9a833277efe26ed90adc4e4e6921bb4320",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/json.pl",
+      "blob": "dac2788261660adf825bf28108e140b827a7fa22",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/lambda.pl",
+      "blob": "5cb192aa709e1ba2a432f10a431f6b73e459c994",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/lists.pl",
+      "blob": "475dd5ca20e2253380508fe89c8186007820a63b",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/ordsets.pl",
+      "blob": "354e674f84ebb6cf47f06836e279a2eed027932d",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/pairs.pl",
+      "blob": "dea0d5b761336e81911e597748b48b387c25a4bb",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/pio.pl",
+      "blob": "93e705c597e7967282b64cb0a5f15fa8d0520797",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/quads.pl",
+      "blob": "e0d60bea184e03bd7393a20d07012da8d9539307",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/random.pl",
+      "blob": "74036b9afe04fe269232315135a49bf64279ab6a",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/raylib.pl",
+      "blob": "506a3b75860e0f4c31baae7639ef538481a3e27b",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/rbtrees.pl",
+      "blob": "a70049c2c32db511b4884539d06a1d0f8a0fb115",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/reif.pl",
+      "blob": "55618e84ec507ead4bdbb9062a44be48cafcd95d",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/si.pl",
+      "blob": "8a64228997fe3397f8184b976a6dffbe180ef143",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/sockets.pl",
+      "blob": "0d4a794f8e341b6fc8b83962bb0e1c4d0af0430c",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/sqlite3.pl",
+      "blob": "96b02b8d430663f369e5e71e16ce4c35261f20fc",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/time.pl",
+      "blob": "f8f3d77168e565e389a61a4b3f99a742cd09cf19",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/ugraphs.pl",
+      "blob": "1d2a90c2899d3cf3ee230a93c91eb896cc0e4da3",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/uuid.pl",
+      "blob": "64d203608c66ed6431cb13428c0fb5bb95da4500",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    },
+    {
+      "rule": "prolog-seed-file",
+      "kind": "path",
+      "classification": "keep",
+      "resolved": true,
+      "path": "vendor/trealla/library/when.pl",
+      "blob": "737aea431f3987d325c873d2b7a8f1c5e2944621",
+      "line": null,
+      "match": null,
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "commits": [
+        {
+          "commit": "e01924426b49df86ffb9da15333bea5f83bb1aae",
+          "date": "2026-08-12T23:58:50-05:00",
+          "subject": "feat: US-3 - Pin and vendor the Trealla source, and resolve its license precisely"
+        }
+      ]
+    }
+  ]
+}

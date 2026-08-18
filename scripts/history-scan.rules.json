@@ -1,0 +1,239 @@
+{
+  "$comment": [
+    "Rules for scripts/history-scan.mjs — the pre-open history scrub audit of",
+    "insimul-native (docs/explanation/OPEN_SOURCE_STRATEGY.md, 'Pre-open",
+    "checklist' → History scrub; tasklist 242-pre-open-native US-1).",
+    "",
+    "The pattern set is INHERITED from insimul/core@b37837b's",
+    "scripts/history-scan.rules.json — 241 is the probe, 242 reuses its method —",
+    "plus the rules below marked 'native-specific', which cover the classes core",
+    "does not have: a vendored C engine, a vendored JS engine, build outputs that",
+    "are binary, and a committed benchmark world.",
+    "",
+    "Two rule kinds, and the difference matters:",
+    "  path    — matched against the object's path in history. Catches a class of",
+    "            file that must never exist in an open repo at all (.env, key",
+    "            material, the closed data/insimul/** pack tree, a shipped binary).",
+    "  content — matched against the blob's decoded text. Catches a credential",
+    "            pasted into a file whose NAME is innocent, which is how secrets",
+    "            actually reach a repository.",
+    "",
+    "A third detector is STRUCTURAL and lives in code, not here: the pack-shape",
+    "detector in scripts/check-pack-provenance.mjs (vendored from core byte for",
+    "byte). It is deliberately not a pattern list, because a deny-list of the",
+    "closed tables' real values would have to contain the real values in the open",
+    "repository — the leak it is meant to prevent, wearing a guard's clothes.",
+    "",
+    "Each rule declares a `classification`:",
+    "  scrub  — if this ever matches, the history must be rewritten before the flip.",
+    "  review — the pattern is suggestive but not conclusive; a human classifies",
+    "           the finding keep/scrub and records the decision in `allow` below.",
+    "An unclassified match is never silently keep: --check exits non-zero on any",
+    "finding that is not covered by an `allow` entry.",
+    "",
+    "Patterns are JavaScript regular expressions. A leading `(?i)` — which JS does",
+    "not support inline — is translated by the scanner into the `i` flag; anywhere",
+    "else in a pattern it is an error rather than a silently-dead group."
+  ],
+  "version": 1,
+
+  "rules": [
+    {
+      "id": "closed-pack-tree",
+      "kind": "path",
+      "classification": "scrub",
+      "description": "The closed genre/language world packs and generation heuristics (data/insimul/**, OPEN_SOURCE_STRATEGY.md 'The content boundary'). These are the CLOSED asset; a single historical commit publishes them forever. This repository has never had one — the rule is the guard that says so, and it stays whether or not it fires.",
+      "pattern": "(^|/)data/insimul/"
+    },
+    {
+      "id": "world-content-tree",
+      "kind": "path",
+      "classification": "review",
+      "description": "native-specific. A directory of world/pack content. libinsimul is the ENGINE — the thing that runs a world — and a world committed into it is either a fixture (fine, and classified as one) or a piece of the closed authoring content that must never be here. `bench/world/` is the committed benchmark fixture and is classified in `allow`; anything else that lands under this pattern needs a human before the flip.",
+      "pattern": "(^|/)(world|worlds|pack|packs|world-packs|worldpacks)/"
+    },
+    {
+      "id": "prolog-seed-file",
+      "kind": "path",
+      "classification": "review",
+      "description": "A .pl source. The Prolog ENGINE is open and contract-level base predicates ship; the genre bundles, the language corpora (CEFR/SRS data, the ~573 .pl seed files) and the generation heuristics do not. Every .pl in history is therefore classified by hand — see `allow`. In this repository most of them are the vendored engine's own library.",
+      "pattern": "\\.pl$"
+    },
+    {
+      "id": "binary-artifact",
+      "kind": "path",
+      "classification": "review",
+      "description": "native-specific. A compiled or packaged artifact by extension. Two reasons it is a finding rather than a nuisance: this repository BUILDS wasm modules, preload images, static libraries and dist tarballs, so a committed one is a real possibility; and the scanner cannot read any of them, so a binary blob in history is a hole in the audit that a human has to close by knowing what it is. `.data` is Emscripten's preload image — the one artifact here that can carry a whole Prolog library tree inside it.",
+      "pattern": "\\.(wasm|data|a|o|so|dylib|dll|lib|exe|bin|zip|gz|tgz|bz2|xz|7z|jar|class|pdb|node)$"
+    },
+    {
+      "id": "build-output-tree",
+      "kind": "path",
+      "classification": "review",
+      "description": "native-specific. A build or dependency tree that .gitignore is supposed to keep out (build/, build-wasm/, dist/, node_modules/, rust's target/). Committed build output is how a binary — engine objects, a preload image, a packaged shared library — reaches a history that reads as pure source, and it is invisible to any working-tree check once removed.",
+      "pattern": "(^|/)(build|build-[^/]+|dist|out|node_modules|target|\\.cache|CMakeFiles)/"
+    },
+    {
+      "id": "dotenv-file",
+      "kind": "path",
+      "classification": "scrub",
+      "description": "A committed .env. Whatever it held was live when it was committed and must be assumed compromised, so this is scrub-AND-rotate, not scrub alone. .env.example / .env.sample / .env.template are excluded by `except`.",
+      "pattern": "(^|/)\\.env($|\\.)",
+      "except": "(^|/)\\.env\\.(example|sample|template|dist)$"
+    },
+    {
+      "id": "private-key-file",
+      "kind": "path",
+      "classification": "scrub",
+      "description": "Private key material by filename: PEM/PKCS#12/Java keystores and SSH private keys.",
+      "pattern": "(\\.(pem|p12|pfx|jks|keystore)$)|((^|/)id_(rsa|dsa|ecdsa|ed25519)$)"
+    },
+    {
+      "id": "credential-config-file",
+      "kind": "path",
+      "classification": "review",
+      "description": "Files whose normal contents are credentials — .npmrc (registry auth token), .netrc, cloud CLI credential files. Often committed empty or with only a registry URL, which is why this is review and not scrub.",
+      "pattern": "(^|/)(\\.npmrc|\\.netrc|_netrc|credentials|\\.pypirc)$"
+    },
+
+    {
+      "id": "aws-access-key-id",
+      "kind": "content",
+      "classification": "scrub",
+      "description": "AWS access key id.",
+      "pattern": "\\b(?:AKIA|ASIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA)[0-9A-Z]{16}\\b"
+    },
+    {
+      "id": "github-token",
+      "kind": "content",
+      "classification": "scrub",
+      "description": "GitHub personal access / OAuth / app token, classic and fine-grained.",
+      "pattern": "\\b(gh[pousr]_[A-Za-z0-9]{36,255}|github_pat_[0-9a-zA-Z_]{22,255})\\b"
+    },
+    {
+      "id": "anthropic-api-key",
+      "kind": "content",
+      "classification": "scrub",
+      "description": "Anthropic API key.",
+      "pattern": "\\bsk-ant-[A-Za-z0-9_-]{24,}"
+    },
+    {
+      "id": "openai-api-key",
+      "kind": "content",
+      "classification": "scrub",
+      "description": "OpenAI API key (legacy sk-… and sk-proj-… project keys).",
+      "pattern": "\\bsk-(proj-)?[A-Za-z0-9_-]{32,}"
+    },
+    {
+      "id": "google-api-key",
+      "kind": "content",
+      "classification": "scrub",
+      "description": "Google / Firebase API key.",
+      "pattern": "\\bAIza[0-9A-Za-z_-]{35}\\b"
+    },
+    {
+      "id": "slack-token",
+      "kind": "content",
+      "classification": "scrub",
+      "description": "Slack bot/user/app token.",
+      "pattern": "\\bxox[baprs]-[0-9A-Za-z-]{10,}"
+    },
+    {
+      "id": "stripe-key",
+      "kind": "content",
+      "classification": "scrub",
+      "description": "Stripe live secret or restricted key.",
+      "pattern": "\\b[sr]k_live_[0-9a-zA-Z]{20,}\\b"
+    },
+    {
+      "id": "npm-token",
+      "kind": "content",
+      "classification": "scrub",
+      "description": "npm automation/publish token. This repository publishes @insimul/prolog-wasm (scripts/package.sh --target wasm), so a leaked one is a write credential against a package other repositories install.",
+      "pattern": "\\bnpm_[A-Za-z0-9]{36}\\b"
+    },
+    {
+      "id": "private-key-block",
+      "kind": "content",
+      "classification": "scrub",
+      "description": "An inline PEM private key block, in a file of any name.",
+      "pattern": "-----BEGIN (RSA |EC |DSA |OPENSSH |PGP |ENCRYPTED )?PRIVATE KEY-----"
+    },
+    {
+      "id": "json-web-token",
+      "kind": "content",
+      "classification": "review",
+      "description": "A three-segment JWT. Frequently an expired example in a doc, which is why it is review — but a session or service token pasted into a test fixture looks identical.",
+      "pattern": "\\beyJ[A-Za-z0-9_-]{8,}\\.eyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}"
+    },
+    {
+      "id": "connection-string-with-password",
+      "kind": "content",
+      "classification": "review",
+      "description": "A database/broker URL carrying inline credentials. Placeholders (user:password@localhost) are common in docs; a real host is not.",
+      "pattern": "\\b(postgres|postgresql|mysql|mongodb(\\+srv)?|redis|rediss|amqp|amqps)://[^\\s/:@\"'`]+:[^\\s/@\"'`]+@"
+    },
+    {
+      "id": "assigned-secret",
+      "kind": "content",
+      "classification": "review",
+      "description": "A secret-shaped assignment: apiKey/secret/password/token = \"<12+ non-space chars>\". The broadest rule here and the noisiest by design — it is the one that catches a credential from a vendor nobody wrote a pattern for. Placeholder-looking values are filtered by `except`.",
+      "pattern": "(?i)(api[_-]?key|secret|password|passwd|access[_-]?token|auth[_-]?token|client[_-]?secret|private[_-]?key)[\"'`]?\\s*[:=]\\s*[\"'`][^\"'`\\s]{12,}[\"'`]",
+      "except": "(?i)(\\$\\{|process\\.env|<[^>]*>|xxx|\\.\\.\\.|example|placeholder|redacted|your[_-]?|dummy|fake|sample|changeme|test[_-]?(key|secret|token)|\\*{4,})"
+    }
+  ],
+
+  "packProvenance": {
+    "$comment": [
+      "The structural pack detector, applied to every historical blob. Prefixes",
+      "match core's `pack-provenance` script: a real pack is named for the product",
+      "it belongs to, so renaming one into this set to get past the check is not a",
+      "mistake anybody makes by accident."
+    ],
+    "classification": "scrub",
+    "allowedPrefixes": ["probe/", "test.", "example/"]
+  },
+
+  "allow": [
+    {
+      "rule": "prolog-seed-file",
+      "pathPrefix": "vendor/trealla/library/",
+      "classification": "keep",
+      "reason": "The vendored Prolog ENGINE's own standard library (39 files: lists, assoc, dcgs, clpz, format, …), not authoring content. It is upstream Trealla's `library/` directory at the pinned commit 07de013677af760a8bca0594ae4b2bef158a3cde, licensed BSD-2-Clause (docs/TREALLA_LICENSE_FINDING.md §4), and the bytes on disk are PROVEN to be upstream's by tests/run_trealla_vendor.sh, which recomputes git's own tree/blob ids for every vendored path offline. So this is not a judgement about 39 files nobody read: it is a judgement about one pinned upstream directory whose identity is already a ctest. A prefix allowance rather than 39 entries — see allowanceFor() in history-scan.mjs for why that is the safer of the two.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "reviewedAt": "2026-08-17"
+    },
+    {
+      "rule": "prolog-seed-file",
+      "path": "src/insimul_boot.pl",
+      "classification": "keep",
+      "reason": "The ABI bootstrap — the Prolog that IS libinsimul's C layer (running goals, serialising the binding-set JSON, classifying ISO errors, snapshotting). Every promise include/insimul.h makes is implemented here. It is engine plumbing, the open half of the content boundary by definition: a runtime cannot be shown conformant against an ABI whose implementation it cannot read. No genre bundle, no language corpus, no generation heuristic. Five blobs = five revisions of the same file.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "reviewedAt": "2026-08-17"
+    },
+    {
+      "rule": "prolog-seed-file",
+      "path": "conformance/snapshots/basic.snapshot.pl",
+      "classification": "keep",
+      "reason": "The golden snapshot image the `snapshot_parse` ctest parses with the wrappers' real prolog-fact-parser.ts. Six clauses of throwaway fixture data (parent/2, likes/2) chosen to exercise quoting and variable rendering. Contract-level by construction: the file exists to pin the snapshot FORMAT, which is part of the published ABI.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "reviewedAt": "2026-08-17"
+    },
+    {
+      "rule": "prolog-seed-file",
+      "pathPrefix": "bench/world/",
+      "classification": "keep",
+      "reason": "The measured benchmark world (6 .pl files, 1,630 clauses), GENERATED IN THE OPEN by bench/world/generate.mjs — a fixed LCG, no clock, and its whole vocabulary (24 given names, 10 surnames, 10 roles, 8 factions, 10 quest titles) is literal in the generator, which is committed beside it. Nothing here was copied from a closed pack; `node bench/world/generate.mjs --check` reproduces the committed bytes from the committed source, which is the strongest form this argument can take. It is a fixture for docs/SWIPL_MEASUREMENT.md, not authoring content.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "reviewedAt": "2026-08-17"
+    },
+    {
+      "rule": "world-content-tree",
+      "pathPrefix": "bench/world/",
+      "classification": "keep",
+      "reason": "Same directory, seen by the native-specific world/pack path rule: the generator, MANIFEST.json (sha256 per file), QUERIES.txt and README.md alongside the six .pl files. Classified once, for the reason above. This is the rule doing its job — a directory literally named `world/` in the engine repository is exactly what a human should be made to look at before the flip; the answer here is that it is a reproducible benchmark fixture.",
+      "reviewedBy": "242-pre-open-native US-1",
+      "reviewedAt": "2026-08-17"
+    }
+  ]
+}
