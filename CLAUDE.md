@@ -434,6 +434,101 @@
   output-only check. Only `--check --core <packages/core>` can see core drifting
   underneath the bundle; say so rather than implying the cheap check covers it.
 
+## The pre-open audit (tasklist 242)
+
+- **The history is the audit surface, not the tree.** `git clone` copies every
+  commit, so every other gate here — `trealla_vendor`, `core_vendor`,
+  `abi_neutrality` — reads a tree that says nothing about what is published.
+  `scripts/history-scan.mjs` reads every blob reachable from every ref;
+  `docs/pre-open/history-scan.json` is its committed output and
+  `docs/pre-open-audit.md` is the human record. Re-run:
+  `node scripts/history-scan.mjs --check --verify-scrub --report docs/pre-open/history-scan.json`.
+- **The method is INHERITED from `insimul/core`@`b37837b` (tasklist 241), which
+  went first.** `check-pack-provenance.mjs` is vendored byte for byte;
+  `history-scan.mjs` is derived with three divergences listed in its own header.
+  A second secret scanner is a second thing to keep correct, and the half nobody
+  re-reads is the half that reports clean — extend the rules file, not the fleet.
+- **Every finding is classified by a human in `scripts/history-scan.rules.json`,
+  and `--check` fails on one that is not.** `allow` entries key on `path`,
+  `blob`, or (native's addition) `pathPrefix` — used for the 39 vendored engine
+  `.pl` files and `bench/world/`, so those blobs stay VISIBLE in the report
+  rather than disappearing into a rule `except`.
+- **The rewrite is PREPARED, never executed.** `scripts/history-scrub.sh` prints
+  the exact `git filter-repo` invocation; it refuses `--execute` while the plan
+  purges nothing, refuses a stale report, refuses a non-bare repo, and omits
+  `--invert-paths` when the paths file is empty (filter-repo reads an empty paths
+  file as *delete the whole tree across all of history*). The visibility flip and
+  the rewrite are human-gated and out of scope for every tasklist.
+- **Anything you commit is scanned forever, including the scanner's own
+  fixtures.** `tests/history_scan_selftest.mjs` assembles every synthetic
+  credential by concatenation instead of taking a `SELF_FILES` exemption — an
+  exemption is a permanent hole. The structural pack detector reads the whole
+  blob, comments included: a comment that spells out the pack skeleton's keys IS
+  a pack document. Commit, then re-run the scan; a pre-commit scan proves nothing
+  about what you just wrote.
+- `ctest -R history_scan` falsifies all of it first: 45 self-test checks (every
+  rule fires on a synthetic positive), then the real audit, then a throwaway
+  repository with a planted key — deleted in the NEXT commit — which the gate
+  must FAIL, and a real `git filter-repo` run over it that must come back clean.
+- **The TREE has its own two audits, and they are a gate, not a report.**
+  `scripts/check-open-boundary.mjs` + `open-boundary.rules.json` answer the
+  content and dependency halves of the checklist over the tracked set
+  (`git ls-files`, because that is what a clone publishes), and `ctest -R
+  open_boundary` runs them. It has **no `--check` flag on purpose**: any
+  unresolved finding exits non-zero, always — a gate with opt-in enforcement is
+  one forgotten argument away from a green job that checks nothing. Its path
+  rules are the SAME rules as the history scan's, and the self-test fails if the
+  two files drift apart.
+- **"Nothing is reachable" is a claim about FOUR surfaces here, not one.** Core
+  closes its graph with npm alone; this tree needs JS (declared set is *empty* —
+  there is no `package.json`, so every bare specifier is a finding), Rust
+  (`Cargo.toml` tables — cargo refuses a `use` of an undeclared crate, so the
+  manifests are the graph), C (`#include` must resolve inside the repository),
+  and **the build itself** (`build-time-fetch`: a dependency the build downloads
+  is one no import graph can see). Adding a language to this repo means adding
+  its surface there.
+- **A rule that fires on correct code gets fixed, never allowed.** The C rule
+  first flagged any `..` in an `#include` and hit seven upstream isocline
+  includes that stay inside the tree; the fix was to resolve the path and ask
+  whether it escapes the REPOSITORY. Seven allowances would have papered over a
+  wrong rule with seven holes. Conversely `check-pack-provenance.mjs`'s own
+  `PROVENANCE_SELF_FILES` must be honoured when you reach for `inspectPackText`
+  directly — the exemption comes with the detector.
+- `ctest -R open_boundary` proves it can fail the same way `history_scan` does:
+  55 self-test checks (a positive AND a near miss per rule, plus real-CLI exit
+  statuses), then the real tree, then **five violations injected into a `git
+  archive` copy of it** — a closed pack, a closed-repo import, an escaping
+  `#include`, a `git =` crate and a `FetchContent` — which must all be named,
+  and the same tree must go green again when they are reverted.
+- **`NOTICE` is a gate's data file, not a document.** `scripts/check-attribution.mjs`
+  (`ctest -R attribution`) reads the `Key: value` lines in each `### stanza` and
+  fails on a crate `rust/Cargo.lock` resolves with no stanza, a stanza whose SPDX
+  disagrees with the crate's own metadata, a `Pinned-Version` the lock has moved
+  past, or an unresolved license with no `Resolution-Owner`. Adding a dependency
+  or vendoring a directory means adding a stanza; the prose around them is for
+  humans and is not checked.
+- **A `NOTICE` pin is checked against the ONE location the BUILD reads it from.**
+  `Pin-Source: vendor/trealla/VENDORED.json#commit` (or `…/quickjs/VERSION`, or
+  `…/core/VENDORED.json#coreCommit`) — the same three authoritative pins the
+  version stamps use. An attribution naming a different drop than the bytes
+  compiled is the failure the stamp discipline exists to prevent, one level up.
+- **The trademark policy is LINKED, and both halves are enforced.** It is
+  authored once in the contract repo; `missing-policy-link` fails when a file
+  `docs/pre-open/status.json`'s `trademarkPolicy.linkedFrom` names stops carrying
+  the URL, and `forked-policy` fails if a `TRADEMARK.md` ever appears here. Five
+  copies of a policy is five policies. **`TRADEMARK.md` is therefore deliberately
+  NOT in this repo's required-artifact list** — the artifact it owes is a link.
+- **The status record is written by the tasklist that does NOT perform the
+  irreversible steps**, so `docs/pre-open/status.json` marking `history-rewrite`
+  or `visibility-flip` as `done`/`performedByTasklist: true` can only be a
+  mistake or a lie, and the gate refuses it. That is check D's fifth injection —
+  the record a future agent would point at when asked whether the flip was
+  reviewed.
+- **Every manifest must declare the repository's own SPDX** (`manifest-license`,
+  over every `Cargo.toml`, every `package.json` and the `"license"` line
+  `scripts/package.sh` stamps). `rust/Cargo.toml` said `MIT` while `LICENSE` was
+  Apache-2.0 until US-3; a redistributor reads the manifest, not the LICENSE.
+
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. **It needs no
   network** — the engine source is committed (see "The engine source is VENDORED"

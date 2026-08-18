@@ -1,0 +1,32 @@
+# history-scrub.replacements.txt — `git filter-repo --replace-text` input for the
+# pre-open history scrub of insimul-native (US-1, `242-pre-open-native`).
+#
+# One rule per line, in filter-repo's own format:
+#
+#   [literal:|regex:]<search>[==><replacement>]
+#
+# The replacement defaults to `***REMOVED***`. `glob:` is REJECTED by
+# scripts/history-scan.mjs rather than ignored: filter-repo would honour it, this
+# file's verifier cannot reproduce its semantics, and a rule the verifier
+# silently skips is a rule that reports covered while purging nothing.
+#
+# ── THERE ARE NO ACTIVE RULES, AND THAT IS THE FINDING ───────────────────────
+#
+# The audit (docs/pre-open/history-scan.json, docs/pre-open-audit.md §1.4) found
+# ZERO scrub-classified findings across all 32 commits and 417 blobs: no secret,
+# no API key, no token, no private key, no closed pack, no binary artifact has
+# ever been committed to this repository. Every finding is a `.pl` or a
+# benchmark-fixture path, and every one is classified **keep** with a reason and
+# a date in scripts/history-scan.rules.json.
+#
+# So this file is empty of rules on purpose, and scripts/history-scrub.sh REFUSES
+# to rewrite while it stays that way — a filter-repo run with nothing to purge
+# changes every commit id in the repository and removes nothing, which is the
+# whole cost of a rewrite for none of the benefit.
+#
+# If a scrub finding appears before the flip (new commits land, or a rule is
+# added), write the rule here, re-run `node scripts/history-scan.mjs --check
+# --verify-scrub`, and read the "provably purged" line: --verify-scrub applies
+# these rules to the flagged blob's REAL bytes in memory and re-scans the result.
+# A finding is reported purged only if it is gone from the rescan. "The
+# invocation mentions the string" is not evidence.

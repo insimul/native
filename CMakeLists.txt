@@ -595,3 +595,51 @@ add_test(NAME corebridge_radiant_none COMMAND
 add_test(NAME core_vendor COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs)
+
+# history_scan: the PRE-OPEN history audit (US-1, tasklist 242-pre-open-native).
+# Every other gate in this file reads the working tree; this one reads the 32
+# commits behind it, because `git clone` publishes all of them and deleting a
+# secret in a later commit hides it from exactly nobody. It falsifies the scanner
+# against a synthetic positive per rule FIRST, then audits this repository, then
+# runs the whole thing against a throwaway repository with a planted secret — and
+# fails if that one passes. Needs node; run_history_scan.sh degrades to a loud
+# [SKIP] without it (read the output — a check that prints [SKIP] asserted
+# nothing, and this is the one standing between us and a permanent public
+# history).
+add_test(NAME history_scan COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_history_scan.sh
+       ${CMAKE_CURRENT_SOURCE_DIR})
+
+# open_boundary: the PRE-OPEN CONTENT + DEPENDENCY audits (US-2, tasklist
+# 242-pre-open-native). `history_scan` above audits the 30-odd commits behind
+# this tree, once, because history is written once. These two audits are
+# properties of the TREE — no closed genre/language pack or generation heuristic
+# is vendored, and nothing from the closed insimul-backend / insimul-web is
+# imported or reachable — so they must hold at every future commit, and the
+# commit that breaks one will not be the commit that is thinking about
+# open-sourcing. run_open_boundary.sh falsifies the gate against a synthetic
+# positive per rule, audits this tree, and then injects five real violations into
+# a copy of it and fails if the gate does not catch every one. Needs node;
+# degrades to a loud [SKIP] without it (read the output).
+add_test(NAME open_boundary COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_open_boundary.sh
+       ${CMAKE_CURRENT_SOURCE_DIR})
+
+# attribution: the PRE-OPEN LICENSING + POLICY gate (US-3, tasklist
+# 242-pre-open-native). The two checklist items the content/dependency audit does
+# not answer — Apache-2.0 LICENSE + a NOTICE carrying every third-party
+# attribution (Trealla included, resolved from its own license text rather than
+# from a classifier), CONTRIBUTING with the CLA/DCO decision MADE, and the
+# trademark/conformance policy LINKED from the contract repo rather than forked
+# into a divergent copy here. They read like paperwork, which is exactly why they
+# are a gate: a NOTICE is only true on the day it is written unless something
+# keeps it true, and the things that falsify it — a re-vendor, a lock bump, a
+# tasklist marking an irreversible step done — all look like ordinary commits.
+# Each NOTICE stanza's pin is checked against the ONE location the BUILD reads
+# that pin from. run_attribution.sh falsifies the gate rule by rule first, then
+# audits this tree, then injects five real violations into a copy of it and fails
+# if the gate does not name every one. Needs node; degrades to a loud [SKIP]
+# without it (read the output).
+add_test(NAME attribution COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_attribution.sh
+       ${CMAKE_CURRENT_SOURCE_DIR})

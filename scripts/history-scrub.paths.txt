@@ -1,0 +1,18 @@
+# history-scrub.paths.txt — `git filter-repo --invert-paths --paths-from-file`
+# input for the pre-open history scrub of insimul-native (US-1,
+# `242-pre-open-native`).
+#
+# One path per line: a file to delete OUTRIGHT from every commit in history.
+# Used for a blob no text replacement can reach — a committed binary, a key
+# file, a vendored artifact that should never have been here.
+#
+# ── EMPTY, AND THE EMPTINESS IS LOAD-BEARING ─────────────────────────────────
+#
+# Nothing in this history needs deleting outright (docs/pre-open-audit.md §1.4).
+#
+# `git filter-repo` reads an empty paths file as "keep nothing that matches" —
+# and nothing matches — so passing one along would delete EVERY FILE IN THE
+# REPOSITORY across all of history. That footgun is one careless copy-paste away
+# from an irreversible rewrite, which is why scripts/history-scrub.sh counts the
+# active entries here and OMITS `--invert-paths` entirely when there are none,
+# rather than passing an empty file and trusting the operator.

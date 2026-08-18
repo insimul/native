@@ -1,0 +1,244 @@
+{
+  "tool": "scripts/check-attribution.mjs",
+  "repository": {
+    "root": "242-pre-open-native",
+    "gitHead": "0cdb4972b7e3b272a0a559a40ea462d3cdefcda2"
+  },
+  "coverage": {
+    "trackedFiles": 305,
+    "components": 22,
+    "registryPackages": 11,
+    "firstPartyPackages": 2,
+    "vendoredDirectories": 6,
+    "derivedPaths": 0,
+    "licenseDeclarations": 2,
+    "licensesVerified": 11,
+    "licensesUnverified": 0,
+    "pinsVerified": 3,
+    "statusItems": 8,
+    "openItems": 5
+  },
+  "components": [
+    {
+      "name": "libinsimul and libinsimulcore",
+      "spdx": "Apache-2.0",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "Trealla Prolog",
+      "spdx": "MIT",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": "07de013677af760a8bca0594ae4b2bef158a3cde",
+      "pinSource": "vendor/trealla/VENDORED.json#commit",
+      "vendoredPath": "vendor/trealla",
+      "derivedWork": []
+    },
+    {
+      "name": "imath",
+      "spdx": "MIT",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": "vendor/trealla/src/imath",
+      "derivedWork": []
+    },
+    {
+      "name": "isocline",
+      "spdx": "MIT",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": "vendor/trealla/src/isocline",
+      "derivedWork": []
+    },
+    {
+      "name": "mini regex (sre)",
+      "spdx": "Unlicense",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": "vendor/trealla/src/sre",
+      "derivedWork": []
+    },
+    {
+      "name": "Prolog standard library",
+      "spdx": "BSD-2-Clause",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": "vendor/trealla/library",
+      "derivedWork": []
+    },
+    {
+      "name": "QuickJS",
+      "spdx": "MIT",
+      "package": null,
+      "pinnedVersion": "2025-04-26",
+      "pinnedCommit": null,
+      "pinSource": "corebridge/vendor/quickjs/VERSION",
+      "vendoredPath": "corebridge/vendor/quickjs",
+      "derivedWork": []
+    },
+    {
+      "name": "@insimul/core bundle",
+      "spdx": "Apache-2.0",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": "247adfa23e394c65650b9813d882516c0fe25d1a",
+      "pinSource": "corebridge/vendor/core/VENDORED.json#coreCommit",
+      "vendoredPath": "corebridge/vendor/core",
+      "derivedWork": []
+    },
+    {
+      "name": "Emscripten runtime",
+      "spdx": "MIT",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "SWI-Prolog",
+      "spdx": "NOASSERTION",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "Emscripten SDK",
+      "spdx": "MIT",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "serde",
+      "spdx": "MIT OR Apache-2.0",
+      "package": "serde",
+      "pinnedVersion": "1.0.229",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "serde_core",
+      "spdx": "MIT OR Apache-2.0",
+      "package": "serde_core",
+      "pinnedVersion": "1.0.229",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "serde_derive",
+      "spdx": "MIT OR Apache-2.0",
+      "package": "serde_derive",
+      "pinnedVersion": "1.0.229",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "serde_json",
+      "spdx": "MIT OR Apache-2.0",
+      "package": "serde_json",
+      "pinnedVersion": "1.0.151",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "itoa",
+      "spdx": "MIT OR Apache-2.0",
+      "package": "itoa",
+      "pinnedVersion": "1.0.18",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "zmij",
+      "spdx": "MIT",
+      "package": "zmij",
+      "pinnedVersion": "1.0.23",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "memchr",
+      "spdx": "Unlicense OR MIT",
+      "package": "memchr",
+      "pinnedVersion": "2.8.3",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "proc-macro2",
+      "spdx": "MIT OR Apache-2.0",
+      "package": "proc-macro2",
+      "pinnedVersion": "1.0.107",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "quote",
+      "spdx": "MIT OR Apache-2.0",
+      "package": "quote",
+      "pinnedVersion": "1.0.47",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "syn",
+      "spdx": "MIT OR Apache-2.0",
+      "package": "syn",
+      "pinnedVersion": "3.0.3",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    },
+    {
+      "name": "unicode-ident",
+      "spdx": "(MIT OR Apache-2.0) AND Unicode-3.0",
+      "package": "unicode-ident",
+      "pinnedVersion": "1.0.24",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
+      "derivedWork": []
+    }
+  ],
+  "findings": []
+}
