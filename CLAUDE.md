@@ -434,6 +434,43 @@
   output-only check. Only `--check --core <packages/core>` can see core drifting
   underneath the bundle; say so rather than implying the cheap check covers it.
 
+## The pre-open audit (tasklist 242)
+
+- **The history is the audit surface, not the tree.** `git clone` copies every
+  commit, so every other gate here — `trealla_vendor`, `core_vendor`,
+  `abi_neutrality` — reads a tree that says nothing about what is published.
+  `scripts/history-scan.mjs` reads every blob reachable from every ref;
+  `docs/pre-open/history-scan.json` is its committed output and
+  `docs/pre-open-audit.md` is the human record. Re-run:
+  `node scripts/history-scan.mjs --check --verify-scrub --report docs/pre-open/history-scan.json`.
+- **The method is INHERITED from `insimul/core`@`b37837b` (tasklist 241), which
+  went first.** `check-pack-provenance.mjs` is vendored byte for byte;
+  `history-scan.mjs` is derived with three divergences listed in its own header.
+  A second secret scanner is a second thing to keep correct, and the half nobody
+  re-reads is the half that reports clean — extend the rules file, not the fleet.
+- **Every finding is classified by a human in `scripts/history-scan.rules.json`,
+  and `--check` fails on one that is not.** `allow` entries key on `path`,
+  `blob`, or (native's addition) `pathPrefix` — used for the 39 vendored engine
+  `.pl` files and `bench/world/`, so those blobs stay VISIBLE in the report
+  rather than disappearing into a rule `except`.
+- **The rewrite is PREPARED, never executed.** `scripts/history-scrub.sh` prints
+  the exact `git filter-repo` invocation; it refuses `--execute` while the plan
+  purges nothing, refuses a stale report, refuses a non-bare repo, and omits
+  `--invert-paths` when the paths file is empty (filter-repo reads an empty paths
+  file as *delete the whole tree across all of history*). The visibility flip and
+  the rewrite are human-gated and out of scope for every tasklist.
+- **Anything you commit is scanned forever, including the scanner's own
+  fixtures.** `tests/history_scan_selftest.mjs` assembles every synthetic
+  credential by concatenation instead of taking a `SELF_FILES` exemption — an
+  exemption is a permanent hole. The structural pack detector reads the whole
+  blob, comments included: a comment that spells out the pack skeleton's keys IS
+  a pack document. Commit, then re-run the scan; a pre-commit scan proves nothing
+  about what you just wrote.
+- `ctest -R history_scan` falsifies all of it first: 45 self-test checks (every
+  rule fires on a synthetic positive), then the real audit, then a throwaway
+  repository with a planted key — deleted in the NEXT commit — which the gate
+  must FAIL, and a real `git filter-repo` run over it that must come back clean.
+
 ## Build
 - `cmake -B build && cmake --build build && ctest --test-dir build`. **It needs no
   network** — the engine source is committed (see "The engine source is VENDORED"
