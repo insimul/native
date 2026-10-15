@@ -247,6 +247,213 @@
     },
     {
       "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/DynamicQuestWaypointDirector",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/GameTimeManager",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/QuestCompletionEngine",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/QuestMarkerService",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/QuestMinimapMarkers",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/WeatherDirector",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-genres/recipes",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-genres/registry",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-genres/resolution",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/modules/module-activation",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/prolog/predicate-packs",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/save-envelope",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/save-extensions",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/save-file",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/save-file-migrations",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/loading-screen-model",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/notifications",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/pause-menu-model",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/quest-journal-model",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/save-slot-model",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/trade-model",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/weather/weather",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/weather/weather-facts",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-c0-bridge (Features Round C0)",
+      "reviewedAt": "2026-10-15"
+    },
+    {
+      "rule": "undeclared-dependency",
       "path": "tests/open_boundary_selftest.mjs",
       "specifier": "${CLOSED_BACKEND}",
       "classification": "keep",

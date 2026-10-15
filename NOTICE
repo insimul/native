@@ -197,14 +197,15 @@ Copyright: Copyright 2026 Overpowered Inc.
 Upstream: @insimul/core (`packages/core`) — first-party, the same TypeScript the
   web runtime executes
 Vendored-Path: corebridge/vendor/core
-Pinned-Commit: 247adfa23e394c65650b9813d882516c0fe25d1a
+Pinned-Commit: 5ce94d7bcaf6d22489f6c882224b8b23d96688ba
 Pin-Source: corebridge/vendor/core/VENDORED.json#coreCommit
 Redistributed-In: libinsimulcore.a, libinsimulcore.dylib (embedded as a C byte array)
 License-Text: LICENSE (beside this file)
 
 A **generated build artifact**, not third-party source: `@insimul/core` bundled
-to a single script by `corebridge/tools/vendor-core-bundle.mjs` (esbuild) and
-embedded as a C array. It sits under `vendor/` because that is where generated
+to a single script by `corebridge/tools/vendor-core-bundle.mjs` (esbuild, at the
+commit and esbuild version `corebridge/core-pin.json` pins) and embedded as a C
+array. It bundles no npm package (`npmModules` in VENDORED.json is empty). It sits under `vendor/` because that is where generated
 drops live, and it is attributed here because a reader who finds a `vendor/`
 directory is entitled to know whose code is in it. Zero lines of core are
 re-implemented in this repository, which is the entire reason `libinsimulcore`

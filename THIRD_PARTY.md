@@ -117,11 +117,21 @@ artifact**, not third-party source and not hand-written.
 
 - **Source:** `@insimul/core` (`packages/core`), Apache-2.0 — the same
   TypeScript the web runtime executes. Zero lines of it are re-implemented here.
-- **Pinned commit:** recorded as `coreCommit` in
-  `corebridge/vendor/core/VENDORED.json`; the top-level `CMakeLists.txt` reads it
-  out of that file and `insimul_core_version()` reports it. That string is what
-  to quote in a bug report about core behaviour.
-- **Generator:** `corebridge/tools/vendor-core-bundle.mjs` (esbuild).
+- **Pinned commit:** the INPUT pin is `coreCommit` in `corebridge/core-pin.json`
+  (a full commit id, plus the exact `esbuild` version); the vendoring tool bundles
+  core at exactly that commit with `git archive` — never a checkout's working tree
+  — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
+  which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
+  `--check` refuses a VENDORED.json that disagrees with the pin. That string is
+  what to quote in a bug report about core behaviour. Today: `5ce94d7` (core's
+  `feat/g-registry` head = `main` cec0a0e plus the genre registry; see the pin's
+  `coreRefNote`).
+- **Generator:** `corebridge/tools/vendor-core-bundle.mjs` (esbuild), which also
+  writes `corebridge/vendor/core/cases/` — core's own conformance corpora at the
+  same commit, transcribed into bridge cases by `corebridge/tools/emit-bridge-cases.mjs`.
+- **npm packages bundled:** none (`npmModules` in VENDORED.json records each one
+  with its version if a future core import pulls one in — that would need its own
+  NOTICE stanza).
 - **How it's vendored:** committed, exactly like the conformance corpus
   (`conformance/VENDORED.md`) and for the same reason — this repo is standalone
   by design and cannot run a bundler against a package it does not contain.
@@ -133,22 +143,24 @@ same hazard the conformance corpus had, so it is checked the same way — by has
 in a ctest that cannot rot unrun (`core_vendor`):
 
 ```sh
-node corebridge/tools/vendor-core-bundle.mjs --check          # runs in ctest
-node corebridge/tools/vendor-core-bundle.mjs --check --core <path-to-packages/core>
+node corebridge/tools/vendor-core-bundle.mjs --check                   # runs in ctest
+node corebridge/tools/vendor-core-bundle.mjs --check --core <core checkout>
 ```
 
 `--check` verifies a **sha256 per file** against `VENDORED.json`'s `files` map,
-over both the generated artifacts and the adapter JS bundled into them
-(`corebridge/js/*.js`) — so a hand-edited bundle, a stale C array, or a `js/`
-edit that was never re-bundled each fail loudly. It cannot see core changing
-*underneath* the bundle; only `--core` can, because that requires a core
-checkout to re-bundle from. Set `INSIMUL_CORE_DIR` and the `core_vendor` ctest
-passes it through.
+over the generated artifacts (bundle, C array, header, case files) AND their
+inputs (`corebridge/js/*.js`, the case emitter, the pin) — so a hand-edited
+bundle, a stale C array, or an input edit that was never re-vendored each fail
+loudly. It cannot see core changing *underneath* the bundle; only `--core` can:
+it re-bundles and re-derives the cases at the pin and diffs both byte for byte.
+`<core checkout>` is any `@insimul/core` checkout that has the pinned commit and
+an installed `node_modules` with the pinned esbuild. Set `INSIMUL_CORE_DIR` and
+the `core_vendor` ctest passes it through.
 
-To re-vendor (adopting more of core, or picking up a core change):
+To re-vendor (adopting more of core, or moving the pin):
 
 ```sh
-node corebridge/tools/vendor-core-bundle.mjs --core <path-to-packages/core>
+node corebridge/tools/vendor-core-bundle.mjs --core <core checkout>
 ```
 
-then rebuild and re-run the radiant corpus gate.
+then rebuild and run `ctest -R corebridge` (the radiant gate and the case gates).

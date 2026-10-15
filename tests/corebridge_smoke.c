@@ -9,8 +9,9 @@
  *   1. the runtime CREATES — QuickJS instantiates and the vendored
  *      `@insimul/core` bundle evaluates without throwing;
  *   2. the ADOPTED SURFACE is present — `core.methods` enumerates the method
- *      table, and `radiant.generate` is in it. A bundle that lost the adopted
- *      method must fail here, not silently return nothing to a caller;
+ *      table, and `radiant.generate` and one row of each feature-phase area are
+ *      in it. A bundle that lost a method must fail here, not silently return
+ *      nothing to a caller;
  *   3. the VERSION STAMP names both pins — the QuickJS version CMake read from
  *      vendor/quickjs/VERSION (EXPECT_QUICKJS) and the core commit the vendored
  *      bundle was built from (EXPECT_CORE_COMMIT, read from VENDORED.json). That
@@ -83,6 +84,20 @@ int main(void) {
     if (!strstr(methods, "radiant.generate")) {
         fprintf(stderr, "corebridge: the bundle does not expose radiant.generate\n");
         ok = 0;
+    }
+    /* One row per feature-phase area (Features Round C0). The full table is held
+     * to its documentation and its cases by corebridge_cases / _js; this is the
+     * cheap tripwire that a re-vendor from the wrong entry point fails at boot. */
+    static const char *const feature_rows[] = {
+        "\"save.decode\"", "\"ui.notifications.apply\"", "\"ui.journal.apply\"",
+        "\"quest.completion.apply\"", "\"quest.waypoints\"", "\"clock.apply\"",
+        "\"weather.apply\"", "\"genre.resolveGame\"", "\"modules.activate\"",
+    };
+    for (size_t i = 0; i < sizeof(feature_rows) / sizeof(feature_rows[0]); i++) {
+        if (!strstr(methods, feature_rows[i])) {
+            fprintf(stderr, "corebridge: the bundle does not expose %s\n", feature_rows[i]);
+            ok = 0;
+        }
     }
 
     /* A failing call must REPORT, not crash or return a plausible answer. */

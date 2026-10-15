@@ -432,6 +432,14 @@ already runs. The allowances are scoped per **specifier**, not per file: a
 path-only allowance would silently bless every future bare import added to the
 one file in this tree where adding one is easy.
 
+*Addendum, 2026-10-15 (Features Round C0, `corebridge/README.md` "The method
+table").* `corebridge/js/entry.js` now imports 26 `@insimul/core` specifiers — the
+feature-phase rows (saves, the in-game view-models, quest completion and markers,
+clock and weather, genre resolution and module activation). Each of the 23 new ones
+carries its own per-specifier allowance in `scripts/open-boundary.rules.json` with
+the reason above, so the JS surface now has 30 findings, all classified; the
+shipped bundle still carries zero bare specifiers.
+
 The other four are the gate auditing **itself**, and they are the evidence that
 its fixtures are safe. `tests/open_boundary_selftest.mjs` takes no basename
 exemption, so it is walked like every other file — and what the scanner reads
