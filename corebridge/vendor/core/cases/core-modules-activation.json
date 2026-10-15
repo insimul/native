@@ -1,0 +1,3056 @@
+{
+ "area": "modules-activation",
+ "description": "core's committed activation table through modules.table, and each genre's row through modules.activate",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "files": {
+   "conformance/modules/genre-activation.json": "b6993fa109348fe5649f6371c5732f5af9e59924ac11d764ae6b0676de69b460"
+  }
+ },
+ "cases": [
+  {
+   "name": "modules.table is the committed genre-activation.json",
+   "steps": [
+    {
+     "call": "modules.table",
+     "args": {},
+     "expect": {
+      "description": "Genre bundle → active Insimul modules. Emitted from INSIMUL_MODULES by npm run module-activation; see packages/core/docs/module-contract.md §7.",
+      "alwaysActivePacks": [
+       "gameplayState",
+       "script",
+       "placement",
+       "scaffold"
+      ],
+      "genres": {
+       "language-learning": {
+        "genre": "language-learning",
+        "known": true,
+        "modules": [
+         {
+          "id": "dialogue",
+          "name": "Dialogue goals",
+          "predicatePack": "dialogue",
+          "irSection": "narrative",
+          "decisionLayer": [
+           "DialogueDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "gameplayState",
+         "dialogue",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "IAgentActionHost"
+        ]
+       },
+       "rpg": {
+        "genre": "rpg",
+        "known": true,
+        "modules": [
+         {
+          "id": "combat",
+          "name": "Combat",
+          "predicatePack": "combat",
+          "irSection": "combat",
+          "decisionLayer": [
+           "CombatResolver"
+          ],
+          "hostInterface": [
+           "ICombatSystem",
+           "ITrajectoryProbe"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "perception",
+          "name": "Stealth and perception",
+          "predicatePack": "perception",
+          "irSection": "perception",
+          "decisionLayer": [
+           "DetectionTracker"
+          ],
+          "hostInterface": [
+           "IPerceptionProbe"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "skill",
+          "name": "Skills",
+          "predicatePack": "skill",
+          "irSection": "skills",
+          "decisionLayer": [
+           "SkillProgression"
+          ],
+          "hostInterface": [
+           "ISkillModifierSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "traversal",
+          "name": "Traversal",
+          "predicatePack": "traversal",
+          "irSection": "traversal",
+          "decisionLayer": [
+           "TraversalPlanner",
+           "VehicleRegistry",
+           "FastTravelDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "equipment",
+          "name": "Equipment",
+          "predicatePack": "equipment",
+          "irSection": "items",
+          "decisionLayer": [
+           "EquipmentManager",
+           "ItemLedger",
+           "Market",
+           "ItemPlacer"
+          ],
+          "hostInterface": [
+           "ICombatStatSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "agentAi",
+          "name": "Agent AI",
+          "predicatePack": "agentAi",
+          "irSection": "systems.actions",
+          "decisionLayer": [
+           "AgentPlanner"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "routine",
+          "name": "NPC routines",
+          "predicatePack": "routine",
+          "irSection": "routines",
+          "decisionLayer": [
+           "RoutineDirector",
+           "LocomotionDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "map",
+          "name": "Map and geopolitics",
+          "predicatePack": "map",
+          "irSection": "geography",
+          "decisionLayer": [
+           "MapDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "volition",
+          "name": "NPC volition",
+          "predicatePack": "volition",
+          "irSection": "volition",
+          "decisionLayer": [
+           "VolitionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "weather",
+          "name": "Weather and seasons",
+          "predicatePack": "weather",
+          "irSection": "weather",
+          "decisionLayer": [
+           "WeatherDirector"
+          ],
+          "hostInterface": [
+           "IWeatherSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "business",
+          "name": "Business lifecycle",
+          "predicatePack": "business",
+          "irSection": "business",
+          "decisionLayer": [
+           "BusinessDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "crafting",
+          "name": "Crafting",
+          "predicatePack": "crafting",
+          "irSection": "production.crafting",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "mining",
+          "name": "Mining",
+          "predicatePack": "mining",
+          "irSection": "production.mining",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "dialogue",
+          "name": "Dialogue goals",
+          "predicatePack": "dialogue",
+          "irSection": "narrative",
+          "decisionLayer": [
+           "DialogueDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "combat",
+         "perception",
+         "skill",
+         "traversal",
+         "equipment",
+         "gameplayState",
+         "agentAi",
+         "routine",
+         "volition",
+         "weather",
+         "business",
+         "crafting",
+         "mining",
+         "dialogue",
+         "script",
+         "placement",
+         "map",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "ICombatSystem",
+         "ITrajectoryProbe",
+         "IPerceptionProbe",
+         "ISkillModifierSink",
+         "ITraversalProbe",
+         "ILocomotionHost",
+         "ICombatStatSink",
+         "IAgentActionHost",
+         "IWeatherSink"
+        ]
+       },
+       "survival": {
+        "genre": "survival",
+        "known": true,
+        "modules": [
+         {
+          "id": "combat",
+          "name": "Combat",
+          "predicatePack": "combat",
+          "irSection": "combat",
+          "decisionLayer": [
+           "CombatResolver"
+          ],
+          "hostInterface": [
+           "ICombatSystem",
+           "ITrajectoryProbe"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "skill",
+          "name": "Skills",
+          "predicatePack": "skill",
+          "irSection": "skills",
+          "decisionLayer": [
+           "SkillProgression"
+          ],
+          "hostInterface": [
+           "ISkillModifierSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "traversal",
+          "name": "Traversal",
+          "predicatePack": "traversal",
+          "irSection": "traversal",
+          "decisionLayer": [
+           "TraversalPlanner",
+           "VehicleRegistry",
+           "FastTravelDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "equipment",
+          "name": "Equipment",
+          "predicatePack": "equipment",
+          "irSection": "items",
+          "decisionLayer": [
+           "EquipmentManager",
+           "ItemLedger",
+           "Market",
+           "ItemPlacer"
+          ],
+          "hostInterface": [
+           "ICombatStatSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "stamina",
+          "name": "Stamina",
+          "predicatePack": "stamina",
+          "irSection": "survival.staminaConfig",
+          "decisionLayer": [
+           "StaminaPool"
+          ],
+          "hostInterface": [
+           "ISurvivalSystem"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "agentAi",
+          "name": "Agent AI",
+          "predicatePack": "agentAi",
+          "irSection": "systems.actions",
+          "decisionLayer": [
+           "AgentPlanner"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "routine",
+          "name": "NPC routines",
+          "predicatePack": "routine",
+          "irSection": "routines",
+          "decisionLayer": [
+           "RoutineDirector",
+           "LocomotionDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "map",
+          "name": "Map and geopolitics",
+          "predicatePack": "map",
+          "irSection": "geography",
+          "decisionLayer": [
+           "MapDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "weather",
+          "name": "Weather and seasons",
+          "predicatePack": "weather",
+          "irSection": "weather",
+          "decisionLayer": [
+           "WeatherDirector"
+          ],
+          "hostInterface": [
+           "IWeatherSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "business",
+          "name": "Business lifecycle",
+          "predicatePack": "business",
+          "irSection": "business",
+          "decisionLayer": [
+           "BusinessDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "crafting",
+          "name": "Crafting",
+          "predicatePack": "crafting",
+          "irSection": "production.crafting",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "farming",
+          "name": "Farming",
+          "predicatePack": "farming",
+          "irSection": "production.farming",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "fishing",
+          "name": "Fishing",
+          "predicatePack": "fishing",
+          "irSection": "production.fishing",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "mining",
+          "name": "Mining",
+          "predicatePack": "mining",
+          "irSection": "production.mining",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "combat",
+         "skill",
+         "traversal",
+         "equipment",
+         "stamina",
+         "gameplayState",
+         "agentAi",
+         "routine",
+         "weather",
+         "business",
+         "crafting",
+         "farming",
+         "fishing",
+         "mining",
+         "script",
+         "placement",
+         "map",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "ICombatSystem",
+         "ITrajectoryProbe",
+         "ISkillModifierSink",
+         "ITraversalProbe",
+         "ILocomotionHost",
+         "ICombatStatSink",
+         "ISurvivalSystem",
+         "IAgentActionHost",
+         "IWeatherSink"
+        ]
+       },
+       "strategy": {
+        "genre": "strategy",
+        "known": true,
+        "modules": [],
+        "predicatePacks": [
+         "gameplayState",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": []
+       },
+       "puzzle": {
+        "genre": "puzzle",
+        "known": true,
+        "modules": [],
+        "predicatePacks": [
+         "gameplayState",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": []
+       },
+       "platformer": {
+        "genre": "platformer",
+        "known": true,
+        "modules": [
+         {
+          "id": "traversal",
+          "name": "Traversal",
+          "predicatePack": "traversal",
+          "irSection": "traversal",
+          "decisionLayer": [
+           "TraversalPlanner",
+           "VehicleRegistry",
+           "FastTravelDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "traversal",
+         "gameplayState",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "ITraversalProbe",
+         "ILocomotionHost"
+        ]
+       },
+       "adventure": {
+        "genre": "adventure",
+        "known": true,
+        "modules": [
+         {
+          "id": "perception",
+          "name": "Stealth and perception",
+          "predicatePack": "perception",
+          "irSection": "perception",
+          "decisionLayer": [
+           "DetectionTracker"
+          ],
+          "hostInterface": [
+           "IPerceptionProbe"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "traversal",
+          "name": "Traversal",
+          "predicatePack": "traversal",
+          "irSection": "traversal",
+          "decisionLayer": [
+           "TraversalPlanner",
+           "VehicleRegistry",
+           "FastTravelDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "agentAi",
+          "name": "Agent AI",
+          "predicatePack": "agentAi",
+          "irSection": "systems.actions",
+          "decisionLayer": [
+           "AgentPlanner"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "routine",
+          "name": "NPC routines",
+          "predicatePack": "routine",
+          "irSection": "routines",
+          "decisionLayer": [
+           "RoutineDirector",
+           "LocomotionDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "map",
+          "name": "Map and geopolitics",
+          "predicatePack": "map",
+          "irSection": "geography",
+          "decisionLayer": [
+           "MapDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "volition",
+          "name": "NPC volition",
+          "predicatePack": "volition",
+          "irSection": "volition",
+          "decisionLayer": [
+           "VolitionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "weather",
+          "name": "Weather and seasons",
+          "predicatePack": "weather",
+          "irSection": "weather",
+          "decisionLayer": [
+           "WeatherDirector"
+          ],
+          "hostInterface": [
+           "IWeatherSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "dialogue",
+          "name": "Dialogue goals",
+          "predicatePack": "dialogue",
+          "irSection": "narrative",
+          "decisionLayer": [
+           "DialogueDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "perception",
+         "traversal",
+         "gameplayState",
+         "agentAi",
+         "routine",
+         "volition",
+         "weather",
+         "dialogue",
+         "script",
+         "placement",
+         "map",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "IPerceptionProbe",
+         "ITraversalProbe",
+         "ILocomotionHost",
+         "IAgentActionHost",
+         "IWeatherSink"
+        ]
+       },
+       "simulation": {
+        "genre": "simulation",
+        "known": true,
+        "modules": [
+         {
+          "id": "agentAi",
+          "name": "Agent AI",
+          "predicatePack": "agentAi",
+          "irSection": "systems.actions",
+          "decisionLayer": [
+           "AgentPlanner"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "routine",
+          "name": "NPC routines",
+          "predicatePack": "routine",
+          "irSection": "routines",
+          "decisionLayer": [
+           "RoutineDirector",
+           "LocomotionDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "map",
+          "name": "Map and geopolitics",
+          "predicatePack": "map",
+          "irSection": "geography",
+          "decisionLayer": [
+           "MapDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "volition",
+          "name": "NPC volition",
+          "predicatePack": "volition",
+          "irSection": "volition",
+          "decisionLayer": [
+           "VolitionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "weather",
+          "name": "Weather and seasons",
+          "predicatePack": "weather",
+          "irSection": "weather",
+          "decisionLayer": [
+           "WeatherDirector"
+          ],
+          "hostInterface": [
+           "IWeatherSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "business",
+          "name": "Business lifecycle",
+          "predicatePack": "business",
+          "irSection": "business",
+          "decisionLayer": [
+           "BusinessDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "crafting",
+          "name": "Crafting",
+          "predicatePack": "crafting",
+          "irSection": "production.crafting",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "farming",
+          "name": "Farming",
+          "predicatePack": "farming",
+          "irSection": "production.farming",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "fishing",
+          "name": "Fishing",
+          "predicatePack": "fishing",
+          "irSection": "production.fishing",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "mining",
+          "name": "Mining",
+          "predicatePack": "mining",
+          "irSection": "production.mining",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "gameplayState",
+         "agentAi",
+         "routine",
+         "volition",
+         "weather",
+         "business",
+         "crafting",
+         "farming",
+         "fishing",
+         "mining",
+         "script",
+         "placement",
+         "map",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "IAgentActionHost",
+         "ILocomotionHost",
+         "IWeatherSink"
+        ]
+       },
+       "educational": {
+        "genre": "educational",
+        "known": true,
+        "modules": [
+         {
+          "id": "dialogue",
+          "name": "Dialogue goals",
+          "predicatePack": "dialogue",
+          "irSection": "narrative",
+          "decisionLayer": [
+           "DialogueDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "gameplayState",
+         "dialogue",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "IAgentActionHost"
+        ]
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "modules.activate on genre language-learning",
+   "steps": [
+    {
+     "call": "modules.activate",
+     "args": {
+      "genre": "language-learning"
+     },
+     "expect": {
+      "source": "genre",
+      "active": {
+       "genre": "language-learning",
+       "known": true,
+       "modules": [
+        {
+         "id": "dialogue",
+         "name": "Dialogue goals",
+         "predicatePack": "dialogue",
+         "irSection": "narrative",
+         "decisionLayer": [
+          "DialogueDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        }
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "dialogue",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "predicatePacks": [
+       "gameplayState",
+       "dialogue",
+       "script",
+       "placement",
+       "scaffold"
+      ],
+      "hostInterfaces": [
+       "IAgentActionHost"
+      ],
+      "reason": ""
+     }
+    },
+    {
+     "call": "modules.activate",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "language-learning"
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "source": "worldIr",
+       "active": {
+        "genre": "language-learning",
+        "known": true,
+        "modules": [
+         {
+          "id": "dialogue",
+          "name": "Dialogue goals",
+          "predicatePack": "dialogue",
+          "irSection": "narrative",
+          "decisionLayer": [
+           "DialogueDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "gameplayState",
+         "dialogue",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "IAgentActionHost"
+        ]
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "modules.activate on genre rpg",
+   "steps": [
+    {
+     "call": "modules.activate",
+     "args": {
+      "genre": "rpg"
+     },
+     "expect": {
+      "source": "genre",
+      "active": {
+       "genre": "rpg",
+       "known": true,
+       "modules": [
+        {
+         "id": "combat",
+         "name": "Combat",
+         "predicatePack": "combat",
+         "irSection": "combat",
+         "decisionLayer": [
+          "CombatResolver"
+         ],
+         "hostInterface": [
+          "ICombatSystem",
+          "ITrajectoryProbe"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "perception",
+         "name": "Stealth and perception",
+         "predicatePack": "perception",
+         "irSection": "perception",
+         "decisionLayer": [
+          "DetectionTracker"
+         ],
+         "hostInterface": [
+          "IPerceptionProbe"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "skill",
+         "name": "Skills",
+         "predicatePack": "skill",
+         "irSection": "skills",
+         "decisionLayer": [
+          "SkillProgression"
+         ],
+         "hostInterface": [
+          "ISkillModifierSink"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "traversal",
+         "name": "Traversal",
+         "predicatePack": "traversal",
+         "irSection": "traversal",
+         "decisionLayer": [
+          "TraversalPlanner",
+          "VehicleRegistry",
+          "FastTravelDirector"
+         ],
+         "hostInterface": [
+          "ITraversalProbe",
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "equipment",
+         "name": "Equipment",
+         "predicatePack": "equipment",
+         "irSection": "items",
+         "decisionLayer": [
+          "EquipmentManager",
+          "ItemLedger",
+          "Market",
+          "ItemPlacer"
+         ],
+         "hostInterface": [
+          "ICombatStatSink"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "agentAi",
+         "name": "Agent AI",
+         "predicatePack": "agentAi",
+         "irSection": "systems.actions",
+         "decisionLayer": [
+          "AgentPlanner"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "routine",
+         "name": "NPC routines",
+         "predicatePack": "routine",
+         "irSection": "routines",
+         "decisionLayer": [
+          "RoutineDirector",
+          "LocomotionDirector"
+         ],
+         "hostInterface": [
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "map",
+         "name": "Map and geopolitics",
+         "predicatePack": "map",
+         "irSection": "geography",
+         "decisionLayer": [
+          "MapDirector"
+         ],
+         "hostInterface": [
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "volition",
+         "name": "NPC volition",
+         "predicatePack": "volition",
+         "irSection": "volition",
+         "decisionLayer": [
+          "VolitionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "weather",
+         "name": "Weather and seasons",
+         "predicatePack": "weather",
+         "irSection": "weather",
+         "decisionLayer": [
+          "WeatherDirector"
+         ],
+         "hostInterface": [
+          "IWeatherSink"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "business",
+         "name": "Business lifecycle",
+         "predicatePack": "business",
+         "irSection": "business",
+         "decisionLayer": [
+          "BusinessDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "crafting",
+         "name": "Crafting",
+         "predicatePack": "crafting",
+         "irSection": "production.crafting",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "mining",
+         "name": "Mining",
+         "predicatePack": "mining",
+         "irSection": "production.mining",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "dialogue",
+         "name": "Dialogue goals",
+         "predicatePack": "dialogue",
+         "irSection": "narrative",
+         "decisionLayer": [
+          "DialogueDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        }
+       ],
+       "predicatePacks": [
+        "combat",
+        "perception",
+        "skill",
+        "traversal",
+        "equipment",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "IPerceptionProbe",
+        "ISkillModifierSink",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "ICombatStatSink",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      },
+      "predicatePacks": [
+       "combat",
+       "perception",
+       "skill",
+       "traversal",
+       "equipment",
+       "gameplayState",
+       "agentAi",
+       "routine",
+       "volition",
+       "weather",
+       "business",
+       "crafting",
+       "mining",
+       "dialogue",
+       "script",
+       "placement",
+       "map",
+       "scaffold"
+      ],
+      "hostInterfaces": [
+       "ICombatSystem",
+       "ITrajectoryProbe",
+       "IPerceptionProbe",
+       "ISkillModifierSink",
+       "ITraversalProbe",
+       "ILocomotionHost",
+       "ICombatStatSink",
+       "IAgentActionHost",
+       "IWeatherSink"
+      ],
+      "reason": ""
+     }
+    },
+    {
+     "call": "modules.activate",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "source": "worldIr",
+       "active": {
+        "genre": "rpg",
+        "known": true,
+        "modules": [
+         {
+          "id": "combat",
+          "name": "Combat",
+          "predicatePack": "combat",
+          "irSection": "combat",
+          "decisionLayer": [
+           "CombatResolver"
+          ],
+          "hostInterface": [
+           "ICombatSystem",
+           "ITrajectoryProbe"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "perception",
+          "name": "Stealth and perception",
+          "predicatePack": "perception",
+          "irSection": "perception",
+          "decisionLayer": [
+           "DetectionTracker"
+          ],
+          "hostInterface": [
+           "IPerceptionProbe"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "skill",
+          "name": "Skills",
+          "predicatePack": "skill",
+          "irSection": "skills",
+          "decisionLayer": [
+           "SkillProgression"
+          ],
+          "hostInterface": [
+           "ISkillModifierSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "traversal",
+          "name": "Traversal",
+          "predicatePack": "traversal",
+          "irSection": "traversal",
+          "decisionLayer": [
+           "TraversalPlanner",
+           "VehicleRegistry",
+           "FastTravelDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "equipment",
+          "name": "Equipment",
+          "predicatePack": "equipment",
+          "irSection": "items",
+          "decisionLayer": [
+           "EquipmentManager",
+           "ItemLedger",
+           "Market",
+           "ItemPlacer"
+          ],
+          "hostInterface": [
+           "ICombatStatSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "agentAi",
+          "name": "Agent AI",
+          "predicatePack": "agentAi",
+          "irSection": "systems.actions",
+          "decisionLayer": [
+           "AgentPlanner"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "routine",
+          "name": "NPC routines",
+          "predicatePack": "routine",
+          "irSection": "routines",
+          "decisionLayer": [
+           "RoutineDirector",
+           "LocomotionDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "map",
+          "name": "Map and geopolitics",
+          "predicatePack": "map",
+          "irSection": "geography",
+          "decisionLayer": [
+           "MapDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "volition",
+          "name": "NPC volition",
+          "predicatePack": "volition",
+          "irSection": "volition",
+          "decisionLayer": [
+           "VolitionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "weather",
+          "name": "Weather and seasons",
+          "predicatePack": "weather",
+          "irSection": "weather",
+          "decisionLayer": [
+           "WeatherDirector"
+          ],
+          "hostInterface": [
+           "IWeatherSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "business",
+          "name": "Business lifecycle",
+          "predicatePack": "business",
+          "irSection": "business",
+          "decisionLayer": [
+           "BusinessDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "crafting",
+          "name": "Crafting",
+          "predicatePack": "crafting",
+          "irSection": "production.crafting",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "mining",
+          "name": "Mining",
+          "predicatePack": "mining",
+          "irSection": "production.mining",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "dialogue",
+          "name": "Dialogue goals",
+          "predicatePack": "dialogue",
+          "irSection": "narrative",
+          "decisionLayer": [
+           "DialogueDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "combat",
+         "perception",
+         "skill",
+         "traversal",
+         "equipment",
+         "gameplayState",
+         "agentAi",
+         "routine",
+         "volition",
+         "weather",
+         "business",
+         "crafting",
+         "mining",
+         "dialogue",
+         "script",
+         "placement",
+         "map",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "ICombatSystem",
+         "ITrajectoryProbe",
+         "IPerceptionProbe",
+         "ISkillModifierSink",
+         "ITraversalProbe",
+         "ILocomotionHost",
+         "ICombatStatSink",
+         "IAgentActionHost",
+         "IWeatherSink"
+        ]
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "modules.activate on genre survival",
+   "steps": [
+    {
+     "call": "modules.activate",
+     "args": {
+      "genre": "survival"
+     },
+     "expect": {
+      "source": "genre",
+      "active": {
+       "genre": "survival",
+       "known": true,
+       "modules": [
+        {
+         "id": "combat",
+         "name": "Combat",
+         "predicatePack": "combat",
+         "irSection": "combat",
+         "decisionLayer": [
+          "CombatResolver"
+         ],
+         "hostInterface": [
+          "ICombatSystem",
+          "ITrajectoryProbe"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "skill",
+         "name": "Skills",
+         "predicatePack": "skill",
+         "irSection": "skills",
+         "decisionLayer": [
+          "SkillProgression"
+         ],
+         "hostInterface": [
+          "ISkillModifierSink"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "traversal",
+         "name": "Traversal",
+         "predicatePack": "traversal",
+         "irSection": "traversal",
+         "decisionLayer": [
+          "TraversalPlanner",
+          "VehicleRegistry",
+          "FastTravelDirector"
+         ],
+         "hostInterface": [
+          "ITraversalProbe",
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "equipment",
+         "name": "Equipment",
+         "predicatePack": "equipment",
+         "irSection": "items",
+         "decisionLayer": [
+          "EquipmentManager",
+          "ItemLedger",
+          "Market",
+          "ItemPlacer"
+         ],
+         "hostInterface": [
+          "ICombatStatSink"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "stamina",
+         "name": "Stamina",
+         "predicatePack": "stamina",
+         "irSection": "survival.staminaConfig",
+         "decisionLayer": [
+          "StaminaPool"
+         ],
+         "hostInterface": [
+          "ISurvivalSystem"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "agentAi",
+         "name": "Agent AI",
+         "predicatePack": "agentAi",
+         "irSection": "systems.actions",
+         "decisionLayer": [
+          "AgentPlanner"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "routine",
+         "name": "NPC routines",
+         "predicatePack": "routine",
+         "irSection": "routines",
+         "decisionLayer": [
+          "RoutineDirector",
+          "LocomotionDirector"
+         ],
+         "hostInterface": [
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "map",
+         "name": "Map and geopolitics",
+         "predicatePack": "map",
+         "irSection": "geography",
+         "decisionLayer": [
+          "MapDirector"
+         ],
+         "hostInterface": [
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "weather",
+         "name": "Weather and seasons",
+         "predicatePack": "weather",
+         "irSection": "weather",
+         "decisionLayer": [
+          "WeatherDirector"
+         ],
+         "hostInterface": [
+          "IWeatherSink"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "business",
+         "name": "Business lifecycle",
+         "predicatePack": "business",
+         "irSection": "business",
+         "decisionLayer": [
+          "BusinessDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "crafting",
+         "name": "Crafting",
+         "predicatePack": "crafting",
+         "irSection": "production.crafting",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "farming",
+         "name": "Farming",
+         "predicatePack": "farming",
+         "irSection": "production.farming",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "fishing",
+         "name": "Fishing",
+         "predicatePack": "fishing",
+         "irSection": "production.fishing",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "mining",
+         "name": "Mining",
+         "predicatePack": "mining",
+         "irSection": "production.mining",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        }
+       ],
+       "predicatePacks": [
+        "combat",
+        "skill",
+        "traversal",
+        "equipment",
+        "stamina",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "weather",
+        "business",
+        "crafting",
+        "farming",
+        "fishing",
+        "mining",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "ISkillModifierSink",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "ICombatStatSink",
+        "ISurvivalSystem",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      },
+      "predicatePacks": [
+       "combat",
+       "skill",
+       "traversal",
+       "equipment",
+       "stamina",
+       "gameplayState",
+       "agentAi",
+       "routine",
+       "weather",
+       "business",
+       "crafting",
+       "farming",
+       "fishing",
+       "mining",
+       "script",
+       "placement",
+       "map",
+       "scaffold"
+      ],
+      "hostInterfaces": [
+       "ICombatSystem",
+       "ITrajectoryProbe",
+       "ISkillModifierSink",
+       "ITraversalProbe",
+       "ILocomotionHost",
+       "ICombatStatSink",
+       "ISurvivalSystem",
+       "IAgentActionHost",
+       "IWeatherSink"
+      ],
+      "reason": ""
+     }
+    },
+    {
+     "call": "modules.activate",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "survival"
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "source": "worldIr",
+       "active": {
+        "genre": "survival",
+        "known": true,
+        "modules": [
+         {
+          "id": "combat",
+          "name": "Combat",
+          "predicatePack": "combat",
+          "irSection": "combat",
+          "decisionLayer": [
+           "CombatResolver"
+          ],
+          "hostInterface": [
+           "ICombatSystem",
+           "ITrajectoryProbe"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "skill",
+          "name": "Skills",
+          "predicatePack": "skill",
+          "irSection": "skills",
+          "decisionLayer": [
+           "SkillProgression"
+          ],
+          "hostInterface": [
+           "ISkillModifierSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "traversal",
+          "name": "Traversal",
+          "predicatePack": "traversal",
+          "irSection": "traversal",
+          "decisionLayer": [
+           "TraversalPlanner",
+           "VehicleRegistry",
+           "FastTravelDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "equipment",
+          "name": "Equipment",
+          "predicatePack": "equipment",
+          "irSection": "items",
+          "decisionLayer": [
+           "EquipmentManager",
+           "ItemLedger",
+           "Market",
+           "ItemPlacer"
+          ],
+          "hostInterface": [
+           "ICombatStatSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "stamina",
+          "name": "Stamina",
+          "predicatePack": "stamina",
+          "irSection": "survival.staminaConfig",
+          "decisionLayer": [
+           "StaminaPool"
+          ],
+          "hostInterface": [
+           "ISurvivalSystem"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "agentAi",
+          "name": "Agent AI",
+          "predicatePack": "agentAi",
+          "irSection": "systems.actions",
+          "decisionLayer": [
+           "AgentPlanner"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "routine",
+          "name": "NPC routines",
+          "predicatePack": "routine",
+          "irSection": "routines",
+          "decisionLayer": [
+           "RoutineDirector",
+           "LocomotionDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "map",
+          "name": "Map and geopolitics",
+          "predicatePack": "map",
+          "irSection": "geography",
+          "decisionLayer": [
+           "MapDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "weather",
+          "name": "Weather and seasons",
+          "predicatePack": "weather",
+          "irSection": "weather",
+          "decisionLayer": [
+           "WeatherDirector"
+          ],
+          "hostInterface": [
+           "IWeatherSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "business",
+          "name": "Business lifecycle",
+          "predicatePack": "business",
+          "irSection": "business",
+          "decisionLayer": [
+           "BusinessDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "crafting",
+          "name": "Crafting",
+          "predicatePack": "crafting",
+          "irSection": "production.crafting",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "farming",
+          "name": "Farming",
+          "predicatePack": "farming",
+          "irSection": "production.farming",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "fishing",
+          "name": "Fishing",
+          "predicatePack": "fishing",
+          "irSection": "production.fishing",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "mining",
+          "name": "Mining",
+          "predicatePack": "mining",
+          "irSection": "production.mining",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "combat",
+         "skill",
+         "traversal",
+         "equipment",
+         "stamina",
+         "gameplayState",
+         "agentAi",
+         "routine",
+         "weather",
+         "business",
+         "crafting",
+         "farming",
+         "fishing",
+         "mining",
+         "script",
+         "placement",
+         "map",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "ICombatSystem",
+         "ITrajectoryProbe",
+         "ISkillModifierSink",
+         "ITraversalProbe",
+         "ILocomotionHost",
+         "ICombatStatSink",
+         "ISurvivalSystem",
+         "IAgentActionHost",
+         "IWeatherSink"
+        ]
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "modules.activate on genre strategy",
+   "steps": [
+    {
+     "call": "modules.activate",
+     "args": {
+      "genre": "strategy"
+     },
+     "expect": {
+      "source": "genre",
+      "active": {
+       "genre": "strategy",
+       "known": true,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      },
+      "predicatePacks": [
+       "gameplayState",
+       "script",
+       "placement",
+       "scaffold"
+      ],
+      "hostInterfaces": [],
+      "reason": ""
+     }
+    },
+    {
+     "call": "modules.activate",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "strategy"
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "source": "worldIr",
+       "active": {
+        "genre": "strategy",
+        "known": true,
+        "modules": [],
+        "predicatePacks": [
+         "gameplayState",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": []
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "modules.activate on genre puzzle",
+   "steps": [
+    {
+     "call": "modules.activate",
+     "args": {
+      "genre": "puzzle"
+     },
+     "expect": {
+      "source": "genre",
+      "active": {
+       "genre": "puzzle",
+       "known": true,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      },
+      "predicatePacks": [
+       "gameplayState",
+       "script",
+       "placement",
+       "scaffold"
+      ],
+      "hostInterfaces": [],
+      "reason": ""
+     }
+    },
+    {
+     "call": "modules.activate",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "source": "worldIr",
+       "active": {
+        "genre": "puzzle",
+        "known": true,
+        "modules": [],
+        "predicatePacks": [
+         "gameplayState",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": []
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "modules.activate on genre platformer",
+   "steps": [
+    {
+     "call": "modules.activate",
+     "args": {
+      "genre": "platformer"
+     },
+     "expect": {
+      "source": "genre",
+      "active": {
+       "genre": "platformer",
+       "known": true,
+       "modules": [
+        {
+         "id": "traversal",
+         "name": "Traversal",
+         "predicatePack": "traversal",
+         "irSection": "traversal",
+         "decisionLayer": [
+          "TraversalPlanner",
+          "VehicleRegistry",
+          "FastTravelDirector"
+         ],
+         "hostInterface": [
+          "ITraversalProbe",
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        }
+       ],
+       "predicatePacks": [
+        "traversal",
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "predicatePacks": [
+       "traversal",
+       "gameplayState",
+       "script",
+       "placement",
+       "scaffold"
+      ],
+      "hostInterfaces": [
+       "ITraversalProbe",
+       "ILocomotionHost"
+      ],
+      "reason": ""
+     }
+    },
+    {
+     "call": "modules.activate",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "platformer"
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "source": "worldIr",
+       "active": {
+        "genre": "platformer",
+        "known": true,
+        "modules": [
+         {
+          "id": "traversal",
+          "name": "Traversal",
+          "predicatePack": "traversal",
+          "irSection": "traversal",
+          "decisionLayer": [
+           "TraversalPlanner",
+           "VehicleRegistry",
+           "FastTravelDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "traversal",
+         "gameplayState",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "ITraversalProbe",
+         "ILocomotionHost"
+        ]
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "modules.activate on genre adventure",
+   "steps": [
+    {
+     "call": "modules.activate",
+     "args": {
+      "genre": "adventure"
+     },
+     "expect": {
+      "source": "genre",
+      "active": {
+       "genre": "adventure",
+       "known": true,
+       "modules": [
+        {
+         "id": "perception",
+         "name": "Stealth and perception",
+         "predicatePack": "perception",
+         "irSection": "perception",
+         "decisionLayer": [
+          "DetectionTracker"
+         ],
+         "hostInterface": [
+          "IPerceptionProbe"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "traversal",
+         "name": "Traversal",
+         "predicatePack": "traversal",
+         "irSection": "traversal",
+         "decisionLayer": [
+          "TraversalPlanner",
+          "VehicleRegistry",
+          "FastTravelDirector"
+         ],
+         "hostInterface": [
+          "ITraversalProbe",
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "agentAi",
+         "name": "Agent AI",
+         "predicatePack": "agentAi",
+         "irSection": "systems.actions",
+         "decisionLayer": [
+          "AgentPlanner"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "routine",
+         "name": "NPC routines",
+         "predicatePack": "routine",
+         "irSection": "routines",
+         "decisionLayer": [
+          "RoutineDirector",
+          "LocomotionDirector"
+         ],
+         "hostInterface": [
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "map",
+         "name": "Map and geopolitics",
+         "predicatePack": "map",
+         "irSection": "geography",
+         "decisionLayer": [
+          "MapDirector"
+         ],
+         "hostInterface": [
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "volition",
+         "name": "NPC volition",
+         "predicatePack": "volition",
+         "irSection": "volition",
+         "decisionLayer": [
+          "VolitionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "weather",
+         "name": "Weather and seasons",
+         "predicatePack": "weather",
+         "irSection": "weather",
+         "decisionLayer": [
+          "WeatherDirector"
+         ],
+         "hostInterface": [
+          "IWeatherSink"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "dialogue",
+         "name": "Dialogue goals",
+         "predicatePack": "dialogue",
+         "irSection": "narrative",
+         "decisionLayer": [
+          "DialogueDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        }
+       ],
+       "predicatePacks": [
+        "perception",
+        "traversal",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "dialogue",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IPerceptionProbe",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      },
+      "predicatePacks": [
+       "perception",
+       "traversal",
+       "gameplayState",
+       "agentAi",
+       "routine",
+       "volition",
+       "weather",
+       "dialogue",
+       "script",
+       "placement",
+       "map",
+       "scaffold"
+      ],
+      "hostInterfaces": [
+       "IPerceptionProbe",
+       "ITraversalProbe",
+       "ILocomotionHost",
+       "IAgentActionHost",
+       "IWeatherSink"
+      ],
+      "reason": ""
+     }
+    },
+    {
+     "call": "modules.activate",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "adventure"
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "source": "worldIr",
+       "active": {
+        "genre": "adventure",
+        "known": true,
+        "modules": [
+         {
+          "id": "perception",
+          "name": "Stealth and perception",
+          "predicatePack": "perception",
+          "irSection": "perception",
+          "decisionLayer": [
+           "DetectionTracker"
+          ],
+          "hostInterface": [
+           "IPerceptionProbe"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "traversal",
+          "name": "Traversal",
+          "predicatePack": "traversal",
+          "irSection": "traversal",
+          "decisionLayer": [
+           "TraversalPlanner",
+           "VehicleRegistry",
+           "FastTravelDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "agentAi",
+          "name": "Agent AI",
+          "predicatePack": "agentAi",
+          "irSection": "systems.actions",
+          "decisionLayer": [
+           "AgentPlanner"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "routine",
+          "name": "NPC routines",
+          "predicatePack": "routine",
+          "irSection": "routines",
+          "decisionLayer": [
+           "RoutineDirector",
+           "LocomotionDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "map",
+          "name": "Map and geopolitics",
+          "predicatePack": "map",
+          "irSection": "geography",
+          "decisionLayer": [
+           "MapDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "volition",
+          "name": "NPC volition",
+          "predicatePack": "volition",
+          "irSection": "volition",
+          "decisionLayer": [
+           "VolitionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "weather",
+          "name": "Weather and seasons",
+          "predicatePack": "weather",
+          "irSection": "weather",
+          "decisionLayer": [
+           "WeatherDirector"
+          ],
+          "hostInterface": [
+           "IWeatherSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "dialogue",
+          "name": "Dialogue goals",
+          "predicatePack": "dialogue",
+          "irSection": "narrative",
+          "decisionLayer": [
+           "DialogueDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "perception",
+         "traversal",
+         "gameplayState",
+         "agentAi",
+         "routine",
+         "volition",
+         "weather",
+         "dialogue",
+         "script",
+         "placement",
+         "map",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "IPerceptionProbe",
+         "ITraversalProbe",
+         "ILocomotionHost",
+         "IAgentActionHost",
+         "IWeatherSink"
+        ]
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "modules.activate on genre simulation",
+   "steps": [
+    {
+     "call": "modules.activate",
+     "args": {
+      "genre": "simulation"
+     },
+     "expect": {
+      "source": "genre",
+      "active": {
+       "genre": "simulation",
+       "known": true,
+       "modules": [
+        {
+         "id": "agentAi",
+         "name": "Agent AI",
+         "predicatePack": "agentAi",
+         "irSection": "systems.actions",
+         "decisionLayer": [
+          "AgentPlanner"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "routine",
+         "name": "NPC routines",
+         "predicatePack": "routine",
+         "irSection": "routines",
+         "decisionLayer": [
+          "RoutineDirector",
+          "LocomotionDirector"
+         ],
+         "hostInterface": [
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "map",
+         "name": "Map and geopolitics",
+         "predicatePack": "map",
+         "irSection": "geography",
+         "decisionLayer": [
+          "MapDirector"
+         ],
+         "hostInterface": [
+          "ILocomotionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "volition",
+         "name": "NPC volition",
+         "predicatePack": "volition",
+         "irSection": "volition",
+         "decisionLayer": [
+          "VolitionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "weather",
+         "name": "Weather and seasons",
+         "predicatePack": "weather",
+         "irSection": "weather",
+         "decisionLayer": [
+          "WeatherDirector"
+         ],
+         "hostInterface": [
+          "IWeatherSink"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "business",
+         "name": "Business lifecycle",
+         "predicatePack": "business",
+         "irSection": "business",
+         "decisionLayer": [
+          "BusinessDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "crafting",
+         "name": "Crafting",
+         "predicatePack": "crafting",
+         "irSection": "production.crafting",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "farming",
+         "name": "Farming",
+         "predicatePack": "farming",
+         "irSection": "production.farming",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "fishing",
+         "name": "Fishing",
+         "predicatePack": "fishing",
+         "irSection": "production.fishing",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        },
+        {
+         "id": "mining",
+         "name": "Mining",
+         "predicatePack": "mining",
+         "irSection": "production.mining",
+         "decisionLayer": [
+          "ProductionDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        }
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "farming",
+        "fishing",
+        "mining",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost",
+        "ILocomotionHost",
+        "IWeatherSink"
+       ]
+      },
+      "predicatePacks": [
+       "gameplayState",
+       "agentAi",
+       "routine",
+       "volition",
+       "weather",
+       "business",
+       "crafting",
+       "farming",
+       "fishing",
+       "mining",
+       "script",
+       "placement",
+       "map",
+       "scaffold"
+      ],
+      "hostInterfaces": [
+       "IAgentActionHost",
+       "ILocomotionHost",
+       "IWeatherSink"
+      ],
+      "reason": ""
+     }
+    },
+    {
+     "call": "modules.activate",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "simulation"
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "source": "worldIr",
+       "active": {
+        "genre": "simulation",
+        "known": true,
+        "modules": [
+         {
+          "id": "agentAi",
+          "name": "Agent AI",
+          "predicatePack": "agentAi",
+          "irSection": "systems.actions",
+          "decisionLayer": [
+           "AgentPlanner"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "routine",
+          "name": "NPC routines",
+          "predicatePack": "routine",
+          "irSection": "routines",
+          "decisionLayer": [
+           "RoutineDirector",
+           "LocomotionDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "map",
+          "name": "Map and geopolitics",
+          "predicatePack": "map",
+          "irSection": "geography",
+          "decisionLayer": [
+           "MapDirector"
+          ],
+          "hostInterface": [
+           "ILocomotionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "volition",
+          "name": "NPC volition",
+          "predicatePack": "volition",
+          "irSection": "volition",
+          "decisionLayer": [
+           "VolitionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "weather",
+          "name": "Weather and seasons",
+          "predicatePack": "weather",
+          "irSection": "weather",
+          "decisionLayer": [
+           "WeatherDirector"
+          ],
+          "hostInterface": [
+           "IWeatherSink"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "business",
+          "name": "Business lifecycle",
+          "predicatePack": "business",
+          "irSection": "business",
+          "decisionLayer": [
+           "BusinessDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "crafting",
+          "name": "Crafting",
+          "predicatePack": "crafting",
+          "irSection": "production.crafting",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "farming",
+          "name": "Farming",
+          "predicatePack": "farming",
+          "irSection": "production.farming",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "fishing",
+          "name": "Fishing",
+          "predicatePack": "fishing",
+          "irSection": "production.fishing",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         },
+         {
+          "id": "mining",
+          "name": "Mining",
+          "predicatePack": "mining",
+          "irSection": "production.mining",
+          "decisionLayer": [
+           "ProductionDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "gameplayState",
+         "agentAi",
+         "routine",
+         "volition",
+         "weather",
+         "business",
+         "crafting",
+         "farming",
+         "fishing",
+         "mining",
+         "script",
+         "placement",
+         "map",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "IAgentActionHost",
+         "ILocomotionHost",
+         "IWeatherSink"
+        ]
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "modules.activate on genre educational",
+   "steps": [
+    {
+     "call": "modules.activate",
+     "args": {
+      "genre": "educational"
+     },
+     "expect": {
+      "source": "genre",
+      "active": {
+       "genre": "educational",
+       "known": true,
+       "modules": [
+        {
+         "id": "dialogue",
+         "name": "Dialogue goals",
+         "predicatePack": "dialogue",
+         "irSection": "narrative",
+         "decisionLayer": [
+          "DialogueDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        }
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "dialogue",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "predicatePacks": [
+       "gameplayState",
+       "dialogue",
+       "script",
+       "placement",
+       "scaffold"
+      ],
+      "hostInterfaces": [
+       "IAgentActionHost"
+      ],
+      "reason": ""
+     }
+    },
+    {
+     "call": "modules.activate",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "educational"
+        }
+       }
+      }
+     },
+     "expect": {
+      "$subset": {
+       "source": "worldIr",
+       "active": {
+        "genre": "educational",
+        "known": true,
+        "modules": [
+         {
+          "id": "dialogue",
+          "name": "Dialogue goals",
+          "predicatePack": "dialogue",
+          "irSection": "narrative",
+          "decisionLayer": [
+           "DialogueDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
+        "predicatePacks": [
+         "gameplayState",
+         "dialogue",
+         "script",
+         "placement",
+         "scaffold"
+        ],
+        "hostInterfaces": [
+         "IAgentActionHost"
+        ]
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,1975 @@
+{
+ "area": "genres-registry",
+ "description": "core's genre resolution corpus through genre.resolve (and the registry ids through genre.registry)",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "files": {
+   "conformance/genres/camera.json": "a2eca78d3c8b3271648aaa61d5a91fe4c5dc61b331a04444d4d6f3d99ca5ba61",
+   "conformance/genres/registry.json": "fc03f5d3d241de8b9f5394541bca14cd98571b5a685c151c80de43d4e5323e95"
+  }
+ },
+ "cases": [
+  {
+   "name": "the registry lists every corpus genre in order",
+   "steps": [
+    {
+     "call": "genre.registry",
+     "args": {},
+     "expect": {
+      "$subset": {
+       "ids": [
+        "rpg",
+        "action",
+        "fighting",
+        "platformer",
+        "strategy",
+        "survival",
+        "shooter",
+        "sandbox",
+        "city-building",
+        "simulation",
+        "puzzle",
+        "language-learning",
+        "educational",
+        "adventure",
+        "roguelike"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "rpg",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "rpg"
+     },
+     "expect": {
+      "requested": "rpg",
+      "known": true,
+      "id": "rpg",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": null,
+      "bundle": {
+       "id": "rpg",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "gamification",
+        "skill-tree",
+        "adaptive-difficulty",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "rpg",
+       "known": true,
+       "modules": [
+        "combat",
+        "perception",
+        "skill",
+        "traversal",
+        "equipment",
+        "agentAi",
+        "routine",
+        "map",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "combat",
+        "perception",
+        "skill",
+        "traversal",
+        "equipment",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "IPerceptionProbe",
+        "ISkillModifierSink",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "ICombatStatSink",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "action",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "action"
+     },
+     "expect": {
+      "requested": "action",
+      "known": true,
+      "id": "action",
+      "config": {
+       "id": "action",
+       "name": "Action",
+       "description": "Fast-paced combat and reflexes",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": false,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1.2,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "fallback": null,
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "action",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "fighting",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "fighting"
+     },
+     "expect": {
+      "requested": "fighting",
+      "known": true,
+      "id": "fighting",
+      "config": {
+       "id": "fighting",
+       "name": "Fighting",
+       "description": "One-on-one combat with combos and special moves",
+       "cameraMode": "fighting",
+       "movementPlane": "xy",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "minimal",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": false,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": false,
+        "experience": false,
+        "skills": false
+       },
+       "questTypes": [],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1.2,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "fallback": null,
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "fighting",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "platformer",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "platformer"
+     },
+     "expect": {
+      "requested": "platformer",
+      "known": true,
+      "id": "platformer",
+      "config": {
+       "id": "platformer",
+       "name": "Platformer",
+       "description": "Jumping and navigating levels",
+       "cameraMode": "side_scroll",
+       "movementPlane": "xy",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "platformer",
+       "uiLayout": "platformer",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": false,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "platformer"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1.5,
+       "gravityMultiplier": 1.2,
+       "showMinimap": false,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "fallback": null,
+      "bundle": {
+       "id": "platformer",
+       "featureModules": [
+        "performance-scoring",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "platformer",
+       "known": true,
+       "modules": [
+        "traversal"
+       ],
+       "predicatePacks": [
+        "traversal",
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "strategy"
+     },
+     "expect": {
+      "requested": "strategy",
+      "known": true,
+      "id": "strategy",
+      "config": {
+       "id": "strategy",
+       "name": "Strategy",
+       "description": "Tactical decision-making and resource management",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "point_click",
+       "combatStyle": "none",
+       "movementStyle": "grid",
+       "uiLayout": "rts",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "strategy"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 0,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "fallback": null,
+      "bundle": {
+       "id": "strategy",
+       "featureModules": [
+        "proficiency",
+        "gamification",
+        "adaptive-difficulty",
+        "world-lore",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "strategy",
+       "known": true,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "survival",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "survival"
+     },
+     "expect": {
+      "requested": "survival",
+      "known": true,
+      "id": "survival",
+      "config": {
+       "id": "survival",
+       "name": "Survival",
+       "description": "Resource gathering, crafting, and survival mechanics",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "hybrid",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "post-apocalyptic",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": true,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "survival"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "hardcore"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": null,
+      "bundle": {
+       "id": "survival",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "gamification",
+        "adaptive-difficulty",
+        "world-lore",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "survival",
+       "known": true,
+       "modules": [
+        "combat",
+        "skill",
+        "traversal",
+        "equipment",
+        "stamina",
+        "agentAi",
+        "routine",
+        "map",
+        "weather",
+        "business",
+        "crafting",
+        "farming",
+        "fishing",
+        "mining"
+       ],
+       "predicatePacks": [
+        "combat",
+        "skill",
+        "traversal",
+        "equipment",
+        "stamina",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "weather",
+        "business",
+        "crafting",
+        "farming",
+        "fishing",
+        "mining",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "ISkillModifierSink",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "ICombatStatSink",
+        "ISurvivalSystem",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "shooter",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "shooter"
+     },
+     "expect": {
+      "requested": "shooter",
+      "known": true,
+      "id": "shooter",
+      "config": {
+       "id": "shooter",
+       "name": "Shooter",
+       "description": "Ranged combat and precision shooting",
+       "cameraMode": "first_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "ranged",
+       "movementStyle": "free",
+       "uiLayout": "fps",
+       "defaultWorldType": "cyberpunk",
+       "features": {
+        "inventory": true,
+        "crafting": false,
+        "dialogue": false,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "shooter"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "nightmare"
+       ],
+       "defaultPlayerSpeed": 1.1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": true,
+       "showCompass": true
+      },
+      "fallback": null,
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "shooter",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "sandbox",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "sandbox"
+     },
+     "expect": {
+      "requested": "sandbox",
+      "known": true,
+      "id": "sandbox",
+      "config": {
+       "id": "sandbox",
+       "name": "Sandbox",
+       "description": "Open-world exploration and creativity",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "hybrid",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": true,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": false,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [],
+       "difficultyLevels": [
+        "creative",
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": null,
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "sandbox",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "city-building",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "city-building"
+     },
+     "expect": {
+      "requested": "city-building",
+      "known": true,
+      "id": "city-building",
+      "config": {
+       "id": "city-building",
+       "name": "City Building",
+       "description": "Urban planning and city management",
+       "cameraMode": "top_down",
+       "movementPlane": "free",
+       "controlScheme": "point_click",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "rts",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": false,
+        "combat": false,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": false,
+        "experience": false,
+        "skills": false
+       },
+       "questTypes": [],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 0,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "fallback": null,
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "city-building",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "simulation",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "simulation"
+     },
+     "expect": {
+      "requested": "simulation",
+      "known": true,
+      "id": "simulation",
+      "config": {
+       "id": "simulation",
+       "name": "Simulation",
+       "description": "Realistic systems and life simulation",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "minimal",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": true,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "fallback": null,
+      "bundle": {
+       "id": "simulation",
+       "featureModules": [
+        "proficiency",
+        "gamification",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "simulation",
+       "known": true,
+       "modules": [
+        "agentAi",
+        "routine",
+        "map",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "farming",
+        "fishing",
+        "mining"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "farming",
+        "fishing",
+        "mining",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost",
+        "ILocomotionHost",
+        "IWeatherSink"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "puzzle"
+     },
+     "expect": {
+      "requested": "puzzle",
+      "known": true,
+      "id": "puzzle",
+      "config": {
+       "id": "puzzle",
+       "name": "Puzzle",
+       "description": "Logic challenges and problem-solving",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "puzzle",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": false,
+        "skills": false
+       },
+       "questTypes": [
+        "puzzle"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "expert"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "fallback": null,
+      "bundle": {
+       "id": "puzzle",
+       "featureModules": [
+        "pattern-recognition",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "puzzle",
+       "known": true,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "language-learning",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "language-learning"
+     },
+     "expect": {
+      "requested": "language-learning",
+      "known": true,
+      "id": "language-learning",
+      "config": {
+       "id": "language-learning",
+       "name": "Language Learning",
+       "description": "Educational game focused on vocabulary and grammar",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "minimal",
+       "defaultWorldType": "historical",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "language-learning"
+       ],
+       "difficultyLevels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": null,
+      "bundle": {
+       "id": "language-learning",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "pattern-recognition",
+        "performance-scoring",
+        "voice",
+        "gamification",
+        "skill-tree",
+        "adaptive-difficulty",
+        "world-lore",
+        "conversation-analytics",
+        "assessment",
+        "npc-exams",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "language-learning",
+       "known": true,
+       "modules": [
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "dialogue",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "educational",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "educational"
+     },
+     "expect": {
+      "requested": "educational",
+      "known": true,
+      "id": "educational",
+      "config": {
+       "id": "educational",
+       "name": "Educational",
+       "description": "Learning experiences through gameplay",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "minimal",
+       "defaultWorldType": "historical",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "language-learning"
+       ],
+       "difficultyLevels": [
+        "beginner",
+        "intermediate",
+        "advanced"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": null,
+      "bundle": {
+       "id": "educational",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "pattern-recognition",
+        "assessment",
+        "gamification",
+        "skill-tree",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "educational",
+       "known": true,
+       "modules": [
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "dialogue",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "adventure",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "adventure"
+     },
+     "expect": {
+      "requested": "adventure",
+      "known": true,
+      "id": "adventure",
+      "config": {
+       "id": "adventure",
+       "name": "Adventure",
+       "description": "Exploration, narrative, and puzzle-solving",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "tropical-pirate",
+       "features": {
+        "inventory": true,
+        "crafting": false,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": null,
+      "bundle": {
+       "id": "adventure",
+       "featureModules": [
+        "knowledge-acquisition",
+        "gamification",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "adventure",
+       "known": true,
+       "modules": [
+        "perception",
+        "traversal",
+        "agentAi",
+        "routine",
+        "map",
+        "volition",
+        "weather",
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "perception",
+        "traversal",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "dialogue",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IPerceptionProbe",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "roguelike",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "roguelike"
+     },
+     "expect": {
+      "requested": "roguelike",
+      "known": true,
+      "id": "roguelike",
+      "config": {
+       "id": "roguelike",
+       "name": "Roguelike",
+       "description": "Procedural generation and permadeath",
+       "cameraMode": "top_down",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "hybrid",
+       "movementStyle": "grid",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "dark-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": false,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": true,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "normal",
+        "hard",
+        "nightmare"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 0,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "fallback": null,
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "roguelike",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "mystery",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "mystery"
+     },
+     "expect": {
+      "requested": "mystery",
+      "known": false,
+      "id": "rpg",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": {
+       "reason": "unknown-genre",
+       "requested": "mystery",
+       "to": "rpg"
+      },
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "mystery",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "RPG",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "RPG"
+     },
+     "expect": {
+      "requested": "RPG",
+      "known": false,
+      "id": "rpg",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": {
+       "reason": "unknown-genre",
+       "requested": "RPG",
+       "to": "rpg"
+      },
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "RPG",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "city_building",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": "city_building"
+     },
+     "expect": {
+      "requested": "city_building",
+      "known": false,
+      "id": "rpg",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": {
+       "reason": "unknown-genre",
+       "requested": "city_building",
+       "to": "rpg"
+      },
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "city_building",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "empty genre id",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": ""
+     },
+     "expect": {
+      "requested": null,
+      "known": false,
+      "id": "rpg",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": {
+       "reason": "no-genre",
+       "requested": null,
+       "to": "rpg"
+      },
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "no genre",
+   "steps": [
+    {
+     "call": "genre.resolve",
+     "args": {
+      "genre": null
+     },
+     "expect": {
+      "requested": null,
+      "known": false,
+      "id": "rpg",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "fallback": {
+       "reason": "no-genre",
+       "requested": null,
+       "to": "rpg"
+      },
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "",
+       "known": false,
+       "modules": [],
+       "predicatePacks": [
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": []
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"first_person\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "first_person"
+     },
+     "expect": {
+      "mode": "first_person"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"third_person\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "third_person"
+     },
+     "expect": {
+      "mode": "third_person"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"isometric\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "isometric"
+     },
+     "expect": {
+      "mode": "isometric"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"side_scroll\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "side_scroll"
+     },
+     "expect": {
+      "mode": "side_scroll"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"top_down\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "top_down"
+     },
+     "expect": {
+      "mode": "top_down"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"fighting\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "fighting"
+     },
+     "expect": {
+      "mode": "fighting"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"third-person\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "third-person"
+     },
+     "expect": {
+      "mode": "third_person"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"Third Person\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "Third Person"
+     },
+     "expect": {
+      "mode": "third_person"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \" TOP-DOWN \"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": " TOP-DOWN "
+     },
+     "expect": {
+      "mode": "top_down"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"side-scroll\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "side-scroll"
+     },
+     "expect": {
+      "mode": "side_scroll"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"first  person\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "first  person"
+     },
+     "expect": {
+      "mode": "first_person"
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"auto\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "auto"
+     },
+     "expect": {
+      "mode": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"thirdperson\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "thirdperson"
+     },
+     "expect": {
+      "mode": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"side_scroller\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": "side_scroller"
+     },
+     "expect": {
+      "mode": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera \"\"",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": ""
+     },
+     "expect": {
+      "mode": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera null",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": null
+     },
+     "expect": {
+      "mode": null
+     }
+    }
+   ]
+  },
+  {
+   "name": "camera 3",
+   "steps": [
+    {
+     "call": "genre.camera",
+     "args": {
+      "value": 3
+     },
+     "expect": {
+      "mode": null
+     }
+    }
+   ]
+  }
+ ]
+}

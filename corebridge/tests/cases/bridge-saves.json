@@ -1,0 +1,131 @@
+{
+ "area": "saves",
+ "description": "Hand-written: the save codec end to end (encode → decode, tampering, malformed input), the rules row, orphan extension keys, the slot view over real envelopes, and SHA-256 over non-ASCII text (expected digests computed with Node's crypto over core's canonical JSON, so the C leg's SHA-256 is checked against an independent implementation). core-saves.json holds core's own corpus.",
+ "cases": [
+  {
+   "name": "save.rules: version, envelope format, the contiguous migration chain, the registered extension keys",
+   "steps": [
+    {
+     "call": "save.rules",
+     "expect": {
+      "saveFileVersion": 3,
+      "envelopeFormat": "insimul-save-v2",
+      "migrations": [
+       {"$subset": {"name": "v1_to_v2_populate_language_progress", "fromVersion": 1, "toVersion": 2, "description": {"$type": "string"}}},
+       {"$subset": {"name": "v2_to_v3_backfill_snapshot_versioning", "fromVersion": 2, "toVersion": 3, "description": {"$type": "string"}}}
+      ],
+      "extensionKeys": {"$type": "array"}
+     }
+    }
+   ]
+  },
+  {
+   "name": "save.integrity is SHA-256 of canonical JSON, including non-ASCII, astral and escaped control characters",
+   "steps": [
+    {
+     "call": "save.integrity",
+     "args": {"saveFile": {"z": 1.5, "a": [3, 1, 2], "id": "s-ü", "name": "Café 🍞 \u0000", "version": 3, "worldId": "w", "currentState": {"player": {"inventory": [{"quantity": 2, "itemId": "пирог"}], "gold": 5}}}},
+     "expect": {"integrity": "f13619fb361538551e683637a065be404b329f89d62d8384a8004158b91c23f2"}
+    },
+    {
+     "call": "save.integrity",
+     "args": {"saveFile": {"version": 3, "id": "big", "blob": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}},
+     "expect": {"integrity": "21b54f6f09864d6e25554bbabd0bf32cc1b9b42ccb3b72fdb0482a34377dccb7"}
+    },
+    {"call": "save.integrity", "args": {"saveFile": "not an object"}, "expectError": "save.integrity: `saveFile` must be a JSON object"}
+   ]
+  },
+  {
+   "name": "encode → decode round trip: the envelope carries the integrity save.integrity computes, and decodes back to the same save",
+   "steps": [
+    {"call": "save.integrity", "args": {"saveFile": {"id": "rt", "version": 3, "name": "Round trip", "worldSnapshot": {"insimulVersion": "x", "engineRevision": "y", "snapshotCreatedAt": "z"}, "currentState": {"player": {"gold": 7}}}}, "bind": "digest"},
+    {
+     "call": "save.encode",
+     "args": {"saveFile": {"id": "rt", "version": 3, "name": "Round trip", "worldSnapshot": {"insimulVersion": "x", "engineRevision": "y", "snapshotCreatedAt": "z"}, "currentState": {"player": {"gold": 7}}}, "insimulVersion": "0.1.0", "exportedAt": "2026-10-15T12:00:00.000Z"},
+     "expect": {"envelope": {"format": "insimul-save-v2", "exportedAt": "2026-10-15T12:00:00.000Z", "insimulVersion": "0.1.0", "saveFile": {"$subset": {"id": "rt"}}, "integrity": {"$type": "string"}}},
+     "bind": "enc"
+    },
+    {
+     "call": "save.decode",
+     "args": {"envelope": {"$ref": "enc.envelope"}},
+     "expect": {
+      "ok": true,
+      "envelope": {"format": "insimul-save-v2", "exportedAt": "2026-10-15T12:00:00.000Z", "insimulVersion": "0.1.0", "integrity": {"$type": "string"}},
+      "saveFile": {"$subset": {"id": "rt", "version": 3, "name": "Round trip", "currentState": {"$subset": {"player": {"gold": 7}}}}},
+      "outcome": {"versionFrom": 3, "versionTo": 3, "versionsBehind": 0, "migrationApplied": false, "droppedFacts": [], "orphanExtensionKeys": [], "predicateSchemaDrift": false},
+      "significant": false
+     }
+    },
+    {"call": "save.decode", "args": {"envelope": {"$ref": "enc.envelope", "$set": {"saveFile.currentState.player.gold": 999999}}}, "expect": {"ok": false, "error": {"code": "integrity_mismatch", "message": "Save file integrity check failed — file may be corrupted or tampered"}}},
+    {"call": "save.decode", "args": {"envelope": {"$ref": "enc.envelope", "$set": {"integrity": ""}}}, "expect": {"ok": false, "error": {"code": "integrity_mismatch", "message": "Envelope is missing integrity hash"}}},
+    {"call": "save.decode", "args": {"envelope": {"$ref": "enc.envelope", "$set": {"insimulVersion": "9.9.9"}}}, "expect": {"$subset": {"ok": true, "envelope": {"$subset": {"insimulVersion": "9.9.9"}}}}}
+   ]
+  },
+  {
+   "name": "the encoded integrity equals save.integrity of the same save",
+   "steps": [
+    {"call": "save.encode", "args": {"saveFile": {"version": 3, "id": "eq"}, "insimulVersion": "t", "exportedAt": "x"}, "bind": "enc"},
+    {"call": "save.decode", "args": {"envelope": {"format": "insimul-save-v2", "exportedAt": "x", "insimulVersion": "t", "saveFile": {"id": "eq", "version": 3}, "integrity": {"$ref": "enc.envelope.integrity"}}}, "expect": {"$subset": {"ok": true}}},
+    {"call": "save.integrity", "args": {"saveFile": {"id": "eq", "version": 3}}, "expect": {"integrity": "896b385c902b209386774942012965a3c885bc15eb59ddd3fe6ade743410ad88"}}
+   ]
+  },
+  {
+   "name": "save.decode: malformed input is an answer, not an error",
+   "steps": [
+    {"call": "save.decode", "args": {"text": "{not json"}, "expect": {"ok": false, "error": {"code": "invalid_format", "message": "Envelope is not valid JSON"}}},
+    {"call": "save.decode", "args": {"text": "42"}, "expect": {"ok": false, "error": {"code": "invalid_format", "message": "Envelope must be a JSON object"}}},
+    {"call": "save.decode", "args": {}, "expect": {"ok": false, "error": {"code": "invalid_format", "message": "Envelope must be a JSON object"}}},
+    {"call": "save.decode", "args": {"envelope": {"format": "insimul-save-v1"}}, "expect": {"ok": false, "error": {"code": "invalid_format", "message": "Unknown envelope format: expected 'insimul-save-v2', got 'insimul-save-v1'"}}},
+    {"call": "save.decode", "args": {"envelope": {"format": "insimul-save-v2", "integrity": "abc"}}, "expect": {"ok": false, "error": {"code": "missing_save_file", "message": "Envelope is missing saveFile payload"}}}
+   ]
+  },
+  {
+   "name": "save.encode refuses what core's types require",
+   "steps": [
+    {"call": "save.encode", "args": {"saveFile": {"version": 3}}, "expectError": "save.encode: `insimulVersion` must be a string"},
+    {"call": "save.encode", "args": {"saveFile": [], "insimulVersion": "t"}, "expectError": "save.encode: `saveFile` must be a JSON object"},
+    {"call": "save.migrate", "args": {}, "expectError": "save.migrate: `saveFile` must be a JSON object"}
+   ]
+  },
+  {
+   "name": "save.migrate reports orphan extension keys core's registry refuses, sorted, and that is significant",
+   "steps": [
+    {
+     "call": "save.migrate",
+     "args": {"saveFile": {"id": "o", "version": 3, "worldSnapshot": {"insimulVersion": "a", "engineRevision": "b", "snapshotCreatedAt": "c"}, "currentState": {"extensions": {"zeta": true, "clock": {"hour": 3}}}}},
+     "expect": {"$subset": {"outcome": {"$subset": {"versionsBehind": 0, "migrationApplied": false, "orphanExtensionKeys": ["clock", "zeta"]}}, "significant": true, "saveFile": {"$subset": {"currentState": {"$subset": {"extensions": {"$subset": {"zeta": true, "clock": {"hour": 3}}}}}}}}}
+    }
+   ]
+  },
+  {
+   "name": "ui.saveSlots over real envelopes: ok with a summary, tampered, empty, wrong format, and a host verdict",
+   "steps": [
+    {"call": "save.encode", "args": {"saveFile": {"version": 3, "id": "slot"}, "insimulVersion": "t", "exportedAt": "2026-10-15"}, "bind": "enc"},
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {"index": 2, "envelope": {"$ref": "enc.envelope", "$set": {"saveFile.id": "edited"}}},
+       {"index": 0, "envelope": {"$ref": "enc.envelope"}, "summary": {"playerName": "Ada", "level": 3, "locationName": "Thistlecombe", "savedAt": "today"}},
+       {"index": 1, "envelope": null},
+       {"index": 3, "envelope": {"format": "nope"}},
+       {"index": 4, "outcome": "missing_save_file"}
+      ]
+     },
+     "expect": {
+      "slots": [
+       {"index": 0, "status": "ok", "title": "Ada · Lv 3 · Thistlecombe", "message": "Saved today", "canLoad": true, "canSave": true, "summary": {"playerName": "Ada", "level": 3, "locationName": "Thistlecombe", "savedAt": "today"}},
+       {"index": 1, "status": "empty", "title": "Empty Slot", "message": "", "canLoad": false, "canSave": true},
+       {"index": 2, "status": "corrupted", "title": "Corrupted Save", "message": "Save file integrity check failed — file may be corrupted or tampered.", "canLoad": false, "canSave": true},
+       {"index": 3, "status": "corrupted", "title": "Corrupted Save", "message": "Unrecognized save format — this slot cannot be loaded.", "canLoad": false, "canSave": true},
+       {"index": 4, "status": "corrupted", "title": "Corrupted Save", "message": "Save data is missing or unreadable.", "canLoad": false, "canSave": true}
+      ],
+      "hasAnyLoadable": true
+     }
+    },
+    {"call": "ui.saveSlots", "args": {"slots": [{"index": 0, "outcome": "lost"}]}, "expectError": "`slots[0].outcome` must be one of empty, ok, invalid_format, missing_save_file, integrity_mismatch"},
+    {"call": "ui.saveSlots", "args": {"slots": []}, "expect": {"slots": [], "hasAnyLoadable": false}}
+   ]
+  }
+ ]
+}

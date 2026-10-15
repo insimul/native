@@ -1,0 +1,978 @@
+{
+ "area": "ui-quest-journal",
+ "description": "core's journal / tracker / offer matrix through ui.journal.*",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "files": {
+   "conformance/ui/quest-journal-cases.json": "b8ebd5b9bddd11c1bcf5cf274a1e7922737b0a3bdc923ece3f820af0efbfc467"
+  }
+ },
+ "cases": [
+  {
+   "name": "filter-tabs-partition-the-set",
+   "steps": [
+    {
+     "call": "ui.journal.create",
+     "args": {
+      "quests": [
+       {
+        "id": "q1",
+        "title": "Find the Sword",
+        "status": "active",
+        "difficulty": "medium"
+       },
+       {
+        "id": "q2",
+        "title": "Slay the Dragon",
+        "status": "active",
+        "difficulty": "hard"
+       },
+       {
+        "id": "q3",
+        "title": "Return the Ring",
+        "status": "completed",
+        "difficulty": "easy"
+       },
+       {
+        "id": "q4",
+        "title": "Deliver the Letter",
+        "status": "available",
+        "difficulty": "easy"
+       }
+      ],
+      "maxTracked": 3
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setFilter",
+        "filter": "all"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "filtered": {
+          "$ids": [
+           "q1",
+           "q2",
+           "q3",
+           "q4"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setFilter",
+        "filter": "active"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "filtered": {
+          "$ids": [
+           "q1",
+           "q2"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setFilter",
+        "filter": "completed"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "filtered": {
+          "$ids": [
+           "q3"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setFilter",
+        "filter": "available"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "filtered": {
+          "$ids": [
+           "q4"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "counts": {
+          "all": 4,
+          "active": 2,
+          "completed": 1,
+          "available": 1
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "accept-moves-available-to-active",
+   "steps": [
+    {
+     "call": "ui.journal.create",
+     "args": {
+      "quests": [
+       {
+        "id": "q1",
+        "title": "Deliver the Letter",
+        "status": "available"
+       }
+      ],
+      "maxTracked": 3
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "accept",
+        "id": "q1"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setFilter",
+        "filter": "active"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "filtered": {
+          "$ids": [
+           "q1"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "accept",
+        "id": "q1"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        false
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "counts": {
+          "all": 1,
+          "active": 1,
+          "completed": 0,
+          "available": 0
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "complete-moves-active-to-completed-and-untracks",
+   "steps": [
+    {
+     "call": "ui.journal.create",
+     "args": {
+      "quests": [
+       {
+        "id": "q1",
+        "title": "Find the Sword",
+        "status": "active"
+       }
+      ],
+      "maxTracked": 3
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "track",
+        "id": "q1"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {
+         "tracked": {
+          "$ids": [
+           "q1"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "complete",
+        "id": "q1"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {
+         "tracked": {
+          "$ids": []
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setFilter",
+        "filter": "completed"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "filtered": {
+          "$ids": [
+           "q1"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "counts": {
+          "all": 1,
+          "active": 0,
+          "completed": 1,
+          "available": 0
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "decline-removes-available-offer",
+   "steps": [
+    {
+     "call": "ui.journal.create",
+     "args": {
+      "quests": [
+       {
+        "id": "q1",
+        "title": "Deliver the Letter",
+        "status": "available"
+       },
+       {
+        "id": "q2",
+        "title": "Find the Sword",
+        "status": "active"
+       }
+      ],
+      "maxTracked": 3
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "decline",
+        "id": "q1"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "decline",
+        "id": "q2"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        false
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setFilter",
+        "filter": "all"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "filtered": {
+          "$ids": [
+           "q2"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "counts": {
+          "all": 1,
+          "active": 1,
+          "completed": 0,
+          "available": 0
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "tracker-respects-max-tracked",
+   "steps": [
+    {
+     "call": "ui.journal.create",
+     "args": {
+      "quests": [
+       {
+        "id": "q1",
+        "title": "A",
+        "status": "active"
+       },
+       {
+        "id": "q2",
+        "title": "B",
+        "status": "active"
+       },
+       {
+        "id": "q3",
+        "title": "C",
+        "status": "active"
+       },
+       {
+        "id": "q4",
+        "title": "D",
+        "status": "active"
+       }
+      ],
+      "maxTracked": 2
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "track",
+        "id": "q1"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {
+         "tracked": {
+          "$ids": [
+           "q1"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "track",
+        "id": "q2"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {
+         "tracked": {
+          "$ids": [
+           "q1",
+           "q2"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "track",
+        "id": "q3"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        false
+       ],
+       "view": {
+        "$subset": {
+         "tracked": {
+          "$ids": [
+           "q1",
+           "q2"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "untrack",
+        "id": "q1"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {
+         "tracked": {
+          "$ids": [
+           "q2"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "track",
+        "id": "q3"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {
+         "tracked": {
+          "$ids": [
+           "q2",
+           "q3"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "counts": {
+          "all": 4,
+          "active": 4,
+          "completed": 0,
+          "available": 0
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "cannot-track-non-active-quest",
+   "steps": [
+    {
+     "call": "ui.journal.create",
+     "args": {
+      "quests": [
+       {
+        "id": "q1",
+        "title": "Deliver the Letter",
+        "status": "available"
+       },
+       {
+        "id": "q2",
+        "title": "Return the Ring",
+        "status": "completed"
+       }
+      ],
+      "maxTracked": 3
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "track",
+        "id": "q1"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        false
+       ],
+       "view": {
+        "$subset": {
+         "tracked": {
+          "$ids": []
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "track",
+        "id": "q2"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        false
+       ],
+       "view": {
+        "$subset": {
+         "tracked": {
+          "$ids": []
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "counts": {
+          "all": 2,
+          "active": 0,
+          "completed": 1,
+          "available": 1
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "radiant-arrival-appears-as-available-then-accepts",
+   "steps": [
+    {
+     "call": "ui.journal.create",
+     "args": {
+      "quests": [
+       {
+        "id": "q1",
+        "title": "Find the Sword",
+        "status": "active"
+       }
+      ],
+      "maxTracked": 3
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "upsert",
+        "quest": {
+         "id": "r1",
+         "title": "Bandits on the Road",
+         "status": "available",
+         "isRadiant": true
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setFilter",
+        "filter": "available"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "filtered": {
+          "$ids": [
+           "r1"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "accept",
+        "id": "r1"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setFilter",
+        "filter": "active"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "filtered": {
+          "$ids": [
+           "q1",
+           "r1"
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.journal.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "counts": {
+          "all": 2,
+          "active": 2,
+          "completed": 0,
+          "available": 0
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

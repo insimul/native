@@ -39,6 +39,7 @@
 
 #include "insimul.h"            /* libinsimul C ABI (vendor/insimul/insimul.h) */
 #include "insimul_core_bundle.h" /* generated: tools/vendor-core-bundle.mjs */
+#include "insimulcore_sha256.h"  /* SHA-256 for core's save envelope (js/host-crypto.js) */
 
 #ifndef INSIMULCORE_ABI_VERSION
 #define INSIMULCORE_ABI_VERSION "0.1.0"
@@ -274,6 +275,31 @@ static JSValue js_prolog_destroy(JSContext *ctx, JSValueConst this_val, int argc
 	return JS_UNDEFINED;
 }
 
+/* ── SHA-256 exposed to JS ─────────────────────────────────────────────────── */
+
+/*
+ * __insimul_sha256_hex(text) -> 64 lowercase hex digits.
+ *
+ * The digest of `text`'s UTF-8 bytes. js/host-crypto.js is the only caller: it
+ * backs core's `createHash('sha256')` (save-envelope.ts) and replaces unpaired
+ * surrogates with U+FFFD first, so the bytes hashed here are the bytes Node
+ * would hash for the same string. JS_ToCStringLen gives the exact byte length,
+ * so an embedded NUL is hashed rather than truncating the input.
+ */
+static JSValue js_sha256_hex(JSContext *ctx, JSValueConst this_val, int argc, JSValueConst *argv) {
+	(void)this_val;
+	if (argc < 1 || !JS_IsString(argv[0])) {
+		return JS_ThrowTypeError(ctx, "__insimul_sha256_hex(text) takes one string");
+	}
+	size_t len = 0;
+	const char *text = JS_ToCStringLen(ctx, &len, argv[0]);
+	if (!text) return JS_EXCEPTION;
+	char hex[65];
+	insimulcore_sha256_hex(text, len, hex);
+	JS_FreeCString(ctx, text);
+	return JS_NewStringLen(ctx, hex, 64);
+}
+
 /* ── lifecycle ────────────────────────────────────────────────────────────── */
 
 insimul_core *insimul_core_create(void) {
@@ -303,6 +329,8 @@ insimul_core *insimul_core_create(void) {
 			JS_NewCFunction(core->ctx, js_prolog_query, "__insimul_prolog_query", 3));
 	JS_SetPropertyStr(core->ctx, global, "__insimul_prolog_destroy",
 			JS_NewCFunction(core->ctx, js_prolog_destroy, "__insimul_prolog_destroy", 1));
+	JS_SetPropertyStr(core->ctx, global, "__insimul_sha256_hex",
+			JS_NewCFunction(core->ctx, js_sha256_hex, "__insimul_sha256_hex", 1));
 	JS_FreeValue(core->ctx, global);
 
 	JSValue res = JS_Eval(core->ctx, insimul_core_bundle_js, (size_t)insimul_core_bundle_js_len,

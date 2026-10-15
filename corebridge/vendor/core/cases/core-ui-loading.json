@@ -1,0 +1,510 @@
+{
+ "area": "ui-loading",
+ "description": "core's loading-screen phase matrix through ui.loading.*",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "files": {
+   "conformance/ui/loading-phases.json": "b40cf57fb466ecdcdf40014627b0a80e8411b0e0a2f4a367d9d4cd7f0dc4fada"
+  }
+ },
+ "cases": [
+  {
+   "name": "full-boot-sequence",
+   "steps": [
+    {
+     "call": "ui.loading.create",
+     "args": {
+      "phases": [
+       {
+        "key": "init",
+        "label": "Starting up…",
+        "weight": 1
+       },
+       {
+        "key": "world",
+        "label": "Loading world…",
+        "weight": 3
+       },
+       {
+        "key": "save",
+        "label": "Restoring save…",
+        "weight": 2
+       },
+       {
+        "key": "kb",
+        "label": "Building knowledge base…",
+        "weight": 2
+       },
+       {
+        "key": "systems",
+        "label": "Initializing systems…",
+        "weight": 1
+       },
+       {
+        "key": "ready",
+        "label": "Ready",
+        "weight": 1
+       }
+      ],
+      "tips": [
+       "Talk to villagers to uncover radiant quests.",
+       "Every conversation is generated live — no two runs are alike.",
+       "Check the quest journal (J) to track objectives.",
+       "Your progress autosaves to the active slot."
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "init"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.1,
+          "$tol": 0.000005
+         },
+         "label": "Starting up…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "world"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.4,
+          "$tol": 0.000005
+         },
+         "label": "Loading world…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "save"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.6,
+          "$tol": 0.000005
+         },
+         "label": "Restoring save…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "kb"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.8,
+          "$tol": 0.000005
+         },
+         "label": "Building knowledge base…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "systems"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.9,
+          "$tol": 0.000005
+         },
+         "label": "Initializing systems…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "ready"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 1,
+          "$tol": 0.000005
+         },
+         "label": "Ready",
+         "complete": true
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "progress-is-monotonic-and-never-regresses",
+   "steps": [
+    {
+     "call": "ui.loading.create",
+     "args": {
+      "phases": [
+       {
+        "key": "init",
+        "label": "Starting up…",
+        "weight": 1
+       },
+       {
+        "key": "world",
+        "label": "Loading world…",
+        "weight": 3
+       },
+       {
+        "key": "save",
+        "label": "Restoring save…",
+        "weight": 2
+       },
+       {
+        "key": "kb",
+        "label": "Building knowledge base…",
+        "weight": 2
+       },
+       {
+        "key": "systems",
+        "label": "Initializing systems…",
+        "weight": 1
+       },
+       {
+        "key": "ready",
+        "label": "Ready",
+        "weight": 1
+       }
+      ],
+      "tips": [
+       "Talk to villagers to uncover radiant quests.",
+       "Every conversation is generated live — no two runs are alike.",
+       "Check the quest journal (J) to track objectives.",
+       "Your progress autosaves to the active slot."
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "init"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.1,
+          "$tol": 0.000005
+         },
+         "label": "Starting up…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "world"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.4,
+          "$tol": 0.000005
+         },
+         "label": "Loading world…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "world"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.4,
+          "$tol": 0.000005
+         },
+         "label": "Loading world…",
+         "complete": false
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "new-game-skips-restore-save-phase",
+   "steps": [
+    {
+     "call": "ui.loading.create",
+     "args": {
+      "phases": [
+       {
+        "key": "init",
+        "label": "Starting up…",
+        "weight": 1
+       },
+       {
+        "key": "world",
+        "label": "Loading world…",
+        "weight": 3
+       },
+       {
+        "key": "save",
+        "label": "Restoring save…",
+        "weight": 2
+       },
+       {
+        "key": "kb",
+        "label": "Building knowledge base…",
+        "weight": 2
+       },
+       {
+        "key": "systems",
+        "label": "Initializing systems…",
+        "weight": 1
+       },
+       {
+        "key": "ready",
+        "label": "Ready",
+        "weight": 1
+       }
+      ],
+      "tips": [
+       "Talk to villagers to uncover radiant quests.",
+       "Every conversation is generated live — no two runs are alike.",
+       "Check the quest journal (J) to track objectives.",
+       "Your progress autosaves to the active slot."
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "init"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.1,
+          "$tol": 0.000005
+         },
+         "label": "Starting up…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "world"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.4,
+          "$tol": 0.000005
+         },
+         "label": "Loading world…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "kb"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 0.8,
+          "$tol": 0.000005
+         },
+         "label": "Building knowledge base…",
+         "complete": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.loading.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "advance",
+        "key": "ready"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "progress": {
+          "$approx": 1,
+          "$tol": 0.000005
+         },
+         "label": "Ready",
+         "complete": true
+        }
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,237 @@
+{
+ "area": "quests",
+ "description": "Hand-written: quest lifecycle (QuestCompletionEngine: ordering, dependencies, typed tracking, the declarative event mapping, triggers, hints, timed objectives, save/restore of progress) and the marker decisions (QuestMarkerService on both surfaces, the minimap objective markers, the waypoint director's targets, fades and compass). Core pins none of these in a corpus yet (features/PLAN.md §1); every expectation here follows from the source at the pinned commit, read rule by rule, and both legs must reproduce it.",
+ "cases": [
+  {
+   "name": "completion: order locks the second objective until the first is done; typed events complete them; the quest completes once",
+   "steps": [
+    {
+     "call": "quest.completion.create",
+     "args": {"quests": [{"id": "q1", "status": "active", "objectives": [
+      {"id": "o1", "questId": "q1", "type": "talk_to_npc", "description": "Talk to Marie", "completed": false, "npcId": "npc_marie", "order": 0},
+      {"id": "o2", "questId": "q1", "type": "defeat_enemies", "description": "Drive off two wolves", "completed": false, "enemyType": "wolf", "enemiesRequired": 2, "order": 1}
+     ]}]},
+     "expect": {"session": 1, "view": {"quests": [{"id": "q1", "complete": false, "available": ["o1"], "locked": ["o2"], "objectives": {"$len": 2}}], "objectiveStates": {}}}
+    },
+    {
+     "call": "quest.completion.apply",
+     "args": {"session": 1, "ops": [{"op": "trackEvent", "event": {"type": "enemy_defeat", "enemyType": "wolf"}}, {"op": "trackEvent", "event": {"type": "npc_conversation", "npcId": "npc_paul"}}]},
+     "expect": {"results": [null, null], "events": [], "view": {"$subset": {"quests": [{"$subset": {"available": ["o1"], "locked": ["o2"]}}]}}}
+    },
+    {
+     "call": "quest.completion.apply",
+     "args": {"session": 1, "ops": [{"op": "trackEvent", "event": {"type": "npc_conversation", "npcId": "npc_marie"}}, {"op": "trackEvent", "event": {"type": "enemy_defeat", "enemyType": "boar"}}, {"op": "trackEvent", "event": {"type": "enemy_defeat", "enemyType": "wolf"}}]},
+     "expect": {"results": [null, null, null], "events": [{"type": "objectiveCompleted", "questId": "q1", "objectiveId": "o1"}], "view": {"$subset": {"quests": [{"$subset": {"complete": false, "available": ["o2"], "locked": []}}], "objectiveStates": {"q1": [{"id": "o1", "completed": true, "currentCount": 1}, {"id": "o2", "enemiesDefeated": 1}]}}}}
+    },
+    {
+     "call": "quest.completion.apply",
+     "args": {"session": 1, "ops": [{"op": "trackEvent", "event": {"type": "enemy_defeat", "enemyType": "wolf"}}, {"op": "completeObjective", "questId": "q1", "objectiveId": "o2"}]},
+     "expect": {"results": [null, false], "events": [{"type": "objectiveCompleted", "questId": "q1", "objectiveId": "o2"}, {"type": "questCompleted", "questId": "q1"}], "view": {"$subset": {"quests": [{"$subset": {"complete": true, "available": [], "locked": []}}]}}}
+    }
+   ]
+  },
+  {
+   "name": "completion: the declarative event mapping counts toward a quantity, reports progress, then completes",
+   "steps": [
+    {"call": "quest.completion.create", "args": {"quests": [{"id": "q2", "status": "active", "objectives": [{"id": "apples", "questId": "q2", "type": "collect_item", "description": "Pick three apples", "completed": false, "itemName": "apple", "itemCount": 3}]}]}},
+    {
+     "call": "quest.completion.apply",
+     "args": {"session": 1, "ops": [{"op": "handleGameEvent", "event": {"type": "item_collected", "itemName": "Red Apple"}}, {"op": "handleGameEvent", "event": {"type": "item_collected", "itemName": "pear"}}, {"op": "handleGameEvent", "event": {"type": "no_such_event"}}, {"op": "handleGameEvent", "event": {"type": "item_collected", "itemName": "apple"}}]},
+     "expect": {"results": [1, 0, 0, 1], "events": [{"type": "objectiveProgress", "questId": "q2", "objectiveId": "apples", "current": 1, "required": 3, "objectiveType": "collect_item"}, {"type": "objectiveProgress", "questId": "q2", "objectiveId": "apples", "current": 2, "required": 3, "objectiveType": "collect_item"}], "view": {"$subset": {"objectiveStates": {"q2": [{"id": "apples", "collectedCount": 2}]}}}}
+    },
+    {
+     "call": "quest.completion.apply",
+     "args": {"session": 1, "ops": [{"op": "handleGameEvent", "event": {"type": "item_collected", "itemName": "APPLES"}}]},
+     "expect": {"results": [1], "events": [{"type": "objectiveCompleted", "questId": "q2", "objectiveId": "apples"}, {"type": "questCompleted", "questId": "q2"}], "view": {"$subset": {"quests": [{"$subset": {"complete": true}}]}}}
+    },
+    {"call": "quest.completion.apply", "args": {"session": 1, "ops": [{"op": "handleGameEvent", "event": {"itemName": "apple"}}]}, "expectError": "`event.type` must be a string"}
+   ]
+  },
+  {
+   "name": "completion: dependsOn, triggers, hints, a quest that is not active, timed objectives",
+   "steps": [
+    {"call": "quest.completion.create", "args": {"quests": [
+     {"id": "q3", "status": "active", "objectives": [
+      {"id": "read", "questId": "q3", "type": "complete_reading", "description": "Read the notice", "completed": false, "completionTrigger": "reading_completed", "hints": [{"text": "Look near the well", "scorePenalty": 0.1}]},
+      {"id": "report", "questId": "q3", "type": "talk_to_npc", "description": "Report back", "completed": false, "npcId": "npc_anna", "dependsOn": ["read"]}
+     ]},
+     {"id": "q4", "status": "available", "objectives": [{"id": "x", "questId": "q4", "type": "complete_reading", "description": "Not yet", "completed": false, "completionTrigger": "reading_completed"}]}
+    ]}, "expect": {"$subset": {"view": {"$subset": {"quests": [{"$subset": {"id": "q3", "available": ["read"], "locked": ["report"]}}, {"$subset": {"id": "q4", "available": ["x"], "locked": []}}]}}}}},
+    {
+     "call": "quest.completion.apply",
+     "args": {"session": 1, "ops": [{"op": "revealHint", "questId": "q3", "objectiveId": "read"}, {"op": "revealHint", "questId": "q3", "objectiveId": "read"}, {"op": "revealHint", "questId": "nope", "objectiveId": "read"}, {"op": "trackByTrigger", "trigger": "reading_completed"}]},
+     "expect": {"results": ["Look near the well", null, null, null], "events": [{"type": "objectiveCompleted", "questId": "q3", "objectiveId": "read"}, {"type": "objectiveCompleted", "questId": "q4", "objectiveId": "x"}, {"type": "questCompleted", "questId": "q4"}], "view": {"$subset": {"quests": [{"$subset": {"id": "q3", "available": ["report"], "locked": []}}, {"$subset": {"id": "q4", "complete": true}}]}}}
+    },
+    {
+     "call": "quest.completion.apply",
+     "args": {"session": 1, "ops": [{"op": "addQuest", "quest": {"id": "q5", "status": "active", "objectives": [{"id": "t", "questId": "q5", "type": "visit_location", "description": "Reach the mill before dusk", "completed": false, "timeLimitSeconds": 1, "startedAt": 1}]}}, {"op": "checkTimedObjectives"}, {"op": "removeQuest", "questId": "q4"}]},
+     "expect": {"results": [null, ["Time expired: Reach the mill before dusk"], null], "events": [], "view": {"$subset": {"quests": [{"$subset": {"id": "q3"}}, {"$subset": {"id": "q5", "complete": true, "objectives": [{"$subset": {"id": "t", "completed": true, "currentCount": 1}}]}}]}}}
+    }
+   ]
+  },
+  {
+   "name": "completion: progress saved from one session restores into another; clear empties it",
+   "steps": [
+    {"call": "quest.completion.create", "args": {"quests": [{"id": "q6", "status": "active", "objectives": [{"id": "wolves", "questId": "q6", "type": "defeat_enemies", "description": "Wolves", "completed": false, "enemyType": "wolf", "enemiesRequired": 3}]}]}},
+    {"call": "quest.completion.apply", "args": {"session": 1, "ops": [{"op": "trackEvent", "event": {"type": "enemy_defeat", "enemyType": "wolf"}}, {"op": "trackEvent", "event": {"type": "enemy_defeat", "enemyType": "wolf"}}]}, "expect": {"$subset": {"view": {"$subset": {"objectiveStates": {"q6": [{"id": "wolves", "enemiesDefeated": 2}]}}}}}, "bind": "saved"},
+    {"call": "quest.completion.create", "args": {"quests": [{"id": "q6", "status": "active", "objectives": [{"id": "wolves", "questId": "q6", "type": "defeat_enemies", "description": "Wolves", "completed": false, "enemyType": "wolf", "enemiesRequired": 3}]}]}, "expect": {"$subset": {"session": 2, "view": {"$subset": {"objectiveStates": {}}}}}},
+    {"call": "quest.completion.apply", "args": {"session": 2, "ops": [{"op": "restoreObjectiveStates", "states": {"$ref": "saved.view.objectiveStates"}}, {"op": "trackEvent", "event": {"type": "enemy_defeat", "enemyType": "wolf"}}]}, "expect": {"$subset": {"events": [{"type": "objectiveCompleted", "questId": "q6", "objectiveId": "wolves"}, {"type": "questCompleted", "questId": "q6"}]}}},
+    {"call": "quest.completion.apply", "args": {"session": 2, "ops": [{"op": "clear"}]}, "expect": {"results": [null], "events": [], "view": {"quests": [], "objectiveStates": {}}}}
+   ]
+  },
+  {
+   "name": "markers on the world surface: in progress, active objective, available, radiant suppressed while a quest is active",
+   "steps": [
+    {
+     "call": "quest.markers",
+     "args": {
+      "quests": [
+       {"id": "q_main", "status": "active", "assignedByCharacterId": "npc_anna", "objectives": [{"id": "o1", "type": "talk_to_npc", "npcId": "npc_bert", "completed": false}, {"id": "o2", "type": "visit_location", "objectiveLocation": "well", "completed": false}, {"id": "o3", "type": "talk_to_npc", "objectiveLocation": "npc('Bert')", "completed": false}]},
+       {"id": "q_side", "status": "available", "assignedByCharacterId": "npc_carl", "tags": ["radiant"], "objectives": []},
+       {"id": "q_offer", "status": "available", "assignedBy": "Dora Diaz", "objectives": []}
+      ],
+      "npcs": [{"id": "npc_anna"}, {"id": "npc_bert"}, {"id": "npc_carl"}, {"id": "npc_dora", "firstName": "Dora", "lastName": "Diaz"}, {"id": "npc_eve"}]
+     },
+     "expect": {
+      "hasActiveQuest": true,
+      "npcs": [
+       {"id": "npc_anna", "kind": "in_progress", "style": {"priority": 30, "symbol": "?", "color": "#C0C0C0", "borderColor": "#808080", "minimapSize": 11, "minimapPulsing": false, "label": "Quest in progress"}},
+       {"id": "npc_bert", "kind": "active_objective", "style": {"priority": 40, "symbol": "!", "color": "#F44336", "borderColor": "#b71c1c", "minimapSize": 14, "minimapPulsing": true, "label": "Current objective"}},
+       {"id": "npc_carl", "kind": null, "style": null},
+       {"id": "npc_dora", "kind": "available", "style": {"priority": 20, "symbol": "?", "color": "#FFD700", "borderColor": "#cc9900", "minimapSize": 11, "minimapPulsing": false, "label": "Quest available"}},
+       {"id": "npc_eve", "kind": null, "style": null}
+      ],
+      "locations": [
+       {"questId": "q_main", "objectiveIndex": 0, "objectiveId": "o1", "kind": null, "style": null},
+       {"questId": "q_main", "objectiveIndex": 1, "objectiveId": "o2", "kind": "active_objective", "style": {"priority": 40, "symbol": "!", "color": "#F44336", "borderColor": "#b71c1c", "minimapSize": 14, "minimapPulsing": true, "label": "Current objective"}},
+       {"questId": "q_main", "objectiveIndex": 2, "objectiveId": "o3", "kind": null, "style": null}
+      ],
+      "styles": {
+       "turn_in": {"priority": 50, "symbol": "✓", "color": "#32CD32", "borderColor": "#228b22", "minimapSize": 14, "minimapPulsing": true, "label": "Ready to turn in"},
+       "active_objective": {"priority": 40, "symbol": "!", "color": "#F44336", "borderColor": "#b71c1c", "minimapSize": 14, "minimapPulsing": true, "label": "Current objective"},
+       "in_progress": {"priority": 30, "symbol": "?", "color": "#C0C0C0", "borderColor": "#808080", "minimapSize": 11, "minimapPulsing": false, "label": "Quest in progress"},
+       "available": {"priority": 20, "symbol": "?", "color": "#FFD700", "borderColor": "#cc9900", "minimapSize": 11, "minimapPulsing": false, "label": "Quest available"},
+       "available_radiant": {"priority": 10, "symbol": "?", "color": "#C0A050", "borderColor": "#806830", "minimapSize": 10, "minimapPulsing": false, "label": "Side quest available"}
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "markers: the minimap hides available quests while one is active; turn-in outranks everything; focus mode quiets the town",
+   "steps": [
+    {
+     "call": "quest.markers",
+     "args": {"surface": "minimap", "quests": [{"id": "q_main", "status": "active", "assignedByCharacterId": "npc_anna", "objectives": [{"id": "o1", "type": "talk_to_npc", "npcId": "npc_bert", "completed": false}]}, {"id": "q_offer", "status": "available", "assignedBy": "Dora Diaz"}], "npcs": [{"id": "npc_anna"}, {"id": "npc_dora", "firstName": "Dora", "lastName": "Diaz"}]},
+     "expect": {"$subset": {"npcs": [{"$subset": {"id": "npc_anna", "kind": "in_progress"}}, {"id": "npc_dora", "kind": null, "style": null}]}}
+    },
+    {
+     "call": "quest.markers",
+     "args": {"readyToTurnIn": ["q_main"], "quests": [{"id": "q_main", "status": "active", "assignedByCharacterId": "npc_anna", "objectives": [{"id": "o1", "type": "talk_to_npc", "npcId": "npc_anna", "completed": false}]}], "npcs": [{"id": "npc_anna"}]},
+     "expect": {"$subset": {"npcs": [{"$subset": {"id": "npc_anna", "kind": "turn_in", "style": {"$subset": {"symbol": "✓", "priority": 50}}}}]}}
+    },
+    {
+     "call": "quest.markers",
+     "args": {"activeObjectiveNpcId": "npc_eve", "quests": [{"id": "q_main", "status": "active", "assignedByCharacterId": "npc_anna", "objectives": [{"id": "o1", "type": "talk_to_npc", "npcId": "npc_bert", "completed": false}]}, {"id": "q_offer", "status": "available", "assignedBy": "Dora Diaz"}], "npcs": [{"id": "npc_anna"}, {"id": "npc_bert"}, {"id": "npc_dora", "firstName": "Dora", "lastName": "Diaz"}, {"id": "npc_eve"}]},
+     "expect": {"$subset": {"npcs": [{"$subset": {"id": "npc_anna", "kind": null}}, {"$subset": {"id": "npc_bert", "kind": "active_objective"}}, {"$subset": {"id": "npc_dora", "kind": null}}, {"$subset": {"id": "npc_eve", "kind": "active_objective"}}]}}
+    },
+    {
+     "call": "quest.markers",
+     "args": {"quests": [{"id": "r1", "status": "available", "assignedByCharacterId": "npc_carl", "tags": ["radiant"]}], "npcs": [{"id": "npc_carl"}]},
+     "expect": {"hasActiveQuest": false, "npcs": [{"id": "npc_carl", "kind": "available_radiant", "style": {"priority": 10, "symbol": "?", "color": "#C0A050", "borderColor": "#806830", "minimapSize": 10, "minimapPulsing": false, "label": "Side quest available"}}], "locations": [], "styles": {"$any": true}}
+    },
+    {"call": "quest.markers", "args": {"quests": [], "surface": "map"}, "expectError": "`surface` must be one of world, minimap"},
+    {"call": "quest.markers", "args": {"quests": [], "npcs": [{"name": "nobody"}]}, "expectError": "`npc.id` must be a string"}
+   ]
+  },
+  {
+   "name": "minimap objective markers: one per active quest's current objective, named locations and resolved positions, NPC targets left to the NPC glyph",
+   "steps": [
+    {
+     "call": "quest.minimapMarkers",
+     "args": {
+      "quests": [
+       {"id": "q1", "title": "Bread", "status": "active", "objectives": [{"type": "visit_location", "description": "Go to the well", "completed": false, "objectiveLocation": "location('Old Well')"}, {"type": "talk_to_npc", "description": "later", "completed": false, "position": {"x": 1, "z": 1}}]},
+       {"id": "q2", "status": "active", "objectives": [{"type": "talk_to_npc", "description": "Talk to Paul", "completed": false, "objectiveLocation": "npc('Paul')", "position": {"x": 2, "z": 2}}]},
+       {"id": "q3", "status": "active", "objectives": [{"type": "collect_item", "description": "done", "completed": true, "position": {"x": 9, "z": 9}}, {"type": "collect_item", "description": "Apples", "completed": false}]},
+       {"id": "q4", "status": "completed", "objectives": [{"type": "visit_location", "description": "old", "completed": false, "position": {"x": 3, "z": 3}}]},
+       {"id": "q5", "status": "active", "locationPosition": {"x": -4, "y": 2, "z": 6}, "objectives": [{"type": "discover_location", "description": "Find it", "completed": false}]},
+       {"id": "q6", "status": "active", "objectives": [{"type": "follow_directions", "description": "Nowhere known", "completed": false}]}
+      ],
+      "namedLocations": {"Old Well": {"x": 5, "z": -5}},
+      "resolvedPositions": {"q3_obj_1": {"x": 7, "z": 8}}
+     },
+     "expect": {"markers": [
+      {"id": "q1_obj_0", "questId": "q1", "questTitle": "Bread", "objectiveType": "visit_location", "objectiveDescription": "Go to the well", "position": {"x": 5, "z": -5}, "color": "#F44336", "shape": "diamond"},
+      {"id": "q3_obj_1", "questId": "q3", "questTitle": "q3", "objectiveType": "collect_item", "objectiveDescription": "Apples", "position": {"x": 7, "z": 8}, "color": "#F44336", "shape": "circle"},
+      {"id": "q5_obj_0", "questId": "q5", "questTitle": "q5", "objectiveType": "discover_location", "objectiveDescription": "Find it", "position": {"x": -4, "z": 6}, "color": "#F44336", "shape": "diamond"}
+     ]}
+    },
+    {"call": "quest.minimapMarkers", "args": {"quests": {}}, "expectError": "`quests` must be an array"}
+   ]
+  },
+  {
+   "name": "waypoints: explicit positions, an NPC's building, a business by type, an unresolvable objective (logged), fades and the compass",
+   "steps": [
+    {
+     "call": "quest.waypoints",
+     "args": {
+      "quest": {"id": "q1", "title": "Bread run", "status": "active", "questType": "errand", "objectives": [
+       {"id": "o1", "type": "visit_location", "completed": false, "locationPosition": {"x": 10, "y": 0, "z": 10}, "locationName": "Well"},
+       {"id": "o2", "type": "talk_to_npc", "completed": false, "npcId": "npc_paul", "npcName": "Paul"},
+       {"id": "o3", "type": "order_food", "completed": false},
+       {"id": "o4", "type": "deliver_item", "completed": true, "position": {"x": 1, "y": 0, "z": 1}},
+       {"id": "o5", "type": "collect_item", "completed": false, "itemName": "apple"}
+      ]},
+      "buildings": [{"id": "b_smith", "position": {"x": 300, "y": 0, "z": 0}, "metadata": {"name": "Smithy", "type": "forge"}}, {"id": "b_bakery", "position": {"x": -20, "y": 0, "z": 5}, "metadata": {"name": "Dubois Bakery", "businessType": "bakery"}}],
+      "npcBuildingMap": {"npc_paul": "b_smith"},
+      "player": {"x": 0, "y": 0, "z": 0}
+     },
+     "expect": {
+      "waypoints": [
+       {"objectiveId": "q1_o1", "objectiveType": "visit_location", "position": {"x": 10, "y": 0, "z": 10}, "label": "Well", "alpha": 1},
+       {"objectiveId": "q1_o2", "objectiveType": "talk_to_npc", "position": {"x": 300, "y": 0, "z": 0}, "label": "Paul", "alpha": 0.2},
+       {"objectiveId": "q1_o3", "objectiveType": "order_food", "position": {"x": -20, "y": 0, "z": 5}, "label": "Dubois Bakery", "alpha": 1}
+      ],
+      "compass": {"angle": {"$approx": 0.7853981633974483, "$tol": 1e-12}, "distance": {"$approx": 14.142135623730951, "$tol": 1e-12}, "label": "Well", "objectiveType": "visit_location"}
+     }
+    },
+    {"call": "core.diagnostics", "expect": {"lines": [{"level": "debug", "text": "[DynamicQuestWaypointDirector] Could not resolve position for objective \"o5\" (type: collect_item) in quest \"Bread run\". npcId=none, locationName=none, npcPositions=0, buildingData=2"}], "dropped": 0}}
+   ]
+  },
+  {
+   "name": "waypoints: real-time NPC positions win over buildings, the nearest NPC for a conversation, the compass is relative to the player's heading and locks ahead when close",
+   "steps": [
+    {
+     "call": "quest.waypoints",
+     "args": {
+      "quest": {"id": "q2", "title": "Chat", "status": "active", "questType": "social", "objectives": [{"id": "talk", "type": "complete_conversation", "completed": false}, {"id": "see", "type": "talk_to_npc", "completed": false, "npcId": "npc_ann", "npcName": "Ann"}]},
+      "npcBuildingMap": {"npc_ann": "b_none"},
+      "npcPositions": [{"id": "npc_far", "position": {"x": 50, "y": 0, "z": 50}, "name": "Far"}, {"id": "npc_ann", "position": {"x": 10, "y": 0, "z": -10}, "name": "Ann"}],
+      "player": {"x": 0, "y": 0, "z": 0},
+      "forwardAngle": -3
+     },
+     "expect": {
+      "waypoints": [
+       {"objectiveId": "q2_talk", "objectiveType": "complete_conversation", "position": {"x": 10, "y": 0, "z": -10}, "label": "Ann", "alpha": 1},
+       {"objectiveId": "q2_see", "objectiveType": "talk_to_npc", "position": {"x": 10, "y": 0, "z": -10}, "label": "Ann", "alpha": 1}
+      ],
+      "compass": {"angle": {"$approx": -0.9269908169872414, "$tol": 1e-12}, "distance": {"$approx": 14.142135623730951, "$tol": 1e-12}, "label": "Ann", "objectiveType": "complete_conversation"}
+     }
+    },
+    {
+     "call": "quest.waypoints",
+     "args": {"quest": {"id": "q3", "title": "Here", "status": "active", "questType": "x", "objectives": [{"id": "o", "type": "visit_location", "completed": false, "position": {"x": 10, "y": 0, "z": 10}}]}, "player": {"x": 9, "y": 0, "z": 9.5}, "forwardAngle": 2},
+     "expect": {"waypoints": [{"objectiveId": "q3_o", "objectiveType": "visit_location", "position": {"x": 10, "y": 0, "z": 10}, "alpha": 0}], "compass": {"angle": 0, "distance": {"$approx": 1.118033988749895, "$tol": 1e-12}, "label": "visit_location", "objectiveType": "visit_location"}}
+    },
+    {
+     "call": "quest.waypoints",
+     "args": {"quest": {"id": "q4", "title": "Done", "status": "active", "questType": "x", "objectives": [{"id": "o", "type": "visit_location", "completed": true}]}, "player": {"x": 0, "y": 0, "z": 0}},
+     "expect": {"waypoints": [], "compass": null}
+    },
+    {"call": "quest.waypoints", "args": {"quest": {"id": "q"}, "player": {"x": 0, "y": 0, "z": 0}, "buildings": [{"position": {"x": 0, "y": 0, "z": 0}}]}, "expectError": "`building.id` must be a string"},
+    {"call": "quest.waypoints", "args": {"quest": {"id": "q"}}, "expectError": "`player` must be a JSON object"}
+   ]
+  }
+ ]
+}

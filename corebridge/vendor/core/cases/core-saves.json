@@ -1,0 +1,2086 @@
+{
+ "area": "saves",
+ "description": "core's save corpus through the save.* rows: every fixture's integrity vector (SHA-256 computed by the C host), an envelope carrying it decoded and migrated, the same envelope tampered, and the v1 migration backfills.",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "files": {
+   "conformance/saves/integrity-vectors.json": "86b2b3b4a45458fc41c9154ee66b1d420345d2c4dc55724b30bc8072835d93fa",
+   "conformance/saves/v1-minimal.json": "c5d87ff78a396cf92006d874768b4d0be50440bb7bd14ed6879d3a17eab7ebd6",
+   "conformance/saves/v2-typical.json": "cff03b510b8ee0261d556a131827d2af0ab9e688b8ce2054143e615f0aceed92",
+   "conformance/saves/v2-with-extensions.json": "6eb5a38fa3033bdc065597dadb851d165d2768a9804c1dcdb64680952215162c",
+   "src/save-envelope.ts": "967998eeb9944cae6eed379de970e42b96a3b1b00a9041120c3d70fe1339fed8",
+   "src/save-file.ts": "9c54964c7c09bbada5bd1e2a496b083a3a1409894f4609919510d801b21dfe76"
+  }
+ },
+ "cases": [
+  {
+   "name": "v1-minimal.json: integrity is the committed vector",
+   "claim": "save-integrity-crosscheck.test.ts: computeSaveFileIntegrity(fixture) equals integrity-vectors.json",
+   "steps": [
+    {
+     "call": "save.integrity",
+     "args": {
+      "saveFile": {
+       "id": "fixture-save-v1-minimal",
+       "slotIndex": 0,
+       "userId": "fixture-user",
+       "worldId": "fixture-world",
+       "name": "v1 minimal fixture",
+       "version": 1,
+       "status": "active",
+       "createdAt": "2025-10-01T00:00:00.000Z",
+       "lastSavedAt": "2025-10-01T00:00:00.000Z",
+       "totalPlaytime": 0,
+       "saveCount": 0,
+       "worldSnapshot": {
+        "world": {
+         "id": "fixture-world",
+         "name": "Fixture Village",
+         "worldType": "medieval-fantasy",
+         "gameType": "language-learning",
+         "targetLanguage": "fr",
+         "description": null
+        },
+        "countries": [],
+        "settlements": [
+         {
+          "id": "settlement-1",
+          "name": "Fixture Village",
+          "settlementType": "village",
+          "streetPattern": null,
+          "population": 0,
+          "countryId": null,
+          "streets": [],
+          "districts": [],
+          "landmarks": []
+         }
+        ],
+        "characters": [],
+        "lots": [],
+        "quests": [],
+        "rules": [],
+        "actions": [],
+        "grammars": []
+       },
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 0,
+         "health": 100,
+         "energy": 100,
+         "inventory": [],
+         "cefrLevel": null,
+         "effectiveFluency": null
+        },
+        "quests": {
+         "progress": {},
+         "dynamicQuests": []
+        },
+        "npcs": {
+         "relationships": {},
+         "romance": {},
+         "merchantStates": {}
+        },
+        "characterRelationships": {},
+        "reputation": {
+         "settlements": {}
+        },
+        "containers": {
+         "containers": {}
+        },
+        "languageProgress": {
+         "vocabulary": [],
+         "grammarPatterns": [],
+         "totalXP": 0,
+         "level": 1
+        },
+        "prologFacts": [],
+        "timeState": null,
+        "interiorState": null,
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "integrity": "39503a8e474f370618de2f54bfe365741d4cf6d254032bb59e42670a4c30427f"
+     }
+    }
+   ]
+  },
+  {
+   "name": "v1-minimal.json: an envelope carrying the committed vector decodes and migrates to v3",
+   "claim": "validateSaveFileEnvelope accepts the vector; migrateSaveFile lifts any fixture to SAVE_FILE_VERSION",
+   "steps": [
+    {
+     "call": "save.decode",
+     "args": {
+      "envelope": {
+       "format": "insimul-save-v2",
+       "exportedAt": "2026-10-15T00:00:00.000Z",
+       "insimulVersion": "conformance",
+       "saveFile": {
+        "id": "fixture-save-v1-minimal",
+        "slotIndex": 0,
+        "userId": "fixture-user",
+        "worldId": "fixture-world",
+        "name": "v1 minimal fixture",
+        "version": 1,
+        "status": "active",
+        "createdAt": "2025-10-01T00:00:00.000Z",
+        "lastSavedAt": "2025-10-01T00:00:00.000Z",
+        "totalPlaytime": 0,
+        "saveCount": 0,
+        "worldSnapshot": {
+         "world": {
+          "id": "fixture-world",
+          "name": "Fixture Village",
+          "worldType": "medieval-fantasy",
+          "gameType": "language-learning",
+          "targetLanguage": "fr",
+          "description": null
+         },
+         "countries": [],
+         "settlements": [
+          {
+           "id": "settlement-1",
+           "name": "Fixture Village",
+           "settlementType": "village",
+           "streetPattern": null,
+           "population": 0,
+           "countryId": null,
+           "streets": [],
+           "districts": [],
+           "landmarks": []
+          }
+         ],
+         "characters": [],
+         "lots": [],
+         "quests": [],
+         "rules": [],
+         "actions": [],
+         "grammars": []
+        },
+        "currentState": {
+         "player": {
+          "position": {
+           "x": 0,
+           "y": 0,
+           "z": 0
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0,
+           "z": 0
+          },
+          "gold": 0,
+          "health": 100,
+          "energy": 100,
+          "inventory": [],
+          "cefrLevel": null,
+          "effectiveFluency": null
+         },
+         "quests": {
+          "progress": {},
+          "dynamicQuests": []
+         },
+         "npcs": {
+          "relationships": {},
+          "romance": {},
+          "merchantStates": {}
+         },
+         "characterRelationships": {},
+         "reputation": {
+          "settlements": {}
+         },
+         "containers": {
+          "containers": {}
+         },
+         "languageProgress": {
+          "vocabulary": [],
+          "grammarPatterns": [],
+          "totalXP": 0,
+          "level": 1
+         },
+         "prologFacts": [],
+         "timeState": null,
+         "interiorState": null,
+         "extensions": {}
+        },
+        "conversations": []
+       },
+       "integrity": "39503a8e474f370618de2f54bfe365741d4cf6d254032bb59e42670a4c30427f"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "envelope": {
+        "format": "insimul-save-v2",
+        "exportedAt": "2026-10-15T00:00:00.000Z",
+        "insimulVersion": "conformance",
+        "integrity": "39503a8e474f370618de2f54bfe365741d4cf6d254032bb59e42670a4c30427f"
+       },
+       "saveFile": {
+        "$subset": {
+         "version": 3,
+         "id": "fixture-save-v1-minimal"
+        }
+       },
+       "outcome": {
+        "$subset": {
+         "versionFrom": 1,
+         "versionTo": 3,
+         "versionsBehind": 2,
+         "migrationApplied": true
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "v1-minimal.json: the same envelope with an edited payload is an integrity mismatch",
+   "claim": "validateSaveFileEnvelope recomputes the hash over the payload it is given",
+   "steps": [
+    {
+     "call": "save.decode",
+     "args": {
+      "envelope": {
+       "format": "insimul-save-v2",
+       "exportedAt": "2026-10-15T00:00:00.000Z",
+       "insimulVersion": "conformance",
+       "saveFile": {
+        "id": "fixture-save-v1-minimal",
+        "slotIndex": 0,
+        "userId": "fixture-user",
+        "worldId": "fixture-world",
+        "name": "v1 minimal fixture (edited)",
+        "version": 1,
+        "status": "active",
+        "createdAt": "2025-10-01T00:00:00.000Z",
+        "lastSavedAt": "2025-10-01T00:00:00.000Z",
+        "totalPlaytime": 0,
+        "saveCount": 0,
+        "worldSnapshot": {
+         "world": {
+          "id": "fixture-world",
+          "name": "Fixture Village",
+          "worldType": "medieval-fantasy",
+          "gameType": "language-learning",
+          "targetLanguage": "fr",
+          "description": null
+         },
+         "countries": [],
+         "settlements": [
+          {
+           "id": "settlement-1",
+           "name": "Fixture Village",
+           "settlementType": "village",
+           "streetPattern": null,
+           "population": 0,
+           "countryId": null,
+           "streets": [],
+           "districts": [],
+           "landmarks": []
+          }
+         ],
+         "characters": [],
+         "lots": [],
+         "quests": [],
+         "rules": [],
+         "actions": [],
+         "grammars": []
+        },
+        "currentState": {
+         "player": {
+          "position": {
+           "x": 0,
+           "y": 0,
+           "z": 0
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0,
+           "z": 0
+          },
+          "gold": 0,
+          "health": 100,
+          "energy": 100,
+          "inventory": [],
+          "cefrLevel": null,
+          "effectiveFluency": null
+         },
+         "quests": {
+          "progress": {},
+          "dynamicQuests": []
+         },
+         "npcs": {
+          "relationships": {},
+          "romance": {},
+          "merchantStates": {}
+         },
+         "characterRelationships": {},
+         "reputation": {
+          "settlements": {}
+         },
+         "containers": {
+          "containers": {}
+         },
+         "languageProgress": {
+          "vocabulary": [],
+          "grammarPatterns": [],
+          "totalXP": 0,
+          "level": 1
+         },
+         "prologFacts": [],
+         "timeState": null,
+         "interiorState": null,
+         "extensions": {}
+        },
+        "conversations": []
+       },
+       "integrity": "39503a8e474f370618de2f54bfe365741d4cf6d254032bb59e42670a4c30427f"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "$subset": {
+        "code": "integrity_mismatch"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "v1-minimal.json: decoding from text gives the same answer as from the object",
+   "claim": "save.decode {text} parses the file a host read from disk",
+   "steps": [
+    {
+     "call": "save.decode",
+     "args": {
+      "text": "{\"format\":\"insimul-save-v2\",\"exportedAt\":\"2026-10-15T00:00:00.000Z\",\"insimulVersion\":\"conformance\",\"saveFile\":{\"id\":\"fixture-save-v1-minimal\",\"slotIndex\":0,\"userId\":\"fixture-user\",\"worldId\":\"fixture-world\",\"name\":\"v1 minimal fixture\",\"version\":1,\"status\":\"active\",\"createdAt\":\"2025-10-01T00:00:00.000Z\",\"lastSavedAt\":\"2025-10-01T00:00:00.000Z\",\"totalPlaytime\":0,\"saveCount\":0,\"worldSnapshot\":{\"world\":{\"id\":\"fixture-world\",\"name\":\"Fixture Village\",\"worldType\":\"medieval-fantasy\",\"gameType\":\"language-learning\",\"targetLanguage\":\"fr\",\"description\":null},\"countries\":[],\"settlements\":[{\"id\":\"settlement-1\",\"name\":\"Fixture Village\",\"settlementType\":\"village\",\"streetPattern\":null,\"population\":0,\"countryId\":null,\"streets\":[],\"districts\":[],\"landmarks\":[]}],\"characters\":[],\"lots\":[],\"quests\":[],\"rules\":[],\"actions\":[],\"grammars\":[]},\"currentState\":{\"player\":{\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0},\"gold\":0,\"health\":100,\"energy\":100,\"inventory\":[],\"cefrLevel\":null,\"effectiveFluency\":null},\"quests\":{\"progress\":{},\"dynamicQuests\":[]},\"npcs\":{\"relationships\":{},\"romance\":{},\"merchantStates\":{}},\"characterRelationships\":{},\"reputation\":{\"settlements\":{}},\"containers\":{\"containers\":{}},\"languageProgress\":{\"vocabulary\":[],\"grammarPatterns\":[],\"totalXP\":0,\"level\":1},\"prologFacts\":[],\"timeState\":null,\"interiorState\":null,\"extensions\":{}},\"conversations\":[]},\"integrity\":\"39503a8e474f370618de2f54bfe365741d4cf6d254032bb59e42670a4c30427f\"}"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "envelope": {
+        "$subset": {
+         "integrity": "39503a8e474f370618de2f54bfe365741d4cf6d254032bb59e42670a4c30427f"
+        }
+       },
+       "saveFile": {
+        "$subset": {
+         "version": 3
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "v2-typical.json: integrity is the committed vector",
+   "claim": "save-integrity-crosscheck.test.ts: computeSaveFileIntegrity(fixture) equals integrity-vectors.json",
+   "steps": [
+    {
+     "call": "save.integrity",
+     "args": {
+      "saveFile": {
+       "id": "fixture-save-v2-typical",
+       "slotIndex": 0,
+       "userId": "fixture-user",
+       "worldId": "fixture-world",
+       "name": "v2 typical fixture",
+       "version": 2,
+       "status": "active",
+       "createdAt": "2026-02-01T12:00:00.000Z",
+       "lastSavedAt": "2026-02-15T18:30:00.000Z",
+       "totalPlaytime": 7200,
+       "saveCount": 12,
+       "worldSnapshot": {
+        "world": {
+         "id": "fixture-world",
+         "name": "Fixture Village",
+         "worldType": "medieval-fantasy",
+         "gameType": "language-learning",
+         "targetLanguage": "fr",
+         "description": "A small fixture village for migration tests"
+        },
+        "countries": [
+         {
+          "id": "country-1",
+          "name": "Fixture Kingdom",
+          "governmentType": "monarchy",
+          "economicSystem": "feudal"
+         }
+        ],
+        "settlements": [
+         {
+          "id": "settlement-1",
+          "name": "Fixture Village",
+          "settlementType": "village",
+          "streetPattern": "grid",
+          "population": 50,
+          "countryId": "country-1",
+          "streets": [],
+          "districts": [],
+          "landmarks": []
+         }
+        ],
+        "characters": [
+         {
+          "id": "npc-shopkeeper",
+          "firstName": "Marie",
+          "lastName": "Fixture",
+          "gender": "female",
+          "birthYear": 1985,
+          "isAlive": true,
+          "occupation": "Shopkeeper",
+          "personality": {
+           "openness": 0.6,
+           "conscientiousness": 0.7,
+           "extroversion": 0.8,
+           "agreeableness": 0.9,
+           "neuroticism": 0.3
+          },
+          "spouseId": null,
+          "parentIds": null,
+          "childIds": null,
+          "currentLocation": "lot-shop",
+          "appearance": null,
+          "socialAttributes": null
+         }
+        ],
+        "lots": [
+         {
+          "id": "lot-shop",
+          "settlementId": "settlement-1",
+          "address": "1 Market Street",
+          "houseNumber": 1,
+          "streetName": "Market Street",
+          "streetId": null,
+          "blockCol": 0,
+          "blockRow": 0,
+          "lotIndex": 0,
+          "lotType": "commercial",
+          "districtName": null,
+          "side": null,
+          "building": {
+           "buildingCategory": "business",
+           "name": "Marie's Shop",
+           "businessType": "General Store",
+           "ownerId": "npc-shopkeeper"
+          }
+         }
+        ],
+        "quests": [
+         {
+          "id": "quest-welcome",
+          "name": "Welcome to the Village",
+          "description": "Meet Marie the shopkeeper",
+          "giverNpcId": "npc-shopkeeper",
+          "status": "active",
+          "stages": [],
+          "rewards": {},
+          "storyText": null,
+          "content": "quest(quest_welcome, [objective(talk_to, npc_shopkeeper)]).",
+          "questType": "tutorial",
+          "difficulty": "easy",
+          "tags": [
+           "tutorial"
+          ],
+          "targetLanguage": "fr"
+         }
+        ],
+        "rules": [],
+        "actions": [],
+        "grammars": []
+       },
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 10,
+          "y": 1,
+          "z": 5
+         },
+         "rotation": {
+          "x": 0,
+          "y": 1.5,
+          "z": 0
+         },
+         "gold": 25,
+         "health": 85,
+         "energy": 70,
+         "inventory": [
+          {
+           "itemId": "item-bread",
+           "quantity": 2
+          }
+         ],
+         "cefrLevel": "A2",
+         "effectiveFluency": 12
+        },
+        "quests": {
+         "progress": {
+          "quest-welcome": {
+           "status": "active",
+           "currentStageIndex": 0,
+           "stageData": {},
+           "completedAt": null
+          }
+         },
+         "dynamicQuests": []
+        },
+        "npcs": {
+         "relationships": {
+          "npc-shopkeeper": {
+           "type": "acquaintance",
+           "strength": 0.3,
+           "trust": 0.4
+          }
+         },
+         "romance": {},
+         "merchantStates": {}
+        },
+        "characterRelationships": {},
+        "reputation": {
+         "settlements": {
+          "settlement-1": {
+           "standing": 5,
+           "fines": 0,
+           "title": null
+          }
+         }
+        },
+        "containers": {
+         "containers": {}
+        },
+        "languageProgress": {
+         "vocabulary": [
+          {
+           "word": "bonjour",
+           "encounters": 3
+          },
+          {
+           "word": "merci",
+           "encounters": 2
+          }
+         ],
+         "grammarPatterns": [],
+         "totalXP": 150,
+         "level": 2,
+         "arrivalAssessment": {
+          "timestamp": "2026-02-01T12:05:00.000Z",
+          "overallLevel": "A1",
+          "overallScore": 15,
+          "dimensions": {
+           "vocabulary": {
+            "level": "A1",
+            "score": 15,
+            "confidence": 0.6
+           }
+          },
+          "source": "arrival"
+         },
+         "proficiencyHistory": [
+          {
+           "timestamp": "2026-02-01T12:05:00.000Z",
+           "overallLevel": "A1",
+           "overallScore": 15,
+           "dimensions": {
+            "vocabulary": {
+             "level": "A1",
+             "score": 15,
+             "confidence": 0.6
+            }
+           },
+           "source": "arrival"
+          },
+          {
+           "timestamp": "2026-02-15T18:00:00.000Z",
+           "overallLevel": "A2",
+           "overallScore": 30,
+           "dimensions": {
+            "vocabulary": {
+             "level": "A2",
+             "score": 35,
+             "confidence": 0.7
+            }
+           },
+           "source": "tracker"
+          }
+         ],
+         "srsState": {
+          "currentSession": 12,
+          "lastUpdated": 1739642400000,
+          "items": {
+           "vocab:fr:bonjour": {
+            "id": "vocab:fr:bonjour",
+            "type": "vocabulary",
+            "word": "bonjour",
+            "language": "fr",
+            "firstSeen": 0,
+            "lastReviewed": 1739642400000,
+            "lastReviewedSession": 12,
+            "repetitions": 3,
+            "easeFactor": 2.5,
+            "interval": 6,
+            "nextReviewSession": 18,
+            "nextReviewTimestamp": 1740247200000,
+            "reviewCount": 3,
+            "errorCount": 0,
+            "correctCount": 3,
+            "averageResponseTimeMs": 2800,
+            "lapses": 0,
+            "masteryLevel": 0.7
+           }
+          }
+         },
+         "weakAreaHistory": [
+          {
+           "dimension": "grammar",
+           "topic": "article-agreement",
+           "severity": 0.4,
+           "errorCount": 2,
+           "recordedAt": "2026-02-15T18:00:00.000Z"
+          }
+         ]
+        },
+        "prologFacts": [
+         {
+          "predicate": "player_cefr_level",
+          "args": [
+           "player",
+           "A2"
+          ]
+         },
+         {
+          "predicate": "in_settlement",
+          "args": [
+           "player",
+           "settlement-1"
+          ]
+         }
+        ],
+        "timeState": {
+         "currentYear": 1850,
+         "currentMonth": 6,
+         "currentDay": 15,
+         "timeOfDay": "afternoon",
+         "ordinalDate": 166
+        },
+        "interiorState": null,
+        "extensions": {}
+       },
+       "conversations": [
+        {
+         "npcCharacterId": "npc-shopkeeper",
+         "npcCharacterName": "Marie",
+         "compressedHistory": null,
+         "recentTurns": [
+          {
+           "role": "npc",
+           "content": "Bonjour, bienvenue !",
+           "timestamp": "2026-02-01T12:10:00.000Z"
+          },
+          {
+           "role": "player",
+           "content": "Bonjour.",
+           "timestamp": "2026-02-01T12:10:15.000Z"
+          }
+         ],
+         "totalTurnCount": 2,
+         "lastLocationId": "lot-shop",
+         "lastLocationName": "Marie's Shop",
+         "wordsUsed": [
+          "bonjour"
+         ],
+         "newWordsLearned": [
+          "bonjour"
+         ],
+         "topics": [
+          "greeting"
+         ]
+        }
+       ]
+      }
+     },
+     "expect": {
+      "integrity": "4b24b7a3fba6eff0808e4306683cd34ac5127223b3de5ab4a7f6d0f84e4534c6"
+     }
+    }
+   ]
+  },
+  {
+   "name": "v2-typical.json: an envelope carrying the committed vector decodes and migrates to v3",
+   "claim": "validateSaveFileEnvelope accepts the vector; migrateSaveFile lifts any fixture to SAVE_FILE_VERSION",
+   "steps": [
+    {
+     "call": "save.decode",
+     "args": {
+      "envelope": {
+       "format": "insimul-save-v2",
+       "exportedAt": "2026-10-15T00:00:00.000Z",
+       "insimulVersion": "conformance",
+       "saveFile": {
+        "id": "fixture-save-v2-typical",
+        "slotIndex": 0,
+        "userId": "fixture-user",
+        "worldId": "fixture-world",
+        "name": "v2 typical fixture",
+        "version": 2,
+        "status": "active",
+        "createdAt": "2026-02-01T12:00:00.000Z",
+        "lastSavedAt": "2026-02-15T18:30:00.000Z",
+        "totalPlaytime": 7200,
+        "saveCount": 12,
+        "worldSnapshot": {
+         "world": {
+          "id": "fixture-world",
+          "name": "Fixture Village",
+          "worldType": "medieval-fantasy",
+          "gameType": "language-learning",
+          "targetLanguage": "fr",
+          "description": "A small fixture village for migration tests"
+         },
+         "countries": [
+          {
+           "id": "country-1",
+           "name": "Fixture Kingdom",
+           "governmentType": "monarchy",
+           "economicSystem": "feudal"
+          }
+         ],
+         "settlements": [
+          {
+           "id": "settlement-1",
+           "name": "Fixture Village",
+           "settlementType": "village",
+           "streetPattern": "grid",
+           "population": 50,
+           "countryId": "country-1",
+           "streets": [],
+           "districts": [],
+           "landmarks": []
+          }
+         ],
+         "characters": [
+          {
+           "id": "npc-shopkeeper",
+           "firstName": "Marie",
+           "lastName": "Fixture",
+           "gender": "female",
+           "birthYear": 1985,
+           "isAlive": true,
+           "occupation": "Shopkeeper",
+           "personality": {
+            "openness": 0.6,
+            "conscientiousness": 0.7,
+            "extroversion": 0.8,
+            "agreeableness": 0.9,
+            "neuroticism": 0.3
+           },
+           "spouseId": null,
+           "parentIds": null,
+           "childIds": null,
+           "currentLocation": "lot-shop",
+           "appearance": null,
+           "socialAttributes": null
+          }
+         ],
+         "lots": [
+          {
+           "id": "lot-shop",
+           "settlementId": "settlement-1",
+           "address": "1 Market Street",
+           "houseNumber": 1,
+           "streetName": "Market Street",
+           "streetId": null,
+           "blockCol": 0,
+           "blockRow": 0,
+           "lotIndex": 0,
+           "lotType": "commercial",
+           "districtName": null,
+           "side": null,
+           "building": {
+            "buildingCategory": "business",
+            "name": "Marie's Shop",
+            "businessType": "General Store",
+            "ownerId": "npc-shopkeeper"
+           }
+          }
+         ],
+         "quests": [
+          {
+           "id": "quest-welcome",
+           "name": "Welcome to the Village",
+           "description": "Meet Marie the shopkeeper",
+           "giverNpcId": "npc-shopkeeper",
+           "status": "active",
+           "stages": [],
+           "rewards": {},
+           "storyText": null,
+           "content": "quest(quest_welcome, [objective(talk_to, npc_shopkeeper)]).",
+           "questType": "tutorial",
+           "difficulty": "easy",
+           "tags": [
+            "tutorial"
+           ],
+           "targetLanguage": "fr"
+          }
+         ],
+         "rules": [],
+         "actions": [],
+         "grammars": []
+        },
+        "currentState": {
+         "player": {
+          "position": {
+           "x": 10,
+           "y": 1,
+           "z": 5
+          },
+          "rotation": {
+           "x": 0,
+           "y": 1.5,
+           "z": 0
+          },
+          "gold": 25,
+          "health": 85,
+          "energy": 70,
+          "inventory": [
+           {
+            "itemId": "item-bread",
+            "quantity": 2
+           }
+          ],
+          "cefrLevel": "A2",
+          "effectiveFluency": 12
+         },
+         "quests": {
+          "progress": {
+           "quest-welcome": {
+            "status": "active",
+            "currentStageIndex": 0,
+            "stageData": {},
+            "completedAt": null
+           }
+          },
+          "dynamicQuests": []
+         },
+         "npcs": {
+          "relationships": {
+           "npc-shopkeeper": {
+            "type": "acquaintance",
+            "strength": 0.3,
+            "trust": 0.4
+           }
+          },
+          "romance": {},
+          "merchantStates": {}
+         },
+         "characterRelationships": {},
+         "reputation": {
+          "settlements": {
+           "settlement-1": {
+            "standing": 5,
+            "fines": 0,
+            "title": null
+           }
+          }
+         },
+         "containers": {
+          "containers": {}
+         },
+         "languageProgress": {
+          "vocabulary": [
+           {
+            "word": "bonjour",
+            "encounters": 3
+           },
+           {
+            "word": "merci",
+            "encounters": 2
+           }
+          ],
+          "grammarPatterns": [],
+          "totalXP": 150,
+          "level": 2,
+          "arrivalAssessment": {
+           "timestamp": "2026-02-01T12:05:00.000Z",
+           "overallLevel": "A1",
+           "overallScore": 15,
+           "dimensions": {
+            "vocabulary": {
+             "level": "A1",
+             "score": 15,
+             "confidence": 0.6
+            }
+           },
+           "source": "arrival"
+          },
+          "proficiencyHistory": [
+           {
+            "timestamp": "2026-02-01T12:05:00.000Z",
+            "overallLevel": "A1",
+            "overallScore": 15,
+            "dimensions": {
+             "vocabulary": {
+              "level": "A1",
+              "score": 15,
+              "confidence": 0.6
+             }
+            },
+            "source": "arrival"
+           },
+           {
+            "timestamp": "2026-02-15T18:00:00.000Z",
+            "overallLevel": "A2",
+            "overallScore": 30,
+            "dimensions": {
+             "vocabulary": {
+              "level": "A2",
+              "score": 35,
+              "confidence": 0.7
+             }
+            },
+            "source": "tracker"
+           }
+          ],
+          "srsState": {
+           "currentSession": 12,
+           "lastUpdated": 1739642400000,
+           "items": {
+            "vocab:fr:bonjour": {
+             "id": "vocab:fr:bonjour",
+             "type": "vocabulary",
+             "word": "bonjour",
+             "language": "fr",
+             "firstSeen": 0,
+             "lastReviewed": 1739642400000,
+             "lastReviewedSession": 12,
+             "repetitions": 3,
+             "easeFactor": 2.5,
+             "interval": 6,
+             "nextReviewSession": 18,
+             "nextReviewTimestamp": 1740247200000,
+             "reviewCount": 3,
+             "errorCount": 0,
+             "correctCount": 3,
+             "averageResponseTimeMs": 2800,
+             "lapses": 0,
+             "masteryLevel": 0.7
+            }
+           }
+          },
+          "weakAreaHistory": [
+           {
+            "dimension": "grammar",
+            "topic": "article-agreement",
+            "severity": 0.4,
+            "errorCount": 2,
+            "recordedAt": "2026-02-15T18:00:00.000Z"
+           }
+          ]
+         },
+         "prologFacts": [
+          {
+           "predicate": "player_cefr_level",
+           "args": [
+            "player",
+            "A2"
+           ]
+          },
+          {
+           "predicate": "in_settlement",
+           "args": [
+            "player",
+            "settlement-1"
+           ]
+          }
+         ],
+         "timeState": {
+          "currentYear": 1850,
+          "currentMonth": 6,
+          "currentDay": 15,
+          "timeOfDay": "afternoon",
+          "ordinalDate": 166
+         },
+         "interiorState": null,
+         "extensions": {}
+        },
+        "conversations": [
+         {
+          "npcCharacterId": "npc-shopkeeper",
+          "npcCharacterName": "Marie",
+          "compressedHistory": null,
+          "recentTurns": [
+           {
+            "role": "npc",
+            "content": "Bonjour, bienvenue !",
+            "timestamp": "2026-02-01T12:10:00.000Z"
+           },
+           {
+            "role": "player",
+            "content": "Bonjour.",
+            "timestamp": "2026-02-01T12:10:15.000Z"
+           }
+          ],
+          "totalTurnCount": 2,
+          "lastLocationId": "lot-shop",
+          "lastLocationName": "Marie's Shop",
+          "wordsUsed": [
+           "bonjour"
+          ],
+          "newWordsLearned": [
+           "bonjour"
+          ],
+          "topics": [
+           "greeting"
+          ]
+         }
+        ]
+       },
+       "integrity": "4b24b7a3fba6eff0808e4306683cd34ac5127223b3de5ab4a7f6d0f84e4534c6"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "envelope": {
+        "format": "insimul-save-v2",
+        "exportedAt": "2026-10-15T00:00:00.000Z",
+        "insimulVersion": "conformance",
+        "integrity": "4b24b7a3fba6eff0808e4306683cd34ac5127223b3de5ab4a7f6d0f84e4534c6"
+       },
+       "saveFile": {
+        "$subset": {
+         "version": 3,
+         "id": "fixture-save-v2-typical"
+        }
+       },
+       "outcome": {
+        "$subset": {
+         "versionFrom": 2,
+         "versionTo": 3,
+         "versionsBehind": 1,
+         "migrationApplied": true
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "v2-typical.json: the same envelope with an edited payload is an integrity mismatch",
+   "claim": "validateSaveFileEnvelope recomputes the hash over the payload it is given",
+   "steps": [
+    {
+     "call": "save.decode",
+     "args": {
+      "envelope": {
+       "format": "insimul-save-v2",
+       "exportedAt": "2026-10-15T00:00:00.000Z",
+       "insimulVersion": "conformance",
+       "saveFile": {
+        "id": "fixture-save-v2-typical",
+        "slotIndex": 0,
+        "userId": "fixture-user",
+        "worldId": "fixture-world",
+        "name": "v2 typical fixture (edited)",
+        "version": 2,
+        "status": "active",
+        "createdAt": "2026-02-01T12:00:00.000Z",
+        "lastSavedAt": "2026-02-15T18:30:00.000Z",
+        "totalPlaytime": 7200,
+        "saveCount": 12,
+        "worldSnapshot": {
+         "world": {
+          "id": "fixture-world",
+          "name": "Fixture Village",
+          "worldType": "medieval-fantasy",
+          "gameType": "language-learning",
+          "targetLanguage": "fr",
+          "description": "A small fixture village for migration tests"
+         },
+         "countries": [
+          {
+           "id": "country-1",
+           "name": "Fixture Kingdom",
+           "governmentType": "monarchy",
+           "economicSystem": "feudal"
+          }
+         ],
+         "settlements": [
+          {
+           "id": "settlement-1",
+           "name": "Fixture Village",
+           "settlementType": "village",
+           "streetPattern": "grid",
+           "population": 50,
+           "countryId": "country-1",
+           "streets": [],
+           "districts": [],
+           "landmarks": []
+          }
+         ],
+         "characters": [
+          {
+           "id": "npc-shopkeeper",
+           "firstName": "Marie",
+           "lastName": "Fixture",
+           "gender": "female",
+           "birthYear": 1985,
+           "isAlive": true,
+           "occupation": "Shopkeeper",
+           "personality": {
+            "openness": 0.6,
+            "conscientiousness": 0.7,
+            "extroversion": 0.8,
+            "agreeableness": 0.9,
+            "neuroticism": 0.3
+           },
+           "spouseId": null,
+           "parentIds": null,
+           "childIds": null,
+           "currentLocation": "lot-shop",
+           "appearance": null,
+           "socialAttributes": null
+          }
+         ],
+         "lots": [
+          {
+           "id": "lot-shop",
+           "settlementId": "settlement-1",
+           "address": "1 Market Street",
+           "houseNumber": 1,
+           "streetName": "Market Street",
+           "streetId": null,
+           "blockCol": 0,
+           "blockRow": 0,
+           "lotIndex": 0,
+           "lotType": "commercial",
+           "districtName": null,
+           "side": null,
+           "building": {
+            "buildingCategory": "business",
+            "name": "Marie's Shop",
+            "businessType": "General Store",
+            "ownerId": "npc-shopkeeper"
+           }
+          }
+         ],
+         "quests": [
+          {
+           "id": "quest-welcome",
+           "name": "Welcome to the Village",
+           "description": "Meet Marie the shopkeeper",
+           "giverNpcId": "npc-shopkeeper",
+           "status": "active",
+           "stages": [],
+           "rewards": {},
+           "storyText": null,
+           "content": "quest(quest_welcome, [objective(talk_to, npc_shopkeeper)]).",
+           "questType": "tutorial",
+           "difficulty": "easy",
+           "tags": [
+            "tutorial"
+           ],
+           "targetLanguage": "fr"
+          }
+         ],
+         "rules": [],
+         "actions": [],
+         "grammars": []
+        },
+        "currentState": {
+         "player": {
+          "position": {
+           "x": 10,
+           "y": 1,
+           "z": 5
+          },
+          "rotation": {
+           "x": 0,
+           "y": 1.5,
+           "z": 0
+          },
+          "gold": 25,
+          "health": 85,
+          "energy": 70,
+          "inventory": [
+           {
+            "itemId": "item-bread",
+            "quantity": 2
+           }
+          ],
+          "cefrLevel": "A2",
+          "effectiveFluency": 12
+         },
+         "quests": {
+          "progress": {
+           "quest-welcome": {
+            "status": "active",
+            "currentStageIndex": 0,
+            "stageData": {},
+            "completedAt": null
+           }
+          },
+          "dynamicQuests": []
+         },
+         "npcs": {
+          "relationships": {
+           "npc-shopkeeper": {
+            "type": "acquaintance",
+            "strength": 0.3,
+            "trust": 0.4
+           }
+          },
+          "romance": {},
+          "merchantStates": {}
+         },
+         "characterRelationships": {},
+         "reputation": {
+          "settlements": {
+           "settlement-1": {
+            "standing": 5,
+            "fines": 0,
+            "title": null
+           }
+          }
+         },
+         "containers": {
+          "containers": {}
+         },
+         "languageProgress": {
+          "vocabulary": [
+           {
+            "word": "bonjour",
+            "encounters": 3
+           },
+           {
+            "word": "merci",
+            "encounters": 2
+           }
+          ],
+          "grammarPatterns": [],
+          "totalXP": 150,
+          "level": 2,
+          "arrivalAssessment": {
+           "timestamp": "2026-02-01T12:05:00.000Z",
+           "overallLevel": "A1",
+           "overallScore": 15,
+           "dimensions": {
+            "vocabulary": {
+             "level": "A1",
+             "score": 15,
+             "confidence": 0.6
+            }
+           },
+           "source": "arrival"
+          },
+          "proficiencyHistory": [
+           {
+            "timestamp": "2026-02-01T12:05:00.000Z",
+            "overallLevel": "A1",
+            "overallScore": 15,
+            "dimensions": {
+             "vocabulary": {
+              "level": "A1",
+              "score": 15,
+              "confidence": 0.6
+             }
+            },
+            "source": "arrival"
+           },
+           {
+            "timestamp": "2026-02-15T18:00:00.000Z",
+            "overallLevel": "A2",
+            "overallScore": 30,
+            "dimensions": {
+             "vocabulary": {
+              "level": "A2",
+              "score": 35,
+              "confidence": 0.7
+             }
+            },
+            "source": "tracker"
+           }
+          ],
+          "srsState": {
+           "currentSession": 12,
+           "lastUpdated": 1739642400000,
+           "items": {
+            "vocab:fr:bonjour": {
+             "id": "vocab:fr:bonjour",
+             "type": "vocabulary",
+             "word": "bonjour",
+             "language": "fr",
+             "firstSeen": 0,
+             "lastReviewed": 1739642400000,
+             "lastReviewedSession": 12,
+             "repetitions": 3,
+             "easeFactor": 2.5,
+             "interval": 6,
+             "nextReviewSession": 18,
+             "nextReviewTimestamp": 1740247200000,
+             "reviewCount": 3,
+             "errorCount": 0,
+             "correctCount": 3,
+             "averageResponseTimeMs": 2800,
+             "lapses": 0,
+             "masteryLevel": 0.7
+            }
+           }
+          },
+          "weakAreaHistory": [
+           {
+            "dimension": "grammar",
+            "topic": "article-agreement",
+            "severity": 0.4,
+            "errorCount": 2,
+            "recordedAt": "2026-02-15T18:00:00.000Z"
+           }
+          ]
+         },
+         "prologFacts": [
+          {
+           "predicate": "player_cefr_level",
+           "args": [
+            "player",
+            "A2"
+           ]
+          },
+          {
+           "predicate": "in_settlement",
+           "args": [
+            "player",
+            "settlement-1"
+           ]
+          }
+         ],
+         "timeState": {
+          "currentYear": 1850,
+          "currentMonth": 6,
+          "currentDay": 15,
+          "timeOfDay": "afternoon",
+          "ordinalDate": 166
+         },
+         "interiorState": null,
+         "extensions": {}
+        },
+        "conversations": [
+         {
+          "npcCharacterId": "npc-shopkeeper",
+          "npcCharacterName": "Marie",
+          "compressedHistory": null,
+          "recentTurns": [
+           {
+            "role": "npc",
+            "content": "Bonjour, bienvenue !",
+            "timestamp": "2026-02-01T12:10:00.000Z"
+           },
+           {
+            "role": "player",
+            "content": "Bonjour.",
+            "timestamp": "2026-02-01T12:10:15.000Z"
+           }
+          ],
+          "totalTurnCount": 2,
+          "lastLocationId": "lot-shop",
+          "lastLocationName": "Marie's Shop",
+          "wordsUsed": [
+           "bonjour"
+          ],
+          "newWordsLearned": [
+           "bonjour"
+          ],
+          "topics": [
+           "greeting"
+          ]
+         }
+        ]
+       },
+       "integrity": "4b24b7a3fba6eff0808e4306683cd34ac5127223b3de5ab4a7f6d0f84e4534c6"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "$subset": {
+        "code": "integrity_mismatch"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "v2-typical.json: decoding from text gives the same answer as from the object",
+   "claim": "save.decode {text} parses the file a host read from disk",
+   "steps": [
+    {
+     "call": "save.decode",
+     "args": {
+      "text": "{\"format\":\"insimul-save-v2\",\"exportedAt\":\"2026-10-15T00:00:00.000Z\",\"insimulVersion\":\"conformance\",\"saveFile\":{\"id\":\"fixture-save-v2-typical\",\"slotIndex\":0,\"userId\":\"fixture-user\",\"worldId\":\"fixture-world\",\"name\":\"v2 typical fixture\",\"version\":2,\"status\":\"active\",\"createdAt\":\"2026-02-01T12:00:00.000Z\",\"lastSavedAt\":\"2026-02-15T18:30:00.000Z\",\"totalPlaytime\":7200,\"saveCount\":12,\"worldSnapshot\":{\"world\":{\"id\":\"fixture-world\",\"name\":\"Fixture Village\",\"worldType\":\"medieval-fantasy\",\"gameType\":\"language-learning\",\"targetLanguage\":\"fr\",\"description\":\"A small fixture village for migration tests\"},\"countries\":[{\"id\":\"country-1\",\"name\":\"Fixture Kingdom\",\"governmentType\":\"monarchy\",\"economicSystem\":\"feudal\"}],\"settlements\":[{\"id\":\"settlement-1\",\"name\":\"Fixture Village\",\"settlementType\":\"village\",\"streetPattern\":\"grid\",\"population\":50,\"countryId\":\"country-1\",\"streets\":[],\"districts\":[],\"landmarks\":[]}],\"characters\":[{\"id\":\"npc-shopkeeper\",\"firstName\":\"Marie\",\"lastName\":\"Fixture\",\"gender\":\"female\",\"birthYear\":1985,\"isAlive\":true,\"occupation\":\"Shopkeeper\",\"personality\":{\"openness\":0.6,\"conscientiousness\":0.7,\"extroversion\":0.8,\"agreeableness\":0.9,\"neuroticism\":0.3},\"spouseId\":null,\"parentIds\":null,\"childIds\":null,\"currentLocation\":\"lot-shop\",\"appearance\":null,\"socialAttributes\":null}],\"lots\":[{\"id\":\"lot-shop\",\"settlementId\":\"settlement-1\",\"address\":\"1 Market Street\",\"houseNumber\":1,\"streetName\":\"Market Street\",\"streetId\":null,\"blockCol\":0,\"blockRow\":0,\"lotIndex\":0,\"lotType\":\"commercial\",\"districtName\":null,\"side\":null,\"building\":{\"buildingCategory\":\"business\",\"name\":\"Marie's Shop\",\"businessType\":\"General Store\",\"ownerId\":\"npc-shopkeeper\"}}],\"quests\":[{\"id\":\"quest-welcome\",\"name\":\"Welcome to the Village\",\"description\":\"Meet Marie the shopkeeper\",\"giverNpcId\":\"npc-shopkeeper\",\"status\":\"active\",\"stages\":[],\"rewards\":{},\"storyText\":null,\"content\":\"quest(quest_welcome, [objective(talk_to, npc_shopkeeper)]).\",\"questType\":\"tutorial\",\"difficulty\":\"easy\",\"tags\":[\"tutorial\"],\"targetLanguage\":\"fr\"}],\"rules\":[],\"actions\":[],\"grammars\":[]},\"currentState\":{\"player\":{\"position\":{\"x\":10,\"y\":1,\"z\":5},\"rotation\":{\"x\":0,\"y\":1.5,\"z\":0},\"gold\":25,\"health\":85,\"energy\":70,\"inventory\":[{\"itemId\":\"item-bread\",\"quantity\":2}],\"cefrLevel\":\"A2\",\"effectiveFluency\":12},\"quests\":{\"progress\":{\"quest-welcome\":{\"status\":\"active\",\"currentStageIndex\":0,\"stageData\":{},\"completedAt\":null}},\"dynamicQuests\":[]},\"npcs\":{\"relationships\":{\"npc-shopkeeper\":{\"type\":\"acquaintance\",\"strength\":0.3,\"trust\":0.4}},\"romance\":{},\"merchantStates\":{}},\"characterRelationships\":{},\"reputation\":{\"settlements\":{\"settlement-1\":{\"standing\":5,\"fines\":0,\"title\":null}}},\"containers\":{\"containers\":{}},\"languageProgress\":{\"vocabulary\":[{\"word\":\"bonjour\",\"encounters\":3},{\"word\":\"merci\",\"encounters\":2}],\"grammarPatterns\":[],\"totalXP\":150,\"level\":2,\"arrivalAssessment\":{\"timestamp\":\"2026-02-01T12:05:00.000Z\",\"overallLevel\":\"A1\",\"overallScore\":15,\"dimensions\":{\"vocabulary\":{\"level\":\"A1\",\"score\":15,\"confidence\":0.6}},\"source\":\"arrival\"},\"proficiencyHistory\":[{\"timestamp\":\"2026-02-01T12:05:00.000Z\",\"overallLevel\":\"A1\",\"overallScore\":15,\"dimensions\":{\"vocabulary\":{\"level\":\"A1\",\"score\":15,\"confidence\":0.6}},\"source\":\"arrival\"},{\"timestamp\":\"2026-02-15T18:00:00.000Z\",\"overallLevel\":\"A2\",\"overallScore\":30,\"dimensions\":{\"vocabulary\":{\"level\":\"A2\",\"score\":35,\"confidence\":0.7}},\"source\":\"tracker\"}],\"srsState\":{\"currentSession\":12,\"lastUpdated\":1739642400000,\"items\":{\"vocab:fr:bonjour\":{\"id\":\"vocab:fr:bonjour\",\"type\":\"vocabulary\",\"word\":\"bonjour\",\"language\":\"fr\",\"firstSeen\":0,\"lastReviewed\":1739642400000,\"lastReviewedSession\":12,\"repetitions\":3,\"easeFactor\":2.5,\"interval\":6,\"nextReviewSession\":18,\"nextReviewTimestamp\":1740247200000,\"reviewCount\":3,\"errorCount\":0,\"correctCount\":3,\"averageResponseTimeMs\":2800,\"lapses\":0,\"masteryLevel\":0.7}}},\"weakAreaHistory\":[{\"dimension\":\"grammar\",\"topic\":\"article-agreement\",\"severity\":0.4,\"errorCount\":2,\"recordedAt\":\"2026-02-15T18:00:00.000Z\"}]},\"prologFacts\":[{\"predicate\":\"player_cefr_level\",\"args\":[\"player\",\"A2\"]},{\"predicate\":\"in_settlement\",\"args\":[\"player\",\"settlement-1\"]}],\"timeState\":{\"currentYear\":1850,\"currentMonth\":6,\"currentDay\":15,\"timeOfDay\":\"afternoon\",\"ordinalDate\":166},\"interiorState\":null,\"extensions\":{}},\"conversations\":[{\"npcCharacterId\":\"npc-shopkeeper\",\"npcCharacterName\":\"Marie\",\"compressedHistory\":null,\"recentTurns\":[{\"role\":\"npc\",\"content\":\"Bonjour, bienvenue !\",\"timestamp\":\"2026-02-01T12:10:00.000Z\"},{\"role\":\"player\",\"content\":\"Bonjour.\",\"timestamp\":\"2026-02-01T12:10:15.000Z\"}],\"totalTurnCount\":2,\"lastLocationId\":\"lot-shop\",\"lastLocationName\":\"Marie's Shop\",\"wordsUsed\":[\"bonjour\"],\"newWordsLearned\":[\"bonjour\"],\"topics\":[\"greeting\"]}]},\"integrity\":\"4b24b7a3fba6eff0808e4306683cd34ac5127223b3de5ab4a7f6d0f84e4534c6\"}"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "envelope": {
+        "$subset": {
+         "integrity": "4b24b7a3fba6eff0808e4306683cd34ac5127223b3de5ab4a7f6d0f84e4534c6"
+        }
+       },
+       "saveFile": {
+        "$subset": {
+         "version": 3
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "v2-with-extensions.json: integrity is the committed vector",
+   "claim": "save-integrity-crosscheck.test.ts: computeSaveFileIntegrity(fixture) equals integrity-vectors.json",
+   "steps": [
+    {
+     "call": "save.integrity",
+     "args": {
+      "saveFile": {
+       "id": "fixture-save-v2-extensions",
+       "slotIndex": 1,
+       "userId": "fixture-user",
+       "worldId": "fixture-world",
+       "name": "v2 with extensions fixture",
+       "version": 2,
+       "status": "active",
+       "createdAt": "2026-03-10T09:00:00.000Z",
+       "lastSavedAt": "2026-03-20T22:15:00.000Z",
+       "totalPlaytime": 18000,
+       "saveCount": 27,
+       "worldSnapshot": {
+        "world": {
+         "id": "fixture-world",
+         "name": "Fixture Village",
+         "worldType": "medieval-fantasy",
+         "gameType": "language-learning",
+         "targetLanguage": "fr",
+         "description": "Extension exerciser world"
+        },
+        "countries": [],
+        "settlements": [
+         {
+          "id": "settlement-1",
+          "name": "Fixture Village",
+          "settlementType": "village",
+          "streetPattern": null,
+          "population": 25,
+          "countryId": null,
+          "streets": [],
+          "districts": [],
+          "landmarks": []
+         }
+        ],
+        "characters": [],
+        "lots": [],
+        "quests": [],
+        "rules": [],
+        "actions": [],
+        "grammars": []
+       },
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 100,
+         "health": 100,
+         "energy": 100,
+         "inventory": [],
+         "cefrLevel": "B1",
+         "effectiveFluency": 25
+        },
+        "quests": {
+         "progress": {},
+         "dynamicQuests": []
+        },
+        "npcs": {
+         "relationships": {},
+         "romance": {},
+         "merchantStates": {}
+        },
+        "characterRelationships": {},
+        "reputation": {
+         "settlements": {}
+        },
+        "containers": {
+         "containers": {}
+        },
+        "languageProgress": {
+         "vocabulary": [],
+         "grammarPatterns": [],
+         "totalXP": 500,
+         "level": 5,
+         "arrivalAssessment": null,
+         "proficiencyHistory": [],
+         "srsState": {
+          "currentSession": 27,
+          "lastUpdated": 1742509200000,
+          "items": {}
+         },
+         "weakAreaHistory": []
+        },
+        "prologFacts": [],
+        "timeState": null,
+        "interiorState": null,
+        "extensions": {
+         "introShown": true,
+         "skillTree": {
+          "unlockedNodes": [
+           "haggling-1",
+           "haggling-2"
+          ],
+          "availablePoints": 3
+         },
+         "gamification": {
+          "streakDays": 7,
+          "lastDailyLoginAt": "2026-03-20T00:00:00.000Z",
+          "badgesEarned": [
+           "first-quest",
+           "week-streak"
+          ]
+         },
+         "achievements": {
+          "earned": [
+           {
+            "id": "first-conversation",
+            "earnedAt": "2026-03-11T10:00:00.000Z"
+           }
+          ]
+         }
+        }
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "integrity": "753a504d7781e07f7fdc368f6f65e1d4677991bf7658b7c84cc7977cde68ac7f"
+     }
+    }
+   ]
+  },
+  {
+   "name": "v2-with-extensions.json: an envelope carrying the committed vector decodes and migrates to v3",
+   "claim": "validateSaveFileEnvelope accepts the vector; migrateSaveFile lifts any fixture to SAVE_FILE_VERSION",
+   "steps": [
+    {
+     "call": "save.decode",
+     "args": {
+      "envelope": {
+       "format": "insimul-save-v2",
+       "exportedAt": "2026-10-15T00:00:00.000Z",
+       "insimulVersion": "conformance",
+       "saveFile": {
+        "id": "fixture-save-v2-extensions",
+        "slotIndex": 1,
+        "userId": "fixture-user",
+        "worldId": "fixture-world",
+        "name": "v2 with extensions fixture",
+        "version": 2,
+        "status": "active",
+        "createdAt": "2026-03-10T09:00:00.000Z",
+        "lastSavedAt": "2026-03-20T22:15:00.000Z",
+        "totalPlaytime": 18000,
+        "saveCount": 27,
+        "worldSnapshot": {
+         "world": {
+          "id": "fixture-world",
+          "name": "Fixture Village",
+          "worldType": "medieval-fantasy",
+          "gameType": "language-learning",
+          "targetLanguage": "fr",
+          "description": "Extension exerciser world"
+         },
+         "countries": [],
+         "settlements": [
+          {
+           "id": "settlement-1",
+           "name": "Fixture Village",
+           "settlementType": "village",
+           "streetPattern": null,
+           "population": 25,
+           "countryId": null,
+           "streets": [],
+           "districts": [],
+           "landmarks": []
+          }
+         ],
+         "characters": [],
+         "lots": [],
+         "quests": [],
+         "rules": [],
+         "actions": [],
+         "grammars": []
+        },
+        "currentState": {
+         "player": {
+          "position": {
+           "x": 0,
+           "y": 0,
+           "z": 0
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0,
+           "z": 0
+          },
+          "gold": 100,
+          "health": 100,
+          "energy": 100,
+          "inventory": [],
+          "cefrLevel": "B1",
+          "effectiveFluency": 25
+         },
+         "quests": {
+          "progress": {},
+          "dynamicQuests": []
+         },
+         "npcs": {
+          "relationships": {},
+          "romance": {},
+          "merchantStates": {}
+         },
+         "characterRelationships": {},
+         "reputation": {
+          "settlements": {}
+         },
+         "containers": {
+          "containers": {}
+         },
+         "languageProgress": {
+          "vocabulary": [],
+          "grammarPatterns": [],
+          "totalXP": 500,
+          "level": 5,
+          "arrivalAssessment": null,
+          "proficiencyHistory": [],
+          "srsState": {
+           "currentSession": 27,
+           "lastUpdated": 1742509200000,
+           "items": {}
+          },
+          "weakAreaHistory": []
+         },
+         "prologFacts": [],
+         "timeState": null,
+         "interiorState": null,
+         "extensions": {
+          "introShown": true,
+          "skillTree": {
+           "unlockedNodes": [
+            "haggling-1",
+            "haggling-2"
+           ],
+           "availablePoints": 3
+          },
+          "gamification": {
+           "streakDays": 7,
+           "lastDailyLoginAt": "2026-03-20T00:00:00.000Z",
+           "badgesEarned": [
+            "first-quest",
+            "week-streak"
+           ]
+          },
+          "achievements": {
+           "earned": [
+            {
+             "id": "first-conversation",
+             "earnedAt": "2026-03-11T10:00:00.000Z"
+            }
+           ]
+          }
+         }
+        },
+        "conversations": []
+       },
+       "integrity": "753a504d7781e07f7fdc368f6f65e1d4677991bf7658b7c84cc7977cde68ac7f"
+      }
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "envelope": {
+        "format": "insimul-save-v2",
+        "exportedAt": "2026-10-15T00:00:00.000Z",
+        "insimulVersion": "conformance",
+        "integrity": "753a504d7781e07f7fdc368f6f65e1d4677991bf7658b7c84cc7977cde68ac7f"
+       },
+       "saveFile": {
+        "$subset": {
+         "version": 3,
+         "id": "fixture-save-v2-extensions"
+        }
+       },
+       "outcome": {
+        "$subset": {
+         "versionFrom": 2,
+         "versionTo": 3,
+         "versionsBehind": 1,
+         "migrationApplied": true
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "v2-with-extensions.json: the same envelope with an edited payload is an integrity mismatch",
+   "claim": "validateSaveFileEnvelope recomputes the hash over the payload it is given",
+   "steps": [
+    {
+     "call": "save.decode",
+     "args": {
+      "envelope": {
+       "format": "insimul-save-v2",
+       "exportedAt": "2026-10-15T00:00:00.000Z",
+       "insimulVersion": "conformance",
+       "saveFile": {
+        "id": "fixture-save-v2-extensions",
+        "slotIndex": 1,
+        "userId": "fixture-user",
+        "worldId": "fixture-world",
+        "name": "v2 with extensions fixture (edited)",
+        "version": 2,
+        "status": "active",
+        "createdAt": "2026-03-10T09:00:00.000Z",
+        "lastSavedAt": "2026-03-20T22:15:00.000Z",
+        "totalPlaytime": 18000,
+        "saveCount": 27,
+        "worldSnapshot": {
+         "world": {
+          "id": "fixture-world",
+          "name": "Fixture Village",
+          "worldType": "medieval-fantasy",
+          "gameType": "language-learning",
+          "targetLanguage": "fr",
+          "description": "Extension exerciser world"
+         },
+         "countries": [],
+         "settlements": [
+          {
+           "id": "settlement-1",
+           "name": "Fixture Village",
+           "settlementType": "village",
+           "streetPattern": null,
+           "population": 25,
+           "countryId": null,
+           "streets": [],
+           "districts": [],
+           "landmarks": []
+          }
+         ],
+         "characters": [],
+         "lots": [],
+         "quests": [],
+         "rules": [],
+         "actions": [],
+         "grammars": []
+        },
+        "currentState": {
+         "player": {
+          "position": {
+           "x": 0,
+           "y": 0,
+           "z": 0
+          },
+          "rotation": {
+           "x": 0,
+           "y": 0,
+           "z": 0
+          },
+          "gold": 100,
+          "health": 100,
+          "energy": 100,
+          "inventory": [],
+          "cefrLevel": "B1",
+          "effectiveFluency": 25
+         },
+         "quests": {
+          "progress": {},
+          "dynamicQuests": []
+         },
+         "npcs": {
+          "relationships": {},
+          "romance": {},
+          "merchantStates": {}
+         },
+         "characterRelationships": {},
+         "reputation": {
+          "settlements": {}
+         },
+         "containers": {
+          "containers": {}
+         },
+         "languageProgress": {
+          "vocabulary": [],
+          "grammarPatterns": [],
+          "totalXP": 500,
+          "level": 5,
+          "arrivalAssessment": null,
+          "proficiencyHistory": [],
+          "srsState": {
+           "currentSession": 27,
+           "lastUpdated": 1742509200000,
+           "items": {}
+          },
+          "weakAreaHistory": []
+         },
+         "prologFacts": [],
+         "timeState": null,
+         "interiorState": null,
+         "extensions": {
+          "introShown": true,
+          "skillTree": {
+           "unlockedNodes": [
+            "haggling-1",
+            "haggling-2"
+           ],
+           "availablePoints": 3
+          },
+          "gamification": {
+           "streakDays": 7,
+           "lastDailyLoginAt": "2026-03-20T00:00:00.000Z",
+           "badgesEarned": [
+            "first-quest",
+            "week-streak"
+           ]
+          },
+          "achievements": {
+           "earned": [
+            {
+             "id": "first-conversation",
+             "earnedAt": "2026-03-11T10:00:00.000Z"
+            }
+           ]
+          }
+         }
+        },
+        "conversations": []
+       },
+       "integrity": "753a504d7781e07f7fdc368f6f65e1d4677991bf7658b7c84cc7977cde68ac7f"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "error": {
+       "$subset": {
+        "code": "integrity_mismatch"
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "v2-with-extensions.json: decoding from text gives the same answer as from the object",
+   "claim": "save.decode {text} parses the file a host read from disk",
+   "steps": [
+    {
+     "call": "save.decode",
+     "args": {
+      "text": "{\"format\":\"insimul-save-v2\",\"exportedAt\":\"2026-10-15T00:00:00.000Z\",\"insimulVersion\":\"conformance\",\"saveFile\":{\"id\":\"fixture-save-v2-extensions\",\"slotIndex\":1,\"userId\":\"fixture-user\",\"worldId\":\"fixture-world\",\"name\":\"v2 with extensions fixture\",\"version\":2,\"status\":\"active\",\"createdAt\":\"2026-03-10T09:00:00.000Z\",\"lastSavedAt\":\"2026-03-20T22:15:00.000Z\",\"totalPlaytime\":18000,\"saveCount\":27,\"worldSnapshot\":{\"world\":{\"id\":\"fixture-world\",\"name\":\"Fixture Village\",\"worldType\":\"medieval-fantasy\",\"gameType\":\"language-learning\",\"targetLanguage\":\"fr\",\"description\":\"Extension exerciser world\"},\"countries\":[],\"settlements\":[{\"id\":\"settlement-1\",\"name\":\"Fixture Village\",\"settlementType\":\"village\",\"streetPattern\":null,\"population\":25,\"countryId\":null,\"streets\":[],\"districts\":[],\"landmarks\":[]}],\"characters\":[],\"lots\":[],\"quests\":[],\"rules\":[],\"actions\":[],\"grammars\":[]},\"currentState\":{\"player\":{\"position\":{\"x\":0,\"y\":0,\"z\":0},\"rotation\":{\"x\":0,\"y\":0,\"z\":0},\"gold\":100,\"health\":100,\"energy\":100,\"inventory\":[],\"cefrLevel\":\"B1\",\"effectiveFluency\":25},\"quests\":{\"progress\":{},\"dynamicQuests\":[]},\"npcs\":{\"relationships\":{},\"romance\":{},\"merchantStates\":{}},\"characterRelationships\":{},\"reputation\":{\"settlements\":{}},\"containers\":{\"containers\":{}},\"languageProgress\":{\"vocabulary\":[],\"grammarPatterns\":[],\"totalXP\":500,\"level\":5,\"arrivalAssessment\":null,\"proficiencyHistory\":[],\"srsState\":{\"currentSession\":27,\"lastUpdated\":1742509200000,\"items\":{}},\"weakAreaHistory\":[]},\"prologFacts\":[],\"timeState\":null,\"interiorState\":null,\"extensions\":{\"introShown\":true,\"skillTree\":{\"unlockedNodes\":[\"haggling-1\",\"haggling-2\"],\"availablePoints\":3},\"gamification\":{\"streakDays\":7,\"lastDailyLoginAt\":\"2026-03-20T00:00:00.000Z\",\"badgesEarned\":[\"first-quest\",\"week-streak\"]},\"achievements\":{\"earned\":[{\"id\":\"first-conversation\",\"earnedAt\":\"2026-03-11T10:00:00.000Z\"}]}}},\"conversations\":[]},\"integrity\":\"753a504d7781e07f7fdc368f6f65e1d4677991bf7658b7c84cc7977cde68ac7f\"}"
+     },
+     "expect": {
+      "$subset": {
+       "ok": true,
+       "envelope": {
+        "$subset": {
+         "integrity": "753a504d7781e07f7fdc368f6f65e1d4677991bf7658b7c84cc7977cde68ac7f"
+        }
+       },
+       "saveFile": {
+        "$subset": {
+         "version": 3
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "v1-minimal.json: migrate backfills what each step owns",
+   "claim": "saves-migration.test.ts: version becomes SAVE_FILE_VERSION; v1->v2 backfills proficiencyHistory, srsState, weakAreaHistory; v2->v3 stamps insimulVersion, engineRevision, snapshotCreatedAt as strings",
+   "steps": [
+    {
+     "call": "save.migrate",
+     "args": {
+      "saveFile": {
+       "id": "fixture-save-v1-minimal",
+       "slotIndex": 0,
+       "userId": "fixture-user",
+       "worldId": "fixture-world",
+       "name": "v1 minimal fixture",
+       "version": 1,
+       "status": "active",
+       "createdAt": "2025-10-01T00:00:00.000Z",
+       "lastSavedAt": "2025-10-01T00:00:00.000Z",
+       "totalPlaytime": 0,
+       "saveCount": 0,
+       "worldSnapshot": {
+        "world": {
+         "id": "fixture-world",
+         "name": "Fixture Village",
+         "worldType": "medieval-fantasy",
+         "gameType": "language-learning",
+         "targetLanguage": "fr",
+         "description": null
+        },
+        "countries": [],
+        "settlements": [
+         {
+          "id": "settlement-1",
+          "name": "Fixture Village",
+          "settlementType": "village",
+          "streetPattern": null,
+          "population": 0,
+          "countryId": null,
+          "streets": [],
+          "districts": [],
+          "landmarks": []
+         }
+        ],
+        "characters": [],
+        "lots": [],
+        "quests": [],
+        "rules": [],
+        "actions": [],
+        "grammars": []
+       },
+       "currentState": {
+        "player": {
+         "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+         },
+         "gold": 0,
+         "health": 100,
+         "energy": 100,
+         "inventory": [],
+         "cefrLevel": null,
+         "effectiveFluency": null
+        },
+        "quests": {
+         "progress": {},
+         "dynamicQuests": []
+        },
+        "npcs": {
+         "relationships": {},
+         "romance": {},
+         "merchantStates": {}
+        },
+        "characterRelationships": {},
+        "reputation": {
+         "settlements": {}
+        },
+        "containers": {
+         "containers": {}
+        },
+        "languageProgress": {
+         "vocabulary": [],
+         "grammarPatterns": [],
+         "totalXP": 0,
+         "level": 1
+        },
+        "prologFacts": [],
+        "timeState": null,
+        "interiorState": null,
+        "extensions": {}
+       },
+       "conversations": []
+      }
+     },
+     "expect": {
+      "$subset": {
+       "saveFile": {
+        "$subset": {
+         "version": 3,
+         "currentState": {
+          "$subset": {
+           "languageProgress": {
+            "$subset": {
+             "proficiencyHistory": {
+              "$any": true
+             },
+             "srsState": {
+              "$any": true
+             },
+             "weakAreaHistory": {
+              "$any": true
+             }
+            }
+           }
+          }
+         },
+         "worldSnapshot": {
+          "$subset": {
+           "insimulVersion": {
+            "$type": "string"
+           },
+           "engineRevision": {
+            "$type": "string"
+           },
+           "snapshotCreatedAt": {
+            "$type": "string"
+           }
+          }
+         }
+        }
+       },
+       "outcome": {
+        "$subset": {
+         "versionFrom": 1,
+         "versionTo": 3,
+         "migrationApplied": true
+        }
+       },
+       "significant": true
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

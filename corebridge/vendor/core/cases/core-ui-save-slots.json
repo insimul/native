@@ -1,0 +1,238 @@
+{
+ "area": "ui-save-slots",
+ "description": "core's save/load slot matrix through ui.saveSlots",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "files": {
+   "conformance/ui/save-slot-cases.json": "60d14158ee3194bcdd94a1ea71762e8689a65f3b8054ec6e29769c17b473d8b6"
+  }
+ },
+ "cases": [
+  {
+   "name": "empty slot",
+   "steps": [
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "empty"
+       }
+      ]
+     },
+     "expect": {
+      "slots": [
+       {
+        "$subset": {
+         "index": 0,
+         "status": "empty",
+         "title": "Empty Slot",
+         "message": "",
+         "canLoad": false,
+         "canSave": true
+        }
+       }
+      ],
+      "hasAnyLoadable": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "healthy slot renders a summary title",
+   "steps": [
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "ok",
+        "summary": {
+         "playerName": "Mara",
+         "level": 7,
+         "locationName": "Rivertown",
+         "gold": 240,
+         "savedAt": "2026-07-17 10:02"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "slots": [
+       {
+        "$subset": {
+         "index": 0,
+         "status": "ok",
+         "title": "Mara · Lv 7 · Rivertown",
+         "message": "Saved 2026-07-17 10:02",
+         "canLoad": true,
+         "canSave": true
+        }
+       }
+      ],
+      "hasAnyLoadable": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "integrity mismatch -> corrupted, cannot load, can overwrite",
+   "steps": [
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "integrity_mismatch"
+       }
+      ]
+     },
+     "expect": {
+      "slots": [
+       {
+        "$subset": {
+         "index": 0,
+         "status": "corrupted",
+         "title": "Corrupted Save",
+         "message": "Save file integrity check failed — file may be corrupted or tampered.",
+         "canLoad": false,
+         "canSave": true
+        }
+       }
+      ],
+      "hasAnyLoadable": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "unknown format -> corrupted",
+   "steps": [
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "slots": [
+       {
+        "$subset": {
+         "index": 0,
+         "status": "corrupted",
+         "title": "Corrupted Save",
+         "message": "Unrecognized save format — this slot cannot be loaded.",
+         "canLoad": false,
+         "canSave": true
+        }
+       }
+      ],
+      "hasAnyLoadable": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "missing save payload -> corrupted",
+   "steps": [
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "missing_save_file"
+       }
+      ]
+     },
+     "expect": {
+      "slots": [
+       {
+        "$subset": {
+         "index": 0,
+         "status": "corrupted",
+         "title": "Corrupted Save",
+         "message": "Save data is missing or unreadable.",
+         "canLoad": false,
+         "canSave": true
+        }
+       }
+      ],
+      "hasAnyLoadable": false
+     }
+    }
+   ]
+  },
+  {
+   "name": "mixed slots sort by index and only ok is loadable",
+   "steps": [
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 2,
+        "outcome": "integrity_mismatch"
+       },
+       {
+        "index": 0,
+        "outcome": "empty"
+       },
+       {
+        "index": 1,
+        "outcome": "ok",
+        "summary": {
+         "playerName": "Kip",
+         "level": 3
+        }
+       }
+      ]
+     },
+     "expect": {
+      "slots": [
+       {
+        "$subset": {
+         "index": 0,
+         "status": "empty",
+         "title": "Empty Slot",
+         "message": "",
+         "canLoad": false,
+         "canSave": true
+        }
+       },
+       {
+        "$subset": {
+         "index": 1,
+         "status": "ok",
+         "title": "Kip · Lv 3",
+         "message": "",
+         "canLoad": true,
+         "canSave": true
+        }
+       },
+       {
+        "$subset": {
+         "index": 2,
+         "status": "corrupted",
+         "title": "Corrupted Save",
+         "message": "Save file integrity check failed — file may be corrupted or tampered.",
+         "canLoad": false,
+         "canSave": true
+        }
+       }
+      ],
+      "hasAnyLoadable": true
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,531 @@
+{
+ "area": "ui-pause-menu",
+ "description": "core's pause-menu tab-gating matrix through ui.pause.*",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "files": {
+   "conformance/ui/pause-menu-cases.json": "f0596dc331ab7ccb3731339cd4d3d02ec1d3b339436f684484bd7850d5084a32"
+  }
+ },
+ "cases": [
+  {
+   "name": "language-learning bundle shows every gated tab",
+   "steps": [
+    {
+     "call": "ui.pause.create",
+     "args": {
+      "enabledModules": [
+       "knowledge-acquisition",
+       "proficiency",
+       "pattern-recognition",
+       "performance-scoring",
+       "voice",
+       "gamification",
+       "skill-tree",
+       "adaptive-difficulty",
+       "world-lore",
+       "conversation-analytics",
+       "assessment",
+       "npc-exams",
+       "onboarding"
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1,
+       "view": {
+        "$subset": {
+         "visibleKeys": [
+          "resume",
+          "journal",
+          "inventory",
+          "map",
+          "character",
+          "vocabulary",
+          "skills",
+          "analytics",
+          "assessment",
+          "settings",
+          "save"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "rpg bundle hides the assessment tab (no assessment module)",
+   "steps": [
+    {
+     "call": "ui.pause.create",
+     "args": {
+      "enabledModules": [
+       "knowledge-acquisition",
+       "proficiency",
+       "gamification",
+       "skill-tree",
+       "adaptive-difficulty",
+       "world-lore",
+       "conversation-analytics",
+       "onboarding"
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1,
+       "view": {
+        "$subset": {
+         "visibleKeys": [
+          "resume",
+          "journal",
+          "inventory",
+          "map",
+          "character",
+          "vocabulary",
+          "skills",
+          "analytics",
+          "settings",
+          "save"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy bundle keeps only character among the gated tabs",
+   "steps": [
+    {
+     "call": "ui.pause.create",
+     "args": {
+      "enabledModules": [
+       "proficiency",
+       "gamification",
+       "adaptive-difficulty",
+       "world-lore",
+       "onboarding"
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1,
+       "view": {
+        "$subset": {
+         "visibleKeys": [
+          "resume",
+          "journal",
+          "inventory",
+          "map",
+          "character",
+          "settings",
+          "save"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "no modules -> only the ungated core tabs",
+   "steps": [
+    {
+     "call": "ui.pause.create",
+     "args": {
+      "enabledModules": []
+     },
+     "expect": {
+      "$subset": {
+       "session": 1,
+       "view": {
+        "$subset": {
+         "visibleKeys": [
+          "resume",
+          "journal",
+          "inventory",
+          "map",
+          "settings",
+          "save"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "AND-gating: a tab requiring two modules needs both",
+   "steps": [
+    {
+     "call": "ui.pause.create",
+     "args": {
+      "enabledModules": [
+       "proficiency"
+      ],
+      "tabs": [
+       {
+        "key": "resume",
+        "label": "Resume"
+       },
+       {
+        "key": "exam",
+        "label": "Exam",
+        "requires": [
+         "proficiency",
+         "assessment"
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1,
+       "view": {
+        "$subset": {
+         "visibleKeys": [
+          "resume"
+         ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "open defaults to the first visible tab, set_active rejects hidden tabs",
+   "steps": [
+    {
+     "call": "ui.pause.create",
+     "args": {
+      "enabledModules": [
+       "proficiency"
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1,
+       "view": {
+        "$subset": {
+         "visibleKeys": [
+          "resume",
+          "journal",
+          "inventory",
+          "map",
+          "character",
+          "settings",
+          "save"
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "open"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "open": true
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "active": "resume"
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setActive",
+        "key": "character"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        true
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "active": "character"
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setActive",
+        "key": "vocabulary"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        false
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "active": "character"
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "open": true
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "close"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "open": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "open": false
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "open to a hidden tab falls back to the first visible tab",
+   "steps": [
+    {
+     "call": "ui.pause.create",
+     "args": {
+      "enabledModules": []
+     },
+     "expect": {
+      "$subset": {
+       "session": 1,
+       "view": {
+        "$subset": {
+         "visibleKeys": [
+          "resume",
+          "journal",
+          "inventory",
+          "map",
+          "settings",
+          "save"
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "open",
+        "tab": "vocabulary"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "open": true
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "active": "resume"
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "toggle"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "open": false
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "toggle"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "open": true
+        }
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,63 @@
+{
+ "area": "genre",
+ "description": "Hand-written: the genre rows the transcribed corpora do not reach — the recipe bindings, the registry's shape, module activation's three distinct answers (known, unknown, nothing declared), the refusal codes as a host reads them, and the predicate-pack text the activation names. core-genres-*.json and core-modules-activation.json hold core's own corpora.",
+ "cases": [
+  {
+   "name": "genre.recipes: core binds the four shipped recipes, platformer overriding combat",
+   "steps": [
+    {
+     "call": "genre.recipes",
+     "expect": {
+      "ids": ["rpg-adventure", "puzzle", "platformer", "strategy"],
+      "bindings": {
+       "rpg-adventure": {"recipeId": "rpg-adventure", "genreId": "adventure", "overrides": [], "keepWorldConfigFor": ["rpg", "adventure"], "camera": "world-default"},
+       "puzzle": {"recipeId": "puzzle", "genreId": "puzzle", "overrides": [], "keepWorldConfigFor": [], "camera": "recipe"},
+       "platformer": {"recipeId": "platformer", "genreId": "platformer", "overrides": [{"path": "combatStyle", "value": "none"}], "keepWorldConfigFor": [], "camera": "recipe"},
+       "strategy": {"recipeId": "strategy", "genreId": "strategy", "overrides": [], "keepWorldConfigFor": [], "camera": "recipe"}
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "genre.registry: fifteen genres, rpg the default, the camera modes",
+   "steps": [
+    {"call": "genre.registry", "expect": {"defaultGenre": "rpg", "ids": {"$len": 15}, "genres": {"$len": 15}, "cameraModes": ["first_person", "third_person", "isometric", "side_scroll", "top_down", "fighting"]}}
+   ]
+  },
+  {
+   "name": "genre.resolveGame: the platformer recipe decides the camera on an rpg world (decision X3), and its combat is off",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {"recipe": "platformer", "world": {"meta": {"cameraPerspective": "third-person"}}},
+     "expect": {"$subset": {"recipe": {"id": "platformer", "bound": true}, "configSource": "recipe", "config": {"$subset": {"id": "platformer", "combatStyle": "none", "cameraMode": "side_scroll"}}, "camera": {"mode": "side_scroll", "policy": "recipe", "source": "genreConfig.cameraMode", "worldPerspective": "third-person"}}}
+    },
+    {"call": "genre.resolveGame", "args": {}, "expect": {"$subset": {"recipe": null, "configSource": "registry-fallback", "genre": {"id": "rpg", "known": false, "fallback": {"reason": "no-genre", "requested": null, "to": "rpg"}}}}}
+   ]
+  },
+  {
+   "name": "genre.resolveGame refusals carry core's code in last_error",
+   "steps": [
+    {"call": "genre.resolveGame", "args": {"recipe": "racing"}, "expectError": "insimulcore: GenreResolutionError: [unknown-recipe] unknown-recipe:"},
+    {"call": "genre.resolveGame", "args": {"recipe": {"id": "x", "genre": {"id": "no-such-genre"}}}, "expectError": "[unknown-recipe-genre]"}
+   ]
+  },
+  {
+   "name": "modules.activate keeps core's three answers apart",
+   "steps": [
+    {"call": "modules.activate", "args": {"genre": "mystery"}, "expect": {"source": "genre", "active": {"$subset": {"genre": "mystery", "known": false, "modules": []}}, "predicatePacks": ["gameplayState", "script", "placement", "scaffold"], "hostInterfaces": [], "reason": "core has no genre bundle \"mystery\" — shared vocabulary only"}},
+    {"call": "modules.activate", "args": {"ir": {"meta": {}}}, "expect": {"source": "undeclared", "active": null, "predicatePacks": {"$type": "array"}, "hostInterfaces": [], "reason": "the World IR carries no meta.genreConfig.id"}},
+    {"call": "modules.activate", "expect": {"source": "undeclared", "active": null, "predicatePacks": {"$type": "array"}, "hostInterfaces": [], "reason": "no genre and no World IR was passed"}},
+    {"call": "modules.activate", "args": {"genre": "platformer"}, "expect": {"$subset": {"source": "genre", "active": {"$subset": {"known": true, "modules": [{"$subset": {"id": "traversal"}}]}}, "hostInterfaces": ["ITraversalProbe", "ILocomotionHost"]}}}
+   ]
+  },
+  {
+   "name": "prolog.packs: the text of the packs an activation names, in consult order, unknown areas reported",
+   "steps": [
+    {"call": "prolog.packs", "args": {"areas": ["weather", "gameplayState", "no_such_area"]}, "expect": {"packs": [{"area": "gameplayState", "prolog": {"$type": "string"}, "runtimePredicates": {"$type": "array"}}, {"area": "weather", "prolog": {"$type": "string"}, "runtimePredicates": {"$type": "array"}}], "order": {"$type": "array"}, "unknown": ["no_such_area"]}},
+    {"call": "prolog.packs", "expect": {"$subset": {"unknown": [], "packs": {"$type": "array"}}}}
+   ]
+  }
+ ]
+}

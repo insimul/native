@@ -1,0 +1,747 @@
+{
+ "area": "ui-trade",
+ "description": "core's container / merchant trade matrix through ui.trade (item census per stack id, as core's runner counts it)",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "files": {
+   "conformance/ui/trade-cases.json": "9b34b02e2c6358524b77f2c73f5aa84cac6139e773f417a779dee26f41bc7320"
+  }
+ },
+ "cases": [
+  {
+   "name": "take-item-from-container-into-inventory",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {
+       "player": {
+        "gold": 50,
+        "inventory": []
+       },
+       "containers": {
+        "containers": {
+         "chest1": {
+          "items": [
+           {
+            "itemId": "potion",
+            "quantity": 3,
+            "value": 10
+           },
+           {
+            "itemId": "key",
+            "quantity": 1,
+            "value": 0
+           }
+          ]
+         }
+        }
+       },
+       "npcs": {
+        "merchantStates": {}
+       }
+      },
+      "ops": [
+       {
+        "op": "takeFromContainer",
+        "containerId": "chest1",
+        "itemId": "potion",
+        "qty": 2
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "$subset": {
+         "ok": true,
+         "moved": 2
+        }
+       }
+      ],
+      "state": {
+       "$subset": {
+        "player": {
+         "$subset": {
+          "inventory": {
+           "$stacks": {
+            "potion": 2
+           }
+          }
+         }
+        },
+        "containers": {
+         "$subset": {
+          "containers": {
+           "$subset": {
+            "chest1": {
+             "$subset": {
+              "items": {
+               "$stacks": {
+                "potion": 1,
+                "key": 1
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "take-clamps-to-available-stock",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {
+       "player": {
+        "gold": 0,
+        "inventory": [
+         {
+          "itemId": "potion",
+          "quantity": 1,
+          "value": 10
+         }
+        ]
+       },
+       "containers": {
+        "containers": {
+         "chest1": {
+          "items": [
+           {
+            "itemId": "potion",
+            "quantity": 2,
+            "value": 10
+           }
+          ]
+         }
+        }
+       },
+       "npcs": {
+        "merchantStates": {}
+       }
+      },
+      "ops": [
+       {
+        "op": "takeFromContainer",
+        "containerId": "chest1",
+        "itemId": "potion",
+        "qty": 99
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "$subset": {
+         "ok": true,
+         "moved": 2
+        }
+       }
+      ],
+      "state": {
+       "$subset": {
+        "player": {
+         "$subset": {
+          "inventory": {
+           "$stacks": {
+            "potion": 3
+           }
+          }
+         }
+        },
+        "containers": {
+         "$subset": {
+          "containers": {
+           "$subset": {
+            "chest1": {
+             "$subset": {
+              "items": {
+               "$stacks": {}
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "take-all-empties-the-container",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {
+       "player": {
+        "gold": 0,
+        "inventory": []
+       },
+       "containers": {
+        "containers": {
+         "chest1": {
+          "items": [
+           {
+            "itemId": "potion",
+            "quantity": 2,
+            "value": 10
+           },
+           {
+            "itemId": "gem",
+            "quantity": 1,
+            "value": 100
+           }
+          ]
+         }
+        }
+       },
+       "npcs": {
+        "merchantStates": {}
+       }
+      },
+      "ops": [
+       {
+        "op": "takeAllFromContainer",
+        "containerId": "chest1"
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "$subset": {
+         "ok": true,
+         "moved": 3
+        }
+       }
+      ],
+      "state": {
+       "$subset": {
+        "player": {
+         "$subset": {
+          "inventory": {
+           "$stacks": {
+            "potion": 2,
+            "gem": 1
+           }
+          }
+         }
+        },
+        "containers": {
+         "$subset": {
+          "containers": {
+           "$subset": {
+            "chest1": {
+             "$subset": {
+              "items": {
+               "$stacks": {}
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "buy-affordable-transfers-item-and-gold",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {
+       "player": {
+        "gold": 100,
+        "inventory": []
+       },
+       "containers": {
+        "containers": {}
+       },
+       "npcs": {
+        "merchantStates": {
+         "shop1": {
+          "goldReserve": 100,
+          "items": [
+           {
+            "itemId": "potion",
+            "quantity": 5,
+            "value": 10
+           }
+          ]
+         }
+        }
+       }
+      },
+      "ops": [
+       {
+        "op": "buy",
+        "merchantId": "shop1",
+        "itemId": "potion",
+        "qty": 2
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "$subset": {
+         "ok": true,
+         "moved": 2
+        }
+       }
+      ],
+      "state": {
+       "$subset": {
+        "player": {
+         "$subset": {
+          "gold": 80,
+          "inventory": {
+           "$stacks": {
+            "potion": 2
+           }
+          }
+         }
+        },
+        "npcs": {
+         "$subset": {
+          "merchantStates": {
+           "$subset": {
+            "shop1": {
+             "$subset": {
+              "goldReserve": 120,
+              "items": {
+               "$stacks": {
+                "potion": 3
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "buy-rejected-when-gold-insufficient",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {
+       "player": {
+        "gold": 15,
+        "inventory": []
+       },
+       "containers": {
+        "containers": {}
+       },
+       "npcs": {
+        "merchantStates": {
+         "shop1": {
+          "goldReserve": 100,
+          "items": [
+           {
+            "itemId": "sword",
+            "quantity": 1,
+            "value": 50
+           }
+          ]
+         }
+        }
+       }
+      },
+      "ops": [
+       {
+        "op": "buy",
+        "merchantId": "shop1",
+        "itemId": "sword",
+        "qty": 1
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "$subset": {
+         "ok": false,
+         "reason": "insufficient_gold"
+        }
+       }
+      ],
+      "state": {
+       "$subset": {
+        "player": {
+         "$subset": {
+          "gold": 15,
+          "inventory": {
+           "$stacks": {}
+          }
+         }
+        },
+        "npcs": {
+         "$subset": {
+          "merchantStates": {
+           "$subset": {
+            "shop1": {
+             "$subset": {
+              "goldReserve": 100,
+              "items": {
+               "$stacks": {
+                "sword": 1
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "buy-rejected-when-out-of-stock",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {
+       "player": {
+        "gold": 1000,
+        "inventory": []
+       },
+       "containers": {
+        "containers": {}
+       },
+       "npcs": {
+        "merchantStates": {
+         "shop1": {
+          "goldReserve": 100,
+          "items": [
+           {
+            "itemId": "potion",
+            "quantity": 1,
+            "value": 10
+           }
+          ]
+         }
+        }
+       }
+      },
+      "ops": [
+       {
+        "op": "buy",
+        "merchantId": "shop1",
+        "itemId": "potion",
+        "qty": 3
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "$subset": {
+         "ok": false,
+         "reason": "out_of_stock"
+        }
+       }
+      ],
+      "state": {
+       "$subset": {
+        "player": {
+         "$subset": {
+          "gold": 1000,
+          "inventory": {
+           "$stacks": {}
+          }
+         }
+        },
+        "npcs": {
+         "$subset": {
+          "merchantStates": {
+           "$subset": {
+            "shop1": {
+             "$subset": {
+              "goldReserve": 100,
+              "items": {
+               "$stacks": {
+                "potion": 1
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "sell-transfers-item-and-gold-back",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {
+       "player": {
+        "gold": 20,
+        "inventory": [
+         {
+          "itemId": "gem",
+          "quantity": 2,
+          "value": 30
+         }
+        ]
+       },
+       "containers": {
+        "containers": {}
+       },
+       "npcs": {
+        "merchantStates": {
+         "shop1": {
+          "goldReserve": 100,
+          "items": []
+         }
+        }
+       }
+      },
+      "ops": [
+       {
+        "op": "sell",
+        "merchantId": "shop1",
+        "itemId": "gem",
+        "qty": 1
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "$subset": {
+         "ok": true,
+         "moved": 1
+        }
+       }
+      ],
+      "state": {
+       "$subset": {
+        "player": {
+         "$subset": {
+          "gold": 50,
+          "inventory": {
+           "$stacks": {
+            "gem": 1
+           }
+          }
+         }
+        },
+        "npcs": {
+         "$subset": {
+          "merchantStates": {
+           "$subset": {
+            "shop1": {
+             "$subset": {
+              "goldReserve": 70,
+              "items": {
+               "$stacks": {
+                "gem": 1
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "sell-rejected-when-merchant-cannot-afford",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {
+       "player": {
+        "gold": 0,
+        "inventory": [
+         {
+          "itemId": "gem",
+          "quantity": 1,
+          "value": 100
+         }
+        ]
+       },
+       "containers": {
+        "containers": {}
+       },
+       "npcs": {
+        "merchantStates": {
+         "shop1": {
+          "goldReserve": 40,
+          "items": []
+         }
+        }
+       }
+      },
+      "ops": [
+       {
+        "op": "sell",
+        "merchantId": "shop1",
+        "itemId": "gem",
+        "qty": 1
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "$subset": {
+         "ok": false,
+         "reason": "merchant_cannot_afford"
+        }
+       }
+      ],
+      "state": {
+       "$subset": {
+        "player": {
+         "$subset": {
+          "gold": 0,
+          "inventory": {
+           "$stacks": {
+            "gem": 1
+           }
+          }
+         }
+        },
+        "npcs": {
+         "$subset": {
+          "merchantStates": {
+           "$subset": {
+            "shop1": {
+             "$subset": {
+              "goldReserve": 40,
+              "items": {
+               "$stacks": {}
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "sell-rejected-when-player-lacks-item",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {
+       "player": {
+        "gold": 0,
+        "inventory": []
+       },
+       "containers": {
+        "containers": {}
+       },
+       "npcs": {
+        "merchantStates": {
+         "shop1": {
+          "goldReserve": 100,
+          "items": []
+         }
+        }
+       }
+      },
+      "ops": [
+       {
+        "op": "sell",
+        "merchantId": "shop1",
+        "itemId": "gem",
+        "qty": 1
+       }
+      ]
+     },
+     "expect": {
+      "results": [
+       {
+        "$subset": {
+         "ok": false,
+         "reason": "insufficient_items"
+        }
+       }
+      ],
+      "state": {
+       "$subset": {
+        "player": {
+         "$subset": {
+          "gold": 0,
+          "inventory": {
+           "$stacks": {}
+          }
+         }
+        },
+        "npcs": {
+         "$subset": {
+          "merchantStates": {
+           "$subset": {
+            "shop1": {
+             "$subset": {
+              "goldReserve": 100,
+              "items": {
+               "$stacks": {}
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

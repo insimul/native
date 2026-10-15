@@ -596,6 +596,36 @@ add_test(NAME core_vendor COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs)
 
+# corebridge_cases (Features Round C0): every method of libinsimulcore's table,
+# called from C through insimulcore.h, over two case directories — the corpus
+# vendor-core-bundle.mjs transcribes from core's own conformance files at the
+# pinned commit (corebridge/vendor/core/cases/, generated) and the hand-written
+# cases for behaviour no core corpus pins yet (corebridge/tests/cases/). Case
+# format and matcher rules: corebridge/tests/README.md. A pure consumer of
+# insimulcore.h, like corebridge_smoke. Never skips: both directories are in-repo.
+add_executable(insimulcore_cases tests/corebridge_cases.c)
+target_link_libraries(insimulcore_cases PRIVATE insimulcore m)
+add_test(NAME corebridge_cases COMMAND insimulcore_cases
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/cases
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tests/cases)
+
+# The JS leg: the same generated bundle evaluated in Node (V8, Node's crypto)
+# over the same cases; and the parity leg, which diffs the RAW result string of
+# every step between QuickJS-through-C and V8. Need node; a loud [SKIP] without.
+add_test(NAME corebridge_cases_js COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_corebridge_cases.sh js ${CMAKE_CURRENT_SOURCE_DIR})
+add_test(NAME corebridge_cases_parity COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_corebridge_cases.sh parity ${CMAKE_CURRENT_SOURCE_DIR}
+       $<TARGET_FILE:insimulcore_cases> ${CMAKE_CURRENT_BINARY_DIR})
+
+# corebridge_sha256: the SHA-256 the C host gives core's save envelope
+# (corebridge/src/insimulcore_sha256.c), against the NIST vectors, at every
+# split point. Compiled straight from the source: the function is internal to
+# libinsimulcore and deliberately not exported.
+add_executable(insimulcore_sha256_test tests/corebridge_sha256.c corebridge/src/insimulcore_sha256.c)
+target_include_directories(insimulcore_sha256_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/src)
+add_test(NAME corebridge_sha256 COMMAND insimulcore_sha256_test)
+
 # history_scan: the PRE-OPEN history audit (US-1, tasklist 242-pre-open-native).
 # Every other gate in this file reads the working tree; this one reads the 32
 # commits behind it, because `git clone` publishes all of them and deleting a

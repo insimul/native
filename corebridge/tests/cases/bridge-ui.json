@@ -1,0 +1,114 @@
+{
+ "area": "ui",
+ "description": "Hand-written: the in-game view-models where core pins behaviour in a unit test rather than a corpus (notifications) or where the bridge adds a boundary rule (enumerations, the genre → pause-menu tabs path, the default loading phases, chained trades). The core-ui-*.json files hold core's own matrices.",
+ "cases": [
+  {
+   "name": "notifications: push, expire by lifetime, dismiss by id (core's ui-corpus.test.ts sequence)",
+   "steps": [
+    {"call": "ui.notifications.create", "expect": {"session": 1, "view": {"visible": [], "count": 0}}},
+    {
+     "call": "ui.notifications.apply",
+     "args": {"session": 1, "ops": [{"op": "push", "text": "hello", "kind": "info", "lifetime": 3}, {"op": "push", "text": "saved", "kind": "success", "lifetime": 1}]},
+     "expect": {"results": [1, 2], "view": {"visible": [{"id": 1, "text": "hello", "kind": "info", "remaining": 3, "color": "accent"}, {"id": 2, "text": "saved", "kind": "success", "remaining": 1, "color": "success"}], "count": 2}}
+    },
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "tick", "delta": 1.5}]}, "expect": {"results": [true], "view": {"visible": [{"id": 1, "text": "hello", "kind": "info", "remaining": 1.5, "color": "accent"}], "count": 1}}},
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "dismiss", "id": 1}, {"op": "dismiss", "id": 1}, {"op": "tick", "delta": 1}]}, "expect": {"results": [true, false, false], "view": {"visible": [], "count": 0}}}
+   ]
+  },
+  {
+   "name": "notifications: default kind and lifetime, the four kinds' colours, clear",
+   "steps": [
+    {"call": "ui.notifications.create"},
+    {
+     "call": "ui.notifications.apply",
+     "args": {"session": 1, "ops": [{"op": "push", "text": "a"}, {"op": "push", "text": "b", "kind": "warning"}, {"op": "push", "text": "c", "kind": "danger"}, {"op": "tick", "delta": 3.75}]},
+     "expect": {"results": [1, 2, 3, false], "view": {"visible": [{"id": 1, "text": "a", "kind": "info", "remaining": 0.25, "color": "accent"}, {"id": 2, "text": "b", "kind": "warning", "remaining": 0.25, "color": "warning"}, {"id": 3, "text": "c", "kind": "danger", "remaining": 0.25, "color": "danger"}], "count": 3}}
+    },
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "clear"}, {"op": "push", "text": "after"}]}, "expect": {"results": [null, 4], "view": {"$subset": {"count": 1}}}},
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "tick", "delta": "soon"}]}, "expectError": "`delta` must be a finite number"},
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "push"}]}, "expectError": "`text` must be a string"}
+   ]
+  },
+  {
+   "name": "pause menu from a genre: the rpg bundle's feature modules gate the tabs",
+   "steps": [
+    {
+     "call": "ui.pause.create",
+     "args": {"genre": "rpg"},
+     "expect": {"session": 1, "source": "genre", "enabledModules": ["knowledge-acquisition", "proficiency", "gamification", "skill-tree", "adaptive-difficulty", "world-lore", "conversation-analytics", "onboarding"], "view": {"$subset": {"open": false, "active": "", "visibleKeys": ["resume", "journal", "inventory", "map", "character", "vocabulary", "skills", "analytics", "settings", "save"]}}}
+    },
+    {"call": "ui.pause.apply", "args": {"session": 1, "ops": [{"op": "open", "tab": "skills"}, {"op": "setActive", "key": "assessment"}]}, "expect": {"results": [null, false], "view": {"$subset": {"open": true, "active": "skills"}}}}
+   ]
+  },
+  {
+   "name": "pause menu from the platformer genre: no Character or Skills tab (track G's bundle)",
+   "steps": [
+    {"call": "ui.pause.create", "args": {"genre": "platformer"}, "expect": {"$subset": {"source": "genre", "enabledModules": ["performance-scoring", "gamification", "adaptive-difficulty", "onboarding"], "view": {"$subset": {"visibleKeys": ["resume", "journal", "inventory", "map", "settings", "save"]}}}}}
+   ]
+  },
+  {
+   "name": "pause menu: an unknown genre enables no module; no argument enables none either; explicit modules win over a genre",
+   "steps": [
+    {"call": "ui.pause.create", "args": {"genre": "mystery"}, "expect": {"$subset": {"source": "genre", "enabledModules": [], "view": {"$subset": {"visibleKeys": ["resume", "journal", "inventory", "map", "settings", "save"]}}}}},
+    {"call": "ui.pause.create", "expect": {"$subset": {"session": 2, "source": "none", "enabledModules": []}}},
+    {"call": "ui.pause.create", "args": {"genre": "rpg", "enabledModules": ["assessment"]}, "expect": {"$subset": {"source": "modules", "enabledModules": ["assessment"], "view": {"$subset": {"visibleKeys": ["resume", "journal", "inventory", "map", "assessment", "settings", "save"]}}}}},
+    {"call": "ui.pause.apply", "args": {"session": 3, "ops": [{"op": "toggle"}]}, "expect": {"results": [null], "view": {"open": true, "active": "resume", "visibleKeys": ["resume", "journal", "inventory", "map", "assessment", "settings", "save"], "visibleTabs": [{"key": "resume", "label": "Resume"}, {"key": "journal", "label": "Journal"}, {"key": "inventory", "label": "Inventory"}, {"key": "map", "label": "Map"}, {"key": "assessment", "label": "Assessment", "requires": "assessment"}, {"key": "settings", "label": "Settings"}, {"key": "save", "label": "Save / Load"}]}}}
+   ]
+  },
+  {
+   "name": "journal: get, decline removes, completing untracks, and statuses/filters are checked at the boundary",
+   "steps": [
+    {"call": "ui.journal.create", "args": {"maxTracked": 1, "quests": [{"id": "a", "title": "A", "status": "active"}, {"id": "b", "title": "B", "status": "available", "isRadiant": true}]}, "expect": {"session": 1, "view": {"filter": "all", "filtered": [{"id": "a", "title": "A", "status": "active"}, {"id": "b", "title": "B", "status": "available", "isRadiant": true}], "counts": {"all": 2, "active": 1, "completed": 0, "available": 1}, "tracked": [], "maxTracked": 1}}},
+    {"call": "ui.journal.apply", "args": {"session": 1, "ops": [{"op": "track", "id": "a"}, {"op": "accept", "id": "b"}, {"op": "track", "id": "b"}, {"op": "get", "id": "b"}, {"op": "get", "id": "zz"}]}, "expect": {"results": [true, true, false, {"id": "b", "title": "B", "status": "active", "isRadiant": true}, null], "view": {"$subset": {"tracked": {"$ids": ["a"]}}}}},
+    {"call": "ui.journal.apply", "args": {"session": 1, "ops": [{"op": "complete", "id": "a"}, {"op": "track", "id": "b"}, {"op": "decline", "id": "b"}, {"op": "setFilter", "filter": "completed"}]}, "expect": {"results": [true, true, false, null], "view": {"filter": "completed", "filtered": [{"id": "a", "title": "A", "status": "completed"}], "counts": {"all": 2, "active": 1, "completed": 1, "available": 0}, "tracked": [{"id": "b", "title": "B", "status": "active", "isRadiant": true}], "maxTracked": 1}}},
+    {"call": "ui.journal.apply", "args": {"session": 1, "ops": [{"op": "upsert", "quest": {"id": "c", "title": "C", "status": "done"}}]}, "expectError": "`quest.status` must be one of available, active, completed (got \"done\")"},
+    {"call": "ui.journal.apply", "args": {"session": 1, "ops": [{"op": "setFilter", "filter": "tracked"}]}, "expectError": "`filter` must be one of all, active, completed, available"},
+    {"call": "ui.journal.create", "args": {"quests": [{"title": "no id", "status": "active"}]}, "expectError": "ui.journal.create: `quest.id` must be a string"}
+   ]
+  },
+  {
+   "name": "loading screen with core's default phases: monotonic progress, per-phase tip, reset",
+   "steps": [
+    {"call": "ui.loading.create", "expect": {"session": 1, "view": {"phase": "", "progress": 0, "label": "", "tip": "", "complete": false}}},
+    {"call": "ui.loading.apply", "args": {"session": 1, "ops": [{"op": "advance", "key": "world"}]}, "expect": {"results": [null], "view": {"phase": "world", "progress": {"$approx": 0.4, "$tol": 1e-12}, "label": "Loading world…", "tip": "Every conversation is generated live — no two runs are alike.", "complete": false}}},
+    {"call": "ui.loading.apply", "args": {"session": 1, "ops": [{"op": "advance", "key": "init"}, {"op": "advance", "key": "nope"}]}, "expect": {"results": [null, null], "view": {"phase": "init", "progress": {"$approx": 0.4, "$tol": 1e-12}, "label": "Starting up…", "tip": "Talk to villagers to uncover radiant quests.", "complete": false}}},
+    {"call": "ui.loading.apply", "args": {"session": 1, "ops": [{"op": "advance", "key": "ready"}]}, "expect": {"results": [null], "view": {"phase": "ready", "progress": 1, "label": "Ready", "tip": "Every conversation is generated live — no two runs are alike.", "complete": true}}},
+    {"call": "ui.loading.apply", "args": {"session": 1, "ops": [{"op": "reset"}]}, "expect": {"results": [null], "view": {"phase": "", "progress": 0, "label": "", "tip": "", "complete": false}}}
+   ]
+  },
+  {
+   "name": "trade: ops chain over one slice, the slice is returned, and a malformed slice is refused",
+   "steps": [
+    {
+     "call": "ui.trade",
+     "args": {
+      "state": {"player": {"gold": 30, "inventory": [{"itemId": "gem", "quantity": 1, "value": 25}]}, "containers": {"containers": {"chest": {"items": [{"itemId": "potion", "quantity": 2, "value": 10}]}}}, "npcs": {"merchantStates": {"shop": {"goldReserve": 5, "items": [{"itemId": "bread", "quantity": 4, "value": 3}]}}}},
+      "ops": [
+       {"op": "takeAllFromContainer", "containerId": "chest"},
+       {"op": "buy", "merchantId": "shop", "itemId": "bread", "qty": 2},
+       {"op": "sell", "merchantId": "shop", "itemId": "gem", "qty": 1},
+       {"op": "sell", "merchantId": "shop", "itemId": "potion", "qty": 1},
+       {"op": "takeFromContainer", "containerId": "attic", "itemId": "potion"}
+      ]
+     },
+     "expect": {
+      "results": [
+       {"ok": true, "reason": "", "moved": 2},
+       {"ok": true, "reason": "", "moved": 2},
+       {"ok": false, "reason": "merchant_cannot_afford", "moved": 0},
+       {"ok": true, "reason": "", "moved": 1},
+       {"ok": false, "reason": "no_container", "moved": 0}
+      ],
+      "state": {
+       "player": {"gold": 34, "inventory": [{"itemId": "gem", "quantity": 1, "value": 25}, {"itemId": "potion", "quantity": 1, "value": 10}, {"itemId": "bread", "quantity": 2, "value": 3}]},
+       "containers": {"containers": {"chest": {"items": []}}},
+       "npcs": {"merchantStates": {"shop": {"goldReserve": 1, "items": [{"itemId": "bread", "quantity": 2, "value": 3}, {"itemId": "potion", "quantity": 1, "value": 10}]}}}
+      }
+     }
+    },
+    {"call": "ui.trade", "args": {"state": {"player": {"gold": 1, "inventory": []}}, "ops": []}, "expectError": "ui.trade: `state.containers.containers` must be a JSON object"},
+    {"call": "ui.trade", "args": {"state": {"player": {"gold": 1, "inventory": []}, "containers": {"containers": {}}, "npcs": {"merchantStates": {}}}, "ops": [{"op": "buy", "merchantId": "m", "itemId": "x"}]}, "expectError": "`qty` must be a finite number"}
+   ]
+  }
+ ]
+}

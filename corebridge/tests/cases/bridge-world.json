@@ -1,0 +1,118 @@
+{
+ "area": "world",
+ "description": "Hand-written: the clock (GameTimeManager: minute accrual, hour/day/time-of-day events, scale clamps, pause, set and restore) and a weather session (WeatherDirector over the monsoon world core's progression corpus uses: the first roll, a season turn, imposing a condition, publishing the climate, restoring a sky). core-weather-progression.json holds core's own seeded corpus.",
+ "cases": [
+  {
+   "name": "clock: minutes accrue at the configured rate; an hour boundary and a time-of-day change are events",
+   "steps": [
+    {"call": "clock.create", "args": {"startHour": 4, "startMinute": 30, "msPerGameHour": 60000}, "expect": {"session": 1, "view": {"state": {"hour": 4, "minute": 30, "day": 1, "msPerGameHour": 60000, "paused": false, "timeScale": 1}, "timeOfDay": "night", "fractionalHour": 4.5, "timeString": "04:30", "isDaytime": false, "realSecondsPerGameHour": 60}}},
+    {"call": "clock.apply", "args": {"session": 1, "ops": [{"op": "update", "deltaMs": 29999}]}, "expect": {"results": [null], "events": [], "view": {"$subset": {"timeString": "04:59"}}}},
+    {"call": "clock.apply", "args": {"session": 1, "ops": [{"op": "update", "deltaMs": 1}]}, "expect": {"results": [null], "events": [{"type": "hour_changed", "hour": 5, "day": 1}, {"type": "time_of_day_changed", "from": "night", "to": "dawn", "hour": 5}], "view": {"$subset": {"timeString": "05:00", "timeOfDay": "dawn", "fractionalHour": 5}}}},
+    {"call": "clock.apply", "args": {"session": 1, "ops": [{"op": "advanceHours", "hours": 3}]}, "expect": {"results": [null], "events": [{"type": "hour_changed", "hour": 6, "day": 1}, {"type": "hour_changed", "hour": 7, "day": 1}, {"type": "time_of_day_changed", "from": "dawn", "to": "morning", "hour": 7}, {"type": "hour_changed", "hour": 8, "day": 1}], "view": {"$subset": {"timeString": "08:00", "timeOfDay": "morning", "isDaytime": true}}}}
+   ]
+  },
+  {
+   "name": "clock: midnight rolls the day; time scale multiplies and clamps; pause stops time; set and restore fire nothing",
+   "steps": [
+    {"call": "clock.create", "expect": {"$subset": {"view": {"$subset": {"state": {"hour": 8, "minute": 0, "day": 1, "msPerGameHour": 60000, "paused": false, "timeScale": 1}, "timeOfDay": "morning"}}}}},
+    {"call": "clock.apply", "args": {"session": 1, "ops": [{"op": "setTime", "hour": 23, "minute": 59}, {"op": "setTimeScale", "scale": 2}, {"op": "update", "deltaMs": 30000}]}, "expect": {"results": [null, null, null], "events": [{"type": "day_changed", "day": 2, "timestep": 2}, {"type": "hour_changed", "hour": 0, "day": 2}], "view": {"state": {"hour": 0, "minute": 59, "day": 2, "msPerGameHour": 60000, "paused": false, "timeScale": 2}, "timeOfDay": "night", "fractionalHour": {"$approx": 0.9833333333333333, "$tol": 1e-12}, "timeString": "00:59", "isDaytime": false, "realSecondsPerGameHour": 30}}},
+    {"call": "clock.apply", "args": {"session": 1, "ops": [{"op": "pause"}, {"op": "update", "deltaMs": 600000}]}, "expect": {"results": [null, null], "events": [], "view": {"$subset": {"timeString": "00:59", "state": {"$subset": {"paused": true}}}}}},
+    {"call": "clock.apply", "args": {"session": 1, "ops": [{"op": "resume"}, {"op": "setTimeScale", "scale": 100}, {"op": "setMsPerGameHour", "ms": 10}]}, "expect": {"results": [null, null, null], "events": [], "view": {"$subset": {"state": {"hour": 0, "minute": 59, "day": 2, "msPerGameHour": 1000, "paused": false, "timeScale": 16}, "realSecondsPerGameHour": 0.0625}}}},
+    {"call": "clock.apply", "args": {"session": 1, "ops": [{"op": "restoreState", "state": {"hour": 17, "minute": 15, "day": 9, "msPerGameHour": 120000, "paused": false, "timeScale": 1}}]}, "expect": {"results": [null], "events": [], "view": {"state": {"hour": 17, "minute": 15, "day": 9, "msPerGameHour": 120000, "paused": false, "timeScale": 1}, "timeOfDay": "evening", "fractionalHour": 17.25, "timeString": "17:15", "isDaytime": true, "realSecondsPerGameHour": 120}}},
+    {"call": "clock.apply", "args": {"session": 1, "ops": [{"op": "update", "deltaMs": -5}]}, "expectError": "`deltaMs` must not be negative"},
+    {"call": "clock.apply", "args": {"session": 1, "ops": [{"op": "setTime"}]}, "expectError": "`hour` must be a finite number"}
+   ]
+  },
+  {
+   "name": "clock: a saved state restores at create",
+   "steps": [
+    {"call": "clock.create", "args": {"state": {"hour": 21, "minute": 5, "day": 3, "msPerGameHour": 30000, "paused": true, "timeScale": 4}}, "expect": {"session": 1, "view": {"state": {"hour": 21, "minute": 5, "day": 3, "msPerGameHour": 30000, "paused": true, "timeScale": 4}, "timeOfDay": "night", "fractionalHour": {"$approx": 21.083333333333332, "$tol": 1e-12}, "timeString": "21:05", "isDaytime": false, "realSecondsPerGameHour": 7.5}}},
+    {"call": "clock.create", "args": {"startHour": "noon"}, "expectError": "clock.create: `startHour` must be a finite number"}
+   ]
+  },
+  {
+   "name": "weather session: the first roll, a run across a season turn (KB writes in order), imposing, publishing, restoring",
+   "steps": [
+    {
+     "call": "weather.create",
+     "args": {"seed": "m", "weather": {"harshAbove": 50, "persistence": 90, "seasons": [{"id": "dry", "index": 0, "length": 5, "weather": [{"condition": "dust", "weight": 100}]}, {"id": "wet", "index": 1, "length": 5, "weather": [{"condition": "downpour", "weight": 100}]}], "conditions": [{"id": "dust", "severity": 40, "bars": ["fish_the_delta"]}, {"id": "downpour", "severity": 70, "bars": ["fire_the_kiln"]}]}},
+     "expect": {"session": 1, "state": null, "view": {"$subset": {"day": 0, "season": null, "condition": null, "severity": 0, "harsh": false, "barred": []}}, "issues": []}
+    },
+    {
+     "call": "weather.apply",
+     "args": {"session": 1, "ops": [{"op": "advanceTo", "day": 2}]},
+     "expect": {
+      "results": [{"day": 2, "steps": [{"day": 2, "state": {"day": 2, "season": "dry", "condition": "dust"}, "conditionChanged": true, "seasonTurned": true}], "state": {"day": 2, "season": "dry", "condition": "dust"}, "changed": true}],
+      "writes": [{"op": "assert", "fact": "weather(dust)"}, {"op": "assert", "fact": "season(dry)"}, {"op": "assert", "fact": "weather_day(2)"}],
+      "events": [{"type": "weather_changed", "day": 2, "season": "dry", "condition": "dust", "fromSeason": null, "fromCondition": null, "seasonTurned": true, "severity": 40, "harsh": false}],
+      "state": {"day": 2, "season": "dry", "condition": "dust"},
+      "view": {"day": 2, "season": "dry", "condition": "dust", "dayOfSeason": 2, "severity": 40, "harsh": false, "barred": ["fish_the_delta"]},
+      "issues": []
+     }
+    },
+    {
+     "call": "weather.apply",
+     "args": {"session": 1, "ops": [{"op": "advanceTo", "day": 5}, {"op": "advanceTo", "day": 5}]},
+     "expect": {
+      "results": [
+       {"day": 5, "steps": [
+        {"day": 3, "state": {"day": 3, "season": "dry", "condition": "dust"}, "conditionChanged": false, "seasonTurned": false},
+        {"day": 4, "state": {"day": 4, "season": "dry", "condition": "dust"}, "conditionChanged": false, "seasonTurned": false},
+        {"day": 5, "state": {"day": 5, "season": "wet", "condition": "downpour"}, "conditionChanged": true, "seasonTurned": true}
+       ], "state": {"day": 5, "season": "wet", "condition": "downpour"}, "changed": true},
+       {"day": 5, "steps": [], "state": {"day": 5, "season": "wet", "condition": "downpour"}, "changed": false}
+      ],
+      "writes": [
+       {"op": "retract", "fact": "weather_day(2)"}, {"op": "assert", "fact": "weather_day(3)"},
+       {"op": "retract", "fact": "weather_day(3)"}, {"op": "assert", "fact": "weather_day(4)"},
+       {"op": "retract", "fact": "weather(dust)"}, {"op": "retract", "fact": "season(dry)"}, {"op": "retract", "fact": "weather_day(4)"},
+       {"op": "assert", "fact": "weather(downpour)"}, {"op": "assert", "fact": "season(wet)"}, {"op": "assert", "fact": "weather_day(5)"}
+      ],
+      "events": [{"type": "weather_changed", "day": 5, "season": "wet", "condition": "downpour", "fromSeason": "dry", "fromCondition": "dust", "seasonTurned": true, "severity": 70, "harsh": true}],
+      "state": {"day": 5, "season": "wet", "condition": "downpour"},
+      "view": {"day": 5, "season": "wet", "condition": "downpour", "dayOfSeason": 0, "severity": 70, "harsh": true, "barred": ["fire_the_kiln"]},
+      "issues": []
+     }
+    },
+    {
+     "call": "weather.apply",
+     "args": {"session": 1, "ops": [{"op": "impose", "condition": "dust"}, {"op": "impose", "condition": "dust"}, {"op": "impose", "condition": "snow"}]},
+     "expect": {
+      "results": [true, false, false],
+      "writes": [{"op": "retract", "fact": "weather(downpour)"}, {"op": "assert", "fact": "weather(dust)"}],
+      "events": [{"type": "weather_changed", "day": 5, "season": "wet", "condition": "dust", "fromSeason": "wet", "fromCondition": "downpour", "seasonTurned": false, "severity": 40, "harsh": false}],
+      "state": {"day": 5, "season": "wet", "condition": "dust"},
+      "view": {"$subset": {"condition": "dust", "barred": ["fish_the_delta"]}},
+      "issues": []
+     }
+    },
+    {
+     "call": "weather.apply",
+     "args": {"session": 1, "ops": [{"op": "publishClimate"}, {"op": "publishState"}]},
+     "expect": {"$subset": {"results": [16, 3], "writes": {"$len": 19}, "events": []}}
+    },
+    {
+     "call": "weather.apply",
+     "args": {"session": 1, "ops": [{"op": "restore", "state": {"day": 8, "season": "renamed", "condition": "dust"}}, {"op": "advanceTo", "day": 9}]},
+     "expect": {"$subset": {
+      "results": [null, {"$subset": {"day": 9, "changed": true}}],
+      "writes": [{"op": "retract", "fact": "weather(dust)"}, {"op": "retract", "fact": "weather_day(8)"}, {"op": "assert", "fact": "weather(downpour)"}, {"op": "assert", "fact": "weather_day(9)"}],
+      "state": {"day": 9, "season": "wet", "condition": "downpour"}
+     }}
+    },
+    {"call": "weather.apply", "args": {"session": 1, "ops": [{"op": "advanceTo"}]}, "expectError": "`day` must be a finite number"}
+   ]
+  },
+  {
+   "name": "weather session: a saved sky restores at create, silently; a world with no calendar answers with no sky",
+   "steps": [
+    {"call": "weather.create", "args": {"seed": 7, "weather": {"seasons": [{"id": "only", "length": 3, "weather": [{"condition": "fog", "weight": 1}]}], "conditions": [{"id": "fog", "severity": 10}]}, "state": {"day": 4, "season": "only", "condition": "fog"}}, "expect": {"session": 1, "state": {"day": 4, "season": "only", "condition": "fog"}, "view": {"$subset": {"day": 4, "condition": "fog", "severity": 10}}, "issues": {"$type": "array"}}},
+    {"call": "weather.create", "args": {"weather": {"conditions": [{"id": "clear", "severity": 0}]}}, "bind": "none"},
+    {"call": "weather.apply", "args": {"session": 2, "ops": [{"op": "advanceTo", "day": 3}]}, "expect": {"$subset": {"state": {"day": 3, "season": null, "condition": null}, "events": []}}},
+    {"call": "weather.climate", "args": {"weather": {"conditions": [{"id": "clear", "severity": 0}]}}, "expect": {"$subset": {"climateFacts": {"$type": "array"}, "issues": {"$type": "array"}}}},
+    {"call": "weather.run", "args": {"weather": {"conditions": [{"id": "clear", "severity": 0}]}, "seed": "s", "from": null, "throughDay": 1}, "expect": {"$subset": {"steps": {"$len": 2}, "final": {"day": 1, "season": null, "condition": null}}}},
+    {"call": "weather.run", "args": {"seed": "s", "from": null}, "expectError": "`throughDay` must be a finite number"}
+   ]
+  }
+ ]
+}

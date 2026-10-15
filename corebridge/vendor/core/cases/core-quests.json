@@ -1,0 +1,317 @@
+{
+ "area": "quests",
+ "description": "core's quest-golden corpora through quest.hydrate and quest.radiantTick (the engines' parity surface); the radiant facts are an order-independent multiset, as core declares them",
+ "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
+ "source": {
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "files": {
+   "conformance/quests/hydration-cases.json": "dfd33f88b950262726a5b99638942f76f614105ff9666f58290ba5617ca39a1e",
+   "conformance/quests/radiant-cases.json": "d09e08e434fb1c4adcc09c2bb7727f5719a3352052b81b2ebb8eae840ed448d5"
+  }
+ },
+ "cases": [
+  {
+   "name": "hydrate full_quest5",
+   "steps": [
+    {
+     "call": "quest.hydrate",
+     "args": {
+      "content": "quest(q_market, 'Bergeron\\'s Market', errand, easy, active).\nquest_objective(q_market, 0, talk_to(npc_marie, 3)).\nquest_objective(q_market, 1, collect(apple, 5)).\nquest_objective(q_market, 2, deliver(bread, npc_paul)).\nquest_objective(q_market, 3, conversation_turns(4)).\nquest_objective(q_market, 4, objective('Chat with the baker')).\nquest_assigned_to(q_market, 'Marie Bergeron').\nquest_assigned_by(q_market, 'Paul Dubois').\nquest_language(q_market, fr).\nquest_reward(q_market, experience, 120).\nquest_prerequisite(q_market, q_intro).\nquest_tag(q_market, errand).\nquest_tag(q_market, radiant).\nquest_completion(q_market, all_objectives_complete)."
+     },
+     "expect": {
+      "quest": {
+       "title": "Bergeron's Market",
+       "questType": "errand",
+       "difficulty": "easy",
+       "status": "active",
+       "targetLanguage": "fr",
+       "assignedTo": "Marie Bergeron",
+       "assignedBy": "Paul Dubois",
+       "experienceReward": 120,
+       "tags": [
+        "errand",
+        "radiant"
+       ],
+       "prerequisiteQuestIds": [
+        "q_intro"
+       ],
+       "completionCriteria": {
+        "type": "all_objectives",
+        "description": "Complete all objectives"
+       },
+       "objectives": [
+        {
+         "id": "obj_0",
+         "type": "talk_to_npc",
+         "description": "Talk to npc_marie (at least 3 turns)",
+         "requiredCount": 3,
+         "target": "npc_marie",
+         "npcId": "npc_marie"
+        },
+        {
+         "id": "obj_1",
+         "type": "collect_item",
+         "description": "Collect 5 apple",
+         "requiredCount": 5,
+         "target": "apple"
+        },
+        {
+         "id": "obj_2",
+         "type": "deliver_item",
+         "description": "Deliver bread to npc_paul",
+         "requiredCount": 1,
+         "target": "npc_paul"
+        },
+        {
+         "id": "obj_3",
+         "type": "conversation_turns",
+         "description": "Complete 4 conversation turns",
+         "requiredCount": 4
+        },
+        {
+         "id": "obj_4",
+         "type": "objective",
+         "description": "Chat with the baker",
+         "requiredCount": 1
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "hydrate availability_rule",
+   "steps": [
+    {
+     "call": "quest.hydrate",
+     "args": {
+      "status": "unavailable",
+      "content": "quest(q_hello, 'Say Hello', tutorial, easy, available).\nquest_objective(q_hello, 0, visit_location('Town Square')).\nquest_prerequisite(q_hello, none)."
+     },
+     "expect": {
+      "quest": {
+       "title": "Say Hello",
+       "questType": "tutorial",
+       "difficulty": "easy",
+       "status": "available",
+       "objectives": [
+        {
+         "id": "obj_0",
+         "type": "visit_location",
+         "description": "Visit Town Square",
+         "requiredCount": 1,
+         "target": "Town Square"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "hydrate conversation_completion",
+   "steps": [
+    {
+     "call": "quest.hydrate",
+     "args": {
+      "content": "quest(q_talk, 'Practice Talking', practice, medium, active).\nquest_objective(q_talk, 0, talk_to(npc_luc)).\nquest_completion(q_talk, conversation_turns(6))."
+     },
+     "expect": {
+      "quest": {
+       "title": "Practice Talking",
+       "questType": "practice",
+       "difficulty": "medium",
+       "status": "active",
+       "completionCriteria": {
+        "type": "conversation_turns",
+        "requiredTurns": 6
+       },
+       "objectives": [
+        {
+         "id": "obj_0",
+         "type": "talk_to_npc",
+         "description": "Talk to npc_luc",
+         "requiredCount": 1,
+         "target": "npc_luc",
+         "npcId": "npc_luc"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "hydrate quest2_noop",
+   "steps": [
+    {
+     "call": "quest.hydrate",
+     "args": {
+      "content": "quest(quest_welcome, [objective(talk_to, npc_shopkeeper)])."
+     },
+     "expect": {
+      "quest": {}
+     }
+    }
+   ]
+  },
+  {
+   "name": "radiant tick single_per_tick",
+   "steps": [
+    {
+     "call": "quest.radiantTick",
+     "args": {
+      "quests": [
+       {
+        "id": "rq_alpha",
+        "tags": [
+         "radiant"
+        ],
+        "status": "available"
+       },
+       {
+        "id": "rq_beta",
+        "tags": [
+         "radiant"
+        ],
+        "status": "available"
+       },
+       {
+        "id": "q_story",
+        "tags": [
+         "main"
+        ],
+        "status": "available"
+       },
+       {
+        "id": "rq_done",
+        "tags": [
+         "radiant"
+        ],
+        "status": "completed"
+       }
+      ],
+      "maxOffering": 1,
+      "ticks": 3
+     },
+     "expect": {
+      "facts": {
+       "$multiset": [
+        {
+         "predicate": "quest_offered",
+         "args": [
+          "rq_alpha",
+          0
+         ]
+        },
+        {
+         "predicate": "quest_offered",
+         "args": [
+          "rq_beta",
+          1
+         ]
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "radiant tick batch_offering",
+   "steps": [
+    {
+     "call": "quest.radiantTick",
+     "args": {
+      "quests": [
+       {
+        "id": "rq_charlie",
+        "tags": [
+         "radiant"
+        ],
+        "status": "available"
+       },
+       {
+        "id": "rq_alpha",
+        "tags": [
+         "radiant"
+        ],
+        "status": "available"
+       },
+       {
+        "id": "rq_bravo",
+        "tags": [
+         "radiant"
+        ],
+        "status": "available"
+       }
+      ],
+      "maxOffering": 3,
+      "ticks": 1
+     },
+     "expect": {
+      "facts": {
+       "$multiset": [
+        {
+         "predicate": "quest_offered",
+         "args": [
+          "rq_alpha",
+          0
+         ]
+        },
+        {
+         "predicate": "quest_offered",
+         "args": [
+          "rq_bravo",
+          0
+         ]
+        },
+        {
+         "predicate": "quest_offered",
+         "args": [
+          "rq_charlie",
+          0
+         ]
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "radiant tick none_available",
+   "steps": [
+    {
+     "call": "quest.radiantTick",
+     "args": {
+      "quests": [
+       {
+        "id": "q_story",
+        "tags": [
+         "main"
+        ],
+        "status": "available"
+       },
+       {
+        "id": "rq_locked",
+        "tags": [
+         "radiant"
+        ],
+        "status": "locked"
+       }
+      ],
+      "maxOffering": 2,
+      "ticks": 2
+     },
+     "expect": {
+      "facts": {
+       "$multiset": []
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

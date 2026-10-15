@@ -1,0 +1,7 @@
+{
+  "description": "The ONE input pin of the vendored @insimul/core bundle (corebridge/vendor/core/). tools/vendor-core-bundle.mjs bundles core at exactly `coreCommit` (a `git archive` of that commit, never the checkout's working tree) with exactly `esbuild`, and --check refuses a VENDORED.json that records anything else. Bump both here, then re-vendor.",
+  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "coreRef": "feat/g-registry",
+  "coreRefNote": "Features Round C0 (2026-10-15): core's origin/main is cec0a0e; module activation's genre resolution (src/game-genres/) exists only on feat/g-registry, whose head 5ce94d7 is cec0a0e plus that one commit. Re-pin to main once track G lands.",
+  "esbuild": "0.28.2"
+}

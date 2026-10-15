@@ -1,0 +1,143 @@
+{
+ "area": "core",
+ "description": "Hand-written: the method table itself, the diagnostics row, the session table every stateful row shares, the error contract (README \"Errors\"), and the radiant/quest parity rows that predate this table.",
+ "cases": [
+  {
+   "name": "core.methods lists exactly the documented table",
+   "steps": [
+    {
+     "call": "core.methods",
+     "expect": {
+      "methods": [
+       "clock.apply",
+       "clock.create",
+       "core.diagnostics",
+       "core.methods",
+       "genre.camera",
+       "genre.recipes",
+       "genre.registry",
+       "genre.resolve",
+       "genre.resolveGame",
+       "modules.activate",
+       "modules.table",
+       "prolog.packs",
+       "quest.completion.apply",
+       "quest.completion.create",
+       "quest.hydrate",
+       "quest.markers",
+       "quest.minimapMarkers",
+       "quest.radiantTick",
+       "quest.waypoints",
+       "radiant.baseTemplates",
+       "radiant.generate",
+       "save.decode",
+       "save.encode",
+       "save.integrity",
+       "save.migrate",
+       "save.rules",
+       "session.dispose",
+       "session.list",
+       "ui.journal.apply",
+       "ui.journal.create",
+       "ui.loading.apply",
+       "ui.loading.create",
+       "ui.notifications.apply",
+       "ui.notifications.create",
+       "ui.pause.apply",
+       "ui.pause.create",
+       "ui.saveSlots",
+       "ui.trade",
+       "weather.apply",
+       "weather.climate",
+       "weather.create",
+       "weather.run"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "core.diagnostics returns what core logged during the previous call, and is cleared by the next",
+   "steps": [
+    {
+     "call": "save.migrate",
+     "args": {"saveFile": {"id": "s1", "version": 1, "worldSnapshot": {}, "currentState": {"extensions": {"bespoke": 1}}}},
+     "expect": {"$subset": {"outcome": {"$subset": {"versionFrom": 1, "versionTo": 3, "orphanExtensionKeys": ["bespoke"]}}, "significant": true}}
+    },
+    {
+     "call": "core.diagnostics",
+     "expect": {
+      "lines": [
+       {"level": "log", "text": "[save-file-migration] applying v1_to_v2_populate_language_progress (v1 -> v2)"},
+       {"level": "log", "text": "[save-file-migration] applying v2_to_v3_backfill_snapshot_versioning (v2 -> v3)"},
+       {"level": "warn", "text": "[save-extensions] orphan extension \"bespoke\" — no registered contract. Value preserved as-is."}
+      ],
+      "dropped": 0
+     }
+    },
+    {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 42}}}},
+    {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
+   ]
+  },
+  {
+   "name": "sessions are numbered from 1 per handle, listed in order, disposed idempotently",
+   "steps": [
+    {"call": "session.list", "expect": {"sessions": []}},
+    {"call": "ui.notifications.create", "expect": {"$subset": {"session": 1}}},
+    {"call": "ui.pause.create", "expect": {"$subset": {"session": 2}}},
+    {"call": "clock.create", "expect": {"$subset": {"session": 3}}},
+    {"call": "session.list", "expect": {"sessions": [{"session": 1, "kind": "ui.notifications"}, {"session": 2, "kind": "ui.pause"}, {"session": 3, "kind": "clock"}]}},
+    {"call": "session.dispose", "args": {"session": 2}, "expect": {"disposed": true}},
+    {"call": "session.dispose", "args": {"session": 2}, "expect": {"disposed": false}},
+    {"call": "session.dispose", "args": {"session": 99}, "expect": {"disposed": false}},
+    {"call": "session.list", "expect": {"sessions": [{"session": 1, "kind": "ui.notifications"}, {"session": 3, "kind": "clock"}]}},
+    {"call": "ui.journal.create", "expect": {"$subset": {"session": 4}}},
+    {"call": "ui.pause.apply", "args": {"session": 2, "ops": []}, "expectError": "insimulcore: ui.pause.apply: no open session 2"}
+   ]
+  },
+  {
+   "name": "a handle of the wrong kind is refused by name",
+   "steps": [
+    {"call": "ui.notifications.create", "expect": {"$subset": {"session": 1}}},
+    {"call": "clock.apply", "args": {"session": 1, "ops": []}, "expectError": "clock.apply: session 1 is a ui.notifications session, not clock"},
+    {"call": "clock.apply", "args": {"ops": []}, "expectError": "clock.apply: no open session null"}
+   ]
+  },
+  {
+   "name": "ops: an unknown op is refused with the known list; a failing op names its index and keeps the earlier ops",
+   "steps": [
+    {"call": "ui.notifications.create", "expect": {"$subset": {"session": 1}}},
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "fly"}]}, "expectError": "ops[0] has no known op \"fly\" (known: push, tick, dismiss, clear)"},
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [{"op": "push", "text": "kept"}, {"op": "push", "text": "bad", "kind": "error"}]}, "expectError": "ui.notifications.apply: ops[1] (push) failed: insimulcore: ui.notifications.apply: `kind` must be one of info, success, warning, danger (got \"error\")"},
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": []}, "expect": {"results": [], "view": {"$subset": {"count": 1, "visible": {"$ids": ["kept"], "$key": "text"}}}}},
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": {"op": "clear"}}, "expectError": "`ops` must be an array"},
+    {"call": "ui.notifications.apply", "args": {"session": 1, "ops": [null]}, "expectError": "ops[0] has no known op null"}
+   ]
+  },
+  {
+   "name": "the error contract: unknown method, non-object arguments, unparseable arguments",
+   "steps": [
+    {"call": "no.such.method", "expectError": "insimulcore: Error: insimulcore: unknown method \"no.such.method\""},
+    {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
+    {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
+    {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 42}}}}
+   ]
+  },
+  {
+   "name": "radiant.baseTemplates: core's shipped template pack",
+   "steps": [
+    {"call": "radiant.baseTemplates", "expect": {"templates": {"$type": "string"}, "templateIds": {"$type": "array"}}}
+   ]
+  },
+  {
+   "name": "radiant.generate: core's radiant engine over a KB on the native Prolog engine",
+   "legs": ["c"],
+   "why": "radiant.generate consults and queries Prolog; only the C leg links the native engine (corebridge_radiant runs the full radiant corpus)",
+   "steps": [
+    {"call": "radiant.generate", "args": {"kb": "", "options": {"seed": "s", "now": 0}}, "expect": {"quests": []}}
+   ]
+  }
+ ]
+}
