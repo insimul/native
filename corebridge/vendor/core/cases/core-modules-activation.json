@@ -3,7 +3,7 @@
  "description": "core's committed activation table through modules.table, and each genre's row through modules.activate",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "73f93ee24bcd1684c31fb4e28378ffe8aa9b373c",
+  "coreCommit": "c4b46c42ead5f245e9cac6a64da3dacaf5447f6e",
   "files": {
    "conformance/modules/genre-activation.json": "e739c73f61145e382bda4a197c76ae57daa29b3dd19f28531c50b7c1c36fbc4a"
   }

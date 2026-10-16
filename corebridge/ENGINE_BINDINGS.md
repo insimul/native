@@ -10,8 +10,7 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
 1. **Take the new library.** The C ABI is unchanged — `insimulcore.h` is
    byte-identical, `INSIMULCORE_ABI_VERSION` is still `0.1.0`, the five functions
    behave as before — so a binding recompiles against nothing new. What changed is
-   the bundle inside it (core `73f93ee`, the `feat/g-mechanics` head, 42 methods
-   instead of 5; the pin moves to core `main` when track G lands) and the size of
+   the bundle inside it (core `main` `c4b46c4`, 42 methods instead of 5) and the size of
    the library (the bundle is ~620 KB of JS instead of 54 KB). Re-fetch or re-stage
    the built `libinsimulcore` (Unity `scripts/fetch-native.sh`, Unreal
    `Source/ThirdParty/InsimulCoreLibrary/lib/`, Godot below) and quote the
@@ -59,8 +58,8 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
    **Do not drive the sky from `events` alone.** Core's `WeatherDirector.advanceTo`
    announces (`weather_changed`, and its `IWeatherSink`) only when the LAST day it
    stepped changed: an `advanceTo` that crosses a season turn and lands on an
-   unchanged day reports no event (observed at core `5ce94d7`, and unchanged at the pin `73f93ee` — no
-   change in `src/weather/` or `WeatherDirector.ts` between them: day 2 → 6 over the
+   unchanged day reports no event (observed at core `5ce94d7`, and unchanged at `73f93ee` and at the pin `c4b46c4` —
+   no change in `src/weather/` or `WeatherDirector.ts` between them: day 2 → 6 over the
    monsoon world turns dry/dust into wet/downpour on day 5 and emits nothing). Read
    the `view` (or the per-step `conditionChanged` / `seasonTurned` in `results`)
    after every advance. Reported to core as a finding; the bridge reproduces core.

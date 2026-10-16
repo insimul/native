@@ -1,7 +1,7 @@
 {
   "description": "The ONE input pin of the vendored @insimul/core bundle (corebridge/vendor/core/). tools/vendor-core-bundle.mjs bundles core at exactly `coreCommit` (a `git archive` of that commit, never the checkout's working tree) with exactly `esbuild`, and --check refuses a VENDORED.json that records anything else. Bump both here, then re-vendor.",
-  "coreCommit": "73f93ee24bcd1684c31fb4e28378ffe8aa9b373c",
-  "coreRef": "feat/g-mechanics",
-  "coreRefNote": "Features Round C0 (2026-10-15, second pass): core's origin/main is still cec0a0e. Module activation's genre resolution (src/game-genres/, track G g-registry 5ce94d7) and the puzzle/platformer/strategy bundles and modules it switches on (track G g-mechanics) exist only on core feature branches; the pin is the g-mechanics head 73f93ee, which is cec0a0e + 5ce94d7 + the two g-mechanics commits. Allowed by the manager for this pass. AT LANDING the pin MOVES TO the core main commit that holds 73f93ee (bump coreCommit and coreRef here, re-vendor, re-run --check --core and the corebridge ctests).",
+  "coreCommit": "c4b46c42ead5f245e9cac6a64da3dacaf5447f6e",
+  "coreRef": "main",
+  "coreRefNote": "Features Round C0 landing (2026-10-16): core main c4b46c4 holds track G (g-registry 5ce94d7, g-mechanics 73f93ee), track E (e-world-ops) and C0 wasm, landed in that order under ruling F-land. The bridge's second pass pinned the g-mechanics head 73f93ee; at landing the pin moved here, to core main. To move it again: bump coreCommit and coreRef here, re-vendor, re-run --check --core and the corebridge ctests.",
   "esbuild": "0.28.2"
 }
