@@ -1837,9 +1837,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     return out;
   }
-  function isRegisteredExtension(key) {
-    return Object.prototype.hasOwnProperty.call(extensionRegistry, key);
-  }
 
   // @insimul/core/src/save-file.ts
   var SAVE_FILE_VERSION = 3;
@@ -8490,6 +8487,554 @@ placement_orphan(I) :-
     PLACEMENT_PACK
   ]);
 
+  // @insimul/core/src/platformer/platformer-predicates.ts
+  var PLATFORMER_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Platformer \u2014 levels over the world's places, goals at homes and workplaces
+% packages/core/docs/genre-mechanics.md \xA74
+%
+% COMPOSITION PACK. Consult WITH prolog/mechanics/traversal-predicates.ts:
+% platformer_goal_reachable/2 calls reachable/3. at_location/2 is the
+% traversal pack's world-state fact; it is declared dynamic here so the pack
+% loads alone.
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% platformer_level(L, Order) \u2014 a level, and where it comes in the course (1..).
+% platformer_level_start(L, Place) / platformer_level_goal(L, Place) \u2014 place
+%   atoms of the traversal graph.
+% platformer_level_goal_kind(L, home|work|place) and
+%   platformer_level_subject(L, Character) \u2014 whose home or workplace it is.
+% platformer_level_checkpoint(L, Place, N) \u2014 the N-th place to touch on the way.
+% platformer_level_par(L, Cost) \u2014 the cost a three-star run stays within.
+:- dynamic(platformer_level/2).
+:- dynamic(platformer_level_start/2).
+:- dynamic(platformer_level_goal/2).
+:- dynamic(platformer_level_goal_kind/2).
+:- dynamic(platformer_level_subject/2).
+:- dynamic(platformer_level_checkpoint/3).
+:- dynamic(platformer_level_par/2).
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% platformer_running(Runner, L) \u2014 the level this runner is on.
+% platformer_checkpoint_reached(Runner, L, N) \u2014 checkpoint N touched this run.
+% platformer_run_cost(Runner, L, Cost) \u2014 what this run has cost so far.
+% platformer_cleared(Runner, L, Stars) \u2014 the best clear of L.
+:- dynamic(platformer_running/2).
+:- dynamic(platformer_checkpoint_reached/3).
+:- dynamic(platformer_run_cost/3).
+:- dynamic(platformer_cleared/3).
+
+% \u2500\u2500 Adopted (declared so the pack loads alone; owned by traversal) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(at_location/2).
+
+% \u2500\u2500 Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+platformer_max([X], X).
+platformer_max([X | T], M) :-
+  T \\== [],
+  platformer_max(T, M0),
+  ( X >= M0 -> M = X ; M = M0 ).
+
+% \u2500\u2500 Order \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% The first level is open to everybody; every other one opens when the level
+% before it has been cleared.
+platformer_unlocked(R, L) :-
+  nonvar(R),
+  platformer_level(L, 1).
+platformer_unlocked(R, L) :-
+  nonvar(R),
+  platformer_level(L, N),
+  N > 1,
+  P is N - 1,
+  platformer_level(Prev, P),
+  platformer_cleared(R, Prev, _).
+
+% \u2500\u2500 Reachability (traversal's question, asked of a level) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% A test, once per level: reachable/3 finds every route, and how many there
+% are is not the question.
+platformer_goal_reachable(R, L) :-
+  nonvar(R),
+  platformer_level_start(L, S),
+  platformer_level_goal(L, G),
+  \\+ \\+ reachable(R, S, G).
+
+% \u2500\u2500 The run \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+platformer_checkpoint_missed(R, L, N) :-
+  platformer_level_checkpoint(L, _, N),
+  \\+ platformer_checkpoint_reached(R, L, N).
+
+% A level is complete when the runner is on it, stands at its goal, and has
+% touched every checkpoint.
+platformer_level_complete(R, L) :-
+  nonvar(R),
+  platformer_running(R, L),
+  platformer_level_goal(L, G),
+  at_location(R, G),
+  \\+ platformer_checkpoint_missed(R, L, _).
+
+% Where a runner who falls goes back to: the furthest checkpoint touched this
+% run, or the level's start.
+platformer_respawn(R, L, Place) :-
+  nonvar(R),
+  platformer_running(R, L),
+  findall(N, platformer_checkpoint_reached(R, L, N), Ns),
+  Ns \\== [],
+  !,
+  platformer_max(Ns, Max),
+  platformer_level_checkpoint(L, Place, Max).
+platformer_respawn(R, L, Place) :-
+  nonvar(R),
+  platformer_running(R, L),
+  platformer_level_start(L, Place).
+
+% Stars for a run of this cost: within par is three, within half as much
+% again is two, anything else that finishes is one. Integer arithmetic only.
+platformer_stars_for(L, Cost, 3) :-
+  platformer_level_par(L, Par),
+  Cost =< Par,
+  !.
+platformer_stars_for(L, Cost, 2) :-
+  platformer_level_par(L, Par),
+  2 * Cost =< 3 * Par,
+  !.
+platformer_stars_for(L, _, 1) :-
+  platformer_level(L, _).
+
+platformer_run_stars(R, L, Stars) :-
+  platformer_level_complete(R, L),
+  platformer_run_cost(R, L, Cost),
+  platformer_stars_for(L, Cost, Stars).
+
+% The course is finished when every level has been cleared.
+platformer_course_complete(R) :-
+  nonvar(R),
+  \\+ \\+ platformer_level(_, _),
+  \\+ (platformer_level(L, _), \\+ platformer_cleared(R, L, _)).
+`;
+  var PLATFORMER_AREA = "platformer";
+  var PLATFORMER_AUTHORED_PREDICATES = Object.freeze([
+    "platformer_level/2",
+    "platformer_level_start/2",
+    "platformer_level_goal/2",
+    "platformer_level_goal_kind/2",
+    "platformer_level_subject/2",
+    "platformer_level_checkpoint/3",
+    "platformer_level_par/2"
+  ]);
+  var PLATFORMER_RUNTIME_PREDICATES = Object.freeze([
+    "platformer_running/2",
+    "platformer_checkpoint_reached/3",
+    "platformer_run_cost/3",
+    "platformer_cleared/3"
+  ]);
+  var PLATFORMER_PACK = Object.freeze({
+    area: PLATFORMER_AREA,
+    prolog: PLATFORMER_PREDICATES_PROLOG,
+    runtimePredicates: PLATFORMER_RUNTIME_PREDICATES
+  });
+  var PLATFORMER_PREDICATE_PACKS = Object.freeze([PLATFORMER_PACK]);
+
+  // @insimul/core/src/puzzle/puzzle-predicates.ts
+  var PUZZLE_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Puzzle \u2014 riddles answered by the world, locks opened by what was found
+% packages/core/docs/genre-mechanics.md \xA73
+%
+% COMPOSITION PACK. Reads the world generator's facts (business_owner/2,
+% lives_at/2, married_to/2, parent_of/2, occupation/2, truth_about/2,
+% text_author/2, business_type/2) and the equipment vocabulary's has_item/3, and
+% defines clauses for none of them. They are declared dynamic so the pack loads
+% alone.
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% puzzle_riddle(R, Relation, Subject) \u2014 a question about Subject, answered by
+%   the world's own facts through puzzle_relation_answer/3.
+% puzzle_riddle_prompt(R, Text) \u2014 what the player is asked. Display only.
+% puzzle_riddle_clue(R, TextId) \u2014 a text that must have been found before the
+%   riddle is put to anybody.
+% puzzle_lock(L, Target) \u2014 a lock on Target (a container or building atom).
+% puzzle_lock_needs(L, Need) \u2014 riddle(R), item(I), clue(T) or lock(L2).
+% puzzle_lock_holds(L, Item) \u2014 what opening L makes available to take.
+% puzzle_final(L) \u2014 the lock whose opening completes the puzzle.
+% puzzle_max_attempts(N) \u2014 wrong answers a riddle tolerates before it is spent.
+%   A world that authored none never spends a riddle.
+:- dynamic(puzzle_riddle/3).
+:- dynamic(puzzle_riddle_prompt/2).
+:- dynamic(puzzle_riddle_clue/2).
+:- dynamic(puzzle_lock/2).
+:- dynamic(puzzle_lock_needs/2).
+:- dynamic(puzzle_lock_holds/2).
+:- dynamic(puzzle_final/1).
+:- dynamic(puzzle_max_attempts/1).
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% puzzle_clue_found(Actor, TextId) \u2014 the actor has found and read that text.
+% puzzle_solved(Actor, R) \u2014 the actor answered R correctly.
+% puzzle_attempts(Actor, R, N) \u2014 wrong answers so far. Absent means none.
+% puzzle_opened(Actor, L) \u2014 the actor opened L.
+:- dynamic(puzzle_clue_found/2).
+:- dynamic(puzzle_solved/2).
+:- dynamic(puzzle_attempts/3).
+:- dynamic(puzzle_opened/2).
+
+% \u2500\u2500 Adopted (declared so the pack loads alone; owned elsewhere) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(business_owner/2).
+:- dynamic(business_type/2).
+:- dynamic(lives_at/2).
+:- dynamic(married_to/2).
+:- dynamic(parent_of/2).
+:- dynamic(occupation/2).
+:- dynamic(truth_about/2).
+:- dynamic(text_author/2).
+:- dynamic(has_item/3).
+
+% \u2500\u2500 What the world says \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% One clause per relation, each a lookup in the world's own vocabulary. A
+% relation with several true answers (two residents of one house, two
+% parents) accepts any of them.
+puzzle_relation_answer(owner_of, B, X) :- business_owner(B, X).
+puzzle_relation_answer(trade_of, B, X) :- business_type(B, X).
+puzzle_relation_answer(resident_of, P, X) :- lives_at(X, P).
+puzzle_relation_answer(home_of, Who, X) :- lives_at(Who, X).
+puzzle_relation_answer(spouse_of, Who, X) :- married_to(Who, X).
+puzzle_relation_answer(parent_of, Who, X) :- parent_of(X, Who).
+puzzle_relation_answer(child_of, Who, X) :- parent_of(Who, X).
+puzzle_relation_answer(occupation_of, Who, X) :- occupation(Who, X).
+puzzle_relation_answer(subject_of, T, X) :- truth_about(T, X).
+puzzle_relation_answer(author_of, T, X) :- text_author(T, X).
+
+puzzle_answer(R, X) :-
+  puzzle_riddle(R, Rel, S),
+  puzzle_relation_answer(Rel, S, X).
+
+% A riddle the world can answer at all. \\+ \\+ keeps it a test: it binds
+% nothing and enumerates each riddle once.
+puzzle_answerable(R) :-
+  puzzle_riddle(R, _, _),
+  \\+ \\+ puzzle_answer(R, _).
+
+% Is this answer right? The answer must be GIVEN: an unbound one would unify
+% with the truth and every guess would be correct.
+puzzle_correct(R, Given) :-
+  nonvar(Given),
+  puzzle_riddle(R, _, _),
+  \\+ \\+ puzzle_answer(R, Given).
+
+% \u2500\u2500 Asking \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+puzzle_spent(A, R) :-
+  puzzle_max_attempts(M),
+  puzzle_attempts(A, R, N),
+  N >= M.
+
+% A riddle may be put to this actor: not yet solved, not spent, and every clue
+% it waits on found. The actor must be bound, as every actor-keyed gate in the
+% build requires.
+puzzle_riddle_open(A, R) :-
+  nonvar(A),
+  puzzle_riddle(R, _, _),
+  \\+ puzzle_solved(A, R),
+  \\+ puzzle_spent(A, R),
+  \\+ (puzzle_riddle_clue(R, T), \\+ puzzle_clue_found(A, T)).
+
+puzzle_can_answer(A, R) :-
+  puzzle_riddle_open(A, R),
+  puzzle_answerable(R).
+
+% \u2500\u2500 Opening \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+puzzle_need_met(A, riddle(R)) :- puzzle_solved(A, R).
+puzzle_need_met(A, item(I)) :- has_item(A, I, N), N > 0.
+puzzle_need_met(A, clue(T)) :- puzzle_clue_found(A, T).
+puzzle_need_met(A, lock(L)) :- puzzle_opened(A, L).
+
+% What still stands between this actor and this lock.
+puzzle_unmet(A, L, Need) :-
+  nonvar(A),
+  puzzle_lock_needs(L, Need),
+  \\+ puzzle_need_met(A, Need).
+
+% The same, with the need taken apart \u2014 riddle(r1) as riddle and r1 \u2014 for a
+% caller that compares atoms rather than terms.
+puzzle_unmet_need(A, L, Kind, Ref) :-
+  puzzle_unmet(A, L, Need),
+  Need =.. [Kind, Ref].
+
+puzzle_can_unlock(A, L) :-
+  nonvar(A),
+  puzzle_lock(L, _),
+  \\+ puzzle_opened(A, L),
+  \\+ puzzle_unmet(A, L, _).
+
+% What an opened lock now lets this actor take, once.
+puzzle_can_take(A, I) :-
+  nonvar(A),
+  puzzle_lock_holds(L, I),
+  puzzle_opened(A, L),
+  \\+ has_item(A, I, _).
+
+puzzle_complete(A) :-
+  nonvar(A),
+  puzzle_final(L),
+  puzzle_opened(A, L).
+`;
+  var PUZZLE_AREA = "puzzle";
+  var PUZZLE_AUTHORED_PREDICATES = Object.freeze([
+    "puzzle_riddle/3",
+    "puzzle_riddle_prompt/2",
+    "puzzle_riddle_clue/2",
+    "puzzle_lock/2",
+    "puzzle_lock_needs/2",
+    "puzzle_lock_holds/2",
+    "puzzle_final/1",
+    "puzzle_max_attempts/1"
+  ]);
+  var PUZZLE_RUNTIME_PREDICATES = Object.freeze([
+    "puzzle_clue_found/2",
+    "puzzle_solved/2",
+    "puzzle_attempts/3",
+    "puzzle_opened/2"
+  ]);
+  var PUZZLE_RELATIONS = Object.freeze([
+    "owner_of",
+    "trade_of",
+    "resident_of",
+    "home_of",
+    "spouse_of",
+    "parent_of",
+    "child_of",
+    "occupation_of",
+    "subject_of",
+    "author_of"
+  ]);
+  var PUZZLE_PACK = Object.freeze({
+    area: PUZZLE_AREA,
+    prolog: PUZZLE_PREDICATES_PROLOG,
+    runtimePredicates: PUZZLE_RUNTIME_PREDICATES
+  });
+  var PUZZLE_PREDICATE_PACKS = Object.freeze([PUZZLE_PACK]);
+
+  // @insimul/core/src/strategy/strategy-predicates.ts
+  var STRATEGY_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Strategy \u2014 holdings, resources and the settlements they add up to
+% packages/core/docs/genre-mechanics.md \xA75
+%
+% COMPOSITION PACK over the world generator's business, settlement and
+% residence blocks: reads them, defines clauses for none of them.
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% strategy_resource(Res) \u2014 a resource the campaign counts.
+% strategy_trade_output(Trade, Res, Amount) \u2014 what one hand at a holding of
+%   that trade yields per turn. The holding itself counts as one hand.
+% strategy_claim_cost(Trade, Res, Amount) \u2014 what taking a holding of that trade
+%   costs. strategy_default_claim_cost(Res, Amount) prices a trade with none.
+% strategy_worker_upkeep(Res, Amount) \u2014 what one assigned worker eats per turn.
+% strategy_workers_per_holding(N) \u2014 hands one holding takes.
+% strategy_adjacent(S1, S2) \u2014 settlements a faction may expand between.
+% strategy_faction(F) \u2014 a faction in the campaign.
+:- dynamic(strategy_resource/1).
+:- dynamic(strategy_trade_output/3).
+:- dynamic(strategy_claim_cost/3).
+:- dynamic(strategy_default_claim_cost/2).
+:- dynamic(strategy_worker_upkeep/2).
+:- dynamic(strategy_workers_per_holding/1).
+:- dynamic(strategy_adjacent/2).
+:- dynamic(strategy_faction/1).
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% strategy_holds(F, B) \u2014 faction F runs business B.
+% strategy_stock(F, Res, Amount) \u2014 F's stockpile. Absent means none.
+% strategy_worker(B, W) \u2014 W works at holding B.
+% strategy_turn(N) \u2014 the campaign's turn counter.
+:- dynamic(strategy_holds/2).
+:- dynamic(strategy_stock/3).
+:- dynamic(strategy_worker/2).
+:- dynamic(strategy_turn/1).
+
+% \u2500\u2500 Adopted (declared so the pack loads alone; owned elsewhere) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(business/1).
+:- dynamic(business_type/2).
+:- dynamic(business_of_settlement/2).
+:- dynamic(business_out_of_business/1).
+:- dynamic(settlement/1).
+:- dynamic(lives_at/2).
+:- dynamic(residence_of_settlement/2).
+
+% \u2500\u2500 Helpers (library-free, as every pack is) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+strategy_sum([], 0).
+strategy_sum([X | T], S) :- strategy_sum(T, S0), S is S0 + X.
+strategy_length([], 0).
+strategy_length([_ | T], N) :- strategy_length(T, N0), N is N0 + 1.
+
+% \u2500\u2500 Holdings \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+strategy_trading(B) :-
+  business(B),
+  \\+ business_out_of_business(B).
+
+strategy_holding_in(F, B, S) :-
+  strategy_holds(F, B),
+  business_of_settlement(B, S).
+
+% What F holds of Res, zero when it holds none. F must be bound.
+strategy_stock_of(F, Res, Amount) :-
+  nonvar(F),
+  strategy_resource(Res),
+  ( strategy_stock(F, Res, A0) -> Amount = A0 ; Amount = 0 ).
+
+strategy_hands(B, Hands) :-
+  findall(W, strategy_worker(B, W), Ws),
+  strategy_length(Ws, N),
+  Hands is N + 1.
+
+% \u2500\u2500 A turn's books \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+strategy_output(B, Res, Amount) :-
+  strategy_trading(B),
+  business_type(B, T),
+  strategy_trade_output(T, Res, Per),
+  strategy_hands(B, Hands),
+  Amount is Per * Hands.
+
+strategy_income(F, Res, Total) :-
+  strategy_faction(F),
+  strategy_resource(Res),
+  findall(A, (strategy_holds(F, B), strategy_output(B, Res, A)), As),
+  strategy_sum(As, Total).
+
+strategy_upkeep(F, Res, Total) :-
+  strategy_faction(F),
+  strategy_resource(Res),
+  findall(W, (strategy_holds(F, B), strategy_worker(B, W)), Ws),
+  strategy_length(Ws, N),
+  ( strategy_worker_upkeep(Res, Per) -> true ; Per = 0 ),
+  Total is N * Per.
+
+strategy_net(F, Res, Net) :-
+  strategy_income(F, Res, In),
+  strategy_upkeep(F, Res, Out),
+  Net is In - Out.
+
+% A resource this faction is short of next turn: what it has plus what the
+% turn brings is below zero.
+strategy_shortfall(F, Res, Short) :-
+  strategy_net(F, Res, Net),
+  strategy_stock_of(F, Res, Have),
+  Short is 0 - (Have + Net),
+  Short > 0.
+
+% \u2500\u2500 Taking a holding \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+strategy_claim_price(B, Res, Amount) :-
+  business_type(B, T),
+  strategy_claim_cost(T, _, _),
+  !,
+  strategy_claim_cost(T, Res, Amount).
+strategy_claim_price(B, Res, Amount) :-
+  business(B),
+  strategy_default_claim_cost(Res, Amount).
+
+strategy_cannot_afford(F, B) :-
+  strategy_claim_price(B, Res, Cost),
+  strategy_stock_of(F, Res, Have),
+  Have < Cost.
+
+% Where a faction may reach: a settlement it already holds in, one adjacent to
+% a settlement it controls, or anywhere at all while it holds nothing.
+strategy_frontier(F, S) :-
+  strategy_holding_in(F, _, S).
+strategy_frontier(F, S) :-
+  strategy_controls(F, S0),
+  ( strategy_adjacent(S0, S) ; strategy_adjacent(S, S0) ).
+strategy_frontier(F, S) :-
+  nonvar(F),
+  \\+ strategy_holds(F, _),
+  settlement(S).
+
+strategy_can_claim(F, B) :-
+  nonvar(F),
+  strategy_faction(F),
+  strategy_trading(B),
+  \\+ strategy_holds(F, B),
+  business_of_settlement(B, S),
+  \\+ \\+ strategy_frontier(F, S),
+  \\+ strategy_cannot_afford(F, B).
+
+% \u2500\u2500 Hands \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+strategy_resident_of(W, S) :-
+  lives_at(W, R),
+  residence_of_settlement(R, S).
+
+strategy_can_assign(F, W, B) :-
+  nonvar(F),
+  nonvar(W),
+  strategy_holds(F, B),
+  strategy_trading(B),
+  business_of_settlement(B, S),
+  strategy_resident_of(W, S),
+  \\+ strategy_worker(_, W),
+  findall(X, strategy_worker(B, X), Xs),
+  strategy_length(Xs, N),
+  strategy_workers_per_holding(Max),
+  N < Max.
+
+% \u2500\u2500 Control \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+strategy_trading_in(S, N) :-
+  settlement(S),
+  findall(B, (business_of_settlement(B, S), strategy_trading(B)), Bs),
+  strategy_length(Bs, N).
+
+strategy_held_in(F, S, N) :-
+  findall(B, (strategy_holding_in(F, B, S), strategy_trading(B)), Bs),
+  strategy_length(Bs, N).
+
+% A strict majority of the settlement's trading businesses.
+strategy_controls(F, S) :-
+  strategy_faction(F),
+  strategy_trading_in(S, Total),
+  Total > 0,
+  strategy_held_in(F, S, Held),
+  2 * Held > Total.
+
+strategy_victory(F) :-
+  nonvar(F),
+  strategy_faction(F),
+  \\+ (strategy_trading_in(S, Total), Total > 0, \\+ strategy_controls(F, S)),
+  \\+ \\+ strategy_controls(F, _).
+`;
+  var STRATEGY_AREA = "strategy";
+  var STRATEGY_AUTHORED_PREDICATES = Object.freeze([
+    "strategy_resource/1",
+    "strategy_trade_output/3",
+    "strategy_claim_cost/3",
+    "strategy_default_claim_cost/2",
+    "strategy_worker_upkeep/2",
+    "strategy_workers_per_holding/1",
+    "strategy_adjacent/2",
+    "strategy_faction/1"
+  ]);
+  var STRATEGY_RUNTIME_PREDICATES = Object.freeze([
+    "strategy_holds/2",
+    "strategy_stock/3",
+    "strategy_worker/2",
+    "strategy_turn/1"
+  ]);
+  var STRATEGY_PACK = Object.freeze({
+    area: STRATEGY_AREA,
+    prolog: STRATEGY_PREDICATES_PROLOG,
+    runtimePredicates: STRATEGY_RUNTIME_PREDICATES
+  });
+  var STRATEGY_PREDICATE_PACKS = Object.freeze([STRATEGY_PACK]);
+
   // @insimul/core/src/production/production-predicates.ts
   var CRAFTING_PREDICATES_PROLOG = `
 % \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -10780,6 +11325,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     ...BUSINESS_PREDICATE_PACKS,
     ...PRODUCTION_PREDICATE_PACKS,
     ...DIALOGUE_PREDICATE_PACKS,
+    ...PUZZLE_PREDICATE_PACKS,
+    ...PLATFORMER_PREDICATE_PACKS,
+    ...STRATEGY_PREDICATE_PACKS,
     ...SCRIPT_PREDICATE_PACKS,
     ...PLACEMENT_PREDICATE_PACKS,
     ...MAP_PREDICATE_PACKS,
@@ -11578,6 +12126,83 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         // was said to get one.
         genreBundles: ["rpg", "adventure", "language-learning", "educational"]
       }
+    },
+    {
+      id: "puzzle",
+      name: "Puzzle",
+      summary: "Whether this riddle may be put to this player, whether their answer is what the world says, and whether what they have found out opens this lock.",
+      parts: {
+        // Features Round track G. A riddle is a RELATION over a SUBJECT
+        // (`puzzle_riddle/3`) and its answer is never authored: it is the world's
+        // own fact — `business_owner/2`, `married_to/2`, `truth_about/2` and the
+        // rest — asked through `puzzle_relation_answer/3`. A lock names what
+        // opening it needs: a riddle solved, an item held (`has_item/3`, adopted),
+        // a text found, another lock opened.
+        predicatePack: "puzzle",
+        // Optional and usually absent: a world with no authored riddles gets a
+        // puzzle GENERATED from what it already is (`src/puzzle/puzzle.ts`).
+        irSection: "puzzle",
+        // Remembers, per actor, clues found, riddles solved and the wrong answers
+        // each cost, locks opened and keys taken; every verdict is the KB's.
+        decisionLayer: ["PuzzleDirector"],
+        // `agentAi`'s own, for `business`'s reason: opening a lock is the action
+        // block's `open_container` row, so once core decides a lock opens it TELLS
+        // the host with an ordinary `ActionOrder`. What the host gives back is
+        // evidence — this text was read, this answer was chosen — and the verdict
+        // never leaves core, the boundary `dialogue` drew.
+        hostInterface: ["IAgentActionHost"],
+        conformanceCorpus: ["mechanic-puzzle"],
+        // The puzzle bundle, and only it: an adventure has mysteries, but its
+        // mysteries are quests and conversations (`dialogue`), not locks.
+        genreBundles: ["puzzle"]
+      }
+    },
+    {
+      id: "platformer",
+      name: "Platformer",
+      summary: "Which level this runner may play, whether its goal can be reached, which checkpoints the run has touched, and how well it went.",
+      parts: {
+        // Level structure over the world's own places: a level's goal is where
+        // somebody lives or works (`platformer_level_goal/2`,
+        // `platformer_level_subject/2`), and whether it can be reached is
+        // `traversal`'s `reachable/3` — the pack asks it rather than owning a path.
+        predicatePack: "platformer",
+        // Optional: a world with no authored levels gets a course GENERATED over
+        // its streets, homes and workplaces (`src/platformer/course.ts`).
+        irSection: "platformer",
+        // Remembers, per runner, the level they are on, the checkpoints touched,
+        // the run's cost and the best clear of each level. Every step goes through
+        // `TraversalPlanner`, which is the module that moves anybody.
+        decisionLayer: ["PlatformerDirector"],
+        // `traversal`'s two, the fourth module to name them: a run is a sequence of
+        // ordinary movements, the jump onto a doorstep is a geometric link the
+        // host's probe is asked about, and the arc of the jump is the engine's. A
+        // jump-shaped hook is where a physics step would arrive in core.
+        hostInterface: ["ITraversalProbe", "ILocomotionHost"],
+        conformanceCorpus: ["mechanic-platformer"],
+        genreBundles: ["platformer"]
+      }
+    },
+    {
+      id: "strategy",
+      name: "Strategy",
+      summary: "Which of the world's businesses a faction holds, what they yield and cost it each turn, whether it may take another, and which settlements that adds up to.",
+      parts: {
+        // Holdings, stockpiles, workers and control over the world generator's
+        // business, residence and settlement blocks, read and never written.
+        predicatePack: "strategy",
+        // Optional; every field falls back on core's table (`src/strategy/strategy.ts`).
+        irSection: "strategy",
+        // Remembers who holds what, every stockpile, who works where and the turn.
+        // Only the player's faction acts (minimal: no opponent AI).
+        decisionLayer: ["StrategyDirector"],
+        // `agentAi`'s own: a worker turning up at a holding is the action block's
+        // `work` row, told once per worker per turn. The board and the turn button
+        // are the host's presentation of values the director returns.
+        hostInterface: ["IAgentActionHost"],
+        conformanceCorpus: ["mechanic-strategy"],
+        genreBundles: ["strategy"]
+      }
     }
   ];
   var PACKS_WITHOUT_A_MODULE = Object.freeze({
@@ -11988,13 +12613,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   }
   function migrateWithOutcome(saveFile) {
     const { save, outcome } = migrateSaveFileWithOutcome(saveFile);
-    const extensions = save && save.currentState && save.currentState.extensions;
-    const orphans = new Set(outcome.orphanExtensionKeys);
-    if (extensions && typeof extensions === "object") {
-      for (const key of Object.keys(extensions)) if (!isRegisteredExtension(key)) orphans.add(key);
-    }
-    const filled = { ...outcome, orphanExtensionKeys: [...orphans].sort() };
-    return { saveFile: save, outcome: filled, significant: isMigrationOutcomeSignificant(filled) };
+    return { saveFile: save, outcome, significant: isMigrationOutcomeSignificant(outcome) };
   }
   var QUEST_STATUSES = ["available", "active", "completed"];
   var QUEST_FILTERS = ["all", "active", "completed", "available"];
@@ -12202,9 +12821,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     },
     /**
      * `save.migrate { saveFile }` → `{ saveFile, outcome, significant }` — core's
-     * `migrateSaveFileWithOutcome`, with `outcome.orphanExtensionKeys` filled
-     * (see migrateWithOutcome above) and `significant` from core's
-     * `isMigrationOutcomeSignificant`.
+     * `migrateSaveFileWithOutcome` unchanged (see migrateWithOutcome above) and
+     * `significant` from core's `isMigrationOutcomeSignificant`.
      */
     "save.migrate": (args) => migrateWithOutcome(needObject("save.migrate", args.saveFile, "saveFile")),
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────

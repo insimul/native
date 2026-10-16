@@ -41,7 +41,7 @@ import {
 	migrateSaveFileWithOutcome,
 } from '@insimul/core/save-file';
 import { listMigrations } from '@insimul/core/save-file-migrations';
-import { extensionRegistry, isRegisteredExtension } from '@insimul/core/save-extensions';
+import { extensionRegistry } from '@insimul/core/save-extensions';
 import {
 	SAVE_ENVELOPE_FORMAT,
 	buildSaveFileEnvelope,
@@ -146,21 +146,19 @@ function plain(value) {
 // ── saves ─────────────────────────────────────────────────────────────────────
 
 /**
- * Core's migration chain plus its outcome. ONE thing is added to core's answer:
- * `migrateSaveFileWithOutcome` declares `orphanExtensionKeys` but leaves it
- * empty ("populated by the extensions contract in sibling stories"), so the row
- * fills it with the extension keys core's own `isRegisteredExtension` refuses,
- * and recomputes `significant` with core's `isMigrationOutcomeSignificant`.
+ * Core's migration chain and its outcome, EXACTLY as core answers: the row
+ * adds nothing to `outcome` and takes `significant` from core's own
+ * `isMigrationOutcomeSignificant` over that unchanged outcome.
+ *
+ * At the pin, `migrateSaveFileWithOutcome` declares `orphanExtensionKeys` and
+ * `droppedFacts` but leaves them empty ("populated by ... sibling stories"), so
+ * this row reports them empty too. Filling them is a core change (with a core
+ * corpus case), never a bridge one (GAUNTLET.md rule 1); the bridge picks it
+ * up by re-pinning.
  */
 function migrateWithOutcome(saveFile) {
 	const { save, outcome } = migrateSaveFileWithOutcome(saveFile);
-	const extensions = save && save.currentState && save.currentState.extensions;
-	const orphans = new Set(outcome.orphanExtensionKeys);
-	if (extensions && typeof extensions === 'object') {
-		for (const key of Object.keys(extensions)) if (!isRegisteredExtension(key)) orphans.add(key);
-	}
-	const filled = { ...outcome, orphanExtensionKeys: [...orphans].sort() };
-	return { saveFile: save, outcome: filled, significant: isMigrationOutcomeSignificant(filled) };
+	return { saveFile: save, outcome, significant: isMigrationOutcomeSignificant(outcome) };
 }
 
 // ── quests ────────────────────────────────────────────────────────────────────
@@ -419,9 +417,8 @@ const METHODS = {
 
 	/**
 	 * `save.migrate { saveFile }` → `{ saveFile, outcome, significant }` — core's
-	 * `migrateSaveFileWithOutcome`, with `outcome.orphanExtensionKeys` filled
-	 * (see migrateWithOutcome above) and `significant` from core's
-	 * `isMigrationOutcomeSignificant`.
+	 * `migrateSaveFileWithOutcome` unchanged (see migrateWithOutcome above) and
+	 * `significant` from core's `isMigrationOutcomeSignificant`.
 	 */
 	'save.migrate': (args) => migrateWithOutcome(needObject('save.migrate', args.saveFile, 'saveFile')),
 

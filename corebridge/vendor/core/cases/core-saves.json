@@ -3,7 +3,7 @@
  "description": "core's save corpus through the save.* rows: every fixture's integrity vector (SHA-256 computed by the C host), an envelope carrying it decoded and migrated, the same envelope tampered, and the v1 migration backfills.",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "coreCommit": "73f93ee24bcd1684c31fb4e28378ffe8aa9b373c",
   "files": {
    "conformance/saves/integrity-vectors.json": "86b2b3b4a45458fc41c9154ee66b1d420345d2c4dc55724b30bc8072835d93fa",
    "conformance/saves/v1-minimal.json": "c5d87ff78a396cf92006d874768b4d0be50440bb7bd14ed6879d3a17eab7ebd6",

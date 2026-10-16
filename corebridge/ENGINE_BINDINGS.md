@@ -10,12 +10,30 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
 1. **Take the new library.** The C ABI is unchanged — `insimulcore.h` is
    byte-identical, `INSIMULCORE_ABI_VERSION` is still `0.1.0`, the five functions
    behave as before — so a binding recompiles against nothing new. What changed is
-   the bundle inside it (core `5ce94d7`, 42 methods instead of 5) and the size of
-   the library (the bundle is ~604 KB of JS instead of 54 KB). Re-fetch or re-stage
+   the bundle inside it (core `73f93ee`, the `feat/g-mechanics` head, 42 methods
+   instead of 5; the pin moves to core `main` when track G lands) and the size of
+   the library (the bundle is ~620 KB of JS instead of 54 KB). Re-fetch or re-stage
    the built `libinsimulcore` (Unity `scripts/fetch-native.sh`, Unreal
    `Source/ThirdParty/InsimulCoreLibrary/lib/`, Godot below) and quote the
    version stamp (`insimul_core_version()`, which names the core commit) in the
    change.
+
+   **Two behaviour changes in the five old methods** (`core.methods`,
+   `quest.hydrate`, `quest.radiantTick`, `radiant.generate`,
+   `radiant.baseTemplates`), both visible to an existing binding:
+   - **Arguments must be a JSON object** (or NULL / empty text, meaning `{}`). The
+     old bundle handed any parsed JSON to the row as it was (`[]`, `42`, `"x"`,
+     `null`), so what happened depended on the row;
+     the new one refuses a non-object before the row runs, with `insimulcore:
+     Error: insimulcore: <method>: the arguments must be a JSON object`. A binding
+     that passes `"null"` or an array for "no arguments" must pass `{}` instead.
+     (A method name that is only an `Object.prototype` key, such as `toString`, is
+     now "unknown method" too.)
+   - **Error text has a code prefix where core raises one.** A refusal core makes
+     with a machine-readable code now reads `insimulcore: <ErrorName>: [<code>]
+     <message>` (README, "Errors"). None of the five old methods raise one today,
+     but a binding that matches error text must read the bracketed code, never
+     the prose, and must not assume the message starts right after `<ErrorName>: `.
 2. **Read the surface, do not assume it.** Both Unity's and Unreal's
    `InsimulMechanicSurface` already read `core.methods`; their comments and tests
    that say the bridge "answers with FIVE methods" become stale and must be
@@ -41,7 +59,8 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
    **Do not drive the sky from `events` alone.** Core's `WeatherDirector.advanceTo`
    announces (`weather_changed`, and its `IWeatherSink`) only when the LAST day it
    stepped changed: an `advanceTo` that crosses a season turn and lands on an
-   unchanged day reports no event (observed at core `5ce94d7`: day 2 → 6 over the
+   unchanged day reports no event (observed at core `5ce94d7`, and unchanged at the pin `73f93ee` — no
+   change in `src/weather/` or `WeatherDirector.ts` between them: day 2 → 6 over the
    monsoon world turns dry/dust into wet/downpour on day 5 and emits nothing). Read
    the `view` (or the per-step `conditionChanged` / `seasonTurned` in `results`)
    after every advance. Reported to core as a finding; the bridge reproduces core.
@@ -95,9 +114,10 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
 - Babylon does not use `libinsimulcore`: its game imports `@insimul/core` as
   TypeScript. Its binding is therefore "call the same core function each row
   wraps" — the "Core behind it" column of the table — so the browser and the
-  native engines run one implementation. Where a row adds a boundary rule (the
-  enumeration checks, `save.decode`'s filled `orphanExtensionKeys`), Babylon's
-  call site must make the same decision or the cross-engine checks will differ.
+  native engines run one implementation. The rows add no rule of their own (the
+  enumeration checks only refuse what core's TypeScript types already forbid), so
+  Babylon's call site takes core's answer as it is — `save.decode` /
+  `save.migrate`'s outcome included.
 - Its corpus runner (vitest) can execute `corebridge/vendor/core/cases/` against
   core directly only through a thin shim mapping each `call` to the core function
   in the table; that shim is Babylon's to write if it wants this gate.

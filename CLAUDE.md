@@ -441,8 +441,11 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `feat/g-registry` (5ce94d7), not `main`,
-  because genre resolution exists only there — re-pin when track G lands.
+  and pin disagree. The pin today is core `feat/g-mechanics` (73f93ee = main cec0a0e +
+  g-registry 5ce94d7 + the two g-mechanics commits), not `main`, because genre
+  resolution and the puzzle/platformer/strategy bundles exist only there — the pin
+  MOVES TO the main commit holding 73f93ee when track G lands (re-vendor, re-run
+  `--check --core` and `ctest -R corebridge`).
 - **macOS realpath trap**: esbuild reports paths it resolves itself through
   symlinks (`/var` → `/private/var`), so the extracted root, `node_modules` and
   `js/` are all `realpathSync`'d before any label is matched by prefix. Without it

@@ -49,7 +49,7 @@
     {"call": "modules.activate", "args": {"genre": "mystery"}, "expect": {"source": "genre", "active": {"$subset": {"genre": "mystery", "known": false, "modules": []}}, "predicatePacks": ["gameplayState", "script", "placement", "scaffold"], "hostInterfaces": [], "reason": "core has no genre bundle \"mystery\" — shared vocabulary only"}},
     {"call": "modules.activate", "args": {"ir": {"meta": {}}}, "expect": {"source": "undeclared", "active": null, "predicatePacks": {"$type": "array"}, "hostInterfaces": [], "reason": "the World IR carries no meta.genreConfig.id"}},
     {"call": "modules.activate", "expect": {"source": "undeclared", "active": null, "predicatePacks": {"$type": "array"}, "hostInterfaces": [], "reason": "no genre and no World IR was passed"}},
-    {"call": "modules.activate", "args": {"genre": "platformer"}, "expect": {"$subset": {"source": "genre", "active": {"$subset": {"known": true, "modules": [{"$subset": {"id": "traversal"}}]}}, "hostInterfaces": ["ITraversalProbe", "ILocomotionHost"]}}}
+    {"call": "modules.activate", "args": {"genre": "platformer"}, "expect": {"$subset": {"source": "genre", "active": {"$subset": {"known": true, "modules": {"$ids": ["traversal", "platformer"]}}}, "hostInterfaces": ["ITraversalProbe", "ILocomotionHost"]}}}
    ]
   },
   {

@@ -62,7 +62,7 @@
     {
      "call": "save.migrate",
      "args": {"saveFile": {"id": "s1", "version": 1, "worldSnapshot": {}, "currentState": {"extensions": {"bespoke": 1}}}},
-     "expect": {"$subset": {"outcome": {"$subset": {"versionFrom": 1, "versionTo": 3, "orphanExtensionKeys": ["bespoke"]}}, "significant": true}}
+     "expect": {"$subset": {"outcome": {"$subset": {"versionFrom": 1, "versionTo": 3, "orphanExtensionKeys": []}}, "significant": true}}
     },
     {
      "call": "core.diagnostics",

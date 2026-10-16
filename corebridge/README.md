@@ -124,7 +124,7 @@ game; **meta** = about the bridge itself.
 | `save.integrity` | `{ saveFile }` → `{ integrity }` | `save-envelope` `computeSaveFileIntegrity` | P1 |
 | `save.encode` | `{ saveFile, insimulVersion, exportedAt? }` → `{ envelope }` | `save-envelope` `buildSaveFileEnvelope` | P1 |
 | `save.decode` | `{ envelope }` or `{ text }` → `{ ok: false, error: { code, message } }` or `{ ok: true, envelope, saveFile, outcome, significant }` | `validateSaveFileEnvelope` then `migrateSaveFileWithOutcome` | P1 |
-| `save.migrate` | `{ saveFile }` → `{ saveFile, outcome, significant }` | `save-file` `migrateSaveFileWithOutcome` (+ orphan keys, below) | P1 |
+| `save.migrate` | `{ saveFile }` → `{ saveFile, outcome, significant }` | `save-file` `migrateSaveFileWithOutcome`, unchanged; `significant` = `isMigrationOutcomeSignificant` | P1 |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `ui.notifications.create` | `{}` → `{ session, view }` | `ui/notifications` `Notifications` | P2 |
 | `ui.notifications.apply` | `{ session, ops: push, tick, dismiss, clear }` → `{ results, view }` | same | P2 |
@@ -160,15 +160,20 @@ Each row's comment in `js/entry.js` gives the exact argument and result fields.
 A row DECIDES nothing: it builds what core takes from JSON (a Map, a callback),
 checks at the boundary the enumerations core's TypeScript types declare but JSON
 cannot (a notification kind, a quest status, a slot outcome, a marker surface),
-and hands core's answer back. Two places do more, and say so in their comments:
+and hands core's answer back. One place does more, and says so in its comment:
 
-- `save.decode` / `save.migrate` fill `outcome.orphanExtensionKeys`, which core's
-  `migrateSaveFileWithOutcome` declares and leaves empty, with the extension keys
-  core's own `isRegisteredExtension` refuses, and recompute `significant` with
-  core's `isMigrationOutcomeSignificant`.
 - `weather.run` steps core's pure functions exactly as core's
   `scripts/emit-weather-progression-corpus.ts` does (that script writes files at
   import, so it cannot be bundled).
+
+`save.decode` / `save.migrate` return core's `migrateSaveFileWithOutcome` outcome
+exactly as core answers it. At the pin core declares `orphanExtensionKeys` and
+`droppedFacts` but leaves both empty ("populated by … sibling stories"; core's
+`migrateExtensions` only logs an orphan key, which `core.diagnostics` shows), so
+the rows report them empty and an unregistered key does not by itself make an
+outcome `significant`. Filling them is core work with a core corpus case; the
+bridge picks it up by re-pinning, and no binding (Babylon's included) fills them
+itself.
 
 ### What the feature phases asked for and core does not have yet
 

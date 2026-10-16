@@ -3,9 +3,9 @@
  "description": "core's recipe → game resolution corpus through genre.resolveGame; a refusal is an error carrying core's code",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "coreCommit": "73f93ee24bcd1684c31fb4e28378ffe8aa9b373c",
   "files": {
-   "conformance/genres/recipes.json": "d8445ff15b897fa4b37fbff975882a5418d6a8605f443c6c5a0bba7874b6962e"
+   "conformance/genres/recipes.json": "ca9aaf2443909d68abe07596799d597abfa48ec6f2ee92d878e6c94ae7fa4c64"
   }
  },
  "cases": [
@@ -3569,14 +3569,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -3758,14 +3763,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -3896,14 +3906,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -4086,14 +4101,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -4224,14 +4244,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -4419,14 +4444,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -4562,14 +4592,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -4757,14 +4792,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -4900,14 +4940,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -5090,14 +5135,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -5228,14 +5278,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -5423,14 +5478,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -5566,14 +5626,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -5756,14 +5821,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -5853,14 +5923,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -6002,14 +6077,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -6095,14 +6175,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -6240,14 +6325,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -6377,11 +6467,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -6576,11 +6668,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -6719,11 +6813,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -6919,11 +7015,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -7062,11 +7160,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -7267,11 +7367,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -7415,11 +7517,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -7620,11 +7724,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -7768,11 +7874,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -7968,11 +8076,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -8111,11 +8221,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -8316,11 +8428,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -8464,11 +8578,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -8664,11 +8780,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -8766,11 +8884,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -8930,11 +9050,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -9033,11 +9155,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -9188,11 +9312,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -9330,14 +9456,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -9518,14 +9649,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -9656,14 +9792,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -9845,14 +9986,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -9983,14 +10129,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -10177,14 +10328,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -10320,14 +10476,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -10514,14 +10675,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -10657,14 +10823,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -10846,14 +11017,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -10984,14 +11160,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -11178,14 +11359,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {
@@ -11321,14 +11507,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -11510,14 +11701,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -11607,14 +11803,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -11755,14 +11956,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -11848,14 +12054,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -11992,14 +12203,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -13001,14 +13217,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }
@@ -14247,14 +14468,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "notes": [
        {

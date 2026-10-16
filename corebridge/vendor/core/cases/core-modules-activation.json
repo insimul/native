@@ -3,9 +3,9 @@
  "description": "core's committed activation table through modules.table, and each genre's row through modules.activate",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "coreCommit": "73f93ee24bcd1684c31fb4e28378ffe8aa9b373c",
   "files": {
-   "conformance/modules/genre-activation.json": "b6993fa109348fe5649f6371c5732f5af9e59924ac11d764ae6b0676de69b460"
+   "conformance/modules/genre-activation.json": "e739c73f61145e382bda4a197c76ae57daa29b3dd19f28531c50b7c1c36fbc4a"
   }
  },
  "cases": [
@@ -510,26 +510,60 @@
        "strategy": {
         "genre": "strategy",
         "known": true,
-        "modules": [],
+        "modules": [
+         {
+          "id": "strategy",
+          "name": "Strategy",
+          "predicatePack": "strategy",
+          "irSection": "strategy",
+          "decisionLayer": [
+           "StrategyDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
         "predicatePacks": [
          "gameplayState",
+         "strategy",
          "script",
          "placement",
          "scaffold"
         ],
-        "hostInterfaces": []
+        "hostInterfaces": [
+         "IAgentActionHost"
+        ]
        },
        "puzzle": {
         "genre": "puzzle",
         "known": true,
-        "modules": [],
+        "modules": [
+         {
+          "id": "puzzle",
+          "name": "Puzzle",
+          "predicatePack": "puzzle",
+          "irSection": "puzzle",
+          "decisionLayer": [
+           "PuzzleDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
         "predicatePacks": [
          "gameplayState",
+         "puzzle",
          "script",
          "placement",
          "scaffold"
         ],
-        "hostInterfaces": []
+        "hostInterfaces": [
+         "IAgentActionHost"
+        ]
        },
        "platformer": {
         "genre": "platformer",
@@ -550,11 +584,26 @@
            "ILocomotionHost"
           ],
           "conforms": true
+         },
+         {
+          "id": "platformer",
+          "name": "Platformer",
+          "predicatePack": "platformer",
+          "irSection": "platformer",
+          "decisionLayer": [
+           "PlatformerDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
          }
         ],
         "predicatePacks": [
          "traversal",
          "gameplayState",
+         "platformer",
          "script",
          "placement",
          "scaffold"
@@ -2038,22 +2087,42 @@
       "active": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        {
+         "id": "strategy",
+         "name": "Strategy",
+         "predicatePack": "strategy",
+         "irSection": "strategy",
+         "decisionLayer": [
+          "StrategyDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        }
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "predicatePacks": [
        "gameplayState",
+       "strategy",
        "script",
        "placement",
        "scaffold"
       ],
-      "hostInterfaces": [],
+      "hostInterfaces": [
+       "IAgentActionHost"
+      ],
       "reason": ""
      }
     },
@@ -2074,14 +2143,31 @@
        "active": {
         "genre": "strategy",
         "known": true,
-        "modules": [],
+        "modules": [
+         {
+          "id": "strategy",
+          "name": "Strategy",
+          "predicatePack": "strategy",
+          "irSection": "strategy",
+          "decisionLayer": [
+           "StrategyDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
         "predicatePacks": [
          "gameplayState",
+         "strategy",
          "script",
          "placement",
          "scaffold"
         ],
-        "hostInterfaces": []
+        "hostInterfaces": [
+         "IAgentActionHost"
+        ]
        }
       }
      }
@@ -2101,22 +2187,42 @@
       "active": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        {
+         "id": "puzzle",
+         "name": "Puzzle",
+         "predicatePack": "puzzle",
+         "irSection": "puzzle",
+         "decisionLayer": [
+          "PuzzleDirector"
+         ],
+         "hostInterface": [
+          "IAgentActionHost"
+         ],
+         "conforms": true
+        }
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       },
       "predicatePacks": [
        "gameplayState",
+       "puzzle",
        "script",
        "placement",
        "scaffold"
       ],
-      "hostInterfaces": [],
+      "hostInterfaces": [
+       "IAgentActionHost"
+      ],
       "reason": ""
      }
     },
@@ -2137,14 +2243,31 @@
        "active": {
         "genre": "puzzle",
         "known": true,
-        "modules": [],
+        "modules": [
+         {
+          "id": "puzzle",
+          "name": "Puzzle",
+          "predicatePack": "puzzle",
+          "irSection": "puzzle",
+          "decisionLayer": [
+           "PuzzleDirector"
+          ],
+          "hostInterface": [
+           "IAgentActionHost"
+          ],
+          "conforms": true
+         }
+        ],
         "predicatePacks": [
          "gameplayState",
+         "puzzle",
          "script",
          "placement",
          "scaffold"
         ],
-        "hostInterfaces": []
+        "hostInterfaces": [
+         "IAgentActionHost"
+        ]
        }
       }
      }
@@ -2180,11 +2303,26 @@
           "ILocomotionHost"
          ],
          "conforms": true
+        },
+        {
+         "id": "platformer",
+         "name": "Platformer",
+         "predicatePack": "platformer",
+         "irSection": "platformer",
+         "decisionLayer": [
+          "PlatformerDirector"
+         ],
+         "hostInterface": [
+          "ITraversalProbe",
+          "ILocomotionHost"
+         ],
+         "conforms": true
         }
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -2197,6 +2335,7 @@
       "predicatePacks": [
        "traversal",
        "gameplayState",
+       "platformer",
        "script",
        "placement",
        "scaffold"
@@ -2241,11 +2380,26 @@
            "ILocomotionHost"
           ],
           "conforms": true
+         },
+         {
+          "id": "platformer",
+          "name": "Platformer",
+          "predicatePack": "platformer",
+          "irSection": "platformer",
+          "decisionLayer": [
+           "PlatformerDirector"
+          ],
+          "hostInterface": [
+           "ITraversalProbe",
+           "ILocomotionHost"
+          ],
+          "conforms": true
          }
         ],
         "predicatePacks": [
          "traversal",
          "gameplayState",
+         "platformer",
          "script",
          "placement",
          "scaffold"

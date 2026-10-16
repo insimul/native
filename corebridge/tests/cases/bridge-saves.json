@@ -1,6 +1,6 @@
 {
  "area": "saves",
- "description": "Hand-written: the save codec end to end (encode → decode, tampering, malformed input), the rules row, orphan extension keys, the slot view over real envelopes, and SHA-256 over non-ASCII text (expected digests computed with Node's crypto over core's canonical JSON, so the C leg's SHA-256 is checked against an independent implementation). core-saves.json holds core's own corpus.",
+ "description": "Hand-written: the save codec end to end (encode → decode, tampering, malformed input), the rules row, unregistered extension keys (core's outcome unchanged), lone-surrogate integrity, the slot view over real envelopes, and SHA-256 over non-ASCII text (expected digests computed with Node's crypto over core's canonical JSON, so the C leg's SHA-256 is checked against an independent implementation). core-saves.json holds core's own corpus.",
  "cases": [
   {
    "name": "save.rules: version, envelope format, the contiguous migration chain, the registered extension keys",
@@ -88,13 +88,22 @@
    ]
   },
   {
-   "name": "save.migrate reports orphan extension keys core's registry refuses, sorted, and that is significant",
+   "name": "save.migrate returns core's outcome unchanged: unregistered extension keys are kept in the save, orphanExtensionKeys is core's (empty at the pin), and a current save is not significant",
    "steps": [
     {
      "call": "save.migrate",
      "args": {"saveFile": {"id": "o", "version": 3, "worldSnapshot": {"insimulVersion": "a", "engineRevision": "b", "snapshotCreatedAt": "c"}, "currentState": {"extensions": {"zeta": true, "clock": {"hour": 3}}}}},
-     "expect": {"$subset": {"outcome": {"$subset": {"versionsBehind": 0, "migrationApplied": false, "orphanExtensionKeys": ["clock", "zeta"]}}, "significant": true, "saveFile": {"$subset": {"currentState": {"$subset": {"extensions": {"$subset": {"zeta": true, "clock": {"hour": 3}}}}}}}}}
+     "expect": {"$subset": {"outcome": {"$subset": {"versionsBehind": 0, "migrationApplied": false, "droppedFacts": [], "orphanExtensionKeys": [], "predicateSchemaDrift": false}}, "significant": false, "saveFile": {"$subset": {"currentState": {"$subset": {"extensions": {"$subset": {"zeta": true, "clock": {"hour": 3}}}}}}}}}
     }
+   ]
+  },
+  {
+   "name": "save integrity over lone surrogates (a lone high, a lone low, a pair, a reversed pair, one in a key, one at the end): the digest is core's own computeSaveFileIntegrity run in Node outside the bridge; argsText carries the \\\\u escapes verbatim, as a UTF-8 host must send them",
+   "steps": [
+    {"call": "save.integrity", "argsText": "{\"saveFile\": {\"version\": 3, \"id\": \"lone\", \"note\": \"a\\ud800b\", \"low\": \"\\udc00\", \"pair\": \"\\ud83d\\ude00\", \"reversed\": \"\\ude00\\ud83d\", \"\\ud800key\": 1, \"tail\": \"x\\udbff\"}}", "expect": {"integrity": "33c00e9601210efc51571558a404910a2e8766346d968fc2e6049c104ccc7d58"}},
+    {"call": "save.encode", "argsText": "{\"saveFile\": {\"version\": 3, \"id\": \"lone\", \"note\": \"a\\ud800b\", \"low\": \"\\udc00\", \"pair\": \"\\ud83d\\ude00\", \"reversed\": \"\\ude00\\ud83d\", \"\\ud800key\": 1, \"tail\": \"x\\udbff\"}, \"insimulVersion\": \"t\", \"exportedAt\": \"2026-10-15\"}", "expect": {"$subset": {"envelope": {"$subset": {"format": "insimul-save-v2", "integrity": "33c00e9601210efc51571558a404910a2e8766346d968fc2e6049c104ccc7d58"}}}}},
+    {"call": "save.decode", "argsText": "{\"envelope\": {\"format\": \"insimul-save-v2\", \"exportedAt\": \"2026-10-15\", \"insimulVersion\": \"t\", \"integrity\": \"33c00e9601210efc51571558a404910a2e8766346d968fc2e6049c104ccc7d58\", \"saveFile\": {\"version\": 3, \"id\": \"lone\", \"note\": \"a\\ud800b\", \"low\": \"\\udc00\", \"pair\": \"\\ud83d\\ude00\", \"reversed\": \"\\ude00\\ud83d\", \"\\ud800key\": 1, \"tail\": \"x\\udbff\"}}}", "expect": {"$subset": {"ok": true, "envelope": {"format": "insimul-save-v2", "exportedAt": "2026-10-15", "insimulVersion": "t", "integrity": "33c00e9601210efc51571558a404910a2e8766346d968fc2e6049c104ccc7d58"}, "significant": false}}},
+    {"call": "save.decode", "argsText": "{\"envelope\": {\"format\": \"insimul-save-v2\", \"exportedAt\": \"2026-10-15\", \"insimulVersion\": \"t\", \"integrity\": \"33c00e9601210efc51571558a404910a2e8766346d968fc2e6049c104ccc7d58\", \"saveFile\": {\"version\": 3, \"id\": \"lone\", \"note\": \"a\\ud800b\", \"low\": \"\\udc00\", \"pair\": \"\\ud83d\\ude00\", \"reversed\": \"\\ude00\\ud83d\", \"\\ud800key\": 1, \"tail\": \"x\\udbfe\"}}}", "expect": {"$subset": {"ok": false, "error": {"$subset": {"code": "integrity_mismatch"}}}}}
    ]
   },
   {

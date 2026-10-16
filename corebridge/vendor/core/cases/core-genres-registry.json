@@ -3,10 +3,10 @@
  "description": "core's genre resolution corpus through genre.resolve (and the registry ids through genre.registry)",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "5ce94d7bcaf6d22489f6c882224b8b23d96688ba",
+  "coreCommit": "73f93ee24bcd1684c31fb4e28378ffe8aa9b373c",
   "files": {
    "conformance/genres/camera.json": "a2eca78d3c8b3271648aaa61d5a91fe4c5dc61b331a04444d4d6f3d99ca5ba61",
-   "conformance/genres/registry.json": "fc03f5d3d241de8b9f5394541bca14cd98571b5a685c151c80de43d4e5323e95"
+   "conformance/genres/registry.json": "7030653395241023f7ed5a140b489bca5478a60cc520fed55f3ec13fa52c6be1"
   }
  },
  "cases": [
@@ -372,11 +372,13 @@
        "genre": "platformer",
        "known": true,
        "modules": [
-        "traversal"
+        "traversal",
+        "platformer"
        ],
        "predicatePacks": [
         "traversal",
         "gameplayState",
+        "platformer",
         "script",
         "placement",
         "scaffold"
@@ -456,14 +458,19 @@
       "activation": {
        "genre": "strategy",
        "known": true,
-       "modules": [],
+       "modules": [
+        "strategy"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "strategy",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       }
      }
     }
@@ -976,14 +983,19 @@
       "activation": {
        "genre": "puzzle",
        "known": true,
-       "modules": [],
+       "modules": [
+        "puzzle"
+       ],
        "predicatePacks": [
         "gameplayState",
+        "puzzle",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
       }
      }
     }
