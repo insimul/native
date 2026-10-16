@@ -168,8 +168,9 @@ and hands core's answer back. One place does more, and says so in its comment:
 
 `save.decode` / `save.migrate` return core's `migrateSaveFileWithOutcome` outcome
 exactly as core answers it. At the pin core declares `orphanExtensionKeys` and
-`droppedFacts` but leaves both empty ("populated by … sibling stories"; core's
-`migrateExtensions` only logs an orphan key, which `core.diagnostics` shows), so
+`droppedFacts` but leaves both empty ("populated by … sibling stories"; when a
+migration step runs, core's `migrateExtensions` only logs an orphan key, which
+`core.diagnostics` shows), so
 the rows report them empty and an unregistered key does not by itself make an
 outcome `significant`. Filling them is core work with a core corpus case; the
 bridge picks it up by re-pinning, and no binding (Babylon's included) fills them
