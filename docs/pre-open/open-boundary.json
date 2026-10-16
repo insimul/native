@@ -4,7 +4,7 @@
   "rulesVersion": 1,
   "repository": {
     "root": "native-c0-bridge",
-    "gitHead": "2badcdf570a68a9aa1982fb49cdf5d58663bba5c"
+    "gitHead": "b8bfd225b99a94a0cd2b7eb5161559ab5ef20dbd"
   },
   "coverage": {
     "files": 336,
