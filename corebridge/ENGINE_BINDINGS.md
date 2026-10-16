@@ -38,6 +38,13 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
    the asserts and retracts `WeatherDirector` made, in order, without the trailing
    period. The game's KB is the engine's own libinsimul KB, so the binding applies
    them there (`insimul_kb_assert` / `insimul_kb_retract`) in that order.
+   **Do not drive the sky from `events` alone.** Core's `WeatherDirector.advanceTo`
+   announces (`weather_changed`, and its `IWeatherSink`) only when the LAST day it
+   stepped changed: an `advanceTo` that crosses a season turn and lands on an
+   unchanged day reports no event (observed at core `5ce94d7`: day 2 → 6 over the
+   monsoon world turns dry/dust into wet/downpour on day 5 and emits nothing). Read
+   the `view` (or the per-step `conditionChanged` / `seasonTurned` in `results`)
+   after every advance. Reported to core as a finding; the bridge reproduces core.
 7. **Errors.** On NULL, read `insimul_core_last_error()`; when it contains
    `[<code>]` (genre resolution refusals today), that bracketed code is the
    machine-readable reason. Domain outcomes (a corrupt save slot, a refused trade)
