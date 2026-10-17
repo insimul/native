@@ -3,7 +3,9 @@
 This component changed no engine. It made `libinsimulcore` answer the feature
 phases' methods (`README.md`, "The method table"); this page is the list of what
 each engine has to do before a phase can use them. Engines are listed in the
-operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
+operator's order (Unreal, Unity, Babylon, Godot). Babylon's items are done by
+its C0 re-vendor (its section says what and where); the three native engines'
+are not done yet.
 
 ## Common to Unreal, Unity and Godot
 
@@ -115,11 +117,30 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   wraps" — the "Core behind it" column of the table — so the browser and the
   native engines run one implementation. The rows add no rule of their own (the
   enumeration checks only refuse what core's TypeScript types already forbid), so
-  Babylon's call site takes core's answer as it is — `save.decode` /
-  `save.migrate`'s outcome included.
-- Its corpus runner (vitest) can execute `corebridge/vendor/core/cases/` against
-  core directly only through a thin shim mapping each `call` to the core function
-  in the table; that shim is Babylon's to write if it wants this gate.
+  Babylon's call site takes core's answer as it is.
+- **There is no mirror to refresh.** `packages/core` is a git submodule, moved to
+  core `main` `c4b46c4` when track G landed on Babylon (`709d20c`); a later core
+  is a gitlink bump, not a re-vendor.
+- **The save call site needed no change after F1.** It already takes core's
+  outcome as it is: `packages/babylon/src/data/BabylonWorld.tsx` reads the
+  `MigrationOutcome` the save load attaches (`_migrationOutcome`) and asks core's
+  `isMigrationOutcomeSignificant`, and `data/ui/SaveMigrationPromptModal.tsx`
+  shows `orphanExtensionKeys` as given. No Babylon code fills an outcome field or
+  calls `isRegisteredExtension`; an orphan-key fill would be core's (with a
+  corpus case), never Babylon's.
+- **Prolog at play time goes through core's browser entry** (no bridge row: core
+  directly). The game's NPC KB (`editor-plugins/bjs-desktop/game/npc/prolog.ts`)
+  loads core's wasm engine with `loadPrologWasm` / `createPrologEngine`, which
+  core's package.json `browser` map routes to the glue twin with no Node branch in
+  the `platform: "browser"` game bundle; the bytes come from
+  `public/insimul/prolog/insimul.wasm` (copied there by the npc installer) through
+  Emscripten's `instantiateWasm`. The plugin's `build.mjs` refuses a game bundle
+  that carries the upstream glue or names a `node:` module, and core's
+  `wasm:browser-proof` runs in Babylon's root vitest gate.
+- Its corpus runner (vitest, C0.runner-babylon) can execute
+  `corebridge/vendor/core/cases/` against core directly only through a thin shim
+  mapping each `call` to the core function in the table; that shim is Babylon's
+  to write, and is not written yet.
 
 ## Godot
 
