@@ -3,7 +3,7 @@
  "description": "core's pause-menu tab-gating matrix through ui.pause.*",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "c4b46c42ead5f245e9cac6a64da3dacaf5447f6e",
+  "coreCommit": "4a4678975fb72a2d2c3f991dd5b67964245e36ab",
   "files": {
    "conformance/ui/pause-menu-cases.json": "f0596dc331ab7ccb3731339cd4d3d02ec1d3b339436f684484bd7850d5084a32"
   }
