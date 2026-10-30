@@ -1,0 +1,17 @@
+{
+  "area": "layout-negative",
+  "description": "The negative control of the layout_corpus gate (ctest layout_corpus_negative, WILL_FAIL): one case whose expectation is deliberately wrong. The input is building-fit.json's first case; core answers false, this file expects true. If the gate passes this file, it can pass a wrong answer.",
+  "version": 1,
+  "sources": [],
+  "tolerance": 1e-6,
+  "angleKeys": [],
+  "cases": [
+    {
+      "name": "door-name: a wall piece named for a door, expected WRONGLY to hold a door",
+      "note": "deliberately wrong; see the description",
+      "op": "isDoorPartName",
+      "input": { "component": "SM_Wall_Door5_StaticMeshComponent0", "mesh": "SM_Wall", "owner": "" },
+      "expected": true
+    }
+  ]
+}

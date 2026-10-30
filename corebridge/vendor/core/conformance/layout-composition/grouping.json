@@ -1,0 +1,4325 @@
+{
+  "area": "layout-composition-grouping",
+  "description": "G2 and G12 (core src/editor/layout/composition/grouping.ts): dressing props by purpose (the archetype table), tied to a building's walls, a cart or a route's edge within the tie reach; blocks (packed clusters over the block area) and grid rows (three or more on a line, evenly spaced) on the square's floor or untied; regrouped into a half-disc off the anchor, or set aside beyond the regroup reach; flora kept off the square. Authored in core (B9's rules are new); every threshold has a case just inside and just past it. Plan frame: IR (x, z) metres.",
+  "version": 1,
+  "sources": [
+    {
+      "authoredIn": "core",
+      "ruling": "U27 (B9 village composition)",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
+      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
+      "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
+    }
+  ],
+  "tolerance": 0.000001,
+  "angleKeys": ["heading"],
+  "fixtures": {
+    "villageFollowedPlan": {
+      "lots": [
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 450.896,
+          "cz": 434.88,
+          "entityId": "bld_6abb84bcf2e499b951eece64_4",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec4"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 418.141,
+          "cz": 410.38100000000003,
+          "entityId": "bld_6abb84bcf2e499b951eece64_5",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec5"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 441.642,
+          "cz": 451.806,
+          "entityId": "bld_6abb84bcf2e499b951eece64_6",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec6"
+        },
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 455.837,
+          "cz": 417.272,
+          "entityId": "bld_6abb84eef2e499b951eecec0",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec0"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 423.954,
+          "cz": 446.566,
+          "entityId": "bld_6abb84eef2e499b951eecec1",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec1"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 417.725,
+          "cz": 428.072,
+          "entityId": "bld_6abb84eef2e499b951eecec2",
+          "halfAcross": 6,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec2"
+        },
+        {
+          "awayX": 6.123233995736766e-17,
+          "awayZ": 1,
+          "cx": 437.041,
+          "cz": 411.301,
+          "entityId": "bld_6abb84eef2e499b951eecec3",
+          "halfAcross": 7.5,
+          "halfAway": 6,
+          "lotId": "6abb84eef2e499b951eecec3"
+        }
+      ],
+      "strips": [
+        {
+          "closed": false,
+          "entityId": "road.street_lane_0_mouth.street_lane_0_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[423.892, 436.911], [415.892, 436.911]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "road.street_lane_1_mouth.street_lane_1_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[426.392, 417.411], [426.392, 409.411]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec0",
+          "points": [[450.4369120320974, 417.4309344924799], [441.72154919284964, 424.1655330500804]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec1",
+          "points": [[423.79616536403324, 441.1658797734054], [423.79616536403324, 438.811]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec2",
+          "points": [[423.1249822338019, 427.42390786597616], [425.14845654213593, 430.04252167676134]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec3",
+          "points": [[441.43151738729995, 417.70075139855004], [438.4852651961146, 419.97740081901145]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec4",
+          "points": [[445.4957542162136, 435.5258924169372], [440.9423780451835, 429.63328796031004]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec5",
+          "points": [[423.5410227784881, 410.2198658143185], [424.492, 410.2198658143185]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec6.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec6",
+          "points": [[440.997207481819, 446.40562277724445], [432.86176255462476, 435.8773999302872]],
+          "surface": "path"
+        },
+        {
+          "closed": true,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+          "halfWidth": 0,
+          "lotId": "6abb84eef2e499b951eeced2",
+          "points": [[438.4767608396403, 418.985117150083], [444.917341184305, 427.3199858314138], [429.72466915757536, 439.0597778520685], [423.2840888129107, 430.7249091707377]],
+          "surface": "plaza"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "name": "grouping: Brightwater Vale's dressing round its settled houses",
+      "note": "Brightwater's 85 props (dressing and rocks) at their settled clearance positions, a disc of half their longest plan side, round the seven settled houses, over the followed plan: the square's goods pile (six barrels and crates packed by the produce stall) is a block and is regrouped at the stall; rocks and walls are not dressing and are left; every dressing prop ends tied to a building, cart or route.",
+      "op": "groupProps",
+      "input": {
+        "plan": {
+          "$fixture": "villageFollowedPlan"
+        },
+        "buildings": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "outline": [[459.00987385207276, 440.97032998790377], [445.89464588250075, 440.9676587673506], [445.8971260833178, 428.7903044541259], [459.0123540528897, 428.792975674679]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "outline": [[412.82080370500114, 404.7803641288587], [423.13991446136845, 404.7782624024681], [423.14219630161534, 415.9817008428932], [412.82308554524803, 415.98380256928385]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "outline": [[435.5500175597363, 459.9186332467596], [435.5553600007318, 446.8034060932717], [447.73271355623086, 446.8083664948028], [447.72737111523537, 459.92359364829065]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "outline": [[461.1549144547519, 422.8748025692839], [450.8358036983846, 422.87270084289327], [450.8380855386315, 411.66926240246806], [461.1571962949988, 411.67136412885867]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "outline": [[418.350114430252, 451.882773203702], [418.3543178829461, 441.56366308943274], [429.5577556262466, 441.5682267698318], [429.55355217355253, 451.88733688410116]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "outline": [[409.60864594711035, 421.98497567467894], [422.7238739166823, 421.98230445412577], [422.7263541174992, 434.15965876735055], [409.6111261479273, 434.1623299879037]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "outline": [[444.93943722855, 405.27424860145004], [444.93943722855, 417.30075139855006], [429.14256277145, 417.30075139855006], [429.14256277145, 405.27424860145004]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "nature.104",
+            "archetype": "prop.rock.stone",
+            "x": 495.84000000000003,
+            "z": 476.619,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.142",
+            "archetype": "prop.rock.stone",
+            "x": 298.579,
+            "z": 379.81100000000004,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.149",
+            "archetype": "prop.rock.stone",
+            "x": 333.679,
+            "z": 378.98900000000003,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.169",
+            "archetype": "prop.rock.boulder",
+            "x": 380.546,
+            "z": 503.159,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.173",
+            "archetype": "prop.rock.boulder",
+            "x": 374.3,
+            "z": 312.921,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.175",
+            "archetype": "prop.rock.boulder",
+            "x": 419.14599999999996,
+            "z": 294.944,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.201",
+            "archetype": "prop.rock.mossy",
+            "x": 307.272,
+            "z": 442.51800000000003,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.209",
+            "archetype": "prop.rock.stone",
+            "x": 319.229,
+            "z": 379.305,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.219",
+            "archetype": "prop.rock.mossy",
+            "x": 381.225,
+            "z": 366.58299999999997,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.224",
+            "archetype": "prop.rock.stone",
+            "x": 405.227,
+            "z": 320.139,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.231",
+            "archetype": "prop.rock.boulder",
+            "x": 334.363,
+            "z": 330.995,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.235",
+            "archetype": "prop.rock.boulder",
+            "x": 406.131,
+            "z": 291.867,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.255",
+            "archetype": "prop.rock.boulder",
+            "x": 358.37800000000004,
+            "z": 375.73699999999997,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.262",
+            "archetype": "prop.rock.stone",
+            "x": 341.3,
+            "z": 405.375,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.264",
+            "archetype": "prop.rock.stone",
+            "x": 468.37799999999993,
+            "z": 289.549,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.268",
+            "archetype": "prop.rock.stone",
+            "x": 374.942,
+            "z": 478.597,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.297",
+            "archetype": "prop.rock.stone",
+            "x": 303.493,
+            "z": 412.199,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.309",
+            "archetype": "prop.rock.boulder",
+            "x": 455.10900000000004,
+            "z": 509.59299999999996,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.320",
+            "archetype": "prop.rock.stone",
+            "x": 367.565,
+            "z": 492.389,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.325",
+            "archetype": "prop.rock.boulder",
+            "x": 382.849,
+            "z": 370.155,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.343",
+            "archetype": "prop.rock.boulder",
+            "x": 480.592,
+            "z": 313.311,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.352",
+            "archetype": "prop.rock.stone",
+            "x": 324.062,
+            "z": 478.913,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.404",
+            "archetype": "prop.rock.stone",
+            "x": 322.279,
+            "z": 460.54200000000003,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.419",
+            "archetype": "prop.rock.boulder",
+            "x": 432.483,
+            "z": 323.75,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.449",
+            "archetype": "prop.rock",
+            "x": 459.587805203476,
+            "z": 489.0767429779014,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.450",
+            "archetype": "prop.rock",
+            "x": 464.50439462381695,
+            "z": 452.94472357531447,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.8",
+            "archetype": "prop.rock.mossy",
+            "x": 358.334,
+            "z": 483.68100000000004,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.86",
+            "archetype": "prop.rock.mossy",
+            "x": 490.457,
+            "z": 313.479,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.96",
+            "archetype": "prop.rock.mossy",
+            "x": 334.128,
+            "z": 455.076,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.goods.0",
+            "archetype": "prop.container.crate",
+            "x": 446.4095764479498,
+            "z": 417.3118593263538,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.planter.1",
+            "archetype": "prop.vegetation.planter",
+            "x": 445.0994314748159,
+            "z": 423.14795966122267,
+            "radius": 0.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.sign",
+            "archetype": "prop.structural.sign",
+            "x": 444.9680084694319,
+            "z": 423.7333894124789,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.0",
+            "archetype": "prop.container.barrel",
+            "x": 429.63694635723516,
+            "z": 437.2869712492719,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.1",
+            "archetype": "prop.container.crate",
+            "x": 422.467205160028,
+            "z": 442.54478146055715,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.lantern",
+            "archetype": "prop.structural.lantern",
+            "x": 422.29026000316406,
+            "z": 442.6745412422574,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.planter.0",
+            "archetype": "prop.vegetation.planter",
+            "x": 427.28997097746947,
+            "z": 439.00808652776675,
+            "radius": 0.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.sign",
+            "archetype": "prop.structural.sign",
+            "x": 427.7738139749829,
+            "z": 438.6532683295903,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work",
+            "archetype": "prop.furniture.anvil",
+            "x": 422.93538399984857,
+            "z": 442.2014503113554,
+            "radius": 0.35
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84e9f2e499b951eece72",
+            "archetype": "prop.furniture.anvil",
+            "x": 423.6638365127716,
+            "z": 441.4192374653753,
+            "radius": 0.35
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84ecf2e499b951eecea3",
+            "archetype": "prop.furniture.anvil",
+            "x": 428.2603449891491,
+            "z": 438.04846458269844,
+            "radius": 0.35
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.banner",
+            "archetype": "prop.structural.banner",
+            "x": 413.49199999999996,
+            "z": 433.861,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.lantern",
+            "archetype": "prop.structural.lantern",
+            "x": 424.592,
+            "z": 434.01099999999997,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.banner",
+            "archetype": "prop.structural.banner",
+            "x": 429.942,
+            "z": 404.51099999999997,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.goods.1",
+            "archetype": "prop.container.barrel",
+            "x": 429.79200000000003,
+            "z": 418.1380531248301,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.lantern",
+            "archetype": "prop.structural.lantern",
+            "x": 429.79200000000003,
+            "z": 418.611,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.work",
+            "archetype": "prop.container.cauldron",
+            "x": 429.79200000000003,
+            "z": 417.81100000000004,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.0",
+            "archetype": "prop.vegetation.planter",
+            "x": 445.49189837494,
+            "z": 436.0202421480296,
+            "radius": 0.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.1",
+            "archetype": "prop.vegetation.planter",
+            "x": 445.16060379671546,
+            "z": 433.0385909440087,
+            "radius": 0.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.bench",
+            "archetype": "prop.furniture.bench.a",
+            "x": 424.642,
+            "z": 419.911,
+            "radius": 0.8
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.goods.0",
+            "archetype": "prop.container.barrel",
+            "x": 413.092,
+            "z": 412.9878150165677,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.0",
+            "archetype": "prop.structural.banner",
+            "x": 425.3809940665999,
+            "z": 430.4947171703327,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.1",
+            "archetype": "prop.structural.banner",
+            "x": 430.47638990889794,
+            "z": 437.0887588486008,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.bench.0",
+            "archetype": "prop.furniture.bench",
+            "x": 435.7408330014934,
+            "z": 426.23856299617785,
+            "radius": 0.8
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0",
+            "archetype": "prop.container.barrel",
+            "x": 431.9820896656394,
+            "z": 429.8527699436347,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.1",
+            "archetype": "prop.container.crate",
+            "x": 433.0301831991242,
+            "z": 429.95252431776476,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.2",
+            "archetype": "prop.container.barrel",
+            "x": 432.40034981277427,
+            "z": 430.6897292480887,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.3",
+            "archetype": "prop.container.crate",
+            "x": 433.5799270757526,
+            "z": 430.3426793897158,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4",
+            "archetype": "prop.container.barrel",
+            "x": 432.5774751129989,
+            "z": 429.8940750106591,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.5",
+            "archetype": "prop.container.barrel",
+            "x": 433.09683372728693,
+            "z": 429.7108235244443,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.0",
+            "archetype": "prop.structural.lantern",
+            "x": 438.45877708960865,
+            "z": 419.1253904003298,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.1",
+            "archetype": "prop.structural.lantern",
+            "x": 438.842430423617,
+            "z": 431.8878583394504,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.2",
+            "archetype": "prop.structural.lantern",
+            "x": 425.0069320659418,
+            "z": 429.51999791861783,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.3",
+            "archetype": "prop.structural.lantern",
+            "x": 431.32522291039135,
+            "z": 437.6966095996702,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch",
+            "archetype": "prop.container.cauldron",
+            "x": 436.65554228311555,
+            "z": 432.4246761161992,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.awning",
+            "archetype": "prop.furniture.stall",
+            "x": 436.65554228311555,
+            "z": 432.4246761161992,
+            "radius": 1.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.0",
+            "archetype": "prop.container.crate",
+            "x": 438.09743482702305,
+            "z": 432.8381321499247,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.1",
+            "archetype": "prop.container.barrel",
+            "x": 435.2136497392081,
+            "z": 432.0112200824737,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 431.17535832679437,
+            "z": 431.451452672016,
+            "radius": 1.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.back.1",
+            "archetype": "prop.structural.wall",
+            "x": 440.7726862603463,
+            "z": 420.07553186033476,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.back.2",
+            "archetype": "prop.structural.wall",
+            "x": 441.9955812624978,
+            "z": 421.6581018631191,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.3",
+            "archetype": "prop.structural.wall",
+            "x": 433.34240020560696,
+            "z": 421.49924540450627,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.4",
+            "archetype": "prop.structural.wall",
+            "x": 431.7598302028226,
+            "z": 422.7221404066579,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.6",
+            "archetype": "prop.structural.wall",
+            "x": 428.59469019725395,
+            "z": 425.16793041096093,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.7",
+            "archetype": "prop.structural.wall",
+            "x": 427.0121201944696,
+            "z": 426.39082541311245,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.2",
+            "archetype": "prop.structural.wall",
+            "x": 442.7718798055304,
+            "z": 430.43117458688755,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.3",
+            "archetype": "prop.structural.wall",
+            "x": 441.18930980274604,
+            "z": 431.65406958903907,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.4",
+            "archetype": "prop.structural.wall",
+            "x": 439.6067397999617,
+            "z": 432.87696459119064,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.6",
+            "archetype": "prop.structural.wall",
+            "x": 436.441599794393,
+            "z": 435.32275459549373,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.well",
+            "archetype": "prop.structural.well",
+            "x": 429.0892433231241,
+            "z": 428.261135416403,
+            "radius": 0.8
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.0",
+            "archetype": "prop.structural.wall",
+            "x": 422.892,
+            "z": 439.661,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.1",
+            "archetype": "prop.structural.wall",
+            "x": 420.892,
+            "z": 439.661,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.2",
+            "archetype": "prop.structural.wall",
+            "x": 418.892,
+            "z": 439.661,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.3",
+            "archetype": "prop.structural.wall",
+            "x": 416.892,
+            "z": 439.661,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.gate.6abb84eef2e499b951eeced2.1.0",
+            "archetype": "prop.structural.wall",
+            "x": 420.90283331223986,
+            "z": 439.911,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_1.frontage.0.3",
+            "archetype": "prop.structural.wall",
+            "x": 423.642,
+            "z": 410.411,
+            "radius": 1
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "nature.104",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 495.84000000000003,
+            "z": 476.619,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.142",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 298.579,
+            "z": 379.81100000000004,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.149",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 333.679,
+            "z": 378.98900000000003,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.169",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 380.546,
+            "z": 503.159,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.173",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 374.3,
+            "z": 312.921,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.175",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 419.14599999999996,
+            "z": 294.944,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.201",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 307.272,
+            "z": 442.51800000000003,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.209",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 319.229,
+            "z": 379.305,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.219",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 381.225,
+            "z": 366.58299999999997,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.224",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 405.227,
+            "z": 320.139,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.231",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 334.363,
+            "z": 330.995,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.235",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 406.131,
+            "z": 291.867,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.255",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 358.37800000000004,
+            "z": 375.73699999999997,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.262",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 341.3,
+            "z": 405.375,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.264",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 468.37799999999993,
+            "z": 289.549,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.268",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 374.942,
+            "z": 478.597,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.297",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 303.493,
+            "z": 412.199,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.309",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 455.10900000000004,
+            "z": 509.59299999999996,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.320",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 367.565,
+            "z": 492.389,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.325",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 382.849,
+            "z": 370.155,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.343",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 480.592,
+            "z": 313.311,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.352",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 324.062,
+            "z": 478.913,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.404",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 322.279,
+            "z": 460.54200000000003,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.419",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 432.483,
+            "z": 323.75,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.449",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 459.587805203476,
+            "z": 489.0767429779014,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.450",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 464.50439462381695,
+            "z": 452.94472357531447,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.8",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 358.334,
+            "z": 483.68100000000004,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.86",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 490.457,
+            "z": 313.479,
+            "moved": 0
+          },
+          {
+            "entityId": "nature.96",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 334.128,
+            "z": 455.076,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.goods.0",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec3"
+            },
+            "why": [],
+            "x": 446.4095764479498,
+            "z": 417.3118593263538,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.planter.1",
+            "purpose": "planting",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "route",
+              "id": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath"
+            },
+            "why": [],
+            "x": 445.0994314748159,
+            "z": 423.14795966122267,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.sign",
+            "purpose": "sign",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84bcf2e499b951eece64_4"
+            },
+            "why": ["untied"],
+            "x": 444.58003017976364,
+            "z": 428.1805535653987,
+            "moved": 4.464056020735949
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.0",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec1"
+            },
+            "why": ["untied"],
+            "x": 428.3909991608252,
+            "z": 440.55875486666935,
+            "moved": 3.500993067018575
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.1",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec1"
+            },
+            "why": [],
+            "x": 422.467205160028,
+            "z": 442.54478146055715,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.lantern",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 422.29026000316406,
+            "z": 442.6745412422574,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.planter.0",
+            "purpose": "planting",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "route",
+              "id": "road.street_lane_0_mouth.street_lane_0_end"
+            },
+            "why": [],
+            "x": 427.28997097746947,
+            "z": 439.00808652776675,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.sign",
+            "purpose": "sign",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec1"
+            },
+            "why": [],
+            "x": 427.7738139749829,
+            "z": 438.6532683295903,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work",
+            "purpose": "work",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec1"
+            },
+            "why": [],
+            "x": 422.93538399984857,
+            "z": 442.2014503113554,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84e9f2e499b951eece72",
+            "purpose": "work",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec1"
+            },
+            "why": [],
+            "x": 423.6638365127716,
+            "z": 441.4192374653753,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84ecf2e499b951eecea3",
+            "purpose": "work",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec1"
+            },
+            "why": ["untied"],
+            "x": 430.1589430309098,
+            "z": 439.1255043771662,
+            "moved": 2.1828168139000708
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.banner",
+            "purpose": "sign",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec2"
+            },
+            "why": [],
+            "x": 413.49199999999996,
+            "z": 433.861,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.lantern",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 424.592,
+            "z": 434.01099999999997,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.banner",
+            "purpose": "sign",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec3"
+            },
+            "why": [],
+            "x": 429.942,
+            "z": 404.51099999999997,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.goods.1",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec3"
+            },
+            "why": [],
+            "x": 429.79200000000003,
+            "z": 418.1380531248301,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.lantern",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 429.79200000000003,
+            "z": 418.611,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.work",
+            "purpose": "work",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec3"
+            },
+            "why": [],
+            "x": 429.79200000000003,
+            "z": 417.81100000000004,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.0",
+            "purpose": "planting",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84bcf2e499b951eece64_4"
+            },
+            "why": [],
+            "x": 445.49189837494,
+            "z": 436.0202421480296,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.1",
+            "purpose": "planting",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "route",
+              "id": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.footpath"
+            },
+            "why": [],
+            "x": 445.16060379671546,
+            "z": 433.0385909440087,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.bench",
+            "purpose": "seat",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "route",
+              "id": "road.street_lane_1_mouth.street_lane_1_end"
+            },
+            "why": [],
+            "x": 424.642,
+            "z": 419.911,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.goods.0",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84bcf2e499b951eece64_5"
+            },
+            "why": [],
+            "x": 413.092,
+            "z": 412.9878150165677,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.0",
+            "purpose": "sign",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "bld_6abb84eef2e499b951eecec2"
+            },
+            "why": [],
+            "x": 425.3809940665999,
+            "z": 430.4947171703327,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.1",
+            "purpose": "sign",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0"
+            },
+            "why": ["untied"],
+            "x": 430.40484704415246,
+            "z": 426.999849131461,
+            "moved": 10.08916337770843
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.bench.0",
+            "purpose": "seat",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "route",
+              "id": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath"
+            },
+            "why": ["untied"],
+            "x": 439.57022041140203,
+            "z": 426.16563086377766,
+            "moved": 3.8300818569716224
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0"
+            },
+            "why": ["block", "row"],
+            "x": 431.23797211604176,
+            "z": 428.69653021205124,
+            "moved": 1.374991361613388
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.1",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0"
+            },
+            "why": ["block", "row"],
+            "x": 433.4752477102023,
+            "z": 428.12775911000176,
+            "moved": 1.8782572993292244
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.2",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0"
+            },
+            "why": ["block"],
+            "x": 431.6393164034305,
+            "z": 427.3999405524163,
+            "moved": 3.3766672196577963
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.3",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0"
+            },
+            "why": ["block"],
+            "x": 434.64405016769445,
+            "z": 429.0638125823536,
+            "moved": 1.6636881516007207
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.awning"
+            },
+            "why": ["block", "row"],
+            "x": 433.63192855100334,
+            "z": 429.8941612510351,
+            "moved": 1.054453441531092
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.5",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.well"
+            },
+            "why": ["block", "row"],
+            "x": 432.61696143448586,
+            "z": 426.67304314270956,
+            "moved": 3.075449083475576
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.0",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 438.45877708960865,
+            "z": 419.1253904003298,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.1",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 438.842430423617,
+            "z": 431.8878583394504,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.2",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 425.0069320659418,
+            "z": 429.51999791861783,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.3",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 431.32522291039135,
+            "z": 437.6966095996702,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch",
+            "purpose": "work",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.awning"
+            },
+            "why": [],
+            "x": 436.65554228311555,
+            "z": 432.4246761161992,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.awning",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 436.65554228311555,
+            "z": 432.4246761161992,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.0",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.awning"
+            },
+            "why": [],
+            "x": 438.09743482702305,
+            "z": 432.8381321499247,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.1",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.awning"
+            },
+            "why": [],
+            "x": 435.2136497392081,
+            "z": 432.0112200824737,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 431.17535832679437,
+            "z": 431.451452672016,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.back.1",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 440.7726862603463,
+            "z": 420.07553186033476,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.back.2",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 441.9955812624978,
+            "z": 421.6581018631191,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.3",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 433.34240020560696,
+            "z": 421.49924540450627,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.4",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 431.7598302028226,
+            "z": 422.7221404066579,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.6",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 428.59469019725395,
+            "z": 425.16793041096093,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.7",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 427.0121201944696,
+            "z": 426.39082541311245,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.2",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 442.7718798055304,
+            "z": 430.43117458688755,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.3",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 441.18930980274604,
+            "z": 431.65406958903907,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.4",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 439.6067397999617,
+            "z": 432.87696459119064,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.6",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 436.441599794393,
+            "z": 435.32275459549373,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.well",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 429.0892433231241,
+            "z": 428.261135416403,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.0",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 422.892,
+            "z": 439.661,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.1",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 420.892,
+            "z": 439.661,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.2",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 418.892,
+            "z": 439.661,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.3",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 416.892,
+            "z": 439.661,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.gate.6abb84eef2e499b951eeced2.1.0",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 420.90283331223986,
+            "z": 439.911,
+            "moved": 0
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_1.frontage.0.3",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 423.642,
+            "z": 410.411,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": ["prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.sign", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.0", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84ecf2e499b951eecea3", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.1", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.bench.0"],
+          "blocks": [["prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.1", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.2", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.3", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.5"]],
+          "rows": [["prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.1", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4"], ["prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.5"]],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "audit: Brightwater Vale's dressing as it stood",
+      "note": "The same props audited as they stood: what was untied, the blocks and rows on the square's floor or untied, flora on the square.",
+      "op": "auditPropGroups",
+      "input": {
+        "plan": {
+          "$fixture": "villageFollowedPlan"
+        },
+        "buildings": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "outline": [[459.00987385207276, 440.97032998790377], [445.89464588250075, 440.9676587673506], [445.8971260833178, 428.7903044541259], [459.0123540528897, 428.792975674679]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "outline": [[412.82080370500114, 404.7803641288587], [423.13991446136845, 404.7782624024681], [423.14219630161534, 415.9817008428932], [412.82308554524803, 415.98380256928385]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "outline": [[435.5500175597363, 459.9186332467596], [435.5553600007318, 446.8034060932717], [447.73271355623086, 446.8083664948028], [447.72737111523537, 459.92359364829065]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "outline": [[461.1549144547519, 422.8748025692839], [450.8358036983846, 422.87270084289327], [450.8380855386315, 411.66926240246806], [461.1571962949988, 411.67136412885867]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "outline": [[418.350114430252, 451.882773203702], [418.3543178829461, 441.56366308943274], [429.5577556262466, 441.5682267698318], [429.55355217355253, 451.88733688410116]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "outline": [[409.60864594711035, 421.98497567467894], [422.7238739166823, 421.98230445412577], [422.7263541174992, 434.15965876735055], [409.6111261479273, 434.1623299879037]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "outline": [[444.93943722855, 405.27424860145004], [444.93943722855, 417.30075139855006], [429.14256277145, 417.30075139855006], [429.14256277145, 405.27424860145004]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "nature.104",
+            "archetype": "prop.rock.stone",
+            "x": 495.84000000000003,
+            "z": 476.619,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.142",
+            "archetype": "prop.rock.stone",
+            "x": 298.579,
+            "z": 379.81100000000004,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.149",
+            "archetype": "prop.rock.stone",
+            "x": 333.679,
+            "z": 378.98900000000003,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.169",
+            "archetype": "prop.rock.boulder",
+            "x": 380.546,
+            "z": 503.159,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.173",
+            "archetype": "prop.rock.boulder",
+            "x": 374.3,
+            "z": 312.921,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.175",
+            "archetype": "prop.rock.boulder",
+            "x": 419.14599999999996,
+            "z": 294.944,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.201",
+            "archetype": "prop.rock.mossy",
+            "x": 307.272,
+            "z": 442.51800000000003,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.209",
+            "archetype": "prop.rock.stone",
+            "x": 319.229,
+            "z": 379.305,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.219",
+            "archetype": "prop.rock.mossy",
+            "x": 381.225,
+            "z": 366.58299999999997,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.224",
+            "archetype": "prop.rock.stone",
+            "x": 405.227,
+            "z": 320.139,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.231",
+            "archetype": "prop.rock.boulder",
+            "x": 334.363,
+            "z": 330.995,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.235",
+            "archetype": "prop.rock.boulder",
+            "x": 406.131,
+            "z": 291.867,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.255",
+            "archetype": "prop.rock.boulder",
+            "x": 358.37800000000004,
+            "z": 375.73699999999997,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.262",
+            "archetype": "prop.rock.stone",
+            "x": 341.3,
+            "z": 405.375,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.264",
+            "archetype": "prop.rock.stone",
+            "x": 468.37799999999993,
+            "z": 289.549,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.268",
+            "archetype": "prop.rock.stone",
+            "x": 374.942,
+            "z": 478.597,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.297",
+            "archetype": "prop.rock.stone",
+            "x": 303.493,
+            "z": 412.199,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.309",
+            "archetype": "prop.rock.boulder",
+            "x": 455.10900000000004,
+            "z": 509.59299999999996,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.320",
+            "archetype": "prop.rock.stone",
+            "x": 367.565,
+            "z": 492.389,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.325",
+            "archetype": "prop.rock.boulder",
+            "x": 382.849,
+            "z": 370.155,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.343",
+            "archetype": "prop.rock.boulder",
+            "x": 480.592,
+            "z": 313.311,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.352",
+            "archetype": "prop.rock.stone",
+            "x": 324.062,
+            "z": 478.913,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.404",
+            "archetype": "prop.rock.stone",
+            "x": 322.279,
+            "z": 460.54200000000003,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.419",
+            "archetype": "prop.rock.boulder",
+            "x": 432.483,
+            "z": 323.75,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.449",
+            "archetype": "prop.rock",
+            "x": 459.587805203476,
+            "z": 489.0767429779014,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.450",
+            "archetype": "prop.rock",
+            "x": 464.50439462381695,
+            "z": 452.94472357531447,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.8",
+            "archetype": "prop.rock.mossy",
+            "x": 358.334,
+            "z": 483.68100000000004,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.86",
+            "archetype": "prop.rock.mossy",
+            "x": 490.457,
+            "z": 313.479,
+            "radius": 0.4
+          },
+          {
+            "entityId": "nature.96",
+            "archetype": "prop.rock.mossy",
+            "x": 334.128,
+            "z": 455.076,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.goods.0",
+            "archetype": "prop.container.crate",
+            "x": 446.4095764479498,
+            "z": 417.3118593263538,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.planter.1",
+            "archetype": "prop.vegetation.planter",
+            "x": 445.0994314748159,
+            "z": 423.14795966122267,
+            "radius": 0.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.sign",
+            "archetype": "prop.structural.sign",
+            "x": 444.9680084694319,
+            "z": 423.7333894124789,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.0",
+            "archetype": "prop.container.barrel",
+            "x": 429.63694635723516,
+            "z": 437.2869712492719,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.1",
+            "archetype": "prop.container.crate",
+            "x": 422.467205160028,
+            "z": 442.54478146055715,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.lantern",
+            "archetype": "prop.structural.lantern",
+            "x": 422.29026000316406,
+            "z": 442.6745412422574,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.planter.0",
+            "archetype": "prop.vegetation.planter",
+            "x": 427.28997097746947,
+            "z": 439.00808652776675,
+            "radius": 0.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.sign",
+            "archetype": "prop.structural.sign",
+            "x": 427.7738139749829,
+            "z": 438.6532683295903,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work",
+            "archetype": "prop.furniture.anvil",
+            "x": 422.93538399984857,
+            "z": 442.2014503113554,
+            "radius": 0.35
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84e9f2e499b951eece72",
+            "archetype": "prop.furniture.anvil",
+            "x": 423.6638365127716,
+            "z": 441.4192374653753,
+            "radius": 0.35
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84ecf2e499b951eecea3",
+            "archetype": "prop.furniture.anvil",
+            "x": 428.2603449891491,
+            "z": 438.04846458269844,
+            "radius": 0.35
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.banner",
+            "archetype": "prop.structural.banner",
+            "x": 413.49199999999996,
+            "z": 433.861,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.lantern",
+            "archetype": "prop.structural.lantern",
+            "x": 424.592,
+            "z": 434.01099999999997,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.banner",
+            "archetype": "prop.structural.banner",
+            "x": 429.942,
+            "z": 404.51099999999997,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.goods.1",
+            "archetype": "prop.container.barrel",
+            "x": 429.79200000000003,
+            "z": 418.1380531248301,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.lantern",
+            "archetype": "prop.structural.lantern",
+            "x": 429.79200000000003,
+            "z": 418.611,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.work",
+            "archetype": "prop.container.cauldron",
+            "x": 429.79200000000003,
+            "z": 417.81100000000004,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.0",
+            "archetype": "prop.vegetation.planter",
+            "x": 445.49189837494,
+            "z": 436.0202421480296,
+            "radius": 0.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.1",
+            "archetype": "prop.vegetation.planter",
+            "x": 445.16060379671546,
+            "z": 433.0385909440087,
+            "radius": 0.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.bench",
+            "archetype": "prop.furniture.bench.a",
+            "x": 424.642,
+            "z": 419.911,
+            "radius": 0.8
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.goods.0",
+            "archetype": "prop.container.barrel",
+            "x": 413.092,
+            "z": 412.9878150165677,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.0",
+            "archetype": "prop.structural.banner",
+            "x": 425.3809940665999,
+            "z": 430.4947171703327,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.1",
+            "archetype": "prop.structural.banner",
+            "x": 430.47638990889794,
+            "z": 437.0887588486008,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.bench.0",
+            "archetype": "prop.furniture.bench",
+            "x": 435.7408330014934,
+            "z": 426.23856299617785,
+            "radius": 0.8
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0",
+            "archetype": "prop.container.barrel",
+            "x": 431.9820896656394,
+            "z": 429.8527699436347,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.1",
+            "archetype": "prop.container.crate",
+            "x": 433.0301831991242,
+            "z": 429.95252431776476,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.2",
+            "archetype": "prop.container.barrel",
+            "x": 432.40034981277427,
+            "z": 430.6897292480887,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.3",
+            "archetype": "prop.container.crate",
+            "x": 433.5799270757526,
+            "z": 430.3426793897158,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4",
+            "archetype": "prop.container.barrel",
+            "x": 432.5774751129989,
+            "z": 429.8940750106591,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.5",
+            "archetype": "prop.container.barrel",
+            "x": 433.09683372728693,
+            "z": 429.7108235244443,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.0",
+            "archetype": "prop.structural.lantern",
+            "x": 438.45877708960865,
+            "z": 419.1253904003298,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.1",
+            "archetype": "prop.structural.lantern",
+            "x": 438.842430423617,
+            "z": 431.8878583394504,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.2",
+            "archetype": "prop.structural.lantern",
+            "x": 425.0069320659418,
+            "z": 429.51999791861783,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.3",
+            "archetype": "prop.structural.lantern",
+            "x": 431.32522291039135,
+            "z": 437.6966095996702,
+            "radius": 0.15
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch",
+            "archetype": "prop.container.cauldron",
+            "x": 436.65554228311555,
+            "z": 432.4246761161992,
+            "radius": 0.45
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.awning",
+            "archetype": "prop.furniture.stall",
+            "x": 436.65554228311555,
+            "z": 432.4246761161992,
+            "radius": 1.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.0",
+            "archetype": "prop.container.crate",
+            "x": 438.09743482702305,
+            "z": 432.8381321499247,
+            "radius": 0.4
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.1",
+            "archetype": "prop.container.barrel",
+            "x": 435.2136497392081,
+            "z": 432.0112200824737,
+            "radius": 0.3
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 431.17535832679437,
+            "z": 431.451452672016,
+            "radius": 1.5
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.back.1",
+            "archetype": "prop.structural.wall",
+            "x": 440.7726862603463,
+            "z": 420.07553186033476,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.back.2",
+            "archetype": "prop.structural.wall",
+            "x": 441.9955812624978,
+            "z": 421.6581018631191,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.3",
+            "archetype": "prop.structural.wall",
+            "x": 433.34240020560696,
+            "z": 421.49924540450627,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.4",
+            "archetype": "prop.structural.wall",
+            "x": 431.7598302028226,
+            "z": 422.7221404066579,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.6",
+            "archetype": "prop.structural.wall",
+            "x": 428.59469019725395,
+            "z": 425.16793041096093,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.7",
+            "archetype": "prop.structural.wall",
+            "x": 427.0121201944696,
+            "z": 426.39082541311245,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.2",
+            "archetype": "prop.structural.wall",
+            "x": 442.7718798055304,
+            "z": 430.43117458688755,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.3",
+            "archetype": "prop.structural.wall",
+            "x": 441.18930980274604,
+            "z": 431.65406958903907,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.4",
+            "archetype": "prop.structural.wall",
+            "x": 439.6067397999617,
+            "z": 432.87696459119064,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.6",
+            "archetype": "prop.structural.wall",
+            "x": 436.441599794393,
+            "z": 435.32275459549373,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.well",
+            "archetype": "prop.structural.well",
+            "x": 429.0892433231241,
+            "z": 428.261135416403,
+            "radius": 0.8
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.0",
+            "archetype": "prop.structural.wall",
+            "x": 422.892,
+            "z": 439.661,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.1",
+            "archetype": "prop.structural.wall",
+            "x": 420.892,
+            "z": 439.661,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.2",
+            "archetype": "prop.structural.wall",
+            "x": 418.892,
+            "z": 439.661,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.3",
+            "archetype": "prop.structural.wall",
+            "x": 416.892,
+            "z": 439.661,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.gate.6abb84eef2e499b951eeced2.1.0",
+            "archetype": "prop.structural.wall",
+            "x": 420.90283331223986,
+            "z": 439.911,
+            "radius": 1
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_1.frontage.0.3",
+            "archetype": "prop.structural.wall",
+            "x": 423.642,
+            "z": 410.411,
+            "radius": 1
+          }
+        ]
+      },
+      "expected": {
+        "untied": ["prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.sign", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.0", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84ecf2e499b951eecea3", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.1", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.bench.0"],
+        "blocks": [["prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.1", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.2", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.3", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.5"]],
+        "rows": [["prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.1", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4"], ["prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4", "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.5"]],
+        "floraOnSquare": []
+      }
+    },
+    {
+      "name": "purpose: the archetype table, longest prefix by whole segments",
+      "note": "Which purpose each archetype has: a sub-archetype takes its parent's (crate.small, bench.a), a name that only starts like one does not (prop.containers), and rocks, trees, lanterns, walls and carts are not dressing.",
+      "op": "propPurpose",
+      "input": {
+        "archetypes": ["prop.container.crate", "prop.container.crate.small", "prop.containers", "prop.container.cauldron", "prop.furniture.anvil", "prop.furniture.bench.a", "prop.structural.sign", "prop.structural.banner.inn", "prop.vegetation.planter", "prop.vegetation.flower.rose", "prop.vegetation.fern", "prop.vegetation.tree.oak", "prop.structural.lantern", "prop.structural.wall", "prop.furniture.stall.produce", "prop.rock.boulder"]
+      },
+      "expected": ["goods", "goods", null, "work", "work", "seat", "sign", "sign", "planting", "flora", "flora", null, null, null, null, null]
+    },
+    {
+      "name": "tie: a crate whose edge is 2.85 m from a house's wall is tied",
+      "note": "A 0.8 m crate 2.85 m off a 6 m house's wall, nothing else near: within the 3 m tie, it stays.",
+      "op": "groupProps",
+      "pins": ["grouping.tieReachM:inside"],
+      "input": {
+        "plan": {},
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "crate",
+            "archetype": "prop.container.crate",
+            "x": 9.25,
+            "z": 3,
+            "radius": 0.4
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "crate",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": [],
+            "x": 9.25,
+            "z": 3,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "tie: a crate whose edge is 3.15 m from a house's wall is regrouped at it",
+      "note": "A 0.8 m crate 3.15 m off a 6 m house's wall, nothing else near: beyond the 3 m tie it is untied, and moves into a cluster off the wall.",
+      "op": "groupProps",
+      "pins": ["grouping.tieReachM:past"],
+      "input": {
+        "plan": {},
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "crate",
+            "archetype": "prop.container.crate",
+            "x": 9.55,
+            "z": 3,
+            "radius": 0.4
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "crate",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied"],
+            "x": 7.087721358048277,
+            "z": 1.8147739912858347,
+            "moved": 2.7326867369576293
+          }
+        ],
+        "before": {
+          "untied": ["crate"],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "regroup: an untied crate 19 m from the nearest house is regrouped at it",
+      "note": "A crate 19 m off the only house: within the 20 m regroup reach it moves to the house.",
+      "op": "groupProps",
+      "pins": ["grouping.regroupReachM:inside"],
+      "input": {
+        "plan": {},
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "crate",
+            "archetype": "prop.container.crate",
+            "x": 25.4,
+            "z": 3,
+            "radius": 0.4
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "crate",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied"],
+            "x": 7.087721358048277,
+            "z": 1.8147739912858347,
+            "moved": 18.350594261554953
+          }
+        ],
+        "before": {
+          "untied": ["crate"],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "regroup: an untied crate 21 m from the nearest house is set aside",
+      "note": "A crate 21 m off the only house: beyond the 20 m regroup reach nothing takes it, so it is set aside rather than left loose.",
+      "op": "groupProps",
+      "pins": ["grouping.regroupReachM:past"],
+      "input": {
+        "plan": {},
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "crate",
+            "archetype": "prop.container.crate",
+            "x": 27.4,
+            "z": 3,
+            "radius": 0.4
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "crate",
+            "purpose": "goods",
+            "verdict": "set-aside",
+            "anchor": null,
+            "why": ["untied"],
+            "x": 27.4,
+            "z": 3,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": ["crate"],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "pack: four crates 0.3325 m apart by a stall on the square are a block",
+      "note": "Four 0.8 m crates in a 2 x 2, gaps 0.3325 m, beside a produce stall on the square (2.56 m2): under the 0.35 m pack gap they are one block, so they are regrouped round the stall.",
+      "op": "groupProps",
+      "pins": ["grouping.packGapM:inside"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "stall",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 30,
+            "z": 10,
+            "radius": 1.5
+          },
+          {
+            "entityId": "crate.0",
+            "archetype": "prop.container.crate",
+            "x": 29.43375,
+            "z": 12,
+            "radius": 0.4
+          },
+          {
+            "entityId": "crate.1",
+            "archetype": "prop.container.crate",
+            "x": 30.56625,
+            "z": 12,
+            "radius": 0.4
+          },
+          {
+            "entityId": "crate.2",
+            "archetype": "prop.container.crate",
+            "x": 29.43375,
+            "z": 13.1325,
+            "radius": 0.4
+          },
+          {
+            "entityId": "crate.3",
+            "archetype": "prop.container.crate",
+            "x": 30.56625,
+            "z": 13.1325,
+            "radius": 0.4
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "stall",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 30,
+            "z": 10,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.0",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["block"],
+            "x": 30.435460597545912,
+            "z": 12.812727606188819,
+            "moved": 1.2899419688874367
+          },
+          {
+            "entityId": "crate.1",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["block"],
+            "x": 28.374515298559043,
+            "z": 13.700571517410367,
+            "moved": 2.774102465181825
+          },
+          {
+            "entityId": "crate.2",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["block"],
+            "x": 30.288146860108476,
+            "z": 14.161994312683136,
+            "moved": 1.3378537044124614
+          },
+          {
+            "entityId": "crate.3",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["block"],
+            "x": 27.048963620415243,
+            "z": 13.004002758197274,
+            "moved": 3.519632795784719
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [["crate.0", "crate.1", "crate.2", "crate.3"]],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "pack: four crates 0.3675 m apart by a stall on the square are not packed",
+      "note": "Four 0.8 m crates in a 2 x 2, gaps 0.3675 m, beside a produce stall on the square (2.56 m2): over the 0.35 m pack gap no two are packed, so each stays tied to the stall.",
+      "op": "groupProps",
+      "pins": ["grouping.packGapM:past"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "stall",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 30,
+            "z": 10,
+            "radius": 1.5
+          },
+          {
+            "entityId": "crate.0",
+            "archetype": "prop.container.crate",
+            "x": 29.41625,
+            "z": 12,
+            "radius": 0.4
+          },
+          {
+            "entityId": "crate.1",
+            "archetype": "prop.container.crate",
+            "x": 30.583750000000002,
+            "z": 12,
+            "radius": 0.4
+          },
+          {
+            "entityId": "crate.2",
+            "archetype": "prop.container.crate",
+            "x": 29.41625,
+            "z": 13.1675,
+            "radius": 0.4
+          },
+          {
+            "entityId": "crate.3",
+            "archetype": "prop.container.crate",
+            "x": 30.583750000000002,
+            "z": 13.1675,
+            "radius": 0.4
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "stall",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 30,
+            "z": 10,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.0",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 29.41625,
+            "z": 12,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.1",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 30.583750000000002,
+            "z": 12,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.2",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 29.41625,
+            "z": 13.1675,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.3",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 30.583750000000002,
+            "z": 13.1675,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "block: a packed cluster covering 1.9 m2 is not a block",
+      "note": "Four crates of radius 0.344601 m packed 0.1 m apart by a stall on the square, covering 1.9 m2 (each a square of its diameter): under the 2 m2 block area, a small pile, tied.",
+      "op": "groupProps",
+      "pins": ["grouping.blockMinAreaM2:inside"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "stall",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 30,
+            "z": 10,
+            "radius": 1.5
+          },
+          {
+            "entityId": "crate.0",
+            "archetype": "prop.container.crate",
+            "x": 29.605398781197746,
+            "z": 12,
+            "radius": 0.3446012188022555
+          },
+          {
+            "entityId": "crate.1",
+            "archetype": "prop.container.crate",
+            "x": 30.394601218802258,
+            "z": 12,
+            "radius": 0.3446012188022555
+          },
+          {
+            "entityId": "crate.2",
+            "archetype": "prop.container.crate",
+            "x": 29.605398781197746,
+            "z": 12.78920243760451,
+            "radius": 0.3446012188022555
+          },
+          {
+            "entityId": "crate.3",
+            "archetype": "prop.container.crate",
+            "x": 30.394601218802258,
+            "z": 12.78920243760451,
+            "radius": 0.3446012188022555
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "stall",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 30,
+            "z": 10,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.0",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 29.605398781197746,
+            "z": 12,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.1",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 30.394601218802258,
+            "z": 12,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.2",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 29.605398781197746,
+            "z": 12.78920243760451,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.3",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 30.394601218802258,
+            "z": 12.78920243760451,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "block: a packed cluster covering 2.1 m2 is a block",
+      "note": "Four crates of radius 0.362284 m packed 0.1 m apart by a stall on the square, covering 2.1 m2 (each a square of its diameter): over it, a block, regrouped.",
+      "op": "groupProps",
+      "pins": ["grouping.blockMinAreaM2:past"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "stall",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 30,
+            "z": 10,
+            "radius": 1.5
+          },
+          {
+            "entityId": "crate.0",
+            "archetype": "prop.container.crate",
+            "x": 29.587715581345265,
+            "z": 12,
+            "radius": 0.362284418654736
+          },
+          {
+            "entityId": "crate.1",
+            "archetype": "prop.container.crate",
+            "x": 30.412284418654735,
+            "z": 12,
+            "radius": 0.362284418654736
+          },
+          {
+            "entityId": "crate.2",
+            "archetype": "prop.container.crate",
+            "x": 29.587715581345265,
+            "z": 12.824568837309473,
+            "radius": 0.362284418654736
+          },
+          {
+            "entityId": "crate.3",
+            "archetype": "prop.container.crate",
+            "x": 30.412284418654735,
+            "z": 12.824568837309473,
+            "radius": 0.362284418654736
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "stall",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 30,
+            "z": 10,
+            "moved": 0
+          },
+          {
+            "entityId": "crate.0",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["block"],
+            "x": 30.64597965214407,
+            "z": 12.736786517426426,
+            "moved": 1.289487191020144
+          },
+          {
+            "entityId": "crate.1",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["block"],
+            "x": 28.654874202991998,
+            "z": 13.771804114603485,
+            "moved": 2.4955521406377366
+          },
+          {
+            "entityId": "crate.2",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["block"],
+            "x": 30.596937813455195,
+            "z": 14.093185013647142,
+            "moved": 1.621084981316698
+          },
+          {
+            "entityId": "crate.3",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["block"],
+            "x": 27.282282059861224,
+            "z": 13.173234071620058,
+            "moved": 3.1493621912491747
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [["crate.0", "crate.1", "crate.2", "crate.3"]],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "row: three barrels whose middle is 0.19 m off their line are a grid row",
+      "note": "Three barrels 1.5 m apart on the square, tied to its stall, the middle one 0.19 m off the line of the other two: within the 0.2 m row tolerance they are a grid row and are regrouped round the stall.",
+      "op": "groupProps",
+      "pins": ["grouping.rowToleranceM:inside"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "stall",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 30,
+            "z": 10,
+            "radius": 1.5
+          },
+          {
+            "entityId": "barrel.0",
+            "archetype": "prop.container.barrel",
+            "x": 28.5,
+            "z": 14,
+            "radius": 0.3
+          },
+          {
+            "entityId": "barrel.1",
+            "archetype": "prop.container.barrel",
+            "x": 30,
+            "z": 14.19,
+            "radius": 0.3
+          },
+          {
+            "entityId": "barrel.2",
+            "archetype": "prop.container.barrel",
+            "x": 31.5,
+            "z": 14,
+            "radius": 0.3
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "stall",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 30,
+            "z": 10,
+            "moved": 0
+          },
+          {
+            "entityId": "barrel.0",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["row"],
+            "x": 30.236264409021917,
+            "z": 12.745486728442081,
+            "moved": 2.1420592070601545
+          },
+          {
+            "entityId": "barrel.1",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["row"],
+            "x": 28.10890281618656,
+            "z": 13.459696074109216,
+            "moved": 2.027212959409695
+          },
+          {
+            "entityId": "barrel.2",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": ["row"],
+            "x": 29.977775065290807,
+            "z": 14.07793006369851,
+            "moved": 1.5242184379800887
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [["barrel.0", "barrel.1", "barrel.2"]],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "row: three barrels whose middle is 0.21 m off their line are not a row",
+      "note": "Three barrels 1.5 m apart on the square, tied to its stall, the middle one 0.21 m off the line of the other two: past it they are not a row and stay.",
+      "op": "groupProps",
+      "pins": ["grouping.rowToleranceM:past"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "stall",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 30,
+            "z": 10,
+            "radius": 1.5
+          },
+          {
+            "entityId": "barrel.0",
+            "archetype": "prop.container.barrel",
+            "x": 28.5,
+            "z": 14,
+            "radius": 0.3
+          },
+          {
+            "entityId": "barrel.1",
+            "archetype": "prop.container.barrel",
+            "x": 30,
+            "z": 14.21,
+            "radius": 0.3
+          },
+          {
+            "entityId": "barrel.2",
+            "archetype": "prop.container.barrel",
+            "x": 31.5,
+            "z": 14,
+            "radius": 0.3
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "stall",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 30,
+            "z": 10,
+            "moved": 0
+          },
+          {
+            "entityId": "barrel.0",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 28.5,
+            "z": 14,
+            "moved": 0
+          },
+          {
+            "entityId": "barrel.1",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 30,
+            "z": 14.21,
+            "moved": 0
+          },
+          {
+            "entityId": "barrel.2",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall"
+            },
+            "why": [],
+            "x": 31.5,
+            "z": 14,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "row: four evenly spaced benches in the open, a row; unevenly spaced, none",
+      "note": "Four benches loose on the square at 3 m spacing are one row of four (not two of three); four more at 2, 3 and 5 m steps along another line are no row.",
+      "op": "auditPropGroups",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "even.0",
+            "archetype": "prop.furniture.bench",
+            "x": 22,
+            "z": 4,
+            "radius": 0.8
+          },
+          {
+            "entityId": "even.1",
+            "archetype": "prop.furniture.bench",
+            "x": 25,
+            "z": 4,
+            "radius": 0.8
+          },
+          {
+            "entityId": "even.2",
+            "archetype": "prop.furniture.bench",
+            "x": 28,
+            "z": 4,
+            "radius": 0.8
+          },
+          {
+            "entityId": "even.3",
+            "archetype": "prop.furniture.bench",
+            "x": 31,
+            "z": 4,
+            "radius": 0.8
+          },
+          {
+            "entityId": "uneven.0",
+            "archetype": "prop.furniture.bench",
+            "x": 22,
+            "z": 17,
+            "radius": 0.8
+          },
+          {
+            "entityId": "uneven.1",
+            "archetype": "prop.furniture.bench",
+            "x": 24,
+            "z": 17,
+            "radius": 0.8
+          },
+          {
+            "entityId": "uneven.2",
+            "archetype": "prop.furniture.bench",
+            "x": 27,
+            "z": 17,
+            "radius": 0.8
+          },
+          {
+            "entityId": "uneven.3",
+            "archetype": "prop.furniture.bench",
+            "x": 32,
+            "z": 17,
+            "radius": 0.8
+          }
+        ]
+      },
+      "expected": {
+        "untied": ["even.0", "even.1", "even.2", "even.3", "uneven.0", "uneven.1", "uneven.2", "uneven.3"],
+        "blocks": [],
+        "rows": [["even.0", "even.1", "even.2", "even.3"]],
+        "floraOnSquare": []
+      }
+    },
+    {
+      "name": "flora: a flower whose edge is 0.57 m outside the square is moved off it",
+      "note": "A 0.2 m flower 0.57 m outside the square's edge: within the 0.6 m margin, it is moved to the margin off the edge.",
+      "op": "groupProps",
+      "pins": ["grouping.floraSquareMarginM:inside"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "flower",
+            "archetype": "prop.vegetation.flower",
+            "x": 40.67,
+            "z": 10,
+            "radius": 0.1
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "flower",
+            "purpose": "flora",
+            "verdict": "off-square",
+            "anchor": null,
+            "why": [],
+            "x": 40.7,
+            "z": 10,
+            "moved": 0.030000000000001137
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": ["flower"]
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "flora: a flower whose edge is 0.63 m outside the square is left",
+      "note": "A 0.2 m flower 0.63 m outside the square's edge: past the margin it stays where it grows.",
+      "op": "groupProps",
+      "pins": ["grouping.floraSquareMarginM:past"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "flower",
+            "archetype": "prop.vegetation.flower",
+            "x": 40.730000000000004,
+            "z": 10,
+            "radius": 0.1
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "flower",
+            "purpose": "flora",
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 40.730000000000004,
+            "z": 10,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "flora: ferns and flowers on the square's floor move just off its nearest edge",
+      "note": "A fern 2 m in from the east edge and a flower 1 m in from the south edge move out across the edge nearest them, to the margin plus their radius outside; a tuft 5 m outside is left; a planter on the square is planting, not flora, and with no house or route to tie to it is set aside.",
+      "op": "groupProps",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "stall",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 30,
+            "z": 10,
+            "radius": 1.5
+          },
+          {
+            "entityId": "fern",
+            "archetype": "prop.vegetation.fern",
+            "x": 38,
+            "z": 10,
+            "radius": 0.25
+          },
+          {
+            "entityId": "flower",
+            "archetype": "prop.vegetation.flower.rose",
+            "x": 30,
+            "z": 1,
+            "radius": 0.1
+          },
+          {
+            "entityId": "tuft",
+            "archetype": "prop.vegetation.tuft",
+            "x": 30,
+            "z": 25,
+            "radius": 0.1
+          },
+          {
+            "entityId": "planter",
+            "archetype": "prop.vegetation.planter",
+            "x": 31,
+            "z": 12.4,
+            "radius": 0.5
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "stall",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 30,
+            "z": 10,
+            "moved": 0
+          },
+          {
+            "entityId": "fern",
+            "purpose": "flora",
+            "verdict": "off-square",
+            "anchor": null,
+            "why": [],
+            "x": 40.85,
+            "z": 10,
+            "moved": 2.8500000000000014
+          },
+          {
+            "entityId": "flower",
+            "purpose": "flora",
+            "verdict": "off-square",
+            "anchor": null,
+            "why": [],
+            "x": 30,
+            "z": -0.7,
+            "moved": 1.7
+          },
+          {
+            "entityId": "tuft",
+            "purpose": "flora",
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 30,
+            "z": 25,
+            "moved": 0
+          },
+          {
+            "entityId": "planter",
+            "purpose": "planting",
+            "verdict": "set-aside",
+            "anchor": null,
+            "why": ["untied"],
+            "x": 31,
+            "z": 12.4,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": ["planter"],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": ["fern", "flower"]
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "flora: an engine's generated fern points on and by the square",
+      "note": "trimFloraOffSquare over points: inside the square, 0.57 m outside its edge (within the 0.6 m margin: dropped), 0.63 m outside (kept), far off (kept).",
+      "op": "trimFloraOffSquare",
+      "pins": ["grouping.floraSquareMarginM:inside", "grouping.floraSquareMarginM:past"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "points": [[30, 10], [40.57, 10], [40.63, 10], [30, -0.57], [60, 60]]
+      },
+      "expected": [0, 1, 3]
+    },
+    {
+      "name": "anchors: a bench ties to the route, goods to the cart before the house, a sign to the house",
+      "note": "A bench 1 m off a road's edge ties to the road; a barrel equally near a cart and a house takes the cart (goods prefer a cart); a sign by the house ties to the house; an anvil whose purpose allows no route is regrouped at the house though a road is nearer.",
+      "op": "groupProps",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[-10, -4], [20, -4]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 3,
+            "z": -1.2,
+            "radius": 0.8
+          },
+          {
+            "entityId": "cart",
+            "archetype": "prop.vehicle.cart",
+            "x": 9,
+            "z": 7,
+            "radius": 1
+          },
+          {
+            "entityId": "barrel",
+            "archetype": "prop.container.barrel",
+            "x": 7.5,
+            "z": 6.5,
+            "radius": 0.3
+          },
+          {
+            "entityId": "sign",
+            "archetype": "prop.structural.sign",
+            "x": 6.5,
+            "z": 3,
+            "radius": 0.15
+          },
+          {
+            "entityId": "anvil",
+            "archetype": "prop.furniture.anvil",
+            "x": 12,
+            "z": -1.5,
+            "radius": 0.35
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "bench",
+            "purpose": "seat",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "route",
+              "id": "road.main"
+            },
+            "why": [],
+            "x": 3,
+            "z": -1.2,
+            "moved": 0
+          },
+          {
+            "entityId": "cart",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 9,
+            "z": 7,
+            "moved": 0
+          },
+          {
+            "entityId": "barrel",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "cart"
+            },
+            "why": [],
+            "x": 7.5,
+            "z": 6.5,
+            "moved": 0
+          },
+          {
+            "entityId": "sign",
+            "purpose": "sign",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": [],
+            "x": 6.5,
+            "z": 3,
+            "moved": 0
+          },
+          {
+            "entityId": "anvil",
+            "purpose": "work",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied"],
+            "x": 6.719278061918357,
+            "z": -1.4015225215190246,
+            "moved": 5.281640086289931
+          }
+        ],
+        "before": {
+          "untied": ["anvil"],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "cluster: five untied goods and a bench regroup off one house, like by like",
+      "note": "Five crates and barrels in a grid 8 m off a house and a bench among them: none within the tie, all within the regroup reach of the house; they move into one half-disc off the wall nearest the first, goods together before the seat; the result has no block and no row.",
+      "op": "groupProps",
+      "input": {
+        "plan": {},
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "goods.0",
+            "archetype": "prop.container.crate",
+            "x": 14,
+            "z": 1,
+            "radius": 0.35
+          },
+          {
+            "entityId": "goods.1",
+            "archetype": "prop.container.barrel",
+            "x": 15.2,
+            "z": 1,
+            "radius": 0.35
+          },
+          {
+            "entityId": "goods.2",
+            "archetype": "prop.container.crate",
+            "x": 16.4,
+            "z": 1,
+            "radius": 0.35
+          },
+          {
+            "entityId": "goods.3",
+            "archetype": "prop.container.barrel",
+            "x": 14,
+            "z": 2.2,
+            "radius": 0.35
+          },
+          {
+            "entityId": "goods.4",
+            "archetype": "prop.container.crate",
+            "x": 15.2,
+            "z": 2.2,
+            "radius": 0.35
+          },
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 15,
+            "z": 4,
+            "radius": 0.8
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "goods.0",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied", "row"],
+            "x": 7.037721358048277,
+            "z": -0.18522600871416528,
+            "moved": 7.062441828426599
+          },
+          {
+            "entityId": "goods.1",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied", "row"],
+            "x": 8.453422931268221,
+            "z": 1.5559090784320981,
+            "moved": 6.7694414132792895
+          },
+          {
+            "entityId": "goods.2",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied", "row"],
+            "x": 8.376088598291075,
+            "z": -0.41104698368480386,
+            "moved": 8.14703674796183
+          },
+          {
+            "entityId": "goods.3",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied"],
+            "x": 8.144301726018655,
+            "z": 3.021084620203996,
+            "moved": 5.912984206764265
+          },
+          {
+            "entityId": "goods.4",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied"],
+            "x": 8.02713504468585,
+            "z": -1.6933906301486314,
+            "moved": 8.161401979200818
+          },
+          {
+            "entityId": "bench",
+            "purpose": "seat",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied"],
+            "x": 9.550521022260892,
+            "z": 5.406263170574561,
+            "moved": 5.628001175704826
+          }
+        ],
+        "before": {
+          "untied": ["bench", "goods.0", "goods.1", "goods.2", "goods.3", "goods.4"],
+          "blocks": [],
+          "rows": [["goods.0", "goods.1", "goods.2"]],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "cluster: a crate inside a house is pushed out the near wall",
+      "note": "A house standing on the square, and a packed pile of three 1 m crates on its floor, the first (by id) with its centre inside the house: the pile is a block (3 m2), and the cluster turns outward from the wall nearest that crate, not into the house.",
+      "op": "groupProps",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[-2, -10], [26, -10], [26, 16], [-2, 16]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "in",
+            "archetype": "prop.container.crate",
+            "x": 5.5,
+            "z": 3,
+            "radius": 0.5
+          },
+          {
+            "entityId": "out.0",
+            "archetype": "prop.container.crate",
+            "x": 6.6,
+            "z": 3,
+            "radius": 0.5
+          },
+          {
+            "entityId": "out.1",
+            "archetype": "prop.container.crate",
+            "x": 6.6,
+            "z": 4.1,
+            "radius": 0.5
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "in",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["block"],
+            "x": 7.187721358048277,
+            "z": 1.8147739912858347,
+            "moved": 2.0623200707321914
+          },
+          {
+            "entityId": "out.0",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["block"],
+            "x": 8.603422931268222,
+            "z": 3.555909078432098,
+            "moved": 2.079119608154995
+          },
+          {
+            "entityId": "out.1",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["block"],
+            "x": 8.526088598291075,
+            "z": 1.5889530163151961,
+            "moved": 3.1646760091262784
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [["in", "out.0", "out.1"]],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "cluster: a regrouped crate's spot keeps off a road beside its house",
+      "note": "The 3.15 m tie case with a road 1 m off the house's wall: the crate's first spot (7.09, 1.81) is on the road, and a spot must clear every anchor (no footprint over a house, a cart or the paving), so the crate stands past the road, still tied to its house.",
+      "op": "groupProps",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.side",
+              "surface": "road",
+              "lotId": "",
+              "points": [[7, -10], [7, 20]],
+              "halfWidth": 0.6,
+              "closed": false
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "crate",
+            "archetype": "prop.container.crate",
+            "x": 12,
+            "z": 3,
+            "radius": 0.4
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "crate",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied"],
+            "x": 8.503422931268222,
+            "z": 3.555909078432098,
+            "moved": 3.5404923529170538
+          }
+        ],
+        "before": {
+          "untied": ["crate"],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "anchors: a bench equally near a route and a house ties to the route, its purpose's first",
+      "note": "A 1 m bench whose edge is 2.1 m from path z.path's edge and 2.1 m from house a.house's wall. A seat's anchors are a route, then a building, so at equal distance it ties to the route, though the house's id sorts first.",
+      "op": "groupProps",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "z.path",
+              "surface": "path",
+              "lotId": "",
+              "points": [[-10, 0], [10, 0]],
+              "halfWidth": 0.6,
+              "closed": false
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "a.house",
+            "outline": [[-3, 5.8], [3, 5.8], [3, 11.8], [-3, 11.8]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 3.2,
+            "radius": 0.5
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "bench",
+            "purpose": "seat",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "route",
+              "id": "z.path"
+            },
+            "why": [],
+            "x": 0,
+            "z": 3.2,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "anchors: a crate equally near two houses ties to the lower id, whatever the input order",
+      "note": "A 0.8 m crate midway between houses h2 and h1 (listed h2 first), its edge 2 m from each wall: within the 3 m tie of both, it ties to h1.",
+      "op": "groupProps",
+      "input": {
+        "plan": {},
+        "buildings": [
+          {
+            "entityId": "h2",
+            "outline": [[2.4, -3], [8.4, -3], [8.4, 3], [2.4, 3]]
+          },
+          {
+            "entityId": "h1",
+            "outline": [[-8.4, -3], [-2.4, -3], [-2.4, 3], [-8.4, 3]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "crate",
+            "archetype": "prop.container.crate",
+            "x": 0,
+            "z": 0,
+            "radius": 0.4
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "crate",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "h1"
+            },
+            "why": [],
+            "x": 0,
+            "z": 0,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,692 @@
+{
+  "area": "layout-composition-seating",
+  "description": "G7 (core src/editor/layout/composition/seating.ts): a bench seats one per 0.6 m (a chair or stool one), its slots evenly along it; a slot within G8's keep-clear of a prop is blocked; sitters and free slots within reach paired nearest first, one sitter per slot, the rest standing. Authored in core; every threshold has a case just inside and just past it. Plan frame: IR (x, z) metres.",
+  "version": 1,
+  "sources": [
+    {
+      "authoredIn": "core",
+      "ruling": "U27 (B9 village composition)",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
+      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
+      "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
+    }
+  ],
+  "tolerance": 0.000001,
+  "angleKeys": ["heading"],
+  "cases": [
+    {
+      "name": "capacity: a 1.14 m bench seats one",
+      "note": "Just inside two spans of 0.6 m: one seat.",
+      "op": "seatCapacity",
+      "pins": ["seating.seatSpanM:inside"],
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 1.14
+          }
+        ]
+      },
+      "expected": [1]
+    },
+    {
+      "name": "capacity: a 1.26 m bench seats two",
+      "note": "Just past two spans: two seats.",
+      "op": "seatCapacity",
+      "pins": ["seating.seatSpanM:past"],
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 1.26
+          }
+        ]
+      },
+      "expected": [2]
+    },
+    {
+      "name": "capacity: benches by length, chairs and stools one, too short none",
+      "note": "A 1.8 m bench seats three, a 0.5 m one none; a 1.2 m chair and a stool seat one.",
+      "op": "seatCapacity",
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench-long",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 1.8
+          },
+          {
+            "entityId": "bench-short",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 0.5
+          },
+          {
+            "entityId": "chair",
+            "archetype": "prop.furniture.chair.wood",
+            "x": 0,
+            "z": 0,
+            "heading": 0,
+            "length": 1.2
+          },
+          {
+            "entityId": "stool",
+            "archetype": "prop.furniture.stool",
+            "x": 0,
+            "z": 0,
+            "heading": 0,
+            "length": 0.4
+          }
+        ]
+      },
+      "expected": [3, 0, 1, 1]
+    },
+    {
+      "name": "one per seat: two villagers for a one-seat bench, one stands",
+      "note": "G7: two seated villagers overlapped on one bench. The nearer takes the seat; the other is standing, never in the same place.",
+      "op": "seatVillagers",
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 1.14
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager-a",
+            "x": 0.2,
+            "z": 0.5
+          },
+          {
+            "entityId": "villager-b",
+            "x": -0.1,
+            "z": 0.5
+          }
+        ]
+      },
+      "expected": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "capacity": 1,
+            "slots": [
+              {
+                "x": 0,
+                "z": 0,
+                "blocked": null,
+                "sitter": "villager-b"
+              }
+            ]
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager-a",
+            "verdict": "standing",
+            "seat": null,
+            "slot": null,
+            "x": 0.2,
+            "z": 0.5,
+            "heading": null
+          },
+          {
+            "entityId": "villager-b",
+            "verdict": "seated",
+            "seat": "bench",
+            "slot": 0,
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966
+          }
+        ]
+      }
+    },
+    {
+      "name": "one per seat: three on a three-seat bench sit a span apart",
+      "note": "Each takes its own slot along the bench, 0.6 m apart, facing the way the bench faces.",
+      "op": "seatVillagers",
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 10,
+            "z": 10,
+            "heading": 0,
+            "length": 1.8
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager-c",
+            "x": 10.5,
+            "z": 10
+          },
+          {
+            "entityId": "villager-a",
+            "x": 10.5,
+            "z": 10.1
+          },
+          {
+            "entityId": "villager-b",
+            "x": 10.5,
+            "z": 9.4
+          }
+        ]
+      },
+      "expected": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "capacity": 3,
+            "slots": [
+              {
+                "x": 10,
+                "z": 9.4,
+                "blocked": null,
+                "sitter": "villager-b"
+              },
+              {
+                "x": 10,
+                "z": 10,
+                "blocked": null,
+                "sitter": "villager-c"
+              },
+              {
+                "x": 10,
+                "z": 10.6,
+                "blocked": null,
+                "sitter": "villager-a"
+              }
+            ]
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager-c",
+            "verdict": "seated",
+            "seat": "bench",
+            "slot": 1,
+            "x": 10,
+            "z": 10,
+            "heading": 0
+          },
+          {
+            "entityId": "villager-a",
+            "verdict": "seated",
+            "seat": "bench",
+            "slot": 2,
+            "x": 10,
+            "z": 10.6,
+            "heading": 0
+          },
+          {
+            "entityId": "villager-b",
+            "verdict": "seated",
+            "seat": "bench",
+            "slot": 0,
+            "x": 10,
+            "z": 9.4,
+            "heading": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "reach: a villager 5.7 m from a seat sits",
+      "note": "Just inside the 6 m seat reach.",
+      "op": "seatVillagers",
+      "pins": ["seating.seatReachM:inside"],
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 0.6
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager",
+            "x": 0,
+            "z": 5.7
+          }
+        ]
+      },
+      "expected": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "capacity": 1,
+            "slots": [
+              {
+                "x": 0,
+                "z": 0,
+                "blocked": null,
+                "sitter": "villager"
+              }
+            ]
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager",
+            "verdict": "seated",
+            "seat": "bench",
+            "slot": 0,
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966
+          }
+        ]
+      }
+    },
+    {
+      "name": "reach: a villager 6.3 m from a seat stands",
+      "note": "Just past the 6 m seat reach.",
+      "op": "seatVillagers",
+      "pins": ["seating.seatReachM:past"],
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 0.6
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager",
+            "x": 0,
+            "z": 6.3
+          }
+        ]
+      },
+      "expected": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "capacity": 1,
+            "slots": [
+              {
+                "x": 0,
+                "z": 0,
+                "blocked": null,
+                "sitter": null
+              }
+            ]
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager",
+            "verdict": "standing",
+            "seat": null,
+            "slot": null,
+            "x": 0,
+            "z": 6.3,
+            "heading": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "blocked: the slot beside the table is not sat in",
+      "note": "G8 at a bench: a table's edge 0.3 m from the first slot's middle (inside the 0.45 m keep-clear) blocks it, so of three villagers one stands.",
+      "op": "seatVillagers",
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 0,
+            "heading": 0,
+            "length": 1.8
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager-a",
+            "x": 0.5,
+            "z": 0
+          },
+          {
+            "entityId": "villager-b",
+            "x": 0.5,
+            "z": 0.5
+          },
+          {
+            "entityId": "villager-c",
+            "x": 0.5,
+            "z": -0.5
+          }
+        ],
+        "props": [
+          {
+            "entityId": "table",
+            "x": 0,
+            "z": -1.5,
+            "radius": 0.6
+          }
+        ]
+      },
+      "expected": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "capacity": 3,
+            "slots": [
+              {
+                "x": 0,
+                "z": -0.6000000000000001,
+                "blocked": "table",
+                "sitter": null
+              },
+              {
+                "x": 0,
+                "z": 0,
+                "blocked": null,
+                "sitter": "villager-a"
+              },
+              {
+                "x": 0,
+                "z": 0.6,
+                "blocked": null,
+                "sitter": "villager-b"
+              }
+            ]
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager-a",
+            "verdict": "seated",
+            "seat": "bench",
+            "slot": 1,
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          },
+          {
+            "entityId": "villager-b",
+            "verdict": "seated",
+            "seat": "bench",
+            "slot": 2,
+            "x": 0,
+            "z": 0.6,
+            "heading": 0
+          },
+          {
+            "entityId": "villager-c",
+            "verdict": "standing",
+            "seat": null,
+            "slot": null,
+            "x": 0.5,
+            "z": -0.5,
+            "heading": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "two benches: ties by sitter id, then seat id",
+      "note": "Two villagers equally near two one-seat benches: the lower id takes the lower seat id.",
+      "op": "seatVillagers",
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench-b",
+            "archetype": "prop.furniture.bench",
+            "x": 1,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 0.6
+          },
+          {
+            "entityId": "bench-a",
+            "archetype": "prop.furniture.bench",
+            "x": -1,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 0.6
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager-b",
+            "x": 0,
+            "z": 1
+          },
+          {
+            "entityId": "villager-a",
+            "x": 0,
+            "z": 1
+          }
+        ]
+      },
+      "expected": {
+        "seats": [
+          {
+            "entityId": "bench-b",
+            "capacity": 1,
+            "slots": [
+              {
+                "x": 1,
+                "z": 0,
+                "blocked": null,
+                "sitter": "villager-b"
+              }
+            ]
+          },
+          {
+            "entityId": "bench-a",
+            "capacity": 1,
+            "slots": [
+              {
+                "x": -1,
+                "z": 0,
+                "blocked": null,
+                "sitter": "villager-a"
+              }
+            ]
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager-b",
+            "verdict": "seated",
+            "seat": "bench-b",
+            "slot": 0,
+            "x": 1,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "villager-a",
+            "verdict": "seated",
+            "seat": "bench-a",
+            "slot": 0,
+            "x": -1,
+            "z": 0,
+            "heading": 1.5707963267948966
+          }
+        ]
+      }
+    },
+    {
+      "name": "slots: a villager at a bench's middle takes its first slot; a slot is blocked by its nearest prop, equally near two by the lower id",
+      "note": "A 1.2 m bench seats two, its slots 0.3 m either side of its middle; a villager 1 m in front of the middle is equally near both and takes slot 0. A chair's one slot is 0.4 m from the edges of crate-b and crate-a (listed b first), inside the 0.45 m keep-clear of both: it is blocked by crate-a. A second chair's slot is 0.4 m from pot-far's edge and 0.3 m from pot-near's (listed far first), inside the keep-clear of both: it is blocked by pot-near, the nearer.",
+      "op": "seatVillagers",
+      "input": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 1.2
+          },
+          {
+            "entityId": "chair",
+            "archetype": "prop.furniture.chair",
+            "x": 10,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 0.5
+          },
+          {
+            "entityId": "chair-2",
+            "archetype": "prop.furniture.chair",
+            "x": 20,
+            "z": 0,
+            "heading": 1.5707963267948966,
+            "length": 0.5
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager",
+            "x": 0,
+            "z": 1
+          }
+        ],
+        "props": [
+          {
+            "entityId": "crate-b",
+            "x": 10.6,
+            "z": 0,
+            "radius": 0.2
+          },
+          {
+            "entityId": "crate-a",
+            "x": 9.4,
+            "z": 0,
+            "radius": 0.2
+          },
+          {
+            "entityId": "pot-far",
+            "x": 20.6,
+            "z": 0,
+            "radius": 0.2
+          },
+          {
+            "entityId": "pot-near",
+            "x": 19.5,
+            "z": 0,
+            "radius": 0.2
+          }
+        ]
+      },
+      "expected": {
+        "seats": [
+          {
+            "entityId": "bench",
+            "capacity": 2,
+            "slots": [
+              {
+                "x": 0.3,
+                "z": -1.8369701987210297e-17,
+                "blocked": null,
+                "sitter": "villager"
+              },
+              {
+                "x": -0.29999999999999993,
+                "z": 1.8369701987210294e-17,
+                "blocked": null,
+                "sitter": null
+              }
+            ]
+          },
+          {
+            "entityId": "chair",
+            "capacity": 1,
+            "slots": [
+              {
+                "x": 10,
+                "z": 0,
+                "blocked": "crate-a",
+                "sitter": null
+              }
+            ]
+          },
+          {
+            "entityId": "chair-2",
+            "capacity": 1,
+            "slots": [
+              {
+                "x": 20,
+                "z": 0,
+                "blocked": "pot-near",
+                "sitter": null
+              }
+            ]
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "villager",
+            "verdict": "seated",
+            "seat": "bench",
+            "slot": 0,
+            "x": 0.3,
+            "z": -1.8369701987210297e-17,
+            "heading": 1.5707963267948966
+          }
+        ]
+      }
+    },
+    {
+      "name": "capacity: a chair or a bench of no length seats none",
+      "note": "A chair seats one whatever its length, but a seat of no length (0, or negative) has no slot at all.",
+      "op": "seatCapacity",
+      "input": {
+        "seats": [
+          {
+            "entityId": "chair",
+            "archetype": "prop.furniture.chair",
+            "x": 0,
+            "z": 0,
+            "heading": 0,
+            "length": 0
+          },
+          {
+            "entityId": "stool",
+            "archetype": "prop.furniture.stool",
+            "x": 2,
+            "z": 0,
+            "heading": 0,
+            "length": -0.4
+          }
+        ]
+      },
+      "expected": [0, 0]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 (() => {
   var __defProp = Object.defineProperty;
-  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  var __defNormalProp = (obj3, key, value) => key in obj3 ? __defProp(obj3, key, { enumerable: true, configurable: true, writable: true, value }) : obj3[key] = value;
+  var __publicField = (obj3, key, value) => __defNormalProp(obj3, typeof key !== "symbol" ? key + "" : key, value);
 
   // corebridge/js/host-text-codec.js
   var REPLACEMENT = 65533;
@@ -11,12 +11,12 @@
     }
     /** @param {string} input @returns {Uint8Array} */
     encode(input = "") {
-      const str = String(input);
+      const str3 = String(input);
       const bytes = [];
-      for (let i = 0; i < str.length; i++) {
-        let code = str.charCodeAt(i);
+      for (let i = 0; i < str3.length; i++) {
+        let code = str3.charCodeAt(i);
         if (code >= 55296 && code <= 56319) {
-          const next = i + 1 < str.length ? str.charCodeAt(i + 1) : 0;
+          const next = i + 1 < str3.length ? str3.charCodeAt(i + 1) : 0;
           if (next >= 56320 && next <= 57343) {
             code = 65536 + (code - 55296 << 10) + (next - 56320);
             i++;
@@ -697,8 +697,8 @@
     lines2.push(
       `quest(${questId}, ${quoteProlog(fillTitle(tpl.meta.title, bindings))}, ${atom(tpl.meta.questType)}, ${tpl.meta.difficulty}, available).`
     );
-    tpl.objectives.forEach((obj, i) => {
-      lines2.push(`quest_objective(${questId}, ${i}, ${argToProlog(substitute(obj, bindMap))}).`);
+    tpl.objectives.forEach((obj3, i) => {
+      lines2.push(`quest_objective(${questId}, ${i}, ${argToProlog(substitute(obj3, bindMap))}).`);
     });
     for (const reward of tpl.rewards) {
       const amount = evalAmount(reward.amount, tpl, bindMap);
@@ -754,12 +754,12 @@
   }
   function countForSlot(slot, tpl) {
     const v = slotVar(slot);
-    for (const obj of tpl.objectives) {
-      if (obj.type !== "compound") continue;
-      const hasSlot = obj.args.some((a) => a.type === "variable" && a.value === v);
+    for (const obj3 of tpl.objectives) {
+      if (obj3.type !== "compound") continue;
+      const hasSlot = obj3.args.some((a) => a.type === "variable" && a.value === v);
       if (!hasSlot) continue;
-      const num = obj.args.find((a) => a.type === "number");
-      if (num && num.type === "number") return num.value;
+      const num3 = obj3.args.find((a) => a.type === "number");
+      if (num3 && num3.type === "number") return num3.value;
     }
     return 1;
   }
@@ -1029,10 +1029,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function sortDeep(value) {
     if (Array.isArray(value)) return value.map(sortDeep);
     if (value && typeof value === "object") {
-      const obj = value;
+      const obj3 = value;
       const out = {};
-      for (const key of Object.keys(obj).sort()) {
-        const v = obj[key];
+      for (const key of Object.keys(obj3).sort()) {
+        const v = obj3[key];
         if (v === void 0) continue;
         out[key] = sortDeep(v);
       }
@@ -1052,11 +1052,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       integrity: computeSaveFileIntegrity(saveFile)
     };
   }
-  function validateSaveFileEnvelope(candidate) {
-    if (!candidate || typeof candidate !== "object") {
+  function validateSaveFileEnvelope(candidate2) {
+    if (!candidate2 || typeof candidate2 !== "object") {
       return { ok: false, error: { code: "invalid_format", message: "Envelope must be a JSON object" } };
     }
-    const e = candidate;
+    const e = candidate2;
     if (e.format !== SAVE_ENVELOPE_FORMAT) {
       return {
         ok: false,
@@ -1120,24 +1120,24 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (objectives.length > 0) {
       const targetLang = parseAtomFact(content, "quest_language");
       if (targetLang) {
-        for (const obj of objectives) {
-          if (obj.assessmentPhaseId && obj.description) {
-            obj.description = enrichAssessmentDescription(obj.description, targetLang);
+        for (const obj3 of objectives) {
+          if (obj3.assessmentPhaseId && obj3.description) {
+            obj3.description = enrichAssessmentDescription(obj3.description, targetLang);
           }
         }
       }
       const existingObjs = Array.isArray(quest.objectives) ? quest.objectives : [];
-      quest.objectives = objectives.map((obj) => {
-        const existing = existingObjs.find((e) => e.id === obj.id);
+      quest.objectives = objectives.map((obj3) => {
+        const existing = existingObjs.find((e) => e.id === obj3.id);
         if (existing) {
           return {
-            ...obj,
-            completed: existing.completed ?? obj.completed,
-            currentCount: existing.currentCount ?? obj.currentCount,
-            current: existing.current ?? existing.currentCount ?? obj.currentCount
+            ...obj3,
+            completed: existing.completed ?? obj3.completed,
+            currentCount: existing.currentCount ?? obj3.currentCount,
+            current: existing.current ?? existing.currentCount ?? obj3.currentCount
           };
         }
-        return obj;
+        return obj3;
       });
     }
     quest.assignedTo = parseStringFact(content, "quest_assigned_to") ?? quest.assignedTo;
@@ -1270,11 +1270,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     return `${label}${mainArg}`.trim();
   }
-  function unescapeObj(obj) {
-    for (const key of Object.keys(obj)) {
-      if (typeof obj[key] === "string") obj[key] = unescape(obj[key]);
+  function unescapeObj(obj3) {
+    for (const key of Object.keys(obj3)) {
+      if (typeof obj3[key] === "string") obj3[key] = unescape(obj3[key]);
     }
-    return obj;
+    return obj3;
   }
   function parseObjectives(content) {
     const objectives = [];
@@ -1298,9 +1298,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     let descMatch;
     while ((descMatch = descPattern.exec(content)) !== null) {
       const idx = parseInt(descMatch[1]);
-      const obj = objectives.find((o) => o.id === `obj_${idx}`);
-      if (obj && !obj.description) {
-        obj.description = descMatch[2].trim();
+      const obj3 = objectives.find((o) => o.id === `obj_${idx}`);
+      if (obj3 && !obj3.description) {
+        obj3.description = descMatch[2].trim();
       }
     }
     const locPattern = /quest_objective_location\(\s*\w+\s*,\s*(\d+)\s*,\s*(.*)\)\s*\./g;
@@ -1308,18 +1308,18 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     while ((locMatch = locPattern.exec(content)) !== null) {
       const idx = parseInt(locMatch[1]);
       const locAtom = locMatch[2].trim().replace(/^'|'$/g, "");
-      const obj = objectives.find((o) => o.id === `obj_${idx}`);
-      if (obj) {
-        obj.objectiveLocation = locAtom;
+      const obj3 = objectives.find((o) => o.id === `obj_${idx}`);
+      if (obj3) {
+        obj3.objectiveLocation = locAtom;
         const innerMatch = locAtom.match(/^(location|npc)\(\s*'((?:[^'\\]|\\.)*)'\s*\)$/);
         if (innerMatch) {
           const locType = innerMatch[1];
           const name = innerMatch[2].replace(/\\'/g, "'");
           if (locType === "location") {
-            obj.locationName = name;
+            obj3.locationName = name;
           } else if (locType === "npc") {
-            if (!obj.npcName) obj.npcName = name;
-            if (!obj.npcId) obj.npcId = name;
+            if (!obj3.npcName) obj3.npcName = name;
+            if (!obj3.npcId) obj3.npcId = name;
           }
         }
       }
@@ -1329,9 +1329,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     while ((detailsMatch = detailsPattern.exec(content)) !== null) {
       const idx = parseInt(detailsMatch[1]);
       const details = detailsMatch[2].replace(/\\'/g, "'").replace(/\\\\/g, "\\");
-      const obj = objectives.find((o) => o.id === `obj_${idx}`);
-      if (obj) {
-        obj.details = details;
+      const obj3 = objectives.find((o) => o.id === `obj_${idx}`);
+      if (obj3) {
+        obj3.details = details;
       }
     }
     return objectives;
@@ -1629,15 +1629,15 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     if (q.completionCriteria) out.completionCriteria = q.completionCriteria;
     if (Array.isArray(q.objectives) && q.objectives.length > 0) {
       out.objectives = q.objectives.map((o) => {
-        const obj = {
+        const obj3 = {
           id: o.id,
           type: o.type,
           description: o.description,
           requiredCount: o.requiredCount
         };
-        if (o.target !== void 0 && o.target !== null) obj.target = o.target;
-        if (o.npcId !== void 0 && o.npcId !== null) obj.npcId = o.npcId;
-        return obj;
+        if (o.target !== void 0 && o.target !== null) obj3.target = o.target;
+        if (o.npcId !== void 0 && o.npcId !== null) obj3.npcId = o.npcId;
+        return obj3;
       });
     }
     return out;
@@ -2199,13 +2199,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * TS-only: run the real envelope validator over a loaded slot candidate and map
      * its verdict to a `SlotLoadResult`. `null`/`undefined` candidate = empty slot.
      */
-    static classifyEnvelope(index, candidate, summarize) {
-      if (candidate === null || candidate === void 0) {
+    static classifyEnvelope(index, candidate2, summarize) {
+      if (candidate2 === null || candidate2 === void 0) {
         return { index, outcome: "empty" };
       }
-      const res = validateSaveFileEnvelope(candidate);
+      const res = validateSaveFileEnvelope(candidate2);
       if (res.ok) {
-        return { index, outcome: "ok", summary: summarize?.(candidate) };
+        return { index, outcome: "ok", summary: summarize?.(candidate2) };
       }
       return { index, outcome: res.error.code };
     }
@@ -2283,7 +2283,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   };
 
   // @insimul/core/src/ui/trade-model.ts
-  var OK = (moved) => ({ ok: true, reason: "", moved });
+  var OK = (moved2) => ({ ok: true, reason: "", moved: moved2 });
   var FAIL = (reason) => ({ ok: false, reason, moved: 0 });
   function findStack(items, itemId) {
     return items.find((i) => i.itemId === itemId);
@@ -2337,22 +2337,22 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const stack = findStack(container.items, itemId);
       const avail = stack?.quantity ?? 0;
       if (avail <= 0) return FAIL("not_present");
-      const moved = qty > 0 ? Math.min(qty, avail) : avail;
-      removeStack(container.items, itemId, moved);
-      addStack(this.state.player.inventory, itemId, moved, stack?.value);
-      return OK(moved);
+      const moved2 = qty > 0 ? Math.min(qty, avail) : avail;
+      removeStack(container.items, itemId, moved2);
+      addStack(this.state.player.inventory, itemId, moved2, stack?.value);
+      return OK(moved2);
     }
     /** Take every stack from a container into the player inventory. */
     takeAllFromContainer(containerId) {
       const container = this.state.containers.containers[containerId];
       if (!container) return FAIL("no_container");
-      let moved = 0;
+      let moved2 = 0;
       const stacks = container.items.map((i) => ({ itemId: i.itemId }));
       for (const s of stacks) {
         const r = this.takeFromContainer(containerId, s.itemId, 0);
-        if (r.ok) moved += r.moved;
+        if (r.ok) moved2 += r.moved;
       }
-      return OK(moved);
+      return OK(moved2);
     }
     // ── Merchant buy / sell ─────────────────────────────────────────────────
     /** Buy `qty` of `itemId` from a merchant: item merchant->player, gold player->merchant. */
@@ -3511,8 +3511,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       okay: ['"{npc} adjusts their glasses" Functionally correct. The prosody needs refinement.', '"{npc}" Understandable. Work on the tonal patterns.']
     }
   };
-  function pick(arr, rng = Math.random) {
-    return arr[Math.floor(rng() * arr.length)];
+  function pick(arr3, rng = Math.random) {
+    return arr3[Math.floor(rng() * arr3.length)];
   }
   function generateCorrectionResponse(input, correct, score, ctx, rng = Math.random) {
     const templates = CORRECTION_TEMPLATES[ctx.style];
@@ -3538,9 +3538,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     // ── Quest management ────────────────────────────────────────────────────
     addQuest(quest) {
       if (quest.objectives) {
-        for (const obj of quest.objectives) {
-          const normalized = normalizeObjectiveType(obj.type);
-          if (normalized) obj.type = normalized;
+        for (const obj3 of quest.objectives) {
+          const normalized = normalizeObjectiveType(obj3.type);
+          if (normalized) obj3.type = normalized;
         }
       }
       this.quests.push(quest);
@@ -3592,13 +3592,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     revealHint(questId, objectiveId) {
       const quest = this.quests.find((q) => q.id === questId);
       if (!quest) return null;
-      const obj = quest.objectives?.find((o) => o.id === objectiveId);
-      if (!obj) return null;
-      const hints = obj.hints ?? [];
-      const revealed = obj.hintsRevealed ?? 0;
+      const obj3 = quest.objectives?.find((o) => o.id === objectiveId);
+      if (!obj3) return null;
+      const hints = obj3.hints ?? [];
+      const revealed = obj3.hintsRevealed ?? 0;
       if (revealed >= hints.length) return null;
       const hint = hints[revealed];
-      obj.hintsRevealed = revealed + 1;
+      obj3.hintsRevealed = revealed + 1;
       return hint.text;
     }
     // ── Unified event dispatch ──────────────────────────────────────────────
@@ -3705,12 +3705,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           break;
         case "clue_discovered":
           this.trackByTrigger("clue_discovered", event.questId);
-          this.forEachObjective(event.questId, "collect_clue", (quest, obj) => {
-            obj.currentCount = (obj.currentCount || 0) + 1;
-            if (obj.currentCount >= (obj.requiredCount || 1)) {
-              this.completeObjective(quest.id, obj.id);
+          this.forEachObjective(event.questId, "collect_clue", (quest, obj3) => {
+            obj3.currentCount = (obj3.currentCount || 0) + 1;
+            if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+              this.completeObjective(quest.id, obj3.id);
             } else {
-              this.onObjectiveProgress?.(quest.id, obj.id, obj.currentCount, obj.requiredCount || 1, obj.type);
+              this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, obj3.requiredCount || 1, obj3.type);
             }
           });
           break;
@@ -3722,30 +3722,30 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           break;
         case "reading_completed":
           this.trackByTrigger("reading_completed", event.questId);
-          this.forEachObjective(event.questId, ["reading", "arrival_reading", "departure_reading"], (quest, obj) => {
-            this.completeObjective(quest.id, obj.id);
+          this.forEachObjective(event.questId, ["reading", "arrival_reading", "departure_reading"], (quest, obj3) => {
+            this.completeObjective(quest.id, obj3.id);
           });
           break;
         case "listening_completed":
           this.trackByTrigger("listening_completed", event.questId);
-          this.forEachObjective(event.questId, ["listening", "arrival_listening", "departure_listening"], (quest, obj) => {
-            this.completeObjective(quest.id, obj.id);
+          this.forEachObjective(event.questId, ["listening", "arrival_listening", "departure_listening"], (quest, obj3) => {
+            this.completeObjective(quest.id, obj3.id);
           });
           break;
         case "npc_talked":
           this.trackByTrigger("npc_talked", event.questId);
-          this.forEachObjective(event.questId, ["initiate_conversation", "arrival_initiate_conversation"], (quest, obj) => {
-            if (obj.npcId && obj.npcId !== event.npcId) return;
-            this.completeObjective(quest.id, obj.id);
+          this.forEachObjective(event.questId, ["initiate_conversation", "arrival_initiate_conversation"], (quest, obj3) => {
+            if (obj3.npcId && obj3.npcId !== event.npcId) return;
+            this.completeObjective(quest.id, obj3.id);
           });
           break;
         case "conversation_assessment_completed":
-          this.forEachObjective(event.questId, ["conversation", "arrival_conversation", "departure_conversation", "periodic_conversational"], (quest, obj) => {
-            if (obj.npcId && obj.npcId !== event.npcId) return;
-            obj.currentCount = event.turnCount;
-            const required2 = obj.requiredCount || getDefaultRequiredCount(obj.type);
+          this.forEachObjective(event.questId, ["conversation", "arrival_conversation", "departure_conversation", "periodic_conversational"], (quest, obj3) => {
+            if (obj3.npcId && obj3.npcId !== event.npcId) return;
+            obj3.currentCount = event.turnCount;
+            const required2 = obj3.requiredCount || getDefaultRequiredCount(obj3.type);
             if (event.turnCount >= required2) {
-              this.completeObjective(quest.id, obj.id);
+              this.completeObjective(quest.id, obj3.id);
             }
           });
           break;
@@ -3771,8 +3771,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           this.trackEavesdrop(event.npcId1, event.npcId2, event.topic, event.languageUsed, event.questId);
           break;
         case "assessment_completed_event":
-          this.forEachObjective(event.questId, "complete_assessment", (quest, obj) => {
-            this.completeObjective(quest.id, obj.id);
+          this.forEachObjective(event.questId, "complete_assessment", (quest, obj3) => {
+            this.completeObjective(quest.id, obj3.id);
           });
           break;
         case "grammar_demonstrated":
@@ -3874,100 +3874,100 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     // ── Type-specific tracking methods ──────────────────────────────────────
     trackNPCConversation(npcId, questId) {
-      this.forEachObjective(questId, ["talk_to_npc", "introduce_self", "ask_for_directions"], (quest, obj) => {
-        if (obj.npcId === npcId) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, ["talk_to_npc", "introduce_self", "ask_for_directions"], (quest, obj3) => {
+        if (obj3.npcId === npcId) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackConversationInitiation(npcId, accepted, responseQuality, questId) {
       if (!accepted) return;
-      this.forEachObjective(questId, "conversation_initiation", (quest, obj) => {
-        if (obj.npcId && obj.npcId !== npcId) return;
-        obj.currentCount = (obj.currentCount || 0) + 1;
+      this.forEachObjective(questId, "conversation_initiation", (quest, obj3) => {
+        if (obj3.npcId && obj3.npcId !== npcId) return;
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
         if (responseQuality !== void 0) {
-          obj.responseQuality = responseQuality;
+          obj3.responseQuality = responseQuality;
         }
-        const minQuality = obj.minResponseQuality ?? 0;
+        const minQuality = obj3.minResponseQuality ?? 0;
         const meetsQuality = (responseQuality ?? 100) >= minQuality;
-        if (obj.currentCount >= (obj.requiredCount || 1) && meetsQuality) {
-          this.completeObjective(quest.id, obj.id);
+        if (obj3.currentCount >= (obj3.requiredCount || 1) && meetsQuality) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     // Also track against 'vocabulary' objective type (alias used in some quests)
     trackVocabularyUsage(word, questId) {
       const lowerWord = word.toLowerCase();
-      this.forEachObjective(questId, ["use_vocabulary", "collect_vocabulary", "vocabulary"], (quest, obj) => {
-        if (obj.targetWords && obj.targetWords.length > 0) {
-          if (!obj.targetWords.includes(lowerWord)) return;
+      this.forEachObjective(questId, ["use_vocabulary", "collect_vocabulary", "vocabulary"], (quest, obj3) => {
+        if (obj3.targetWords && obj3.targetWords.length > 0) {
+          if (!obj3.targetWords.includes(lowerWord)) return;
         }
-        obj.wordsUsed = obj.wordsUsed || [];
-        if (obj.wordsUsed.includes(lowerWord)) return;
-        obj.wordsUsed.push(lowerWord);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        const required2 = obj.requiredCount || getDefaultRequiredCount("use_vocabulary");
-        if (obj.currentCount >= required2) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.wordsUsed = obj3.wordsUsed || [];
+        if (obj3.wordsUsed.includes(lowerWord)) return;
+        obj3.wordsUsed.push(lowerWord);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        const required2 = obj3.requiredCount || getDefaultRequiredCount("use_vocabulary");
+        if (obj3.currentCount >= required2) {
+          this.completeObjective(quest.id, obj3.id);
         } else {
-          this.onObjectiveProgress?.(quest.id, obj.id, obj.currentCount, required2, obj.type);
+          this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, required2, obj3.type);
         }
       });
     }
     trackConversationTurn(keywords, questId) {
-      this.forEachObjective(questId, ["complete_conversation", "conversation"], (quest, obj) => {
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        const required2 = obj.requiredCount || getDefaultRequiredCount(obj.type);
-        if (obj.currentCount >= required2) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, ["complete_conversation", "conversation"], (quest, obj3) => {
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        const required2 = obj3.requiredCount || getDefaultRequiredCount(obj3.type);
+        if (obj3.currentCount >= required2) {
+          this.completeObjective(quest.id, obj3.id);
         } else {
-          this.onObjectiveProgress?.(quest.id, obj.id, obj.currentCount, required2, obj.type);
+          this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, required2, obj3.type);
         }
       });
     }
     // ── Missing objective type handlers (added for full quest coverage) ────
     trackGrammarDemonstrated(patternCount, questId) {
-      this.forEachObjective(questId, "grammar", (quest, obj) => {
-        obj.currentCount = (obj.currentCount || 0) + patternCount;
-        const required2 = obj.requiredCount || getDefaultRequiredCount("grammar");
-        if (obj.currentCount >= required2) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "grammar", (quest, obj3) => {
+        obj3.currentCount = (obj3.currentCount || 0) + patternCount;
+        const required2 = obj3.requiredCount || getDefaultRequiredCount("grammar");
+        if (obj3.currentCount >= required2) {
+          this.completeObjective(quest.id, obj3.id);
         } else {
-          this.onObjectiveProgress?.(quest.id, obj.id, obj.currentCount, required2, obj.type);
+          this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, required2, obj3.type);
         }
       });
     }
     trackItemPurchased(itemName, merchantId, questId) {
-      this.forEachObjective(questId, "buy_item", (quest, obj) => {
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "buy_item", (quest, obj3) => {
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackItemSold(itemName, questId) {
-      this.forEachObjective(questId, "sell_item", (quest, obj) => {
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "sell_item", (quest, obj3) => {
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackListenAndRepeat(passed, phrase, questId) {
-      this.forEachObjective(questId, "listen_and_repeat", (quest, obj) => {
+      this.forEachObjective(questId, "listen_and_repeat", (quest, obj3) => {
         if (!passed) return;
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || getDefaultRequiredCount("listen_and_repeat"))) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || getDefaultRequiredCount("listen_and_repeat"))) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackFriendshipBuilt(npcId, relationshipStrength, questId) {
-      this.forEachObjective(questId, "build_friendship", (quest, obj) => {
-        if (obj.npcId && obj.npcId !== npcId) return;
-        const threshold = obj.requiredStrength ?? OBJECTIVE_TYPE_DEFAULTS["build_friendship"]?.requiredStrength ?? 0.5;
+      this.forEachObjective(questId, "build_friendship", (quest, obj3) => {
+        if (obj3.npcId && obj3.npcId !== npcId) return;
+        const threshold = obj3.requiredStrength ?? OBJECTIVE_TYPE_DEFAULTS["build_friendship"]?.requiredStrength ?? 0.5;
         if (relationshipStrength >= threshold) {
-          this.completeObjective(quest.id, obj.id);
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
@@ -3981,8 +3981,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const key = itemName.toLowerCase();
       const catKey = category?.toLowerCase();
       const matches = [];
-      this.forEachObjective(questId, "collect_item", (quest, obj) => {
-        const objName = (obj.itemName || "").toLowerCase();
+      this.forEachObjective(questId, "collect_item", (quest, obj3) => {
+        const objName = (obj3.itemName || "").toLowerCase();
         if (!objName) return;
         const exactMatch = objName === key;
         const substringMatch = key.includes(objName) || objName.includes(key);
@@ -3992,77 +3992,77 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         const keyWords = key.split(/\s+/);
         const wordOverlap = objWords.some((w) => w.length >= 3 && keyWords.includes(w)) || keyWords.some((w) => w.length >= 3 && objWords.includes(w));
         if (!exactMatch && !substringMatch && !categoryExact && !categorySubstring && !wordOverlap) return;
-        const required2 = obj.itemCount || 1;
-        obj.collectedCount = (obj.collectedCount || 0) + 1;
-        if (obj.collectedCount >= required2) {
-          if (this.completeObjective(quest.id, obj.id)) {
-            matches.push({ questId: quest.id, objectiveId: obj.id, questName: "", objectiveDescription: obj.description, completed: true, current: obj.collectedCount, required: required2 });
+        const required2 = obj3.itemCount || 1;
+        obj3.collectedCount = (obj3.collectedCount || 0) + 1;
+        if (obj3.collectedCount >= required2) {
+          if (this.completeObjective(quest.id, obj3.id)) {
+            matches.push({ questId: quest.id, objectiveId: obj3.id, questName: "", objectiveDescription: obj3.description, completed: true, current: obj3.collectedCount, required: required2 });
           }
         } else {
-          matches.push({ questId: quest.id, objectiveId: obj.id, questName: "", objectiveDescription: obj.description, completed: false, current: obj.collectedCount, required: required2 });
+          matches.push({ questId: quest.id, objectiveId: obj3.id, questName: "", objectiveDescription: obj3.description, completed: false, current: obj3.collectedCount, required: required2 });
         }
       });
       return matches;
     }
     trackItemDelivery(npcId, playerItemNames, questId) {
       const normalizedItems = playerItemNames.map((n) => n.toLowerCase());
-      this.forEachObjective(questId, "deliver_item", (quest, obj) => {
-        const matchesNpc = obj.npcId === npcId || !obj.npcId;
-        const matchesItem = obj.itemName && normalizedItems.includes(obj.itemName.toLowerCase());
+      this.forEachObjective(questId, "deliver_item", (quest, obj3) => {
+        const matchesNpc = obj3.npcId === npcId || !obj3.npcId;
+        const matchesItem = obj3.itemName && normalizedItems.includes(obj3.itemName.toLowerCase());
         if (matchesNpc && matchesItem) {
-          obj.delivered = true;
-          this.completeObjective(quest.id, obj.id);
+          obj3.delivered = true;
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     checkInventoryObjectives(playerItemNames, questId) {
       const normalizedItems = playerItemNames.map((n) => n.toLowerCase());
-      this.forEachObjective(questId, ["collect_item", "collect_items"], (quest, obj) => {
-        const objName = (obj.itemName || "").toLowerCase();
+      this.forEachObjective(questId, ["collect_item", "collect_items"], (quest, obj3) => {
+        const objName = (obj3.itemName || "").toLowerCase();
         if (!objName) return;
         const matched = normalizedItems.some((n) => n === objName || n.includes(objName) || objName.includes(n));
         if (matched) {
-          this.completeObjective(quest.id, obj.id);
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackEnemyDefeat(enemyType, questId) {
-      this.forEachObjective(questId, "defeat_enemies", (quest, obj) => {
-        if (obj.enemyType === enemyType || !obj.enemyType) {
-          obj.enemiesDefeated = (obj.enemiesDefeated || 0) + 1;
-          if (obj.enemiesDefeated >= (obj.enemiesRequired || 1)) {
-            this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "defeat_enemies", (quest, obj3) => {
+        if (obj3.enemyType === enemyType || !obj3.enemyType) {
+          obj3.enemiesDefeated = (obj3.enemiesDefeated || 0) + 1;
+          if (obj3.enemiesDefeated >= (obj3.enemiesRequired || 1)) {
+            this.completeObjective(quest.id, obj3.id);
           }
         }
       });
     }
     trackItemCrafted(itemId, questId) {
-      this.forEachObjective(questId, "craft_item", (quest, obj) => {
-        if (obj.craftedItemId === itemId) {
-          obj.craftedCount = (obj.craftedCount || 0) + 1;
-          if (obj.craftedCount >= (obj.requiredCount || 1)) {
-            this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "craft_item", (quest, obj3) => {
+        if (obj3.craftedItemId === itemId) {
+          obj3.craftedCount = (obj3.craftedCount || 0) + 1;
+          if (obj3.craftedCount >= (obj3.requiredCount || 1)) {
+            this.completeObjective(quest.id, obj3.id);
           }
         }
       });
     }
     trackPhysicalAction(actionType, itemsProduced, questId) {
-      this.forEachObjective(questId, ["perform_physical_action", "physical_action"], (quest, obj) => {
-        if (obj.actionType && obj.actionType !== actionType) return;
-        obj.actionsCompleted = (obj.actionsCompleted || 0) + 1;
-        if (obj.actionsCompleted >= (obj.actionsRequired || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, ["perform_physical_action", "physical_action"], (quest, obj3) => {
+        if (obj3.actionType && obj3.actionType !== actionType) return;
+        obj3.actionsCompleted = (obj3.actionsCompleted || 0) + 1;
+        if (obj3.actionsCompleted >= (obj3.actionsRequired || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
       for (const itemName of itemsProduced) {
         this.trackCollectedItemByName(itemName, questId);
       }
       for (const itemName of itemsProduced) {
-        this.forEachObjective(questId, "craft_item", (quest, obj) => {
-          if (obj.craftedItemId === itemName || obj.itemName === itemName) {
-            obj.craftedCount = (obj.craftedCount || 0) + 1;
-            if (obj.craftedCount >= (obj.requiredCount || 1)) {
-              this.completeObjective(quest.id, obj.id);
+        this.forEachObjective(questId, "craft_item", (quest, obj3) => {
+          if (obj3.craftedItemId === itemName || obj3.itemName === itemName) {
+            obj3.craftedCount = (obj3.craftedCount || 0) + 1;
+            if (obj3.craftedCount >= (obj3.requiredCount || 1)) {
+              this.completeObjective(quest.id, obj3.id);
             }
           }
         });
@@ -4071,11 +4071,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     trackLocationVisit(locationId, locationName, questId) {
       const lowerName = locationName.toLowerCase();
       const lowerId = locationId.toLowerCase();
-      this.forEachObjective(questId, ["visit_location", "discover_location"], (quest, obj) => {
-        const objName = (obj.locationName || "").toLowerCase();
+      this.forEachObjective(questId, ["visit_location", "discover_location"], (quest, obj3) => {
+        const objName = (obj3.locationName || "").toLowerCase();
         if (!objName) return;
         if (objName === lowerId || objName === lowerName || lowerName.includes(objName) || objName.includes(lowerName)) {
-          this.completeObjective(quest.id, obj.id);
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
@@ -4084,108 +4084,108 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       this.trackLocationVisit(locationId, locationId, questId);
     }
     trackArrival(npcOrItemId, destinationReached, questId) {
-      this.forEachObjective(questId, ["escort_npc", "deliver_item"], (quest, obj) => {
+      this.forEachObjective(questId, ["escort_npc", "deliver_item"], (quest, obj3) => {
         if (destinationReached) {
-          if (obj.type === "escort_npc") {
-            obj.arrived = true;
+          if (obj3.type === "escort_npc") {
+            obj3.arrived = true;
           } else {
-            obj.delivered = true;
+            obj3.delivered = true;
           }
-          this.completeObjective(quest.id, obj.id);
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackReputationGain(factionId, amount, questId) {
-      this.forEachObjective(questId, "gain_reputation", (quest, obj) => {
-        if (obj.factionId === factionId) {
-          obj.reputationGained = (obj.reputationGained || 0) + amount;
-          if (obj.reputationGained >= (obj.reputationRequired || OBJECTIVE_TYPE_DEFAULTS["gain_reputation"]?.reputationRequired || 100)) {
-            this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "gain_reputation", (quest, obj3) => {
+        if (obj3.factionId === factionId) {
+          obj3.reputationGained = (obj3.reputationGained || 0) + amount;
+          if (obj3.reputationGained >= (obj3.reputationRequired || OBJECTIVE_TYPE_DEFAULTS["gain_reputation"]?.reputationRequired || 100)) {
+            this.completeObjective(quest.id, obj3.id);
           }
         }
       });
     }
     trackListeningAnswer(isCorrect, questId) {
-      this.forEachObjective(questId, "listening_comprehension", (quest, obj) => {
-        obj.questionsAnswered = (obj.questionsAnswered || 0) + 1;
+      this.forEachObjective(questId, "listening_comprehension", (quest, obj3) => {
+        obj3.questionsAnswered = (obj3.questionsAnswered || 0) + 1;
         if (isCorrect) {
-          obj.questionsCorrect = (obj.questionsCorrect || 0) + 1;
+          obj3.questionsCorrect = (obj3.questionsCorrect || 0) + 1;
         }
-        obj.currentCount = obj.questionsAnswered;
-        const required2 = obj.requiredCount || obj.comprehensionQuestions?.length || getDefaultRequiredCount("listening_comprehension");
-        if (obj.questionsCorrect >= required2) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.currentCount = obj3.questionsAnswered;
+        const required2 = obj3.requiredCount || obj3.comprehensionQuestions?.length || getDefaultRequiredCount("listening_comprehension");
+        if (obj3.questionsCorrect >= required2) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackTranslationAttempt(isCorrect, questId) {
-      this.forEachObjective(questId, "translation_challenge", (quest, obj) => {
+      this.forEachObjective(questId, "translation_challenge", (quest, obj3) => {
         if (isCorrect) {
-          obj.translationsCorrect = (obj.translationsCorrect || 0) + 1;
+          obj3.translationsCorrect = (obj3.translationsCorrect || 0) + 1;
         }
-        obj.translationsCompleted = (obj.translationsCompleted || 0) + 1;
-        obj.currentCount = obj.translationsCorrect || 0;
-        const required2 = obj.requiredCount || obj.translationPhrases?.length || getDefaultRequiredCount("translation_challenge");
-        if (obj.translationsCorrect >= required2) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.translationsCompleted = (obj3.translationsCompleted || 0) + 1;
+        obj3.currentCount = obj3.translationsCorrect || 0;
+        const required2 = obj3.requiredCount || obj3.translationPhrases?.length || getDefaultRequiredCount("translation_challenge");
+        if (obj3.translationsCorrect >= required2) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackNavigationWaypoint(questId) {
       let result = null;
-      this.forEachObjective(questId, "navigate_language", (quest, obj) => {
-        obj.waypointsReached = (obj.waypointsReached || 0) + 1;
-        obj.stepsCompleted = obj.waypointsReached;
-        const waypoints = obj.navigationWaypoints || [];
-        const nextIdx = obj.waypointsReached;
-        if (nextIdx >= (obj.stepsRequired || waypoints.length)) {
-          this.completeObjective(quest.id, obj.id);
-          result = { nextWaypointIndex: nextIdx, completed: true, objective: obj };
+      this.forEachObjective(questId, "navigate_language", (quest, obj3) => {
+        obj3.waypointsReached = (obj3.waypointsReached || 0) + 1;
+        obj3.stepsCompleted = obj3.waypointsReached;
+        const waypoints = obj3.navigationWaypoints || [];
+        const nextIdx = obj3.waypointsReached;
+        if (nextIdx >= (obj3.stepsRequired || waypoints.length)) {
+          this.completeObjective(quest.id, obj3.id);
+          result = { nextWaypointIndex: nextIdx, completed: true, objective: obj3 };
         } else {
-          result = { nextWaypointIndex: nextIdx, completed: false, objective: obj };
+          result = { nextWaypointIndex: nextIdx, completed: false, objective: obj3 };
         }
       });
       return result;
     }
     trackPronunciationAttempt(passed, questId, score, phrase, options) {
       const pronunciationTypes = ["pronunciation_check", "listen_and_repeat", "speak_phrase"];
-      this.forEachObjective(questId, pronunciationTypes, (quest, obj) => {
-        if (obj.completed || obj.failed) return;
+      this.forEachObjective(questId, pronunciationTypes, (quest, obj3) => {
+        if (obj3.completed || obj3.failed) return;
         let effectivePassed = passed;
-        if (obj.difficulty && score !== void 0) {
-          const threshold = DIFFICULTY_CONFIGS[obj.difficulty].passThreshold;
+        if (obj3.difficulty && score !== void 0) {
+          const threshold = DIFFICULTY_CONFIGS[obj3.difficulty].passThreshold;
           effectivePassed = score >= threshold;
         }
         const isPronunciationRetry = !effectivePassed && score !== void 0 && score < PRONUNCIATION_RETRY_THRESHOLD;
-        const effectiveScore = score === void 0 ? 0 : applyHintPenalty(score, obj.hints, obj.hintsRevealed ?? 0);
+        const effectiveScore = score === void 0 ? 0 : applyHintPenalty(score, obj3.hints, obj3.hintsRevealed ?? 0);
         if (score !== void 0) {
-          if (!obj.pronunciationScores) obj.pronunciationScores = [];
-          obj.pronunciationScores.push(score);
-          if (score > (obj.pronunciationBestScore ?? 0)) {
-            obj.pronunciationBestScore = score;
+          if (!obj3.pronunciationScores) obj3.pronunciationScores = [];
+          obj3.pronunciationScores.push(score);
+          if (score > (obj3.pronunciationBestScore ?? 0)) {
+            obj3.pronunciationBestScore = score;
           }
         }
         if (options?.wordResults && options.wordResults.length > 0) {
-          obj.wordFeedback = wordResultsToFeedback(options.wordResults);
+          obj3.wordFeedback = wordResultsToFeedback(options.wordResults);
         }
         if (!isPronunciationRetry) {
-          obj.attempts = (obj.attempts ?? 0) + 1;
-          if (!effectivePassed && obj.maxAttempts && obj.maxAttempts > 0 && obj.attempts >= obj.maxAttempts) {
-            obj.failed = true;
+          obj3.attempts = (obj3.attempts ?? 0) + 1;
+          if (!effectivePassed && obj3.maxAttempts && obj3.maxAttempts > 0 && obj3.attempts >= obj3.maxAttempts) {
+            obj3.failed = true;
           }
           if (effectivePassed) {
-            obj.currentCount = (obj.currentCount || 0) + 1;
-            obj.totalScore = (obj.totalScore ?? 0) + effectiveScore;
-            const required2 = obj.requiredCount || getDefaultRequiredCount("pronunciation_check");
-            if (obj.currentCount >= required2) {
-              const scores = obj.pronunciationScores || [];
-              if (obj.minAverageScore && obj.minAverageScore > 0 && scores.length > 0) {
+            obj3.currentCount = (obj3.currentCount || 0) + 1;
+            obj3.totalScore = (obj3.totalScore ?? 0) + effectiveScore;
+            const required2 = obj3.requiredCount || getDefaultRequiredCount("pronunciation_check");
+            if (obj3.currentCount >= required2) {
+              const scores = obj3.pronunciationScores || [];
+              if (obj3.minAverageScore && obj3.minAverageScore > 0 && scores.length > 0) {
                 const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-                if (avg >= obj.minAverageScore) {
-                  this.completeObjective(quest.id, obj.id);
+                if (avg >= obj3.minAverageScore) {
+                  this.completeObjective(quest.id, obj3.id);
                 }
               } else {
-                this.completeObjective(quest.id, obj.id);
+                this.completeObjective(quest.id, obj3.id);
               }
             }
           }
@@ -4197,7 +4197,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           if (this.correctionContext && score !== void 0) {
             npcResponse = effectivePassed ? generatePraiseResponse(score, this.correctionContext) : generateCorrectionResponse(input, targetPhrase, score, this.correctionContext);
           }
-          this.onPronunciationFeedback(quest.id, obj.id, {
+          this.onPronunciationFeedback(quest.id, obj3.id, {
             npcResponse,
             isPronunciationRetry,
             effectiveScore,
@@ -4208,9 +4208,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     getPronunciationStats(questId, objectiveId) {
       const quest = this.quests.find((q) => q.id === questId);
-      const obj = quest?.objectives?.find((o) => o.id === objectiveId);
-      if (!obj || obj.type !== "pronunciation_check") return null;
-      const scores = obj.pronunciationScores || [];
+      const obj3 = quest?.objectives?.find((o) => o.id === objectiveId);
+      if (!obj3 || obj3.type !== "pronunciation_check") return null;
+      const scores = obj3.pronunciationScores || [];
       const average = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
       return { scores, average, passed: scores.length };
     }
@@ -4238,12 +4238,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       ];
       const currentIdx = stageOrder.indexOf(currentStage.toLowerCase());
       if (currentIdx < 0) return;
-      this.forEachObjective(questId, "romance_stage_reach", (quest, obj) => {
-        const target = (obj.targetRomanceStage ?? obj.targetPhrase ?? "").toLowerCase();
+      this.forEachObjective(questId, "romance_stage_reach", (quest, obj3) => {
+        const target = (obj3.targetRomanceStage ?? obj3.targetPhrase ?? "").toLowerCase();
         const targetIdx = stageOrder.indexOf(target);
         if (targetIdx < 0) return;
         if (currentIdx >= targetIdx) {
-          this.completeObjective(quest.id, obj.id);
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
@@ -4253,33 +4253,33 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * only matching recipients count.
      */
     trackRomanceGift(npcId, questId) {
-      this.forEachObjective(questId, "romance_gift", (quest, obj) => {
-        if (obj.romanceGiftRecipientNpcId && obj.romanceGiftRecipientNpcId !== npcId) return;
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        const required2 = obj.requiredCount ?? 1;
-        if (obj.currentCount >= required2) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "romance_gift", (quest, obj3) => {
+        if (obj3.romanceGiftRecipientNpcId && obj3.romanceGiftRecipientNpcId !== npcId) return;
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        const required2 = obj3.requiredCount ?? 1;
+        if (obj3.currentCount >= required2) {
+          this.completeObjective(quest.id, obj3.id);
         } else {
-          this.onObjectiveProgress?.(quest.id, obj.id, obj.currentCount, required2, obj.type);
+          this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, required2, obj3.type);
         }
       });
     }
     trackWritingSubmission(text2, wordCount, questId) {
       this.trackByTrigger("writing_submitted", questId);
-      this.forEachObjective(questId, ["writing", "arrival_writing", "departure_writing"], (quest, obj) => {
-        const minWords = obj.minWordCount || OBJECTIVE_TYPE_DEFAULTS[obj.type]?.minWordCount || OBJECTIVE_TYPE_DEFAULTS["writing"]?.minWordCount || 20;
+      this.forEachObjective(questId, ["writing", "arrival_writing", "departure_writing"], (quest, obj3) => {
+        const minWords = obj3.minWordCount || OBJECTIVE_TYPE_DEFAULTS[obj3.type]?.minWordCount || OBJECTIVE_TYPE_DEFAULTS["writing"]?.minWordCount || 20;
         if (wordCount >= minWords) {
-          this.completeObjective(quest.id, obj.id);
+          this.completeObjective(quest.id, obj3.id);
         }
       });
-      this.forEachObjective(questId, ["write_response", "describe_scene"], (quest, obj) => {
-        if (!obj.writtenResponses) obj.writtenResponses = [];
-        obj.writtenResponses.push(text2);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        const minWords = obj.minWordCount || 0;
+      this.forEachObjective(questId, ["write_response", "describe_scene"], (quest, obj3) => {
+        if (!obj3.writtenResponses) obj3.writtenResponses = [];
+        obj3.writtenResponses.push(text2);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        const minWords = obj3.minWordCount || 0;
         if (minWords > 0 && wordCount < minWords) return;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
@@ -4288,15 +4288,15 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const expired = [];
       const now = Date.now();
       for (const quest of this.quests) {
-        for (const obj of quest.objectives || []) {
-          if (obj.completed) continue;
-          if (!obj.timeLimitSeconds || !obj.startedAt) continue;
-          const elapsedSec = (now - obj.startedAt) / 1e3;
-          if (elapsedSec > obj.timeLimitSeconds) {
-            obj.completed = true;
-            const required2 = obj.requiredCount ?? 1;
-            obj.currentCount = Math.max(obj.currentCount ?? 0, required2);
-            expired.push(`Time expired: ${obj.description}`);
+        for (const obj3 of quest.objectives || []) {
+          if (obj3.completed) continue;
+          if (!obj3.timeLimitSeconds || !obj3.startedAt) continue;
+          const elapsedSec = (now - obj3.startedAt) / 1e3;
+          if (elapsedSec > obj3.timeLimitSeconds) {
+            obj3.completed = true;
+            const required2 = obj3.requiredCount ?? 1;
+            obj3.currentCount = Math.max(obj3.currentCount ?? 0, required2);
+            expired.push(`Time expired: ${obj3.description}`);
           }
         }
       }
@@ -4304,10 +4304,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     getObjectiveTimeRemaining(objectiveId) {
       for (const quest of this.quests) {
-        const obj = quest.objectives?.find((o) => o.id === objectiveId);
-        if (obj?.timeLimitSeconds && obj.startedAt) {
-          const elapsed = (Date.now() - obj.startedAt) / 1e3;
-          return Math.max(0, obj.timeLimitSeconds - elapsed);
+        const obj3 = quest.objectives?.find((o) => o.id === objectiveId);
+        if (obj3?.timeLimitSeconds && obj3.startedAt) {
+          const elapsed = (Date.now() - obj3.startedAt) / 1e3;
+          return Math.max(0, obj3.timeLimitSeconds - elapsed);
         }
       }
       return null;
@@ -4315,61 +4315,61 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     // ── Teaching tracking ──────────────────────────────────────────────────
     trackTeachWord(npcId, word, questId) {
       const lowerWord = word.toLowerCase();
-      this.forEachObjective(questId, "teach_vocabulary", (quest, obj) => {
-        if (obj.npcId && obj.npcId !== npcId) return;
-        obj.wordsTaught = obj.wordsTaught || [];
-        if (obj.wordsTaught.includes(lowerWord)) return;
-        obj.wordsTaught.push(lowerWord);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || getDefaultRequiredCount("teach_vocabulary"))) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "teach_vocabulary", (quest, obj3) => {
+        if (obj3.npcId && obj3.npcId !== npcId) return;
+        obj3.wordsTaught = obj3.wordsTaught || [];
+        if (obj3.wordsTaught.includes(lowerWord)) return;
+        obj3.wordsTaught.push(lowerWord);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || getDefaultRequiredCount("teach_vocabulary"))) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackTeachPhrase(npcId, phrase, questId) {
       const lowerPhrase = phrase.toLowerCase();
-      this.forEachObjective(questId, "teach_phrase", (quest, obj) => {
-        if (obj.npcId && obj.npcId !== npcId) return;
-        obj.phrasesTaught = obj.phrasesTaught || [];
-        if (obj.phrasesTaught.includes(lowerPhrase)) return;
-        obj.phrasesTaught.push(lowerPhrase);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "teach_phrase", (quest, obj3) => {
+        if (obj3.npcId && obj3.npcId !== npcId) return;
+        obj3.phrasesTaught = obj3.phrasesTaught || [];
+        if (obj3.phrasesTaught.includes(lowerPhrase)) return;
+        obj3.phrasesTaught.push(lowerPhrase);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     // ── Object interaction tracking ─────────────────────────────────────
     trackObjectIdentified(objectName, questId) {
       const lowerName = objectName.toLowerCase();
-      this.forEachObjective(questId, "identify_object", (quest, obj) => {
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "identify_object", (quest, obj3) => {
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackObjectExamined(objectName, questId) {
-      this.forEachObjective(questId, "examine_object", (quest, obj) => {
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "examine_object", (quest, obj3) => {
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackSignRead(signId, questId) {
-      this.forEachObjective(questId, "read_sign", (quest, obj) => {
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "read_sign", (quest, obj3) => {
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackPointAndName(objectName, questId) {
-      this.forEachObjective(questId, "point_and_name", (quest, obj) => {
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "point_and_name", (quest, obj3) => {
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
@@ -4389,124 +4389,124 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         friendship: ["build_friendship"]
       };
       const targetTypes = topicTag && tagToTypes[topicTag] ? tagToTypes[topicTag] : ["ask_for_directions", "order_food", "haggle_price", "introduce_self", "build_friendship"];
-      this.forEachObjective(questId, targetTypes, (quest, obj) => {
-        if (obj.npcId && obj.npcId !== npcId) return;
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, targetTypes, (quest, obj3) => {
+        if (obj3.npcId && obj3.npcId !== npcId) return;
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackGiftGiven(npcId, itemName, questId) {
-      this.forEachObjective(questId, "give_gift", (quest, obj) => {
-        if (obj.npcId && obj.npcId !== npcId) return;
-        this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "give_gift", (quest, obj3) => {
+        if (obj3.npcId && obj3.npcId !== npcId) return;
+        this.completeObjective(quest.id, obj3.id);
       });
     }
     trackDirectionStep(questId) {
-      this.forEachObjective(questId, "follow_directions", (quest, obj) => {
-        obj.stepsCompleted = (obj.stepsCompleted || 0) + 1;
-        obj.currentCount = obj.stepsCompleted;
-        if (obj.stepsCompleted >= (obj.stepsRequired || obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "follow_directions", (quest, obj3) => {
+        obj3.stepsCompleted = (obj3.stepsCompleted || 0) + 1;
+        obj3.currentCount = obj3.stepsCompleted;
+        if (obj3.stepsCompleted >= (obj3.stepsRequired || obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     // ── Mercantile objective tracking ──────────────────────────────────
     trackFoodOrdered(itemName, merchantId, businessType, questId) {
-      this.forEachObjective(questId, "order_food", (quest, obj) => {
-        if (obj.merchantId && obj.merchantId !== merchantId) return;
-        obj.itemsPurchased = obj.itemsPurchased || [];
-        obj.itemsPurchased.push(itemName);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "order_food", (quest, obj3) => {
+        if (obj3.merchantId && obj3.merchantId !== merchantId) return;
+        obj3.itemsPurchased = obj3.itemsPurchased || [];
+        obj3.itemsPurchased.push(itemName);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackPriceHaggled(itemName, merchantId, typedWord, questId) {
-      this.forEachObjective(questId, "haggle_price", (quest, obj) => {
-        if (obj.merchantId && obj.merchantId !== merchantId) return;
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "haggle_price", (quest, obj3) => {
+        if (obj3.merchantId && obj3.merchantId !== merchantId) return;
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     // ── Text / reading / comprehension tracking ──────────────────────────
     trackTextFound(textId, textName, questId) {
       const lowerName = textName.toLowerCase();
-      this.forEachObjective(questId, ["find_text", "collect_text"], (quest, obj) => {
-        const targetName = (obj.itemName || "").toLowerCase();
+      this.forEachObjective(questId, ["find_text", "collect_text"], (quest, obj3) => {
+        const targetName = (obj3.itemName || "").toLowerCase();
         if (targetName && targetName !== lowerName && targetName !== textId) return;
-        obj.textsFound = obj.textsFound || [];
-        if (obj.textsFound.includes(textId)) return;
-        obj.textsFound.push(textId);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.textsFound = obj3.textsFound || [];
+        if (obj3.textsFound.includes(textId)) return;
+        obj3.textsFound.push(textId);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackTextRead(textId, questId) {
-      this.forEachObjective(questId, ["read_text", "read_document"], (quest, obj) => {
-        if (obj.textId && obj.textId !== textId) return;
-        obj.textsRead = obj.textsRead || [];
-        if (obj.textsRead.includes(textId)) return;
-        obj.textsRead.push(textId);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, ["read_text", "read_document"], (quest, obj3) => {
+        if (obj3.textId && obj3.textId !== textId) return;
+        obj3.textsRead = obj3.textsRead || [];
+        if (obj3.textsRead.includes(textId)) return;
+        obj3.textsRead.push(textId);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackComprehensionAnswer(isCorrect, questId) {
-      this.forEachObjective(questId, "comprehension_quiz", (quest, obj) => {
-        obj.quizAnswered = (obj.quizAnswered || 0) + 1;
+      this.forEachObjective(questId, "comprehension_quiz", (quest, obj3) => {
+        obj3.quizAnswered = (obj3.quizAnswered || 0) + 1;
         if (isCorrect) {
-          obj.quizCorrect = (obj.quizCorrect || 0) + 1;
+          obj3.quizCorrect = (obj3.quizCorrect || 0) + 1;
         }
-        obj.currentCount = obj.quizCorrect || 0;
-        const required2 = obj.requiredCount || obj.quizQuestions?.length || getDefaultRequiredCount("comprehension_quiz");
-        const threshold = obj.quizPassThreshold ?? required2;
-        if (obj.quizCorrect >= threshold) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.currentCount = obj3.quizCorrect || 0;
+        const required2 = obj3.requiredCount || obj3.quizQuestions?.length || getDefaultRequiredCount("comprehension_quiz");
+        const threshold = obj3.quizPassThreshold ?? required2;
+        if (obj3.quizCorrect >= threshold) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackPhotoTaken(subjectName, subjectCategory, subjectActivity, questId) {
       const lowerName = subjectName.toLowerCase();
       const lowerActivity = subjectActivity?.toLowerCase();
-      this.forEachObjective(questId, "photograph_subject", (quest, obj) => {
-        if (obj.targetCategory && obj.targetCategory !== subjectCategory) return;
-        if (obj.targetSubject && obj.targetSubject.toLowerCase() !== lowerName) return;
-        if (obj.targetActivity) {
+      this.forEachObjective(questId, "photograph_subject", (quest, obj3) => {
+        if (obj3.targetCategory && obj3.targetCategory !== subjectCategory) return;
+        if (obj3.targetSubject && obj3.targetSubject.toLowerCase() !== lowerName) return;
+        if (obj3.targetActivity) {
           if (!lowerActivity) return;
-          if (!lowerActivity.includes(obj.targetActivity.toLowerCase())) return;
+          if (!lowerActivity.includes(obj3.targetActivity.toLowerCase())) return;
         }
-        const trackingKey = obj.targetActivity ? `${lowerName}:${lowerActivity}` : lowerName;
-        obj.photographedSubjects = obj.photographedSubjects || [];
-        if (obj.photographedSubjects.includes(trackingKey)) return;
-        obj.photographedSubjects.push(trackingKey);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+        const trackingKey = obj3.targetActivity ? `${lowerName}:${lowerActivity}` : lowerName;
+        obj3.photographedSubjects = obj3.photographedSubjects || [];
+        if (obj3.photographedSubjects.includes(trackingKey)) return;
+        obj3.photographedSubjects.push(trackingKey);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
     trackActivityPhotographed(npcId, npcName, activity, questId) {
       const lowerName = npcName.toLowerCase();
       const lowerActivity = activity.toLowerCase();
-      this.forEachObjective(questId, "photograph_activity", (quest, obj) => {
-        if (obj.npcName && obj.npcName.toLowerCase() !== lowerName) return;
-        if (obj.targetActivity && !lowerActivity.includes(obj.targetActivity.toLowerCase())) return;
+      this.forEachObjective(questId, "photograph_activity", (quest, obj3) => {
+        if (obj3.npcName && obj3.npcName.toLowerCase() !== lowerName) return;
+        if (obj3.targetActivity && !lowerActivity.includes(obj3.targetActivity.toLowerCase())) return;
         const trackingKey = `${lowerName}:${lowerActivity}`;
-        obj.photographedSubjects = obj.photographedSubjects || [];
-        if (obj.photographedSubjects.includes(trackingKey)) return;
-        obj.photographedSubjects.push(trackingKey);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.photographedSubjects = obj3.photographedSubjects || [];
+        if (obj3.photographedSubjects.includes(trackingKey)) return;
+        obj3.photographedSubjects.push(trackingKey);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
@@ -4514,18 +4514,18 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const lowerName = npcName.toLowerCase();
       const lowerActivity = activity.toLowerCase();
       const defaultDuration = OBJECTIVE_TYPE_DEFAULTS["observe_activity"]?.observeDurationSeconds ?? 5;
-      this.forEachObjective(questId, "observe_activity", (quest, obj) => {
-        if (obj.npcName && obj.npcName.toLowerCase() !== lowerName) return;
-        if (obj.targetActivity && !lowerActivity.includes(obj.targetActivity.toLowerCase())) return;
-        const required2 = obj.observeDurationRequired || defaultDuration;
+      this.forEachObjective(questId, "observe_activity", (quest, obj3) => {
+        if (obj3.npcName && obj3.npcName.toLowerCase() !== lowerName) return;
+        if (obj3.targetActivity && !lowerActivity.includes(obj3.targetActivity.toLowerCase())) return;
+        const required2 = obj3.observeDurationRequired || defaultDuration;
         if (durationSeconds < required2) return;
         const trackingKey = `${lowerName}:${lowerActivity}`;
-        obj.observedActivities = obj.observedActivities || [];
-        if (obj.observedActivities.includes(trackingKey)) return;
-        obj.observedActivities.push(trackingKey);
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.observedActivities = obj3.observedActivities || [];
+        if (obj3.observedActivities.includes(trackingKey)) return;
+        obj3.observedActivities.push(trackingKey);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
@@ -4537,12 +4537,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     trackConversationGoalResult(questId, objectiveId, goalMet, confidence, extractedInfo) {
       const quest = this.quests.find((q) => q.id === questId);
       if (!quest) return;
-      const obj = quest.objectives?.find((o) => o.id === objectiveId);
-      if (!obj || obj.completed) return;
-      obj.conversationGoalConfidence = confidence;
-      obj.conversationGoalExtractedInfo = extractedInfo;
+      const obj3 = quest.objectives?.find((o) => o.id === objectiveId);
+      if (!obj3 || obj3.completed) return;
+      obj3.conversationGoalConfidence = confidence;
+      obj3.conversationGoalExtractedInfo = extractedInfo;
       if (goalMet && confidence >= MIN_CONVERSATION_GOAL_CONFIDENCE) {
-        obj.conversationGoalMet = true;
+        obj3.conversationGoalMet = true;
         this.completeObjective(questId, objectiveId);
       }
     }
@@ -4554,10 +4554,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const results = [];
       for (const quest of this.quests) {
         if (questId && quest.id !== questId) continue;
-        for (const obj of quest.objectives || []) {
-          if (obj.completed) continue;
-          if (obj.conversationGoal && !this.isObjectiveLocked(quest, obj)) {
-            results.push({ questId: quest.id, objective: obj });
+        for (const obj3 of quest.objectives || []) {
+          if (obj3.completed) continue;
+          if (obj3.conversationGoal && !this.isObjectiveLocked(quest, obj3)) {
+            results.push({ questId: quest.id, objective: obj3 });
           }
         }
       }
@@ -4570,15 +4570,15 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      */
     trackEavesdrop(npcId1, npcId2, topic, languageUsed, questId) {
       const lowerTopic = topic.toLowerCase();
-      this.forEachObjective(questId, "eavesdrop", (quest, obj) => {
-        if (obj.eavesdropTopic) {
-          const targetTopic = obj.eavesdropTopic.toLowerCase();
+      this.forEachObjective(questId, "eavesdrop", (quest, obj3) => {
+        if (obj3.eavesdropTopic) {
+          const targetTopic = obj3.eavesdropTopic.toLowerCase();
           if (!lowerTopic.includes(targetTopic) && !targetTopic.includes(lowerTopic)) return;
         }
-        obj.eavesdropCompleted = true;
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.eavesdropCompleted = true;
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
@@ -4591,11 +4591,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       for (const quest of this.quests) {
         if (!quest.objectives?.length) continue;
         const objectiveStates = [];
-        for (const obj of quest.objectives) {
-          const state = { id: obj.id };
+        for (const obj3 of quest.objectives) {
+          const state = { id: obj3.id };
           let hasProgress = false;
           for (const field of _QuestCompletionEngine.PROGRESS_FIELDS) {
-            const value = obj[field];
+            const value = obj3[field];
             if (value !== void 0 && value !== false && value !== null && value !== 0) {
               state[field] = value;
               hasProgress = true;
@@ -4621,11 +4621,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         const quest = this.quests.find((q) => q.id === questId);
         if (!quest?.objectives) continue;
         for (const saved of savedObjectives) {
-          const obj = quest.objectives.find((o) => o.id === saved.id);
-          if (!obj) continue;
+          const obj3 = quest.objectives.find((o) => o.id === saved.id);
+          if (!obj3) continue;
           for (const [key, value] of Object.entries(saved)) {
             if (key === "id") continue;
-            obj[key] = value;
+            obj3[key] = value;
           }
         }
       }
@@ -4651,19 +4651,19 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         made_introduction: ["made_introduction", "introduce_self"]
       };
       const targetTypes = actionToObjectiveTypes[action] || [action];
-      this.forEachObjective(questId, targetTypes, (quest, obj) => {
-        if (obj.npcId && obj.npcId !== npcId) return;
-        if (obj.type === "asked_about_topic" && obj.targetWords && obj.targetWords.length > 0) {
-          if (topic && !obj.targetWords.includes(topic)) return;
+      this.forEachObjective(questId, targetTypes, (quest, obj3) => {
+        if (obj3.npcId && obj3.npcId !== npcId) return;
+        if (obj3.type === "asked_about_topic" && obj3.targetWords && obj3.targetWords.length > 0) {
+          if (topic && !obj3.targetWords.includes(topic)) return;
         }
-        obj.currentCount = (obj.currentCount || 0) + 1;
-        if (obj.currentCount >= (obj.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj.id);
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
         }
       });
-      this.forEachObjective(questId, "arrival_initiate_conversation", (quest, obj) => {
-        if (obj.npcId && obj.npcId !== npcId) return;
-        this.completeObjective(quest.id, obj.id);
+      this.forEachObjective(questId, "arrival_initiate_conversation", (quest, obj3) => {
+        if (obj3.npcId && obj3.npcId !== npcId) return;
+        this.completeObjective(quest.id, obj3.id);
       });
     }
     /**
@@ -4672,12 +4672,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * meets the required threshold (arrival, departure, periodic).
      */
     trackConversationTurnCounted(npcId, totalTurns, meaningfulTurns, questId) {
-      this.forEachObjective(questId, ["conversation", "arrival_conversation", "departure_conversation", "periodic_conversational"], (quest, obj) => {
-        if (obj.npcId && obj.npcId !== npcId) return;
-        obj.currentCount = meaningfulTurns;
-        const required2 = obj.requiredCount || getDefaultRequiredCount(obj.type);
+      this.forEachObjective(questId, ["conversation", "arrival_conversation", "departure_conversation", "periodic_conversational"], (quest, obj3) => {
+        if (obj3.npcId && obj3.npcId !== npcId) return;
+        obj3.currentCount = meaningfulTurns;
+        const required2 = obj3.requiredCount || getDefaultRequiredCount(obj3.type);
         if (meaningfulTurns >= required2) {
-          this.completeObjective(quest.id, obj.id);
+          this.completeObjective(quest.id, obj3.id);
         }
       });
     }
@@ -4691,10 +4691,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     trackByTrigger(trigger, questId) {
       for (const quest of this.quests) {
         if (questId && quest.id !== questId) continue;
-        for (const obj of quest.objectives || []) {
-          if (obj.completed) continue;
-          if (obj.completionTrigger === trigger && !this.isObjectiveLocked(quest, obj)) {
-            this.completeObjective(quest.id, obj.id);
+        for (const obj3 of quest.objectives || []) {
+          if (obj3.completed) continue;
+          if (obj3.completionTrigger === trigger && !this.isObjectiveLocked(quest, obj3)) {
+            this.completeObjective(quest.id, obj3.id);
           }
         }
       }
@@ -4722,12 +4722,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       if (mappings.length === 0) return 0;
       let affected = 0;
       for (const mapping of mappings) {
-        this.forEachObjective(void 0, mapping.objectiveType, (quest, obj) => {
-          if (!matchesAllFields(mapping, event, obj)) {
+        this.forEachObjective(void 0, mapping.objectiveType, (quest, obj3) => {
+          if (!matchesAllFields(mapping, event, obj3)) {
             return;
           }
           if (mapping.objectiveType === "photograph_activity") {
-            const objActivity = (obj.targetActivity || "").toLowerCase();
+            const objActivity = (obj3.targetActivity || "").toLowerCase();
             const eventActivity = String(event.subjectActivity || event.activity || "").toLowerCase();
             if (objActivity && (!eventActivity || !eventActivity.includes(objActivity))) {
               return;
@@ -4736,16 +4736,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           affected++;
           if (mapping.quantity) {
             const { currentField, requiredField, defaultRequired } = mapping.quantity;
-            const objAny = obj;
+            const objAny = obj3;
             objAny[currentField] = (objAny[currentField] || 0) + 1;
             const required2 = objAny[requiredField] || defaultRequired;
             if (objAny[currentField] >= required2) {
-              this.completeObjective(quest.id, obj.id);
+              this.completeObjective(quest.id, obj3.id);
             } else {
-              this.onObjectiveProgress?.(quest.id, obj.id, objAny[currentField], required2, obj.type);
+              this.onObjectiveProgress?.(quest.id, obj3.id, objAny[currentField], required2, obj3.type);
             }
           } else {
-            this.completeObjective(quest.id, obj.id);
+            this.completeObjective(quest.id, obj3.id);
           }
         });
       }
@@ -4765,11 +4765,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         if (questId && quest.id !== questId) continue;
         if (quest.status && quest.status !== "active") continue;
         const eligible = (quest.objectives || []).filter(
-          (obj) => !obj.completed && types.includes(obj.type) && !this.isObjectiveLocked(quest, obj)
+          (obj3) => !obj3.completed && types.includes(obj3.type) && !this.isObjectiveLocked(quest, obj3)
         );
-        for (const obj of eligible) {
-          if (obj.completed) continue;
-          callback(quest, obj);
+        for (const obj3 of eligible) {
+          if (obj3.completed) continue;
+          callback(quest, obj3);
         }
       }
     }
@@ -4888,9 +4888,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     for (const q of quests) {
       if (!q || q.status !== "active") continue;
-      const obj = firstIncompleteObjective(q);
-      if (!obj) continue;
-      if (npcMatchesObjective(obj, npc.id, npcFullName)) {
+      const obj3 = firstIncompleteObjective(q);
+      if (!obj3) continue;
+      if (npcMatchesObjective(obj3, npc.id, npcFullName)) {
         return "active_objective";
       }
     }
@@ -4929,8 +4929,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function firstIncompleteObjective(quest) {
     const objs = quest.objectives;
     if (!Array.isArray(objs)) return null;
-    for (const obj of objs) {
-      if (obj && !obj.completed) return obj;
+    for (const obj3 of objs) {
+      if (obj3 && !obj3.completed) return obj3;
     }
     return null;
   }
@@ -4977,13 +4977,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const questPos = quest.locationPosition;
       let foundCurrent = false;
       for (let i = 0; i < quest.objectives.length; i++) {
-        const obj = quest.objectives[i];
-        if (obj.completed) continue;
+        const obj3 = quest.objectives[i];
+        if (obj3.completed) continue;
         if (foundCurrent) break;
         foundCurrent = true;
-        const objLoc = obj.objectiveLocation || "";
+        const objLoc = obj3.objectiveLocation || "";
         if (objLoc.startsWith("npc(")) continue;
-        let pos = obj.locationPosition ?? obj.position ?? questPos;
+        let pos = obj3.locationPosition ?? obj3.position ?? questPos;
         if (!pos && resolvedPositions) {
           const markerId = `${quest.id}_obj_${i}`;
           const dynPos = resolvedPositions.get(markerId);
@@ -4991,8 +4991,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
             pos = { x: dynPos.x, y: 0, z: dynPos.z };
           }
         }
-        if (!pos && namedLocations && obj.objectiveLocation) {
-          let locKey = obj.objectiveLocation;
+        if (!pos && namedLocations && obj3.objectiveLocation) {
+          let locKey = obj3.objectiveLocation;
           const termMatch = locKey.match(/^(?:location|npc|merchant|settlement)\(\s*'?([^')]+)'?\s*\)$/);
           if (termMatch) locKey = termMatch[1];
           const namedPos = namedLocations.get(locKey);
@@ -5006,11 +5006,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           id: `${quest.id}_obj_${i}`,
           questId: quest.id,
           questTitle: quest.title || quest.name || quest.id,
-          objectiveType: obj.type,
-          objectiveDescription: obj.description,
+          objectiveType: obj3.type,
+          objectiveDescription: obj3.description,
           position: { x: pos.x, z: pos.z },
           color: MARKER_STYLES.active_objective.color,
-          shape: getObjectiveMarkerShape(obj.type)
+          shape: getObjectiveMarkerShape(obj3.type)
         });
       }
     }
@@ -5062,10 +5062,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const waypoints = [];
       const objectives = this.getIncompleteObjectives(quest);
       if (objectives.length === 0) return waypoints;
-      for (const obj of objectives) {
+      for (const obj3 of objectives) {
         const resolved = this.resolveObjectivePosition(
           quest,
-          obj,
+          obj3,
           buildingData,
           npcBuildingMap,
           npcPositions,
@@ -5124,30 +5124,30 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     getIncompleteObjectives(quest) {
       const objectives = [];
       if (quest.objectives) {
-        for (const obj of quest.objectives) {
-          if (!obj.completed) {
-            objectives.push(obj);
+        for (const obj3 of quest.objectives) {
+          if (!obj3.completed) {
+            objectives.push(obj3);
           }
         }
       }
       if (quest.completionCriteria?.objectives) {
         const criteriaObjs = Array.isArray(quest.completionCriteria.objectives) ? quest.completionCriteria.objectives : [];
-        for (const obj of criteriaObjs) {
-          if (!obj.completed) {
+        for (const obj3 of criteriaObjs) {
+          if (!obj3.completed) {
             objectives.push({
-              id: obj.id || `crit_${objectives.length}`,
-              type: obj.type || quest.questType,
+              id: obj3.id || `crit_${objectives.length}`,
+              type: obj3.type || quest.questType,
               completed: false,
-              position: obj.position,
-              locationPosition: obj.locationPosition,
-              locationName: obj.locationName,
-              npcId: obj.npcId,
-              npcName: obj.npcName,
-              itemName: obj.itemName,
-              directionSteps: obj.directionSteps,
-              navigationWaypoints: obj.navigationWaypoints,
-              stepsCompleted: obj.stepsCompleted,
-              waypointsReached: obj.waypointsReached
+              position: obj3.position,
+              locationPosition: obj3.locationPosition,
+              locationName: obj3.locationName,
+              npcId: obj3.npcId,
+              npcName: obj3.npcName,
+              itemName: obj3.itemName,
+              directionSteps: obj3.directionSteps,
+              navigationWaypoints: obj3.navigationWaypoints,
+              stepsCompleted: obj3.stepsCompleted,
+              waypointsReached: obj3.waypointsReached
             });
           }
         }
@@ -12493,12 +12493,12 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     let config;
     let configSource;
     let fallback = null;
-    let policy;
+    let policy2;
     let recipeOut = null;
     if (request.recipe !== void 0 && request.recipe !== null) {
       const { binding: binding2, bound } = bindingFor(request.recipe);
       recipeOut = { id: binding2.recipeId, bound };
-      policy = binding2.camera;
+      policy2 = binding2.camera;
       if (own && binding2.keepWorldConfigFor.includes(own.id)) {
         config = own;
         configSource = "world";
@@ -12511,7 +12511,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         configSource = "recipe";
       }
     } else {
-      policy = "world-default";
+      policy2 = "world-default";
       if (own) {
         config = own;
         configSource = "world";
@@ -12544,7 +12544,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     }
     let source = "genreConfig.cameraMode";
     const perspective = normalizeCameraMode(worldPerspective);
-    if (policy === "world-default") {
+    if (policy2 === "world-default") {
       if (perspective) {
         mode = perspective;
         source = "meta.cameraPerspective";
@@ -12566,12 +12566,4509 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       genre: { id: config.id, known, fallback },
       configSource,
       config,
-      camera: { mode, policy, source, worldPerspective },
+      camera: { mode, policy: policy2, source, worldPerspective },
       bundle: known ? bundleFor(config.id) : { id: null, featureModules: [] },
       activation: activationFor(declared),
       notes
     };
   }
+
+  // @insimul/core/src/game-engine/ir-types.ts
+  var DEFAULT_HANDLE_KEY = "default";
+
+  // @insimul/core/src/editor/binding/geometry.ts
+  var CORE_CONVENTION = {
+    up: "y",
+    handedness: "left",
+    unitsPerMetre: 1
+  };
+  var ENGINE_CONVENTIONS = {
+    [DEFAULT_HANDLE_KEY]: CORE_CONVENTION,
+    babylon: { up: "y", handedness: "left", unitsPerMetre: 1 },
+    unity: { up: "y", handedness: "left", unitsPerMetre: 1 },
+    godot: { up: "y", handedness: "right", unitsPerMetre: 1 },
+    unreal: { up: "z", handedness: "left", unitsPerMetre: 100 }
+  };
+  var ENTRANCE_SOCKET_KIND = "door";
+  function socketByName(geometry, name) {
+    if (!name) return null;
+    return geometry.sockets.find((socket) => socket.name === name) ?? null;
+  }
+  function socketsOfKind(geometry, kind) {
+    if (!kind) return [];
+    return geometry.sockets.filter((socket) => socket.kind === kind);
+  }
+  function entranceSocket(geometry) {
+    const byKind = socketsOfKind(geometry, ENTRANCE_SOCKET_KIND);
+    if (byKind.length > 0) return byKind[0];
+    return socketByName(geometry, ENTRANCE_SOCKET_KIND);
+  }
+
+  // @insimul/core/src/editor/scene/fit.ts
+  var FIT_QUANTUM = 1e-3;
+  var QUARTER_TURN = Math.PI / 2;
+  var TWO_PI = Math.PI * 2;
+  var UNBOUNDED_LOT = {
+    width: 0,
+    depth: 0,
+    frontageYaw: 0,
+    hasFrontage: false
+  };
+  function isRecord(v) {
+    return typeof v === "object" && v !== null && !Array.isArray(v);
+  }
+  function positive(v) {
+    return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
+  }
+  function readFitLot(raw) {
+    if (!isRecord(raw)) return { ...UNBOUNDED_LOT };
+    const frontage = raw.frontageYaw;
+    const hasFrontage = typeof frontage === "number" && Number.isFinite(frontage);
+    return {
+      width: positive(raw.width),
+      depth: positive(raw.depth),
+      frontageYaw: hasFrontage ? normalizeYaw(frontage) : 0,
+      hasFrontage
+    };
+  }
+  function lotIsBounded(lot) {
+    return lot.width > 0 && lot.depth > 0;
+  }
+  function normalizeYaw(yaw) {
+    if (!Number.isFinite(yaw)) return 0;
+    let out = yaw % TWO_PI;
+    if (out > Math.PI) out -= TWO_PI;
+    else if (out <= -Math.PI) out += TWO_PI;
+    return out === 0 ? 0 : out;
+  }
+  function quantizeFitMetre(value) {
+    if (!Number.isFinite(value)) return 0;
+    const inv = 1 / FIT_QUANTUM;
+    const scaled2 = value * inv;
+    const rounded = scaled2 < 0 ? -Math.round(-scaled2) : Math.round(scaled2);
+    const q = rounded / inv;
+    return q === 0 ? 0 : q;
+  }
+  function rotatedExtent(sizeX, sizeZ, delta) {
+    const c = Math.abs(Math.cos(delta));
+    const s = Math.abs(Math.sin(delta));
+    return {
+      across: quantizeFitMetre(sizeX * c + sizeZ * s),
+      away: quantizeFitMetre(sizeX * s + sizeZ * c)
+    };
+  }
+  function within(required2, lot) {
+    return required2.across <= lot.width + FIT_QUANTUM && required2.away <= lot.depth + FIT_QUANTUM;
+  }
+  function scaled(size, factor) {
+    if (factor === void 0) return { ...size };
+    return { x: size.x * factor.x, y: size.y * factor.y, z: size.z * factor.z };
+  }
+  function alignEntranceYaw(geometry, entrance, frontageYaw) {
+    return normalizeYaw(frontageYaw - geometry.yaw - entrance.yaw);
+  }
+  function checkAssetFit(geometry, lot, placement) {
+    const authored = normalizeYaw(placement.rotationY);
+    if (!geometry.measured) {
+      return {
+        outcome: "unmeasured",
+        issues: [],
+        rotationY: authored,
+        aligned: false,
+        required: { across: 0, away: 0 }
+      };
+    }
+    const issues = [];
+    const entrance = lot.hasFrontage ? entranceSocket(geometry) : null;
+    const aligned = entrance !== null;
+    const rotationY = aligned ? alignEntranceYaw(geometry, entrance, lot.frontageYaw) : authored;
+    if (lot.hasFrontage && !aligned) issues.push("no-entrance-anchor");
+    if (geometry.footprint === null) {
+      return {
+        outcome: issues.length > 0 ? "misfit" : "unmeasured",
+        issues,
+        rotationY,
+        aligned,
+        required: { across: 0, away: 0 }
+      };
+    }
+    const size = scaled(scaled(geometry.footprint.size, geometry.scale), placement.scale);
+    const delta = lot.hasFrontage ? rotationY + geometry.yaw - lot.frontageYaw : 0;
+    const required2 = rotatedExtent(size.x, size.z, delta);
+    if (!lotIsBounded(lot)) {
+      return {
+        outcome: issues.length > 0 ? "misfit" : "unbounded",
+        issues,
+        rotationY,
+        aligned,
+        required: required2
+      };
+    }
+    if (!within(required2, lot)) {
+      const turned = { across: required2.away, away: required2.across };
+      issues.push(within(turned, lot) ? "wrong-aspect" : "too-large");
+    }
+    issues.sort();
+    return {
+      outcome: issues.length > 0 ? "misfit" : "fits",
+      issues,
+      rotationY,
+      aligned,
+      required: required2
+    };
+  }
+
+  // @insimul/core/src/editor/layout/plan-geometry.ts
+  function planSub(a, b) {
+    return [a[0] - b[0], a[1] - b[1]];
+  }
+  function planDot(a, b) {
+    return a[0] * b[0] + a[1] * b[1];
+  }
+  function planCross(a, b) {
+    return a[0] * b[1] - a[1] * b[0];
+  }
+  function isConvexOutline(p) {
+    if (p.length < 3) return false;
+    let sign = 0;
+    for (let i = 0; i < p.length; i += 1) {
+      const a = p[i];
+      const b = p[(i + 1) % p.length];
+      const c = p[(i + 2) % p.length];
+      const z = planCross(planSub(b, a), planSub(c, b));
+      if (Math.abs(z) < 1e-12) continue;
+      const s = z > 0 ? 1 : -1;
+      if (sign === 0) sign = s;
+      else if (s !== sign) return false;
+    }
+    return sign !== 0;
+  }
+  function satDepth(a, b) {
+    let best = Infinity;
+    for (const q of [a, b]) {
+      for (let i = 0; i < q.length; i += 1) {
+        const e = planSub(q[(i + 1) % q.length], q[i]);
+        const l = Math.sqrt(e[0] * e[0] + e[1] * e[1]);
+        if (l < 1e-12) continue;
+        const n = [-e[1] / l, e[0] / l];
+        let aMin = Infinity;
+        let aMax = -Infinity;
+        let bMin = Infinity;
+        let bMax = -Infinity;
+        for (const v of a) {
+          const d = planDot(v, n);
+          aMin = Math.min(aMin, d);
+          aMax = Math.max(aMax, d);
+        }
+        for (const v of b) {
+          const d = planDot(v, n);
+          bMin = Math.min(bMin, d);
+          bMax = Math.max(bMax, d);
+        }
+        const overlap = Math.min(aMax, bMax) - Math.max(aMin, bMin);
+        if (overlap <= 0) return 0;
+        best = Math.min(best, overlap);
+      }
+    }
+    return best === Infinity ? 0 : best;
+  }
+  function planSeparation(a, b) {
+    let best = -Infinity;
+    let axis = [1, 0];
+    for (const q of [a, b]) {
+      for (let i = 0; i < q.length; i += 1) {
+        const e = planSub(q[(i + 1) % q.length], q[i]);
+        const l = Math.sqrt(e[0] * e[0] + e[1] * e[1]);
+        if (l < 1e-12) continue;
+        const n = [-e[1] / l, e[0] / l];
+        let aMin = Infinity;
+        let aMax = -Infinity;
+        let bMin = Infinity;
+        let bMax = -Infinity;
+        for (const v of a) {
+          const d = planDot(v, n);
+          aMin = Math.min(aMin, d);
+          aMax = Math.max(aMax, d);
+        }
+        for (const v of b) {
+          const d = planDot(v, n);
+          bMin = Math.min(bMin, d);
+          bMax = Math.max(bMax, d);
+        }
+        const forward = bMin - aMax;
+        const back = aMin - bMax;
+        const gap = Math.max(forward, back);
+        if (gap > best + 1e-12) {
+          best = gap;
+          axis = forward >= back ? n : [-n[0], -n[1]];
+        }
+      }
+    }
+    return { gap: best === -Infinity ? 0 : best, axis };
+  }
+  function pointInOutline(p, q) {
+    let inside = false;
+    for (let i = 0, j = q.length - 1; i < q.length; j = i, i += 1) {
+      if (q[i][1] > p[1] !== q[j][1] > p[1] && p[0] < (q[j][0] - q[i][0]) * (p[1] - q[i][1]) / (q[j][1] - q[i][1]) + q[i][0]) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  }
+  function pointSegmentDistance(p, a, b) {
+    const ab = planSub(b, a);
+    const l2 = planDot(ab, ab);
+    let t = l2 > 0 ? planDot(planSub(p, a), ab) / l2 : 0;
+    t = Math.max(0, Math.min(1, t));
+    const cx = a[0] + t * ab[0] - p[0];
+    const cz = a[1] + t * ab[1] - p[1];
+    return Math.sqrt(cx * cx + cz * cz);
+  }
+  function nearestOnSegment(p, a, b) {
+    const dx = b[0] - a[0];
+    const dz = b[1] - a[1];
+    const l2 = dx * dx + dz * dz;
+    const t = l2 > 0 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / l2)) : 0;
+    return [a[0] + dx * t, a[1] + dz * t];
+  }
+  function segmentsCross(a, b, c, d) {
+    const d1 = planCross(planSub(b, a), planSub(c, a));
+    const d2 = planCross(planSub(b, a), planSub(d, a));
+    const d3 = planCross(planSub(d, c), planSub(a, c));
+    const d4 = planCross(planSub(d, c), planSub(b, c));
+    return d1 > 0 !== d2 > 0 && d3 > 0 !== d4 > 0;
+  }
+  function segmentOutlineDistance(a, b, q) {
+    if (pointInOutline(a, q) || pointInOutline(b, q)) return 0;
+    let best = Infinity;
+    for (let i = 0; i < q.length; i += 1) {
+      const c = q[i];
+      const d = q[(i + 1) % q.length];
+      if (segmentsCross(a, b, c, d)) return 0;
+      best = Math.min(
+        best,
+        pointSegmentDistance(c, a, b),
+        pointSegmentDistance(d, a, b),
+        pointSegmentDistance(a, c, d),
+        pointSegmentDistance(b, c, d)
+      );
+    }
+    return best;
+  }
+  function triangulateOutline(outline) {
+    const out = [];
+    let p = [...outline];
+    let area = 0;
+    for (let i = 0; i < p.length; i += 1) area += planCross(p[i], p[(i + 1) % p.length]);
+    if (area < 0) p = p.reverse();
+    let guard = 0;
+    while (p.length > 3 && guard < 1e4) {
+      guard += 1;
+      let cut = false;
+      for (let i = 0; i < p.length; i += 1) {
+        const ia = (i + p.length - 1) % p.length;
+        const ic = (i + 1) % p.length;
+        const a = p[ia];
+        const b = p[i];
+        const c = p[ic];
+        if (planCross(planSub(b, a), planSub(c, b)) <= 1e-12) continue;
+        let empty = true;
+        for (let j = 0; j < p.length && empty; j += 1) {
+          if (j === ia || j === i || j === ic) continue;
+          const q = p[j];
+          const d1 = planCross(planSub(b, a), planSub(q, a));
+          const d2 = planCross(planSub(c, b), planSub(q, b));
+          const d3 = planCross(planSub(a, c), planSub(q, c));
+          if (d1 > 0 && d2 > 0 && d3 > 0) empty = false;
+        }
+        if (!empty) continue;
+        out.push([a, b, c]);
+        p.splice(i, 1);
+        cut = true;
+        break;
+      }
+      if (!cut) break;
+    }
+    if (p.length >= 3) out.push(p);
+    return out;
+  }
+  function outlineDepth(footprint, outline) {
+    if (isConvexOutline(outline)) return satDepth(footprint, outline);
+    let deepest = 0;
+    for (const t of triangulateOutline(outline)) deepest = Math.max(deepest, satDepth(footprint, t));
+    return deepest;
+  }
+  function quantizeMillimetre(m) {
+    const scaled2 = m * 1e3;
+    const q = (scaled2 < 0 ? -Math.round(-scaled2) : Math.round(scaled2)) / 1e3;
+    return q === 0 ? 0 : q;
+  }
+  function roundHalfAway(v) {
+    return v < 0 ? -Math.round(-v) : Math.round(v);
+  }
+
+  // @insimul/core/src/editor/layout/building-fit.ts
+  var QUARTER_TURN2 = Math.PI / 2;
+  var DOOR_GROUND_FLOOR_BAND_M = 0.6;
+  var DOOR_OUTLINE_BAND_M = 1;
+  var DOOR_MIN_HEIGHT_M = 1;
+  var SEAT_TOLERANCE_M = 0.02;
+  var DEFAULT_FIT_SCALE_MIN = 0.5;
+  var DEFAULT_FIT_SCALE_MAX = 1;
+  var DEFAULT_DOOR_CLEARANCE = 1;
+  var DEFAULT_SEAT_SINK = 0;
+  var DEFAULT_NEIGHBOUR_GAP_M = 1;
+  var STATURE_PER_HEAD_BONE = 1.15;
+  var CROWN_RADIUS_M = 0.15;
+  var FIT_ISSUE_DOOR_BELOW_BODY = "door-below-body";
+  var FIT_OVERLAP_TOLERANCE_M = 0.02;
+  function defaultFitPolicy() {
+    return {
+      mode: "lot",
+      scaleMin: DEFAULT_FIT_SCALE_MIN,
+      scaleMax: DEFAULT_FIT_SCALE_MAX,
+      doorClearance: DEFAULT_DOOR_CLEARANCE,
+      seatSink: DEFAULT_SEAT_SINK,
+      neighbourGap: DEFAULT_NEIGHBOUR_GAP_M
+    };
+  }
+  function bodyStature(boundsHeight, headBoneHeight = 0, crownTop = 0) {
+    if (!(boundsHeight > 0)) return 0;
+    const person = headBoneHeight > 0 ? Math.min(boundsHeight, headBoneHeight * STATURE_PER_HEAD_BONE) : boundsHeight;
+    if (!(person > 0) || !(crownTop > 0)) return person;
+    return Math.min(boundsHeight, Math.max(person, crownTop));
+  }
+  function noDoor() {
+    return { source: "none", name: "", hasPosition: false, position: { x: 0, y: 0, z: 0 }, yaw: 0, candidates: 0, height: 0 };
+  }
+  function isDoorPartName(c) {
+    if (c.mesh !== "") return c.mesh.toLowerCase().includes("door");
+    return c.component.toLowerCase().includes("door") || c.owner.toLowerCase().includes("door");
+  }
+  function faceYawOf(p, min, max) {
+    const sides = [max.z - p.z, max.x - p.x, p.x - min.x, p.z - min.z];
+    const yaws = [0, QUARTER_TURN2, -QUARTER_TURN2, Math.PI];
+    let best = 0;
+    for (let i = 1; i < 4; i += 1) {
+      if (sides[i] < sides[best] - 1e-11) best = i;
+    }
+    return yaws[best];
+  }
+  function faceCentreFor(yaw, min, max, y) {
+    const cf = (min.z + max.z) / 2;
+    const cr = (min.x + max.x) / 2;
+    const hf = (max.z - min.z) / 2;
+    const hr = (max.x - min.x) / 2;
+    const df = Math.cos(yaw);
+    const dr = Math.sin(yaw);
+    const tf = Math.abs(df) > 1e-12 ? hf / Math.abs(df) : Infinity;
+    const tr = Math.abs(dr) > 1e-12 ? hr / Math.abs(dr) : Infinity;
+    const t = Math.min(tf, tr);
+    return { x: cr + dr * t, y, z: cf + df * t };
+  }
+  function facingRank(yaw) {
+    if (yaw === 0) return 0;
+    if (yaw === QUARTER_TURN2) return 1;
+    if (yaw === -QUARTER_TURN2) return 2;
+    return 3;
+  }
+  function compareStrings(a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
+  }
+  function chooseDoorPart(parts, boundsMin, boundsMax) {
+    const upright = [];
+    let named = 0;
+    for (const p of parts) {
+      if (!isDoorPartName(p)) continue;
+      named += 1;
+      const h = p.max.y - p.min.y;
+      const w = Math.max(p.max.z - p.min.z, p.max.x - p.min.x);
+      if (h < DOOR_MIN_HEIGHT_M || h < 0.5 * w) continue;
+      const c = { x: (p.min.x + p.max.x) / 2, y: p.min.y, z: (p.min.z + p.max.z) / 2 };
+      const outline = Math.min(boundsMax.z - c.z, boundsMax.x - c.x, c.x - boundsMin.x, c.z - boundsMin.z);
+      const yaw = faceYawOf(c, boundsMin, boundsMax);
+      const mesh = (p.mesh === "" ? p.component : p.mesh).toLowerCase();
+      upright.push({ part: p, leaf: !mesh.includes("wall"), outline, yaw, facingRank: facingRank(yaw) });
+    }
+    const out = noDoor();
+    out.candidates = named;
+    if (upright.length === 0) return out;
+    let lowest = Infinity;
+    for (const r of upright) lowest = Math.min(lowest, r.part.min.y);
+    let ground = upright.filter((r) => r.part.min.y <= lowest + DOOR_GROUND_FLOOR_BAND_M);
+    if (ground.some((r) => r.leaf)) ground = ground.filter((r) => r.leaf);
+    let nearest = Infinity;
+    for (const r of ground) nearest = Math.min(nearest, r.outline);
+    const near = ground.filter((r) => r.outline <= nearest + DOOR_OUTLINE_BAND_M);
+    near.sort((a, b) => a.facingRank - b.facingRank || (a.outline < b.outline ? -1 : a.outline > b.outline ? 1 : 0) || compareStrings(a.part.component, b.part.component) || compareStrings(a.part.owner, b.part.owner));
+    const chosen = near[0];
+    out.source = "component";
+    out.name = chosen.part.component;
+    out.hasPosition = true;
+    out.position = {
+      x: (chosen.part.min.x + chosen.part.max.x) / 2,
+      y: chosen.part.min.y,
+      z: (chosen.part.min.z + chosen.part.max.z) / 2
+    };
+    out.yaw = chosen.yaw;
+    out.height = chosen.part.max.y - chosen.part.min.y;
+    return out;
+  }
+  function streetHeadingOf(frontageYaw) {
+    return normalizeYaw(QUARTER_TURN2 - frontageYaw);
+  }
+  function quantizeFactor(f) {
+    const q = (f < 0 ? -Math.round(-f * 1e6) : Math.round(f * 1e6)) / 1e6;
+    return q === 0 ? 0 : q;
+  }
+  function turn(forward, right, heading) {
+    const c = Math.cos(heading);
+    const s = Math.sin(heading);
+    return [forward * c - right * s, forward * s + right * c];
+  }
+  function emptySeat() {
+    return { sampled: false, groundMin: 0, groundMax: 0, foundation: 0, float: 0, sink: 0 };
+  }
+  function sampleGrid(g, x, z) {
+    const { heights, resolution, sizeX, sizeZ } = g;
+    if (resolution < 1 || heights.length === 0) return 0;
+    if (resolution === 1) return heights[0];
+    if (sizeX <= 0 || sizeZ <= 0) return heights[0];
+    let gx = x / sizeX * (resolution - 1);
+    let gz = z / sizeZ * (resolution - 1);
+    gx = Math.min(Math.max(gx, 0), resolution - 1);
+    gz = Math.min(Math.max(gz, 0), resolution - 1);
+    const x0 = Math.floor(gx);
+    const z0 = Math.floor(gz);
+    const x1 = Math.min(x0 + 1, resolution - 1);
+    const z1 = Math.min(z0 + 1, resolution - 1);
+    const fx = gx - x0;
+    const fz = gz - z0;
+    const at = (xi, zi) => {
+      const idx = zi * resolution + xi;
+      return idx < heights.length ? heights[idx] : 0;
+    };
+    const top = at(x0, z0) + (at(x1, z0) - at(x0, z0)) * fx;
+    const bot = at(x0, z1) + (at(x1, z1) - at(x0, z1)) * fx;
+    return top + (bot - top) * fz;
+  }
+  function layoutGroundAt(g, x, z) {
+    return sampleGrid(g, x, z);
+  }
+  function fitBuildingToLot(input) {
+    const policy2 = { ...input.policy };
+    const notApplied = (why) => ({
+      applied: false,
+      notApplied: why,
+      fit: { outcome: "unmeasured", issues: [], rotationY: 0, aligned: false, required: { across: 0, away: 0 } },
+      lot: { width: 0, depth: 0, frontageYaw: 0, hasFrontage: false },
+      streetHeading: 0,
+      wantedFactor: 1,
+      factor: 1,
+      limited: false,
+      doorFactor: 0,
+      doorHeld: false,
+      doorHeight: 0,
+      castHeight: 0,
+      policy: policy2,
+      scale: { x: 1, y: 1, z: 1 },
+      fixupScale: { x: 1, y: 1, z: 1 },
+      heading: 0,
+      fixupHeading: 0,
+      location: { x: 0, y: 0, z: 0 },
+      offsetFromNode: { x: 0, y: 0, z: 0 },
+      door: noDoor(),
+      doorWorld: { x: 0, y: 0, z: 0 },
+      doorHeading: 0,
+      seat: emptySeat(),
+      footprint: { entityId: input.entityId, lotId: input.lotId, corners: [[0, 0], [0, 0], [0, 0], [0, 0]] },
+      settleShift: [0, 0],
+      notes: []
+    });
+    if (input.lot === null) return notApplied("no-lot");
+    if (policy2.mode === "none") return notApplied("fit-none");
+    const inLot2 = input.lot;
+    const notes = [];
+    let door2 = { ...input.door, position: { ...input.door.position } };
+    if (door2.source === "none" && policy2.doorYaw !== void 0) {
+      door2 = { ...door2, source: "binding_yaw", name: "doorYaw", yaw: policy2.doorYaw, hasPosition: false };
+    }
+    const hasDoor = door2.source !== "none";
+    const hostLot = {
+      width: inLot2.width,
+      depth: inLot2.depth,
+      frontageYaw: inLot2.hasFrontage ? streetHeadingOf(inLot2.frontageYaw) : 0,
+      hasFrontage: inLot2.hasFrontage
+    };
+    const streetHeading = inLot2.hasFrontage ? hostLot.frontageYaw : 0;
+    const b = input.bounds;
+    const size = b === null ? null : { x: b.max.x - b.min.x, y: b.max.y - b.min.y, z: b.max.z - b.min.z };
+    const hasFootprint = size !== null && size.x > 0 && size.y > 0 && size.z > 0;
+    const g = input.geometry;
+    const sockets = hasDoor ? [{ name: "door", kind: "door", position: { ...door2.position }, yaw: door2.yaw, node: "" }] : [];
+    const checkGeometry = (factor2) => ({
+      convention: CORE_CONVENTION,
+      measured: true,
+      footprint: hasFootprint && size !== null ? { size, pivot: { x: 0, y: 0, z: 0 } } : null,
+      offset: { ...g.offset },
+      yaw: g.yaw,
+      scale: { x: g.scale.x * factor2, y: g.scale.y * factor2, z: g.scale.z * factor2 },
+      sockets
+    });
+    const placement = { rotationY: input.nodeHeading, scale: { ...input.nodeScale } };
+    const first = checkAssetFit(checkGeometry(1), hostLot, placement);
+    let wanted = 1;
+    if (hasFootprint && lotIsBounded(inLot2) && first.required.across > 0 && first.required.away > 0) {
+      wanted = Math.min(inLot2.width / first.required.across, inLot2.depth / first.required.away);
+    }
+    const wantedFactor = quantizeFactor(wanted);
+    const lotFactor = Math.max(policy2.scaleMin, Math.min(policy2.scaleMax, wanted));
+    let factor = lotFactor;
+    const limited = wanted < policy2.scaleMin - 1e-9;
+    let doorShort = false;
+    let doorFactor = 0;
+    let doorHeld = false;
+    const doorLocal = door2.height * g.scale.y * input.nodeScale.y;
+    if (policy2.doorClearance > 0 && input.castHeight > 0 && doorLocal > 0) {
+      const floor = input.castHeight * policy2.doorClearance / doorLocal;
+      doorFactor = quantizeFactor(floor);
+      if (floor > factor + 1e-9) {
+        if (floor <= policy2.scaleMax + 1e-9) {
+          factor = Math.min(policy2.scaleMax, Math.ceil(floor * 1e6) / 1e6);
+          doorHeld = true;
+        } else {
+          factor = policy2.scaleMax;
+          doorHeld = factor > lotFactor + 1e-9;
+          doorShort = true;
+        }
+      }
+    }
+    factor = quantizeFactor(factor);
+    const doorHeight = doorLocal * factor;
+    const fit = checkAssetFit(checkGeometry(factor), hostLot, placement);
+    let fitOut = fit;
+    if (doorShort) {
+      const issues = [.../* @__PURE__ */ new Set([...fit.issues, FIT_ISSUE_DOOR_BELOW_BODY])].sort();
+      fitOut = { ...fit, outcome: "misfit", issues };
+    }
+    const fixupScale = { x: g.scale.x * factor, y: g.scale.y * factor, z: g.scale.z * factor };
+    const scale = { x: input.nodeScale.x * fixupScale.x, y: input.nodeScale.y * fixupScale.y, z: input.nodeScale.z * fixupScale.z };
+    const heading = normalizeYaw(fitOut.rotationY + g.yaw);
+    const fixupHeading = normalizeYaw(heading - input.nodeHeading);
+    const target = input.lotCentre !== null ? [input.lotCentre[0], input.lotCentre[1]] : [input.node.x, input.node.z];
+    const settleShift = [input.settleShift[0], input.settleShift[1]];
+    target[0] += settleShift[0];
+    target[1] += settleShift[1];
+    if (doorHeld && lotIsBounded(inLot2) && inLot2.hasFrontage && fitOut.required.away > inLot2.depth + FIT_QUANTUM) {
+      const back = (fitOut.required.away - inLot2.depth) / 2;
+      target[0] -= Math.cos(hostLot.frontageYaw) * back;
+      target[1] -= Math.sin(hostLot.frontageYaw) * back;
+    }
+    let centreF = 0;
+    let centreR = 0;
+    if (b !== null) {
+      centreF = (b.min.z + b.max.z) / 2;
+      centreR = (b.min.x + b.max.x) / 2;
+    } else {
+      notes.push("no-bounds");
+    }
+    const shift = turn((g.offset.z - centreF) * scale.z, (g.offset.x - centreR) * scale.x, heading);
+    const location = { x: target[0] + shift[0], y: input.node.y, z: target[1] + shift[1] };
+    const corners = [];
+    if (b !== null) {
+      const fs = [b.min.z, b.max.z, b.max.z, b.min.z];
+      const rs = [b.min.x, b.min.x, b.max.x, b.max.x];
+      for (let i = 0; i < 4; i += 1) {
+        const w = turn(fs[i] * scale.z, rs[i] * scale.x, heading);
+        corners.push([location.x + w[0], location.z + w[1]]);
+      }
+    } else {
+      for (let i = 0; i < 4; i += 1) corners.push([location.x, location.z]);
+    }
+    const bottom = b !== null ? b.min.y : 0;
+    const floorKnown = hasDoor && door2.hasPosition;
+    const floorLocal = floorKnown ? Math.max(door2.position.y, bottom) : bottom;
+    let y = input.node.y - bottom * scale.y;
+    const seat = emptySeat();
+    if (input.ground !== null) {
+      let gMin = Infinity;
+      let gMax = -Infinity;
+      const samples = corners.map((c) => [c[0], c[1]]);
+      for (let i = 0; i < 4; i += 1) {
+        const a = corners[i];
+        const c = corners[(i + 1) % 4];
+        samples.push([(a[0] + c[0]) / 2, (a[1] + c[1]) / 2]);
+      }
+      samples.push([target[0], target[1]]);
+      for (const s of samples) {
+        const h = sampleGrid(input.ground, s[0], s[1]);
+        gMin = Math.min(gMin, h);
+        gMax = Math.max(gMax, h);
+      }
+      if (gMin <= gMax) {
+        seat.sampled = true;
+        seat.groundMin = gMin;
+        seat.groundMax = gMax;
+        const bottomOnLow = gMin - bottom * scale.y;
+        const floorOnHigh = gMax - floorLocal * scale.y;
+        seat.foundation = (floorLocal - bottom) * scale.y;
+        const sink = floorKnown ? Math.max(0, Math.min(1, policy2.seatSink)) * seat.foundation : 0;
+        y = floorKnown ? Math.max(bottomOnLow - sink, floorOnHigh) : bottomOnLow;
+        const float = y + bottom * scale.y - gMin;
+        seat.float = float > SEAT_TOLERANCE_M ? float : 0;
+        seat.sink = float < -SEAT_TOLERANCE_M ? -float : 0;
+        if (policy2.seatSink > 0 && !floorKnown) notes.push("seat-sink-needs-floor");
+        if (!floorKnown && gMax - gMin > SEAT_TOLERANCE_M) notes.push("no-floor");
+      }
+    }
+    y += g.offset.y * scale.y;
+    location.y = y;
+    const offsetFromNode = { x: location.x - input.node.x, y: location.y - input.node.y, z: location.z - input.node.z };
+    let doorWorld = { x: 0, y: 0, z: 0 };
+    let doorHeading = 0;
+    if (hasDoor) {
+      let local;
+      if (b !== null) {
+        const face = faceCentreFor(door2.yaw, b.min, b.max, floorLocal);
+        if (door2.hasPosition) {
+          const alongRight = Math.abs(Math.cos(door2.yaw)) > 0.5;
+          local = alongRight ? { x: door2.position.x, y: floorLocal, z: face.z } : { x: face.x, y: floorLocal, z: door2.position.z };
+        } else {
+          local = face;
+        }
+      } else {
+        local = door2.hasPosition ? { ...door2.position } : { x: 0, y: 0, z: 0 };
+      }
+      const w = turn(local.z * scale.z, local.x * scale.x, heading);
+      doorWorld = { x: location.x + w[0], y: location.y + local.y * scale.y, z: location.z + w[1] };
+      doorHeading = normalizeYaw(heading + door2.yaw);
+    } else {
+      notes.push("no-door");
+    }
+    if (doorHeld) notes.push("door-held");
+    if (doorShort) notes.push("door-below-body");
+    if (policy2.doorClearance > 0 && input.castHeight > 0 && hasDoor && doorLocal <= 0) notes.push("door-unmeasured");
+    if (limited) notes.push("limited");
+    if (Math.hypot(settleShift[0], settleShift[1]) > 5e-4) notes.push("settled");
+    return {
+      applied: true,
+      notApplied: null,
+      fit: fitOut,
+      lot: hostLot,
+      streetHeading,
+      wantedFactor,
+      factor,
+      limited,
+      doorFactor,
+      doorHeld,
+      doorHeight,
+      castHeight: input.castHeight,
+      policy: policy2,
+      scale,
+      fixupScale,
+      heading,
+      fixupHeading,
+      location,
+      offsetFromNode,
+      door: door2,
+      doorWorld,
+      doorHeading,
+      seat,
+      footprint: { entityId: input.entityId, lotId: input.lotId, corners },
+      settleShift,
+      notes
+    };
+  }
+  function findFitOverlaps(buildings, obstacles2) {
+    const out = [];
+    for (let i = 0; i < buildings.length; i += 1) {
+      const a = buildings[i].corners;
+      for (let j = 0; j < buildings.length; j += 1) {
+        if (i === j) continue;
+        const d = satDepth(a, buildings[j].corners);
+        if (d > FIT_OVERLAP_TOLERANCE_M) out.push({ entityId: buildings[i].entityId, with: buildings[j].entityId, withKind: "building", depth: d });
+      }
+      for (const o of obstacles2) {
+        if (o.points.length < 2) continue;
+        if (o.lotId !== "" && o.lotId === buildings[i].lotId) continue;
+        let depth;
+        if (o.closed && o.points.length >= 3) {
+          depth = outlineDepth(a, o.points);
+        } else {
+          let nearest = Infinity;
+          for (let k = 0; k + 1 < o.points.length; k += 1) {
+            nearest = Math.min(nearest, segmentOutlineDistance(o.points[k], o.points[k + 1], a));
+          }
+          depth = o.halfWidth - nearest;
+        }
+        if (depth > FIT_OVERLAP_TOLERANCE_M) out.push({ entityId: buildings[i].entityId, with: o.entityId, withKind: o.kind, depth });
+      }
+    }
+    out.sort((x, y) => compareStrings(x.entityId, y.entityId) || compareStrings(x.withKind, y.withKind) || compareStrings(x.with, y.with));
+    return out;
+  }
+
+  // @insimul/core/src/editor/layout/settle.ts
+  var SETTLE_OBSTACLE_GAP_M = 0.25;
+  var SETTLE_BUILDING_MAX_SHIFT_M = 2;
+  var SETTLE_BUILDING_EXTRA_SHIFT_M = 1.5;
+  var SETTLE_DEFAULT_NEIGHBOUR_GAP_M = 1;
+  var CLEARANCE_BUILDING = 0;
+  var CLEARANCE_PROP = 1;
+  var CLEARANCE_PLANT = 2;
+  var PROP_CLEARANCE_MAX_SHIFT_M = 2.5;
+  var PLANT_CLEARANCE_MAX_SHIFT_M = 3;
+  var PLANT_PAVING_CLEARANCE_M = 0.3;
+  var POST_CLEARANCE_M = 3;
+  var CLEARANCE_INSIDE_TOLERANCE_M = 0.02;
+  var PLANT_TRUNK_HALF_M = 0.25;
+  var BANNER_ARCHETYPE_PREFIX = "prop.structural.banner";
+  var SETTLE_DEFAULT_ITERATIONS = 128;
+  var SLACK = 1e-4;
+  var neighbourPairGap = (a, b) => Math.max(a.gap, b.gap);
+  function settleBuildingMaxShiftM(neighbourGap) {
+    if (!Number.isFinite(neighbourGap) || neighbourGap <= SETTLE_DEFAULT_NEIGHBOUR_GAP_M + 1e-9) return SETTLE_BUILDING_MAX_SHIFT_M;
+    return Math.max(SETTLE_BUILDING_MAX_SHIFT_M, neighbourGap + SETTLE_BUILDING_EXTRA_SHIFT_M);
+  }
+  function plantWallClearanceM(crownRadius) {
+    const r = !Number.isFinite(crownRadius) || crownRadius < 0 ? 0 : crownRadius;
+    return Math.max(0.5, Math.min(2, r / 3));
+  }
+  function isPostShape(height, longestPlan) {
+    if (!Number.isFinite(height) || !Number.isFinite(longestPlan) || longestPlan <= 0) return false;
+    return height >= 1.8 && height >= 2.5 * longestPlan;
+  }
+  function markerClearanceM(archetype, height, longestPlan) {
+    if (isPostShape(height, longestPlan)) return POST_CLEARANCE_M;
+    if (archetype.startsWith(BANNER_ARCHETYPE_PREFIX)) return POST_CLEARANCE_M;
+    return 0;
+  }
+  function clearancePairGap(classA, gapA, classB, gapB) {
+    let ca = classA;
+    let ga = gapA;
+    let cb = classB;
+    let gb = gapB;
+    if (ca > cb) {
+      [ca, cb] = [cb, ca];
+      [ga, gb] = [gb, ga];
+    }
+    if (ca === CLEARANCE_BUILDING && cb === CLEARANCE_BUILDING) return -1;
+    if (ca === CLEARANCE_BUILDING && cb === CLEARANCE_PROP) return 0.15;
+    if (ca === CLEARANCE_BUILDING && cb === CLEARANCE_PLANT) return gb;
+    if (ca === CLEARANCE_PROP && cb === CLEARANCE_PROP) return ga > 0 && gb > 0 ? Math.max(0.05, Math.min(ga, gb)) : 0.05;
+    if (ca === CLEARANCE_PROP && cb === CLEARANCE_PLANT) return 0.3;
+    return -1;
+  }
+  function settlePairGapOf(rule) {
+    return rule === "neighbour" ? neighbourPairGap : (a, b) => clearancePairGap(a.class, a.gap, b.class, b.gap);
+  }
+  function obstaclePieces(obstacles2) {
+    const out = [];
+    for (const o of obstacles2) {
+      if (o.points.length < 2) continue;
+      const p = o.points;
+      if (o.closed && p.length >= 3) {
+        if (isConvexOutline(p)) out.push({ outline: [...p], entityId: o.entityId, lotId: o.lotId });
+        else for (const t of triangulateOutline(p)) out.push({ outline: t, entityId: o.entityId, lotId: o.lotId });
+        continue;
+      }
+      if (o.halfWidth <= 0) continue;
+      for (let k = 0; k + 1 < p.length; k += 1) {
+        const a = p[k];
+        const b = p[k + 1];
+        const dx = b[0] - a[0];
+        const dz = b[1] - a[1];
+        const l = Math.sqrt(dx * dx + dz * dz);
+        const u = l > 1e-9 ? [dx / l, dz / l] : [1, 0];
+        const n = [-u[1] * o.halfWidth, u[0] * o.halfWidth];
+        const e = [u[0] * o.halfWidth, u[1] * o.halfWidth];
+        out.push({
+          outline: [
+            [a[0] - e[0] + n[0], a[1] - e[1] + n[1]],
+            [b[0] + e[0] + n[0], b[1] + e[1] + n[1]],
+            [b[0] + e[0] - n[0], b[1] + e[1] - n[1]],
+            [a[0] - e[0] - n[0], a[1] - e[1] - n[1]]
+          ],
+          entityId: o.entityId,
+          lotId: o.lotId
+        });
+      }
+    }
+    return out;
+  }
+  function moved(p, d) {
+    return p.map((v) => [v[0] + d[0], v[1] + d[1]]);
+  }
+  function circle(p) {
+    let cx = 0;
+    let cz = 0;
+    for (const v of p) {
+      cx += v[0];
+      cz += v[1];
+    }
+    if (p.length > 0) {
+      cx /= p.length;
+      cz /= p.length;
+    }
+    let r = 0;
+    for (const v of p) r = Math.max(r, Math.hypot(v[0] - cx, v[1] - cz));
+    return { centre: [cx, cz], radius: r };
+  }
+  function settleSeparation(a, b) {
+    return planSeparation(a, b);
+  }
+  function settleBodies(bodies, obstacles2, pairGap, iterations = SETTLE_DEFAULT_ITERATIONS) {
+    const n = bodies.length;
+    const base = bodies.map((b) => b.outline);
+    const shift = bodies.map(() => [0, 0]);
+    const limited = bodies.map(() => false);
+    const movable = (i) => bodies[i].mass > 0 && bodies[i].maxShift > 0 && base[i].length >= 3;
+    const clamp = (i) => {
+      const l = Math.sqrt(shift[i][0] * shift[i][0] + shift[i][1] * shift[i][1]);
+      if (l > bodies[i].maxShift) {
+        shift[i][0] *= bodies[i].maxShift / l;
+        shift[i][1] *= bodies[i].maxShift / l;
+        limited[i] = true;
+      }
+    };
+    const pieces = obstaclePieces(obstacles2);
+    const circles = base.map((p) => circle(p));
+    const reach = (i) => circles[i].radius + (movable(i) ? bodies[i].maxShift : 0);
+    const pairs = [];
+    for (let i = 0; i < n; i += 1) {
+      for (let j = i + 1; j < n; j += 1) {
+        if (!movable(i) && !movable(j) || base[i].length < 3 || base[j].length < 3) continue;
+        const g = pairGap(bodies[i], bodies[j]);
+        if (g < 0) continue;
+        const ci = circles[i].centre;
+        const cj = circles[j].centre;
+        if (Math.hypot(ci[0] - cj[0], ci[1] - cj[1]) > reach(i) + reach(j) + g) continue;
+        pairs.push({ i, j, gap: g });
+      }
+    }
+    const near = bodies.map(() => []);
+    for (let i = 0; i < n; i += 1) {
+      if (!movable(i) || bodies[i].obstacleGap < 0) continue;
+      for (let k = 0; k < pieces.length; k += 1) {
+        const o = pieces[k];
+        if (o.lotId !== "" && o.lotId === bodies[i].lotId) continue;
+        const c = circle(o.outline);
+        const ci = circles[i].centre;
+        if (Math.hypot(ci[0] - c.centre[0], ci[1] - c.centre[1]) > reach(i) + c.radius + bodies[i].obstacleGap) continue;
+        near[i].push(k);
+      }
+    }
+    for (let it = 0; it < Math.max(1, iterations); it += 1) {
+      let worst = 0;
+      for (const p of pairs) {
+        const sep = planSeparation(moved(base[p.i], shift[p.i]), moved(base[p.j], shift[p.j]));
+        const short = p.gap - sep.gap;
+        if (short <= SLACK) continue;
+        const mi = movable(p.i);
+        const mj = movable(p.j);
+        let shareI = 0;
+        let shareJ = 0;
+        if (mi && mj) {
+          const massI = bodies[p.i].mass;
+          const massJ = bodies[p.j].mass;
+          shareI = massJ / (massI + massJ);
+          shareJ = massI / (massI + massJ);
+        } else if (mi) {
+          shareI = 1;
+        } else {
+          shareJ = 1;
+        }
+        const push = short + SLACK;
+        const beforeI = [shift[p.i][0], shift[p.i][1]];
+        const beforeJ = [shift[p.j][0], shift[p.j][1]];
+        shift[p.i][0] -= sep.axis[0] * push * shareI;
+        shift[p.i][1] -= sep.axis[1] * push * shareI;
+        shift[p.j][0] += sep.axis[0] * push * shareJ;
+        shift[p.j][1] += sep.axis[1] * push * shareJ;
+        clamp(p.i);
+        clamp(p.j);
+        const movedBy = Math.hypot(shift[p.i][0] - beforeI[0], shift[p.i][1] - beforeI[1]) + Math.hypot(shift[p.j][0] - beforeJ[0], shift[p.j][1] - beforeJ[1]);
+        if (movedBy > SLACK) worst = Math.max(worst, short);
+      }
+      for (let i = 0; i < n; i += 1) {
+        for (const k of near[i]) {
+          const o = pieces[k];
+          const sep = planSeparation(moved(base[i], shift[i]), o.outline);
+          const short = bodies[i].obstacleGap - sep.gap;
+          if (short <= SLACK) continue;
+          const before = [shift[i][0], shift[i][1]];
+          shift[i][0] -= sep.axis[0] * (short + SLACK);
+          shift[i][1] -= sep.axis[1] * (short + SLACK);
+          clamp(i);
+          if (Math.hypot(shift[i][0] - before[0], shift[i][1] - before[1]) > SLACK) worst = Math.max(worst, short);
+        }
+      }
+      if (worst <= SLACK) break;
+    }
+    const out = bodies.map((b, i) => ({
+      entityId: b.entityId,
+      dx: quantizeMillimetre(shift[i][0]),
+      dz: quantizeMillimetre(shift[i][1]),
+      short: 0,
+      shortOf: "",
+      limited: limited[i]
+    }));
+    for (let i = 0; i < n; i += 1) shift[i] = [out[i].dx, out[i].dz];
+    const note = (i, short, of) => {
+      if (short > out[i].short + 1e-9) {
+        out[i].short = short;
+        out[i].shortOf = of;
+      }
+    };
+    for (const p of pairs) {
+      const short = p.gap - planSeparation(moved(base[p.i], shift[p.i]), moved(base[p.j], shift[p.j])).gap;
+      if (short < 0.01) continue;
+      note(p.i, short, bodies[p.j].entityId);
+      note(p.j, short, bodies[p.i].entityId);
+    }
+    for (let i = 0; i < n; i += 1) {
+      for (const k of near[i]) {
+        const o = pieces[k];
+        const short = bodies[i].obstacleGap - planSeparation(moved(base[i], shift[i]), o.outline).gap;
+        if (short >= 0.01) note(i, short, o.entityId);
+      }
+    }
+    for (const m of out) m.short = quantizeMillimetre(m.short);
+    return out;
+  }
+  function clearanceSetAsides(bodies, moves) {
+    const out = [];
+    if (moves.length !== bodies.length) return out;
+    const buildings = [];
+    for (let i = 0; i < bodies.length; i += 1) {
+      if (bodies[i].class === CLEARANCE_BUILDING && bodies[i].outline.length >= 3) buildings.push(i);
+    }
+    const movedOf = (i) => moved(bodies[i].outline, [moves[i].dx, moves[i].dz]);
+    for (let i = 0; i < bodies.length; i += 1) {
+      const b = bodies[i];
+      if (b.class === CLEARANCE_BUILDING || b.outline.length < 3) continue;
+      const mine = movedOf(i);
+      const worst = { index: i, buildingId: "", inside: 0 };
+      for (const k of buildings) {
+        const sep = planSeparation(mine, movedOf(k)).gap;
+        if (-sep > worst.inside) {
+          worst.inside = -sep;
+          worst.buildingId = bodies[k].entityId;
+        }
+      }
+      if (worst.inside > CLEARANCE_INSIDE_TOLERANCE_M) out.push(worst);
+    }
+    return out;
+  }
+  function settleFittedBuildings(buildings, obstacles2, iterations = SETTLE_DEFAULT_ITERATIONS) {
+    const bodies = buildings.map((b) => {
+      const gap = Math.max(0, b.neighbourGap);
+      return {
+        entityId: b.entityId,
+        lotId: b.lotId,
+        outline: b.corners.map((c) => [c[0], c[1]]),
+        mass: 1,
+        maxShift: settleBuildingMaxShiftM(gap),
+        obstacleGap: SETTLE_OBSTACLE_GAP_M,
+        class: CLEARANCE_BUILDING,
+        gap
+      };
+    });
+    return settleBodies(bodies, obstacles2, neighbourPairGap, iterations);
+  }
+  function plantTrunkOutline(x, z) {
+    const h = PLANT_TRUNK_HALF_M;
+    return [[x - h, z - h], [x + h, z - h], [x + h, z + h], [x - h, z + h]];
+  }
+  function clearanceBodyOf(item) {
+    const outline = item.outline.map((c) => [c[0], c[1]]);
+    if (item.kind === "building") {
+      return { entityId: item.entityId, lotId: "", outline, mass: 0, maxShift: 0, obstacleGap: -1, class: CLEARANCE_BUILDING, gap: 0 };
+    }
+    if (item.kind === "plant") {
+      return {
+        entityId: item.entityId,
+        lotId: "",
+        outline,
+        mass: 1e-3,
+        maxShift: PLANT_CLEARANCE_MAX_SHIFT_M,
+        obstacleGap: PLANT_PAVING_CLEARANCE_M,
+        class: CLEARANCE_PLANT,
+        gap: plantWallClearanceM(item.crownRadius ?? 1)
+      };
+    }
+    return {
+      entityId: item.entityId,
+      lotId: "",
+      outline,
+      mass: Math.max(0.01, item.area ?? 0),
+      maxShift: PROP_CLEARANCE_MAX_SHIFT_M,
+      obstacleGap: -1,
+      // a prop may stand on paving (a market's barrels on the square)
+      class: CLEARANCE_PROP,
+      gap: markerClearanceM(item.archetype ?? "", item.height ?? 0, item.longestPlan ?? 0)
+    };
+  }
+  function settleClearance(items, obstacles2, iterations = SETTLE_DEFAULT_ITERATIONS) {
+    const bodies = items.map(clearanceBodyOf);
+    const moves = settleBodies(bodies, obstacles2, settlePairGapOf("clearance"), iterations);
+    return { moves, setAsides: clearanceSetAsides(bodies, moves) };
+  }
+
+  // @insimul/core/src/editor/layout/pairing.ts
+  var PAIRING_NEIGHBOUR_GAP_M = 6;
+  var PAIRING_STEP_M = 0.3;
+  var PAIRING_MAX_SEAT_SINK = 0.9;
+  function pairingSeatSink(bottom, doorFoot, factor) {
+    if (doorFoot === null) return null;
+    const foundation = (Math.max(doorFoot, bottom) - bottom) * Math.max(0.05, factor);
+    if (foundation <= PAIRING_STEP_M * 1.5) return null;
+    const ratio = (foundation - PAIRING_STEP_M) / foundation * 100;
+    const sink = (ratio < 0 ? -Math.round(-ratio) : Math.round(ratio)) / 100;
+    return Math.min(PAIRING_MAX_SEAT_SINK, sink);
+  }
+
+  // @insimul/core/src/editor/layout/backdrop.ts
+  var CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let i = 0; i < 256; i += 1) {
+      let c = i;
+      for (let k = 0; k < 8; k += 1) c = c & 1 ? (3988292384 ^ c >>> 1) >>> 0 : c >>> 1;
+      t[i] = c >>> 0;
+    }
+    return t;
+  })();
+  function strCrc32(text2, crc = 0) {
+    let c = ~crc >>> 0;
+    for (let i = 0; i < text2.length; i += 1) {
+      const ch = text2.charCodeAt(i);
+      for (let b = 0; b < 4; b += 1) {
+        const byte = ch >>> 8 * b & 255;
+        c = (CRC_TABLE[(c ^ byte) & 255] ^ c >>> 8) >>> 0;
+      }
+    }
+    return ~c >>> 0;
+  }
+  function lookHash01(id, salt) {
+    const seed = Math.imul(salt >>> 0, 2654435761) + 17 >>> 0;
+    return (strCrc32(id, seed) & 16777215) / 16777216;
+  }
+  function backdropRing(box, ring, ringIndex, meshHalfExtents) {
+    const out = [];
+    if (meshHalfExtents.length === 0 || !(ring.count > 0)) return out;
+    const cx = (box.minX + box.maxX) / 2;
+    const cz = (box.minZ + box.maxZ) / 2;
+    const ex = (box.maxX - box.minX) / 2;
+    const ez = (box.maxZ - box.minZ) / 2;
+    const hx0 = ex + ring.outside;
+    const hz0 = ez + ring.outside;
+    const perimeter = 4 * (hx0 + hz0);
+    for (let i = 0; i < ring.count; i += 1) {
+      const id = `backdrop.${ringIndex}.${i}`;
+      const s = ring.scale * (1 + ring.scaleJitter * (2 * lookHash01(id, 2) - 1));
+      const mesh = i % meshHalfExtents.length;
+      const half = meshHalfExtents[mesh] * s;
+      const hx = hx0 + half;
+      const hz = hz0 + half;
+      let d = (i + 0.5) / ring.count * perimeter * ((hx + hz) / (hx0 + hz0));
+      let at;
+      if (d < 2 * hx) {
+        at = [-hx + d, -hz];
+      } else if ((d -= 2 * hx) < 2 * hz) {
+        at = [hx, -hz + d];
+      } else if ((d -= 2 * hz) < 2 * hx) {
+        at = [hx - d, hz];
+      } else {
+        d -= 2 * hx;
+        at = [-hx, hz - d];
+      }
+      const heading = Math.atan2(-at[1], -at[0]) + (lookHash01(id, 1) - 0.5) * 40 * Math.PI / 180;
+      out.push({ id, mesh, scale: s, x: cx + at[0], y: box.minY - ring.sink, z: cz + at[1], heading });
+    }
+    return out;
+  }
+  var BACKDROP_FRAME_OVERLAP_M = 1;
+  var BACKDROP_FRAME_MIN_BEYOND_M = 1;
+  var BACKDROP_FRAME_MIN_SIZE_M = 0.01;
+  function backdropFrame(box, mesh, pieceScale, offsetY, edgeMinY) {
+    const sizeX = mesh.maxX - mesh.minX;
+    const sizeZ = mesh.maxZ - mesh.minZ;
+    const height = (edgeMinY !== null ? edgeMinY : box.minY) + offsetY;
+    if (sizeX <= BACKDROP_FRAME_MIN_SIZE_M || sizeZ <= BACKDROP_FRAME_MIN_SIZE_M) {
+      return { laid: false, outerHalfX: 0, outerHalfZ: 0, height, strips: [] };
+    }
+    const cx = (box.minX + box.maxX) / 2;
+    const cz = (box.minZ + box.maxZ) / 2;
+    const ex = (box.maxX - box.minX) / 2;
+    const ez = (box.maxZ - box.minZ) / 2;
+    const outerHalfX = Math.max(sizeX * pieceScale.x * 0.5, ex + BACKDROP_FRAME_MIN_BEYOND_M);
+    const outerHalfZ = Math.max(sizeZ * pieceScale.z * 0.5, ez + BACKDROP_FRAME_MIN_BEYOND_M);
+    const o = BACKDROP_FRAME_OVERLAP_M;
+    const rects = [
+      ["S", cx - outerHalfX, cz - outerHalfZ, cx + outerHalfX, box.minZ + o],
+      ["N", cx - outerHalfX, box.maxZ - o, cx + outerHalfX, cz + outerHalfZ],
+      ["W", cx - outerHalfX, box.minZ + o, box.minX + o, box.maxZ - o],
+      ["E", box.maxX - o, box.minZ + o, cx + outerHalfX, box.maxZ - o]
+    ];
+    const meshCx = (mesh.minX + mesh.maxX) / 2;
+    const meshCz = (mesh.minZ + mesh.maxZ) / 2;
+    const strips = rects.map(([side, x0, z0, x1, z1]) => {
+      const scaleX = (x1 - x0) / sizeX;
+      const scaleZ = (z1 - z0) / sizeZ;
+      return {
+        side,
+        x0,
+        z0,
+        x1,
+        z1,
+        scaleX,
+        scaleZ,
+        scaleY: pieceScale.y,
+        x: (x0 + x1) * 0.5 - meshCx * scaleX,
+        y: height,
+        z: (z0 + z1) * 0.5 - meshCz * scaleZ
+      };
+    });
+    return { laid: true, outerHalfX, outerHalfZ, height, strips };
+  }
+
+  // @insimul/core/src/editor/layout/ground-plan.ts
+  var GROUND_SURFACES = ["road", "plaza", "path", "lot", "slope", "patch", "fleck", "base"];
+  function buildGroundPlan(nodes, terrain = null) {
+    const plan2 = { strips: [], lots: [], terrain };
+    for (const n of nodes) {
+      const path = n.path ?? [];
+      if ((n.kind === "road" || n.kind === "ground_surface") && path.length >= 2) {
+        const closed = n.kind === "ground_surface" && n.closed === true && path.length >= 3;
+        const width = n.width ?? 0;
+        plan2.strips.push({
+          entityId: n.entityId,
+          surface: n.kind === "road" ? "road" : closed ? "plaza" : "path",
+          lotId: n.lotId ?? "",
+          points: path.map((p) => [p[0], p[1]]),
+          halfWidth: closed ? 0 : (width > 0 ? width : n.kind === "road" ? 4 : 2) / 2,
+          closed
+        });
+      } else if (n.kind === "building" && n.lot != null && lotIsBounded(n.lot)) {
+        const centre = n.lotCentre ?? n.position ?? [0, 0];
+        const heading = n.lot.hasFrontage ? streetHeadingOf(n.lot.frontageYaw) : 0;
+        plan2.lots.push({
+          entityId: n.entityId,
+          lotId: n.lotId ?? "",
+          cx: centre[0],
+          cz: centre[1],
+          halfAcross: n.lot.width / 2,
+          halfAway: n.lot.depth / 2,
+          awayX: Math.cos(heading),
+          awayZ: Math.sin(heading)
+        });
+      }
+    }
+    return plan2;
+  }
+  function layoutObstaclesOf(nodes) {
+    const out = [];
+    for (const n of nodes) {
+      const path = n.path ?? [];
+      if (n.kind !== "road" && n.kind !== "ground_surface" || path.length < 2) continue;
+      const closed = n.kind === "ground_surface" && n.closed === true && path.length >= 3;
+      out.push({
+        entityId: n.entityId,
+        kind: n.kind === "road" ? "road" : closed ? "plaza" : "footpath",
+        lotId: n.lotId ?? "",
+        points: path.map((p) => [p[0], p[1]]),
+        halfWidth: closed ? 0 : (n.width ?? 0) / 2,
+        closed
+      });
+    }
+    return out;
+  }
+  function stripDistance(strip, x, z) {
+    const p = strip.points;
+    if (p.length < 2) return Infinity;
+    let best = Infinity;
+    for (let i = 0; i + 1 < p.length; i += 1) best = Math.min(best, pointSegmentDistance([x, z], p[i], p[i + 1]));
+    if (strip.closed) {
+      best = Math.min(best, pointSegmentDistance([x, z], p[p.length - 1], p[0]));
+      return pointInOutline([x, z], p) ? 0 : best;
+    }
+    return best - strip.halfWidth;
+  }
+  function lotDistance(lot, x, z) {
+    const dx = x - lot.cx;
+    const dz = z - lot.cz;
+    const away = dx * lot.awayX + dz * lot.awayZ;
+    const across = -dx * lot.awayZ + dz * lot.awayX;
+    const ox = Math.max(0, Math.abs(away) - lot.halfAway);
+    const oz = Math.max(0, Math.abs(across) - lot.halfAcross);
+    return Math.sqrt(ox * ox + oz * oz);
+  }
+  function isOnPavedNode(paved, x, z) {
+    const p = paved.path;
+    if (p.length < 2) return false;
+    if (paved.kind === "ground_surface" && paved.closed && p.length >= 3) return pointInOutline([x, z], p);
+    if (paved.kind !== "road" && paved.kind !== "ground_surface") return false;
+    const half = paved.width * 0.5;
+    if (half <= 0) return false;
+    for (let i = 0; i + 1 < p.length; i += 1) {
+      const ax = p[i][0];
+      const az = p[i][1];
+      const dx = p[i + 1][0] - ax;
+      const dz = p[i + 1][1] - az;
+      const l2 = dx * dx + dz * dz;
+      let t = l2 > 0 ? ((x - ax) * dx + (z - az) * dz) / l2 : 0;
+      t = Math.max(0, Math.min(1, t));
+      const cx = ax + t * dx - x;
+      const cz = az + t * dz - z;
+      if (cx * cx + cz * cz <= half * half) return true;
+    }
+    return false;
+  }
+  var LOT_PAD_MARGIN_M = 2;
+  var LOT_PAD_BLEND_M = 4;
+  var GRADED_CELL_M = 1;
+  var GRADED_MAX_RESOLUTION = 2049;
+  function buildLotPads(lots, raw) {
+    const pads = [];
+    if (raw.resolution < 2 || raw.sizeX <= 0 || raw.sizeZ <= 0) return pads;
+    for (const l of lots) {
+      let sum = 0;
+      let count = 0;
+      for (let i = 0; i < 5; i += 1) {
+        for (let j = 0; j < 5; j += 1) {
+          const a = (i / 4 * 2 - 1) * l.halfAway;
+          const c = (j / 4 * 2 - 1) * l.halfAcross;
+          const x = l.cx + a * l.awayX - c * l.awayZ;
+          const z = l.cz + a * l.awayZ + c * l.awayX;
+          sum += layoutGroundAt(raw, x, z);
+          count += 1;
+        }
+      }
+      pads.push({
+        lotId: l.lotId,
+        cx: l.cx,
+        cz: l.cz,
+        halfAcross: l.halfAcross,
+        halfAway: l.halfAway,
+        awayX: l.awayX,
+        awayZ: l.awayZ,
+        height: count > 0 ? sum / count : 0
+      });
+    }
+    pads.sort((p, q) => p.lotId < q.lotId ? -1 : p.lotId > q.lotId ? 1 : 0);
+    return pads;
+  }
+  function gradedHeight(pads, rawHeight, x, z) {
+    let wMax = 0;
+    let wSum = 0;
+    let hSum = 0;
+    for (const p of pads) {
+      const dx = x - p.cx;
+      const dz = z - p.cz;
+      const away = Math.abs(dx * p.awayX + dz * p.awayZ) - (p.halfAway + LOT_PAD_MARGIN_M);
+      const across = Math.abs(-dx * p.awayZ + dz * p.awayX) - (p.halfAcross + LOT_PAD_MARGIN_M);
+      const outside = Math.hypot(Math.max(0, away), Math.max(0, across));
+      if (outside >= LOT_PAD_BLEND_M) continue;
+      const t = 1 - outside / LOT_PAD_BLEND_M;
+      const w = t * t * (3 - 2 * t);
+      wMax = Math.max(wMax, w);
+      wSum += w;
+      hSum += w * p.height;
+    }
+    if (wSum <= 0) return rawHeight;
+    return rawHeight + wMax * (hSum / wSum - rawHeight);
+  }
+  function gradeTerrain(raw, lots) {
+    if (raw.resolution < 2 || raw.sizeX <= 0 || raw.sizeZ <= 0) return { pads: [], grid: null };
+    const pads = buildLotPads(lots, raw);
+    if (pads.length === 0) return { pads, grid: null };
+    const size = Math.max(raw.sizeX, raw.sizeZ);
+    const resolution = Math.max(raw.resolution, Math.min(GRADED_MAX_RESOLUTION, Math.ceil(size / GRADED_CELL_M) + 1));
+    const heights = new Array(resolution * resolution);
+    for (let j = 0; j < resolution; j += 1) {
+      for (let i = 0; i < resolution; i += 1) {
+        const x = raw.sizeX * i / (resolution - 1);
+        const z = raw.sizeZ * j / (resolution - 1);
+        heights[j * resolution + i] = gradedHeight(pads, layoutGroundAt(raw, x, z), x, z);
+      }
+    }
+    return { pads, grid: { resolution, sizeX: raw.sizeX, sizeZ: raw.sizeZ, heights } };
+  }
+  function gradeLift(pads, raw, x, z) {
+    const h = layoutGroundAt(raw, x, z);
+    return gradedHeight(pads, h, x, z) - h;
+  }
+  function quantizeSceneMetre(v) {
+    if (!Number.isFinite(v)) return 0;
+    const q = roundHalfAway(v * 1e3) / 1e3;
+    return q === 0 ? 0 : q;
+  }
+  function gradedNodeHeight(pads, raw, x, y, z) {
+    const d = gradeLift(pads, raw, x, z);
+    return d !== 0 ? quantizeSceneMetre(y + d) : y;
+  }
+  var FOOTPATH_REACH_M = 14;
+  var FOOTPATH_STEP_M = 0.4;
+  var FOOTPATH_INTO_STREET_M = 0.6;
+  function nearestStreetPoint(s, x, z) {
+    const p = s.points;
+    if (p.length < 2) return null;
+    if (s.closed && pointInOutline([x, z], p)) return null;
+    let best = Infinity;
+    let ox = 0;
+    let oz = 0;
+    const n = s.closed ? p.length : p.length - 1;
+    for (let i = 0; i < n; i += 1) {
+      const q = nearestOnSegment([x, z], p[i], p[(i + 1) % p.length]);
+      const d = Math.hypot(q[0] - x, q[1] - z);
+      if (d < best) {
+        best = d;
+        ox = q[0];
+        oz = q[1];
+      }
+    }
+    if (!s.closed) {
+      if (best <= s.halfWidth) return null;
+      const k = (best - s.halfWidth) / best;
+      ox = x + (ox - x) * k;
+      oz = z + (oz - z) * k;
+      best -= s.halfWidth;
+    }
+    return { x: ox, z: oz, d: best };
+  }
+  function followSettledBuildings(plan2, settled) {
+    const out = {
+      strips: plan2.strips.map((s) => ({ ...s, points: s.points.map((p) => [p[0], p[1]]) })),
+      lots: plan2.lots.map((l) => ({ ...l })),
+      terrain: plan2.terrain
+    };
+    const result = { plan: out, lotsMoved: 0, pathsFromDoor: 0, pathsMoved: 0, events: [] };
+    for (const b of settled) {
+      if (b.lotId === "") continue;
+      const shifted = b.shiftX !== 0 || b.shiftZ !== 0;
+      if (shifted) {
+        for (const l of out.lots) {
+          if (l.lotId !== b.lotId) continue;
+          l.cx += b.shiftX;
+          l.cz += b.shiftZ;
+          result.lotsMoved += 1;
+          result.events.push({ kind: "yard-moved", lotId: b.lotId, entityId: b.entityId, shiftX: b.shiftX, shiftZ: b.shiftZ });
+        }
+      }
+      for (const s of out.strips) {
+        if (s.surface !== "path" || s.closed || s.lotId !== b.lotId || s.points.length < 2) continue;
+        let fromDoor = false;
+        if (b.door !== null) {
+          const fl = Math.hypot(b.door.faceX, b.door.faceZ);
+          const fx = fl > 0 ? b.door.faceX / fl : 1;
+          const fz = fl > 0 ? b.door.faceZ / fl : 0;
+          const sx = b.door.x + fx * FOOTPATH_STEP_M;
+          const sz = b.door.z + fz * FOOTPATH_STEP_M;
+          let qx = 0;
+          let qz = 0;
+          let d = Infinity;
+          let to = "";
+          for (const t of out.strips) {
+            const street = t.surface === "road" || t.surface === "plaza" && t.lotId !== b.lotId;
+            if (!street) continue;
+            const q = nearestStreetPoint(t, sx, sz);
+            if (q === null) continue;
+            const ahead = (q.x - sx) * fx + (q.z - sz) * fz;
+            if (q.d > 1e-6 && ahead < 0.25 * q.d) continue;
+            if (q.d < d) {
+              d = q.d;
+              qx = q.x;
+              qz = q.z;
+              to = t.entityId;
+            }
+          }
+          if (d <= FOOTPATH_REACH_M) {
+            let ex = qx;
+            let ez = qz;
+            if (d > 1e-6) {
+              ex += (qx - sx) / d * FOOTPATH_INTO_STREET_M;
+              ez += (qz - sz) / d * FOOTPATH_INTO_STREET_M;
+            } else {
+              ex += fx * FOOTPATH_INTO_STREET_M;
+              ez += fz * FOOTPATH_INTO_STREET_M;
+            }
+            s.points = [[sx, sz], [ex, ez]];
+            fromDoor = true;
+            result.pathsFromDoor += 1;
+            result.events.push({ kind: "path-from-door", pathId: s.entityId, entityId: b.entityId, to, length: d + FOOTPATH_INTO_STREET_M });
+          }
+        }
+        if (!fromDoor && shifted) {
+          s.points = s.points.map((p) => [p[0] + b.shiftX, p[1] + b.shiftZ]);
+          result.pathsMoved += 1;
+          result.events.push({ kind: "path-moved", pathId: s.entityId, entityId: b.entityId });
+        }
+      }
+    }
+    return result;
+  }
+  function pathMouths(plan2) {
+    const out = [];
+    for (const s of plan2.strips) {
+      if (s.surface !== "path" || s.closed || s.points.length < 2) continue;
+      const a = s.points[s.points.length - 2];
+      const b = s.points[s.points.length - 1];
+      const l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      if (l < 1e-6) continue;
+      out.push({ pathId: s.entityId, x: b[0], z: b[1], dirX: (b[0] - a[0]) / l, dirZ: (b[1] - a[1]) / l, halfWidth: s.halfWidth });
+    }
+    return out;
+  }
+  var LANTERN_MOUTH_REACH_M = 4.5;
+  var LANTERN_BESIDE_PATH_M = 0.5;
+  var LANTERN_SHORT_OF_MOUTH_M = 0.3;
+  function lanternsAtPathMouths(mouths, lanterns) {
+    const pairs = [];
+    for (let l = 0; l < lanterns.length; l += 1) {
+      for (let m = 0; m < mouths.length; m += 1) {
+        const d = Math.hypot(lanterns[l][0] - mouths[m].x, lanterns[l][1] - mouths[m].z);
+        if (d <= LANTERN_MOUTH_REACH_M) pairs.push({ d, l, m });
+      }
+    }
+    pairs.sort((a, b) => {
+      if (a.d !== b.d) return a.d < b.d ? -1 : 1;
+      if (a.l !== b.l) return a.l - b.l;
+      const pa = mouths[a.m].pathId;
+      const pb = mouths[b.m].pathId;
+      return pa < pb ? -1 : pa > pb ? 1 : 0;
+    });
+    const lTaken = lanterns.map(() => false);
+    const mTaken = mouths.map(() => false);
+    const out = [];
+    for (const p of pairs) {
+      if (lTaken[p.l] || mTaken[p.m]) continue;
+      lTaken[p.l] = true;
+      mTaken[p.m] = true;
+      const m = mouths[p.m];
+      const nx = -m.dirZ;
+      const nz = m.dirX;
+      const side = (lanterns[p.l][0] - m.x) * nx + (lanterns[p.l][1] - m.z) * nz < 0 ? -1 : 1;
+      const off = m.halfWidth + LANTERN_BESIDE_PATH_M;
+      const x = m.x - m.dirX * LANTERN_SHORT_OF_MOUTH_M + nx * side * off;
+      const z = m.z - m.dirZ * LANTERN_SHORT_OF_MOUTH_M + nz * side * off;
+      out.push({ lantern: p.l, pathId: m.pathId, x, z, from: Math.hypot(x - lanterns[p.l][0], z - lanterns[p.l][1]) });
+    }
+    out.sort((a, b) => a.lantern - b.lantern);
+    return out;
+  }
+  function isPlantArchetype(archetype) {
+    return archetype.startsWith("prop.vegetation.") && !archetype.startsWith("prop.vegetation.planter");
+  }
+  function keepPlantPropsOffPaving(props, paved) {
+    const usable = paved.filter((p) => (p.kind === "road" || p.kind === "ground_surface") && p.path.length >= 2);
+    const out = [];
+    if (usable.length === 0) return out;
+    for (const n of props) {
+      if (!isPlantArchetype(n.archetype)) continue;
+      for (const p of usable) {
+        if (!isOnPavedNode(p, n.x, n.z)) continue;
+        out.push({ entityId: n.entityId, archetype: n.archetype, x: n.x, z: n.z, onKind: p.kind, on: p.entityId });
+        break;
+      }
+    }
+    return out;
+  }
+  function groundKeepOff(plan2, x, z, margin) {
+    for (const s of plan2.strips) {
+      if (stripDistance(s, x, z) <= margin) return { surface: s.surface, entityId: s.entityId };
+    }
+    for (const l of plan2.lots) {
+      if (lotDistance(l, x, z) <= margin) return { surface: "lot", entityId: l.entityId };
+    }
+    return null;
+  }
+  function keepOffMarginFor(horizontalRadius) {
+    const r = Number.isFinite(horizontalRadius) && horizontalRadius > 0 ? horizontalRadius : 0;
+    return Math.min(3, 0.5 + r / 3);
+  }
+  function obstacleMarginFor(horizontalRadius) {
+    const r = Number.isFinite(horizontalRadius) && horizontalRadius > 0 ? horizontalRadius : 0;
+    return Math.min(1, 0.2 + r / 3);
+  }
+  function obstacleDistance(o, x, z) {
+    const dx = x - o.cx;
+    const dz = z - o.cz;
+    const u = dx * o.axisX + dz * o.axisZ;
+    const v = -dx * o.axisZ + dz * o.axisX;
+    const ou = Math.max(0, Math.abs(u) - o.halfX);
+    const ov = Math.max(0, Math.abs(v) - o.halfZ);
+    return Math.sqrt(ou * ou + ov * ov);
+  }
+  function obstacleAt(obstacles2, x, z, margin) {
+    for (const o of obstacles2) if (obstacleDistance(o, x, z) <= margin) return o;
+    return null;
+  }
+  var LAYER_AREA_CELL_M = 4;
+  var LAYER_AREA_DILATE = 1;
+  function cellKey(cx, cz) {
+    return `${cx},${cz}`;
+  }
+  function buildLayerArea(instances, cell = LAYER_AREA_CELL_M, dilate = LAYER_AREA_DILATE) {
+    const c = cell > 0 ? cell : LAYER_AREA_CELL_M;
+    const d = Math.max(0, Math.trunc(dilate));
+    const cells = /* @__PURE__ */ new Set();
+    for (const p of instances) {
+      const cx = Math.floor(p[0] / c);
+      const cz = Math.floor(p[1] / c);
+      for (let a = -d; a <= d; a += 1) for (let b = -d; b <= d; b += 1) cells.add(cellKey(cx + a, cz + b));
+    }
+    return { cell: c, cells };
+  }
+  function inLayerArea(area, x, z) {
+    return area.cells.has(cellKey(Math.floor(x / area.cell), Math.floor(z / area.cell)));
+  }
+  function onGround(hit) {
+    return hit.surface === "road" ? "on-road" : hit.surface === "plaza" ? "on-plaza" : hit.surface === "path" ? "on-path" : "on-lot";
+  }
+  function atObstacle(obstacles2, x, z, margin) {
+    const o = obstacles2 !== null ? obstacleAt(obstacles2, x, z, margin) : null;
+    if (o === null) return { trim: "kept", what: "" };
+    return { trim: o.building ? "in-building" : "at-prop", what: o.entityId };
+  }
+  function trimGeneratedPoint(plan2, area, x, z, radius, obstacles2 = null) {
+    if (!inLayerArea(area, x, z)) return { trim: "off-area", what: "" };
+    const hit = groundKeepOff(plan2, x, z, keepOffMarginFor(radius));
+    if (hit !== null) return { trim: onGround(hit), what: hit.entityId };
+    return atObstacle(obstacles2, x, z, obstacleMarginFor(radius));
+  }
+  function keepLookNeighbour(plan2, obstacles2, x, z, radius) {
+    if (plan2 !== null) {
+      const hit = groundKeepOff(plan2, x, z, keepOffMarginFor(radius));
+      if (hit !== null) return { trim: onGround(hit), what: hit.entityId };
+    }
+    return atObstacle(obstacles2, x, z, obstacleMarginFor(radius));
+  }
+  function keepStatedRow(obstacles2, x, z) {
+    return atObstacle(obstacles2, x, z, 0);
+  }
+  function trimGeneratedPointClumped(plan2, area, x, z, radius, obstacles2, clumping, clumpCell) {
+    const r = trimGeneratedPoint(plan2, area, x, z, radius, obstacles2);
+    if (r.trim === "kept" && clumpThins(x, z, clumping, clumpCell)) return { trim: "in-clearing", what: "" };
+    return r;
+  }
+  function layerInstanceKey(layerId, x, z) {
+    return `${layerId}@${roundHalfAway(x * 100)},${roundHalfAway(z * 100)}`;
+  }
+  function lookPropStands(entityId, density) {
+    return !(density < 1 && lookHash01(entityId, 0) >= density);
+  }
+  var LOOK_PI = Math.fround(Math.PI);
+  function lookNeighbours(layerId, row, look, terrain, plan2, paving, obstacles2, radius) {
+    const density = Math.max(0, look.density);
+    const whole = Math.floor(density);
+    const frac = density - whole;
+    const key = layerInstanceKey(layerId, row.x, row.z);
+    const evenCopies = whole + (lookHash01(key, 0) < frac ? 1 : 0);
+    let copies = evenCopies;
+    if (look.clumping > 0 && density > 1) {
+      const d = density * clumpWeight(row.x, row.z, look.clumping, look.clumpCell);
+      const w = Math.floor(d);
+      copies = Math.max(1, w + (lookHash01(key, 0) < d - w ? 1 : 0));
+    }
+    const plants = [];
+    for (let c = 0; c < copies; c += 1) {
+      let x = row.x;
+      let z = row.z;
+      let yaw = row.yaw;
+      if (c === 0) {
+        const inside = keepStatedRow(obstacles2, x, z);
+        plants.push({ copy: 0, x, z, yaw, keep: inside.trim, what: inside.what });
+        continue;
+      }
+      const a = lookHash01(key, c * 3 + 1) * 2 * LOOK_PI;
+      const r = Math.sqrt(lookHash01(key, c * 3 + 2)) * look.jitter;
+      x += Math.cos(a) * r;
+      z += Math.sin(a) * r;
+      if (terrain !== null && (x < 0 || z < 0 || x > terrain.sizeX || z > terrain.sizeZ)) {
+        plants.push({ copy: c, x, z, yaw, keep: "off-terrain", what: "" });
+        continue;
+      }
+      let keep;
+      if (plan2 !== null) keep = keepLookNeighbour(plan2, obstacles2, x, z, radius);
+      else if (paving.some((p) => isOnPavedNode(p, x, z))) keep = { trim: "on-road", what: "" };
+      else keep = keepLookNeighbour(null, obstacles2, x, z, radius);
+      if (keep.trim === "kept") yaw += lookHash01(key, c * 3 + 3) * 2 * LOOK_PI;
+      plants.push({ copy: c, x, z, yaw, keep: keep.trim, what: keep.what });
+    }
+    return { evenCopies, copies, plants };
+  }
+  var MASK64 = (1n << 64n) - 1n;
+  function mix64(v) {
+    let x = v + 0x9e3779b97f4a7c15n & MASK64;
+    x = (x ^ x >> 30n) * 0xbf58476d1ce4e5b9n & MASK64;
+    x = (x ^ x >> 27n) * 0x94d049bb133111ebn & MASK64;
+    return x ^ x >> 31n;
+  }
+  function latticeValue01(ix, iz, salt) {
+    const ux = BigInt.asUintN(64, BigInt(ix));
+    const uz = BigInt.asUintN(64, BigInt(iz));
+    const h = mix64(ux * 0x632be59bd9b4e019n & MASK64 ^ mix64(uz + BigInt(salt >>> 0) & MASK64));
+    return Number(h >> 11n) * (1 / 9007199254740992);
+  }
+  function fade(t) {
+    return t * t * t * (t * (t * 6 - 15) + 10);
+  }
+  function valueNoise(x, z, cell, salt) {
+    const gx = x / cell;
+    const gz = z / cell;
+    const fx = Math.floor(gx);
+    const fz = Math.floor(gz);
+    const u = fade(gx - fx);
+    const v = fade(gz - fz);
+    const a = latticeValue01(fx, fz, salt);
+    const b = latticeValue01(fx + 1, fz, salt);
+    const c = latticeValue01(fx, fz + 1, salt);
+    const d = latticeValue01(fx + 1, fz + 1, salt);
+    return (a + (b - a) * u) * (1 - v) + (c + (d - c) * u) * v;
+  }
+  function clamp01(v) {
+    return v < 0 ? 0 : v > 1 ? 1 : v;
+  }
+  function smooth(edge0, edge1, x) {
+    const t = clamp01((x - edge0) / (edge1 - edge0));
+    return t * t * (3 - 2 * t);
+  }
+  function groundNoise01(x, z, cell, salt) {
+    if (!Number.isFinite(x) || !Number.isFinite(z) || !(cell > 0)) return 0.5;
+    const second = Math.imul(salt >>> 0, 31) + 7 >>> 0;
+    return clamp01(0.68 * valueNoise(x, z, cell, salt >>> 0) + 0.32 * valueNoise(x, z, cell * 0.43, second));
+  }
+  var GROUND_PATCH_CELL_M = 16;
+  var GROUND_FLECK_CELL_M = 6;
+  var PATCH_SALT = 1346458691;
+  var FLECK_SALT = 1179403587;
+  var CLUMP_SALT = 1129076045;
+  var THIN_SALT = 1414023502;
+  var DEFAULT_CLUMP_CELL_M = 12;
+  function groundPatchCoverage(x, z) {
+    return smooth(0.52, 0.64, groundNoise01(x, z, GROUND_PATCH_CELL_M, PATCH_SALT));
+  }
+  function groundFleckCoverage(x, z) {
+    return smooth(0.58, 0.68, groundNoise01(x, z, GROUND_FLECK_CELL_M, FLECK_SALT));
+  }
+  function clumpWeight(x, z, clumping, cell) {
+    const c = clamp01(Number.isFinite(clumping) ? clumping : 0);
+    if (c <= 0) return 1;
+    const n = smooth(0.36, 0.64, groundNoise01(x, z, cell > 0 ? cell : DEFAULT_CLUMP_CELL_M, CLUMP_SALT));
+    return 1 - c + 2 * c * n;
+  }
+  function clumpThins(x, z, clumping, cell) {
+    const c = clamp01(Number.isFinite(clumping) ? clumping : 0);
+    if (c <= 0) return false;
+    const keep = clumpWeight(x, z, c, cell) / (1 + c);
+    return latticeValue01(roundHalfAway(x * 100), roundHalfAway(z * 100), THIN_SALT) >= keep;
+  }
+  function surfaceRank(name) {
+    const i = GROUND_SURFACES.indexOf(name);
+    return i >= 0 ? i : GROUND_SURFACES.length;
+  }
+  function readGroundLayers(transform) {
+    const out = [];
+    if (typeof transform !== "object" || transform === null || Array.isArray(transform)) return out;
+    const block = transform.groundLayers;
+    if (typeof block !== "object" || block === null || Array.isArray(block)) return out;
+    for (const [surface, v] of Object.entries(block)) {
+      if (v === void 0) continue;
+      const c = { surface, layer: "", strength: 1, hasStrength: false };
+      if (typeof v === "string") {
+        c.layer = v;
+      } else if (typeof v === "object" && v !== null && !Array.isArray(v)) {
+        const l = v.layer;
+        if (typeof l !== "string") continue;
+        c.layer = l;
+        const s = v.strength;
+        if (typeof s === "number" && Number.isFinite(s)) {
+          c.strength = clamp01(s);
+          c.hasStrength = true;
+        }
+      } else if (v === null) {
+        c.layer = "";
+      } else {
+        continue;
+      }
+      out.push(c);
+    }
+    out.sort((a, b) => {
+      const ra = surfaceRank(a.surface);
+      const rb = surfaceRank(b.surface);
+      if (ra !== rb) return ra - rb;
+      return a.surface < b.surface ? -1 : a.surface > b.surface ? 1 : 0;
+    });
+    return out;
+  }
+  function layerWords(name) {
+    const out = [];
+    let cur = "";
+    const isAlnum = (ch) => /^[A-Za-z0-9]$/.test(ch);
+    const isUpper = (ch) => /^[A-Z]$/.test(ch);
+    const isLower = (ch) => /^[a-z]$/.test(ch);
+    for (const ch of name.split("")) {
+      const alnum = isAlnum(ch);
+      if (alnum && cur !== "" && isUpper(ch) && isLower(cur[cur.length - 1])) {
+        out.push(cur.toLowerCase());
+        cur = "";
+      }
+      if (alnum) cur += ch;
+      else if (cur !== "") {
+        out.push(cur.toLowerCase());
+        cur = "";
+      }
+    }
+    if (cur !== "") out.push(cur.toLowerCase());
+    return out;
+  }
+  function firstLayer(layers, pred) {
+    for (const l of layers) if (pred(layerWords(l))) return l;
+    return "";
+  }
+  var LOT_DEFAULT_STRENGTH = 0.5;
+  function resolveGroundPaint(layers, authored) {
+    const rules = {};
+    for (const s of GROUND_SURFACES) rules[s] = { layer: "", strength: 1, why: "none" };
+    const paint = { layers: [...layers], rules, notes: [] };
+    if (layers.length === 0) {
+      for (const c of authored) paint.notes.push(`ignored:${c.surface}`);
+      return paint;
+    }
+    const isLayer = (l) => layers.includes(l);
+    const authoredSet = /* @__PURE__ */ new Set();
+    for (const c of authored) {
+      if (!GROUND_SURFACES.includes(c.surface)) {
+        paint.notes.push(`not-a-surface:${c.surface}`);
+        continue;
+      }
+      const s = c.surface;
+      if (c.layer !== "" && !isLayer(c.layer)) {
+        paint.notes.push(`unknown-layer:${c.surface}`);
+        continue;
+      }
+      rules[s] = { layer: c.layer, strength: c.hasStrength ? c.strength : 1, why: c.layer === "" ? "none" : "authored" };
+      authoredSet.add(s);
+    }
+    const infer = (s, layer, strength) => {
+      if (authoredSet.has(s)) return;
+      rules[s] = { layer, strength, why: layer === "" ? "none" : "by-name" };
+    };
+    const has = (w, word) => w.includes(word);
+    let base = firstLayer(layers, (w) => has(w, "grass") && !has(w, "lush"));
+    if (base === "") base = firstLayer(layers, (w) => has(w, "grass"));
+    if (base === "") base = layers[0];
+    infer("base", base, 1);
+    let road = firstLayer(layers, (w) => has(w, "dirt") && !has(w, "rocky") && !has(w, "rock"));
+    if (road === "") road = firstLayer(layers, (w) => has(w, "mud"));
+    if (road === "") road = firstLayer(layers, (w) => has(w, "gravel") || has(w, "path") || has(w, "road") || has(w, "sand"));
+    const roadNow = rules.road.layer;
+    infer("road", road, 1);
+    const roadLayer = authoredSet.has("road") ? roadNow : road;
+    const path = firstLayer(layers, (w) => has(w, "mud"));
+    infer("path", path === "" ? roadLayer : path, 1);
+    let plaza = firstLayer(layers, (w) => (has(w, "rocky") || has(w, "rock")) && has(w, "dirt"));
+    if (plaza === "") {
+      plaza = firstLayer(layers, (w) => has(w, "stone") || has(w, "cobble") || has(w, "cobblestone") || has(w, "paving") || has(w, "gravel") || has(w, "rocky"));
+    }
+    infer("plaza", plaza === "" ? roadLayer : plaza, 1);
+    infer("lot", roadLayer, LOT_DEFAULT_STRENGTH);
+    const slope = firstLayer(layers, (w) => (has(w, "rock") || has(w, "rocks") || has(w, "cliff")) && !has(w, "dirt") && !has(w, "rocky"));
+    infer("slope", slope, 1);
+    infer("patch", "", 1);
+    infer("fleck", "", 1);
+    if (rules.base.layer === "") {
+      rules.base = { ...rules.base, layer: layers[0] };
+      paint.notes.push("base-cannot-be-none");
+    }
+    return paint;
+  }
+  function paintLayerIndex(paint, surface) {
+    const l = paint.rules[surface].layer;
+    if (l === "") return -1;
+    return paint.layers.indexOf(l);
+  }
+  var ROAD_FEATHER_M = 1.5;
+  var EDGE_FEATHER_M = 1;
+  var SLOPE_START = 0.45;
+  var SLOPE_FULL = 0.8;
+  function feathered(d, feather) {
+    if (d <= 0) return 1;
+    if (d >= feather) return 0;
+    return 1 - smooth(0, feather, d);
+  }
+  function sampleGroundCoverage(plan2, x, z) {
+    const c = { road: 0, plaza: 0, path: 0, lot: 0, slope: 0, patch: 0, fleck: 0, base: 0 };
+    for (const s of plan2.strips) {
+      const d = stripDistance(s, x, z);
+      c[s.surface] = Math.max(c[s.surface], feathered(d, s.surface === "road" ? ROAD_FEATHER_M : EDGE_FEATHER_M));
+    }
+    for (const l of plan2.lots) c.lot = Math.max(c.lot, feathered(lotDistance(l, x, z), EDGE_FEATHER_M));
+    if (plan2.terrain !== null && plan2.terrain.resolution >= 2) {
+      const g = plan2.terrain;
+      const h = (px, pz) => layoutGroundAt(g, px, pz);
+      const step = 1;
+      const dx = (h(x + step, z) - h(x - step, z)) / (2 * step);
+      const dz = (h(x, z + step) - h(x, z - step)) / (2 * step);
+      c.slope = smooth(SLOPE_START, SLOPE_FULL, Math.sqrt(dx * dx + dz * dz));
+    }
+    c.patch = groundPatchCoverage(x, z);
+    c.fleck = groundFleckCoverage(x, z);
+    c.base = 1;
+    return c;
+  }
+  function groundLayerWeights(paint, coverage) {
+    const n = paint.layers.length;
+    const out = new Array(n).fill(0);
+    const base = paintLayerIndex(paint, "base");
+    if (n === 0 || base < 0) return out;
+    const share = new Array(n).fill(0);
+    let left = 1;
+    for (const s of GROUND_SURFACES) {
+      if (s === "base") continue;
+      const layer = paintLayerIndex(paint, s);
+      if (layer < 0) continue;
+      const take = clamp01(coverage[s]) * clamp01(paint.rules[s].strength) * left;
+      share[layer] += take;
+      left -= take;
+    }
+    share[base] += Math.max(0, left);
+    let sum = 0;
+    const frac = [];
+    for (let i = 0; i < n; i += 1) {
+      const v = share[i] * 255;
+      const f = Math.floor(v + 1e-9);
+      out[i] = Math.max(0, Math.min(255, f));
+      sum += out[i];
+      frac.push({ f: v - f, i });
+    }
+    frac.sort((a, b) => b.f - a.f);
+    for (let k = 0; sum < 255 && k < frac.length; k += 1) {
+      if (out[frac[k].i] < 255) {
+        out[frac[k].i] += 1;
+        sum += 1;
+      }
+    }
+    return out;
+  }
+
+  // @insimul/core/src/editor/layout/corpus.ts
+  function bad(why) {
+    throw new Error(`layout corpus: ${why}`);
+  }
+  function obj(v, what) {
+    if (typeof v !== "object" || v === null || Array.isArray(v)) bad(`${what} is not an object`);
+    return v;
+  }
+  function arr(v, what) {
+    if (!Array.isArray(v)) bad(`${what} is not an array`);
+    return v;
+  }
+  function num(o, k) {
+    const v = o[k];
+    if (typeof v !== "number") bad(`'${k}' is not a number`);
+    return v;
+  }
+  function numOr(o, k, d) {
+    const v = o[k];
+    return typeof v === "number" ? v : d;
+  }
+  function str(o, k, d = "") {
+    const v = o[k];
+    return typeof v === "string" ? v : d;
+  }
+  function bool(o, k) {
+    return o[k] === true;
+  }
+  function present(o, k) {
+    return o[k] !== void 0 && o[k] !== null;
+  }
+  function point(v) {
+    const a = arr(v, "a point");
+    if (a.length < 2) bad("a point is [x, z]");
+    return [a[0], a[1]];
+  }
+  function points(v) {
+    return arr(v, "points").map(point);
+  }
+  function vec(v) {
+    const o = obj(v, "a vector");
+    return { x: numOr(o, "x", 0), y: numOr(o, "y", 0), z: numOr(o, "z", 0) };
+  }
+  function grid(v) {
+    const o = obj(v, "a terrain grid");
+    return {
+      resolution: num(o, "resolution"),
+      sizeX: num(o, "sizeX"),
+      sizeZ: num(o, "sizeZ"),
+      heights: arr(o.heights, "heights")
+    };
+  }
+  var DOOR_SOURCES = ["none", "binding_socket", "mesh_socket", "component", "binding_yaw"];
+  function door(v) {
+    const o = obj(v, "a door");
+    const source = str(o, "source", "none");
+    if (!DOOR_SOURCES.includes(source)) bad(`unknown door source '${source}'`);
+    return {
+      source,
+      name: str(o, "name"),
+      hasPosition: bool(o, "hasPosition"),
+      position: present(o, "position") ? vec(o.position) : { x: 0, y: 0, z: 0 },
+      yaw: numOr(o, "yaw", 0),
+      candidates: numOr(o, "candidates", 0),
+      height: numOr(o, "height", 0)
+    };
+  }
+  function candidate(v) {
+    const o = obj(v, "a door candidate");
+    return { component: str(o, "component"), mesh: str(o, "mesh"), owner: str(o, "owner"), min: vec(o.min), max: vec(o.max) };
+  }
+  function policy(v) {
+    const o = obj(v, "a fit policy");
+    const d = defaultFitPolicy();
+    const p = {
+      mode: str(o, "mode", "lot") === "none" ? "none" : "lot",
+      scaleMin: numOr(o, "scaleMin", d.scaleMin),
+      scaleMax: numOr(o, "scaleMax", d.scaleMax),
+      doorClearance: numOr(o, "doorClearance", d.doorClearance),
+      seatSink: numOr(o, "seatSink", d.seatSink),
+      neighbourGap: numOr(o, "neighbourGap", d.neighbourGap)
+    };
+    if (present(o, "doorYaw")) p.doorYaw = num(o, "doorYaw");
+    return p;
+  }
+  function fitInput(v) {
+    const o = obj(v, "a fit input");
+    const g = obj(o.geometry, "geometry");
+    const b = present(o, "bounds") ? obj(o.bounds, "bounds") : null;
+    return {
+      entityId: str(o, "entityId"),
+      lotId: str(o, "lotId"),
+      lot: present(o, "lot") ? readFitLot(o.lot) : null,
+      lotCentre: present(o, "lotCentre") ? point(o.lotCentre) : null,
+      node: vec(o.node),
+      nodeHeading: num(o, "nodeHeading"),
+      nodeScale: vec(o.nodeScale),
+      geometry: { scale: vec(g.scale), yaw: num(g, "yaw"), offset: vec(g.offset) },
+      policy: policy(o.policy),
+      bounds: b === null ? null : { min: vec(b.min), max: vec(b.max) },
+      door: door(o.door),
+      ground: present(o, "ground") ? grid(o.ground) : null,
+      castHeight: numOr(o, "castHeight", 0),
+      settleShift: point(o.settleShift)
+    };
+  }
+  function obstacle(v) {
+    const o = obj(v, "an obstacle");
+    return {
+      entityId: str(o, "entityId"),
+      kind: str(o, "kind"),
+      lotId: str(o, "lotId"),
+      points: points(o.points),
+      halfWidth: numOr(o, "halfWidth", 0),
+      closed: bool(o, "closed")
+    };
+  }
+  function obstacles(v) {
+    return arr(v, "obstacles").map(obstacle);
+  }
+  function body(v) {
+    const o = obj(v, "a body");
+    return {
+      entityId: str(o, "entityId"),
+      lotId: str(o, "lotId"),
+      outline: points(o.outline),
+      mass: num(o, "mass"),
+      maxShift: num(o, "maxShift"),
+      obstacleGap: num(o, "obstacleGap"),
+      class: numOr(o, "class", 0),
+      gap: numOr(o, "gap", 0)
+    };
+  }
+  function layoutNode(v) {
+    const o = obj(v, "a node");
+    let position;
+    let y = 0;
+    if (present(o, "position")) {
+      const p = arr(o.position, "a position");
+      if (p.length !== 3) bad("a node's position is [x, y, z]");
+      position = [p[0], p[2]];
+      y = p[1];
+    }
+    return {
+      kind: str(o, "kind"),
+      entityId: str(o, "entityId"),
+      archetype: str(o, "archetype"),
+      lotId: str(o, "lotId"),
+      path: present(o, "path") ? points(o.path) : [],
+      width: numOr(o, "width", 0),
+      closed: bool(o, "closed"),
+      lot: present(o, "lot") ? readFitLot(o.lot) : null,
+      lotCentre: present(o, "lotCentre") ? point(o.lotCentre) : null,
+      position: position ?? [0, 0],
+      y
+    };
+  }
+  function plan(v) {
+    const o = obj(v, "a plan");
+    const strips = present(o, "strips") ? arr(o.strips, "strips").map((x) => {
+      const s = obj(x, "a strip");
+      const surface = str(s, "surface");
+      if (surface !== "road" && surface !== "plaza" && surface !== "path") bad("a strip's surface is road, plaza or path");
+      return {
+        entityId: str(s, "entityId"),
+        surface,
+        lotId: str(s, "lotId"),
+        points: points(s.points),
+        halfWidth: numOr(s, "halfWidth", 0),
+        closed: bool(s, "closed")
+      };
+    }) : [];
+    const lots = present(o, "lots") ? arr(o.lots, "lots").map((x) => {
+      const l = obj(x, "a lot");
+      return {
+        entityId: str(l, "entityId"),
+        lotId: str(l, "lotId"),
+        cx: num(l, "cx"),
+        cz: num(l, "cz"),
+        halfAcross: num(l, "halfAcross"),
+        halfAway: num(l, "halfAway"),
+        awayX: num(l, "awayX"),
+        awayZ: num(l, "awayZ")
+      };
+    }) : [];
+    return { strips, lots, terrain: present(o, "terrain") ? grid(o.terrain) : null };
+  }
+  function groundObstacles(v) {
+    return arr(v, "obstacles").map((x) => {
+      const o = obj(x, "a ground obstacle");
+      return {
+        entityId: str(o, "entityId"),
+        building: bool(o, "building"),
+        cx: num(o, "cx"),
+        cz: num(o, "cz"),
+        halfX: num(o, "halfX"),
+        halfZ: num(o, "halfZ"),
+        axisX: num(o, "axisX"),
+        axisZ: num(o, "axisZ")
+      };
+    });
+  }
+  function choices(v) {
+    return arr(v, "authored").map((x) => {
+      const o = obj(x, "a layer choice");
+      return { surface: str(o, "surface"), layer: str(o, "layer"), strength: numOr(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
+    });
+  }
+  var v3 = (v) => ({ x: v.x, y: v.y, z: v.z });
+  var pt = (p) => [p[0], p[1]];
+  function doorJson(d) {
+    return {
+      source: d.source,
+      name: d.name,
+      hasPosition: d.hasPosition,
+      position: v3(d.position),
+      yaw: d.yaw,
+      candidates: d.candidates,
+      height: d.height
+    };
+  }
+  function policyJson(p) {
+    const o = { mode: p.mode, scaleMin: p.scaleMin, scaleMax: p.scaleMax };
+    if (p.doorYaw !== void 0) o.doorYaw = p.doorYaw;
+    o.doorClearance = p.doorClearance;
+    o.seatSink = p.seatSink;
+    o.neighbourGap = p.neighbourGap;
+    return o;
+  }
+  function fitJson(f) {
+    if (!f.applied) return { applied: false, notApplied: f.notApplied ?? "" };
+    const o = {
+      applied: true,
+      outcome: f.fit.outcome,
+      issues: [...f.fit.issues],
+      required: { across: f.fit.required.across, away: f.fit.required.away },
+      aligned: f.fit.aligned,
+      lot: { width: f.lot.width, depth: f.lot.depth, hasFrontage: f.lot.hasFrontage },
+      streetHeading: f.streetHeading,
+      wantedFactor: f.wantedFactor,
+      factor: f.factor,
+      limited: f.limited,
+      doorFactor: f.doorFactor,
+      doorHeld: f.doorHeld,
+      doorHeight: f.doorHeight,
+      castHeight: f.castHeight,
+      policy: policyJson(f.policy),
+      scale: v3(f.scale),
+      fixupScale: v3(f.fixupScale),
+      heading: f.heading,
+      fixupHeading: f.fixupHeading,
+      location: v3(f.location),
+      offsetFromNode: v3(f.offsetFromNode),
+      door: doorJson(f.door)
+    };
+    if (f.door.source !== "none") {
+      o.doorWorld = v3(f.doorWorld);
+      o.doorHeading = f.doorHeading;
+    }
+    o.seat = { ...f.seat };
+    o.footprint = f.footprint.corners.map((c) => [c[0], c[1]]);
+    o.settleShift = [f.settleShift[0], f.settleShift[1]];
+    o.notes = [...f.notes];
+    return o;
+  }
+  function movesJson(moves) {
+    return moves.map((m) => ({ entityId: m.entityId, dx: m.dx, dz: m.dz, short: m.short, shortOf: m.shortOf, limited: m.limited }));
+  }
+  function obstacleJson(o) {
+    return { entityId: o.entityId, kind: o.kind, lotId: o.lotId, points: o.points.map(pt), halfWidth: o.halfWidth, closed: o.closed };
+  }
+  function planJson(p) {
+    return {
+      strips: p.strips.map((s) => ({
+        entityId: s.entityId,
+        surface: s.surface,
+        lotId: s.lotId,
+        points: s.points.map(pt),
+        halfWidth: s.halfWidth,
+        closed: s.closed
+      })),
+      lots: p.lots.map((l) => ({ ...l }))
+    };
+  }
+  function trimJson(r) {
+    return { trim: r.trim, what: r.what };
+  }
+  var EXCLUDED_FROM_GRADING = /* @__PURE__ */ new Set(["terrain_field", "environment", "nav_region", "interior"]);
+  function noNegativeZero(v) {
+    if (typeof v === "number") return v === 0 ? 0 : v;
+    if (Array.isArray(v)) return v.map(noNegativeZero);
+    if (v !== null && typeof v === "object") {
+      const out = {};
+      for (const k of Object.keys(v)) out[k] = noNegativeZero(v[k]);
+      return out;
+    }
+    return v;
+  }
+  function runLayoutOp(op, input) {
+    return noNegativeZero(answer(op, input));
+  }
+  function answer(op, input) {
+    const i = obj(input, "an input");
+    switch (op) {
+      // ── building-fit ──
+      case "isDoorPartName":
+        return isDoorPartName({ component: str(i, "component"), mesh: str(i, "mesh"), owner: str(i, "owner") });
+      case "faceYawOf":
+        return faceYawOf(vec(i.point), vec(i.min), vec(i.max));
+      case "chooseDoorPart":
+        return doorJson(chooseDoorPart(arr(i.parts, "parts").map(candidate), vec(i.boundsMin), vec(i.boundsMax)));
+      case "bodyStature":
+        return bodyStature(num(i, "boundsHeight"), numOr(i, "headBoneHeight", 0), numOr(i, "crownTop", 0));
+      case "fitBuildingToLot":
+        return fitJson(fitBuildingToLot(fitInput(input)));
+      case "findFitOverlaps": {
+        const buildings = arr(i.buildings, "buildings").map((x) => {
+          const o = obj(x, "a footprint");
+          const corners = points(o.corners);
+          if (corners.length !== 4) bad("a footprint has four corners");
+          return { entityId: str(o, "entityId"), lotId: str(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
+        });
+        return findFitOverlaps(buildings, obstacles(i.obstacles)).map((o) => ({ entityId: o.entityId, with: o.with, withKind: o.withKind, depth: o.depth }));
+      }
+      // ── settle ──
+      case "settleSeparation": {
+        const s = settleSeparation(points(i.a), points(i.b));
+        return { gap: s.gap, axis: [s.axis[0], s.axis[1]] };
+      }
+      case "settleBodies": {
+        const rule = str(i, "rule");
+        if (rule !== "neighbour" && rule !== "clearance") bad(`unknown settle rule '${rule}'`);
+        return movesJson(settleBodies(
+          arr(i.bodies, "bodies").map(body),
+          obstacles(i.obstacles),
+          settlePairGapOf(rule),
+          numOr(i, "iterations", SETTLE_DEFAULT_ITERATIONS)
+        ));
+      }
+      case "settleFittedBuildings":
+        return movesJson(settleFittedBuildings(arr(i.buildings, "buildings").map((x) => {
+          const o = obj(x, "a fitted footprint");
+          return { entityId: str(o, "entityId"), lotId: str(o, "lotId"), corners: points(o.corners), neighbourGap: num(o, "neighbourGap") };
+        }), obstacles(i.obstacles)));
+      case "settleClearance": {
+        const items = arr(i.items, "items").map((x) => {
+          const o = obj(x, "a clearance item");
+          const kind = str(o, "kind");
+          const item = {
+            entityId: str(o, "entityId"),
+            kind: kind === "building" ? "building" : kind === "plant" ? "plant" : "prop",
+            outline: points(o.outline)
+          };
+          item.area = numOr(o, "area", 0);
+          item.archetype = str(o, "archetype");
+          item.height = numOr(o, "height", 0);
+          item.longestPlan = numOr(o, "longestPlan", 0);
+          item.crownRadius = numOr(o, "crownRadius", 1);
+          return item;
+        });
+        const r = settleClearance(items, obstacles(i.obstacles));
+        return { moves: movesJson(r.moves), setAsides: r.setAsides.map((s) => ({ index: s.index, buildingId: s.buildingId, inside: s.inside })) };
+      }
+      case "clearancePairGap":
+        return clearancePairGap(num(i, "classA"), num(i, "gapA"), num(i, "classB"), num(i, "gapB"));
+      case "plantTrunkOutline":
+        return points(i.points).map((q) => plantTrunkOutline(q[0], q[1]).map(pt));
+      case "layoutConstants":
+        return { pairingNeighbourGap: PAIRING_NEIGHBOUR_GAP_M, crownRadius: CROWN_RADIUS_M };
+      case "markerClearance":
+        return markerClearanceM(str(i, "archetype"), num(i, "height"), num(i, "longestPlan"));
+      case "plantWallClearance":
+        return plantWallClearanceM(num(i, "crownRadius"));
+      case "settleBuildingMaxShift":
+        return settleBuildingMaxShiftM(num(i, "neighbourGap"));
+      case "pairingSeatSink":
+        return pairingSeatSink(num(i, "bottom"), present(i, "doorFoot") ? num(i, "doorFoot") : null, num(i, "factor"));
+      case "layoutObstaclesOf":
+        return layoutObstaclesOf(arr(i.nodes, "nodes").map(layoutNode)).map(obstacleJson);
+      // ── ground plan ──
+      case "buildGroundPlan":
+        return planJson(buildGroundPlan(arr(i.nodes, "nodes").map(layoutNode)));
+      case "gradeTerrain": {
+        const nodes = arr(i.nodes, "nodes").map(layoutNode);
+        const raw = grid(i.terrain);
+        const graded = gradeTerrain(raw, buildGroundPlan(nodes).lots);
+        const probes = present(i, "gridProbes") ? arr(i.gridProbes, "gridProbes") : [];
+        return {
+          pads: graded.pads.map((p) => ({ ...p })),
+          resolution: graded.grid !== null ? graded.grid.resolution : 0,
+          gridProbes: probes.map((x) => {
+            const ij = arr(x, "a grid probe");
+            const g = graded.grid;
+            return g !== null ? g.heights[ij[1] * g.resolution + ij[0]] : null;
+          }),
+          lifted: nodes.map((n) => ({
+            entityId: n.entityId,
+            y: graded.pads.length > 0 && !EXCLUDED_FROM_GRADING.has(n.kind) ? gradedNodeHeight(graded.pads, raw, n.position[0], n.y, n.position[1]) : n.y
+          }))
+        };
+      }
+      case "followSettledBuildings": {
+        const settled = arr(i.settled, "settled").map((x) => {
+          const o = obj(x, "a settled building");
+          const d = present(o, "door") ? obj(o.door, "a door") : null;
+          return {
+            entityId: str(o, "entityId"),
+            lotId: str(o, "lotId"),
+            shiftX: numOr(o, "shiftX", 0),
+            shiftZ: numOr(o, "shiftZ", 0),
+            door: d === null ? null : { x: num(d, "x"), z: num(d, "z"), faceX: num(d, "faceX"), faceZ: num(d, "faceZ") }
+          };
+        });
+        const f = followSettledBuildings(plan(i.plan), settled);
+        return {
+          plan: planJson(f.plan),
+          lotsMoved: f.lotsMoved,
+          pathsFromDoor: f.pathsFromDoor,
+          pathsMoved: f.pathsMoved,
+          events: f.events.map((e) => e.kind === "yard-moved" ? { kind: e.kind, lotId: e.lotId, entityId: e.entityId } : e.kind === "path-from-door" ? { kind: e.kind, pathId: e.pathId, entityId: e.entityId, to: e.to } : { kind: e.kind, pathId: e.pathId, entityId: e.entityId })
+        };
+      }
+      case "pathMouths":
+        return pathMouths(plan(i.plan)).map((m) => ({ ...m }));
+      case "lanternsAtPathMouths": {
+        const mouths = arr(i.mouths, "mouths").map((x) => {
+          const o = obj(x, "a mouth");
+          return { pathId: str(o, "pathId"), x: num(o, "x"), z: num(o, "z"), dirX: num(o, "dirX"), dirZ: num(o, "dirZ"), halfWidth: num(o, "halfWidth") };
+        });
+        return lanternsAtPathMouths(mouths, points(i.lanterns)).map((l) => ({ ...l }));
+      }
+      case "keepPlantPropsOffPaving": {
+        const nodes = arr(i.nodes, "nodes").map(layoutNode);
+        const props = nodes.filter((n) => n.kind === "prop").map((n) => ({ entityId: n.entityId, archetype: n.archetype, x: n.position[0], z: n.position[1] }));
+        const paved = nodes.filter((n) => n.kind === "road" || n.kind === "ground_surface").map((n) => ({ kind: n.kind, entityId: n.entityId, path: n.path ?? [], width: n.width ?? 0, closed: n.closed === true }));
+        return keepPlantPropsOffPaving(props, paved).map((p) => ({ ...p }));
+      }
+      case "trimGeneratedPoints":
+      case "keepLookNeighbours":
+      case "keepStatedRows": {
+        const obs = groundObstacles(i.obstacles);
+        const p = present(i, "plan") ? plan(i.plan) : null;
+        const area = op === "trimGeneratedPoints" ? (() => {
+          const layer = obj(i.layer, "a layer");
+          return buildLayerArea(points(layer.instances), numOr(layer, "cell", LAYER_AREA_CELL_M), numOr(layer, "dilate", LAYER_AREA_DILATE));
+        })() : null;
+        return arr(i.points, "points").map((x) => {
+          const q = arr(x, "a point");
+          const px = q[0];
+          const pz = q[1];
+          const r = q.length > 2 ? q[2] : 0;
+          if (op === "trimGeneratedPoints") {
+            const flat = p ?? { strips: [], lots: [], terrain: null };
+            return trimJson(present(i, "clumping") ? trimGeneratedPointClumped(flat, area, px, pz, r, obs, num(i, "clumping"), num(i, "clumpCell")) : trimGeneratedPoint(flat, area, px, pz, r, obs));
+          }
+          if (op === "keepLookNeighbours") return trimJson(keepLookNeighbour(p, obs, px, pz, r));
+          return trimJson(keepStatedRow(obs, px, pz));
+        });
+      }
+      case "lookPropStands": {
+        const d = num(i, "density");
+        return arr(i.entityIds, "entityIds").map((id) => lookPropStands(id, d));
+      }
+      case "lookNeighbours": {
+        const look = obj(i.look, "a look");
+        const t = present(i, "terrain") ? obj(i.terrain, "a terrain size") : null;
+        const paving = present(i, "paving") ? arr(i.paving, "paving").map(layoutNode).map((n) => ({ kind: n.kind, entityId: n.entityId, path: n.path ?? [], width: n.width ?? 0, closed: n.closed === true })) : [];
+        const p = present(i, "plan") ? plan(i.plan) : null;
+        const obs = groundObstacles(i.obstacles);
+        const radius = num(i, "radius");
+        return arr(i.rows, "rows").map((x) => {
+          const q = arr(x, "a row");
+          const r = lookNeighbours(
+            str(i, "layerId"),
+            { x: q[0], z: q[1], yaw: q[2] },
+            { density: num(look, "density"), clumping: num(look, "clumping"), clumpCell: num(look, "clumpCell"), jitter: num(look, "jitter") },
+            t === null ? null : { sizeX: num(t, "sizeX"), sizeZ: num(t, "sizeZ") },
+            p,
+            paving,
+            obs,
+            radius
+          );
+          return { evenCopies: r.evenCopies, copies: r.copies, plants: r.plants.map((pl) => ({ ...pl })) };
+        });
+      }
+      case "planDistances": {
+        const p = plan(input);
+        const pts = points(i.points);
+        return {
+          strips: p.strips.map((s) => pts.map((q) => stripDistance(s, q[0], q[1]))),
+          lots: p.lots.map((l) => pts.map((q) => lotDistance(l, q[0], q[1])))
+        };
+      }
+      case "margins":
+        return arr(i.radii, "radii").map((r) => ({ keepOff: keepOffMarginFor(r), obstacle: obstacleMarginFor(r) }));
+      // ── paint ──
+      case "readGroundLayers":
+        return readGroundLayers(i.transform ?? null).map((c) => ({ surface: c.surface, layer: c.layer, strength: c.strength, hasStrength: c.hasStrength }));
+      case "resolveGroundPaint": {
+        const p = resolveGroundPaint(arr(i.layers, "layers"), choices(i.authored));
+        const rules = {};
+        for (const s of GROUND_SURFACES) rules[s] = { layer: p.rules[s].layer, strength: p.rules[s].strength, why: p.rules[s].why };
+        return { rules, notes: [...p.notes] };
+      }
+      case "groundNoise":
+        return arr(i.samples, "samples").map((x) => {
+          const s = arr(x, "a sample");
+          return groundNoise01(s[0], s[1], s[2], s[3]);
+        });
+      case "groundCoverage": {
+        const p = plan(i.plan);
+        return points(i.points).map((q) => ({ ...sampleGroundCoverage(p, q[0], q[1]) }));
+      }
+      case "groundLayerWeights": {
+        const p = plan(i.plan);
+        const paint = resolveGroundPaint(arr(i.layers, "layers"), choices(i.authored));
+        return points(i.points).map((q) => groundLayerWeights(paint, sampleGroundCoverage(p, q[0], q[1])));
+      }
+      case "clump": {
+        const c = num(i, "clumping");
+        const cell = num(i, "cell");
+        return points(i.points).map((q) => ({ weight: clumpWeight(q[0], q[1], c, cell), thins: clumpThins(q[0], q[1], c, cell) }));
+      }
+      // ── backdrop ──
+      case "lookHash01":
+        return arr(i.samples, "samples").map((x) => {
+          const s = arr(x, "a sample");
+          return lookHash01(s[0], s[1]);
+        });
+      case "backdropRing": {
+        const box = obj(i.box, "a box");
+        const ring = obj(i.ring, "a ring");
+        return backdropRing(
+          { minX: num(box, "minX"), minZ: num(box, "minZ"), maxX: num(box, "maxX"), maxZ: num(box, "maxZ"), minY: num(box, "minY") },
+          { count: num(ring, "count"), outside: num(ring, "outside"), scale: num(ring, "scale"), scaleJitter: num(ring, "scaleJitter"), sink: num(ring, "sink") },
+          num(i, "ringIndex"),
+          arr(i.meshHalfExtents, "meshHalfExtents")
+        ).map((p) => ({ ...p }));
+      }
+      case "backdropFrame": {
+        const box = obj(i.box, "a box");
+        const m = obj(i.mesh, "a mesh");
+        const f = backdropFrame(
+          { minX: num(box, "minX"), minZ: num(box, "minZ"), maxX: num(box, "maxX"), maxZ: num(box, "maxZ"), minY: num(box, "minY") },
+          { minX: num(m, "minX"), minZ: num(m, "minZ"), maxX: num(m, "maxX"), maxZ: num(m, "maxZ") },
+          vec(i.pieceScale),
+          num(i, "offsetY"),
+          present(i, "edgeMinY") ? num(i, "edgeMinY") : null
+        );
+        return { laid: f.laid, outerHalfX: f.outerHalfX, outerHalfZ: f.outerHalfZ, height: f.height, strips: f.strips.map((s) => ({ ...s })) };
+      }
+      default:
+        return bad(`unknown layout op '${op}'`);
+    }
+  }
+  var LAYOUT_OPS = [
+    "isDoorPartName",
+    "faceYawOf",
+    "chooseDoorPart",
+    "bodyStature",
+    "fitBuildingToLot",
+    "findFitOverlaps",
+    "settleSeparation",
+    "settleBodies",
+    "settleFittedBuildings",
+    "settleClearance",
+    "clearancePairGap",
+    "markerClearance",
+    "plantWallClearance",
+    "settleBuildingMaxShift",
+    "pairingSeatSink",
+    "layoutObstaclesOf",
+    "plantTrunkOutline",
+    "layoutConstants",
+    "buildGroundPlan",
+    "gradeTerrain",
+    "followSettledBuildings",
+    "pathMouths",
+    "lanternsAtPathMouths",
+    "keepPlantPropsOffPaving",
+    "trimGeneratedPoints",
+    "keepLookNeighbours",
+    "keepStatedRows",
+    "planDistances",
+    "margins",
+    "readGroundLayers",
+    "resolveGroundPaint",
+    "groundNoise",
+    "groundCoverage",
+    "groundLayerWeights",
+    "clump",
+    "lookHash01",
+    "lookNeighbours",
+    "lookPropStands",
+    "backdropRing",
+    "backdropFrame"
+  ];
+
+  // @insimul/core/src/editor/layout/composition/rules.ts
+  var TRANSITION_SURFACES = ["road", "plaza", "path", "lot"];
+  var PROP_PURPOSES = ["goods", "work", "seat", "sign", "planting", "flora"];
+  var DEFAULT_COMPOSITION_RULES = deepFreeze({
+    network: {
+      laneHalfWidthM: 1.25,
+      pathHalfWidthM: 0.6,
+      minVisibleHalfWidthM: 0.5,
+      laneLotClearanceM: 0.3,
+      laneReachM: 24,
+      streetJoinReachM: 18,
+      doorStepOutM: 1,
+      sampleStepM: 1,
+      maxWalkGrade: 0.2
+    },
+    transitions: {
+      featherM: { road: 3.5, plaza: 3, path: 3, lot: 3 },
+      edgeBreakupM: 0.3,
+      edgeBreakupCellM: 6,
+      maxEdgeGradientPerM: 0.75,
+      minEdgeContrast: 0.1
+    },
+    grouping: {
+      purposeByArchetype: {
+        "prop.container.crate": "goods",
+        "prop.container.barrel": "goods",
+        "prop.container.sack": "goods",
+        "prop.container.basket": "goods",
+        "prop.container.cauldron": "work",
+        "prop.furniture.anvil": "work",
+        "prop.furniture.workbench": "work",
+        "prop.furniture.bench": "seat",
+        "prop.structural.sign": "sign",
+        "prop.structural.banner": "sign",
+        "prop.vegetation.planter": "planting",
+        "prop.vegetation.flower": "flora",
+        "prop.vegetation.fern": "flora",
+        "prop.vegetation.tuft": "flora",
+        "prop.vegetation.grass": "flora"
+      },
+      anchorsByPurpose: {
+        goods: ["cart", "building"],
+        work: ["building", "cart"],
+        seat: ["route", "building"],
+        sign: ["building", "cart"],
+        planting: ["building", "route"],
+        flora: []
+      },
+      cartArchetypes: ["prop.vehicle.cart", "prop.furniture.stall", "prop.structural.well"],
+      tieReachM: 3,
+      regroupReachM: 20,
+      clusterSpacingM: 1.2,
+      clusterStandOffM: 0.5,
+      packGapM: 0.35,
+      blockMinAreaM2: 2,
+      rowToleranceM: 0.2,
+      floraSquareMarginM: 0.6
+    },
+    yards: {
+      roleByArchetype: {
+        "building.farm": "farm",
+        "building.blacksmith": "smithy",
+        "building.smithy": "smithy",
+        "building.bakery": "bakery",
+        "building.restaurant": "inn",
+        "building.inn": "inn",
+        "building.tavern": "inn",
+        "building.shop": "shop",
+        "building.residence": "home"
+      },
+      defaultRole: "home",
+      edgeByRole: { farm: "fence", smithy: "wall", bakery: "fence", inn: "wall", shop: "fence", home: "hedge" },
+      itemsByRole: {
+        farm: ["prop.container.hay", "prop.vehicle.cart", "prop.container.trough"],
+        smithy: ["prop.container.coal", "prop.furniture.grindstone"],
+        bakery: ["prop.container.woodpile", "prop.container.sack"],
+        inn: ["prop.container.barrel", "prop.furniture.bench"],
+        shop: ["prop.container.crate"],
+        home: ["prop.furniture.washline", "prop.vegetation.planter"]
+      },
+      porchWidthM: 2.4,
+      porchDepthM: 1.5,
+      porchPostReachM: 3,
+      porchDeckMarginM: 0.3,
+      yardEdgeInsetM: 0.3,
+      gateGapM: 3,
+      minYardGapM: 1,
+      edgePostSpacingM: 2,
+      yardItemInsetM: 1
+    },
+    lanterns: {
+      routeReachM: 3,
+      besideRouteM: 0.5,
+      minSpacingM: 5,
+      postClearM: 0.3
+    },
+    foliage: {
+      kindByArchetype: {
+        "prop.vegetation.tree": "tree",
+        "prop.vegetation.sapling": "sapling",
+        "prop.vegetation.tree.sapling": "sapling",
+        "prop.vegetation.fern": "undergrowth",
+        "prop.vegetation.tuft": "undergrowth",
+        "prop.vegetation.bush": "undergrowth",
+        "prop.vegetation.grass": "undergrowth"
+      },
+      fillArchetype: "prop.vegetation.fern",
+      treeWallSetbackM: 3,
+      saplingWallSetbackM: 1.5,
+      setBackMarginM: 0.2,
+      groveCellM: 12,
+      grovePull: 0.5,
+      undergrowthReachM: 4,
+      undergrowthRingM: 0.8,
+      undergrowthSpacingM: 0.45,
+      clumpCellM: 5,
+      clumpPull: 0.6,
+      evenSpacingMaxCv: 0.25
+    },
+    variety: {
+      neighbourReachM: 20,
+      minRoofGapM: 2,
+      blankWallViewM: 8,
+      wayUpOffsetM: 0.6,
+      wayUpArchetype: "prop.structural.stair"
+    },
+    seating: {
+      seatSpanM: 0.6,
+      seatReachM: 6,
+      singleSeatArchetypes: ["prop.furniture.chair", "prop.furniture.stool"]
+    },
+    reach: {
+      bodyKeepClearM: 0.45,
+      workReachM: 0.8
+    }
+  });
+  function byLongestPrefix(table, archetype) {
+    let best = null;
+    for (const k of Object.keys(table)) {
+      if ((archetype === k || archetype.startsWith(`${k}.`)) && (best === null || k.length > best.length)) best = k;
+    }
+    return best === null ? null : table[best];
+  }
+  function underAnyPrefix(prefixes, archetype) {
+    return prefixes.some((k) => archetype === k || archetype.startsWith(`${k}.`));
+  }
+  function compositionConstant(rules, key) {
+    let v = rules;
+    for (const part of key.split(".")) {
+      if (typeof v !== "object" || v === null || !(part in v)) throw new Error(`no composition constant '${key}'`);
+      v = v[part];
+    }
+    if (typeof v !== "number") throw new Error(`composition constant '${key}' is not a number`);
+    return v;
+  }
+  function withCompositionConstant(rules, key, value) {
+    compositionConstant(rules, key);
+    const out = JSON.parse(JSON.stringify(rules));
+    const parts = key.split(".");
+    let o = out;
+    for (const part of parts.slice(0, -1)) o = o[part];
+    o[parts[parts.length - 1]] = value;
+    return out;
+  }
+  function deepFreeze(v) {
+    if (typeof v === "object" && v !== null) {
+      for (const k of Object.keys(v)) deepFreeze(v[k]);
+      Object.freeze(v);
+    }
+    return v;
+  }
+
+  // @insimul/core/src/editor/layout/composition/geometry.ts
+  var COMPOSITION_SLACK = 1e-9;
+  function compareIds2(a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
+  }
+  function byEntityId(a, b) {
+    return compareIds2(a.entityId, b.entityId);
+  }
+  function nearestOnPolyline(p, q, closed) {
+    if (q.length === 0) return null;
+    if (q.length === 1) return { at: [q[0][0], q[0][1]], d: Math.hypot(p[0] - q[0][0], p[1] - q[0][1]) };
+    let best = null;
+    const n = closed ? q.length : q.length - 1;
+    for (let i = 0; i < n; i += 1) {
+      const at = nearestOnSegment(p, q[i], q[(i + 1) % q.length]);
+      const d = Math.hypot(at[0] - p[0], at[1] - p[1]);
+      if (best === null || d < best.d - COMPOSITION_SLACK) best = { at, d };
+    }
+    return best;
+  }
+  function lotOutline(lot) {
+    const ax = lot.awayX * lot.halfAway;
+    const az = lot.awayZ * lot.halfAway;
+    const cx = -lot.awayZ * lot.halfAcross;
+    const cz = lot.awayX * lot.halfAcross;
+    return [
+      [lot.cx + ax + cx, lot.cz + az + cz],
+      [lot.cx + ax - cx, lot.cz + az - cz],
+      [lot.cx - ax - cx, lot.cz - az - cz],
+      [lot.cx - ax + cx, lot.cz - az + cz]
+    ];
+  }
+  function signedStripDistance(strip, x, z) {
+    if (!strip.closed) return stripDistance(strip, x, z);
+    const p = strip.points;
+    if (p.length < 3) return Infinity;
+    let edge = Infinity;
+    for (let i = 0; i < p.length; i += 1) edge = Math.min(edge, pointSegmentDistance([x, z], p[i], p[(i + 1) % p.length]));
+    return pointInOutline([x, z], p) ? -edge : edge;
+  }
+  function signedLotDistance(lot, x, z) {
+    const dx = x - lot.cx;
+    const dz = z - lot.cz;
+    const away = Math.abs(dx * lot.awayX + dz * lot.awayZ) - lot.halfAway;
+    const across = Math.abs(-dx * lot.awayZ + dz * lot.awayX) - lot.halfAcross;
+    if (away <= 0 && across <= 0) return Math.max(away, across);
+    return Math.hypot(Math.max(0, away), Math.max(0, across));
+  }
+  function signedOutlineDistance(p, outline) {
+    const n = nearestOnPolyline(p, outline, true);
+    if (n === null) return Infinity;
+    return outline.length >= 3 && pointInOutline(p, outline) ? -n.d : n.d;
+  }
+  function cellHash01(ix, iz, salt) {
+    let h = (Math.imul(ix | 0, 668265261) ^ Math.imul(iz | 0, 374761393) ^ (salt | 0)) >>> 0;
+    h = Math.imul(h ^ h >>> 15, 739982445) >>> 0;
+    h = Math.imul(h ^ h >>> 12, 695872825) >>> 0;
+    h = (h ^ h >>> 15) >>> 0;
+    return h / 4294967296;
+  }
+  function stringHash01(s) {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i += 1) h = Math.imul(h ^ s.charCodeAt(i), 16777619) >>> 0;
+    return h / 4294967296;
+  }
+
+  // @insimul/core/src/editor/layout/composition/grouping.ts
+  var GOLDEN = 0.6180339887498949;
+  var CLUSTER_SPOTS = 256;
+  function propPurpose(archetype, rules = DEFAULT_COMPOSITION_RULES) {
+    return byLongestPrefix(rules.grouping.purposeByArchetype, archetype);
+  }
+  function anchorsOf(input, rules) {
+    const g = rules.grouping;
+    const out = [];
+    for (const b of input.buildings) {
+      if (b.outline.length < 3) continue;
+      out.push({
+        kind: "building",
+        id: b.entityId,
+        reach: (p) => {
+          const n = nearestOnPolyline(p, b.outline, true);
+          const inside = pointInOutline(p, b.outline);
+          return { at: n.at, edge: inside ? 0 : n.d, inside };
+        }
+      });
+    }
+    for (const c of input.props) {
+      if (!underAnyPrefix(g.cartArchetypes, c.archetype)) continue;
+      out.push({
+        kind: "cart",
+        id: c.entityId,
+        reach: (p) => {
+          const d = Math.hypot(p[0] - c.x, p[1] - c.z);
+          const k = d > COMPOSITION_SLACK ? c.radius / d : 0;
+          const at = d > COMPOSITION_SLACK ? [c.x + (p[0] - c.x) * k, c.z + (p[1] - c.z) * k] : [c.x + c.radius, c.z];
+          return { at, edge: Math.max(0, d - c.radius), inside: d < c.radius };
+        }
+      });
+    }
+    for (const s of input.plan.strips) {
+      if (s.closed || s.surface !== "road" && s.surface !== "path" || s.points.length < 2) continue;
+      out.push({
+        kind: "route",
+        id: s.entityId,
+        reach: (p) => {
+          const n = nearestOnPolyline(p, s.points, false);
+          const inside = n.d < s.halfWidth;
+          if (n.d <= COMPOSITION_SLACK) return { at: n.at, edge: 0, inside };
+          const k = s.halfWidth / n.d;
+          return { at: [n.at[0] + (p[0] - n.at[0]) * k, n.at[1] + (p[1] - n.at[1]) * k], edge: Math.max(0, n.d - s.halfWidth), inside };
+        }
+      });
+    }
+    return out;
+  }
+  function nearestAnchor(anchors, kinds, p, reach, exceptId) {
+    let best = null;
+    for (const a of anchors) {
+      const rank = kinds.indexOf(a.kind);
+      if (rank < 0 || a.id === exceptId) continue;
+      const r = a.reach([p.x, p.z]);
+      if (r === null) continue;
+      const edge = Math.max(0, r.edge - p.radius);
+      if (edge > reach + COMPOSITION_SLACK) continue;
+      const better = best === null || edge < best.edge - COMPOSITION_SLACK || Math.abs(edge - best.edge) <= COMPOSITION_SLACK && (rank < best.rank || rank === best.rank && a.id < best.a.id);
+      if (better) best = { a, edge, at: r.at, inside: r.inside, rank };
+    }
+    return best;
+  }
+  function squareReach(plan2, p, margin) {
+    let best = null;
+    for (const s of plan2.strips) {
+      if (!s.closed || s.surface !== "plaza" || s.points.length < 3) continue;
+      const n = nearestOnPolyline(p, s.points, true);
+      const outside = pointInOutline(p, s.points) ? -n.d : n.d;
+      if (outside >= margin - COMPOSITION_SLACK) continue;
+      if (best === null || outside < best.outside) best = { id: s.entityId, at: n.at, outside };
+    }
+    return best;
+  }
+  function onSquareFloor(plan2, p) {
+    return plan2.strips.some((s) => s.closed && s.surface === "plaza" && s.points.length >= 3 && pointInOutline(p, s.points));
+  }
+  function makesRow(standing, x, z, radius, rules) {
+    const reach = 4 * rules.grouping.tieReachM;
+    const near = standing.filter((q) => Math.hypot(q.x - x, q.z - z) <= reach).map((q, k) => ({ entityId: `s${k}`, archetype: "", x: q.x, z: q.z, radius: q.radius }));
+    if (near.length < 2) return false;
+    near.push({ entityId: "~spot", archetype: "", x, z, radius });
+    return findBlocksAndRows(near, rules).rows.some((r) => r.includes("~spot"));
+  }
+  function findBlocksAndRows(props, rules = DEFAULT_COMPOSITION_RULES) {
+    const g = rules.grouping;
+    const n = props.length;
+    const parent = Array.from({ length: n }, (_, k) => k);
+    const find = (k) => {
+      while (parent[k] !== k) k = parent[k] = parent[parent[k]];
+      return k;
+    };
+    for (let i = 0; i < n; i += 1) {
+      for (let j = i + 1; j < n; j += 1) {
+        const gap = Math.hypot(props[i].x - props[j].x, props[i].z - props[j].z) - props[i].radius - props[j].radius;
+        if (gap < g.packGapM) parent[find(i)] = find(j);
+      }
+    }
+    const comps = /* @__PURE__ */ new Map();
+    for (let k = 0; k < n; k += 1) comps.set(find(k), [...comps.get(find(k)) ?? [], k]);
+    const blocks = [];
+    for (const members of comps.values()) {
+      if (members.length < 2) continue;
+      const area = members.reduce((a, k) => a + 4 * props[k].radius * props[k].radius, 0);
+      if (area >= g.blockMinAreaM2 - COMPOSITION_SLACK) blocks.push(members.map((k) => props[k].entityId).sort());
+    }
+    const seen = /* @__PURE__ */ new Set();
+    const rows = [];
+    const tol = g.rowToleranceM;
+    for (let i = 0; i < n; i += 1) {
+      for (let j = i + 1; j < n; j += 1) {
+        const dx = props[j].x - props[i].x;
+        const dz = props[j].z - props[i].z;
+        const l = Math.hypot(dx, dz);
+        if (l <= COMPOSITION_SLACK) continue;
+        const ux = dx / l;
+        const uz = dz / l;
+        const on = props.map((p, k) => ({ k, s: (p.x - props[i].x) * ux + (p.z - props[i].z) * uz, off: Math.abs(-(p.x - props[i].x) * uz + (p.z - props[i].z) * ux) })).filter((q) => q.off <= tol + COMPOSITION_SLACK).sort((a, b) => a.s - b.s);
+        for (let a = 0; a + 2 < on.length; a += 1) {
+          let b = a + 1;
+          const step = on[b].s - on[a].s;
+          while (b + 1 < on.length && Math.abs(on[b + 1].s - on[b].s - step) <= tol + COMPOSITION_SLACK) b += 1;
+          if (b - a < 2) continue;
+          const ids = on.slice(a, b + 1).map((q) => props[q.k].entityId).sort();
+          const key = ids.join("|");
+          if (!seen.has(key)) {
+            seen.add(key);
+            rows.push(ids);
+          }
+        }
+      }
+    }
+    const kept = rows.filter((r) => !rows.some((o) => o.length > r.length && r.every((id) => o.includes(id))));
+    const sortSets = (s) => s.sort((a, b) => a.join("|") < b.join("|") ? -1 : 1);
+    return { blocks: sortSets(blocks), rows: sortSets(kept) };
+  }
+  function auditPropGroups(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const g = rules.grouping;
+    const anchors = anchorsOf(input, rules);
+    const untied = [];
+    const floraOnSquare = [];
+    const open = [];
+    for (const p of input.props) {
+      const purpose = propPurpose(p.archetype, rules);
+      if (purpose === null) continue;
+      if (purpose === "flora") {
+        const sq = squareReach(input.plan, [p.x, p.z], g.floraSquareMarginM + p.radius);
+        if (sq !== null) floraOnSquare.push(p.entityId);
+        continue;
+      }
+      const tied = nearestAnchor(anchors, g.anchorsByPurpose[purpose], p, g.tieReachM, p.entityId) !== null;
+      if (!tied) untied.push(p.entityId);
+      if (!tied || onSquareFloor(input.plan, [p.x, p.z])) open.push(p);
+    }
+    return { untied: untied.sort(), ...findBlocksAndRows(open, rules), floraOnSquare: floraOnSquare.sort() };
+  }
+  function groupProps(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const g = rules.grouping;
+    const anchors = anchorsOf(input, rules);
+    const before = auditPropGroups(input, rules);
+    const why = /* @__PURE__ */ new Map();
+    const add = (id, w) => why.set(id, [...why.get(id) ?? [], w].filter((x, k, a) => a.indexOf(x) === k));
+    for (const id of before.untied) add(id, "untied");
+    for (const b of before.blocks) for (const id of b) add(id, "block");
+    for (const r of before.rows) for (const id of r) add(id, "row");
+    const out = input.props.map((p) => ({
+      entityId: p.entityId,
+      purpose: propPurpose(p.archetype, rules),
+      verdict: "left",
+      anchor: null,
+      why: why.get(p.entityId) ?? [],
+      x: p.x,
+      z: p.z,
+      moved: 0
+    }));
+    const clusters = /* @__PURE__ */ new Map();
+    input.props.forEach((p, k) => {
+      const o = out[k];
+      if (o.purpose === null) return;
+      if (o.purpose === "flora") {
+        const sq = squareReach(input.plan, [p.x, p.z], g.floraSquareMarginM + p.radius);
+        if (sq === null) return;
+        let nx = p.x - sq.at[0];
+        let nz = p.z - sq.at[1];
+        let l = Math.hypot(nx, nz);
+        if (l <= COMPOSITION_SLACK) {
+          [nx, nz, l] = [1, 0, 1];
+        }
+        const sign = sq.outside < 0 ? -1 : 1;
+        const off = g.floraSquareMarginM + p.radius;
+        o.x = sq.at[0] + nx / l * sign * off;
+        o.z = sq.at[1] + nz / l * sign * off;
+        o.verdict = "off-square";
+        o.moved = Math.hypot(o.x - p.x, o.z - p.z);
+        return;
+      }
+      const kinds = g.anchorsByPurpose[o.purpose];
+      const tied = nearestAnchor(anchors, kinds, p, g.tieReachM, p.entityId);
+      if (o.why.length === 0 && tied !== null) {
+        o.verdict = "tied";
+        o.anchor = { kind: tied.a.kind, id: tied.a.id };
+        return;
+      }
+      const to = tied ?? nearestAnchor(anchors, kinds, p, g.regroupReachM, p.entityId);
+      if (to === null) {
+        o.verdict = "set-aside";
+        return;
+      }
+      const key = `${to.a.kind}:${to.a.id}`;
+      const c = clusters.get(key) ?? { anchor: to.a, at: to.at, members: [] };
+      c.members.push(k);
+      clusters.set(key, c);
+    });
+    const purposeRank = (k) => PROP_PURPOSES.indexOf(out[k].purpose);
+    const regrouping = new Set([...clusters.values()].flatMap((c) => c.members));
+    const standing = input.props.map((p, k) => ({ x: out[k].x, z: out[k].z, radius: p.radius, k })).filter((q) => !regrouping.has(q.k) && out[q.k].verdict !== "set-aside");
+    const spotAt = (anchor, at, n, p) => {
+      const [nx, nz] = n;
+      const tx = -nz;
+      const tz = nx;
+      const out0 = g.clusterStandOffM + p.radius;
+      for (let j = 0; j < CLUSTER_SPOTS; j += 1) {
+        const phi = (j * GOLDEN % 1 - 0.5) * Math.PI * 0.9;
+        const rho = g.clusterSpacingM * Math.sqrt(j + 1);
+        const x = at[0] + nx * (out0 + rho * Math.cos(phi)) + tx * rho * Math.sin(phi);
+        const z = at[1] + nz * (out0 + rho * Math.cos(phi)) + tz * rho * Math.sin(phi);
+        const mine = anchor.reach([x, z]);
+        if (mine.inside || Math.max(0, mine.edge - p.radius) > g.tieReachM + COMPOSITION_SLACK) continue;
+        if (anchors.some((a) => a.id !== p.entityId && (() => {
+          const q = a.reach([x, z]);
+          return q !== null && (q.inside || q.edge < p.radius - COMPOSITION_SLACK);
+        })())) continue;
+        if (standing.some((q) => Math.hypot(q.x - x, q.z - z) - q.radius - p.radius < g.packGapM)) continue;
+        if (makesRow(standing, x, z, p.radius, rules)) continue;
+        return [x, z];
+      }
+      return null;
+    };
+    const outOf = (anchor, from) => {
+      const r = anchor.reach(from);
+      let nx = from[0] - r.at[0];
+      let nz = from[1] - r.at[1];
+      let l = Math.hypot(nx, nz);
+      if (l <= COMPOSITION_SLACK) {
+        [nx, nz, l] = [1, 0, 1];
+      }
+      const k = r.inside ? -1 : 1;
+      return { at: r.at, n: [k * nx / l, k * nz / l] };
+    };
+    for (const key of [...clusters.keys()].sort()) {
+      const c = clusters.get(key);
+      c.members.sort((a, b) => purposeRank(a) - purposeRank(b) || (input.props[a].entityId < input.props[b].entityId ? -1 : 1));
+      const first = input.props[c.members[0]];
+      const own = outOf(c.anchor, [first.x, first.z]);
+      for (const k of c.members) {
+        const p = input.props[k];
+        const o = out[k];
+        let spot = spotAt(c.anchor, own.at, own.n, p);
+        let anchor = c.anchor;
+        if (spot === null) {
+          const kinds = g.anchorsByPurpose[o.purpose];
+          const others = anchors.map((a) => ({ a, rank: kinds.indexOf(a.kind), r: a.reach([p.x, p.z]) })).filter((x) => x.rank >= 0 && x.a.id !== p.entityId && x.a !== c.anchor && x.r !== null && Math.max(0, x.r.edge - p.radius) <= g.regroupReachM + COMPOSITION_SLACK).map((x) => ({ ...x, edge: Math.max(0, x.r.edge - p.radius) })).sort((x, y) => Math.abs(x.edge - y.edge) > COMPOSITION_SLACK ? x.edge - y.edge : x.rank - y.rank || (x.a.id < y.a.id ? -1 : x.a.id > y.a.id ? 1 : 0));
+          for (const x of others) {
+            const w = outOf(x.a, [p.x, p.z]);
+            spot = spotAt(x.a, w.at, w.n, p);
+            if (spot !== null) {
+              anchor = x.a;
+              break;
+            }
+          }
+        }
+        if (spot === null) {
+          o.verdict = "set-aside";
+          o.why = [...o.why, "crowded"];
+          continue;
+        }
+        standing.push({ x: spot[0], z: spot[1], radius: p.radius });
+        o.x = spot[0];
+        o.z = spot[1];
+        o.verdict = "regrouped";
+        o.anchor = { kind: anchor.kind, id: anchor.id };
+        o.moved = Math.hypot(o.x - p.x, o.z - p.z);
+      }
+    }
+    const placed = input.props.map((p, k) => ({ ...p, x: out[k].x, z: out[k].z })).filter((_, k) => out[k].verdict !== "set-aside");
+    return { props: out, before, after: auditPropGroups({ ...input, props: placed }, rules) };
+  }
+  function regroupedHeading(input, prop, rules = DEFAULT_COMPOSITION_RULES) {
+    if (prop.verdict !== "regrouped" || prop.anchor === null) return null;
+    const a = anchorsOf(input, rules).find((x) => x.kind === prop.anchor.kind && x.id === prop.anchor.id);
+    if (a === void 0) return null;
+    const r = a.reach([prop.x, prop.z]);
+    if (r === null) return null;
+    const dx = prop.x - r.at[0];
+    const dz = prop.z - r.at[1];
+    if (Math.hypot(dx, dz) <= COMPOSITION_SLACK) return null;
+    return a.kind === "route" ? Math.atan2(-dz, -dx) : Math.atan2(dz, dx);
+  }
+  function trimFloraOffSquare(plan2, points3, rules = DEFAULT_COMPOSITION_RULES) {
+    const out = [];
+    points3.forEach((p, k) => {
+      if (squareReach(plan2, p, rules.grouping.floraSquareMarginM) !== null) out.push(k);
+    });
+    return out;
+  }
+
+  // @insimul/core/src/editor/layout/composition/foliage.ts
+  var UNDERGROWTH_PER_TREE = 3;
+  var EVEN_AUDIT_MIN = 4;
+  var EVEN_AUDIT_NEIGHBOURS = 3;
+  var FOOT_SPOTS = 64;
+  var GOLDEN_TURN = 2 * Math.PI * 0.3819660112501051;
+  var GROVE_SALT = 1196576598;
+  var CLUMP_SALT2 = 1129074e3;
+  function foliageKind(archetype, rules = DEFAULT_COMPOSITION_RULES) {
+    return byLongestPrefix(rules.foliage.kindByArchetype, archetype);
+  }
+  function onStrip(plan2, x, z) {
+    return plan2.strips.some((s) => s.points.length >= 2 && signedStripDistance(s, x, z) <= COMPOSITION_SLACK);
+  }
+  function inLot(plan2, x, z) {
+    return plan2.lots.some((l) => signedLotDistance(l, x, z) < -COMPOSITION_SLACK);
+  }
+  function inHouse(buildings, x, z) {
+    return buildings.some((b) => b.outline.length >= 3 && pointInOutline([x, z], b.outline));
+  }
+  function auditFoliageSpacing(points3, rules = DEFAULT_COMPOSITION_RULES) {
+    if (points3.length < 2) return { count: points3.length, meanNearest: null, cv: null, even: false };
+    const nearest = points3.flatMap((p, i) => {
+      const ds = [];
+      for (let j = 0; j < points3.length; j += 1) if (j !== i) ds.push(Math.hypot(points3[j][0] - p[0], points3[j][1] - p[1]));
+      return ds.sort((a, b) => a - b).slice(0, EVEN_AUDIT_NEIGHBOURS);
+    });
+    const mean = nearest.reduce((a, b) => a + b, 0) / nearest.length;
+    const variance = nearest.reduce((a, b) => a + (b - mean) * (b - mean), 0) / nearest.length;
+    const cv = mean > COMPOSITION_SLACK ? Math.sqrt(variance) / mean : null;
+    return {
+      count: points3.length,
+      meanNearest: mean,
+      cv,
+      even: points3.length >= EVEN_AUDIT_MIN && cv !== null && cv < rules.foliage.evenSpacingMaxCv - COMPOSITION_SLACK
+    };
+  }
+  function gatherByCell(members, cell, pull, salt, ok) {
+    const out = /* @__PURE__ */ new Map();
+    if (!(cell > 0)) return out;
+    const cells = /* @__PURE__ */ new Map();
+    for (const m of members) {
+      const ix = Math.floor(m.x / cell);
+      const iz = Math.floor(m.z / cell);
+      const key = `${ix},${iz}`;
+      if (!cells.has(key)) cells.set(key, { ix, iz, list: [] });
+      cells.get(key).list.push(m);
+    }
+    for (const { ix, iz, list } of cells.values()) {
+      if (list.length < 2) continue;
+      const cx = list.reduce((a, m) => a + m.x, 0) / list.length + (cellHash01(ix, iz, salt) - 0.5) * 0.5 * cell;
+      const cz = list.reduce((a, m) => a + m.z, 0) / list.length + (cellHash01(ix, iz, salt ^ 1515870810) - 0.5) * 0.5 * cell;
+      for (const m of list) {
+        const x = m.x + pull * (cx - m.x);
+        const z = m.z + pull * (cz - m.z);
+        out.set(m.k, ok(x, z) ? { x, z, blocked: false } : { x: m.x, z: m.z, blocked: true });
+      }
+    }
+    return out;
+  }
+  function composeFoliage(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const f = rules.foliage;
+    const { plan: plan2, buildings } = input;
+    const houses = buildings.filter((b) => b.outline.length >= 3);
+    const items = input.foliage.map((p) => ({
+      entityId: p.entityId,
+      archetype: p.archetype,
+      kind: foliageKind(p.archetype, rules),
+      verdict: "left",
+      why: null,
+      x: p.x,
+      z: p.z,
+      moved: 0,
+      wall: null,
+      host: null,
+      generated: false
+    }));
+    const woody = items.map((it, k) => ({ it, k })).filter(({ it }) => it.kind === "tree" || it.kind === "sapling");
+    const under = items.map((it, k) => ({ it, k })).filter(({ it }) => it.kind === "undergrowth");
+    const before = {
+      woody: auditFoliageSpacing(woody.map(({ it }) => [it.x, it.z]), rules),
+      undergrowth: auditFoliageSpacing(under.map(({ it }) => [it.x, it.z]), rules)
+    };
+    const nearestWall = (x, z) => {
+      let best = null;
+      for (const b of houses) {
+        const d = signedOutlineDistance([x, z], b.outline);
+        if (best === null || d < best.d - COMPOSITION_SLACK || Math.abs(d - best.d) <= COMPOSITION_SLACK && b.entityId < best.b.entityId) best = { d, b };
+      }
+      return best;
+    };
+    const groves = gatherByCell(
+      woody.map(({ it, k }) => ({ k, x: it.x, z: it.z })),
+      f.groveCellM,
+      f.grovePull,
+      GROVE_SALT,
+      (x, z) => !onStrip(plan2, x, z) && !inLot(plan2, x, z) && !inHouse(houses, x, z)
+    );
+    for (const { it, k } of woody) {
+      it.verdict = "kept";
+      const g = groves.get(k);
+      if (g === void 0) continue;
+      if (g.blocked) it.why = "pull-blocked";
+      else if (Math.hypot(g.x - it.x, g.z - it.z) > COMPOSITION_SLACK) {
+        it.x = g.x;
+        it.z = g.z;
+        it.verdict = "grove";
+      }
+    }
+    const setback = (kind) => kind === "tree" ? f.treeWallSetbackM : f.saplingWallSetbackM;
+    for (const { it } of woody) {
+      const w = nearestWall(it.x, it.z);
+      if (w === null) continue;
+      const need = setback(it.kind);
+      if (w.d >= need - COMPOSITION_SLACK) continue;
+      const at = nearestOnPolyline([it.x, it.z], w.b.outline, true).at;
+      let dx = it.x - at[0];
+      let dz = it.z - at[1];
+      let len = Math.hypot(dx, dz);
+      if (w.d < 0) {
+        dx = -dx;
+        dz = -dz;
+      }
+      if (len <= COMPOSITION_SLACK) {
+        const c = w.b.outline.reduce((a, p) => [a[0] + p[0] / w.b.outline.length, a[1] + p[1] / w.b.outline.length], [0, 0]);
+        dx = at[0] - c[0];
+        dz = at[1] - c[1];
+        len = Math.hypot(dx, dz) || 1;
+      }
+      len = Math.hypot(dx, dz);
+      const x = at[0] + dx / len * (need + f.setBackMarginM);
+      const z = at[1] + dz / len * (need + f.setBackMarginM);
+      const crowd = houses.some((b) => signedOutlineDistance([x, z], b.outline) < need - COMPOSITION_SLACK);
+      if (onStrip(plan2, x, z) || crowd) {
+        it.verdict = "set-aside";
+        it.why = onStrip(plan2, x, z) ? "on-strip" : "walls";
+        continue;
+      }
+      it.x = x;
+      it.z = z;
+      it.verdict = "set-back";
+      it.why = null;
+    }
+    for (const { it, k } of woody) {
+      const p = input.foliage[k];
+      it.moved = Math.hypot(it.x - p.x, it.z - p.z);
+      const w = nearestWall(it.x, it.z);
+      it.wall = w === null ? null : w.d;
+    }
+    const trunks = woody.filter(({ it }) => it.verdict !== "set-aside").map(({ it }) => it);
+    const feet = new Map(trunks.map((t) => [t.entityId, []]));
+    const open = [];
+    for (const u of under) {
+      let host = null;
+      let hd = Infinity;
+      for (const t of trunks) {
+        const d = Math.hypot(t.x - u.it.x, t.z - u.it.z);
+        if (d < hd - COMPOSITION_SLACK || Math.abs(d - hd) <= COMPOSITION_SLACK && host !== null && t.entityId < host.entityId) {
+          host = t;
+          hd = d;
+        }
+      }
+      if (host !== null && hd <= f.undergrowthReachM + COMPOSITION_SLACK) feet.get(host.entityId).push(u.it);
+      else open.push(u);
+    }
+    const fills = [];
+    const spotOk = (x, z) => !onStrip(plan2, x, z) && !inHouse(houses, x, z);
+    for (const t of [...trunks].sort(byEntityId)) {
+      const mine = feet.get(t.entityId).sort(byEntityId);
+      const base = 2 * Math.PI * stringHash01(t.entityId);
+      let spot = 0;
+      const nextSpot = () => {
+        while (spot < FOOT_SPOTS) {
+          const k = spot;
+          spot += 1;
+          const r = f.undergrowthRingM + f.undergrowthSpacingM * Math.sqrt(k);
+          const a = base + k * GOLDEN_TURN;
+          const x = t.x + r * Math.cos(a);
+          const z = t.z + r * Math.sin(a);
+          if (spotOk(x, z)) return [x, z];
+        }
+        return null;
+      };
+      for (const u of mine) {
+        const at = nextSpot();
+        u.host = t.entityId;
+        if (at === null) {
+          u.verdict = "set-aside";
+          u.why = "no-spot";
+          continue;
+        }
+        u.verdict = "foot";
+        u.x = at[0];
+        u.z = at[1];
+      }
+      if (t.kind !== "tree") continue;
+      for (let n = mine.length; n < UNDERGROWTH_PER_TREE; n += 1) {
+        const at = nextSpot();
+        if (at === null) break;
+        fills.push({
+          entityId: `${t.entityId}:undergrowth:${n}`,
+          archetype: f.fillArchetype,
+          kind: "undergrowth",
+          verdict: "foot",
+          why: null,
+          x: at[0],
+          z: at[1],
+          moved: 0,
+          wall: null,
+          host: t.entityId,
+          generated: true
+        });
+      }
+    }
+    const clumps = gatherByCell(open.map(({ it, k }) => ({ k, x: it.x, z: it.z })), f.clumpCellM, f.clumpPull, CLUMP_SALT2, spotOk);
+    for (const { it, k } of open) {
+      it.verdict = "kept";
+      const c = clumps.get(k);
+      if (c === void 0) continue;
+      if (c.blocked) it.why = "pull-blocked";
+      else if (Math.hypot(c.x - it.x, c.z - it.z) > COMPOSITION_SLACK) {
+        it.x = c.x;
+        it.z = c.z;
+        it.verdict = "clump";
+      }
+    }
+    for (const { it, k } of under) it.moved = Math.hypot(it.x - input.foliage[k].x, it.z - input.foliage[k].z);
+    const all = [...items, ...fills];
+    const standing = (it) => it.verdict !== "set-aside" && it.verdict !== "left";
+    const after = {
+      woody: auditFoliageSpacing(all.filter((it) => (it.kind === "tree" || it.kind === "sapling") && standing(it)).map((it) => [it.x, it.z]), rules),
+      undergrowth: auditFoliageSpacing(all.filter((it) => it.kind === "undergrowth" && standing(it)).map((it) => [it.x, it.z]), rules)
+    };
+    return { items: all, audit: { before, after } };
+  }
+
+  // @insimul/core/src/editor/layout/composition/lanterns.ts
+  var LANTERN_STATION_STEP_M = 0.5;
+  var LANTERN_STATIONS = 8;
+  var ROUTE_REPEAT_M = 1e-3;
+  function withoutRepeats(s) {
+    const pts = [];
+    for (const p of s.points) {
+      const last = pts[pts.length - 1];
+      if (last === void 0 || Math.hypot(p[0] - last[0], p[1] - last[1]) > ROUTE_REPEAT_M) pts.push(p);
+    }
+    if (s.closed) while (pts.length > 1 && Math.hypot(pts[0][0] - pts[pts.length - 1][0], pts[0][1] - pts[pts.length - 1][1]) <= ROUTE_REPEAT_M) pts.pop();
+    if (pts.length < (s.closed ? 3 : 2)) return null;
+    return pts.length === s.points.length ? s : { ...s, points: pts };
+  }
+  function stationsOf(s, p) {
+    const q = s.points;
+    const n = s.closed ? q.length : q.length - 1;
+    const cum = [0];
+    for (let i = 0; i < n; i += 1) cum.push(cum[i] + Math.hypot(q[(i + 1) % q.length][0] - q[i][0], q[(i + 1) % q.length][1] - q[i][1]));
+    const total = cum[n];
+    let s0 = 0;
+    let best = Infinity;
+    for (let i = 0; i < n; i += 1) {
+      const a = q[i];
+      const b = q[(i + 1) % q.length];
+      const dx = b[0] - a[0];
+      const dz = b[1] - a[1];
+      const t = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (dx * dx + dz * dz)));
+      const d = Math.hypot(a[0] + dx * t - p[0], a[1] + dz * t - p[1]);
+      if (d < best - COMPOSITION_SLACK) {
+        best = d;
+        s0 = cum[i] + t * (cum[i + 1] - cum[i]);
+      }
+    }
+    const at = (arc) => {
+      let u = arc;
+      if (s.closed) u = (u % total + total) % total;
+      else if (u < -COMPOSITION_SLACK || u > total + COMPOSITION_SLACK) return null;
+      u = Math.max(0, Math.min(total, u));
+      let i = 0;
+      while (i < n - 1 && cum[i + 1] <= u) i += 1;
+      const a = q[i];
+      const b = q[(i + 1) % q.length];
+      const len = cum[i + 1] - cum[i];
+      const t = Math.max(0, Math.min(1, (u - cum[i]) / len));
+      return { at: [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t], dir: [(b[0] - a[0]) / len, (b[1] - a[1]) / len] };
+    };
+    const out = [];
+    for (let k = 0; k <= LANTERN_STATIONS; k += 1) {
+      for (const sign of k === 0 ? [1] : [1, -1]) {
+        const st = at(s0 + sign * k * LANTERN_STATION_STEP_M);
+        if (st !== null) out.push(st);
+      }
+    }
+    return out;
+  }
+  function lanternsOnRoutes(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const r = rules.lanterns;
+    const routes = [...input.plan.strips, ...input.routes ?? []].filter((s) => s.closed ? s.surface === "plaza" : s.surface === "road" || s.surface === "path").map(withoutRepeats).filter((s) => s !== null);
+    const open = routes.filter((s) => !s.closed);
+    const buildings = input.buildings.filter((b) => b.outline.length >= 3);
+    const props = input.props;
+    const lines2 = (input.lines ?? []).filter((q) => q.points.length >= 2);
+    const clear = (x, z, own) => {
+      for (const b of buildings) if (signedOutlineDistance([x, z], b.outline) < r.postClearM - COMPOSITION_SLACK) return false;
+      for (const p of props) if (Math.hypot(p.x - x, p.z - z) - p.radius < r.postClearM - COMPOSITION_SLACK) return false;
+      for (const q of lines2) if (nearestOnPolyline([x, z], q.points, false).d < r.postClearM - COMPOSITION_SLACK) return false;
+      for (const s of open) if (nearestOnPolyline([x, z], s.points, false).d < s.halfWidth + r.besideRouteM - COMPOSITION_SLACK) return false;
+      if (own.closed && nearestOnPolyline([x, z], own.points, true).d < r.besideRouteM - COMPOSITION_SLACK) return false;
+      return true;
+    };
+    const spotOn = (s, l) => {
+      const stations = stationsOf(s, [l.x, l.z]);
+      const first = stations[0];
+      const left = (st) => [-st.dir[1], st.dir[0]];
+      if (s.closed) {
+        const wantInside = pointInOutline([l.x, l.z], s.points);
+        for (const st of stations) {
+          const [lx, lz] = left(st);
+          const probe = [st.at[0] + lx * 1e-6, st.at[1] + lz * 1e-6];
+          const k = pointInOutline(probe, s.points) === wantInside ? 1 : -1;
+          const x = st.at[0] + k * lx * r.besideRouteM;
+          const z = st.at[1] + k * lz * r.besideRouteM;
+          if (clear(x, z, s)) return [x, z];
+        }
+        return null;
+      }
+      const cross = first.dir[0] * (l.z - first.at[1]) - first.dir[1] * (l.x - first.at[0]);
+      const own = cross < -COMPOSITION_SLACK ? -1 : 1;
+      const off = s.halfWidth + r.besideRouteM;
+      for (const side of [own, -own]) {
+        for (const st of stations) {
+          const [lx, lz] = left(st);
+          const x = st.at[0] + side * lx * off;
+          const z = st.at[1] + side * lz * off;
+          if (clear(x, z, s)) return [x, z];
+        }
+      }
+      return null;
+    };
+    const found = input.lanterns.map((l) => {
+      const near = routes.map((s) => {
+        const n = nearestOnPolyline([l.x, l.z], s.points, s.closed);
+        const edge = s.closed && pointInOutline([l.x, l.z], s.points) ? 0 : Math.max(0, n.d - (s.closed ? 0 : s.halfWidth));
+        return { s, edge };
+      }).sort((a, b) => Math.abs(a.edge - b.edge) > COMPOSITION_SLACK ? a.edge - b.edge : compareIds2(a.s.entityId, b.s.entityId));
+      return { l, near };
+    });
+    const out = input.lanterns.map((l) => ({ entityId: l.entityId, verdict: "loose", route: null, edge: null, x: l.x, z: l.z, moved: 0 }));
+    const order = found.map((f, k) => ({ ...f, k })).sort((a, b) => {
+      const ea = a.near[0]?.edge ?? Infinity;
+      const eb = b.near[0]?.edge ?? Infinity;
+      if (Math.abs(ea - eb) > COMPOSITION_SLACK) return ea - eb;
+      return compareIds2(a.l.entityId, b.l.entityId);
+    });
+    const placed = [];
+    for (const { l, near, k } of order) {
+      const o = out[k];
+      if (near.length === 0) continue;
+      o.edge = near[0].edge;
+      if (near[0].edge > r.routeReachM + COMPOSITION_SLACK) continue;
+      let spot = null;
+      for (const { s, edge } of near) {
+        if (edge > r.routeReachM + COMPOSITION_SLACK) break;
+        const at = spotOn(s, l);
+        if (at !== null) {
+          spot = { s, at };
+          break;
+        }
+      }
+      if (spot === null) {
+        o.verdict = "blocked";
+        o.route = near[0].s.entityId;
+        continue;
+      }
+      o.route = spot.s.entityId;
+      const [x, z] = spot.at;
+      if (placed.some((p) => Math.hypot(p[0] - x, p[1] - z) < r.minSpacingM - COMPOSITION_SLACK)) {
+        o.verdict = "crowded";
+        continue;
+      }
+      placed.push([x, z]);
+      o.verdict = "on-route";
+      o.x = x;
+      o.z = z;
+      o.moved = Math.hypot(x - l.x, z - l.z);
+    }
+    return out;
+  }
+
+  // @insimul/core/src/editor/layout/composition/reach.ts
+  var REACH_PASSES = 4;
+  var REACH_VERDICT_TOLERANCE = 1e-6;
+  function propEdgeDistance(p, x, z) {
+    return Math.hypot(x - p.x, z - p.z) - p.radius;
+  }
+  function standAt(p, x, z, edge) {
+    let dx = x - p.x;
+    let dz = z - p.z;
+    let len = Math.hypot(dx, dz);
+    if (len <= COMPOSITION_SLACK) {
+      dx = 1;
+      dz = 0;
+      len = 1;
+    }
+    return [p.x + dx / len * (p.radius + edge), p.z + dz / len * (p.radius + edge)];
+  }
+  function keepClearOfProps(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const r = rules.reach;
+    const props = [...input.props].sort(byEntityId);
+    return input.villagers.map((v) => {
+      const target = v.target == null ? null : props.find((p) => p.entityId === v.target) ?? null;
+      let x = v.x;
+      let z = v.z;
+      for (let pass = 0; pass < REACH_PASSES; pass += 1) {
+        let changed = false;
+        if (target !== null) {
+          const d = propEdgeDistance(target, x, z);
+          if (d < r.bodyKeepClearM - COMPOSITION_SLACK) [x, z] = standAt(target, x, z, r.bodyKeepClearM);
+          else if (d > r.workReachM + COMPOSITION_SLACK) [x, z] = standAt(target, x, z, r.workReachM);
+          changed || (changed = d < r.bodyKeepClearM - COMPOSITION_SLACK || d > r.workReachM + COMPOSITION_SLACK);
+        }
+        for (const p of props) {
+          if (p === target) continue;
+          if (propEdgeDistance(p, x, z) < r.bodyKeepClearM - COMPOSITION_SLACK) {
+            [x, z] = standAt(p, x, z, r.bodyKeepClearM);
+            changed = true;
+          }
+        }
+        if (!changed) break;
+      }
+      const targetEdge = target === null ? null : propEdgeDistance(target, x, z);
+      let nearest = null;
+      for (const p of props) {
+        const e = propEdgeDistance(p, x, z);
+        if (nearest === null || e < nearest.edge - COMPOSITION_SLACK) nearest = { prop: p.entityId, edge: e };
+      }
+      const tooNear = props.some((p) => propEdgeDistance(p, x, z) < r.bodyKeepClearM - REACH_VERDICT_TOLERANCE);
+      const outOfReach = targetEdge !== null && targetEdge > r.workReachM + REACH_VERDICT_TOLERANCE;
+      const moved2 = Math.hypot(x - v.x, z - v.z);
+      return {
+        entityId: v.entityId,
+        verdict: tooNear || outOfReach ? "blocked" : moved2 > COMPOSITION_SLACK ? "moved" : "clear",
+        x,
+        z,
+        moved: moved2,
+        heading: target === null ? null : Math.atan2(target.z - z, target.x - x),
+        targetEdge,
+        nearest
+      };
+    });
+  }
+
+  // @insimul/core/src/editor/layout/composition/seating.ts
+  function seatCapacity(seat, rules = DEFAULT_COMPOSITION_RULES) {
+    if (!(seat.length > 0)) return 0;
+    if (underAnyPrefix(rules.seating.singleSeatArchetypes, seat.archetype)) return 1;
+    const span = rules.seating.seatSpanM;
+    return span > 0 ? Math.max(0, Math.floor(seat.length / span + COMPOSITION_SLACK)) : 0;
+  }
+  function seatVillagers(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const props = input.props ?? [];
+    const keep = rules.reach.bodyKeepClearM;
+    const seats = input.seats.map((s) => {
+      const capacity = seatCapacity(s, rules);
+      const ax = -Math.sin(s.heading);
+      const az = Math.cos(s.heading);
+      const slots = [];
+      for (let i = 0; i < capacity; i += 1) {
+        const t = (i + 0.5) * s.length / capacity - s.length / 2;
+        const x = s.x + ax * t;
+        const z = s.z + az * t;
+        let blocked = null;
+        for (const p of props) {
+          const e = propEdgeDistance(p, x, z);
+          if (e < keep - COMPOSITION_SLACK && (blocked === null || e < blocked.e - COMPOSITION_SLACK || Math.abs(e - blocked.e) <= COMPOSITION_SLACK && p.entityId < blocked.id)) blocked = { id: p.entityId, e };
+        }
+        slots.push({ x, z, blocked: blocked?.id ?? null, sitter: null });
+      }
+      return { entityId: s.entityId, capacity, slots };
+    });
+    const pairs = [];
+    input.sitters.forEach((v, si) => {
+      seats.forEach(
+        (s, ki) => s.slots.forEach((slot, li) => {
+          if (slot.blocked !== null) return;
+          const d = Math.hypot(slot.x - v.x, slot.z - v.z);
+          if (d <= rules.seating.seatReachM + COMPOSITION_SLACK) pairs.push({ d, sitter: si, seat: ki, slot: li });
+        })
+      );
+    });
+    const cmp = compareIds2;
+    pairs.sort(
+      (a, b) => (Math.abs(a.d - b.d) > COMPOSITION_SLACK ? a.d - b.d : 0) || cmp(input.sitters[a.sitter].entityId, input.sitters[b.sitter].entityId) || cmp(seats[a.seat].entityId, seats[b.seat].entityId) || a.slot - b.slot
+    );
+    const sitters = input.sitters.map((v) => ({ entityId: v.entityId, verdict: "standing", seat: null, slot: null, x: v.x, z: v.z, heading: null }));
+    for (const p of pairs) {
+      const who = sitters[p.sitter];
+      const slot = seats[p.seat].slots[p.slot];
+      if (who.verdict === "seated" || slot.sitter !== null) continue;
+      slot.sitter = who.entityId;
+      who.verdict = "seated";
+      who.seat = seats[p.seat].entityId;
+      who.slot = p.slot;
+      who.x = slot.x;
+      who.z = slot.z;
+      who.heading = input.seats[p.seat].heading;
+    }
+    return { seats, sitters };
+  }
+
+  // @insimul/core/src/editor/layout/composition/variety.ts
+  var HOUSE_SIDES = ["front", "back", "left", "right"];
+  function axes(h) {
+    const f = [Math.cos(h.heading), Math.sin(h.heading)];
+    return { f, l: [-f[1], f[0]] };
+  }
+  function houseFootprint(h, m) {
+    const { f, l } = axes(h);
+    const d = m.depth / 2;
+    const w = m.width / 2;
+    const at = (a, b) => [h.x + f[0] * a + l[0] * b, h.z + f[1] * a + l[1] * b];
+    return [at(d, -w), at(d, w), at(-d, w), at(-d, -w)];
+  }
+  function houseWall(h, m, side) {
+    const { f, l } = axes(h);
+    const s = side === "front" ? { v: f, r: m.depth / 2 } : side === "back" ? { v: [-f[0], -f[1]], r: m.depth / 2 } : side === "left" ? { v: l, r: m.width / 2 } : { v: [-l[0], -l[1]], r: m.width / 2 };
+    return { at: [h.x + s.v[0] * s.r, h.z + s.v[1] * s.r], n: s.v };
+  }
+  function turnedBlank(m, mirrored) {
+    const out = m.blank.map((s) => !mirrored ? s : s === "left" ? "right" : s === "right" ? "left" : s);
+    return HOUSE_SIDES.filter((s) => out.includes(s));
+  }
+  function openBlankWalls(h, m, mirrored, lots, rules = DEFAULT_COMPOSITION_RULES) {
+    const view2 = rules.variety.blankWallViewM;
+    const others = lots.filter((l) => l.entityId !== h.entityId).map(lotOutline);
+    return turnedBlank(m, mirrored).filter((side) => {
+      const { at, n } = houseWall(h, m, side);
+      const end = [at[0] + n[0] * view2, at[1] + n[1] * view2];
+      return !others.some((o) => segmentOutlineDistance(at, end, o) <= COMPOSITION_SLACK || pointInOutline(end, o));
+    });
+  }
+  function lexLess(a, b) {
+    for (let i = 0; i < a.length; i += 1) if (a[i] !== b[i]) return a[i] < b[i];
+    return false;
+  }
+  function assignHouseModels(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const v = rules.variety;
+    const houses = [...input.houses].sort(byEntityId);
+    const models = input.models;
+    if (models.length === 0) return { houses: [], unplaced: houses.map((h) => h.entityId) };
+    const done = [];
+    const near = (a, b) => Math.hypot(a.x - b.x, a.z - b.z) <= v.neighbourReachM + COMPOSITION_SLACK;
+    const crowds = (a, b) => planSeparation(a, b).gap < v.minRoofGapM - COMPOSITION_SLACK;
+    houses.forEach((h, k) => {
+      let best = null;
+      for (let j = 0; j < models.length; j += 1) {
+        const m = models[(j + k) % models.length];
+        const fp = houseFootprint(h, m);
+        for (const mirrored of [false, true]) {
+          const score = [
+            done.filter((d) => crowds(fp, d.fp)).length,
+            done.filter((d) => near(h, d.h) && d.m.id === m.id && d.mirrored === mirrored).length,
+            openBlankWalls(h, m, mirrored, input.lots, rules).length,
+            done.filter((d) => near(h, d.h) && d.m.id === m.id).length
+          ];
+          if (best === null || lexLess(score, best.score)) best = { score, m, mirrored, fp };
+        }
+      }
+      done.push({ h, m: best.m, mirrored: best.mirrored, fp: best.fp });
+    });
+    return {
+      houses: done.map((d) => {
+        const openBlank = openBlankWalls(d.h, d.m, d.mirrored, input.lots, rules);
+        return {
+          entityId: d.h.entityId,
+          model: d.m.id,
+          mirrored: d.mirrored,
+          footprint: d.fp,
+          openBlank,
+          wayUps: openBlank.map((side) => {
+            const { at, n } = houseWall(d.h, d.m, side);
+            return { side, archetype: v.wayUpArchetype, x: at[0] + n[0] * v.wayUpOffsetM, z: at[1] + n[1] * v.wayUpOffsetM, heading: Math.atan2(n[1], n[0]) };
+          }),
+          repeats: done.filter((o) => o !== d && near(d.h, o.h) && o.m.id === d.m.id).map((o) => o.h.entityId),
+          crowdedWith: done.filter((o) => o !== d && crowds(d.fp, o.fp)).map((o) => o.h.entityId)
+        };
+      }),
+      unplaced: []
+    };
+  }
+
+  // @insimul/core/src/editor/layout/composition/network.ts
+  function convexHull(points3) {
+    const pts = [...points3].map((p) => [p[0], p[1]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    if (pts.length < 3) return pts;
+    const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const half = (list) => {
+      const h = [];
+      for (const p of list) {
+        while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], p) <= COMPOSITION_SLACK) h.pop();
+        h.push(p);
+      }
+      h.pop();
+      return h;
+    };
+    return [...half(pts), ...half([...pts].reverse())];
+  }
+  function offsetHull(hull, off) {
+    const n = hull.length;
+    const normal = (a, b) => {
+      const l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+      return [(b[1] - a[1]) / l, -(b[0] - a[0]) / l];
+    };
+    return hull.map((c, i) => {
+      const n1 = normal(hull[(i + n - 1) % n], c);
+      const n2 = normal(c, hull[(i + 1) % n]);
+      const k = off / (1 + n1[0] * n2[0] + n1[1] * n2[1]);
+      return [c[0] + (n1[0] + n2[0]) * k, c[1] + (n1[1] + n2[1]) * k];
+    });
+  }
+  function roundHouse(p, t, hull, ring, half) {
+    const clears = (a, b) => segmentOutlineDistance(a, b, hull) >= half - COMPOSITION_SLACK;
+    if (clears(p, t)) return [];
+    const n = hull.length;
+    let side = 0;
+    for (let i = 1; i < n; i += 1) {
+      if (pointSegmentDistance(p, hull[i], hull[(i + 1) % n]) < pointSegmentDistance(p, hull[side], hull[(side + 1) % n]) - COMPOSITION_SLACK) side = i;
+    }
+    const walk = (d) => {
+      const pts = [];
+      let k = d > 0 ? side + 1 : side;
+      for (let step = 0; step < n; step += 1, k += d) {
+        const q = ring[(k % n + n) % n];
+        pts.push(q);
+        if (clears(q, t)) {
+          let length = 0;
+          let at = p;
+          for (const x of [...pts, t]) {
+            length += Math.hypot(x[0] - at[0], x[1] - at[1]);
+            at = x;
+          }
+          return { pts, length };
+        }
+      }
+      return null;
+    };
+    const ccw = walk(1);
+    const cw = walk(-1);
+    if (ccw === null && cw === null) return [];
+    if (cw === null || ccw !== null && ccw.length <= cw.length + COMPOSITION_SLACK) return ccw.pts;
+    return cw.pts;
+  }
+  function lotGate(lot, standOff) {
+    const reach = lot.halfAway + standOff;
+    return [lot.cx + lot.awayX * reach, lot.cz + lot.awayZ * reach];
+  }
+  function groundRun(polyline, terrain, step) {
+    const at = (x, z) => [x, terrain !== null ? layoutGroundAt(terrain, x, z) : 0, z];
+    const out = [];
+    if (polyline.length === 0) return out;
+    out.push(at(polyline[0][0], polyline[0][1]));
+    for (let i = 0; i + 1 < polyline.length; i += 1) {
+      const [ax, az] = polyline[i];
+      const [bx, bz] = polyline[i + 1];
+      const len = Math.hypot(bx - ax, bz - az);
+      const n = Math.max(1, Math.ceil(len / step - COMPOSITION_SLACK));
+      for (let k = 1; k <= n; k += 1) out.push(at(ax + (bx - ax) * k / n, az + (bz - az) * k / n));
+    }
+    return out;
+  }
+  function runProfile(points3) {
+    let length = 0;
+    let maxGrade = 0;
+    for (let i = 0; i + 1 < points3.length; i += 1) {
+      const d = Math.hypot(points3[i + 1][0] - points3[i][0], points3[i + 1][2] - points3[i][2]);
+      const dy = points3[i + 1][1] - points3[i][1];
+      length += Math.hypot(d, dy);
+      if (d > COMPOSITION_SLACK) maxGrade = Math.max(maxGrade, Math.abs(dy) / d);
+    }
+    return { length, maxGrade };
+  }
+  function streetReach(strip, p) {
+    const q = strip.points;
+    if (q.length < 2) return null;
+    if (strip.closed) {
+      if (pointInOutline(p, q)) return { at: [p[0], p[1]], edge: 0 };
+      let best2 = null;
+      for (let i = 0; i < q.length; i += 1) {
+        const at = nearestOnSegment(p, q[i], q[(i + 1) % q.length]);
+        const d = Math.hypot(at[0] - p[0], at[1] - p[1]);
+        if (best2 === null || d < best2.edge) best2 = { at, edge: d };
+      }
+      return best2;
+    }
+    let best = null;
+    for (let i = 0; i + 1 < q.length; i += 1) {
+      const at = nearestOnSegment(p, q[i], q[i + 1]);
+      const d = Math.hypot(at[0] - p[0], at[1] - p[1]);
+      if (best === null || d < best.d) best = { at, d };
+    }
+    return best === null ? null : { at: best.at, edge: Math.max(0, best.d - strip.halfWidth) };
+  }
+  function composeLaneNetwork(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const r = rules.network;
+    const { plan: plan2 } = input;
+    const notes = [];
+    const widthOf2 = (stated, fallbackHalf, note) => {
+      const half = stated != null && stated > 0 ? stated / 2 : fallbackHalf;
+      if (half < r.minVisibleHalfWidthM) {
+        notes.push(note);
+        return r.minVisibleHalfWidthM;
+      }
+      return half;
+    };
+    const laneHalf = widthOf2(input.laneWidthM, r.laneHalfWidthM, "lane-widened");
+    const pathHalf = widthOf2(input.pathWidthM, r.pathHalfWidthM, "path-widened");
+    const keepOff = laneHalf + r.laneLotClearanceM;
+    const lots = plan2.lots;
+    const outlines = lots.map(lotOutline);
+    const gates = lots.map((l) => lotGate(l, keepOff));
+    const clear = (a, b) => outlines.every((o) => segmentOutlineDistance(a, b, o) >= keepOff - COMPOSITION_SLACK);
+    const run = (polyline) => {
+      const points3 = groundRun(polyline, plan2.terrain, r.sampleStepM);
+      return { points: points3, ...runProfile(points3) };
+    };
+    const n = lots.length;
+    const street = n;
+    const candidates = [];
+    for (let i = 0; i < n; i += 1) {
+      for (let j = i + 1; j < n; j += 1) {
+        const d = Math.hypot(gates[j][0] - gates[i][0], gates[j][1] - gates[i][1]);
+        if (d > r.laneReachM || !clear(gates[i], gates[j])) continue;
+        const polyline = [gates[i], gates[j]];
+        candidates.push({ a: i, b: j, to: lots[j].entityId, polyline, ...run(polyline) });
+      }
+      let best = null;
+      for (const s of plan2.strips) {
+        if (s.surface !== "road" && s.surface !== "plaza") continue;
+        const reach = streetReach(s, gates[i]);
+        if (reach === null || reach.edge > r.streetJoinReachM || !clear(gates[i], reach.at)) continue;
+        const polyline = [gates[i], reach.at];
+        const c = { a: i, b: street, to: s.entityId, polyline, ...run(polyline) };
+        if (best === null || c.length < best.length - COMPOSITION_SLACK || Math.abs(c.length - best.length) <= COMPOSITION_SLACK && c.to < best.to) best = c;
+      }
+      if (best !== null) candidates.push(best);
+    }
+    const key = (c) => `${lots[c.a].entityId}~${c.to}`;
+    candidates.sort((x, y) => Math.abs(x.length - y.length) > COMPOSITION_SLACK ? x.length - y.length : key(x) < key(y) ? -1 : key(x) > key(y) ? 1 : 0);
+    const parent = Array.from({ length: n + 1 }, (_, k) => k);
+    const find = (k) => {
+      while (parent[k] !== k) {
+        parent[k] = parent[parent[k]];
+        k = parent[k];
+      }
+      return k;
+    };
+    const lanes = [];
+    for (const c of candidates) {
+      const ra = find(c.a);
+      const rb = find(c.b);
+      if (ra === rb) continue;
+      parent[ra] = rb;
+      lanes.push({
+        id: `lane:${key(c)}`,
+        kind: "lane",
+        from: lots[c.a].entityId,
+        to: c.to,
+        halfWidth: laneHalf,
+        points: c.points,
+        length: c.length,
+        maxGrade: c.maxGrade,
+        stepped: c.maxGrade > r.maxWalkGrade
+      });
+    }
+    const unjoined = lots.filter((_, k) => find(k) !== find(street)).map((l) => l.entityId);
+    const houses = new Map((input.buildings ?? []).filter((b) => b.outline.length >= 3).map((b) => [b.entityId, convexHull(b.outline)]));
+    const off = Math.max(r.doorStepOutM, pathHalf);
+    const edgeAway = (l) => l.halfAway - rules.yards.yardEdgeInsetM;
+    const frame = (l, q) => {
+      const dx = q[0] - l.cx;
+      const dz = q[1] - l.cz;
+      return [dx * l.awayX + dz * l.awayZ, -dx * l.awayZ + dz * l.awayX];
+    };
+    const missesGap = (l, a, gate) => {
+      const [ua, va] = frame(l, a);
+      const [ug, vg] = frame(l, gate);
+      const line = edgeAway(l);
+      if (ua >= line - COMPOSITION_SLACK || ug <= line + COMPOSITION_SLACK) return false;
+      const v = va + (line - ua) / (ug - ua) * (vg - va);
+      return Math.abs(v) > Math.max(0, rules.yards.gateGapM / 2 - pathHalf) + COMPOSITION_SLACK;
+    };
+    const paths = [];
+    const noLot = [];
+    const served = /* @__PURE__ */ new Set();
+    const pathPolylines = [];
+    for (const d of input.doors) {
+      const k = lots.findIndex((l) => l.entityId === d.entityId);
+      if (k < 0) {
+        noLot.push(d.entityId);
+        continue;
+      }
+      const out = [d.x + Math.cos(d.heading) * r.doorStepOutM, d.z + Math.sin(d.heading) * r.doorStepOutM];
+      const polyline = [[d.x, d.z], out];
+      const lot = lots[k];
+      const hull = houses.get(d.entityId) ?? null;
+      const ring = hull === null ? null : offsetHull(hull, off);
+      const round = (a, t) => hull === null ? [] : roundHouse(a, t, hull, ring, pathHalf);
+      let mid = round(out, gates[k]);
+      const last = mid.length > 0 ? mid[mid.length - 1] : out;
+      if (missesGap(lot, last, gates[k])) {
+        const depth = Math.max(edgeAway(lot) - off, frame(lot, last)[0]);
+        const approach = [lot.cx + lot.awayX * depth, lot.cz + lot.awayZ * depth];
+        if (hull === null || segmentOutlineDistance(approach, approach, hull) >= pathHalf - COMPOSITION_SLACK) mid = [...round(out, approach), approach];
+      }
+      polyline.push(...mid);
+      const tail = polyline[polyline.length - 1];
+      if (Math.hypot(gates[k][0] - tail[0], gates[k][1] - tail[1]) > COMPOSITION_SLACK) polyline.push(gates[k]);
+      const p = run(polyline);
+      pathPolylines.push(polyline);
+      served.add(lots[k].lotId);
+      paths.push({
+        id: `path:${d.entityId}`,
+        kind: "path",
+        from: d.entityId,
+        to: `gate:${lots[k].entityId}`,
+        halfWidth: pathHalf,
+        points: p.points,
+        length: p.length,
+        maxGrade: p.maxGrade,
+        stepped: p.maxGrade > r.maxWalkGrade
+      });
+    }
+    const strips = [
+      ...lanes.map((l) => ({
+        entityId: l.id,
+        surface: "path",
+        lotId: "",
+        points: [
+          [l.points[0][0], l.points[0][2]],
+          [l.points[l.points.length - 1][0], l.points[l.points.length - 1][2]]
+        ],
+        halfWidth: l.halfWidth,
+        closed: false
+      })),
+      ...paths.map((p, k) => ({
+        entityId: p.id,
+        surface: "path",
+        lotId: lots.find((l) => l.entityId === p.from).lotId,
+        points: pathPolylines[k].map((q) => [q[0], q[1]]),
+        halfWidth: p.halfWidth,
+        closed: false
+      }))
+    ];
+    const supersedes = plan2.strips.filter((s) => s.surface === "path" && s.lotId !== "" && served.has(s.lotId)).map((s) => s.entityId);
+    return {
+      gates: lots.map((l, k) => ({ entityId: l.entityId, x: gates[k][0], z: gates[k][1] })),
+      lanes,
+      paths,
+      strips,
+      unjoined,
+      noLot,
+      supersedes,
+      notes
+    };
+  }
+
+  // @insimul/core/src/editor/layout/composition/yards.ts
+  var YARD_SIDES = ["back", "across+", "across-", "front"];
+  function yardRole(archetype, rules = DEFAULT_COMPOSITION_RULES) {
+    return byLongestPrefix(rules.yards.roleByArchetype, archetype) ?? rules.yards.defaultRole;
+  }
+  function porchFor(door2, posts, rules) {
+    const y = rules.yards;
+    const hx = Math.cos(door2.heading);
+    const hz = Math.sin(door2.heading);
+    let depth = y.porchDepthM;
+    let halfWidth = y.porchWidthM / 2;
+    for (const p of posts) {
+      const dx = p.x - door2.x;
+      const dz = p.z - door2.z;
+      depth = Math.max(depth, dx * hx + dz * hz + y.porchDeckMarginM);
+      halfWidth = Math.max(halfWidth, Math.abs(-dx * hz + dz * hx) + y.porchDeckMarginM);
+    }
+    return {
+      door: door2.entityId,
+      x: door2.x + hx * depth / 2,
+      z: door2.z + hz * depth / 2,
+      heading: door2.heading,
+      halfWidth,
+      depth,
+      posts: posts.map((p) => p.entityId).sort()
+    };
+  }
+  function porchDeckOutline(d) {
+    const hx = Math.cos(d.heading);
+    const hz = Math.sin(d.heading);
+    const ox = hx * d.depth / 2;
+    const oz = hz * d.depth / 2;
+    const ax = -hz * d.halfWidth;
+    const az = hx * d.halfWidth;
+    return [
+      [d.x - ox - ax, d.z - oz - az],
+      [d.x + ox - ax, d.z + oz - az],
+      [d.x + ox + ax, d.z + oz + az],
+      [d.x - ox + ax, d.z - oz + az]
+    ];
+  }
+  function postsAlong(a, b, spacing) {
+    const l = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    const out = [];
+    for (let k = 0; k * spacing < l - COMPOSITION_SLACK; k += 1) out.push([a[0] + (b[0] - a[0]) * k * spacing / l, a[1] + (b[1] - a[1]) * k * spacing / l]);
+    out.push([b[0], b[1]]);
+    return out;
+  }
+  function composeYards(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const y = rules.yards;
+    const posts = input.posts ?? [];
+    const claimed = /* @__PURE__ */ new Map();
+    const loosePosts = [];
+    for (const p of posts) {
+      let best = null;
+      for (const d of input.doors) {
+        const dist = Math.hypot(p.x - d.x, p.z - d.z);
+        if (dist > y.porchPostReachM + COMPOSITION_SLACK) continue;
+        if (best === null || dist < best.d - COMPOSITION_SLACK || Math.abs(dist - best.d) <= COMPOSITION_SLACK && d.entityId < best.id) best = { id: d.entityId, d: dist };
+      }
+      if (best === null) loosePosts.push(p.entityId);
+      else claimed.set(best.id, [...claimed.get(best.id) ?? [], p]);
+    }
+    const porches = input.doors.map((d) => porchFor(d, claimed.get(d.entityId) ?? [], rules));
+    const yards = [];
+    for (const lot of input.lots) {
+      const b = input.buildings.find((x) => x.entityId === lot.entityId);
+      const role = yardRole(b?.archetype ?? "", rules);
+      const edge = y.edgeByRole[role] ?? y.edgeByRole[y.defaultRole] ?? "none";
+      const ax = lot.awayX;
+      const az = lot.awayZ;
+      const ux = -az;
+      const uz = ax;
+      const toPlan = (s, w) => [lot.cx + ux * s + ax * w, lot.cz + uz * s + az * w];
+      const hA = lot.halfAcross;
+      const hW = lot.halfAway;
+      const gaps = { back: 2 * hW, "across+": 2 * hA, "across-": 2 * hA, front: 2 * hW };
+      const outline = b?.outline != null && b.outline.length >= 3 ? b.outline : null;
+      if (outline !== null) {
+        let sMin = Infinity;
+        let sMax = -Infinity;
+        let wMin = Infinity;
+        let wMax = -Infinity;
+        for (const p of outline) {
+          const s = (p[0] - lot.cx) * ux + (p[1] - lot.cz) * uz;
+          const w = (p[0] - lot.cx) * ax + (p[1] - lot.cz) * az;
+          sMin = Math.min(sMin, s);
+          sMax = Math.max(sMax, s);
+          wMin = Math.min(wMin, w);
+          wMax = Math.max(wMax, w);
+        }
+        gaps.back = wMin + hW;
+        gaps["across+"] = hA - sMax;
+        gaps["across-"] = sMin + hA;
+        gaps.front = hW - wMax;
+      }
+      const clear = (side) => gaps[side] >= y.minYardGapM - COMPOSITION_SLACK;
+      const tooTight = YARD_SIDES.filter((s) => !clear(s));
+      const edges = [];
+      if (edge !== "none") {
+        const i = y.yardEdgeInsetM;
+        const sE = hA - i;
+        const wE = hW - i;
+        const runs = [
+          ["back", -sE, -wE, sE, -wE],
+          ["across+", sE, -wE, sE, wE],
+          ["across-", -sE, -wE, -sE, wE]
+        ];
+        const half = y.gateGapM / 2;
+        if (sE - half > COMPOSITION_SLACK) runs.push(["front", -sE, wE, -half, wE], ["front", half, wE, sE, wE]);
+        for (const [side, s0, w0, s1, w1] of runs) {
+          if (!clear(side)) continue;
+          const from = toPlan(s0, w0);
+          const to = toPlan(s1, w1);
+          edges.push({ side, kind: edge, from, to, posts: postsAlong(from, to, y.edgePostSpacingM) });
+        }
+      }
+      const ins = y.yardItemInsetM;
+      const slots = [
+        ["back across+", hA - ins, -(hW - ins), ["back", "across+"]],
+        ["back across-", -(hA - ins), -(hW - ins), ["back", "across-"]],
+        ["side across+", hA - ins, 0, ["across+"]],
+        ["side across-", -(hA - ins), 0, ["across-"]],
+        ["front across+", hA - ins, hW - ins, ["front", "across+"]],
+        ["front across-", -(hA - ins), hW - ins, ["front", "across-"]]
+      ];
+      const items = [];
+      const want = [...y.itemsByRole[role] ?? []];
+      for (const [slot, s, w, sides] of slots) {
+        if (want.length === 0) break;
+        const at = toPlan(s, w);
+        if (!sides.some(clear) || outline !== null && pointInOutline(at, outline)) continue;
+        items.push({ archetype: want.shift(), slot, x: at[0], z: at[1], heading: Math.atan2(lot.cz - at[1], lot.cx - at[0]) });
+      }
+      yards.push({
+        entityId: lot.entityId,
+        role,
+        edge,
+        gaps,
+        tooTight,
+        porches: porches.filter((p) => p.door === lot.entityId),
+        edges,
+        items,
+        unplaced: want
+      });
+    }
+    const noLot = input.doors.filter((d) => !input.lots.some((l) => l.entityId === d.entityId)).map((d) => d.entityId);
+    return { yards, noLot, porches, loosePosts: loosePosts.sort() };
+  }
+
+  // @insimul/core/src/editor/layout/composition/village.ts
+  var YARD_ITEM_RADIUS_M = 0.5;
+  function withLaneNetwork(plan2, network) {
+    const superseded = new Set(network.supersedes);
+    return {
+      strips: [...plan2.strips.filter((s) => !superseded.has(s.entityId)), ...network.strips],
+      lots: plan2.lots,
+      terrain: plan2.terrain
+    };
+  }
+  function yardLines(yards) {
+    return yards.yards.flatMap((y) => y.edges.map((e, k) => ({ entityId: `edge:${y.entityId}:${e.side}:${k}`, points: [e.from, e.to] })));
+  }
+  function postObstacles(yards, foliage, stairs) {
+    const items = yards.yards.flatMap((y) => y.items.map((it) => ({ entityId: `yard:${y.entityId}:${it.slot}`, x: it.x, z: it.z, radius: YARD_ITEM_RADIUS_M })));
+    const trunks = foliage.items.filter((f) => (f.kind === "tree" || f.kind === "sapling") && f.verdict !== "set-aside").map((f) => ({ entityId: f.entityId, x: f.x, z: f.z, radius: PLANT_TRUNK_HALF_M }));
+    return [...items, ...trunks, ...stairs];
+  }
+  function composeVillage(input, rules = DEFAULT_COMPOSITION_RULES) {
+    const network = composeLaneNetwork(
+      { plan: input.plan, doors: input.doors, laneWidthM: input.laneWidthM, pathWidthM: input.pathWidthM, buildings: input.buildings },
+      rules
+    );
+    const plan2 = withLaneNetwork(input.plan, network);
+    const props = input.props ?? [];
+    const grouping = groupProps({ plan: plan2, buildings: input.buildings, props }, rules);
+    const radius = new Map(props.map((p) => [p.entityId, p.radius]));
+    const standing = grouping.props.filter((p) => p.verdict !== "set-aside").map((p) => ({ entityId: p.entityId, x: p.x, z: p.z, radius: radius.get(p.entityId) }));
+    const yards = composeYards({ lots: plan2.lots, buildings: input.buildings, doors: input.doors, posts: input.posts ?? [] }, rules);
+    const decks = yards.porches.map((d) => ({ entityId: `porch:${d.door}`, outline: porchDeckOutline(d) }));
+    const foliage = composeFoliage({ plan: plan2, buildings: input.buildings, foliage: input.foliage ?? [] }, rules);
+    const lanterns = lanternsOnRoutes(
+      { plan: plan2, lanterns: input.lanterns ?? [], buildings: [...input.buildings, ...decks], props: [...standing, ...postObstacles(yards, foliage, input.stairs ?? [])], lines: yardLines(yards) },
+      rules
+    );
+    const stoodAt = new Map(grouping.props.map((p) => [p.entityId, p]));
+    const seatsSetAside = [];
+    const seatsTurned = [];
+    const seats = [];
+    for (const s of input.seats ?? []) {
+      const p = stoodAt.get(s.entityId);
+      if (p === void 0) seats.push({ ...s });
+      else if (p.verdict === "set-aside") seatsSetAside.push(s.entityId);
+      else {
+        const turned = regroupedHeading({ plan: plan2, buildings: input.buildings, props }, p, rules);
+        if (turned !== null) seatsTurned.push({ entityId: s.entityId, heading: turned });
+        seats.push({ ...s, x: p.x, z: p.z, heading: turned ?? s.heading });
+      }
+    }
+    const seatIds = new Set((input.seats ?? []).map((s) => s.entityId));
+    const seating = seatVillagers({ seats, sitters: input.sitters ?? [], props: standing.filter((p) => !seatIds.has(p.entityId)) }, rules);
+    const reach = keepClearOfProps({ villagers: input.villagers ?? [], props: standing }, rules);
+    return { plan: plan2, network, grouping, lanterns, yards, foliage, seatsSetAside, seatsTurned, seating, reach };
+  }
+
+  // @insimul/core/src/editor/layout/composition/transitions.ts
+  var BREAKUP_SALT = 1162102597;
+  var NOISE_SLOPE_BOUND = 1.875 * Math.SQRT2 * (0.68 + 0.32 / 0.43);
+  function clamp012(v) {
+    return v < 0 ? 0 : v > 1 ? 1 : v;
+  }
+  function transitionCoverage(distance, feather) {
+    if (distance <= 0) return 1;
+    if (!(feather > 0) || distance >= feather) return 0;
+    const t = clamp012(distance / feather);
+    return 1 - t * t * (3 - 2 * t);
+  }
+  function edgeBreakup(x, z, rules = DEFAULT_COMPOSITION_RULES) {
+    const t = rules.transitions;
+    if (!(t.edgeBreakupM > 0)) return 0;
+    return t.edgeBreakupM * (2 * groundNoise01(x, z, t.edgeBreakupCellM, BREAKUP_SALT) - 1);
+  }
+  function groundTransitionCoverage(plan2, x, z, rules = DEFAULT_COMPOSITION_RULES) {
+    const c = sampleGroundCoverage(plan2, x, z);
+    const f = rules.transitions.featherM;
+    const b = edgeBreakup(x, z, rules);
+    c.road = 0;
+    c.plaza = 0;
+    c.path = 0;
+    c.lot = 0;
+    for (const s of plan2.strips) {
+      c[s.surface] = Math.max(c[s.surface], transitionCoverage(signedStripDistance(s, x, z) - b, f[s.surface]));
+    }
+    for (const l of plan2.lots) c.lot = Math.max(c.lot, transitionCoverage(signedLotDistance(l, x, z) - b, f.lot));
+    return c;
+  }
+  function transitionSteepestGradient(surface, rules = DEFAULT_COMPOSITION_RULES) {
+    const t = rules.transitions;
+    const feather = t.featherM[surface];
+    if (!(feather > 0)) return Infinity;
+    const breakup = t.edgeBreakupM > 0 && t.edgeBreakupCellM > 0 ? 2 * t.edgeBreakupM * NOISE_SLOPE_BOUND / t.edgeBreakupCellM : 0;
+    return 1.5 / feather * (1 + breakup);
+  }
+  function hardTransitionSurfaces(rules = DEFAULT_COMPOSITION_RULES) {
+    return TRANSITION_SURFACES.filter((s) => transitionSteepestGradient(s, rules) > rules.transitions.maxEdgeGradientPerM);
+  }
+  function auditGroundEdges(samples, rules = DEFAULT_COMPOSITION_RULES) {
+    const t = rules.transitions;
+    let maxGradient = 0;
+    const edges = [];
+    let start = -1;
+    let steepest = 0;
+    const close = (end) => {
+      const rise = samples[end][1] - samples[start][1];
+      if (Math.abs(rise) >= t.minEdgeContrast) edges.push({ s0: samples[start][0], s1: samples[end][0], rise, gradient: steepest });
+      start = -1;
+      steepest = 0;
+    };
+    for (let i = 0; i + 1 < samples.length; i += 1) {
+      const ds = samples[i + 1][0] - samples[i][0];
+      if (!(ds > 0)) continue;
+      const g = Math.abs(samples[i + 1][1] - samples[i][1]) / ds;
+      maxGradient = Math.max(maxGradient, g);
+      if (g > t.maxEdgeGradientPerM) {
+        if (start < 0) start = i;
+        steepest = Math.max(steepest, g);
+      } else if (start >= 0) {
+        close(i);
+      }
+    }
+    if (start >= 0) close(samples.length - 1);
+    return { maxGradient, edges };
+  }
+  function coverageProfile(plan2, surface, from, to, step, source, rules = DEFAULT_COMPOSITION_RULES) {
+    const len = Math.hypot(to[0] - from[0], to[1] - from[1]);
+    const n = Math.max(1, Math.ceil(len / step - COMPOSITION_SLACK));
+    const out = [];
+    for (let k = 0; k <= n; k += 1) {
+      const x = from[0] + (to[0] - from[0]) * k / n;
+      const z = from[1] + (to[1] - from[1]) * k / n;
+      const c = source === "transition" ? groundTransitionCoverage(plan2, x, z, rules) : sampleGroundCoverage(plan2, x, z);
+      out.push([len * k / n, c[surface]]);
+    }
+    return out;
+  }
+
+  // @insimul/core/src/editor/layout/composition/corpus.ts
+  function bad2(why) {
+    throw new Error(`composition corpus: ${why}`);
+  }
+  function obj2(v, what) {
+    if (typeof v !== "object" || v === null || Array.isArray(v)) bad2(`${what} is not an object`);
+    return v;
+  }
+  function arr2(v, what) {
+    if (!Array.isArray(v)) bad2(`${what} is not an array`);
+    return v;
+  }
+  function num2(o, k) {
+    const v = o[k];
+    if (typeof v !== "number") bad2(`'${k}' is not a number`);
+    return v;
+  }
+  function str2(o, k) {
+    const v = o[k];
+    if (typeof v !== "string") bad2(`'${k}' is not a string`);
+    return v;
+  }
+  function point2(v, what) {
+    const p = arr2(v, what);
+    if (p.length !== 2 || typeof p[0] !== "number" || typeof p[1] !== "number") bad2(`${what} is not [x, z]`);
+    return [p[0], p[1]];
+  }
+  function points2(v, what) {
+    return arr2(v, what).map((p, k) => point2(p, `${what}[${k}]`));
+  }
+  function terrainOf(v) {
+    if (v === void 0 || v === null) return null;
+    const t = obj2(v, "terrain");
+    return {
+      resolution: num2(t, "resolution"),
+      sizeX: num2(t, "sizeX"),
+      sizeZ: num2(t, "sizeZ"),
+      heights: arr2(t.heights, "terrain.heights")
+    };
+  }
+  function stripOf(v) {
+    const s = obj2(v, "a strip");
+    const surface = str2(s, "surface");
+    if (surface !== "road" && surface !== "plaza" && surface !== "path") bad2(`unknown strip surface '${surface}'`);
+    return {
+      entityId: str2(s, "entityId"),
+      surface,
+      lotId: typeof s.lotId === "string" ? s.lotId : "",
+      points: points2(s.points, "a strip's points"),
+      halfWidth: num2(s, "halfWidth"),
+      closed: s.closed === true
+    };
+  }
+  function lotOf(v) {
+    const l = obj2(v, "a lot");
+    return {
+      entityId: str2(l, "entityId"),
+      lotId: typeof l.lotId === "string" ? l.lotId : "",
+      cx: num2(l, "cx"),
+      cz: num2(l, "cz"),
+      halfAcross: num2(l, "halfAcross"),
+      halfAway: num2(l, "halfAway"),
+      awayX: num2(l, "awayX"),
+      awayZ: num2(l, "awayZ")
+    };
+  }
+  function compositionPlan(v) {
+    const p = obj2(v, "plan");
+    return {
+      strips: arr2(p.strips ?? [], "plan.strips").map(stripOf),
+      lots: arr2(p.lots ?? [], "plan.lots").map(lotOf),
+      terrain: terrainOf(p.terrain)
+    };
+  }
+  function surfaceOf(v) {
+    if (typeof v !== "string" || !TRANSITION_SURFACES.includes(v)) bad2(`unknown transition surface ${JSON.stringify(v)}`);
+    return v;
+  }
+  function json(v) {
+    return JSON.parse(JSON.stringify(v));
+  }
+  function applyRuleOverrides(rules, input) {
+    const o = input.ruleOverrides;
+    if (o === void 0) return rules;
+    let out = rules;
+    for (const [k, v] of Object.entries(obj2(o, "ruleOverrides"))) {
+      if (typeof v !== "number") bad2(`ruleOverrides '${k}' is not a number`);
+      out = withCompositionConstant(out, k, v);
+    }
+    return out;
+  }
+  function doorsOf(v) {
+    return arr2(v ?? [], "doors").map((d) => {
+      const o = obj2(d, "a door");
+      return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z"), heading: num2(o, "heading") };
+    });
+  }
+  function groupingInput(i) {
+    return {
+      plan: compositionPlan(i.plan),
+      buildings: outlinedBuildings(i.buildings),
+      props: propsOf(i.props)
+    };
+  }
+  function propsOf(v) {
+    return arr2(v ?? [], "props").map((p) => {
+      const o = obj2(p, "a prop");
+      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num2(o, "x"), z: num2(o, "z"), radius: num2(o, "radius") };
+    });
+  }
+  function plannedOn(i) {
+    const plan2 = compositionPlan(i.plan);
+    if (i.terrain !== void 0) plan2.terrain = terrainOf(i.terrain);
+    return plan2;
+  }
+  function widthOf(i, k) {
+    return typeof i[k] === "number" ? i[k] : null;
+  }
+  function spotsOf(v, what) {
+    return arr2(v ?? [], what).map((p) => {
+      const o = obj2(p, what);
+      return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z") };
+    });
+  }
+  var postsOf = (v) => spotsOf(v, "posts");
+  var lanternsOf = (v) => spotsOf(v, "lanterns");
+  var sittersOf = (v) => spotsOf(v, "sitters");
+  function foliageOf(v) {
+    return arr2(v ?? [], "foliage").map((p) => {
+      const o = obj2(p, "a foliage prop");
+      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num2(o, "x"), z: num2(o, "z") };
+    });
+  }
+  function villagersOf(v) {
+    return arr2(v ?? [], "villagers").map((p) => {
+      const o = obj2(p, "a villager");
+      return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z"), target: typeof o.target === "string" ? o.target : null };
+    });
+  }
+  function outlinedBuildings(v) {
+    return arr2(v ?? [], "buildings").map((b) => {
+      const o = obj2(b, "a building");
+      return { entityId: str2(o, "entityId"), outline: points2(o.outline, "a building's outline") };
+    });
+  }
+  function reachProps(v) {
+    return arr2(v ?? [], "props").map((p) => {
+      const o = obj2(p, "a prop");
+      return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z"), radius: num2(o, "radius") };
+    });
+  }
+  function seatsOf(v) {
+    return arr2(v ?? [], "seats").map((s) => {
+      const o = obj2(s, "a seat");
+      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num2(o, "x"), z: num2(o, "z"), heading: num2(o, "heading"), length: num2(o, "length") };
+    });
+  }
+  function modelsOf(v) {
+    return arr2(v ?? [], "models").map((m) => {
+      const o = obj2(m, "a model");
+      const blank = arr2(o.blank ?? [], "a model's blank walls").map((s) => {
+        if (typeof s !== "string" || !HOUSE_SIDES.includes(s)) bad2(`unknown house side ${JSON.stringify(s)}`);
+        return s;
+      });
+      return { id: str2(o, "id"), width: num2(o, "width"), depth: num2(o, "depth"), blank };
+    });
+  }
+  function runCompositionOp(op, input, rules = DEFAULT_COMPOSITION_RULES) {
+    const i = obj2(input, "input");
+    const r = applyRuleOverrides(rules, i);
+    switch (op) {
+      case "composeLaneNetwork":
+        return json(
+          composeLaneNetwork(
+            {
+              plan: plannedOn(i),
+              doors: doorsOf(i.doors),
+              laneWidthM: widthOf(i, "laneWidthM"),
+              pathWidthM: widthOf(i, "pathWidthM"),
+              buildings: i.buildings === void 0 ? void 0 : outlinedBuildings(i.buildings)
+            },
+            r
+          )
+        );
+      case "transitionCoverage":
+        return arr2(i.samples, "samples").map((s) => {
+          const [d, f] = point2(s, "a [distance, feather] sample");
+          return transitionCoverage(d, f);
+        });
+      case "edgeBreakup":
+        return points2(i.points, "points").map((p) => edgeBreakup(p[0], p[1], r));
+      case "groundTransitionCoverage": {
+        const plan2 = compositionPlan(i.plan);
+        return points2(i.points, "points").map((p) => json(groundTransitionCoverage(plan2, p[0], p[1], r)));
+      }
+      case "transitionBounds": {
+        const out = {};
+        for (const s of TRANSITION_SURFACES) out[s] = transitionSteepestGradient(s, r);
+        out.hard = hardTransitionSurfaces(r);
+        return out;
+      }
+      case "auditGroundEdges":
+        return json(auditGroundEdges(arr2(i.samples, "samples").map((s) => point2(s, "an [s, w] sample")), r));
+      case "coverageAudit": {
+        const source = str2(i, "source");
+        if (source !== "transition" && source !== "paint") bad2(`unknown coverage source '${source}'`);
+        const profile = coverageProfile(
+          compositionPlan(i.plan),
+          surfaceOf(i.surface),
+          point2(i.from, "from"),
+          point2(i.to, "to"),
+          num2(i, "step"),
+          source,
+          r
+        );
+        return json({ samples: profile.length, ...auditGroundEdges(profile, r) });
+      }
+      case "propPurpose":
+        return arr2(i.archetypes, "archetypes").map((a) => {
+          if (typeof a !== "string") bad2("an archetype is not a string");
+          return propPurpose(a, r);
+        });
+      case "groupProps":
+        return json(groupProps(groupingInput(i), r));
+      case "auditPropGroups":
+        return json(auditPropGroups(groupingInput(i), r));
+      case "trimFloraOffSquare":
+        return trimFloraOffSquare(compositionPlan(i.plan), points2(i.points, "points"), r);
+      case "yardRole":
+        return arr2(i.archetypes, "archetypes").map((a) => {
+          if (typeof a !== "string") bad2("an archetype is not a string");
+          return yardRole(a, r);
+        });
+      case "composeYards": {
+        const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
+          const o = obj2(b, "a building");
+          return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
+        });
+        return json(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
+      }
+      case "lanternsOnRoutes": {
+        const routes = i.routes === void 0 ? [] : compositionPlan({ strips: i.routes }).strips;
+        if (i.buildings === void 0 || i.props === void 0) bad2("a lanternsOnRoutes input states its 'buildings' and 'props' (empty means none)");
+        const lines2 = arr2(i.lines ?? [], "lines").map((q) => {
+          const o = obj2(q, "a line");
+          return { entityId: str2(o, "entityId"), points: points2(o.points, "a line's points") };
+        });
+        return json(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
+      }
+      case "foliageKind":
+        return arr2(i.archetypes, "archetypes").map((a) => {
+          if (typeof a !== "string") bad2("an archetype is not a string");
+          return foliageKind(a, r);
+        });
+      case "composeFoliage":
+        return json(composeFoliage({ plan: compositionPlan(i.plan ?? {}), buildings: outlinedBuildings(i.buildings), foliage: foliageOf(i.foliage) }, r));
+      case "auditFoliageSpacing":
+        return json(auditFoliageSpacing(points2(i.points, "points"), r));
+      case "assignHouseModels": {
+        const houses = arr2(i.houses ?? [], "houses").map((h) => {
+          const o = obj2(h, "a house");
+          return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z"), heading: num2(o, "heading") };
+        });
+        return json(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: modelsOf(i.models) }, r));
+      }
+      case "seatCapacity":
+        return seatsOf(i.seats).map((s) => seatCapacity(s, r));
+      case "seatVillagers":
+        return json(seatVillagers({ seats: seatsOf(i.seats), sitters: sittersOf(i.sitters), props: reachProps(i.props) }, r));
+      case "keepClearOfProps":
+        return json(keepClearOfProps({ villagers: villagersOf(i.villagers), props: reachProps(i.props) }, r));
+      case "composeVillage": {
+        const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
+          const o = obj2(b, "a building");
+          return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), outline: points2(o.outline, "an outline") };
+        });
+        return json(
+          composeVillage(
+            {
+              plan: plannedOn(i),
+              doors: doorsOf(i.doors),
+              laneWidthM: widthOf(i, "laneWidthM"),
+              pathWidthM: widthOf(i, "pathWidthM"),
+              buildings,
+              props: propsOf(i.props),
+              posts: postsOf(i.posts),
+              lanterns: lanternsOf(i.lanterns),
+              foliage: foliageOf(i.foliage),
+              seats: seatsOf(i.seats),
+              sitters: sittersOf(i.sitters),
+              villagers: villagersOf(i.villagers),
+              stairs: i.stairs === void 0 ? void 0 : reachProps(i.stairs)
+            },
+            r
+          )
+        );
+      }
+      default:
+        return bad2(`unknown composition op '${op}'`);
+    }
+  }
+  var COMPOSITION_OPS = [
+    "composeLaneNetwork",
+    "transitionCoverage",
+    "edgeBreakup",
+    "groundTransitionCoverage",
+    "transitionBounds",
+    "auditGroundEdges",
+    "coverageAudit",
+    "propPurpose",
+    "groupProps",
+    "auditPropGroups",
+    "trimFloraOffSquare",
+    "yardRole",
+    "composeYards",
+    "lanternsOnRoutes",
+    "foliageKind",
+    "composeFoliage",
+    "auditFoliageSpacing",
+    "assignHouseModels",
+    "seatCapacity",
+    "seatVillagers",
+    "keepClearOfProps",
+    "composeVillage"
+  ];
 
   // corebridge/js/entry.js
   function refuse(method, message) {
@@ -12610,6 +17107,12 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   }
   function plain(value) {
     return value === void 0 ? null : JSON.parse(JSON.stringify(value));
+  }
+  function layoutRow(op) {
+    return (args) => runLayoutOp(op, args);
+  }
+  function compositionRow(op) {
+    return (args) => runCompositionOp(op, args);
   }
   function migrateWithOutcome(saveFile) {
     const { save, outcome } = migrateSaveFileWithOutcome(saveFile);
@@ -12802,15 +17305,15 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
      * `save.migrate` for the last three.
      */
     "save.decode": (args) => {
-      let candidate = args.envelope;
-      if (candidate === void 0 && typeof args.text === "string") {
+      let candidate2 = args.envelope;
+      if (candidate2 === void 0 && typeof args.text === "string") {
         try {
-          candidate = JSON.parse(args.text);
+          candidate2 = JSON.parse(args.text);
         } catch {
           return { ok: false, error: { code: "invalid_format", message: "Envelope is not valid JSON" } };
         }
       }
-      const res = validateSaveFileEnvelope(candidate);
+      const res = validateSaveFileEnvelope(candidate2);
       if (!res.ok) return { ok: false, error: res.error };
       const { format, exportedAt, insimulVersion, integrity } = res.envelope;
       return {
@@ -13326,7 +17829,78 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         order: [...PREDICATE_PACK_AREAS],
         unknown: wanted === null ? [] : [...wanted].filter((a) => !PREDICATE_PACK_AREAS.includes(a))
       };
-    }
+    },
+    // ── village layout (U23, U36) ──
+    // One row per op core's layout corpus may name (`LAYOUT_OPS`, then
+    // `COMPOSITION_OPS`), each `layout.<op>`. The rows are written out rather than
+    // generated so the adopted surface stays reviewable here; `layout.ops`
+    // returns core's two lists so the layout gate (tests/layout_corpus.cpp) can
+    // fail when core gains an op this table does not have.
+    /** `layout.ops` → `{ layout: LAYOUT_OPS, composition: COMPOSITION_OPS }`, core's lists as core declares them. */
+    "layout.ops": () => ({ layout: [...LAYOUT_OPS], composition: [...COMPOSITION_OPS] }),
+    "layout.isDoorPartName": layoutRow("isDoorPartName"),
+    "layout.faceYawOf": layoutRow("faceYawOf"),
+    "layout.chooseDoorPart": layoutRow("chooseDoorPart"),
+    "layout.bodyStature": layoutRow("bodyStature"),
+    "layout.fitBuildingToLot": layoutRow("fitBuildingToLot"),
+    "layout.findFitOverlaps": layoutRow("findFitOverlaps"),
+    "layout.settleSeparation": layoutRow("settleSeparation"),
+    "layout.settleBodies": layoutRow("settleBodies"),
+    "layout.settleFittedBuildings": layoutRow("settleFittedBuildings"),
+    "layout.settleClearance": layoutRow("settleClearance"),
+    "layout.clearancePairGap": layoutRow("clearancePairGap"),
+    "layout.markerClearance": layoutRow("markerClearance"),
+    "layout.plantWallClearance": layoutRow("plantWallClearance"),
+    "layout.settleBuildingMaxShift": layoutRow("settleBuildingMaxShift"),
+    "layout.pairingSeatSink": layoutRow("pairingSeatSink"),
+    "layout.layoutObstaclesOf": layoutRow("layoutObstaclesOf"),
+    "layout.plantTrunkOutline": layoutRow("plantTrunkOutline"),
+    "layout.layoutConstants": layoutRow("layoutConstants"),
+    "layout.buildGroundPlan": layoutRow("buildGroundPlan"),
+    "layout.gradeTerrain": layoutRow("gradeTerrain"),
+    "layout.followSettledBuildings": layoutRow("followSettledBuildings"),
+    "layout.pathMouths": layoutRow("pathMouths"),
+    "layout.lanternsAtPathMouths": layoutRow("lanternsAtPathMouths"),
+    "layout.keepPlantPropsOffPaving": layoutRow("keepPlantPropsOffPaving"),
+    "layout.trimGeneratedPoints": layoutRow("trimGeneratedPoints"),
+    "layout.keepLookNeighbours": layoutRow("keepLookNeighbours"),
+    "layout.keepStatedRows": layoutRow("keepStatedRows"),
+    "layout.planDistances": layoutRow("planDistances"),
+    "layout.margins": layoutRow("margins"),
+    "layout.readGroundLayers": layoutRow("readGroundLayers"),
+    "layout.resolveGroundPaint": layoutRow("resolveGroundPaint"),
+    "layout.groundNoise": layoutRow("groundNoise"),
+    "layout.groundCoverage": layoutRow("groundCoverage"),
+    "layout.groundLayerWeights": layoutRow("groundLayerWeights"),
+    "layout.clump": layoutRow("clump"),
+    "layout.lookHash01": layoutRow("lookHash01"),
+    "layout.lookNeighbours": layoutRow("lookNeighbours"),
+    "layout.lookPropStands": layoutRow("lookPropStands"),
+    "layout.backdropRing": layoutRow("backdropRing"),
+    "layout.backdropFrame": layoutRow("backdropFrame"),
+    // ── village composition (B9) ──
+    "layout.composeLaneNetwork": compositionRow("composeLaneNetwork"),
+    "layout.transitionCoverage": compositionRow("transitionCoverage"),
+    "layout.edgeBreakup": compositionRow("edgeBreakup"),
+    "layout.groundTransitionCoverage": compositionRow("groundTransitionCoverage"),
+    "layout.transitionBounds": compositionRow("transitionBounds"),
+    "layout.auditGroundEdges": compositionRow("auditGroundEdges"),
+    "layout.coverageAudit": compositionRow("coverageAudit"),
+    "layout.propPurpose": compositionRow("propPurpose"),
+    "layout.groupProps": compositionRow("groupProps"),
+    "layout.auditPropGroups": compositionRow("auditPropGroups"),
+    "layout.trimFloraOffSquare": compositionRow("trimFloraOffSquare"),
+    "layout.yardRole": compositionRow("yardRole"),
+    "layout.composeYards": compositionRow("composeYards"),
+    "layout.lanternsOnRoutes": compositionRow("lanternsOnRoutes"),
+    "layout.foliageKind": compositionRow("foliageKind"),
+    "layout.composeFoliage": compositionRow("composeFoliage"),
+    "layout.auditFoliageSpacing": compositionRow("auditFoliageSpacing"),
+    "layout.assignHouseModels": compositionRow("assignHouseModels"),
+    "layout.seatCapacity": compositionRow("seatCapacity"),
+    "layout.seatVillagers": compositionRow("seatVillagers"),
+    "layout.keepClearOfProps": compositionRow("keepClearOfProps"),
+    "layout.composeVillage": compositionRow("composeVillage")
   };
   function notificationsView(model) {
     return { visible: plain(model.visible()), count: model.count() };

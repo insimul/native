@@ -311,6 +311,24 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/editor/layout/corpus",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the layout rows (L.native-layout, ruling U36), exactly as the C0 method table's specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-l-native-layout (Features Gauntlet L.native-layout)",
+      "reviewedAt": "2026-10-29"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/editor/layout/composition/corpus",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the layout rows (L.native-layout, ruling U36), exactly as the C0 method table's specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-l-native-layout (Features Gauntlet L.native-layout)",
+      "reviewedAt": "2026-10-29"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/game-genres/registry",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

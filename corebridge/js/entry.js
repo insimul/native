@@ -92,6 +92,16 @@ import {
 } from '@insimul/core/modules/module-activation';
 import { PREDICATE_PACK_AREAS, PREDICATE_PACKS } from '@insimul/core/prolog/predicate-packs';
 
+// ── village layout and composition (U23, U36: L.native-layout) ────────────────
+// Core's own JSON boundary for its layout rules: `runLayoutOp` /
+// `runCompositionOp` read a corpus input, call the rule, and answer in exactly
+// the shape `conformance/layout/` and `conformance/layout-composition/` pin.
+// The rows below call them and nothing else, so an engine binding (Unreal's
+// `Portable/` shrinking to one, L.portable-binding) sends a case's input and
+// reads a case's answer.
+import { LAYOUT_OPS, runLayoutOp } from '@insimul/core/editor/layout/corpus';
+import { COMPOSITION_OPS, runCompositionOp } from '@insimul/core/editor/layout/composition/corpus';
+
 // ── boundary helpers ──────────────────────────────────────────────────────────
 
 /** A caller error, named after the row it was made against. */
@@ -141,6 +151,27 @@ function mapOf(method, value, name) {
 /** Plain-JSON copy of a model's answer (drops undefined, freezes nothing). */
 function plain(value) {
 	return value === undefined ? null : JSON.parse(JSON.stringify(value));
+}
+
+// ── layout ────────────────────────────────────────────────────────────────────
+
+/**
+ * One layout row: the args ARE the corpus case's `input` (fixtures resolved by
+ * the caller), answered by core's `runLayoutOp` — which also turns -0 into 0, the
+ * one normalisation the corpus pins. A row adds no check of its own: core's
+ * reader refuses a malformed input with `layout corpus: …`.
+ */
+function layoutRow(op) {
+	return (args) => runLayoutOp(op, args);
+}
+
+/**
+ * One composition row: core's `runCompositionOp` under core's
+ * `DEFAULT_COMPOSITION_RULES`, with the input's own `ruleOverrides` applied by
+ * core (`applyRuleOverrides`), never by the row.
+ */
+function compositionRow(op) {
+	return (args) => runCompositionOp(op, args);
 }
 
 // ── saves ─────────────────────────────────────────────────────────────────────
@@ -969,6 +1000,81 @@ const METHODS = {
 			unknown: wanted === null ? [] : [...wanted].filter((a) => !PREDICATE_PACK_AREAS.includes(a)),
 		};
 	},
+
+	// ── village layout (U23, U36) ──
+	// One row per op core's layout corpus may name (`LAYOUT_OPS`, then
+	// `COMPOSITION_OPS`), each `layout.<op>`. The rows are written out rather than
+	// generated so the adopted surface stays reviewable here; `layout.ops`
+	// returns core's two lists so the layout gate (tests/layout_corpus.cpp) can
+	// fail when core gains an op this table does not have.
+
+	/** `layout.ops` → `{ layout: LAYOUT_OPS, composition: COMPOSITION_OPS }`, core's lists as core declares them. */
+	'layout.ops': () => ({ layout: [...LAYOUT_OPS], composition: [...COMPOSITION_OPS] }),
+
+	'layout.isDoorPartName': layoutRow('isDoorPartName'),
+	'layout.faceYawOf': layoutRow('faceYawOf'),
+	'layout.chooseDoorPart': layoutRow('chooseDoorPart'),
+	'layout.bodyStature': layoutRow('bodyStature'),
+	'layout.fitBuildingToLot': layoutRow('fitBuildingToLot'),
+	'layout.findFitOverlaps': layoutRow('findFitOverlaps'),
+	'layout.settleSeparation': layoutRow('settleSeparation'),
+	'layout.settleBodies': layoutRow('settleBodies'),
+	'layout.settleFittedBuildings': layoutRow('settleFittedBuildings'),
+	'layout.settleClearance': layoutRow('settleClearance'),
+	'layout.clearancePairGap': layoutRow('clearancePairGap'),
+	'layout.markerClearance': layoutRow('markerClearance'),
+	'layout.plantWallClearance': layoutRow('plantWallClearance'),
+	'layout.settleBuildingMaxShift': layoutRow('settleBuildingMaxShift'),
+	'layout.pairingSeatSink': layoutRow('pairingSeatSink'),
+	'layout.layoutObstaclesOf': layoutRow('layoutObstaclesOf'),
+	'layout.plantTrunkOutline': layoutRow('plantTrunkOutline'),
+	'layout.layoutConstants': layoutRow('layoutConstants'),
+	'layout.buildGroundPlan': layoutRow('buildGroundPlan'),
+	'layout.gradeTerrain': layoutRow('gradeTerrain'),
+	'layout.followSettledBuildings': layoutRow('followSettledBuildings'),
+	'layout.pathMouths': layoutRow('pathMouths'),
+	'layout.lanternsAtPathMouths': layoutRow('lanternsAtPathMouths'),
+	'layout.keepPlantPropsOffPaving': layoutRow('keepPlantPropsOffPaving'),
+	'layout.trimGeneratedPoints': layoutRow('trimGeneratedPoints'),
+	'layout.keepLookNeighbours': layoutRow('keepLookNeighbours'),
+	'layout.keepStatedRows': layoutRow('keepStatedRows'),
+	'layout.planDistances': layoutRow('planDistances'),
+	'layout.margins': layoutRow('margins'),
+	'layout.readGroundLayers': layoutRow('readGroundLayers'),
+	'layout.resolveGroundPaint': layoutRow('resolveGroundPaint'),
+	'layout.groundNoise': layoutRow('groundNoise'),
+	'layout.groundCoverage': layoutRow('groundCoverage'),
+	'layout.groundLayerWeights': layoutRow('groundLayerWeights'),
+	'layout.clump': layoutRow('clump'),
+	'layout.lookHash01': layoutRow('lookHash01'),
+	'layout.lookNeighbours': layoutRow('lookNeighbours'),
+	'layout.lookPropStands': layoutRow('lookPropStands'),
+	'layout.backdropRing': layoutRow('backdropRing'),
+	'layout.backdropFrame': layoutRow('backdropFrame'),
+
+	// ── village composition (B9) ──
+	'layout.composeLaneNetwork': compositionRow('composeLaneNetwork'),
+	'layout.transitionCoverage': compositionRow('transitionCoverage'),
+	'layout.edgeBreakup': compositionRow('edgeBreakup'),
+	'layout.groundTransitionCoverage': compositionRow('groundTransitionCoverage'),
+	'layout.transitionBounds': compositionRow('transitionBounds'),
+	'layout.auditGroundEdges': compositionRow('auditGroundEdges'),
+	'layout.coverageAudit': compositionRow('coverageAudit'),
+	'layout.propPurpose': compositionRow('propPurpose'),
+	'layout.groupProps': compositionRow('groupProps'),
+	'layout.auditPropGroups': compositionRow('auditPropGroups'),
+	'layout.trimFloraOffSquare': compositionRow('trimFloraOffSquare'),
+	'layout.yardRole': compositionRow('yardRole'),
+	'layout.composeYards': compositionRow('composeYards'),
+	'layout.lanternsOnRoutes': compositionRow('lanternsOnRoutes'),
+	'layout.foliageKind': compositionRow('foliageKind'),
+	'layout.composeFoliage': compositionRow('composeFoliage'),
+	'layout.auditFoliageSpacing': compositionRow('auditFoliageSpacing'),
+	'layout.assignHouseModels': compositionRow('assignHouseModels'),
+	'layout.seatCapacity': compositionRow('seatCapacity'),
+	'layout.seatVillagers': compositionRow('seatVillagers'),
+	'layout.keepClearOfProps': compositionRow('keepClearOfProps'),
+	'layout.composeVillage': compositionRow('composeVillage'),
 };
 
 function notificationsView(model) {

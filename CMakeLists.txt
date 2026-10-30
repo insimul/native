@@ -618,6 +618,31 @@ add_test(NAME corebridge_cases_parity COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_corebridge_cases.sh parity ${CMAKE_CURRENT_SOURCE_DIR}
        $<TARGET_FILE:insimulcore_cases> ${CMAKE_CURRENT_BINARY_DIR})
 
+# layout_corpus (L.native-layout, ruling U36): core's village-layout rules as
+# libinsimulcore's `layout.*` rows, held to core's own layout corpora —
+# conformance/layout/ and conformance/layout-composition/, COPIED byte for byte
+# into corebridge/vendor/core/conformance/ at the pin (sha256s in VENDORED.json,
+# checked by core_vendor; byte-compared with core by `--check --core`). The
+# runner resolves fixtures, calls `layout.<op>` through insimulcore.h and
+# compares by the corpus's rule; it also fails on a row no case names, an op
+# core declares that is not a row, and a comparator that cannot fail
+# (tests/layout_corpus.cpp). A pure consumer of insimulcore.h; the JSON reader is
+# tests/radiant/json_value.cpp, used unchanged. Never skips: the corpus is in-repo.
+add_executable(insimulcore_layout tests/layout_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_layout PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_layout PRIVATE insimulcore)
+add_test(NAME layout_corpus COMMAND insimulcore_layout
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance/layout
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance/layout-composition)
+# The negative control: the same runner over a one-case corpus whose expectation
+# is deliberately wrong (tests/layout-negative/). It passes only when the runner
+# reports THAT case as differing and the run as failed — not on any non-zero exit,
+# which a missing directory or a crash would also give.
+add_test(NAME layout_corpus_negative COMMAND insimulcore_layout --only wrong-answer
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/layout-negative)
+set_tests_properties(layout_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "expected WRONGLY to hold a door [^\n]*boolean differs.*layout_corpus: FAIL")
+
 # corebridge_sha256: the SHA-256 the C host gives core's save envelope
 # (corebridge/src/insimulcore_sha256.c), against the NIST vectors, at every
 # split point. Compiled straight from the source: the function is internal to

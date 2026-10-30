@@ -154,6 +154,69 @@ game; **meta** = about the bridge itself.
 | `modules.activate` | `{ ir }` or `{ genre }` or `{}` → `{ source, active, predicatePacks, hostInterfaces, reason }` | `modules/module-activation` | P9 (Godot's fork has the same row) |
 | `modules.table` | `{}` → core's `moduleActivationTable()` | same | P9 |
 | `prolog.packs` | `{ areas? }` → `{ packs: [{ area, prolog, runtimePredicates }], order, unknown }` | `prolog/predicate-packs` | P9 |
+| `layout.ops` | `{}` → `{ layout, composition }` — core's `LAYOUT_OPS` and `COMPOSITION_OPS` | `editor/layout/corpus`, `editor/layout/composition/corpus` | L.native-layout (U36) |
+| `layout.isDoorPartName` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('isDoorPartName')` | L.native-layout |
+| `layout.faceYawOf` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('faceYawOf')` | L.native-layout |
+| `layout.chooseDoorPart` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('chooseDoorPart')` | L.native-layout |
+| `layout.bodyStature` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('bodyStature')` | L.native-layout |
+| `layout.fitBuildingToLot` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('fitBuildingToLot')` | L.native-layout |
+| `layout.findFitOverlaps` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('findFitOverlaps')` | L.native-layout |
+| `layout.settleSeparation` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('settleSeparation')` | L.native-layout |
+| `layout.settleBodies` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('settleBodies')` | L.native-layout |
+| `layout.settleFittedBuildings` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('settleFittedBuildings')` | L.native-layout |
+| `layout.settleClearance` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('settleClearance')` | L.native-layout |
+| `layout.clearancePairGap` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('clearancePairGap')` | L.native-layout |
+| `layout.markerClearance` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('markerClearance')` | L.native-layout |
+| `layout.plantWallClearance` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('plantWallClearance')` | L.native-layout |
+| `layout.settleBuildingMaxShift` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('settleBuildingMaxShift')` | L.native-layout |
+| `layout.pairingSeatSink` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('pairingSeatSink')` | L.native-layout |
+| `layout.layoutObstaclesOf` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('layoutObstaclesOf')` | L.native-layout |
+| `layout.plantTrunkOutline` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('plantTrunkOutline')` | L.native-layout |
+| `layout.layoutConstants` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('layoutConstants')` | L.native-layout |
+| `layout.buildGroundPlan` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('buildGroundPlan')` | L.native-layout |
+| `layout.gradeTerrain` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('gradeTerrain')` | L.native-layout |
+| `layout.followSettledBuildings` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('followSettledBuildings')` | L.native-layout |
+| `layout.pathMouths` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('pathMouths')` | L.native-layout |
+| `layout.lanternsAtPathMouths` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('lanternsAtPathMouths')` | L.native-layout |
+| `layout.keepPlantPropsOffPaving` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('keepPlantPropsOffPaving')` | L.native-layout |
+| `layout.trimGeneratedPoints` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('trimGeneratedPoints')` | L.native-layout |
+| `layout.keepLookNeighbours` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('keepLookNeighbours')` | L.native-layout |
+| `layout.keepStatedRows` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('keepStatedRows')` | L.native-layout |
+| `layout.planDistances` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('planDistances')` | L.native-layout |
+| `layout.margins` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('margins')` | L.native-layout |
+| `layout.readGroundLayers` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('readGroundLayers')` | L.native-layout |
+| `layout.resolveGroundPaint` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('resolveGroundPaint')` | L.native-layout |
+| `layout.groundNoise` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('groundNoise')` | L.native-layout |
+| `layout.groundCoverage` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('groundCoverage')` | L.native-layout |
+| `layout.groundLayerWeights` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('groundLayerWeights')` | L.native-layout |
+| `layout.clump` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('clump')` | L.native-layout |
+| `layout.lookHash01` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('lookHash01')` | L.native-layout |
+| `layout.lookNeighbours` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('lookNeighbours')` | L.native-layout |
+| `layout.lookPropStands` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('lookPropStands')` | L.native-layout |
+| `layout.backdropRing` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('backdropRing')` | L.native-layout |
+| `layout.backdropFrame` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('backdropFrame')` | L.native-layout |
+| `layout.composeLaneNetwork` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('composeLaneNetwork')` | L.native-layout |
+| `layout.transitionCoverage` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('transitionCoverage')` | L.native-layout |
+| `layout.edgeBreakup` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('edgeBreakup')` | L.native-layout |
+| `layout.groundTransitionCoverage` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('groundTransitionCoverage')` | L.native-layout |
+| `layout.transitionBounds` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('transitionBounds')` | L.native-layout |
+| `layout.auditGroundEdges` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('auditGroundEdges')` | L.native-layout |
+| `layout.coverageAudit` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('coverageAudit')` | L.native-layout |
+| `layout.propPurpose` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('propPurpose')` | L.native-layout |
+| `layout.groupProps` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('groupProps')` | L.native-layout |
+| `layout.auditPropGroups` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('auditPropGroups')` | L.native-layout |
+| `layout.trimFloraOffSquare` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('trimFloraOffSquare')` | L.native-layout |
+| `layout.yardRole` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('yardRole')` | L.native-layout |
+| `layout.composeYards` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('composeYards')` | L.native-layout |
+| `layout.lanternsOnRoutes` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('lanternsOnRoutes')` | L.native-layout |
+| `layout.foliageKind` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('foliageKind')` | L.native-layout |
+| `layout.composeFoliage` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('composeFoliage')` | L.native-layout |
+| `layout.auditFoliageSpacing` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('auditFoliageSpacing')` | L.native-layout |
+| `layout.assignHouseModels` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('assignHouseModels')` | L.native-layout |
+| `layout.seatCapacity` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('seatCapacity')` | L.native-layout |
+| `layout.seatVillagers` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('seatVillagers')` | L.native-layout |
+| `layout.keepClearOfProps` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('keepClearOfProps')` | L.native-layout |
+| `layout.composeVillage` | a `conformance/layout-composition/` case's `input` (with its `ruleOverrides`) → its `expected` shape | `editor/layout/composition/corpus` `runCompositionOp('composeVillage')` | L.native-layout |
 <!-- END METHOD TABLE -->
 
 Each row's comment in `js/entry.js` gives the exact argument and result fields.
@@ -165,6 +228,56 @@ and hands core's answer back. One place does more, and says so in its comment:
 - `weather.run` steps core's pure functions exactly as core's
   `scripts/emit-weather-progression-corpus.ts` does (that script writes files at
   import, so it cannot be bundled).
+
+### The layout rows (L.native-layout, ruling U36)
+
+Core's village-layout rules (`src/editor/layout/`: building fit, settle, the
+ground plan and its paint, the backdrop; and `composition/`: the lane network,
+transitions, prop grouping, yards, lanterns, foliage, house variety, seating,
+reach, the composed village) are one row each, `layout.<op>`, for every op core's
+two corpus runners declare (`LAYOUT_OPS`, `COMPOSITION_OPS`). A row is core's
+own JSON boundary and nothing else: `runLayoutOp(op, args)` or
+`runCompositionOp(op, args)` (core's `DEFAULT_COMPOSITION_RULES`, with the
+input's `ruleOverrides` applied by core). So **the args are a corpus case's
+`input` and the answer is in its `expected` shape**, `-0` already written as
+`0`. A caller resolves a case's `{"$fixture": …}` references before sending;
+the rows never see a fixture.
+
+The evidence is core's own corpus, not a transcription: `vendor/core/conformance/
+layout/` and `layout-composition/` are core's files at the pin, copied byte for
+byte by `tools/vendor-core-bundle.mjs` and hashed in `VENDORED.json`
+(`core_vendor`; `--check --core` byte-compares them with core). The
+`layout_corpus` ctest (`tests/layout_corpus.cpp`) runs every case through
+`insimulcore.h` and compares by the corpus's rule (the case's tolerance or the
+file's, `angleKeys` round the circle, exact keys). It also fails when a row is
+named by no case, when core declares an op that is not a row (`layout.ops`), and
+when its comparator cannot fail; `layout_corpus_negative` runs it over a
+deliberately wrong one-case file (`tests/layout-negative/`) and must fail. The
+two case harnesses therefore do not require a case per `layout.*` row.
+
+**What Unreal's binding will call (L.portable-binding, a later row on the 36 GB
+Mac).** Unreal's `Portable/` layout code (`InsimulVillageLayout`,
+`InsimulBuildingFit`, …; ~3,700 lines held by the same corpus under U36) shrinks
+to a binding that builds each op's corpus-shaped input from its scene and calls
+`insimul_core_call(core, "layout.<op>", input)`. Its `layout_corpus_ops.h` table
+maps one-to-one onto these rows (the op names are the corpus's), so its host
+suite's `layout_conformance` can run the same files through this library
+instead of `Portable/`. The calls a placement pass makes, in order: `layout.fitBuildingToLot`
+per building (or `layout.composeVillage` for the composed village), then
+`layout.settleFittedBuildings` / `layout.settleBodies` / `layout.settleClearance`,
+`layout.buildGroundPlan`, `layout.gradeTerrain`, `layout.followSettledBuildings`,
+the paint (`layout.readGroundLayers`, `layout.resolveGroundPaint`,
+`layout.groundLayerWeights`), the prop passes (`layout.keepPlantPropsOffPaving`,
+`layout.trimGeneratedPoints`, `layout.lanternsAtPathMouths`, …) and the backdrop
+(`layout.backdropRing`, `layout.backdropFrame`). The binding owns only the scene
+reads and writes; every number it places comes back from a row.
+
+**Cost.** Under QuickJS the whole corpus (427 cases) takes about 11 s on this
+repo's 2026-10-29 build host, nearly all of it `ground-plan.json` (≈ 9.4 s) and
+`settle.json` (≈ 1.1 s), every other file under 0.2 s; `gradeTerrain` at core's cap (2,049² heights) is the largest call, and it
+is what sized the JS heap cap (`INSIMULCORE_JS_MEMORY_LIMIT`, 192 MiB,
+`src/insimulcore.c`). A game calls these at authoring or load time, never per
+frame.
 
 `save.decode` / `save.migrate` return core's `migrateSaveFileWithOutcome` outcome
 exactly as core answers it. At the pin core declares `orphanExtensionKeys` and

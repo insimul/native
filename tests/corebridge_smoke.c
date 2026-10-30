@@ -92,6 +92,7 @@ int main(void) {
         "\"save.decode\"", "\"ui.notifications.apply\"", "\"ui.journal.apply\"",
         "\"quest.completion.apply\"", "\"quest.waypoints\"", "\"clock.apply\"",
         "\"weather.apply\"", "\"genre.resolveGame\"", "\"modules.activate\"",
+        "\"layout.fitBuildingToLot\"", "\"layout.composeVillage\"",
     };
     for (size_t i = 0; i < sizeof(feature_rows) / sizeof(feature_rows[0]); i++) {
         if (!strstr(methods, feature_rows[i])) {

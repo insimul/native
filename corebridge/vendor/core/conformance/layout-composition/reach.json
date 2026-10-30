@@ -1,0 +1,535 @@
+{
+  "area": "layout-composition-reach",
+  "description": "G8 (core src/editor/layout/composition/reach.ts): every villager's middle 0.45 m off every prop's edge (no arms in a cauldron or a table), one working at a prop no more than 0.8 m from its edge and facing it; still too near or out of reach after the pushes, blocked. Authored in core; every threshold has a case just inside and just past it. Plan frame: IR (x, z) metres.",
+  "version": 1,
+  "sources": [
+    {
+      "authoredIn": "core",
+      "ruling": "U27 (B9 village composition)",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
+      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
+      "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
+    }
+  ],
+  "tolerance": 0.000001,
+  "angleKeys": ["heading"],
+  "cases": [
+    {
+      "name": "keep-clear: a cook 0.4275 m from the cauldron's edge is stood off",
+      "note": "G8: arms into the cauldron. Just inside the 0.45 m keep-clear: pushed straight out to 0.45 m, facing the cauldron.",
+      "op": "keepClearOfProps",
+      "pins": ["reach.bodyKeepClearM:inside"],
+      "input": {
+        "villagers": [
+          {
+            "entityId": "cook",
+            "x": 0.9275,
+            "z": 0,
+            "target": "cauldron"
+          }
+        ],
+        "props": [
+          {
+            "entityId": "cauldron",
+            "x": 0,
+            "z": 0,
+            "radius": 0.5
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "cook",
+          "verdict": "moved",
+          "x": 0.95,
+          "z": 0,
+          "moved": 0.022499999999999964,
+          "heading": 3.141592653589793,
+          "targetEdge": 0.44999999999999996,
+          "nearest": {
+            "prop": "cauldron",
+            "edge": 0.44999999999999996
+          }
+        }
+      ]
+    },
+    {
+      "name": "keep-clear: a cook 0.4725 m from the cauldron's edge stays",
+      "note": "Just past the 0.45 m keep-clear, and within reach: clear.",
+      "op": "keepClearOfProps",
+      "pins": ["reach.bodyKeepClearM:past"],
+      "input": {
+        "villagers": [
+          {
+            "entityId": "cook",
+            "x": 0.9725,
+            "z": 0,
+            "target": "cauldron"
+          }
+        ],
+        "props": [
+          {
+            "entityId": "cauldron",
+            "x": 0,
+            "z": 0,
+            "radius": 0.5
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "cook",
+          "verdict": "clear",
+          "x": 0.9725,
+          "z": 0,
+          "moved": 0,
+          "heading": 3.141592653589793,
+          "targetEdge": 0.47250000000000003,
+          "nearest": {
+            "prop": "cauldron",
+            "edge": 0.47250000000000003
+          }
+        }
+      ]
+    },
+    {
+      "name": "work reach: a cook 0.76 m from the cauldron's edge stays",
+      "note": "Just inside the 0.8 m work reach: clear.",
+      "op": "keepClearOfProps",
+      "pins": ["reach.workReachM:inside"],
+      "input": {
+        "villagers": [
+          {
+            "entityId": "cook",
+            "x": 0,
+            "z": 1.26,
+            "target": "cauldron"
+          }
+        ],
+        "props": [
+          {
+            "entityId": "cauldron",
+            "x": 0,
+            "z": 0,
+            "radius": 0.5
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "cook",
+          "verdict": "clear",
+          "x": 0,
+          "z": 1.26,
+          "moved": 0,
+          "heading": -1.5707963267948966,
+          "targetEdge": 0.76,
+          "nearest": {
+            "prop": "cauldron",
+            "edge": 0.76
+          }
+        }
+      ]
+    },
+    {
+      "name": "work reach: a cook 0.84 m from the cauldron's edge is drawn in",
+      "note": "Just past the 0.8 m reach: drawn straight in to it.",
+      "op": "keepClearOfProps",
+      "pins": ["reach.workReachM:past"],
+      "input": {
+        "villagers": [
+          {
+            "entityId": "cook",
+            "x": 0,
+            "z": 1.34,
+            "target": "cauldron"
+          }
+        ],
+        "props": [
+          {
+            "entityId": "cauldron",
+            "x": 0,
+            "z": 0,
+            "radius": 0.5
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "cook",
+          "verdict": "moved",
+          "x": 0,
+          "z": 1.3,
+          "moved": 0.040000000000000036,
+          "heading": -1.5707963267948966,
+          "targetEdge": 0.8,
+          "nearest": {
+            "prop": "cauldron",
+            "edge": 0.8
+          }
+        }
+      ]
+    },
+    {
+      "name": "no target: a villager at a table is stood off it; one far off is left",
+      "note": "Without a target only the keep-clear holds: one 0.2 m from the table's edge goes to 0.45 m, one 5 m off is clear.",
+      "op": "keepClearOfProps",
+      "input": {
+        "villagers": [
+          {
+            "entityId": "near",
+            "x": 1,
+            "z": 0
+          },
+          {
+            "entityId": "far",
+            "x": 6,
+            "z": 0
+          }
+        ],
+        "props": [
+          {
+            "entityId": "table",
+            "x": 0,
+            "z": 0,
+            "radius": 0.8
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "near",
+          "verdict": "moved",
+          "x": 1.25,
+          "z": 0,
+          "moved": 0.25,
+          "heading": null,
+          "targetEdge": null,
+          "nearest": {
+            "prop": "table",
+            "edge": 0.44999999999999996
+          }
+        },
+        {
+          "entityId": "far",
+          "verdict": "clear",
+          "x": 6,
+          "z": 0,
+          "moved": 0,
+          "heading": null,
+          "targetEdge": null,
+          "nearest": {
+            "prop": "table",
+            "edge": 5.2
+          }
+        }
+      ]
+    },
+    {
+      "name": "blocked: wedged between two props 0.6 m apart",
+      "note": "No spot keeps 0.45 m off both (their gap is under 0.9 m): blocked, the engine finds another spot.",
+      "op": "keepClearOfProps",
+      "input": {
+        "villagers": [
+          {
+            "entityId": "wedged",
+            "x": 0.8,
+            "z": 0.0001
+          }
+        ],
+        "props": [
+          {
+            "entityId": "barrel-a",
+            "x": 0,
+            "z": 0,
+            "radius": 0.5
+          },
+          {
+            "entityId": "barrel-b",
+            "x": 1.6,
+            "z": 0,
+            "radius": 0.5
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "wedged",
+          "verdict": "blocked",
+          "x": 0.6500015060975951,
+          "z": 0.0016916214594861693,
+          "moved": 0.15000693794575007,
+          "heading": null,
+          "targetEdge": null,
+          "nearest": {
+            "prop": "barrel-a",
+            "edge": 0.15000370730658463
+          }
+        }
+      ]
+    },
+    {
+      "name": "working at the table with a barrel behind",
+      "note": "Drawn in to the table and stood off the barrel beside the way: the passes settle on a spot that keeps both.",
+      "op": "keepClearOfProps",
+      "input": {
+        "villagers": [
+          {
+            "entityId": "smith",
+            "x": 2.5,
+            "z": 0.3,
+            "target": "table"
+          }
+        ],
+        "props": [
+          {
+            "entityId": "table",
+            "x": 0,
+            "z": 0,
+            "radius": 0.8
+          },
+          {
+            "entityId": "barrel",
+            "x": 1.6,
+            "z": 0.9,
+            "radius": 0.35
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "smith",
+          "verdict": "moved",
+          "x": 1.5871484550752049,
+          "z": 0.10010323304000912,
+          "moved": 0.9344820279238346,
+          "heading": -3.078604964650409,
+          "targetEdge": 0.790302133467937,
+          "nearest": {
+            "prop": "barrel",
+            "edge": 0.45000000000000007
+          }
+        }
+      ]
+    },
+    {
+      "name": "a target that is not a prop is no target",
+      "note": "A villager naming a prop that is not there keeps only the keep-clear.",
+      "op": "keepClearOfProps",
+      "input": {
+        "villagers": [
+          {
+            "entityId": "lost",
+            "x": 3,
+            "z": 3,
+            "target": "nothing"
+          }
+        ],
+        "props": [
+          {
+            "entityId": "table",
+            "x": 0,
+            "z": 0,
+            "radius": 0.8
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "lost",
+          "verdict": "clear",
+          "x": 3,
+          "z": 3,
+          "moved": 0,
+          "heading": null,
+          "targetEdge": null,
+          "nearest": {
+            "prop": "table",
+            "edge": 3.442640687119286
+          }
+        }
+      ]
+    },
+    {
+      "name": "blocked: still out of reach of its own prop after the passes",
+      "note": "A cook 2.5 m from the cauldron's edge, with a barrel between them. Each pass draws it in to the cauldron, into the barrel, and the barrel pushes it back out; after the passes it is clear of both but 1.25 m from the cauldron's edge, past the 0.8 m reach: blocked, not moved.",
+      "op": "keepClearOfProps",
+      "input": {
+        "villagers": [
+          {
+            "entityId": "cook",
+            "x": 3,
+            "z": 0,
+            "target": "cauldron"
+          }
+        ],
+        "props": [
+          {
+            "entityId": "cauldron",
+            "x": 0,
+            "z": 0,
+            "radius": 0.5
+          },
+          {
+            "entityId": "barrel",
+            "x": 1,
+            "z": 0,
+            "radius": 0.3
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "cook",
+          "verdict": "blocked",
+          "x": 1.75,
+          "z": 0,
+          "moved": 1.25,
+          "heading": 3.141592653589793,
+          "targetEdge": 1.25,
+          "nearest": {
+            "prop": "barrel",
+            "edge": 0.45
+          }
+        }
+      ]
+    },
+    {
+      "name": "keep-clear: a villager exactly at a prop's middle is stood out along +x",
+      "note": "A villager at the crate's very middle has no way out of it to follow; it is stood out along the plan's +x, 0.45 m off the edge at (2.85, 3).",
+      "op": "keepClearOfProps",
+      "input": {
+        "villagers": [
+          {
+            "entityId": "villager",
+            "x": 2,
+            "z": 3
+          }
+        ],
+        "props": [
+          {
+            "entityId": "crate",
+            "x": 2,
+            "z": 3,
+            "radius": 0.4
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "villager",
+          "verdict": "moved",
+          "x": 2.85,
+          "z": 3,
+          "moved": 0.8500000000000001,
+          "heading": null,
+          "targetEdge": null,
+          "nearest": {
+            "prop": "crate",
+            "edge": 0.45000000000000007
+          }
+        }
+      ]
+    },
+    {
+      "name": "nearest: equally near two props, the lower id, whatever the input order",
+      "note": "A villager midway between two crates 1.5 m from each edge, listed b first: the prop reported nearest is a.",
+      "op": "keepClearOfProps",
+      "input": {
+        "villagers": [
+          {
+            "entityId": "villager",
+            "x": 0,
+            "z": 0
+          }
+        ],
+        "props": [
+          {
+            "entityId": "b",
+            "x": 2,
+            "z": 0,
+            "radius": 0.5
+          },
+          {
+            "entityId": "a",
+            "x": -2,
+            "z": 0,
+            "radius": 0.5
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "villager",
+          "verdict": "clear",
+          "x": 0,
+          "z": 0,
+          "moved": 0,
+          "heading": null,
+          "targetEdge": null,
+          "nearest": {
+            "prop": "a",
+            "edge": 1.5
+          }
+        }
+      ]
+    },
+    {
+      "name": "target: its own prop is not pushed off as an obstacle; its own step keeps the keep-clear",
+      "note": "A cook working at c.stool among three other props (found by the round 5 sweep). The stool's own step stands the cook off it to the keep-clear and draws it in to the reach; the obstacle pushes are the other props'. Pushed off the stool as an obstacle too, within the same pass, the cook is driven round the barrel and the table and ends out of reach, blocked; as the rule is, it settles 0.455 m from the stool's edge, within reach and clear of every prop.",
+      "op": "keepClearOfProps",
+      "input": {
+        "villagers": [
+          {
+            "entityId": "cook",
+            "x": 1.2,
+            "z": 2.7,
+            "target": "c.stool"
+          }
+        ],
+        "props": [
+          {
+            "entityId": "a.barrel",
+            "x": 2,
+            "z": 2.8,
+            "radius": 0.6
+          },
+          {
+            "entityId": "b.crate",
+            "x": 4,
+            "z": 2,
+            "radius": 0.7
+          },
+          {
+            "entityId": "c.stool",
+            "x": 0.8,
+            "z": 2.6,
+            "radius": 0.3
+          },
+          {
+            "entityId": "d.table",
+            "x": 0.7,
+            "z": 3.4,
+            "radius": 0.7
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "cook",
+          "verdict": "moved",
+          "x": 1.2904856195540493,
+          "z": 2.025991379931464,
+          "moved": 0.680055341330963,
+          "heading": 2.2778922994085757,
+          "targetEdge": 0.4550245286759263,
+          "nearest": {
+            "prop": "a.barrel",
+            "edge": 0.4500000000000003
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -3,19 +3,19 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-c0-bridge",
-    "gitHead": "3a90e6e47113d1a64485bc6daaec23d47429dc2b"
+    "root": "native-l-native-layout",
+    "gitHead": "2f76da632da565154bc08c0b3b9a0a9b0a849965"
   },
   "coverage": {
-    "files": 336,
-    "packScanned": 99,
+    "files": 354,
+    "packScanned": 116,
     "packDocuments": [],
     "importFiles": 20,
-    "importSpecifiers": 113,
+    "importSpecifiers": 115,
     "cargoManifests": 3,
     "cargoDependencies": 3,
-    "cFiles": 137,
-    "cIncludes": 741,
+    "cFiles": 138,
+    "cIncludes": 755,
     "buildFiles": 21
   },
   "content": [
@@ -987,6 +987,32 @@
       "reviewedAt": "2026-10-15"
     },
     {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 102,
+      "specifier": "@insimul/core/editor/layout/corpus",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the layout rows (L.native-layout, ruling U36), exactly as the C0 method table's specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-l-native-layout (Features Gauntlet L.native-layout)",
+      "reviewedAt": "2026-10-29"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 103,
+      "specifier": "@insimul/core/editor/layout/composition/corpus",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the layout rows (L.native-layout, ruling U36), exactly as the C0 method table's specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-l-native-layout (Features Gauntlet L.native-layout)",
+      "reviewedAt": "2026-10-29"
+    },
+    {
       "rule": "build-time-fetch",
       "kind": "fetch",
       "classification": "keep",
@@ -1163,7 +1189,7 @@
       "unresolved": 0
     },
     "dependency": {
-      "findings": 39,
+      "findings": 41,
       "unresolved": 0
     },
     "unusedAllowances": 0

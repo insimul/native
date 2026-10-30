@@ -441,12 +441,23 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` c4b46c4 (2026-10-16 landing: track
-  G's genre registry and mechanics, track E's world creation and C0's wasm entry on
-  top of cec0a0e). The second pass had pinned the `feat/g-mechanics` head 73f93ee;
-  the bundle bytes did not change when the pin moved, only the recorded commit. To
+  and pin disagree. The pin today is core `main` 4a46789 (2026-10-29,
+  L.native-layout: it holds L1's layout rules and B9's composition rules). Before
+  that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R corebridge`.
+  `ctest -R 'corebridge|core_vendor|layout'`, then regenerate the two pre-open
+  reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
+  `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
+- **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
+  `layout.<op>` is one row per op of core's `LAYOUT_OPS` / `COMPOSITION_OPS`, each
+  calling core's own corpus boundary (`runLayoutOp` / `runCompositionOp`).
+  `vendor-core-bundle.mjs` COPIES core's `conformance/layout/` and
+  `conformance/layout-composition/` into `corebridge/vendor/core/conformance/`
+  (hashed in VENDORED.json; `--check --core` byte-compares them) — never transcribe
+  them into bridge cases. `layout_corpus` (`tests/layout_corpus.cpp`) runs them
+  through `insimulcore.h`; `layout_corpus_negative` must see it fail a wrong
+  answer. `gradeTerrain` at core's 2,049² cap is what sized the JS heap cap
+  (192 MiB; it OOMs at 80).
 - **macOS realpath trap**: esbuild reports paths it resolves itself through
   symlinks (`/var` → `/private/var`), so the extracted root, `node_modules` and
   `js/` are all `realpathSync`'d before any label is matched by prefix. Without it

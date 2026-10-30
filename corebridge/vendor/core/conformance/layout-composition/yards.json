@@ -1,0 +1,3933 @@
+{
+  "area": "layout-composition-yards",
+  "description": "G5 (core src/editor/layout/composition/yards.ts): each lot dressed by its building's role: a porch deck under every door, widened under the porch posts within reach; the yard's edges (fence, hedge or wall by role) inset in the lot, open at the gate, skipped where the house leaves too little clear ground; the role's dressing in the yard's slots. Authored in core; every threshold has a case just inside and just past it. Plan frame: IR (x, z) metres; a lot's away towards its street, across its quarter turn left.",
+  "version": 1,
+  "sources": [
+    {
+      "authoredIn": "core",
+      "ruling": "U27 (B9 village composition)",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
+      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
+      "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
+    },
+    {
+      "authoredIn": "core",
+      "ruling": "U38 (L3 lot-sizing: village lots grow at their source)",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
+      "ir": "$LOOPS_HOME/features/state/lot-sizing/round-1/ir/brightwater-ir-lot-sizing.json (pipelines feat/lot-sizing, exported 2026-10-24)",
+      "irSha256": "06f7101bccde8f4ca130c1dfb34b7084a4f7fc7fe809994f0c171b7fcbad3c72",
+      "inputsFrom": "$LOOPS_HOME/features/state/lot-sizing/round-1/g5-yards.ts: the IR's lots (+256, the corpus plan frame); outlines as the IR's spec boxes, or the B8 pack houses through core's fitBuildingToLot (conformance/layout/building-fit.json's Brightwater inputs, lot and node moved to the IR's)"
+    }
+  ],
+  "tolerance": 0.000001,
+  "angleKeys": ["heading"],
+  "fixtures": {
+    "villageFollowedPlan": {
+      "lots": [
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 450.896,
+          "cz": 434.88,
+          "entityId": "bld_6abb84bcf2e499b951eece64_4",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec4"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 418.141,
+          "cz": 410.38100000000003,
+          "entityId": "bld_6abb84bcf2e499b951eece64_5",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec5"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 441.642,
+          "cz": 451.806,
+          "entityId": "bld_6abb84bcf2e499b951eece64_6",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec6"
+        },
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 455.837,
+          "cz": 417.272,
+          "entityId": "bld_6abb84eef2e499b951eecec0",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec0"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 423.954,
+          "cz": 446.566,
+          "entityId": "bld_6abb84eef2e499b951eecec1",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec1"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 417.725,
+          "cz": 428.072,
+          "entityId": "bld_6abb84eef2e499b951eecec2",
+          "halfAcross": 6,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec2"
+        },
+        {
+          "awayX": 6.123233995736766e-17,
+          "awayZ": 1,
+          "cx": 437.041,
+          "cz": 411.301,
+          "entityId": "bld_6abb84eef2e499b951eecec3",
+          "halfAcross": 7.5,
+          "halfAway": 6,
+          "lotId": "6abb84eef2e499b951eecec3"
+        }
+      ],
+      "strips": [
+        {
+          "closed": false,
+          "entityId": "road.street_lane_0_mouth.street_lane_0_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[423.892, 436.911], [415.892, 436.911]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "road.street_lane_1_mouth.street_lane_1_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[426.392, 417.411], [426.392, 409.411]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec0",
+          "points": [[450.4369120320974, 417.4309344924799], [441.72154919284964, 424.1655330500804]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec1",
+          "points": [[423.79616536403324, 441.1658797734054], [423.79616536403324, 438.811]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec2",
+          "points": [[423.1249822338019, 427.42390786597616], [425.14845654213593, 430.04252167676134]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec3",
+          "points": [[441.43151738729995, 417.70075139855004], [438.4852651961146, 419.97740081901145]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec4",
+          "points": [[445.4957542162136, 435.5258924169372], [440.9423780451835, 429.63328796031004]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec5",
+          "points": [[423.5410227784881, 410.2198658143185], [424.492, 410.2198658143185]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec6.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec6",
+          "points": [[440.997207481819, 446.40562277724445], [432.86176255462476, 435.8773999302872]],
+          "surface": "path"
+        },
+        {
+          "closed": true,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+          "halfWidth": 0,
+          "lotId": "6abb84eef2e499b951eeced2",
+          "points": [[438.4767608396403, 418.985117150083], [444.917341184305, 427.3199858314138], [429.72466915757536, 439.0597778520685], [423.2840888129107, 430.7249091707377]],
+          "surface": "plaza"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "name": "yards: Brightwater Vale's seven lots by role",
+      "note": "The followed plan's lots, their buildings' roles from the IR archetypes (a farm, a smithy, a bakery, an inn, three homes), the settled footprints and the doors: the pack's houses fill their 10 m lots, so most sides are too tight for an edge, and every door still gets its porch deck.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "$fixture": "villageFollowedPlan"
+        },
+        "buildings": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "archetype": "building.residence_small",
+            "outline": [[459.00987385207276, 440.97032998790377], [445.89464588250075, 440.9676587673506], [445.8971260833178, 428.7903044541259], [459.0123540528897, 428.792975674679]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "archetype": "building.residence_small",
+            "outline": [[412.82080370500114, 404.7803641288587], [423.13991446136845, 404.7782624024681], [423.14219630161534, 415.9817008428932], [412.82308554524803, 415.98380256928385]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "archetype": "building.residence_small",
+            "outline": [[435.5500175597363, 459.9186332467596], [435.5553600007318, 446.8034060932717], [447.73271355623086, 446.8083664948028], [447.72737111523537, 459.92359364829065]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "archetype": "building.farm",
+            "outline": [[461.1549144547519, 422.8748025692839], [450.8358036983846, 422.87270084289327], [450.8380855386315, 411.66926240246806], [461.1571962949988, 411.67136412885867]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "archetype": "building.blacksmith",
+            "outline": [[418.350114430252, 451.882773203702], [418.3543178829461, 441.56366308943274], [429.5577556262466, 441.5682267698318], [429.55355217355253, 451.88733688410116]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "archetype": "building.bakery",
+            "outline": [[409.60864594711035, 421.98497567467894], [422.7238739166823, 421.98230445412577], [422.7263541174992, 434.15965876735055], [409.6111261479273, 434.1623299879037]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "archetype": "building.restaurant",
+            "outline": [[444.93943722855, 405.27424860145004], [444.93943722855, 417.30075139855006], [429.14256277145, 417.30075139855006], [429.14256277145, 405.27424860145004]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "x": 445.89575420791704,
+            "z": 435.5259738862187,
+            "heading": -3.1413889803846904
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "x": 423.1410227867847,
+            "z": 410.2199472836,
+            "heading": -0.00020367320510339404
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "x": 440.9970445432594,
+            "z": 446.8056227440582,
+            "heading": -1.5703889803846898
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "x": 450.83691202380083,
+            "z": 417.4310159617614,
+            "heading": -3.1413889803846904
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "x": 423.79600242547366,
+            "z": 441.56587974021915,
+            "heading": -1.5703889803846898
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "x": 422.72498224209846,
+            "z": 427.42398933525766,
+            "heading": -0.00020367320510339404
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "x": 441.43151738729995,
+            "z": 417.30075139855006,
+            "heading": 1.5707963267948966
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": -3.115114120799941,
+              "across+": -1.0886772828999591,
+              "across-": -1.0886772829000497,
+              "front": -0.00011412080008987857
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84bcf2e499b951eece64_4",
+                "x": 445.1457542234731,
+                "z": 435.5258211313159,
+                "heading": -3.1413889803846904,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.furniture.washline", "prop.vegetation.planter"]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": -0.319055485200022,
+              "across+": -0.6017193363999498,
+              "across-": -0.6017193364000546,
+              "front": -0.000055485199964344645
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84bcf2e499b951eece64_5",
+                "x": 423.8910227712286,
+                "z": 410.2197945286972,
+                "heading": -0.00020367320510339404,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.furniture.washline", "prop.vegetation.planter"]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": -3.1151141208000475,
+              "across+": -1.0886772828999298,
+              "across-": -1.0886772829000373,
+              "front": -0.0001141207999939553
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84bcf2e499b951eece64_6",
+                "x": 440.9973500530586,
+                "z": 446.0556228062824,
+                "heading": -1.5703889803846898,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.furniture.washline", "prop.vegetation.planter"]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": -0.31905548519996607,
+              "across+": -0.6017193364000537,
+              "across-": -0.6017193364000288,
+              "front": -0.000055485200021188064
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec0",
+                "x": 450.0869120393569,
+                "z": 417.4308632068586,
+                "heading": -3.1413889803846904,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.container.hay", "prop.vehicle.cart", "prop.container.trough"]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "role": "smithy",
+            "edge": "wall",
+            "gaps": {
+              "back": -0.31905548519997406,
+              "across+": -0.6017193363999054,
+              "across-": -0.6017193364000493,
+              "front": -0.0000554852000567152
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec1",
+                "x": 423.79630793527286,
+                "z": 440.8158798024433,
+                "heading": -1.5703889803846898,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.container.coal", "prop.furniture.grindstone"]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "role": "bakery",
+            "edge": "fence",
+            "gaps": {
+              "back": -3.115114120799941,
+              "across+": -0.088677282899992,
+              "across-": -0.08867728290002308,
+              "front": -0.00011412080004902236
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec2",
+                "x": 423.4749822265424,
+                "z": 427.4238365803549,
+                "heading": -0.00020367320510339404,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.container.woodpile", "prop.container.sack"]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "role": "inn",
+            "edge": "wall",
+            "gaps": {
+              "back": -0.02675139854994857,
+              "across+": -0.3984372285499944,
+              "across-": -0.3984372285499944,
+              "front": 0.000248601449924557
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec3",
+                "x": 441.43151738729995,
+                "z": 418.05075139855006,
+                "heading": 1.5707963267948966,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.container.barrel", "prop.furniture.bench"]
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "bld_6abb84bcf2e499b951eece64_4",
+            "x": 445.1457542234731,
+            "z": 435.5258211313159,
+            "heading": -3.1413889803846904,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84bcf2e499b951eece64_5",
+            "x": 423.8910227712286,
+            "z": 410.2197945286972,
+            "heading": -0.00020367320510339404,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84bcf2e499b951eece64_6",
+            "x": 440.9973500530586,
+            "z": 446.0556228062824,
+            "heading": -1.5703889803846898,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec0",
+            "x": 450.0869120393569,
+            "z": 417.4308632068586,
+            "heading": -3.1413889803846904,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec1",
+            "x": 423.79630793527286,
+            "z": 440.8158798024433,
+            "heading": -1.5703889803846898,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec2",
+            "x": 423.4749822265424,
+            "z": 427.4238365803549,
+            "heading": -0.00020367320510339404,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec3",
+            "x": 441.43151738729995,
+            "z": 418.05075139855006,
+            "heading": 1.5707963267948966,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "yards: Brightwater Vale on its grown lots (L3), the houses as the IR's boxes",
+      "note": "U38's lots: each building's box plus 2.5 m a side and 5 m behind, its front on the lot's front. The house as the IR states it (its spec box at its position): every back and both sides clear 1 m, so they are edged by role, and every role's dressing finds its slots; the front has no ground (the house stands on the street line), so it is too tight and the square's facades are not fenced.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "bld_6abb84eef2e499b951eecec0",
+              "lotId": "6abb84eef2e499b951eecec0",
+              "cx": 416.392,
+              "cz": 446.911,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": 0.0004073463989411658,
+              "awayZ": -0.9999999170344522
+            },
+            {
+              "entityId": "bld_6abb84eef2e499b951eecec1",
+              "lotId": "6abb84eef2e499b951eecec1",
+              "cx": 437.892,
+              "cz": 446.911,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": 0.0004073463989411658,
+              "awayZ": -0.9999999170344522
+            },
+            {
+              "entityId": "bld_6abb84eef2e499b951eecec2",
+              "lotId": "6abb84eef2e499b951eecec2",
+              "cx": 416.392,
+              "cz": 425.911,
+              "halfAcross": 8.5,
+              "halfAway": 7.5,
+              "awayX": 0.9999999792586128,
+              "awayZ": -0.00020367320369523912
+            },
+            {
+              "entityId": "bld_6abb84eef2e499b951eecec3",
+              "lotId": "6abb84eef2e499b951eecec3",
+              "cx": 438.892,
+              "cz": 408.911,
+              "halfAcross": 10,
+              "halfAway": 8.5,
+              "awayX": 6.123233995736766e-17,
+              "awayZ": 1
+            },
+            {
+              "entityId": "bld_6abb84bcf2e499b951eece64_4",
+              "lotId": "6abb84eef2e499b951eecec4",
+              "cx": 453.392,
+              "cz": 425.411,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": -0.9999999792586128,
+              "awayZ": -0.00020367320369513953
+            },
+            {
+              "entityId": "bld_6abb84bcf2e499b951eece64_5",
+              "lotId": "6abb84eef2e499b951eecec5",
+              "cx": 416.392,
+              "cz": 408.911,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": 0.9999999792586128,
+              "awayZ": -0.00020367320369523912
+            },
+            {
+              "entityId": "bld_6abb84bcf2e499b951eece64_6",
+              "lotId": "6abb84eef2e499b951eecec6",
+              "cx": 400.392,
+              "cz": 446.911,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": 0.0004073463989411658,
+              "awayZ": -0.9999999170344522
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "archetype": "building.farm",
+            "outline": [[411.38996368283307, 449.40896285317757], [421.38996285317756, 449.4130363171669], [421.3940363171669, 439.41303714682243], [411.3940371468224, 439.4089636828331]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "archetype": "building.blacksmith",
+            "outline": [[432.88996368283307, 449.40896285317757], [442.88996285317756, 449.4130363171669], [442.8940363171669, 439.41303714682243], [432.8940371468224, 439.4089636828331]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "archetype": "building.bakery",
+            "outline": [[413.8907780644848, 419.9120184904668], [413.8932221429291, 431.91201824157014], [423.8932219355152, 431.9099815095332], [423.8907778570709, 419.90998175842986]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "archetype": "building.restaurant",
+            "outline": [[446.392, 405.411], [431.392, 405.411], [431.392, 417.411], [446.392, 417.411]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "archetype": "building.residence_small",
+            "outline": [[455.8909815302746, 430.4120182623115], [455.8930182623115, 420.4120184697254], [445.8930184697254, 420.4099817376885], [445.8909817376885, 430.4099815302746]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "archetype": "building.residence_small",
+            "outline": [[413.8909817376885, 403.9120184697254], [413.8930184697254, 413.9120182623115], [423.8930182623115, 413.9099815302746], [423.8909815302746, 403.9099817376885]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "archetype": "building.residence_small",
+            "outline": [[395.38996368283307, 449.40896285317757], [405.38996285317756, 449.4130363171669], [405.3940363171669, 439.41303714682243], [395.3940371468224, 439.4089636828331]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "x": 416.3940367319947,
+            "z": 439.41100041482775,
+            "heading": -1.5703889803846902
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "x": 437.8940367319947,
+            "z": 439.41100041482775,
+            "heading": -1.5703889803846902
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "x": 423.89199989629304,
+            "z": 425.90998163398154,
+            "heading": -0.00020367320510339404
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "x": 438.892,
+            "z": 417.411,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "x": 445.89200010370695,
+            "z": 425.40998163398154,
+            "heading": -3.14138898038469
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "x": 423.89199989629304,
+            "z": 408.90998163398154,
+            "heading": -0.00020367320510339404
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "x": 400.3940367319947,
+            "z": 439.41100041482775,
+            "heading": -1.5703889803846902
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 4.999999792586117,
+              "across+": 2.5010183659973393,
+              "across-": 2.498981634002633,
+              "front": 2.074138558683103e-7
+            },
+            "tooTight": ["front"],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec0",
+                "x": 416.3943422417939,
+                "z": 438.6610004770519,
+                "heading": -1.5703889803846902,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [409.18906770327953, 454.1080665085757],
+                "to": [423.5890665085757, 454.11393229672046],
+                "posts": [
+                  [409.18906770327953, 454.1080665085757],
+                  [411.1890675373484, 454.10888120137355],
+                  [413.18906737141737, 454.10969589417147],
+                  [415.18906720548625, 454.1105105869693],
+                  [417.18906703955514, 454.11132527976724],
+                  [419.18906687362403, 454.1121399725651],
+                  [421.189066707693, 454.112954665363],
+                  [423.18906654176186, 454.1137693581609],
+                  [423.5890665085757, 454.11393229672046]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [423.5890665085757, 454.11393229672046],
+                "to": [423.59493229672046, 439.7139334914243],
+                "posts": [
+                  [423.5890665085757, 454.11393229672046],
+                  [423.58988120137354, 452.1139324626516],
+                  [423.59069589417146, 450.11393262858263],
+                  [423.5915105869693, 448.11393279451374],
+                  [423.59232527976724, 446.11393296044486],
+                  [423.5931399725651, 444.11393312637597],
+                  [423.593954665363, 442.113933292307],
+                  [423.5947693581609, 440.11393345823814],
+                  [423.59493229672046, 439.7139334914243]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [409.18906770327953, 454.1080665085757],
+                "to": [409.1949334914243, 439.70806770327954],
+                "posts": [
+                  [409.18906770327953, 454.1080665085757],
+                  [409.1898823960774, 452.1080666745068],
+                  [409.1906970888753, 450.10806684043786],
+                  [409.19151178167317, 448.10806700636897],
+                  [409.1923264744711, 446.1080671723001],
+                  [409.19314116726895, 444.1080673382312],
+                  [409.19395586006686, 442.10806750416225],
+                  [409.1947705528647, 440.10806767009336],
+                  [409.1949334914243, 439.70806770327954]
+                ]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": 422.8893517091308,
+                "z": 453.4136472123171,
+                "heading": -2.3557871437821345
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": 409.8893527876829,
+                "z": 453.4083517091308,
+                "heading": -0.7849908169872377
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across+",
+                "x": 422.8919994607239,
+                "z": 446.91364775159315,
+                "heading": -3.1411853071795828
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "role": "smithy",
+            "edge": "wall",
+            "gaps": {
+              "back": 4.999999792586117,
+              "across+": 2.5010183659973393,
+              "across-": 2.498981634002633,
+              "front": 2.074138558683103e-7
+            },
+            "tooTight": ["front"],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec1",
+                "x": 437.8943422417939,
+                "z": 438.6610004770519,
+                "heading": -1.5703889803846902,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "wall",
+                "from": [430.68906770327953, 454.1080665085757],
+                "to": [445.0890665085757, 454.11393229672046],
+                "posts": [
+                  [430.68906770327953, 454.1080665085757],
+                  [432.6890675373484, 454.10888120137355],
+                  [434.68906737141737, 454.10969589417147],
+                  [436.68906720548625, 454.1105105869693],
+                  [438.68906703955514, 454.11132527976724],
+                  [440.68906687362403, 454.1121399725651],
+                  [442.689066707693, 454.112954665363],
+                  [444.68906654176186, 454.1137693581609],
+                  [445.0890665085757, 454.11393229672046]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "wall",
+                "from": [445.0890665085757, 454.11393229672046],
+                "to": [445.09493229672046, 439.7139334914243],
+                "posts": [
+                  [445.0890665085757, 454.11393229672046],
+                  [445.08988120137354, 452.1139324626516],
+                  [445.09069589417146, 450.11393262858263],
+                  [445.0915105869693, 448.11393279451374],
+                  [445.09232527976724, 446.11393296044486],
+                  [445.0931399725651, 444.11393312637597],
+                  [445.093954665363, 442.113933292307],
+                  [445.0947693581609, 440.11393345823814],
+                  [445.09493229672046, 439.7139334914243]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "wall",
+                "from": [430.68906770327953, 454.1080665085757],
+                "to": [430.6949334914243, 439.70806770327954],
+                "posts": [
+                  [430.68906770327953, 454.1080665085757],
+                  [430.6898823960774, 452.1080666745068],
+                  [430.6906970888753, 450.10806684043786],
+                  [430.69151178167317, 448.10806700636897],
+                  [430.6923264744711, 446.1080671723001],
+                  [430.69314116726895, 444.1080673382312],
+                  [430.69395586006686, 442.10806750416225],
+                  [430.6947705528647, 440.10806767009336],
+                  [430.6949334914243, 439.70806770327954]
+                ]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.coal",
+                "slot": "back across+",
+                "x": 444.3893517091308,
+                "z": 453.4136472123171,
+                "heading": -2.3557871437821345
+              },
+              {
+                "archetype": "prop.furniture.grindstone",
+                "slot": "back across-",
+                "x": 431.3893527876829,
+                "z": 453.4083517091308,
+                "heading": -0.7849908169872377
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "role": "bakery",
+            "edge": "fence",
+            "gaps": {
+              "back": 4.999999948146548,
+              "across+": 2.4994908169907397,
+              "across-": 2.500509183009216,
+              "front": 5.185348417313662e-8
+            },
+            "tooTight": ["front"],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec2",
+                "x": 424.641999880737,
+                "z": 425.90982887907876,
+                "heading": -0.00020367320510339404,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [409.19033002906764, 417.712466617146],
+                "to": [409.1936702696083, 434.1124662769872],
+                "posts": [
+                  [409.19033002906764, 417.712466617146],
+                  [409.190737375475, 419.7124665756632],
+                  [409.19114472188244, 421.71246653418046],
+                  [409.1915520682898, 423.7124664926977],
+                  [409.19195941469724, 425.7124664512149],
+                  [409.1923667611046, 427.71246640973214],
+                  [409.192774107512, 429.71246636824935],
+                  [409.1931814539194, 431.71246632676656],
+                  [409.1935888003268, 433.71246628528377],
+                  [409.1936702696083, 434.1124662769872]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [409.1936702696083, 434.1124662769872],
+                "to": [423.59366997093235, 434.109533382854],
+                "posts": [
+                  [409.1936702696083, 434.1124662769872],
+                  [411.1936702281255, 434.11205893057985],
+                  [413.19367018664275, 434.1116515841724],
+                  [415.19367014515996, 434.11124423776505],
+                  [417.19367010367716, 434.1108368913577],
+                  [419.1936700621944, 434.11042954495025],
+                  [421.19367002071164, 434.1100221985429],
+                  [423.19366997922884, 434.1096148521355],
+                  [423.59366997093235, 434.109533382854]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [409.19033002906764, 417.712466617146],
+                "to": [423.5903297303917, 417.7095337230128],
+                "posts": [
+                  [409.19033002906764, 417.712466617146],
+                  [411.19032998758485, 417.7120592707386],
+                  [413.1903299461021, 417.7116519243312],
+                  [415.1903299046193, 417.7112445779238],
+                  [417.1903298631365, 417.71083723151645],
+                  [419.1903298216538, 417.710429885109],
+                  [421.190329780171, 417.71002253870165],
+                  [423.1903297386882, 417.7096151922943],
+                  [423.5903297303917, 417.7095337230128]
+                ]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.woodpile",
+                "slot": "back across+",
+                "x": 409.89352768384674,
+                "z": 433.4123237202636,
+                "heading": -0.8569093013878422
+              },
+              {
+                "archetype": "prop.container.sack",
+                "slot": "back across-",
+                "x": 409.89047258579126,
+                "z": 418.41232403138446,
+                "heading": 0.8565019549776299
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "role": "inn",
+            "edge": "wall",
+            "gaps": {
+              "back": 5,
+              "across+": 2.499999999999999,
+              "across-": 2.5,
+              "front": 0
+            },
+            "tooTight": ["front"],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec3",
+                "x": 438.892,
+                "z": 418.161,
+                "heading": 1.5707963267948966,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "wall",
+                "from": [448.592, 400.711],
+                "to": [429.192, 400.711],
+                "posts": [
+                  [448.592, 400.711],
+                  [446.592, 400.711],
+                  [444.592, 400.711],
+                  [442.592, 400.711],
+                  [440.592, 400.711],
+                  [438.592, 400.711],
+                  [436.592, 400.711],
+                  [434.592, 400.711],
+                  [432.592, 400.711],
+                  [430.592, 400.711],
+                  [429.192, 400.711]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "wall",
+                "from": [429.192, 400.711],
+                "to": [429.192, 417.111],
+                "posts": [
+                  [429.192, 400.711],
+                  [429.192, 402.711],
+                  [429.192, 404.711],
+                  [429.192, 406.711],
+                  [429.192, 408.711],
+                  [429.192, 410.711],
+                  [429.192, 412.711],
+                  [429.192, 414.711],
+                  [429.192, 416.711],
+                  [429.192, 417.111]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "wall",
+                "from": [448.592, 400.711],
+                "to": [448.592, 417.111],
+                "posts": [
+                  [448.592, 400.711],
+                  [448.592, 402.711],
+                  [448.592, 404.711],
+                  [448.592, 406.711],
+                  [448.592, 408.711],
+                  [448.592, 410.711],
+                  [448.592, 412.711],
+                  [448.592, 414.711],
+                  [448.592, 416.711],
+                  [448.592, 417.111]
+                ]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.barrel",
+                "slot": "back across+",
+                "x": 429.892,
+                "z": 401.411,
+                "heading": 0.6947382761967033
+              },
+              {
+                "archetype": "prop.furniture.bench",
+                "slot": "back across-",
+                "x": 447.892,
+                "z": 401.411,
+                "heading": 2.44685437739309
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": 4.999999948146529,
+              "across+": 2.5005091830092354,
+              "across-": 2.4994908169907593,
+              "front": 5.185346552138981e-8
+            },
+            "tooTight": ["front"],
+            "porches": [
+              {
+                "door": "bld_6abb84bcf2e499b951eece64_4",
+                "x": 445.142000119263,
+                "z": 425.40982887907876,
+                "heading": -3.14138898038469,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "hedge",
+                "from": [460.59053340359543, 432.61246629772864],
+                "to": [460.59346629772864, 418.21246659640457],
+                "posts": [
+                  [460.59053340359543, 432.61246629772864],
+                  [460.5909407500028, 430.61246633921144],
+                  [460.59134809641023, 428.6124663806942],
+                  [460.5917554428176, 426.61246642217696],
+                  [460.592162789225, 424.61246646365976],
+                  [460.5925701356324, 422.6124665051425],
+                  [460.59297748203977, 420.6124665466253],
+                  [460.59338482844714, 418.6124665881081],
+                  [460.59346629772864, 418.21246659640457]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "hedge",
+                "from": [460.59346629772864, 418.21246659640457],
+                "to": [446.19346659640456, 418.20953370227136],
+                "posts": [
+                  [460.59346629772864, 418.21246659640457],
+                  [458.59346633921143, 418.2120592499972],
+                  [456.59346638069417, 418.21165190358977],
+                  [454.59346642217696, 418.2112445571824],
+                  [452.59346646365975, 418.210837210775],
+                  [450.5934665051425, 418.2104298643676],
+                  [448.5934665466253, 418.2100225179602],
+                  [446.5934665881081, 418.20961517155285],
+                  [446.19346659640456, 418.20953370227136]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "hedge",
+                "from": [460.59053340359543, 432.61246629772864],
+                "to": [446.19053370227135, 432.60953340359544],
+                "posts": [
+                  [460.59053340359543, 432.61246629772864],
+                  [458.5905334450782, 432.6120589513213],
+                  [456.59053348656096, 432.61165160491385],
+                  [454.59053352804375, 432.6112442585065],
+                  [452.59053356952654, 432.6108369120991],
+                  [450.5905336110093, 432.6104295656917],
+                  [448.59053365249207, 432.6100222192843],
+                  [446.59053369397486, 432.60961487287693],
+                  [446.19053370227135, 432.60953340359544]
+                ]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.furniture.washline",
+                "slot": "back across+",
+                "x": 459.893323741005,
+                "z": 418.91232401064303,
+                "heading": 2.35639816339745
+              },
+              {
+                "archetype": "prop.vegetation.planter",
+                "slot": "back across-",
+                "x": 459.89067598935696,
+                "z": 431.912323741005,
+                "heading": -2.3559908169872403
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": 4.999999948146529,
+              "across+": 2.4994908169907584,
+              "across-": 2.5005091830092345,
+              "front": 5.185346463321139e-8
+            },
+            "tooTight": ["front"],
+            "porches": [
+              {
+                "door": "bld_6abb84bcf2e499b951eece64_5",
+                "x": 424.641999880737,
+                "z": 408.90982887907876,
+                "heading": -0.00020367320510339404,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "hedge",
+                "from": [409.19053370227135, 401.71246659640457],
+                "to": [409.19346659640456, 416.11246629772864],
+                "posts": [
+                  [409.19053370227135, 401.71246659640457],
+                  [409.1909410486787, 403.7124665549218],
+                  [409.19134839508615, 405.71246651343904],
+                  [409.1917557414935, 407.71246647195625],
+                  [409.1921630879009, 409.71246643047346],
+                  [409.1925704343083, 411.7124663889907],
+                  [409.1929777807157, 413.7124663475079],
+                  [409.19338512712307, 415.71246630602514],
+                  [409.19346659640456, 416.11246629772864]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "hedge",
+                "from": [409.19346659640456, 416.11246629772864],
+                "to": [423.59346629772864, 416.10953340359544],
+                "posts": [
+                  [409.19346659640456, 416.11246629772864],
+                  [411.19346655492177, 416.1120589513213],
+                  [413.19346651343903, 416.11165160491385],
+                  [415.19346647195624, 416.1112442585065],
+                  [417.19346643047345, 416.1108369120991],
+                  [419.1934663889907, 416.1104295656917],
+                  [421.1934663475079, 416.1100222192843],
+                  [423.19346630602513, 416.10961487287693],
+                  [423.59346629772864, 416.10953340359544]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "hedge",
+                "from": [409.19053370227135, 401.71246659640457],
+                "to": [423.59053340359543, 401.70953370227136],
+                "posts": [
+                  [409.19053370227135, 401.71246659640457],
+                  [411.19053366078856, 401.7120592499972],
+                  [413.1905336193058, 401.71165190358977],
+                  [415.19053357782303, 401.7112445571824],
+                  [417.19053353634024, 401.710837210775],
+                  [419.1905334948575, 401.7104298643676],
+                  [421.1905334533747, 401.7100225179602],
+                  [423.1905334118919, 401.70961517155285],
+                  [423.59053340359543, 401.70953370227136]
+                ]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.furniture.washline",
+                "slot": "back across+",
+                "x": 409.893324010643,
+                "z": 415.412323741005,
+                "heading": -0.785601836602553
+              },
+              {
+                "archetype": "prop.vegetation.planter",
+                "slot": "back across-",
+                "x": 409.890676258995,
+                "z": 402.41232401064303,
+                "heading": 0.7851944901923436
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": 4.999999792586117,
+              "across+": 2.5010183659973393,
+              "across-": 2.498981634002633,
+              "front": 2.074138558683103e-7
+            },
+            "tooTight": ["front"],
+            "porches": [
+              {
+                "door": "bld_6abb84bcf2e499b951eece64_6",
+                "x": 400.3943422417939,
+                "z": 438.6610004770519,
+                "heading": -1.5703889803846902,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "hedge",
+                "from": [393.18906770327953, 454.1080665085757],
+                "to": [407.5890665085757, 454.11393229672046],
+                "posts": [
+                  [393.18906770327953, 454.1080665085757],
+                  [395.1890675373484, 454.10888120137355],
+                  [397.18906737141737, 454.10969589417147],
+                  [399.18906720548625, 454.1105105869693],
+                  [401.18906703955514, 454.11132527976724],
+                  [403.18906687362403, 454.1121399725651],
+                  [405.189066707693, 454.112954665363],
+                  [407.18906654176186, 454.1137693581609],
+                  [407.5890665085757, 454.11393229672046]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "hedge",
+                "from": [407.5890665085757, 454.11393229672046],
+                "to": [407.59493229672046, 439.7139334914243],
+                "posts": [
+                  [407.5890665085757, 454.11393229672046],
+                  [407.58988120137354, 452.1139324626516],
+                  [407.59069589417146, 450.11393262858263],
+                  [407.5915105869693, 448.11393279451374],
+                  [407.59232527976724, 446.11393296044486],
+                  [407.5931399725651, 444.11393312637597],
+                  [407.593954665363, 442.113933292307],
+                  [407.5947693581609, 440.11393345823814],
+                  [407.59493229672046, 439.7139334914243]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "hedge",
+                "from": [393.18906770327953, 454.1080665085757],
+                "to": [393.1949334914243, 439.70806770327954],
+                "posts": [
+                  [393.18906770327953, 454.1080665085757],
+                  [393.1898823960774, 452.1080666745068],
+                  [393.1906970888753, 450.10806684043786],
+                  [393.19151178167317, 448.10806700636897],
+                  [393.1923264744711, 446.1080671723001],
+                  [393.19314116726895, 444.1080673382312],
+                  [393.19395586006686, 442.10806750416225],
+                  [393.1947705528647, 440.10806767009336],
+                  [393.1949334914243, 439.70806770327954]
+                ]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.furniture.washline",
+                "slot": "back across+",
+                "x": 406.8893517091308,
+                "z": 453.4136472123171,
+                "heading": -2.3557871437821345
+              },
+              {
+                "archetype": "prop.vegetation.planter",
+                "slot": "back across-",
+                "x": 393.8893527876829,
+                "z": 453.4083517091308,
+                "heading": -0.7849908169872377
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "bld_6abb84eef2e499b951eecec0",
+            "x": 416.3943422417939,
+            "z": 438.6610004770519,
+            "heading": -1.5703889803846902,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec1",
+            "x": 437.8943422417939,
+            "z": 438.6610004770519,
+            "heading": -1.5703889803846902,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec2",
+            "x": 424.641999880737,
+            "z": 425.90982887907876,
+            "heading": -0.00020367320510339404,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec3",
+            "x": 438.892,
+            "z": 418.161,
+            "heading": 1.5707963267948966,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84bcf2e499b951eece64_4",
+            "x": 445.142000119263,
+            "z": 425.40982887907876,
+            "heading": -3.14138898038469,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84bcf2e499b951eece64_5",
+            "x": 424.641999880737,
+            "z": 408.90982887907876,
+            "heading": -0.00020367320510339404,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84bcf2e499b951eece64_6",
+            "x": 400.3943422417939,
+            "z": 438.6610004770519,
+            "heading": -1.5703889803846902,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "yards: Brightwater Vale on its grown lots (L3), the pack houses fitted to the whole lot",
+      "note": "The same lots with B8's pack houses fitted by core's fitBuildingToLot to the whole lot, centred, as core stands them today: the House_03 homes fill their 15 m lots to 0.54 m a side and nothing behind (no edge, no dressing), the bakery keeps its sides but no back yard, and the House_01 and House_Large houses stand 1.5-1.8 m off the lot front, so their fronts are fenced too.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "bld_6abb84eef2e499b951eecec0",
+              "lotId": "6abb84eef2e499b951eecec0",
+              "cx": 416.392,
+              "cz": 446.911,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": 0.0004073463989411658,
+              "awayZ": -0.9999999170344522
+            },
+            {
+              "entityId": "bld_6abb84eef2e499b951eecec1",
+              "lotId": "6abb84eef2e499b951eecec1",
+              "cx": 437.892,
+              "cz": 446.911,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": 0.0004073463989411658,
+              "awayZ": -0.9999999170344522
+            },
+            {
+              "entityId": "bld_6abb84eef2e499b951eecec2",
+              "lotId": "6abb84eef2e499b951eecec2",
+              "cx": 416.392,
+              "cz": 425.911,
+              "halfAcross": 8.5,
+              "halfAway": 7.5,
+              "awayX": 0.9999999792586128,
+              "awayZ": -0.00020367320369523912
+            },
+            {
+              "entityId": "bld_6abb84eef2e499b951eecec3",
+              "lotId": "6abb84eef2e499b951eecec3",
+              "cx": 438.892,
+              "cz": 408.911,
+              "halfAcross": 10,
+              "halfAway": 8.5,
+              "awayX": 6.123233995736766e-17,
+              "awayZ": 1
+            },
+            {
+              "entityId": "bld_6abb84bcf2e499b951eece64_4",
+              "lotId": "6abb84eef2e499b951eecec4",
+              "cx": 453.392,
+              "cz": 425.411,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": -0.9999999792586128,
+              "awayZ": -0.00020367320369513953
+            },
+            {
+              "entityId": "bld_6abb84bcf2e499b951eece64_5",
+              "lotId": "6abb84eef2e499b951eecec5",
+              "cx": 416.392,
+              "cz": 408.911,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": 0.9999999792586128,
+              "awayZ": -0.00020367320369523912
+            },
+            {
+              "entityId": "bld_6abb84bcf2e499b951eece64_6",
+              "lotId": "6abb84eef2e499b951eecec6",
+              "cx": 400.392,
+              "cz": 446.911,
+              "halfAcross": 7.5,
+              "halfAway": 7.5,
+              "awayX": 0.0004073463989411658,
+              "awayZ": -0.9999999170344522
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "archetype": "building.farm",
+            "outline": [[409.892963059612, 452.89215313693535], [409.897838018376, 440.92455412983384], [422.891036940388, 440.9298468630646], [422.886161981624, 452.8974458701661]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "archetype": "building.blacksmith",
+            "outline": [[431.392963059612, 452.89215313693535], [431.397838018376, 440.92455412983384], [444.391036940388, 440.9298468630646], [444.386161981624, 452.8974458701661]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "archetype": "building.bakery",
+            "outline": [[408.8903868015223, 418.94867379263474], [423.8907764975934, 418.9456186151453], [423.8936131984777, 432.8733262073653], [408.89322350240656, 432.87638138485477]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "archetype": "building.restaurant",
+            "outline": [[447.73235, 402.18065], [447.73235, 415.64135000000005], [430.05165, 415.64135000000005], [430.05165, 402.18065]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "archetype": "building.residence_small",
+            "outline": [[460.8907764975934, 432.3763813848547], [445.8903868015223, 432.37332620736527], [445.89322350240656, 418.44561861514524], [460.8936131984777, 418.4486737926347]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "archetype": "building.residence_small",
+            "outline": [[410.4068769407772, 402.41561887446477], [422.37447669255255, 402.4131813950322], [422.3771230592228, 415.40638112553523], [410.40952330744744, 415.40881860496773]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "archetype": "building.residence_small",
+            "outline": [[393.42509145978386, 454.40835768051676], [393.431201814636, 439.4079689178323], [407.3589085402161, 439.4136423194832], [407.35279818536395, 454.41403108216764]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "x": 416.20883749478037,
+            "z": 440.9271248929576,
+            "heading": -1.5703889803846898
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "x": 437.70883749478037,
+            "z": 440.9271248929576,
+            "heading": -1.5703889803846898
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "x": 423.89204413191834,
+            "z": 425.1694825090537,
+            "heading": -0.00020367320510339404
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "x": 443.8061,
+            "z": 415.64135000000005,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "x": 445.8916544358472,
+            "z": 426.14946231345687,
+            "heading": -3.14138898038469
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "x": 422.37576207414105,
+            "z": 408.72418126413334,
+            "heading": -0.00020367320510339404
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "x": 399.6550653212697,
+            "z": 439.4105041864296,
+            "heading": -1.5703889803846898
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 1.5162000000000075,
+              "across+": 1.0033999999999965,
+              "across-": 1.0033999999999965,
+              "front": 1.5161999999999507
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec0",
+                "x": 416.2091430045796,
+                "z": 440.17712495518174,
+                "heading": -1.5703889803846898,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [409.18906770327953, 454.1080665085757],
+                "to": [423.5890665085757, 454.11393229672046],
+                "posts": [
+                  [409.18906770327953, 454.1080665085757],
+                  [411.1890675373484, 454.10888120137355],
+                  [413.18906737141737, 454.10969589417147],
+                  [415.18906720548625, 454.1105105869693],
+                  [417.18906703955514, 454.11132527976724],
+                  [419.18906687362403, 454.1121399725651],
+                  [421.189066707693, 454.112954665363],
+                  [423.18906654176186, 454.1137693581609],
+                  [423.5890665085757, 454.11393229672046]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [423.5890665085757, 454.11393229672046],
+                "to": [423.59493229672046, 439.7139334914243],
+                "posts": [
+                  [423.5890665085757, 454.11393229672046],
+                  [423.58988120137354, 452.1139324626516],
+                  [423.59069589417146, 450.11393262858263],
+                  [423.5915105869693, 448.11393279451374],
+                  [423.59232527976724, 446.11393296044486],
+                  [423.5931399725651, 444.11393312637597],
+                  [423.593954665363, 442.113933292307],
+                  [423.5947693581609, 440.11393345823814],
+                  [423.59493229672046, 439.7139334914243]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [409.18906770327953, 454.1080665085757],
+                "to": [409.1949334914243, 439.70806770327954],
+                "posts": [
+                  [409.18906770327953, 454.1080665085757],
+                  [409.1898823960774, 452.1080666745068],
+                  [409.1906970888753, 450.10806684043786],
+                  [409.19151178167317, 448.10806700636897],
+                  [409.1923264744711, 446.1080671723001],
+                  [409.19314116726895, 444.1080673382312],
+                  [409.19395586006686, 442.10806750416225],
+                  [409.1947705528647, 440.10806767009336],
+                  [409.1949334914243, 439.70806770327954]
+                ]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [409.1949334914243, 439.70806770327954],
+                "to": [414.8949330185207, 439.7103895777535],
+                "posts": [[409.1949334914243, 439.70806770327954], [411.1949333254932, 439.7088823960774], [413.19493315956214, 439.7096970888753], [414.8949330185207, 439.7103895777535]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [417.89493276962406, 439.71161161695034],
+                "to": [423.59493229672046, 439.7139334914243],
+                "posts": [[417.89493276962406, 439.71161161695034], [419.89493260369295, 439.7124263097482], [421.8949324377619, 439.7132410025461], [423.59493229672046, 439.7139334914243]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": 422.8893517091308,
+                "z": 453.4136472123171,
+                "heading": -2.3557871437821345
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": 409.8893527876829,
+                "z": 453.4083517091308,
+                "heading": -0.7849908169872377
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across+",
+                "x": 422.8919994607239,
+                "z": 446.91364775159315,
+                "heading": -3.1411853071795828
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "role": "smithy",
+            "edge": "wall",
+            "gaps": {
+              "back": 1.5162000000000075,
+              "across+": 1.0033999999999965,
+              "across-": 1.0033999999999965,
+              "front": 1.5161999999999507
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec1",
+                "x": 437.7091430045796,
+                "z": 440.17712495518174,
+                "heading": -1.5703889803846898,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "wall",
+                "from": [430.68906770327953, 454.1080665085757],
+                "to": [445.0890665085757, 454.11393229672046],
+                "posts": [
+                  [430.68906770327953, 454.1080665085757],
+                  [432.6890675373484, 454.10888120137355],
+                  [434.68906737141737, 454.10969589417147],
+                  [436.68906720548625, 454.1105105869693],
+                  [438.68906703955514, 454.11132527976724],
+                  [440.68906687362403, 454.1121399725651],
+                  [442.689066707693, 454.112954665363],
+                  [444.68906654176186, 454.1137693581609],
+                  [445.0890665085757, 454.11393229672046]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "wall",
+                "from": [445.0890665085757, 454.11393229672046],
+                "to": [445.09493229672046, 439.7139334914243],
+                "posts": [
+                  [445.0890665085757, 454.11393229672046],
+                  [445.08988120137354, 452.1139324626516],
+                  [445.09069589417146, 450.11393262858263],
+                  [445.0915105869693, 448.11393279451374],
+                  [445.09232527976724, 446.11393296044486],
+                  [445.0931399725651, 444.11393312637597],
+                  [445.093954665363, 442.113933292307],
+                  [445.0947693581609, 440.11393345823814],
+                  [445.09493229672046, 439.7139334914243]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "wall",
+                "from": [430.68906770327953, 454.1080665085757],
+                "to": [430.6949334914243, 439.70806770327954],
+                "posts": [
+                  [430.68906770327953, 454.1080665085757],
+                  [430.6898823960774, 452.1080666745068],
+                  [430.6906970888753, 450.10806684043786],
+                  [430.69151178167317, 448.10806700636897],
+                  [430.6923264744711, 446.1080671723001],
+                  [430.69314116726895, 444.1080673382312],
+                  [430.69395586006686, 442.10806750416225],
+                  [430.6947705528647, 440.10806767009336],
+                  [430.6949334914243, 439.70806770327954]
+                ]
+              },
+              {
+                "side": "front",
+                "kind": "wall",
+                "from": [430.6949334914243, 439.70806770327954],
+                "to": [436.3949330185207, 439.7103895777535],
+                "posts": [[430.6949334914243, 439.70806770327954], [432.6949333254932, 439.7088823960774], [434.69493315956214, 439.7096970888753], [436.3949330185207, 439.7103895777535]]
+              },
+              {
+                "side": "front",
+                "kind": "wall",
+                "from": [439.39493276962406, 439.71161161695034],
+                "to": [445.09493229672046, 439.7139334914243],
+                "posts": [[439.39493276962406, 439.71161161695034], [441.39493260369295, 439.7124263097482], [443.3949324377619, 439.7132410025461], [445.09493229672046, 439.7139334914243]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.coal",
+                "slot": "back across+",
+                "x": 444.3893517091308,
+                "z": 453.4136472123171,
+                "heading": -2.3557871437821345
+              },
+              {
+                "archetype": "prop.furniture.grindstone",
+                "slot": "back across-",
+                "x": 431.3893527876829,
+                "z": 453.4083517091308,
+                "heading": -0.7849908169872377
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "role": "bakery",
+            "edge": "fence",
+            "gaps": {
+              "back": -0.0001950036000257782,
+              "across+": 1.5361460594499645,
+              "across-": 1.5361460594500214,
+              "front": -0.00019500359999558015
+            },
+            "tooTight": ["back", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec2",
+                "x": 424.6420441163623,
+                "z": 425.1693297541509,
+                "heading": -0.00020367320510339404,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [409.1936702696083, 434.1124662769872],
+                "to": [423.59366997093235, 434.109533382854],
+                "posts": [
+                  [409.1936702696083, 434.1124662769872],
+                  [411.1936702281255, 434.11205893057985],
+                  [413.19367018664275, 434.1116515841724],
+                  [415.19367014515996, 434.11124423776505],
+                  [417.19367010367716, 434.1108368913577],
+                  [419.1936700621944, 434.11042954495025],
+                  [421.19367002071164, 434.1100221985429],
+                  [423.19366997922884, 434.1096148521355],
+                  [423.59366997093235, 434.109533382854]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [409.19033002906764, 417.712466617146],
+                "to": [423.5903297303917, 417.7095337230128],
+                "posts": [
+                  [409.19033002906764, 417.712466617146],
+                  [411.19032998758485, 417.7120592707386],
+                  [413.1903299461021, 417.7116519243312],
+                  [415.1903299046193, 417.7112445779238],
+                  [417.1903298631365, 417.71083723151645],
+                  [419.1903298216538, 417.710429885109],
+                  [421.190329780171, 417.71002253870165],
+                  [423.1903297386882, 417.7096151922943],
+                  [423.5903297303917, 417.7095337230128]
+                ]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.woodpile",
+                "slot": "back across+",
+                "x": 409.89352768384674,
+                "z": 433.4123237202636,
+                "heading": -0.8569093013878422
+              },
+              {
+                "archetype": "prop.container.sack",
+                "slot": "back across-",
+                "x": 409.89047258579126,
+                "z": 418.41232403138446,
+                "heading": 0.8565019549776299
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "role": "inn",
+            "edge": "wall",
+            "gaps": {
+              "back": 1.769650000000012,
+              "across+": 1.1596499999999992,
+              "across-": 1.1596499999999992,
+              "front": 1.769649999999955
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "bld_6abb84eef2e499b951eecec3",
+                "x": 443.8061,
+                "z": 416.39135000000005,
+                "heading": 1.5707963267948966,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "wall",
+                "from": [448.592, 400.711],
+                "to": [429.192, 400.711],
+                "posts": [
+                  [448.592, 400.711],
+                  [446.592, 400.711],
+                  [444.592, 400.711],
+                  [442.592, 400.711],
+                  [440.592, 400.711],
+                  [438.592, 400.711],
+                  [436.592, 400.711],
+                  [434.592, 400.711],
+                  [432.592, 400.711],
+                  [430.592, 400.711],
+                  [429.192, 400.711]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "wall",
+                "from": [429.192, 400.711],
+                "to": [429.192, 417.111],
+                "posts": [
+                  [429.192, 400.711],
+                  [429.192, 402.711],
+                  [429.192, 404.711],
+                  [429.192, 406.711],
+                  [429.192, 408.711],
+                  [429.192, 410.711],
+                  [429.192, 412.711],
+                  [429.192, 414.711],
+                  [429.192, 416.711],
+                  [429.192, 417.111]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "wall",
+                "from": [448.592, 400.711],
+                "to": [448.592, 417.111],
+                "posts": [
+                  [448.592, 400.711],
+                  [448.592, 402.711],
+                  [448.592, 404.711],
+                  [448.592, 406.711],
+                  [448.592, 408.711],
+                  [448.592, 410.711],
+                  [448.592, 412.711],
+                  [448.592, 414.711],
+                  [448.592, 416.711],
+                  [448.592, 417.111]
+                ]
+              },
+              {
+                "side": "front",
+                "kind": "wall",
+                "from": [448.592, 417.111],
+                "to": [440.392, 417.111],
+                "posts": [[448.592, 417.111], [446.592, 417.111], [444.592, 417.111], [442.592, 417.111], [440.592, 417.111], [440.392, 417.111]]
+              },
+              {
+                "side": "front",
+                "kind": "wall",
+                "from": [437.392, 417.111],
+                "to": [429.192, 417.111],
+                "posts": [[437.392, 417.111], [435.392, 417.111], [433.392, 417.111], [431.392, 417.111], [429.392, 417.111], [429.192, 417.111]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.barrel",
+                "slot": "back across+",
+                "x": 429.892,
+                "z": 401.411,
+                "heading": 0.6947382761967033
+              },
+              {
+                "archetype": "prop.furniture.bench",
+                "slot": "back across-",
+                "x": 447.892,
+                "z": 401.411,
+                "heading": 2.44685437739309
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": -0.00019500359999646832,
+              "across+": 0.5361460594499654,
+              "across-": 0.5361460594500222,
+              "front": -0.00019500360002489003
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84bcf2e499b951eece64_4",
+                "x": 445.14165445140327,
+                "z": 426.1493095585541,
+                "heading": -3.14138898038469,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.furniture.washline", "prop.vegetation.planter"]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": 1.5161999999999987,
+              "across+": 1.003400000000001,
+              "across-": 1.0033999999999859,
+              "front": 1.5161999999999987
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "bld_6abb84bcf2e499b951eece64_5",
+                "x": 423.125762058585,
+                "z": 408.72402850923055,
+                "heading": -0.00020367320510339404,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "hedge",
+                "from": [409.19053370227135, 401.71246659640457],
+                "to": [409.19346659640456, 416.11246629772864],
+                "posts": [
+                  [409.19053370227135, 401.71246659640457],
+                  [409.1909410486787, 403.7124665549218],
+                  [409.19134839508615, 405.71246651343904],
+                  [409.1917557414935, 407.71246647195625],
+                  [409.1921630879009, 409.71246643047346],
+                  [409.1925704343083, 411.7124663889907],
+                  [409.1929777807157, 413.7124663475079],
+                  [409.19338512712307, 415.71246630602514],
+                  [409.19346659640456, 416.11246629772864]
+                ]
+              },
+              {
+                "side": "across+",
+                "kind": "hedge",
+                "from": [409.19346659640456, 416.11246629772864],
+                "to": [423.59346629772864, 416.10953340359544],
+                "posts": [
+                  [409.19346659640456, 416.11246629772864],
+                  [411.19346655492177, 416.1120589513213],
+                  [413.19346651343903, 416.11165160491385],
+                  [415.19346647195624, 416.1112442585065],
+                  [417.19346643047345, 416.1108369120991],
+                  [419.1934663889907, 416.1104295656917],
+                  [421.1934663475079, 416.1100222192843],
+                  [423.19346630602513, 416.10961487287693],
+                  [423.59346629772864, 416.10953340359544]
+                ]
+              },
+              {
+                "side": "across-",
+                "kind": "hedge",
+                "from": [409.19053370227135, 401.71246659640457],
+                "to": [423.59053340359543, 401.70953370227136],
+                "posts": [
+                  [409.19053370227135, 401.71246659640457],
+                  [411.19053366078856, 401.7120592499972],
+                  [413.1905336193058, 401.71165190358977],
+                  [415.19053357782303, 401.7112445571824],
+                  [417.19053353634024, 401.710837210775],
+                  [419.1905334948575, 401.7104298643676],
+                  [421.1905334533747, 401.7100225179602],
+                  [423.1905334118919, 401.70961517155285],
+                  [423.59053340359543, 401.70953370227136]
+                ]
+              },
+              {
+                "side": "front",
+                "kind": "hedge",
+                "from": [423.59053340359543, 401.70953370227136],
+                "to": [423.59169434085646, 407.4095335840455],
+                "posts": [[423.59053340359543, 401.70953370227136], [423.5909407500028, 403.70953366078857], [423.5913480964102, 405.70953361930583], [423.59169434085646, 407.4095335840455]]
+              },
+              {
+                "side": "front",
+                "kind": "hedge",
+                "from": [423.5923053604676, 410.4095335218213],
+                "to": [423.59346629772864, 416.10953340359544],
+                "posts": [[423.5923053604676, 410.4095335218213], [423.592712706875, 412.4095334803385], [423.59312005328235, 414.40953343885576], [423.59346629772864, 416.10953340359544]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.furniture.washline",
+                "slot": "back across+",
+                "x": 409.893324010643,
+                "z": 415.412323741005,
+                "heading": -0.785601836602553
+              },
+              {
+                "archetype": "prop.vegetation.planter",
+                "slot": "back across-",
+                "x": 409.890676258995,
+                "z": 402.41232401064303,
+                "heading": 0.7851944901923436
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": -0.00019500359999025108,
+              "across+": 0.5361460594500143,
+              "across-": 0.5361460594499574,
+              "front": -0.0001950036000470945
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "bld_6abb84bcf2e499b951eece64_6",
+                "x": 399.6553708310689,
+                "z": 438.66050424865375,
+                "heading": -1.5703889803846898,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.furniture.washline", "prop.vegetation.planter"]
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "bld_6abb84eef2e499b951eecec0",
+            "x": 416.2091430045796,
+            "z": 440.17712495518174,
+            "heading": -1.5703889803846898,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec1",
+            "x": 437.7091430045796,
+            "z": 440.17712495518174,
+            "heading": -1.5703889803846898,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec2",
+            "x": 424.6420441163623,
+            "z": 425.1693297541509,
+            "heading": -0.00020367320510339404,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84eef2e499b951eecec3",
+            "x": 443.8061,
+            "z": 416.39135000000005,
+            "heading": 1.5707963267948966,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84bcf2e499b951eece64_4",
+            "x": 445.14165445140327,
+            "z": 426.1493095585541,
+            "heading": -3.14138898038469,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84bcf2e499b951eece64_5",
+            "x": 423.125762058585,
+            "z": 408.72402850923055,
+            "heading": -0.00020367320510339404,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "bld_6abb84bcf2e499b951eece64_6",
+            "x": 399.6553708310689,
+            "z": 438.66050424865375,
+            "heading": -1.5703889803846898,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "role: the building table, longest prefix by whole segments",
+      "note": "The role of each building archetype: a sub-archetype takes its parent's (farm.barn, residence.small); building.residence_small is not under building.residence (whole segments only) and an unknown building has no prefix, so both take the default role, home; restaurant and tavern are inns.",
+      "op": "yardRole",
+      "input": {
+        "archetypes": ["building.farm", "building.farm.barn", "building.blacksmith", "building.bakery", "building.restaurant", "building.tavern", "building.residence", "building.residence.small", "building.residence_small", "building.chapel", ""]
+      },
+      "expected": ["farm", "farm", "smithy", "bakery", "inn", "inn", "home", "home", "home", "home", "home"]
+    },
+    {
+      "name": "yards: a farm with clear ground on every side",
+      "note": "A 10 x 12 m lot facing +x with a 6 m house set back: 2 m clear behind and at each side, 4 m in front. A fence 0.3 m inside the lot on all four sides, the front open 3 m at the gate, posts every 2 m from each run's start; the farm's hay, cart and trough in the two back corners and the first side's middle; a porch deck under the door.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "farm",
+              "lotId": "farm",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 6,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "farm",
+            "archetype": "building.farm",
+            "outline": [[-4, -3], [2, -3], [2, 3], [-4, 3]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "farm",
+            "x": 2,
+            "z": 0,
+            "heading": 0
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "farm",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 2,
+              "across+": 2,
+              "across-": 2,
+              "front": 4
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "farm",
+                "x": 2.75,
+                "z": 0,
+                "heading": 0,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [-5.7, 4.7],
+                "posts": [[-5.7, -4.7], [-5.7, -2.7], [-5.7, -0.7000000000000002], [-5.7, 1.2999999999999998], [-5.7, 3.3], [-5.7, 4.7]]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [-5.7, 4.7],
+                "to": [5.7, 4.7],
+                "posts": [[-5.7, 4.7], [-3.7, 4.7], [-1.7000000000000002, 4.7], [0.2999999999999998, 4.7], [2.3, 4.7], [4.3, 4.7], [5.7, 4.7]]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [5.7, -4.7],
+                "posts": [[-5.7, -4.7], [-3.7, -4.7], [-1.7000000000000002, -4.7], [0.2999999999999998, -4.7], [2.3, -4.7], [4.3, -4.7], [5.7, -4.7]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, -4.7],
+                "to": [5.7, -1.5],
+                "posts": [[5.7, -4.7], [5.7, -2.7], [5.7, -1.5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, 1.5],
+                "to": [5.7, 4.7],
+                "posts": [[5.7, 1.5], [5.7, 3.5], [5.7, 4.7]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": -5,
+                "z": 4,
+                "heading": -0.6747409422235527
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": -5,
+                "z": -4,
+                "heading": 0.6747409422235527
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across+",
+                "x": 0,
+                "z": 4,
+                "heading": -1.5707963267948966
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "farm",
+            "x": 2.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "tight: 0.95 m of clear ground at a side gets no edge",
+      "note": "The farm's house widened so its +across side leaves 0.95 m to the lot's edge: under the 1 m least yard gap that side is too tight, with no fence and no dressing in its slots.",
+      "op": "composeYards",
+      "pins": ["yards.minYardGapM:inside"],
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "farm",
+              "lotId": "farm",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 6,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "farm",
+            "archetype": "building.farm",
+            "outline": [[-4, -3], [2, -3], [2, 4.05], [-4, 4.05]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "farm",
+            "x": 2,
+            "z": 0,
+            "heading": 0
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "farm",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 2,
+              "across+": 0.9500000000000002,
+              "across-": 2,
+              "front": 4
+            },
+            "tooTight": ["across+"],
+            "porches": [
+              {
+                "door": "farm",
+                "x": 2.75,
+                "z": 0,
+                "heading": 0,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [-5.7, 4.7],
+                "posts": [[-5.7, -4.7], [-5.7, -2.7], [-5.7, -0.7000000000000002], [-5.7, 1.2999999999999998], [-5.7, 3.3], [-5.7, 4.7]]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [5.7, -4.7],
+                "posts": [[-5.7, -4.7], [-3.7, -4.7], [-1.7000000000000002, -4.7], [0.2999999999999998, -4.7], [2.3, -4.7], [4.3, -4.7], [5.7, -4.7]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, -4.7],
+                "to": [5.7, -1.5],
+                "posts": [[5.7, -4.7], [5.7, -2.7], [5.7, -1.5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, 1.5],
+                "to": [5.7, 4.7],
+                "posts": [[5.7, 1.5], [5.7, 3.5], [5.7, 4.7]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": -5,
+                "z": 4,
+                "heading": -0.6747409422235527
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": -5,
+                "z": -4,
+                "heading": 0.6747409422235527
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across-",
+                "x": 0,
+                "z": -4,
+                "heading": 1.5707963267948966
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "farm",
+            "x": 2.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "tight: 1.05 m of clear ground at a side is edged",
+      "note": "The farm's house widened so its +across side leaves 1.05 m to the lot's edge: over it, that side keeps its fence and its slots.",
+      "op": "composeYards",
+      "pins": ["yards.minYardGapM:past"],
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "farm",
+              "lotId": "farm",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 6,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "farm",
+            "archetype": "building.farm",
+            "outline": [[-4, -3], [2, -3], [2, 3.95], [-4, 3.95]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "farm",
+            "x": 2,
+            "z": 0,
+            "heading": 0
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "farm",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 2,
+              "across+": 1.0499999999999998,
+              "across-": 2,
+              "front": 4
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "farm",
+                "x": 2.75,
+                "z": 0,
+                "heading": 0,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [-5.7, 4.7],
+                "posts": [[-5.7, -4.7], [-5.7, -2.7], [-5.7, -0.7000000000000002], [-5.7, 1.2999999999999998], [-5.7, 3.3], [-5.7, 4.7]]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [-5.7, 4.7],
+                "to": [5.7, 4.7],
+                "posts": [[-5.7, 4.7], [-3.7, 4.7], [-1.7000000000000002, 4.7], [0.2999999999999998, 4.7], [2.3, 4.7], [4.3, 4.7], [5.7, 4.7]]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [5.7, -4.7],
+                "posts": [[-5.7, -4.7], [-3.7, -4.7], [-1.7000000000000002, -4.7], [0.2999999999999998, -4.7], [2.3, -4.7], [4.3, -4.7], [5.7, -4.7]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, -4.7],
+                "to": [5.7, -1.5],
+                "posts": [[5.7, -4.7], [5.7, -2.7], [5.7, -1.5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, 1.5],
+                "to": [5.7, 4.7],
+                "posts": [[5.7, 1.5], [5.7, 3.5], [5.7, 4.7]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": -5,
+                "z": 4,
+                "heading": -0.6747409422235527
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": -5,
+                "z": -4,
+                "heading": 0.6747409422235527
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across+",
+                "x": 0,
+                "z": 4,
+                "heading": -1.5707963267948966
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "farm",
+            "x": 2.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "porch: a post 2.85 m from the door is under the deck",
+      "note": "A porch post 0.9 m out and 2.7042 m along the wall from the farm's door, 2.85 m off: within the 3 m post reach the deck widens to run 0.3 m past it.",
+      "op": "composeYards",
+      "pins": ["yards.porchPostReachM:inside"],
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "farm",
+              "lotId": "farm",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 6,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "farm",
+            "archetype": "building.farm",
+            "outline": [[-4, -3], [2, -3], [2, 3], [-4, 3]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "farm",
+            "x": 2,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "posts": [
+          {
+            "entityId": "post",
+            "x": 2.9,
+            "z": 2.704163456597992
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "farm",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 2,
+              "across+": 2,
+              "across-": 2,
+              "front": 4
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "farm",
+                "x": 2.75,
+                "z": 0,
+                "heading": 0,
+                "halfWidth": 3.004163456597992,
+                "depth": 1.5,
+                "posts": ["post"]
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [-5.7, 4.7],
+                "posts": [[-5.7, -4.7], [-5.7, -2.7], [-5.7, -0.7000000000000002], [-5.7, 1.2999999999999998], [-5.7, 3.3], [-5.7, 4.7]]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [-5.7, 4.7],
+                "to": [5.7, 4.7],
+                "posts": [[-5.7, 4.7], [-3.7, 4.7], [-1.7000000000000002, 4.7], [0.2999999999999998, 4.7], [2.3, 4.7], [4.3, 4.7], [5.7, 4.7]]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [5.7, -4.7],
+                "posts": [[-5.7, -4.7], [-3.7, -4.7], [-1.7000000000000002, -4.7], [0.2999999999999998, -4.7], [2.3, -4.7], [4.3, -4.7], [5.7, -4.7]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, -4.7],
+                "to": [5.7, -1.5],
+                "posts": [[5.7, -4.7], [5.7, -2.7], [5.7, -1.5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, 1.5],
+                "to": [5.7, 4.7],
+                "posts": [[5.7, 1.5], [5.7, 3.5], [5.7, 4.7]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": -5,
+                "z": 4,
+                "heading": -0.6747409422235527
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": -5,
+                "z": -4,
+                "heading": 0.6747409422235527
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across+",
+                "x": 0,
+                "z": 4,
+                "heading": -1.5707963267948966
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "farm",
+            "x": 2.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 3.004163456597992,
+            "depth": 1.5,
+            "posts": ["post"]
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "porch: a post 3.15 m from the door is loose",
+      "note": "A porch post 0.9 m out and 3.0187 m along the wall from the farm's door, 3.15 m off: past the reach no door claims it; the deck keeps its least size and the post is reported loose.",
+      "op": "composeYards",
+      "pins": ["yards.porchPostReachM:past"],
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "farm",
+              "lotId": "farm",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 6,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "farm",
+            "archetype": "building.farm",
+            "outline": [[-4, -3], [2, -3], [2, 3], [-4, 3]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "farm",
+            "x": 2,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "posts": [
+          {
+            "entityId": "post",
+            "x": 2.9,
+            "z": 3.018691769624716
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "farm",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 2,
+              "across+": 2,
+              "across-": 2,
+              "front": 4
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "farm",
+                "x": 2.75,
+                "z": 0,
+                "heading": 0,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [-5.7, 4.7],
+                "posts": [[-5.7, -4.7], [-5.7, -2.7], [-5.7, -0.7000000000000002], [-5.7, 1.2999999999999998], [-5.7, 3.3], [-5.7, 4.7]]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [-5.7, 4.7],
+                "to": [5.7, 4.7],
+                "posts": [[-5.7, 4.7], [-3.7, 4.7], [-1.7000000000000002, 4.7], [0.2999999999999998, 4.7], [2.3, 4.7], [4.3, 4.7], [5.7, 4.7]]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [5.7, -4.7],
+                "posts": [[-5.7, -4.7], [-3.7, -4.7], [-1.7000000000000002, -4.7], [0.2999999999999998, -4.7], [2.3, -4.7], [4.3, -4.7], [5.7, -4.7]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, -4.7],
+                "to": [5.7, -1.5],
+                "posts": [[5.7, -4.7], [5.7, -2.7], [5.7, -1.5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, 1.5],
+                "to": [5.7, 4.7],
+                "posts": [[5.7, 1.5], [5.7, 3.5], [5.7, 4.7]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": -5,
+                "z": 4,
+                "heading": -0.6747409422235527
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": -5,
+                "z": -4,
+                "heading": 0.6747409422235527
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across+",
+                "x": 0,
+                "z": 4,
+                "heading": -1.5707963267948966
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "farm",
+            "x": 2.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": ["post"]
+      }
+    },
+    {
+      "name": "porch: two posts either side of a door, a deck under both",
+      "note": "Two posts 1.6 m out and 1.5 m either side of a door facing -z: the deck runs 1.9 m deep and 1.8 m a side, centred on the door's line.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": []
+        },
+        "buildings": [],
+        "doors": [
+          {
+            "entityId": "cottage",
+            "x": 0,
+            "z": 0,
+            "heading": -1.5707963267948966
+          }
+        ],
+        "posts": [
+          {
+            "entityId": "post.l",
+            "x": -1.5,
+            "z": -1.6
+          },
+          {
+            "entityId": "post.r",
+            "x": 1.5,
+            "z": -1.6
+          }
+        ]
+      },
+      "expected": {
+        "yards": [],
+        "noLot": ["cottage"],
+        "porches": [
+          {
+            "door": "cottage",
+            "x": 5.817072295949928e-17,
+            "z": -0.9500000000000001,
+            "heading": -1.5707963267948966,
+            "halfWidth": 1.8,
+            "depth": 1.9000000000000001,
+            "posts": ["post.l", "post.r"]
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "yards: a home with no footprint, turned, and an inn whose front is too narrow for a gate run",
+      "note": "A home's lot facing -z with no measured footprint (all its ground clear): a hedge on four sides and its washing line and planter in the back corners. An inn on a 2.4 m wide lot: the 3 m gate takes the whole front, so it has no front run; a wall on its back and sides.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "home",
+              "lotId": "home",
+              "cx": 20,
+              "cz": 0,
+              "halfAcross": 4,
+              "halfAway": 5,
+              "awayX": 0,
+              "awayZ": -1
+            },
+            {
+              "entityId": "inn",
+              "lotId": "inn",
+              "cx": 40,
+              "cz": 0,
+              "halfAcross": 1.2,
+              "halfAway": 6,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "home",
+            "archetype": "building.residence",
+            "outline": null
+          },
+          {
+            "entityId": "inn",
+            "archetype": "building.tavern"
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "home",
+            "x": 20,
+            "z": -2,
+            "heading": -1.5707963267948966
+          },
+          {
+            "entityId": "stray",
+            "x": 60,
+            "z": 0,
+            "heading": 0
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "home",
+            "role": "home",
+            "edge": "hedge",
+            "gaps": {
+              "back": 10,
+              "across+": 8,
+              "across-": 8,
+              "front": 10
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "home",
+                "x": 20,
+                "z": -2.75,
+                "heading": -1.5707963267948966,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "hedge",
+                "from": [16.3, 4.7],
+                "to": [23.7, 4.7],
+                "posts": [[16.3, 4.7], [18.3, 4.7], [20.3, 4.7], [22.3, 4.7], [23.7, 4.7]]
+              },
+              {
+                "side": "across+",
+                "kind": "hedge",
+                "from": [23.7, 4.7],
+                "to": [23.7, -4.7],
+                "posts": [[23.7, 4.7], [23.7, 2.7], [23.7, 0.7000000000000002], [23.7, -1.2999999999999998], [23.7, -3.3], [23.7, -4.7]]
+              },
+              {
+                "side": "across-",
+                "kind": "hedge",
+                "from": [16.3, 4.7],
+                "to": [16.3, -4.7],
+                "posts": [[16.3, 4.7], [16.3, 2.7], [16.3, 0.7000000000000002], [16.3, -1.2999999999999998], [16.3, -3.3], [16.3, -4.7]]
+              },
+              {
+                "side": "front",
+                "kind": "hedge",
+                "from": [16.3, -4.7],
+                "to": [18.5, -4.7],
+                "posts": [[16.3, -4.7], [18.3, -4.7], [18.5, -4.7]]
+              },
+              {
+                "side": "front",
+                "kind": "hedge",
+                "from": [21.5, -4.7],
+                "to": [23.7, -4.7],
+                "posts": [[21.5, -4.7], [23.5, -4.7], [23.7, -4.7]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.furniture.washline",
+                "slot": "back across+",
+                "x": 23,
+                "z": 4,
+                "heading": -2.214297435588181
+              },
+              {
+                "archetype": "prop.vegetation.planter",
+                "slot": "back across-",
+                "x": 17,
+                "z": 4,
+                "heading": -0.9272952180016122
+              }
+            ],
+            "unplaced": []
+          },
+          {
+            "entityId": "inn",
+            "role": "inn",
+            "edge": "wall",
+            "gaps": {
+              "back": 12,
+              "across+": 2.4,
+              "across-": 2.4,
+              "front": 12
+            },
+            "tooTight": [],
+            "porches": [],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "wall",
+                "from": [34.3, -0.8999999999999999],
+                "to": [34.3, 0.8999999999999999],
+                "posts": [[34.3, -0.8999999999999999], [34.3, 0.8999999999999999]]
+              },
+              {
+                "side": "across+",
+                "kind": "wall",
+                "from": [34.3, 0.8999999999999999],
+                "to": [45.7, 0.8999999999999999],
+                "posts": [[34.3, 0.8999999999999999], [36.3, 0.8999999999999999], [38.3, 0.8999999999999999], [40.3, 0.8999999999999999], [42.3, 0.8999999999999999], [44.3, 0.8999999999999999], [45.7, 0.8999999999999999]]
+              },
+              {
+                "side": "across-",
+                "kind": "wall",
+                "from": [34.3, -0.8999999999999999],
+                "to": [45.7, -0.8999999999999999],
+                "posts": [[34.3, -0.8999999999999999], [36.3, -0.8999999999999999], [38.3, -0.8999999999999999], [40.3, -0.8999999999999999], [42.3, -0.8999999999999999], [44.3, -0.8999999999999999], [45.7, -0.8999999999999999]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.barrel",
+                "slot": "back across+",
+                "x": 35,
+                "z": 0.19999999999999996,
+                "heading": -0.03997868712329004
+              },
+              {
+                "archetype": "prop.furniture.bench",
+                "slot": "back across-",
+                "x": 35,
+                "z": -0.19999999999999996,
+                "heading": 0.03997868712329004
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": ["stray"],
+        "porches": [
+          {
+            "door": "home",
+            "x": 20,
+            "z": -2.75,
+            "heading": -1.5707963267948966,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "stray",
+            "x": 60.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "yards: a house over its whole lot",
+      "note": "A house larger than its lot on every side: every side too tight, no edge, no dressing (all unplaced), and its porch deck still laid.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "shop",
+              "lotId": "shop",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 4,
+              "halfAway": 4,
+              "awayX": 0,
+              "awayZ": 1
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "shop",
+            "archetype": "building.shop",
+            "outline": [[-5, -5], [5, -5], [5, 5], [-5, 5]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "shop",
+            "x": 0,
+            "z": 5,
+            "heading": 1.5707963267948966
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "shop",
+            "role": "shop",
+            "edge": "fence",
+            "gaps": {
+              "back": -1,
+              "across+": -1,
+              "across-": -1,
+              "front": -1
+            },
+            "tooTight": ["back", "across+", "across-", "front"],
+            "porches": [
+              {
+                "door": "shop",
+                "x": 4.592425496802574e-17,
+                "z": 5.75,
+                "heading": 1.5707963267948966,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [],
+            "items": [],
+            "unplaced": ["prop.container.crate"]
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "shop",
+            "x": 4.592425496802574e-17,
+            "z": 5.75,
+            "heading": 1.5707963267948966,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "slots: a slot under the house is not used, though its side clears a lower least gap",
+      "note": "Under a least yard gap of 0.5 m (ruleOverrides), the farm's across+ side has 0.7 m of clear ground and is edged, but its middle slot, 1 m in from the lot's edge, is under the house: it is skipped and the trough takes the other side's middle.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "farm",
+              "lotId": "farm",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 6,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "farm",
+            "archetype": "building.farm",
+            "outline": [[-4, -3], [2, -3], [2, 4.3], [-4, 4.3]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "farm",
+            "x": 2,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "ruleOverrides": {
+          "yards.minYardGapM": 0.5
+        }
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "farm",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 2,
+              "across+": 0.7000000000000002,
+              "across-": 2,
+              "front": 4
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "farm",
+                "x": 2.75,
+                "z": 0,
+                "heading": 0,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [-5.7, 4.7],
+                "posts": [[-5.7, -4.7], [-5.7, -2.7], [-5.7, -0.7000000000000002], [-5.7, 1.2999999999999998], [-5.7, 3.3], [-5.7, 4.7]]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [-5.7, 4.7],
+                "to": [5.7, 4.7],
+                "posts": [[-5.7, 4.7], [-3.7, 4.7], [-1.7000000000000002, 4.7], [0.2999999999999998, 4.7], [2.3, 4.7], [4.3, 4.7], [5.7, 4.7]]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [5.7, -4.7],
+                "posts": [[-5.7, -4.7], [-3.7, -4.7], [-1.7000000000000002, -4.7], [0.2999999999999998, -4.7], [2.3, -4.7], [4.3, -4.7], [5.7, -4.7]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, -4.7],
+                "to": [5.7, -1.5],
+                "posts": [[5.7, -4.7], [5.7, -2.7], [5.7, -1.5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, 1.5],
+                "to": [5.7, 4.7],
+                "posts": [[5.7, 1.5], [5.7, 3.5], [5.7, 4.7]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": -5,
+                "z": 4,
+                "heading": -0.6747409422235527
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": -5,
+                "z": -4,
+                "heading": 0.6747409422235527
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across-",
+                "x": 0,
+                "z": -4,
+                "heading": 1.5707963267948966
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "farm",
+            "x": 2.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "porch: a post goes to its nearest door, a post equally near two doors to the lower id; posts answered by id",
+      "note": "Doors a (0, 0) and b (4, 0), listed b first, both facing -z. Post p1 at (1.5, -1) is 1.80 m from a and 2.69 m from b, both within the 3 m reach: it is a's, its nearest, not the first door listed that reaches it. Post p2 at (2, -1) is 2.24 m from each: the lower id, a, takes it. b's deck has no post. The posts are listed p2 first and two loose posts q2 first: a deck's posts and the loose posts are answered by id.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": []
+        },
+        "buildings": [],
+        "doors": [
+          {
+            "entityId": "b",
+            "x": 4,
+            "z": 0,
+            "heading": -1.5707963267948966
+          },
+          {
+            "entityId": "a",
+            "x": 0,
+            "z": 0,
+            "heading": -1.5707963267948966
+          }
+        ],
+        "posts": [
+          {
+            "entityId": "p2",
+            "x": 2,
+            "z": -1
+          },
+          {
+            "entityId": "p1",
+            "x": 1.5,
+            "z": -1
+          },
+          {
+            "entityId": "q2",
+            "x": 30,
+            "z": 30
+          },
+          {
+            "entityId": "q1",
+            "x": 40,
+            "z": 40
+          }
+        ]
+      },
+      "expected": {
+        "yards": [],
+        "noLot": ["b", "a"],
+        "porches": [
+          {
+            "door": "b",
+            "x": 4,
+            "z": -0.75,
+            "heading": -1.5707963267948966,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          },
+          {
+            "door": "a",
+            "x": 4.592425496802574e-17,
+            "z": -0.75,
+            "heading": -1.5707963267948966,
+            "halfWidth": 2.3,
+            "depth": 1.5,
+            "posts": ["p1", "p2"]
+          }
+        ],
+        "loosePosts": ["q1", "q2"]
+      }
+    },
+    {
+      "name": "porch: a post on the door's right widens the deck as one on its left does",
+      "note": "One post 0.9 m out and 2 m to the right of a door facing +x (2.19 m off, within reach): the deck's half width runs 0.3 m past it, to 2.3 m, as it would for a post on the left.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": []
+        },
+        "buildings": [],
+        "doors": [
+          {
+            "entityId": "door",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "posts": [
+          {
+            "entityId": "post",
+            "x": 0.9,
+            "z": -2
+          }
+        ]
+      },
+      "expected": {
+        "yards": [],
+        "noLot": ["door"],
+        "porches": [
+          {
+            "door": "door",
+            "x": 0.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 2.3,
+            "depth": 1.5,
+            "posts": ["post"]
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "edges: a run a whole number of spacings long ends in one post, not two",
+      "note": "A farm lot 10.6 m across and 12.6 m deep: inset 0.3 m, its back run is 10 m and its side runs 12 m, whole numbers of the 2 m post spacing, so each has a post every 2 m from its start and the post at its end is the last of them (6 on the back, 7 on each side), not a second one on top of it.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "farm",
+              "lotId": "farm",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5.3,
+              "halfAway": 6.3,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "farm",
+            "archetype": "building.farm",
+            "outline": [[-2, -2], [2, -2], [2, 2], [-2, 2]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "farm",
+            "x": 2,
+            "z": 0,
+            "heading": 0
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "farm",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 4.3,
+              "across+": 3.3,
+              "across-": 3.3,
+              "front": 4.3
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "farm",
+                "x": 2.75,
+                "z": 0,
+                "heading": 0,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [-6, -5],
+                "to": [-6, 5],
+                "posts": [[-6, -5], [-6, -3], [-6, -1], [-6, 1], [-6, 3], [-6, 5]]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [-6, 5],
+                "to": [6, 5],
+                "posts": [[-6, 5], [-4, 5], [-2, 5], [0, 5], [2, 5], [4, 5], [6, 5]]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [-6, -5],
+                "to": [6, -5],
+                "posts": [[-6, -5], [-4, -5], [-2, -5], [0, -5], [2, -5], [4, -5], [6, -5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [6, -5],
+                "to": [6, -1.5],
+                "posts": [[6, -5], [6, -3], [6, -1.5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [6, 1.5],
+                "to": [6, 5],
+                "posts": [[6, 1.5], [6, 3.5], [6, 5]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": -5.3,
+                "z": 4.3,
+                "heading": -0.6816058229404055
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": -5.3,
+                "z": -4.3,
+                "heading": 0.6816058229404055
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across+",
+                "x": 0,
+                "z": 4.3,
+                "heading": -1.5707963267948966
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "farm",
+            "x": 2.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "tight: exactly 1 m of clear ground at a side is edged",
+      "note": "As the 1.05 m case with the house 1 m from the lot's across+ side: the least yard gap itself is enough, so that side is edged.",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "farm",
+              "lotId": "farm",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 6,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "farm",
+            "archetype": "building.farm",
+            "outline": [[-4, -3], [2, -3], [2, 4], [-4, 4]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "farm",
+            "x": 2,
+            "z": 0,
+            "heading": 0
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "farm",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 2,
+              "across+": 1,
+              "across-": 2,
+              "front": 4
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "farm",
+                "x": 2.75,
+                "z": 0,
+                "heading": 0,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [-5.7, 4.7],
+                "posts": [[-5.7, -4.7], [-5.7, -2.7], [-5.7, -0.7000000000000002], [-5.7, 1.2999999999999998], [-5.7, 3.3], [-5.7, 4.7]]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [-5.7, 4.7],
+                "to": [5.7, 4.7],
+                "posts": [[-5.7, 4.7], [-3.7, 4.7], [-1.7000000000000002, 4.7], [0.2999999999999998, 4.7], [2.3, 4.7], [4.3, 4.7], [5.7, 4.7]]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [-5.7, -4.7],
+                "to": [5.7, -4.7],
+                "posts": [[-5.7, -4.7], [-3.7, -4.7], [-1.7000000000000002, -4.7], [0.2999999999999998, -4.7], [2.3, -4.7], [4.3, -4.7], [5.7, -4.7]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, -4.7],
+                "to": [5.7, -1.5],
+                "posts": [[5.7, -4.7], [5.7, -2.7], [5.7, -1.5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, 1.5],
+                "to": [5.7, 4.7],
+                "posts": [[5.7, 1.5], [5.7, 3.5], [5.7, 4.7]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": -5,
+                "z": 4,
+                "heading": -0.6747409422235527
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": -5,
+                "z": -4,
+                "heading": 0.6747409422235527
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across+",
+                "x": 0,
+                "z": 4,
+                "heading": -1.5707963267948966
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "farm",
+            "x": 2.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    },
+    {
+      "name": "edges: a front just wider than the gate gets a short run either side of it",
+      "note": "A farm lot 4.2 m across: inset 0.3 m, its front edge is 3.6 m, 0.3 m wider than the 3 m gate gap each side, so a 0.3 m run stands either side of the gate (a front no wider than the gate gets none).",
+      "op": "composeYards",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "farm",
+              "lotId": "farm",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 2.1,
+              "halfAway": 6,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "farm",
+            "archetype": "building.farm",
+            "outline": [[-3, -1.1], [3, -1.1], [3, 1.1], [-3, 1.1]]
+          }
+        ],
+        "doors": [
+          {
+            "entityId": "farm",
+            "x": 3,
+            "z": 0,
+            "heading": 0
+          }
+        ]
+      },
+      "expected": {
+        "yards": [
+          {
+            "entityId": "farm",
+            "role": "farm",
+            "edge": "fence",
+            "gaps": {
+              "back": 3,
+              "across+": 1,
+              "across-": 1,
+              "front": 3
+            },
+            "tooTight": [],
+            "porches": [
+              {
+                "door": "farm",
+                "x": 3.75,
+                "z": 0,
+                "heading": 0,
+                "halfWidth": 1.2,
+                "depth": 1.5,
+                "posts": []
+              }
+            ],
+            "edges": [
+              {
+                "side": "back",
+                "kind": "fence",
+                "from": [-5.7, -1.8],
+                "to": [-5.7, 1.8],
+                "posts": [[-5.7, -1.8], [-5.7, 0.19999999999999996], [-5.7, 1.8]]
+              },
+              {
+                "side": "across+",
+                "kind": "fence",
+                "from": [-5.7, 1.8],
+                "to": [5.7, 1.8],
+                "posts": [[-5.7, 1.8], [-3.7, 1.8], [-1.7000000000000002, 1.8], [0.2999999999999998, 1.8], [2.3, 1.8], [4.3, 1.8], [5.7, 1.8]]
+              },
+              {
+                "side": "across-",
+                "kind": "fence",
+                "from": [-5.7, -1.8],
+                "to": [5.7, -1.8],
+                "posts": [[-5.7, -1.8], [-3.7, -1.8], [-1.7000000000000002, -1.8], [0.2999999999999998, -1.8], [2.3, -1.8], [4.3, -1.8], [5.7, -1.8]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, -1.8],
+                "to": [5.7, -1.5],
+                "posts": [[5.7, -1.8], [5.7, -1.5]]
+              },
+              {
+                "side": "front",
+                "kind": "fence",
+                "from": [5.7, 1.5],
+                "to": [5.7, 1.8],
+                "posts": [[5.7, 1.5], [5.7, 1.8]]
+              }
+            ],
+            "items": [
+              {
+                "archetype": "prop.container.hay",
+                "slot": "back across+",
+                "x": -5,
+                "z": 1.1,
+                "heading": -0.2165503049760893
+              },
+              {
+                "archetype": "prop.vehicle.cart",
+                "slot": "back across-",
+                "x": -5,
+                "z": -1.1,
+                "heading": 0.2165503049760893
+              },
+              {
+                "archetype": "prop.container.trough",
+                "slot": "side across+",
+                "x": 0,
+                "z": 1.1,
+                "heading": -1.5707963267948966
+              }
+            ],
+            "unplaced": []
+          }
+        ],
+        "noLot": [],
+        "porches": [
+          {
+            "door": "farm",
+            "x": 3.75,
+            "z": 0,
+            "heading": 0,
+            "halfWidth": 1.2,
+            "depth": 1.5,
+            "posts": []
+          }
+        ],
+        "loosePosts": []
+      }
+    }
+  ]
+}

@@ -1,0 +1,1897 @@
+{
+  "area": "layout-composition-lanterns",
+  "description": "G9 (core src/editor/layout/composition/lanterns.ts): every lantern on a route (roads, paths, G1's lanes, the square's edge) within reach, beside its edge on its own side; loose beyond reach and crowded under the spacing, set aside. Authored in core; every threshold has a case just inside and just past it. Plan frame: IR (x, z) metres.",
+  "version": 1,
+  "sources": [
+    {
+      "authoredIn": "core",
+      "ruling": "U27 (B9 village composition)",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
+      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
+      "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
+    }
+  ],
+  "tolerance": 0.000001,
+  "angleKeys": ["heading"],
+  "fixtures": {
+    "villageFollowedPlan": {
+      "lots": [
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 450.896,
+          "cz": 434.88,
+          "entityId": "bld_6abb84bcf2e499b951eece64_4",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec4"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 418.141,
+          "cz": 410.38100000000003,
+          "entityId": "bld_6abb84bcf2e499b951eece64_5",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec5"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 441.642,
+          "cz": 451.806,
+          "entityId": "bld_6abb84bcf2e499b951eece64_6",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec6"
+        },
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 455.837,
+          "cz": 417.272,
+          "entityId": "bld_6abb84eef2e499b951eecec0",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec0"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 423.954,
+          "cz": 446.566,
+          "entityId": "bld_6abb84eef2e499b951eecec1",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec1"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 417.725,
+          "cz": 428.072,
+          "entityId": "bld_6abb84eef2e499b951eecec2",
+          "halfAcross": 6,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec2"
+        },
+        {
+          "awayX": 6.123233995736766e-17,
+          "awayZ": 1,
+          "cx": 437.041,
+          "cz": 411.301,
+          "entityId": "bld_6abb84eef2e499b951eecec3",
+          "halfAcross": 7.5,
+          "halfAway": 6,
+          "lotId": "6abb84eef2e499b951eecec3"
+        }
+      ],
+      "strips": [
+        {
+          "closed": false,
+          "entityId": "road.street_lane_0_mouth.street_lane_0_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[423.892, 436.911], [415.892, 436.911]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "road.street_lane_1_mouth.street_lane_1_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[426.392, 417.411], [426.392, 409.411]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec0",
+          "points": [[450.4369120320974, 417.4309344924799], [441.72154919284964, 424.1655330500804]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec1",
+          "points": [[423.79616536403324, 441.1658797734054], [423.79616536403324, 438.811]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec2",
+          "points": [[423.1249822338019, 427.42390786597616], [425.14845654213593, 430.04252167676134]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec3",
+          "points": [[441.43151738729995, 417.70075139855004], [438.4852651961146, 419.97740081901145]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec4",
+          "points": [[445.4957542162136, 435.5258924169372], [440.9423780451835, 429.63328796031004]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec5",
+          "points": [[423.5410227784881, 410.2198658143185], [424.492, 410.2198658143185]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec6.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec6",
+          "points": [[440.997207481819, 446.40562277724445], [432.86176255462476, 435.8773999302872]],
+          "surface": "path"
+        },
+        {
+          "closed": true,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+          "halfWidth": 0,
+          "lotId": "6abb84eef2e499b951eeced2",
+          "points": [[438.4767608396403, 418.985117150083], [444.917341184305, 427.3199858314138], [429.72466915757536, 439.0597778520685], [423.2840888129107, 430.7249091707377]],
+          "surface": "plaza"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "name": "reach: a lantern 2.85 m from a road's edge stands beside it",
+      "note": "A lantern 2.85 m off a 4 m road's edge: within the 3 m route reach it moves to 0.5 m off the edge on its own side.",
+      "op": "lanternsOnRoutes",
+      "pins": ["lanterns.routeReachM:inside"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 10,
+            "z": 4.85
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 2.8499999999999996,
+          "x": 10,
+          "z": 2.5,
+          "moved": 2.3499999999999996
+        }
+      ]
+    },
+    {
+      "name": "reach: a lantern 3.15 m from a road's edge is loose",
+      "note": "A lantern 3.15 m off a 4 m road's edge: past the reach it is loose, set aside rather than left in the open.",
+      "op": "lanternsOnRoutes",
+      "pins": ["lanterns.routeReachM:past"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 10,
+            "z": 5.15
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "loose",
+          "route": null,
+          "edge": 3.1500000000000004,
+          "x": 10,
+          "z": 5.15,
+          "moved": 0
+        }
+      ]
+    },
+    {
+      "name": "spacing: two lanterns 4.75 m apart on one road crowd",
+      "note": "Two lanterns 1 m off the road's edge, 4.75 m apart along it: under the 5 m spacing the farther from the road (then the later id) is crowded and set aside.",
+      "op": "lanternsOnRoutes",
+      "pins": ["lanterns.minSpacingM:inside"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "a",
+            "x": 8,
+            "z": 3
+          },
+          {
+            "entityId": "b",
+            "x": 12.75,
+            "z": 3.2
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "a",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1,
+          "x": 8,
+          "z": 2.5,
+          "moved": 0.5
+        },
+        {
+          "entityId": "b",
+          "verdict": "crowded",
+          "route": "road.main",
+          "edge": 1.2000000000000002,
+          "x": 12.75,
+          "z": 3.2,
+          "moved": 0
+        }
+      ]
+    },
+    {
+      "name": "spacing: two lanterns 5.25 m apart on one road both stand",
+      "note": "Two lanterns 1 m off the road's edge, 5.25 m apart along it: over it both stand.",
+      "op": "lanternsOnRoutes",
+      "pins": ["lanterns.minSpacingM:past"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "a",
+            "x": 8,
+            "z": 3
+          },
+          {
+            "entityId": "b",
+            "x": 13.25,
+            "z": 3.2
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "a",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1,
+          "x": 8,
+          "z": 2.5,
+          "moved": 0.5
+        },
+        {
+          "entityId": "b",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1.2000000000000002,
+          "x": 13.25,
+          "z": 2.5,
+          "moved": 0.7000000000000002
+        }
+      ]
+    },
+    {
+      "name": "square: lanterns in the open square move to its edge, inside it",
+      "note": "A lantern in the middle of a 20 m square and one 1 m in from its edge: both are on the square (edge 0) and move to 0.5 m inside the edge nearest them; one 1 m outside the edge moves to 0.5 m outside.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "middle",
+            "x": 30.5,
+            "z": 9
+          },
+          {
+            "entityId": "near",
+            "x": 21,
+            "z": 4
+          },
+          {
+            "entityId": "outside",
+            "x": 41,
+            "z": 15
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "middle",
+          "verdict": "on-route",
+          "route": "square",
+          "edge": 0,
+          "x": 30.5,
+          "z": 0.5,
+          "moved": 8.5
+        },
+        {
+          "entityId": "near",
+          "verdict": "on-route",
+          "route": "square",
+          "edge": 0,
+          "x": 20.5,
+          "z": 4,
+          "moved": 0.5
+        },
+        {
+          "entityId": "outside",
+          "verdict": "on-route",
+          "route": "square",
+          "edge": 1,
+          "x": 40.5,
+          "z": 15,
+          "moved": 0.5
+        }
+      ]
+    },
+    {
+      "name": "routes: G1's lanes are routes, a lantern on a centreline steps to the left, ties by id",
+      "note": "A lantern 2 m off a lane passed as an extra route stands beside the lane; one on a path's centreline steps to the path's left; one equidistant from two paths takes the lower id; with no routes at all a lantern is loose with no edge. On.centre stands at x 9, so its spot is more than the spacing from between's on the other path (spacing counts across routes).",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "path.b",
+              "surface": "path",
+              "lotId": "",
+              "points": [[0, 30], [10, 30]],
+              "halfWidth": 0.6,
+              "closed": false
+            },
+            {
+              "entityId": "path.a",
+              "surface": "path",
+              "lotId": "",
+              "points": [[0, 34], [10, 34]],
+              "halfWidth": 0.6,
+              "closed": false
+            }
+          ]
+        },
+        "routes": [
+          {
+            "entityId": "lane:a~b",
+            "surface": "path",
+            "lotId": "",
+            "points": [[50, 0], [50, 20]],
+            "halfWidth": 1.25,
+            "closed": false
+          }
+        ],
+        "lanterns": [
+          {
+            "entityId": "by.lane",
+            "x": 53.25,
+            "z": 10
+          },
+          {
+            "entityId": "on.centre",
+            "x": 9,
+            "z": 30
+          },
+          {
+            "entityId": "between",
+            "x": 2,
+            "z": 32
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "by.lane",
+          "verdict": "on-route",
+          "route": "lane:a~b",
+          "edge": 2,
+          "x": 51.75,
+          "z": 10,
+          "moved": 1.5
+        },
+        {
+          "entityId": "on.centre",
+          "verdict": "on-route",
+          "route": "path.b",
+          "edge": 0,
+          "x": 9,
+          "z": 31.1,
+          "moved": 1.1000000000000014
+        },
+        {
+          "entityId": "between",
+          "verdict": "on-route",
+          "route": "path.a",
+          "edge": 1.4,
+          "x": 2,
+          "z": 32.9,
+          "moved": 0.8999999999999986
+        }
+      ]
+    },
+    {
+      "name": "routes: none at all",
+      "note": "With no routes every lantern is loose, its edge null.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {},
+        "lanterns": [
+          {
+            "entityId": "alone",
+            "x": 0,
+            "z": 0
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "alone",
+          "verdict": "loose",
+          "route": null,
+          "edge": null,
+          "x": 0,
+          "z": 0,
+          "moved": 0
+        }
+      ]
+    },
+    {
+      "name": "lanterns: Brightwater Vale's seven on its followed plan, among its houses",
+      "note": "Brightwater's seven lanterns at their settled clearance positions (the square's four already at the footpaths' mouths, three by houses), on the followed plan's roads, footpaths and square, with Brightwater's seven fitted house outlines (village.json's): each stands 0.5 m off its route's edge and at least postClearM off every house wall; none is loose.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "$fixture": "villageFollowedPlan"
+        },
+        "buildings": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "outline": [[459.00987385207276, 440.97032998790377], [445.89464588250075, 440.9676587673506], [445.8971260833178, 428.7903044541259], [459.0123540528897, 428.792975674679]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "outline": [[412.82080370500114, 404.7803641288587], [423.13991446136845, 404.7782624024681], [423.14219630161534, 415.9817008428932], [412.82308554524803, 415.98380256928385]]
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "outline": [[435.5500175597363, 459.9186332467596], [435.5553600007318, 446.8034060932717], [447.73271355623086, 446.8083664948028], [447.72737111523537, 459.92359364829065]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "outline": [[461.1549144547519, 422.8748025692839], [450.8358036983846, 422.87270084289327], [450.8380855386315, 411.66926240246806], [461.1571962949988, 411.67136412885867]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "outline": [[418.350114430252, 451.882773203702], [418.3543178829461, 441.56366308943274], [429.5577556262466, 441.5682267698318], [429.55355217355253, 451.88733688410116]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "outline": [[409.60864594711035, 421.98497567467894], [422.7238739166823, 421.98230445412577], [422.7263541174992, 434.15965876735055], [409.6111261479273, 434.1623299879037]]
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "outline": [[444.93943722855, 405.27424860145004], [444.93943722855, 417.30075139855006], [429.14256277145, 417.30075139855006], [429.14256277145, 405.27424860145004]]
+          }
+        ],
+        "lanterns": [
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.lantern",
+            "x": 422.29026000316406,
+            "z": 442.6745412422574
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.lantern",
+            "x": 424.592,
+            "z": 434.01099999999997
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.lantern",
+            "x": 429.79200000000003,
+            "z": 418.611
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.0",
+            "x": 438.45877708960865,
+            "z": 419.1253904003298
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.1",
+            "x": 438.842430423617,
+            "z": 431.8878583394504
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.2",
+            "x": 425.0069320659418,
+            "z": 429.51999791861783
+          },
+          {
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.3",
+            "x": 431.32522291039135,
+            "z": 437.6966095996702
+          }
+        ],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.lantern",
+          "verdict": "on-route",
+          "route": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.footpath",
+          "edge": 0.9316215385225692,
+          "x": 422.09616536403325,
+          "z": 441.1658797734054,
+          "moved": 1.5210957091971937
+        },
+        {
+          "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.lantern",
+          "verdict": "on-route",
+          "route": "road.street_lane_0_mouth.street_lane_0_end",
+          "edge": 0.48328677803528963,
+          "x": 423.892,
+          "z": 433.911,
+          "moved": 0.7071067811865315
+        },
+        {
+          "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.lantern",
+          "verdict": "on-route",
+          "route": "road.street_lane_1_mouth.street_lane_1_end",
+          "edge": 1.1055512754640175,
+          "x": 423.392,
+          "z": 417.411,
+          "moved": 6.511528238439914
+        },
+        {
+          "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.0",
+          "verdict": "on-route",
+          "route": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.footpath",
+          "edge": 0,
+          "x": 437.84144694498184,
+          "z": 418.3264925661069,
+          "moved": 1.0096208481361006
+        },
+        {
+          "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.1",
+          "verdict": "on-route",
+          "route": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+          "edge": 0,
+          "x": 438.5978514231866,
+          "z": 431.57134433889354,
+          "moved": 0.4000000000000356
+        },
+        {
+          "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.2",
+          "verdict": "on-route",
+          "route": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.footpath",
+          "edge": 0,
+          "x": 426.18791729396474,
+          "z": 428.60741842423647,
+          "moved": 1.4924903491727473
+        },
+        {
+          "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.3",
+          "verdict": "on-route",
+          "route": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+          "edge": 0,
+          "x": 431.08064390996105,
+          "z": 437.38009559911336,
+          "moved": 0.3999999999999559
+        }
+      ]
+    },
+    {
+      "name": "clear: a post 0.285 m from a house's wall is refused and steps along the road",
+      "note": "A house's lantern inside its small house; the spot beside the road is 0.285 m from the wall, under postClearM 0.3, so it is refused, as are the stations 0.5 m either way (0.285 m off its corners); the station 1 m along clears it.",
+      "op": "lanternsOnRoutes",
+      "pins": ["lanterns.postClearM:inside"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[9.5, 2.785], [10.5, 2.785], [10.5, 5], [9.5, 5]]
+          }
+        ],
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 10,
+            "z": 3
+          }
+        ],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1,
+          "x": 11,
+          "z": 2.5,
+          "moved": 1.118033988749895
+        }
+      ]
+    },
+    {
+      "name": "clear: a post 0.315 m from a house's wall stands",
+      "note": "The same house 0.03 m farther off: the nearest spot is 0.315 m from the wall, past postClearM 0.3, and the post stands there.",
+      "op": "lanternsOnRoutes",
+      "pins": ["lanterns.postClearM:past"],
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[9.5, 2.815], [10.5, 2.815], [10.5, 5], [9.5, 5]]
+          }
+        ],
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 10,
+            "z": 3
+          }
+        ],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1,
+          "x": 10,
+          "z": 2.5,
+          "moved": 0.5
+        }
+      ]
+    },
+    {
+      "name": "clear: a line (a yard's edge run) 0.2 m from the post's spot sends it across the road",
+      "note": "A road along x at z = 0 (half width 2) and a 10 m line at z = 2.7 from x = 5 to 15 (a fence's run; `lines` has no width). The lantern at (10, 3) would stand at (10, 2.5), 0.2 m from the line, inside the post's 0.3 m clearance; every station on its side within 4 m is as near, so the post goes across the road to (10, -2.5).",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[-20, 0], [30, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 10,
+            "z": 3
+          }
+        ],
+        "buildings": [],
+        "props": [],
+        "lines": [
+          {
+            "entityId": "edge:lot:front:0",
+            "points": [[5, 2.7], [15, 2.7]]
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1,
+          "x": 10,
+          "z": -2.5,
+          "moved": 5.5
+        }
+      ]
+    },
+    {
+      "name": "side: a long wall on the lantern's own side sends it across the road",
+      "note": "Every station on the lantern's side is 0.1 m from a long wall; the other side is clear, so it stands across the road.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 2.6], [20, 2.6], [20, 8], [0, 8]]
+          }
+        ],
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 10,
+            "z": 3
+          }
+        ],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1,
+          "x": 10,
+          "z": -2.5,
+          "moved": 5.5
+        }
+      ]
+    },
+    {
+      "name": "blocked: a road walled on both sides has no clear spot",
+      "note": "Both sides of the road are 0.1 m from a wall at every station: the lantern is blocked and set aside, never stood in a wall.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house.n",
+            "outline": [[-5, 2.6], [25, 2.6], [25, 10], [-5, 10]]
+          },
+          {
+            "entityId": "house.s",
+            "outline": [[-5, -10], [25, -10], [25, -2.6], [-5, -2.6]]
+          }
+        ],
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 10,
+            "z": 3.5
+          }
+        ],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "blocked",
+          "route": "road.main",
+          "edge": 1.5,
+          "x": 10,
+          "z": 3.5,
+          "moved": 0
+        }
+      ]
+    },
+    {
+      "name": "inside: a lantern inside its house by the door path stands beside the path outside, clear of the anvil",
+      "note": "B9 round 1's B1 in small: the lantern stands 1 m inside its house and its nearest route is its own door path, nearest at the door on the wall. The spot by the door is on the wall, the next two are in the anvil; it stands 1.5 m out, beside the path.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "path:house",
+              "surface": "path",
+              "lotId": "",
+              "points": [[4, 6], [4, 7], [4, 12]],
+              "halfWidth": 0.6,
+              "closed": false
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [8, 0], [8, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "anvil",
+            "x": 5.1,
+            "z": 6.6,
+            "radius": 0.35
+          }
+        ],
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 4.5,
+            "z": 5
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "path:house",
+          "edge": 0.5180339887498949,
+          "x": 5.1,
+          "z": 7.5,
+          "moved": 2.570992026436488
+        }
+      ]
+    },
+    {
+      "name": "order: the nearer of two crowding lanterns stands, though its id is later",
+      "note": "b is 0.3 m from the road's edge, a 2.5 m; their spots are 3 m apart. Placed nearest first, b stands and a is crowded.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "a",
+            "x": 8,
+            "z": 4.5
+          },
+          {
+            "entityId": "b",
+            "x": 11,
+            "z": 2.3
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "a",
+          "verdict": "crowded",
+          "route": "road.main",
+          "edge": 2.5,
+          "x": 8,
+          "z": 4.5,
+          "moved": 0
+        },
+        {
+          "entityId": "b",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 0.2999999999999998,
+          "x": 11,
+          "z": 2.5,
+          "moved": 0.20000000000000018
+        }
+      ]
+    },
+    {
+      "name": "spacing: two lanterns on two roads at a junction crowd",
+      "note": "a goes to road.main, b to road.cross; their spots are 4.74 m apart, under the spacing, which counts across routes: b, placed second, is crowded.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 1,
+              "closed": false
+            },
+            {
+              "entityId": "road.cross",
+              "surface": "road",
+              "lotId": "",
+              "points": [[10, 0], [10, 20]],
+              "halfWidth": 1,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "a",
+            "x": 7,
+            "z": 1.6
+          },
+          {
+            "entityId": "b",
+            "x": 11.7,
+            "z": 3
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "a",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 0.6000000000000001,
+          "x": 7,
+          "z": 1.5,
+          "moved": 0.10000000000000009
+        },
+        {
+          "entityId": "b",
+          "verdict": "crowded",
+          "route": "road.cross",
+          "edge": 0.6999999999999993,
+          "x": 11.7,
+          "z": 3,
+          "moved": 0
+        }
+      ]
+    },
+    {
+      "name": "square: a lantern in the square's corner steps along its edge, the beside distance off both sides",
+      "note": "Inside the square 0.2 m off its south edge and 0.3 m off its west: the spot 0.5 m in from the south edge would be 0.3 m off the west edge, so it is refused and the post steps 0.5 m along the edge.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[20, 0], [40, 0], [40, 20], [20, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "corner",
+            "x": 20.3,
+            "z": 0.2
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "corner",
+          "verdict": "on-route",
+          "route": "square",
+          "edge": 0,
+          "x": 20.799999999999997,
+          "z": 0.5,
+          "moved": 0.583095189484527
+        }
+      ]
+    },
+    {
+      "name": "reach: a road past the reach is never tried, though its spot is clear",
+      "note": "The lantern is 0.4 m from road.near's edge, walled on both sides at every station (0.1 m from each wall), and 4.6 m from road.far's edge, past the 3 m reach, where the spot (10, 6.5) is clear. Only the routes within reach are tried: the lantern is blocked on road.near, not moved 4.1 m to road.far.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.near",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            },
+            {
+              "entityId": "road.far",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 9], [20, 9]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house.n",
+            "outline": [[-5, 2.6], [25, 2.6], [25, 5.5], [-5, 5.5]]
+          },
+          {
+            "entityId": "house.s",
+            "outline": [[-5, -10], [25, -10], [25, -2.6], [-5, -2.6]]
+          }
+        ],
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 10,
+            "z": 2.4
+          }
+        ],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "blocked",
+          "route": "road.near",
+          "edge": 0.3999999999999999,
+          "x": 10,
+          "z": 2.4,
+          "moved": 0
+        }
+      ]
+    },
+    {
+      "name": "order: two crowding lanterns at one distance are placed by id, whatever the input order",
+      "note": "a and b are both 1 m from the road's edge and their spots 3 m apart, under the spacing. Listed b then a, a is placed first by id and stands; b is crowded.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "b",
+            "x": 11,
+            "z": 3
+          },
+          {
+            "entityId": "a",
+            "x": 8,
+            "z": 3
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "b",
+          "verdict": "crowded",
+          "route": "road.main",
+          "edge": 1,
+          "x": 11,
+          "z": 3,
+          "moved": 0
+        },
+        {
+          "entityId": "a",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1,
+          "x": 8,
+          "z": 2.5,
+          "moved": 0.5
+        }
+      ]
+    },
+    {
+      "name": "spacing: a crowded lantern does not count: at 0, 4 and 8 m along a road the first and third stand",
+      "note": "Three lanterns 1 m off a road's edge, 4 m apart. l0 stands; l1 is 4 m from it, crowded and set aside; l2 is 4 m from l1 but 8 m from l0, and only lanterns already placed count, so it stands.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[-10, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "l0",
+            "x": 0,
+            "z": 3
+          },
+          {
+            "entityId": "l1",
+            "x": 4,
+            "z": 3
+          },
+          {
+            "entityId": "l2",
+            "x": 8,
+            "z": 3
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "l0",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1,
+          "x": 0,
+          "z": 2.5,
+          "moved": 0.5
+        },
+        {
+          "entityId": "l1",
+          "verdict": "crowded",
+          "route": "road.main",
+          "edge": 1,
+          "x": 4,
+          "z": 3,
+          "moved": 0
+        },
+        {
+          "entityId": "l2",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 1,
+          "x": 8,
+          "z": 2.5,
+          "moved": 0.5
+        }
+      ]
+    },
+    {
+      "name": "stations: equally near three legs of a bent road, the station earliest along it",
+      "note": "A lantern at (5, 5) inside a road bent round three sides of a square, 5 m from each leg's centreline. Its first station is the earliest of the three along the road, on its first leg at (5, 0), so it stands at (5, 3), beside that leg on its own side.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.bend",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [10, 0], [10, 10], [0, 10]],
+              "halfWidth": 2.5,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 5,
+            "z": 5
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.bend",
+          "edge": 2.5,
+          "x": 5,
+          "z": 3,
+          "moved": 2
+        }
+      ]
+    },
+    {
+      "name": "stations: a square's lantern steps back past its edge's first corner, round the square",
+      "note": "A lantern inside the square 1 m along its first edge, 0.8 m in. A 3.8 m well by the corner refuses every spot along that edge; stepping back past the square's first corner the search carries on round it, up its last edge, and the lantern stands 0.5 m inside it at (0.5, 3).",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[0, 0], [20, 0], [20, 20], [0, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 1,
+            "z": 0.8
+          }
+        ],
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "well",
+            "x": 4,
+            "z": 0.5,
+            "radius": 3.8
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "square",
+          "edge": 0,
+          "x": 0.5,
+          "z": 3,
+          "moved": 2.2561028345356955
+        }
+      ]
+    },
+    {
+      "name": "stations: none past an open road's end, though a spot there is clear",
+      "note": "A lantern by the end of a road walled along both sides up to 10.4 m: every station on the road is refused, and the search does not step past the end (10 m), where a spot would be clear, so the lantern is blocked.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.end",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [10, 0]],
+              "halfWidth": 1,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 9.5,
+            "z": 2
+          }
+        ],
+        "buildings": [
+          {
+            "entityId": "wall.n",
+            "outline": [[4, 1.25], [10.4, 1.25], [10.4, 5], [4, 5]]
+          },
+          {
+            "entityId": "wall.s",
+            "outline": [[4, -5], [10.4, -5], [10.4, -1.25], [4, -1.25]]
+          }
+        ],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "blocked",
+          "route": "road.end",
+          "edge": 1,
+          "x": 9.5,
+          "z": 2,
+          "moved": 0
+        }
+      ]
+    },
+    {
+      "name": "clear: a spot nearer another path's centreline than its half width and the beside distance is refused",
+      "note": "A lantern 0.2 m off a road's edge by a footpath running beside it 1.4 m off the road's edge. Its nearest spot, 0.5 m off the road, is 0.9 m from the path's centreline: past the path's 0.6 m half width but inside it plus the 0.5 m beside distance (1.1 m), so it is refused and the lantern steps along the road past the path's end to (13, 2.5), the first station whose spot is 1.1 m clear of it.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            },
+            {
+              "entityId": "path.side",
+              "surface": "path",
+              "lotId": "",
+              "points": [[8, 3.4], [12, 3.4]],
+              "halfWidth": 0.6,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 10,
+            "z": 2.2
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 0.20000000000000018,
+          "x": 13,
+          "z": 2.5,
+          "moved": 3.0149626863362666
+        }
+      ]
+    },
+    {
+      "name": "stations: off a road's outer corner, the corner's station is square to the leg that starts there",
+      "note": "A lantern beyond the outer corner of a road bent at (10, 0): its nearest station is the corner, and at a vertex the station takes the leg that starts there (up +z), so the post stands 2.5 m out square to that leg, at (12.5, 0), not to the leg that ends there.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.bend",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [10, 0], [10, 10]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 12,
+            "z": -2
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.bend",
+          "edge": 0.8284271247461903,
+          "x": 12.5,
+          "z": 0,
+          "moved": 2.0615528128088303
+        }
+      ]
+    },
+    {
+      "name": "spacing: counted between the spots the posts stand at, not where the lanterns stood",
+      "note": "Lantern b, 0.1 m off the road's edge, stands first at (4.6, 2.5). Lantern a stood 5.33 m from b's lantern and 5.14 m from b's post, but its own spot, (0, 2.5), is 4.6 m from b's post: under the 5 m spacing, so a is crowded.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.main",
+              "surface": "road",
+              "lotId": "",
+              "points": [[-10, 0], [20, 0]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "a",
+            "x": 0,
+            "z": 4.8
+          },
+          {
+            "entityId": "b",
+            "x": 4.6,
+            "z": 2.1
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "a",
+          "verdict": "crowded",
+          "route": "road.main",
+          "edge": 2.8,
+          "x": 0,
+          "z": 4.8,
+          "moved": 0
+        },
+        {
+          "entityId": "b",
+          "verdict": "on-route",
+          "route": "road.main",
+          "edge": 0.10000000000000009,
+          "x": 4.600000000000001,
+          "z": 2.5,
+          "moved": 0.3999999999999999
+        }
+      ]
+    },
+    {
+      "name": "routes: a closed strip that is not a plaza is not a route",
+      "note": "A lantern 1 m from a closed ring of road: only a plaza's closed edge is a route, so with no other route it is loose.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.ring",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [10, 0], [10, 10], [0, 10]],
+              "halfWidth": 1,
+              "closed": true
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 5,
+            "z": 11
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "loose",
+          "route": null,
+          "edge": null,
+          "x": 5,
+          "z": 11,
+          "moved": 0
+        }
+      ]
+    },
+    {
+      "name": "routes: a repeated vertex is no piece: at a road's repeated end the post stands square to its last leg",
+      "note": "A 4 m road up z whose end vertex (0, 10) is listed twice, and a lantern 4 m across from that end. The repeat is dropped, so the end's station is square to the road's last leg and the post stands at (2.5, 10), beside the road on the lantern's side; a piece of no length would have no direction to stand square to (B9 round 4's B1).",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.end",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [0, 10], [0, 10]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 4,
+            "z": 10
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.end",
+          "edge": 2,
+          "x": 2.5,
+          "z": 10,
+          "moved": 1.5
+        }
+      ]
+    },
+    {
+      "name": "routes: a 0.9 mm sliver at a road's end is a repeat: the post stands square to its last leg",
+      "note": "As the repeated end above, but the end vertex is listed again 0.9 mm across (0.0009, 10), the float32 rounding an engine's own copied routes can carry. Within ROUTE_REPEAT_M (1 mm) it is a repeat and dropped, so the post stands at (2.5, 10), square to the 10 m leg, not 2.5 m past the road's end square to a 0.9 mm sliver (B9 round 5's m14).",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.sliver",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [0, 10], [0.0009, 10]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 4,
+            "z": 10
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.sliver",
+          "edge": 2,
+          "x": 2.5,
+          "z": 10,
+          "moved": 1.5
+        }
+      ]
+    },
+    {
+      "name": "routes: a 1.1 mm piece at a road's end is a piece: the end station is square to it",
+      "note": "The control: the same end vertex listed again 1.1 mm across is past ROUTE_REPEAT_M, so it is a piece of the road, and the end station is square to it: the post stands 2.5 m on along it, by the road's end. The two cases pin the millimetre from both sides.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road.sliver",
+              "surface": "road",
+              "lotId": "",
+              "points": [[0, 0], [0, 10], [0.0011, 10]],
+              "halfWidth": 2,
+              "closed": false
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 4,
+            "z": 10
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "road.sliver",
+          "edge": 1.9989,
+          "x": 0.0011,
+          "z": 12.50000000000179,
+          "moved": 4.7160578039299885
+        }
+      ]
+    },
+    {
+      "name": "routes: a closed route's last corner 0.85 mm off its first is a repeat: the post stands square to the first leg",
+      "note": "A 20 m square whose outline ends with its first corner listed again 0.85 mm off, at (-0.0006, -0.0006), and a lantern outside that corner at (-1, -1). Within ROUTE_REPEAT_M (1 mm) of the first corner it is a repeat and dropped, so the corner is (0, 0), its station takes the first leg (along +x) and the post stands 0.5 m outside it at (0, -0.5); kept, it would be a 0.85 mm piece the station took instead, square to which the post would stand elsewhere (B9 round 5's m14, its closed-route half).",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square.sliver",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[0, 0], [20, 0], [20, 20], [0, 20], [-0.0006, -0.0006]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": -1,
+            "z": -1
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "square.sliver",
+          "edge": 1.4142135623730951,
+          "x": 0,
+          "z": -0.5,
+          "moved": 1.118033988749895
+        }
+      ]
+    },
+    {
+      "name": "routes: a closed route's last corner 1.13 mm off its first is a corner: the post stands square to the piece it starts",
+      "note": "The control: the same square with its last corner 1.13 mm off the first, at (-0.0008, -0.0008), past ROUTE_REPEAT_M, so it is a corner of the square and the lantern's nearest station is on it; the post does not stand at (0, -0.5). The two cases pin the closed route's millimetre from both sides.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "square.sliver",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[0, 0], [20, 0], [20, 20], [0, 20], [-0.0008, -0.0008]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": -1,
+            "z": -1
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "on-route",
+          "route": "square.sliver",
+          "edge": 1.4130821915231953,
+          "x": 0.49886862915009544,
+          "z": -0.5,
+          "moved": 1.580065557959633
+        }
+      ]
+    },
+    {
+      "name": "routes: a lane of no length is no route: a lantern by it goes to the square's edge",
+      "note": "G1 lays a lane of no length where a gate stands on a plaza (network.json's 'plaza: a gate on a plaza joins it where it stands'). A lantern 0.82 m from that gate, inside the square, is 0 from the lane's edge and 0 from the square's, and the lane's id sorts first; but a route with no length is no route, so it goes to the square and stands 0.5 m inside its edge at (0.5, 6.5), not on the open floor.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "plaza.square",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[-10, 6], [10, 6], [10, 20], [-10, 20]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "routes": [
+          {
+            "entityId": "lane:a~plaza.square",
+            "surface": "path",
+            "lotId": "",
+            "points": [[0, 6.55], [0, 6.55]],
+            "halfWidth": 1.25,
+            "closed": false
+          }
+        ],
+        "lanterns": [
+          {
+            "entityId": "lamp",
+            "x": 0.5,
+            "z": 7.2
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lamp",
+          "verdict": "on-route",
+          "route": "plaza.square",
+          "edge": 0,
+          "x": 0.5,
+          "z": 6.5,
+          "moved": 0.7000000000000002
+        }
+      ]
+    },
+    {
+      "name": "routes: a path of no length alone is no route, and a square of two corners none",
+      "note": "The only strips are a path whose two points are one, at (5, 5), and a plaza along z = 5 whose outline repeats its first corner and has two corners left (no floor). Neither is a route: the lantern 0.5 m from both is loose, with no route to measure from.",
+      "op": "lanternsOnRoutes",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "path.dot",
+              "surface": "path",
+              "lotId": "",
+              "points": [[5, 5], [5, 5]],
+              "halfWidth": 0.6,
+              "closed": false
+            },
+            {
+              "entityId": "plaza.flat",
+              "surface": "plaza",
+              "lotId": "",
+              "points": [[3, 5], [7, 5], [3, 5]],
+              "halfWidth": 0,
+              "closed": true
+            }
+          ]
+        },
+        "lanterns": [
+          {
+            "entityId": "lantern",
+            "x": 5,
+            "z": 5.5
+          }
+        ],
+        "buildings": [],
+        "props": []
+      },
+      "expected": [
+        {
+          "entityId": "lantern",
+          "verdict": "loose",
+          "route": null,
+          "edge": null,
+          "x": 5,
+          "z": 5.5,
+          "moved": 0
+        }
+      ]
+    }
+  ]
+}

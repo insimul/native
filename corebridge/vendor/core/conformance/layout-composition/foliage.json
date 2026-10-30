@@ -1,0 +1,2751 @@
+{
+  "area": "layout-composition-foliage",
+  "description": "G3 and G6 (core src/editor/layout/composition/foliage.ts): trees and saplings gathered into groves by cell, set back from house walls (a tree 3 m, a sapling 1.5 m, corners and eaves included), undergrowth relaid at the trunks' feet (a tree filled to three plants), open undergrowth gathered into clumps, and the nearest-neighbour audit that reads a set as evenly spaced. Authored in core; every threshold has a case just inside and just past it. Plan frame: IR (x, z) metres.",
+  "version": 1,
+  "sources": [
+    {
+      "authoredIn": "core",
+      "ruling": "U27 (B9 village composition)",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
+      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
+      "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
+    }
+  ],
+  "tolerance": 0.000001,
+  "angleKeys": ["heading"],
+  "cases": [
+    {
+      "name": "kinds: trees, saplings and undergrowth by the longest prefix; the rest are not foliage",
+      "note": "A sapling under the tree prefix is a sapling (the longer prefix wins); a flower, a rock and a lantern are not foliage.",
+      "op": "foliageKind",
+      "input": {
+        "archetypes": ["prop.vegetation.tree", "prop.vegetation.tree.oak", "prop.vegetation.tree.sapling", "prop.vegetation.sapling.birch", "prop.vegetation.fern", "prop.vegetation.tuft.dry", "prop.vegetation.bush", "prop.vegetation.grass", "prop.vegetation.flower", "prop.rock", "prop.structural.lantern"]
+      },
+      "expected": ["tree", "tree", "sapling", "sapling", "undergrowth", "undergrowth", "undergrowth", "undergrowth", null, null, null]
+    },
+    {
+      "name": "set-back: a tree 2.85 m from a wall is set back to 3.2 m",
+      "note": "G6: no tree 1-2 m from a wall. Just inside the tree's 3 m set-back: moved straight out to 3 m plus the 0.2 m margin; a lone tree, so no grove pull, and its foot filled to three plants.",
+      "op": "composeFoliage",
+      "pins": ["foliage.treeWallSetbackM:inside"],
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 10.85,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "set-back",
+            "why": null,
+            "x": 11.2,
+            "z": 4,
+            "moved": 0.34999999999999964,
+            "wall": 3.1999999999999993,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 10.48068384382139,
+            "z": 4.35012036139081,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.659216314253438,
+            "z": 2.837407906132384,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.713319540183452,
+            "z": 5.341542699497291,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 3,
+              "meanNearest": 2.0014001801132744,
+              "cv": 0.1905576489354943,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-back: a tree 3.15 m from a wall stays",
+      "note": "Just past the 3 m set-back: kept where it stands.",
+      "op": "composeFoliage",
+      "pins": ["foliage.treeWallSetbackM:past"],
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 11.15,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": null,
+            "x": 11.15,
+            "z": 4,
+            "moved": 0,
+            "wall": 3.1500000000000004,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 10.430683843821392,
+            "z": 4.35012036139081,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.60921631425344,
+            "z": 2.837407906132384,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.663319540183453,
+            "z": 5.341542699497291,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 3,
+              "meanNearest": 2.0014001801132744,
+              "cv": 0.1905576489354943,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-back: a sapling 1.425 m off a house's corner is set back along the diagonal",
+      "note": "G6: no sapling at a corner. The corner counts: just inside the sapling's 1.5 m set-back, moved out to 1.7 m from the corner.",
+      "op": "composeFoliage",
+      "pins": ["foliage.saplingWallSetbackM:inside"],
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "x": 9.007627163190831,
+            "z": 9.007627163190831
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "kind": "sapling",
+            "verdict": "set-back",
+            "why": null,
+            "x": 9.20208152801713,
+            "z": 9.20208152801713,
+            "moved": 0.27499999999999825,
+            "wall": 1.6999999999999993,
+            "host": null,
+            "generated": false
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-back: a sapling 1.575 m off a house's corner stays",
+      "note": "Just past the 1.5 m set-back.",
+      "op": "composeFoliage",
+      "pins": ["foliage.saplingWallSetbackM:past"],
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "x": 9.113693180368813,
+            "z": 9.113693180368813
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "kind": "sapling",
+            "verdict": "kept",
+            "why": null,
+            "x": 9.113693180368813,
+            "z": 9.113693180368813,
+            "moved": 0,
+            "wall": 1.5750000000000008,
+            "host": null,
+            "generated": false
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-back: a sapling under the eaves and a tree inside the outline are both stood out",
+      "note": "A sapling 0.4 m off the wall (under the eaves) goes to 1.7 m; a tree whose trunk is inside the outline goes out across the nearest wall to 3.2 m.",
+      "op": "composeFoliage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "x": 4,
+            "z": 8.4
+          },
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 7.5,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "kind": "sapling",
+            "verdict": "set-back",
+            "why": null,
+            "x": 4,
+            "z": 9.7,
+            "moved": 1.299999999999999,
+            "wall": 1.6999999999999993,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "set-back",
+            "why": null,
+            "x": 11.2,
+            "z": 4,
+            "moved": 3.6999999999999993,
+            "wall": 3.1999999999999993,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 10.48068384382139,
+            "z": 4.35012036139081,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.659216314253438,
+            "z": 2.837407906132384,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.713319540183452,
+            "z": 5.341542699497291,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 2,
+              "meanNearest": 5.622277118748239,
+              "cv": 0,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 2,
+              "meanNearest": 9.18313671900838,
+              "cv": 0,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 3,
+              "meanNearest": 2.0014001801132744,
+              "cv": 0.1905576489354943,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-aside: a tree between two houses 4 m apart has no spot",
+      "note": "Set back 3.2 m from the nearer house (ties by id) it stands 0.8 m from the other: `walls`, set aside, never left by a wall.",
+      "op": "composeFoliage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          },
+          {
+            "entityId": "house-b",
+            "outline": [[12, 0], [20, 0], [20, 8], [12, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 10,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "set-aside",
+            "why": "walls",
+            "x": 10,
+            "z": 4,
+            "moved": 0,
+            "wall": 2,
+            "host": null,
+            "generated": false
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-aside: a tree whose set-back lands on a road",
+      "note": "Stood out to 3.2 m it would be on the road: `on-strip`, set aside.",
+      "op": "composeFoliage",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "road",
+              "surface": "road",
+              "points": [[12, -10], [12, 20]],
+              "halfWidth": 1.25
+            }
+          ]
+        },
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 9.5,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "set-aside",
+            "why": "on-strip",
+            "x": 9.5,
+            "z": 4,
+            "moved": 0,
+            "wall": 1.5,
+            "host": null,
+            "generated": false
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "groves: an even grid of eight trees gathers into groves",
+      "note": "G3: trees 6 m apart on a grid read as evenly spaced (cv 0). Each 12 m cell pulls its trees half way to its jittered middle; the audit after is not even.",
+      "op": "composeFoliage",
+      "input": {
+        "foliage": [
+          {
+            "entityId": "tree-0-0",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 200,
+            "z": 200
+          },
+          {
+            "entityId": "tree-0-6",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 200,
+            "z": 206
+          },
+          {
+            "entityId": "tree-6-0",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 206,
+            "z": 200
+          },
+          {
+            "entityId": "tree-6-6",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 206,
+            "z": 206
+          },
+          {
+            "entityId": "tree-12-0",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 212,
+            "z": 200
+          },
+          {
+            "entityId": "tree-12-6",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 212,
+            "z": 206
+          },
+          {
+            "entityId": "tree-18-0",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 218,
+            "z": 200
+          },
+          {
+            "entityId": "tree-18-6",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 218,
+            "z": 206
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree-0-0",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": null,
+            "x": 200,
+            "z": 200,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-0-6",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": null,
+            "x": 200,
+            "z": 206,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-6-0",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "grove",
+            "why": null,
+            "x": 207.87983006960712,
+            "z": 199.93991926824674,
+            "moved": 1.8807899364169118,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-6-6",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "grove",
+            "why": null,
+            "x": 207.5761011093855,
+            "z": 206.87691034702584,
+            "moved": 1.8036259212284447,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-12-0",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "grove",
+            "why": null,
+            "x": 210.87983006960712,
+            "z": 199.93991926824674,
+            "moved": 1.1217799995027493,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-12-6",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "grove",
+            "why": null,
+            "x": 210.5761011093855,
+            "z": 206.87691034702584,
+            "moved": 1.6722618836217649,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-18-0",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": null,
+            "x": 218,
+            "z": 200,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-18-6",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": null,
+            "x": 218,
+            "z": 206,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-0-0:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 199.64443330556364,
+            "z": 200.7166396066417,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-0-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-0-0:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 199.65328236841984,
+            "z": 198.79904750970263,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-0-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-0-0:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 201.22598193362728,
+            "z": 200.74846647441828,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-0-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-0-6:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 199.75343733974438,
+            "z": 206.76105640695528,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-0-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-0-6:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 199.4808147123201,
+            "z": 204.8629218861236,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-0-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-0-6:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 201.32253735387619,
+            "z": 206.5604718659405,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-0-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-12-0:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 210.98177300368465,
+            "z": 200.73339745836392,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-12-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-12-0:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 209.9248982523241,
+            "z": 199.13331823654607,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-12-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-12-0:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 212.3150634628963,
+            "z": 199.88213629760438,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-12-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-12-6:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 210.63898617894503,
+            "z": 207.6744349347512,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-12-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-12-6:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 209.66189859120988,
+            "z": 206.02442354022978,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-12-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-12-6:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 212.01244096219406,
+            "z": 206.8896222368335,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-12-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-18-0:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 218.027226350611,
+            "z": 199.20046343058468,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-18-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-18-0:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 218.81250520147347,
+            "z": 200.94991331055974,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-18-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-18-0:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 216.57420648755175,
+            "z": 199.8257971734755,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-18-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-18-6:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 217.9879612120956,
+            "z": 205.20009058788773,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-18-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-18-6:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 218.85813761203246,
+            "z": 206.90890034592096,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-18-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-18-6:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 216.56737606805595,
+            "z": 205.89596906936018,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-18-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-6-0:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 207.65601899810227,
+            "z": 200.70797434717784,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-6-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-6-0:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 207.32704501870217,
+            "z": 198.81879095824115,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-6-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-6-0:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 209.21845676283215,
+            "z": 200.46079578057387,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-6-0",
+            "generated": true
+          },
+          {
+            "entityId": "tree-6-6:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 207.39024722207762,
+            "z": 207.6550223778881,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-6-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-6-6:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 206.96896946512788,
+            "z": 205.78425707789557,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-6-6",
+            "generated": true
+          },
+          {
+            "entityId": "tree-6-6:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 208.9386741031883,
+            "z": 207.3314745355272,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-6-6",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 8,
+              "meanNearest": 6.414213562373096,
+              "cv": 0.14439957037007603,
+              "even": true
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 8,
+              "meanNearest": 6.797974962372339,
+              "cv": 0.30560811292138473,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 24,
+              "meanNearest": 2.5152276513588707,
+              "cv": 0.48684162354882826,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "groves: a pull into a lot is not made",
+      "note": "Two trees of one cell whose pull would end inside a lot keep their spots (`pull-blocked`).",
+      "op": "composeFoliage",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "lot",
+              "cx": 6,
+              "cz": 5,
+              "halfAcross": 4,
+              "halfAway": 2.8,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "foliage": [
+          {
+            "entityId": "tree-w",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 1.5,
+            "z": 5
+          },
+          {
+            "entityId": "tree-e",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 10.5,
+            "z": 5
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree-w",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": "pull-blocked",
+            "x": 1.5,
+            "z": 5,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-e",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": "pull-blocked",
+            "x": 10.5,
+            "z": 5,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree-e:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.003331921504397,
+            "z": 5.6218174786822015,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-e",
+            "generated": true
+          },
+          {
+            "entityId": "tree-e:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 9.263792240761402,
+            "z": 4.814823392410686,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-e",
+            "generated": true
+          },
+          {
+            "entityId": "tree-e:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.691204586376772,
+            "z": 4.197338553122444,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-e",
+            "generated": true
+          },
+          {
+            "entityId": "tree-w:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 1.6891371888124012,
+            "z": 5.777320476900064,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-w",
+            "generated": true
+          },
+          {
+            "entityId": "tree-w:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 0.4616620087590322,
+            "z": 4.304044386511847,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-w",
+            "generated": true
+          },
+          {
+            "entityId": "tree-w:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 2.9200204771266973,
+            "z": 4.7837233034987445,
+            "moved": 0,
+            "wall": null,
+            "host": "tree-w",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 2,
+              "meanNearest": 9,
+              "cv": 0,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 2,
+              "meanNearest": 9,
+              "cv": 0,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 6,
+              "meanNearest": 3.8930224234836732,
+              "cv": 0.7082972614908686,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "undergrowth: a tuft 3.8 m from a trunk is relaid at its foot",
+      "note": "G3: undergrowth at the trees' feet. Just inside the 4 m reach: the tuft is the tree's first plant, and two fills complete the foot; a rock is not foliage and is left.",
+      "op": "composeFoliage",
+      "pins": ["foliage.undergrowthReachM:inside"],
+      "input": {
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 50,
+            "z": 50
+          },
+          {
+            "entityId": "tuft",
+            "archetype": "prop.vegetation.tuft",
+            "x": 53.8,
+            "z": 50
+          },
+          {
+            "entityId": "rock",
+            "archetype": "prop.rock.boulder",
+            "x": 47,
+            "z": 47
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": null,
+            "x": 50,
+            "z": 50,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 49.28068384382139,
+            "z": 50.35012036139081,
+            "moved": 4.53285812561538,
+            "wall": null,
+            "host": "tree",
+            "generated": false
+          },
+          {
+            "entityId": "rock",
+            "archetype": "prop.rock.boulder",
+            "kind": null,
+            "verdict": "left",
+            "why": null,
+            "x": 47,
+            "z": 47,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 50.45921631425344,
+            "z": 48.837407906132384,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 50.51331954018345,
+            "z": 51.34154269949729,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 3,
+              "meanNearest": 2.001400180113272,
+              "cv": 0.1905576489354944,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "undergrowth: a tuft 4.2 m from a trunk stays in the open",
+      "note": "Just past the 4 m reach: the tuft is open undergrowth, alone in its clump cell, kept; the tree is filled with three.",
+      "op": "composeFoliage",
+      "pins": ["foliage.undergrowthReachM:past"],
+      "input": {
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 50,
+            "z": 50
+          },
+          {
+            "entityId": "tuft",
+            "archetype": "prop.vegetation.tuft",
+            "x": 54.2,
+            "z": 50
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": null,
+            "x": 50,
+            "z": 50,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "kept",
+            "why": null,
+            "x": 54.2,
+            "z": 50,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 49.28068384382139,
+            "z": 50.35012036139081,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 50.45921631425344,
+            "z": 48.837407906132384,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 50.51331954018345,
+            "z": 51.34154269949729,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 4,
+              "meanNearest": 3.1294035910529705,
+              "cv": 0.38595582303071224,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "undergrowth: a sapling's foot takes what is near and is not filled; spots on a path are skipped",
+      "note": "Two ferns by a sapling go to its foot (a sapling is not filled); the tree beside a path skips the spiral spots on it.",
+      "op": "composeFoliage",
+      "input": {
+        "plan": {
+          "strips": [
+            {
+              "entityId": "path",
+              "surface": "path",
+              "points": [[-10, 71.2], [10, 71.2]],
+              "halfWidth": 0.6
+            }
+          ]
+        },
+        "foliage": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "x": 30,
+            "z": 70
+          },
+          {
+            "entityId": "fern-1",
+            "archetype": "prop.vegetation.fern",
+            "x": 31,
+            "z": 71
+          },
+          {
+            "entityId": "fern-2",
+            "archetype": "prop.vegetation.fern",
+            "x": 29,
+            "z": 69.5
+          },
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 0,
+            "z": 70
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "kind": "sapling",
+            "verdict": "kept",
+            "why": null,
+            "x": 30,
+            "z": 70,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "fern-1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 30.179389416708023,
+            "z": 70.77962775551744,
+            "moved": 0.8496856215972354,
+            "wall": null,
+            "host": "sapling",
+            "generated": false
+          },
+          {
+            "entityId": "fern-2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 28.970457570428056,
+            "z": 69.29109776011703,
+            "moved": 0.21098080712030867,
+            "wall": null,
+            "host": "sapling",
+            "generated": false
+          },
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": null,
+            "x": 0,
+            "z": 70,
+            "moved": 0,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": -0.7193161561786088,
+            "z": 70.35012036139081,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 0.4592163142534388,
+            "z": 68.83740790613238,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": -1.412627289211312,
+            "z": 69.29355770000298,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 2,
+              "meanNearest": 30,
+              "cv": 0,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 2,
+              "meanNearest": 2.5,
+              "cv": 0,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 2,
+              "meanNearest": 30,
+              "cv": 0,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 5,
+              "meanNearest": 14.771100121500984,
+              "cv": 0.9427954497660506,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "clumps: twelve tufts scattered evenly gather into clumps",
+      "note": "G3: tufts on a 2 m grid (even) with no trunk near: each 5 m cell of two or more pulls them 0.6 of the way to its jittered middle; the audit after is not even.",
+      "op": "composeFoliage",
+      "input": {
+        "foliage": [
+          {
+            "entityId": "tuft-0-0",
+            "archetype": "prop.vegetation.tuft",
+            "x": 100,
+            "z": 100
+          },
+          {
+            "entityId": "tuft-0-2",
+            "archetype": "prop.vegetation.tuft",
+            "x": 100,
+            "z": 102
+          },
+          {
+            "entityId": "tuft-0-4",
+            "archetype": "prop.vegetation.tuft",
+            "x": 100,
+            "z": 104
+          },
+          {
+            "entityId": "tuft-2-0",
+            "archetype": "prop.vegetation.tuft",
+            "x": 102,
+            "z": 100
+          },
+          {
+            "entityId": "tuft-2-2",
+            "archetype": "prop.vegetation.tuft",
+            "x": 102,
+            "z": 102
+          },
+          {
+            "entityId": "tuft-2-4",
+            "archetype": "prop.vegetation.tuft",
+            "x": 102,
+            "z": 104
+          },
+          {
+            "entityId": "tuft-4-0",
+            "archetype": "prop.vegetation.tuft",
+            "x": 104,
+            "z": 100
+          },
+          {
+            "entityId": "tuft-4-2",
+            "archetype": "prop.vegetation.tuft",
+            "x": 104,
+            "z": 102
+          },
+          {
+            "entityId": "tuft-4-4",
+            "archetype": "prop.vegetation.tuft",
+            "x": 104,
+            "z": 104
+          },
+          {
+            "entityId": "tuft-6-0",
+            "archetype": "prop.vegetation.tuft",
+            "x": 106,
+            "z": 100
+          },
+          {
+            "entityId": "tuft-6-2",
+            "archetype": "prop.vegetation.tuft",
+            "x": 106,
+            "z": 102
+          },
+          {
+            "entityId": "tuft-6-4",
+            "archetype": "prop.vegetation.tuft",
+            "x": 106,
+            "z": 104
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tuft-0-0",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 101.48468561009504,
+            "z": 100.4686873843195,
+            "moved": 1.5569069416774841,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-0-2",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 101.48468561009504,
+            "z": 101.26868738431949,
+            "moved": 1.655025529312691,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-0-4",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 101.48468561009504,
+            "z": 102.06868738431949,
+            "moved": 2.43603361641624,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-2-0",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 102.28468561009504,
+            "z": 100.4686873843195,
+            "moved": 0.5483737419091418,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-2-2",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 102.28468561009504,
+            "z": 101.26868738431949,
+            "moved": 0.7847700545055548,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-2-4",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 102.28468561009504,
+            "z": 102.06868738431949,
+            "moved": 1.9521819372389149,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-4-0",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 103.08468561009504,
+            "z": 100.4686873843195,
+            "moved": 1.0283327752178988,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-4-2",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 103.08468561009504,
+            "z": 101.26868738431949,
+            "moved": 1.1715880565371786,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-4-4",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 103.08468561009504,
+            "z": 102.06868738431949,
+            "moved": 2.137233925393707,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-6-0",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 105.59940693818498,
+            "z": 101.28498805260752,
+            "moved": 1.345982576602828,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-6-2",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 105.59940693818498,
+            "z": 102.08498805260751,
+            "moved": 0.4095091821441208,
+            "wall": null,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tuft-6-4",
+            "archetype": "prop.vegetation.tuft",
+            "kind": "undergrowth",
+            "verdict": "clump",
+            "why": null,
+            "x": 105.59940693818498,
+            "z": 102.88498805260751,
+            "moved": 1.1847896201445722,
+            "wall": null,
+            "host": null,
+            "generated": false
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 12,
+              "meanNearest": 2.0920474583051325,
+              "cv": 0.12444723794416292,
+              "even": true
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 12,
+              "meanNearest": 1.0277479085140466,
+              "cv": 0.4900762596450474,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "audit: neighbour distances varying by 0.2375 read as evenly spaced",
+      "note": "Four corners of a rectangle (1 m by the side that makes each corner's three neighbour distances vary by a cv of 0.2375): just inside 0.25, even.",
+      "op": "auditFoliageSpacing",
+      "pins": ["foliage.evenSpacingMaxCv:inside"],
+      "input": {
+        "points": [[0, 0], [1, 0], [1, 1.54114297964], [0, 1.54114297964]]
+      },
+      "expected": {
+        "count": 4,
+        "meanNearest": 1.4594311348451614,
+        "cv": 0.23749999999992372,
+        "even": true
+      }
+    },
+    {
+      "name": "audit: neighbour distances varying by 0.2625 do not",
+      "note": "The rectangle drawn out to a cv of 0.2625: just past 0.25, not even.",
+      "op": "auditFoliageSpacing",
+      "pins": ["foliage.evenSpacingMaxCv:past"],
+      "input": {
+        "points": [[0, 0], [1, 0], [1, 1.697062242796], [0, 1.697062242796]]
+      },
+      "expected": {
+        "count": 4,
+        "meanNearest": 1.5556129816140487,
+        "cv": 0.2625000000000578,
+        "even": false
+      }
+    },
+    {
+      "name": "audit: a set of like clumps is not even",
+      "note": "Four clumps of three, alike inside (0.8 m) and 10 m apart: the first neighbour alone would read them as even; pooled with the third, they are not.",
+      "op": "auditFoliageSpacing",
+      "input": {
+        "points": [
+          [0, 0],
+          [0.8, 0],
+          [0.4, 0.6928],
+          [10, 0],
+          [10.8, 0],
+          [10.4, 0.6928],
+          [0, 10],
+          [0.8, 10],
+          [0.4, 10.6928],
+          [10, 10],
+          [10.8, 10],
+          [10.4, 10.6928]
+        ]
+      },
+      "expected": {
+        "count": 12,
+        "meanNearest": 3.6809115738350076,
+        "cv": 1.1077707719763505,
+        "even": false
+      }
+    },
+    {
+      "name": "audit: three are no pattern",
+      "note": "Fewer than four props are never read as even.",
+      "op": "auditFoliageSpacing",
+      "input": {
+        "points": [[0, 0], [1, 0], [2, 0]]
+      },
+      "expected": {
+        "count": 3,
+        "meanNearest": 1.3333333333333333,
+        "cv": 0.3535533905932738,
+        "even": false
+      }
+    },
+    {
+      "name": "set-aside: a tree set back to 2.85 m from a second house's wall is set aside",
+      "note": "A tree 2 m from house-a's wall is set back to 3.2 m from it, which is 2.85 m from house-b's wall: inside house-b's 3 m set-back, so it is set aside (`walls`).",
+      "op": "composeFoliage",
+      "pins": ["foliage.treeWallSetbackM:inside"],
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          },
+          {
+            "entityId": "house-b",
+            "outline": [[14.05, 0], [22, 0], [22, 8], [14.05, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 10,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "set-aside",
+            "why": "walls",
+            "x": 10,
+            "z": 4,
+            "moved": 0,
+            "wall": 2,
+            "host": null,
+            "generated": false
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-back: a tree set back to 3.15 m from a second house's wall stands there",
+      "note": "As the case before with house-b 0.3 m farther: the set-back spot is 3.15 m from its wall, outside its 3 m set-back, so the tree is set back.",
+      "op": "composeFoliage",
+      "pins": ["foliage.treeWallSetbackM:past"],
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          },
+          {
+            "entityId": "house-b",
+            "outline": [[14.35, 0], [22, 0], [22, 8], [14.35, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 10,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "set-back",
+            "why": null,
+            "x": 11.2,
+            "z": 4,
+            "moved": 1.1999999999999993,
+            "wall": 3.1500000000000004,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 10.48068384382139,
+            "z": 4.35012036139081,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.659216314253438,
+            "z": 2.837407906132384,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.713319540183452,
+            "z": 5.341542699497291,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 3,
+              "meanNearest": 2.0014001801132744,
+              "cv": 0.1905576489354943,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-aside: a sapling set back to 1.425 m from a second house's wall is set aside",
+      "note": "A sapling 1 m from house-a's wall is set back to 1.7 m from it, 1.425 m from house-b's wall: inside a sapling's 1.5 m set-back of house-b, set aside (`walls`).",
+      "op": "composeFoliage",
+      "pins": ["foliage.saplingWallSetbackM:inside"],
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          },
+          {
+            "entityId": "house-b",
+            "outline": [[11.125, 0], [19, 0], [19, 8], [11.125, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "x": 9,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "kind": "sapling",
+            "verdict": "set-aside",
+            "why": "walls",
+            "x": 9,
+            "z": 4,
+            "moved": 0,
+            "wall": 1,
+            "host": null,
+            "generated": false
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-back: a sapling set back to 1.575 m from a second house's wall stands there",
+      "note": "As the case before with house-b 0.15 m farther: 1.575 m off its wall is outside a sapling's set-back (a tree's 3 m does not apply to a sapling), so it is set back.",
+      "op": "composeFoliage",
+      "pins": ["foliage.saplingWallSetbackM:past"],
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          },
+          {
+            "entityId": "house-b",
+            "outline": [[11.275, 0], [19, 0], [19, 8], [11.275, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "x": 9,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "sapling",
+            "archetype": "prop.vegetation.sapling",
+            "kind": "sapling",
+            "verdict": "set-back",
+            "why": null,
+            "x": 9.7,
+            "z": 4,
+            "moved": 0.6999999999999993,
+            "wall": 1.575000000000001,
+            "host": null,
+            "generated": false
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-back: a tree equally near two houses' corners is set back from the lower id",
+      "note": "A tree 2 m from a corner of house-b and of house-a (listed b first), 20 degrees apart: it is set back from house-a, the lower id, along the line from that corner, and stands 3.15 m from house-b's.",
+      "op": "composeFoliage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-b",
+            "outline": [[-10, 0.34729635533386066], [-1.969615506024416, 0.34729635533386066], [-1.969615506024416, 10], [-10, 10]]
+          },
+          {
+            "entityId": "house-a",
+            "outline": [[-10, -10], [-1.969615506024416, -10], [-1.969615506024416, -0.34729635533386066], [-10, -0.34729635533386066]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 0,
+            "z": 0
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "set-back",
+            "why": null,
+            "x": 1.1817693036146502,
+            "z": 0.20837781320031623,
+            "moved": 1.2000000000000004,
+            "wall": 3.154445209505526,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 0.4624531474360414,
+            "z": 0.5584981745911263,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 1.6409856178680888,
+            "z": -0.9542142806672995,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 1.6950888437981024,
+            "z": 1.549920512697607,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 3,
+              "meanNearest": 2.001400180113274,
+              "cv": 0.19055764893549434,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-back: a tree exactly 3 m from a wall is kept",
+      "note": "As the 3.15 m case with the tree 3 m off the wall: the set-back itself is far enough, so it stays.",
+      "op": "composeFoliage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 11,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "kept",
+            "why": null,
+            "x": 11,
+            "z": 4,
+            "moved": 0,
+            "wall": 3,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 10.280683843821391,
+            "z": 4.35012036139081,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.459216314253439,
+            "z": 2.837407906132384,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.513319540183453,
+            "z": 5.341542699497291,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 3,
+              "meanNearest": 2.0014001801132744,
+              "cv": 0.1905576489354943,
+              "even": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "set-back: a tree exactly on a wall is stood out from the house's middle",
+      "note": "A tree at (8, 4), on house-a's wall: there is no way out from the wall's nearest point, so it is stood out along the line from the house's middle through that point, to 3.2 m off the wall at (11.2, 4).",
+      "op": "composeFoliage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house-a",
+            "outline": [[0, 0], [8, 0], [8, 8], [0, 8]]
+          }
+        ],
+        "foliage": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "x": 8,
+            "z": 4
+          }
+        ]
+      },
+      "expected": {
+        "items": [
+          {
+            "entityId": "tree",
+            "archetype": "prop.vegetation.tree.oak",
+            "kind": "tree",
+            "verdict": "set-back",
+            "why": null,
+            "x": 11.2,
+            "z": 4,
+            "moved": 3.1999999999999993,
+            "wall": 3.1999999999999993,
+            "host": null,
+            "generated": false
+          },
+          {
+            "entityId": "tree:undergrowth:0",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 10.48068384382139,
+            "z": 4.35012036139081,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:1",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.659216314253438,
+            "z": 2.837407906132384,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          },
+          {
+            "entityId": "tree:undergrowth:2",
+            "archetype": "prop.vegetation.fern",
+            "kind": "undergrowth",
+            "verdict": "foot",
+            "why": null,
+            "x": 11.713319540183452,
+            "z": 5.341542699497291,
+            "moved": 0,
+            "wall": null,
+            "host": "tree",
+            "generated": true
+          }
+        ],
+        "audit": {
+          "before": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 0,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            }
+          },
+          "after": {
+            "woody": {
+              "count": 1,
+              "meanNearest": null,
+              "cv": null,
+              "even": false
+            },
+            "undergrowth": {
+              "count": 3,
+              "meanNearest": 2.0014001801132744,
+              "cv": 0.1905576489354943,
+              "even": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -50,8 +50,17 @@
 
 /* Hard cap on JS heap. A radiant tick allocates a few hundred KB; anything
  * approaching this is a runaway, and dying with a JS OOM beats taking the game
- * process down. */
-#define INSIMULCORE_JS_MEMORY_LIMIT (64u * 1024u * 1024u)
+ * process down.
+ *
+ * Sized by the largest LEGITIMATE call, which since L.native-layout is core's
+ * `gradeTerrain` at its own cap (`GRADED_MAX_RESOLUTION` = 2,049 points a side,
+ * 4.2 M heights in one `new Array<number>`, 16 bytes each in QuickJS). Its corpus
+ * case (`conformance/layout/ground-plan.json`, "grade: a terrain 2,100 m deep
+ * grades at the cap of 2,049 points") failed with an OOM at 64 and 80 MiB and
+ * passed at 96 MiB (2026-10-29); the cap is twice that measured need. It is a
+ * ceiling, not a reservation: a host that never grades a terrain never
+ * approaches it. */
+#define INSIMULCORE_JS_MEMORY_LIMIT (192u * 1024u * 1024u)
 
 /* ── small growable string buffer ─────────────────────────────────────────── */
 

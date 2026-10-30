@@ -1,0 +1,1232 @@
+{
+  "area": "layout-composition-variety",
+  "description": "G4, G10 and n2 (core src/editor/layout/composition/variety.ts): each house a model and a turn (as built or mirrored) so neighbours read as separate: crowding first, then clones, then blank walls facing the open, then repeats; every blank wall left facing the open gets an outside stair. Authored in core; every threshold has a case just inside and just past it. Plan frame: IR (x, z) metres.",
+  "version": 1,
+  "sources": [
+    {
+      "authoredIn": "core",
+      "ruling": "U27 (B9 village composition)",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
+      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
+      "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
+    }
+  ],
+  "tolerance": 0.000001,
+  "angleKeys": ["heading"],
+  "fixtures": {
+    "villageFollowedPlan": {
+      "lots": [
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 450.896,
+          "cz": 434.88,
+          "entityId": "bld_6abb84bcf2e499b951eece64_4",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec4"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 418.141,
+          "cz": 410.38100000000003,
+          "entityId": "bld_6abb84bcf2e499b951eece64_5",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec5"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 441.642,
+          "cz": 451.806,
+          "entityId": "bld_6abb84bcf2e499b951eece64_6",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec6"
+        },
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 455.837,
+          "cz": 417.272,
+          "entityId": "bld_6abb84eef2e499b951eecec0",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec0"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 423.954,
+          "cz": 446.566,
+          "entityId": "bld_6abb84eef2e499b951eecec1",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec1"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 417.725,
+          "cz": 428.072,
+          "entityId": "bld_6abb84eef2e499b951eecec2",
+          "halfAcross": 6,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec2"
+        },
+        {
+          "awayX": 6.123233995736766e-17,
+          "awayZ": 1,
+          "cx": 437.041,
+          "cz": 411.301,
+          "entityId": "bld_6abb84eef2e499b951eecec3",
+          "halfAcross": 7.5,
+          "halfAway": 6,
+          "lotId": "6abb84eef2e499b951eecec3"
+        }
+      ],
+      "strips": [
+        {
+          "closed": false,
+          "entityId": "road.street_lane_0_mouth.street_lane_0_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[423.892, 436.911], [415.892, 436.911]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "road.street_lane_1_mouth.street_lane_1_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[426.392, 417.411], [426.392, 409.411]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec0",
+          "points": [[450.4369120320974, 417.4309344924799], [441.72154919284964, 424.1655330500804]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec1",
+          "points": [[423.79616536403324, 441.1658797734054], [423.79616536403324, 438.811]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec2",
+          "points": [[423.1249822338019, 427.42390786597616], [425.14845654213593, 430.04252167676134]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec3",
+          "points": [[441.43151738729995, 417.70075139855004], [438.4852651961146, 419.97740081901145]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec4",
+          "points": [[445.4957542162136, 435.5258924169372], [440.9423780451835, 429.63328796031004]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec5",
+          "points": [[423.5410227784881, 410.2198658143185], [424.492, 410.2198658143185]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec6.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec6",
+          "points": [[440.997207481819, 446.40562277724445], [432.86176255462476, 435.8773999302872]],
+          "surface": "path"
+        },
+        {
+          "closed": true,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+          "halfWidth": 0,
+          "lotId": "6abb84eef2e499b951eeced2",
+          "points": [[438.4767608396403, 418.985117150083], [444.917341184305, 427.3199858314138], [429.72466915757536, 439.0597778520685], [423.2840888129107, 430.7249091707377]],
+          "surface": "plaza"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "name": "spread: a row of four houses takes three models before any repeats",
+      "note": "n2: the k-th house tries the models from the k-th, so the row runs cottage, longhouse, townhouse; the fourth, 45 m from the first, may be a cottage again.",
+      "op": "assignHouseModels",
+      "input": {
+        "houses": [
+          {
+            "entityId": "house-0",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "house-1",
+            "x": 15,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "house-2",
+            "x": 30,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "house-3",
+            "x": 45,
+            "z": 0,
+            "heading": 1.5707963267948966
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 6,
+            "blank": []
+          },
+          {
+            "id": "longhouse",
+            "width": 7,
+            "depth": 9,
+            "blank": []
+          },
+          {
+            "id": "townhouse",
+            "width": 6,
+            "depth": 7,
+            "blank": []
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-0",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3, 3], [-3, 3], [-3, -3], [3, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-1",
+            "model": "longhouse",
+            "mirrored": false,
+            "footprint": [[18.5, 4.5], [11.5, 4.5], [11.5, -4.5], [18.5, -4.5]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-2",
+            "model": "townhouse",
+            "mirrored": false,
+            "footprint": [[33, 3.5], [27, 3.5], [27, -3.5], [33, -3.5]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-3",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[48, 3], [42, 3], [42, -3], [48, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "one model: the neighbour is mirrored, not a clone",
+      "note": "n2: with one model the second house is turned the other way round, so the two do not read as copies; with no lots both blank walls face the open and get their stairs.",
+      "op": "assignHouseModels",
+      "input": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "house-b",
+            "x": 12,
+            "z": 0,
+            "heading": 1.5707963267948966
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 6,
+            "blank": ["left"]
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3, 3], [-3, 3], [-3, -3], [3, -3]],
+            "openBlank": ["left"],
+            "wayUps": [
+              {
+                "side": "left",
+                "archetype": "prop.structural.stair",
+                "x": -3.6,
+                "z": 2.2043642384652356e-16,
+                "heading": 3.141592653589793
+              }
+            ],
+            "repeats": ["house-b"],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-b",
+            "model": "cottage",
+            "mirrored": true,
+            "footprint": [[15, 3], [9, 3], [9, -3], [15, -3]],
+            "openBlank": ["right"],
+            "wayUps": [
+              {
+                "side": "right",
+                "archetype": "prop.structural.stair",
+                "x": 15.6,
+                "z": -2.2043642384652356e-16,
+                "heading": -6.123233995736766e-17
+              }
+            ],
+            "repeats": ["house-a"],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "neighbours: a house 19 m from one of the same model takes another",
+      "note": "Just inside the 20 m neighbour reach: the third house would start at the first model, which its neighbour has, so it takes the second.",
+      "op": "assignHouseModels",
+      "pins": ["variety.neighbourReachM:inside"],
+      "input": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "house-b",
+            "x": 100,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "house-c",
+            "x": 19,
+            "z": 0,
+            "heading": 1.5707963267948966
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 6,
+            "blank": []
+          },
+          {
+            "id": "longhouse",
+            "width": 6,
+            "depth": 8,
+            "blank": []
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3, 3], [-3, 3], [-3, -3], [3, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-b",
+            "model": "longhouse",
+            "mirrored": false,
+            "footprint": [[103, 4], [97, 4], [97, -4], [103, -4]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-c",
+            "model": "longhouse",
+            "mirrored": false,
+            "footprint": [[22, 4], [16, 4], [16, -4], [22, -4]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "neighbours: a house 21 m away may repeat the model",
+      "note": "Just past the 20 m reach: not neighbours, so the third house keeps the first model.",
+      "op": "assignHouseModels",
+      "pins": ["variety.neighbourReachM:past"],
+      "input": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "house-b",
+            "x": 100,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "house-c",
+            "x": 21,
+            "z": 0,
+            "heading": 1.5707963267948966
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 6,
+            "blank": []
+          },
+          {
+            "id": "longhouse",
+            "width": 6,
+            "depth": 8,
+            "blank": []
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3, 3], [-3, 3], [-3, -3], [3, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-b",
+            "model": "longhouse",
+            "mirrored": false,
+            "footprint": [[103, 4], [97, 4], [97, -4], [103, -4]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-c",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[24, 3], [18, 3], [18, -3], [24, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "roofs: a wide model 1.9 m from the next roof gives way to a narrow one",
+      "note": "G10: just inside the 2 m least roof gap, the wide model would crowd its neighbour, so the second house takes the narrow model (mirrored, so not a clone).",
+      "op": "assignHouseModels",
+      "pins": ["variety.minRoofGapM:inside"],
+      "input": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          },
+          {
+            "entityId": "house-b",
+            "x": 0,
+            "z": 8.9,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "narrow",
+            "width": 6,
+            "depth": 6,
+            "blank": []
+          },
+          {
+            "id": "wide",
+            "width": 8,
+            "depth": 6,
+            "blank": []
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "narrow",
+            "mirrored": false,
+            "footprint": [[3, -3], [3, 3], [-3, 3], [-3, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": ["house-b"],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-b",
+            "model": "narrow",
+            "mirrored": true,
+            "footprint": [[3, 5.9], [3, 11.9], [-3, 11.9], [-3, 5.9]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": ["house-a"],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "roofs: a wide model 2.1 m from the next roof stands",
+      "note": "Just past the 2 m gap: the wide model is not crowded and is taken.",
+      "op": "assignHouseModels",
+      "pins": ["variety.minRoofGapM:past"],
+      "input": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          },
+          {
+            "entityId": "house-b",
+            "x": 0,
+            "z": 9.1,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "narrow",
+            "width": 6,
+            "depth": 6,
+            "blank": []
+          },
+          {
+            "id": "wide",
+            "width": 8,
+            "depth": 6,
+            "blank": []
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "narrow",
+            "mirrored": false,
+            "footprint": [[3, -3], [3, 3], [-3, 3], [-3, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "house-b",
+            "model": "wide",
+            "mirrored": false,
+            "footprint": [[3, 5.1], [3, 13.1], [-3, 13.1], [-3, 5.1]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "roofs: two houses 5 m apart crowd whatever they take, and say so",
+      "note": "No model clears the gap: both are reported crowded with each other, never hidden.",
+      "op": "assignHouseModels",
+      "input": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          },
+          {
+            "entityId": "house-b",
+            "x": 0,
+            "z": 5,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 6,
+            "blank": []
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3, -3], [3, 3], [-3, 3], [-3, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": ["house-b"],
+            "crowdedWith": ["house-b"]
+          },
+          {
+            "entityId": "house-b",
+            "model": "cottage",
+            "mirrored": true,
+            "footprint": [[3, 2], [3, 8], [-3, 8], [-3, 2]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": ["house-a"],
+            "crowdedWith": ["house-a"]
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "blank walls: a back wall with another lot 7.6 m out faces no open ground",
+      "note": "G4: just inside the 8 m view, the blank back wall faces the next lot: no stair.",
+      "op": "assignHouseModels",
+      "pins": ["variety.blankWallViewM:inside"],
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "house-a",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            },
+            {
+              "entityId": "lot-behind",
+              "cx": -16.1,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 7,
+            "blank": ["back"]
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3.5, -3], [3.5, 3], [-3.5, 3], [-3.5, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "blank walls: a back wall with the next lot 8.4 m out faces the open and gets its stair",
+      "note": "Just past the 8 m view: the blank back wall faces open ground, so an outside stair stands 0.6 m out of its middle, facing out.",
+      "op": "assignHouseModels",
+      "pins": ["variety.blankWallViewM:past"],
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "house-a",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            },
+            {
+              "entityId": "lot-behind",
+              "cx": -16.9,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 7,
+            "blank": ["back"]
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3.5, -3], [3.5, 3], [-3.5, 3], [-3.5, -3]],
+            "openBlank": ["back"],
+            "wayUps": [
+              {
+                "side": "back",
+                "archetype": "prop.structural.stair",
+                "x": -4.1,
+                "z": 0,
+                "heading": -3.141592653589793
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "blank walls: the turn puts a blank side wall against the neighbour",
+      "note": "A model blank on its left: mirrored, its blank wall faces the lot beside it, not the open, and needs no stair.",
+      "op": "assignHouseModels",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "house-a",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            },
+            {
+              "entityId": "lot-right",
+              "cx": 0,
+              "cz": -11,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 7,
+            "blank": ["left"]
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": true,
+            "footprint": [[3.5, -3], [3.5, 3], [-3.5, 3], [-3.5, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "no models: every house unplaced",
+      "note": "With no model to give, nothing is invented.",
+      "op": "assignHouseModels",
+      "input": {
+        "houses": [
+          {
+            "entityId": "house-b",
+            "x": 0,
+            "z": 0,
+            "heading": 1.5707963267948966
+          },
+          {
+            "entityId": "house-a",
+            "x": 9,
+            "z": 0,
+            "heading": 1.5707963267948966
+          }
+        ],
+        "models": []
+      },
+      "expected": {
+        "houses": [],
+        "unplaced": ["house-a", "house-b"]
+      }
+    },
+    {
+      "name": "variety: Brightwater Vale's seven lots over three models",
+      "note": "Brightwater's seven houses (doors to their lots' fronts) over three models blank at the back: no two neighbours the same model the same way round, no roof crowding, and every blank back wall facing the open has its stair.",
+      "op": "assignHouseModels",
+      "input": {
+        "plan": {
+          "$fixture": "villageFollowedPlan"
+        },
+        "houses": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "x": 450.896,
+            "z": 434.88,
+            "heading": -3.14138898038469
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "x": 418.141,
+            "z": 410.38100000000003,
+            "heading": -0.00020367320510339404
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "x": 441.642,
+            "z": 451.806,
+            "heading": -1.5703889803846898
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "x": 455.837,
+            "z": 417.272,
+            "heading": -3.14138898038469
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "x": 423.954,
+            "z": 446.566,
+            "heading": -1.5703889803846898
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "x": 417.725,
+            "z": 428.072,
+            "heading": -0.00020367320510339404
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "x": 437.041,
+            "z": 411.301,
+            "heading": 1.5707963267948966
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 6,
+            "blank": ["back"]
+          },
+          {
+            "id": "longhouse",
+            "width": 7,
+            "depth": 9,
+            "blank": ["back"]
+          },
+          {
+            "id": "townhouse",
+            "width": 6,
+            "depth": 7,
+            "blank": ["back"]
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[447.8953890426131, 437.87938891816475], [447.89661108183526, 431.87938904261307], [453.89661095738694, 431.88061108183524], [453.89538891816477, 437.8806109573869]],
+            "openBlank": ["back"],
+            "wayUps": [
+              {
+                "side": "back",
+                "archetype": "prop.structural.stair",
+                "x": 454.49599992533103,
+                "z": 434.8807332235333,
+                "heading": 0.00020367320510329446
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "model": "longhouse",
+            "mirrored": false,
+            "footprint": [[422.6402870504508, 406.8800835431782], [422.6417127628767, 413.8800833979885], [413.64171294954923, 413.88191645682184], [413.64028723712335, 406.88191660201153]],
+            "openBlank": ["back"],
+            "wayUps": [
+              {
+                "side": "back",
+                "archetype": "prop.structural.stair",
+                "x": 413.0410001057811,
+                "z": 410.3820387333389,
+                "heading": 3.14138898038469
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "model": "townhouse",
+            "mirrored": false,
+            "footprint": [[438.6434259612929, 448.3047782511826], [444.6434254634996, 448.30722232957623], [444.6405740387071, 455.30722174881737], [438.64057453650037, 455.30477767042373]],
+            "openBlank": ["back"],
+            "wayUps": [
+              {
+                "side": "back",
+                "archetype": "prop.structural.stair",
+                "x": 441.64032987976435,
+                "z": 455.9059996598412,
+                "heading": 1.5712036732051036
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "model": "longhouse",
+            "mirrored": false,
+            "footprint": [[451.3362872371233, 420.7710833979885], [451.3377129495492, 413.7710835431782], [460.33771276287666, 413.7729166020115], [460.3362870504508, 420.7729164568218]],
+            "openBlank": ["back"],
+            "wayUps": [
+              {
+                "side": "back",
+                "archetype": "prop.structural.stair",
+                "x": 460.9369998942189,
+                "z": 417.27303873333886,
+                "heading": 0.00020367320510329446
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "model": "longhouse",
+            "mirrored": false,
+            "footprint": [[420.45583334917467, 442.06457466094867], [427.4558327684158, 442.0674260857412], [427.45216665082535, 451.0674253390513], [420.4521672315842, 451.06457391425874]],
+            "openBlank": ["back"],
+            "wayUps": [
+              {
+                "side": "back",
+                "archetype": "prop.structural.stair",
+                "x": 423.9519225333654,
+                "z": 451.66599957687566,
+                "heading": 1.5712036732051036
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "model": "townhouse",
+            "mirrored": false,
+            "footprint": [[421.2243889077941, 425.0712872060112], [421.22561094701626, 431.0712870815629], [414.22561109220595, 431.0727127939888], [414.2243890529838, 425.0727129184371]],
+            "openBlank": ["back"],
+            "wayUps": [
+              {
+                "side": "back",
+                "archetype": "prop.structural.stair",
+                "x": 413.6250000850397,
+                "z": 428.07283506013516,
+                "heading": 3.14138898038469
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[440.041, 414.301], [434.041, 414.301], [434.041, 408.301], [440.041, 408.301]],
+            "openBlank": ["back"],
+            "wayUps": [
+              {
+                "side": "back",
+                "archetype": "prop.structural.stair",
+                "x": 437.041,
+                "z": 407.70099999999996,
+                "heading": -1.5707963267948968
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "order: crowding before clones: the third house takes a clone rather than crowd a roof",
+      "note": "a takes narrow; b, 9 m from a, takes narrow mirrored (wide would crowd a's roof, narrow as built would clone it); c, 9 m the other side of a and 18 m from b, has no choice that is neither a clone (narrow either way round) nor crowding (wide is 1 m from a's roof). Crowding comes first, so c takes the clone.",
+      "op": "assignHouseModels",
+      "input": {
+        "houses": [
+          {
+            "entityId": "a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          },
+          {
+            "entityId": "b",
+            "x": 0,
+            "z": 9,
+            "heading": 0
+          },
+          {
+            "entityId": "c",
+            "x": 0,
+            "z": -9,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "narrow",
+            "width": 6,
+            "depth": 6,
+            "blank": []
+          },
+          {
+            "id": "wide",
+            "width": 10,
+            "depth": 6,
+            "blank": []
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "a",
+            "model": "narrow",
+            "mirrored": false,
+            "footprint": [[3, -3], [3, 3], [-3, 3], [-3, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": ["b", "c"],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "b",
+            "model": "narrow",
+            "mirrored": true,
+            "footprint": [[3, 6], [3, 12], [-3, 12], [-3, 6]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": ["a", "c"],
+            "crowdedWith": []
+          },
+          {
+            "entityId": "c",
+            "model": "narrow",
+            "mirrored": false,
+            "footprint": [[3, -12], [3, -6], [-3, -6], [-3, -12]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": ["a", "b"],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "blank walls: a narrow lot across the view, short of its end, still closes it",
+      "note": "The back wall looks 8 m out along -x; a 2 m deep lot crosses that line 1.5 to 3.5 m out and does not hold its end point. Another lot within the view anywhere along the line, not only at its end, means the wall faces no open ground.",
+      "op": "assignHouseModels",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "house-a",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            },
+            {
+              "entityId": "lot-across",
+              "cx": -6,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 1,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "width": 6,
+            "depth": 7,
+            "blank": ["back"]
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3.5, -3], [3.5, 3], [-3.5, 3], [-3.5, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    }
+  ]
+}

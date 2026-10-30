@@ -24,6 +24,13 @@
 //   4. the adapter JS in corebridge/js/ and the case emitter beside this file
 //      (hashed in VENDORED.json's `files`).
 //
+// THE LAYOUT CORPUS IS COPIED, NOT TRANSCRIBED (L.native-layout, ruling U36).
+// core's `conformance/layout/*.json` and `conformance/layout-composition/*.json`
+// at the pin are copied byte for byte into vendor/core/conformance/ and hashed
+// in `files`; nothing here parses or rewrites them. tests/layout_corpus.cpp runs
+// them through the `layout.*` rows. `--check` holds each copy to its recorded
+// sha256; `--check --core` holds the copied SET and every byte to core at the pin.
+//
 // TWO MODES:
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --core <core git checkout>
@@ -82,6 +89,10 @@ const BUNDLE_JS = path.join(OUT_DIR, 'insimul-core-bundle.js');
 const BUNDLE_C = path.join(OUT_DIR, 'insimul_core_bundle.c');
 const BUNDLE_H = path.join(OUT_DIR, 'insimul_core_bundle.h');
 const MANIFEST = path.join(OUT_DIR, 'VENDORED.json');
+
+// core's layout corpora, copied verbatim (see the top of this file). Paths are
+// core-relative; each lands at vendor/core/<same path>.
+const LAYOUT_CORPUS_DIRS = ['conformance/layout', 'conformance/layout-composition'];
 
 // The adapter JS that is BUNDLED IN — inputs, not outputs, and hashed for the
 // reason spelled out at the top of this file. Paths are relative to BRIDGE, so
@@ -142,6 +153,30 @@ function caseFilesOnDisk() {
     .filter((f) => f.endsWith('.json'))
     .sort()
     .map((f) => `vendor/core/cases/${f}`);
+}
+
+/** The vendored layout corpus files on disk, as bridge-relative paths, sorted. */
+function layoutFilesOnDisk() {
+  const out = [];
+  for (const dir of LAYOUT_CORPUS_DIRS) {
+    const abs = path.join(OUT_DIR, dir);
+    if (!fs.existsSync(abs)) continue;
+    for (const f of fs.readdirSync(abs).filter((x) => x.endsWith('.json')).sort()) out.push(`vendor/core/${dir}/${f}`);
+  }
+  return out;
+}
+
+/** core's layout corpus files at the pin, as { 'vendor/core/<dir>/<f>': Buffer }. */
+function layoutFilesAtPin(src) {
+  const out = {};
+  for (const dir of LAYOUT_CORPUS_DIRS) {
+    const abs = path.join(src.root, dir);
+    if (!fs.existsSync(abs)) fail(`core ${src.commit} has no ${dir}/ — the layout rows would have no corpus`);
+    const names = fs.readdirSync(abs).filter((x) => x.endsWith('.json')).sort();
+    if (names.length === 0) fail(`core ${src.commit} has an empty ${dir}/`);
+    for (const f of names) out[`vendor/core/${dir}/${f}`] = fs.readFileSync(path.join(abs, f));
+  }
+  return out;
 }
 
 /** sha256 of each listed bridge-relative file. */
@@ -390,6 +425,14 @@ async function write(coreDir) {
     }
     for (const [name, text] of Object.entries(cases)) fs.writeFileSync(path.join(CASES_DIR, name), text);
 
+    // The layout corpus: the same exact-set replacement, bytes copied unchanged.
+    const layout = layoutFilesAtPin(src);
+    for (const rel of layoutFilesOnDisk()) if (!(rel in layout)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(layout)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -404,6 +447,7 @@ async function write(coreDir) {
       npmModules,
       adapterModules: ADAPTER_MODULES,
       toolInputs: TOOL_INPUTS,
+      layoutCorpus: LAYOUT_CORPUS_DIRS,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -411,12 +455,19 @@ async function write(coreDir) {
     fs.writeFileSync(BUNDLE_C, c);
     fs.writeFileSync(BUNDLE_H, h);
     // Hashed LAST: the .c/.h are derived from the bundle text plus provenance.
-    manifest.files = hashFiles([...GENERATED_FIXED, ...caseFilesOnDisk(), ...ADAPTER_MODULES, ...TOOL_INPUTS]);
+    manifest.files = hashFiles([
+      ...GENERATED_FIXED,
+      ...caseFilesOnDisk(),
+      ...layoutFilesOnDisk(),
+      ...ADAPTER_MODULES,
+      ...TOOL_INPUTS,
+    ]);
     fs.writeFileSync(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`);
     console.log(`vendor-core-bundle: wrote ${manifest.bundleBytes} bytes from core ${manifest.coreCommit}`);
     console.log(`  core modules (${coreModules.length}): ${coreModules.join(', ')}`);
     console.log(`  npm modules: ${Object.keys(npmModules).length ? JSON.stringify(npmModules) : 'none'}`);
     console.log(`  case files (${Object.keys(cases).length}): ${Object.keys(cases).join(', ')}`);
+    console.log(`  layout corpus files (${Object.keys(layout).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -448,7 +499,13 @@ async function check(coreDir) {
   }
   const caseFiles = caseFilesOnDisk();
   if (caseFiles.length === 0) fail('vendor/core/cases/ holds no case file — the bridge gate would run nothing');
-  const expectedList = [...GENERATED_FIXED, ...caseFiles, ...ADAPTER_MODULES, ...TOOL_INPUTS];
+  const layoutFiles = layoutFilesOnDisk();
+  for (const dir of LAYOUT_CORPUS_DIRS) {
+    if (!layoutFiles.some((f) => f.startsWith(`vendor/core/${dir}/`))) {
+      fail(`vendor/core/${dir}/ holds no corpus file — the layout gate would run nothing`);
+    }
+  }
+  const expectedList = [...GENERATED_FIXED, ...caseFiles, ...layoutFiles, ...ADAPTER_MODULES, ...TOOL_INPUTS];
   const hashes = hashFiles(expectedList);
   const inputs = [...ADAPTER_MODULES, ...TOOL_INPUTS];
   for (const rel of expectedList) {
@@ -462,7 +519,9 @@ async function check(coreDir) {
           (inputs.includes(rel)
             ? '  This file is an INPUT to the vendored artifacts — editing it does nothing until you re-vendor:\n' +
               '      node corebridge/tools/vendor-core-bundle.mjs --core <core checkout>'
-            : '  This file is GENERATED — do not hand-edit it; re-vendor instead.'),
+            : rel.startsWith('vendor/core/conformance/')
+              ? '  This file is core\'s layout corpus, COPIED at the pin — never edit it here; change it in core, re-pin, re-vendor.'
+              : '  This file is GENERATED — do not hand-edit it; re-vendor instead.'),
       );
     }
   }
@@ -475,7 +534,8 @@ async function check(coreDir) {
   if (fs.readFileSync(BUNDLE_H, 'utf8') !== h) fail('insimul_core_bundle.h is stale');
   console.log(
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
-      `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), core ${manifest.coreCommit}, esbuild ${manifest.esbuild})`,
+      `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
+      `core ${manifest.coreCommit}, esbuild ${manifest.esbuild})`,
   );
 
   if (coreDir) {
@@ -504,8 +564,19 @@ async function check(coreDir) {
           fail(`DRIFT: vendor/core/cases/${name} is not what core ${pin.coreCommit} derives`);
         }
       }
+      const layout = layoutFilesAtPin(src);
+      const want = Object.keys(layout).sort();
+      if (JSON.stringify(want) !== JSON.stringify([...layoutFiles].sort())) {
+        fail(`DRIFT: core ${pin.coreCommit} has layout corpus ${want.join(', ')} but vendor/core/ holds ${layoutFiles.join(', ')}`);
+      }
+      for (const rel of want) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(layout[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       console.log(
-        `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle and all ${names.length} case file(s) byte for byte`,
+        `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s) ` +
+          `and all ${want.length} layout corpus file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });

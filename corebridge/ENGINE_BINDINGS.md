@@ -91,6 +91,13 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   P3 `ui.journal.*` (the journal port), `quest.completion.*`, `quest.markers`,
   `quest.minimapMarkers`, `quest.waypoints`, P4 `clock.*`, `weather.*`.
 - Update `InsimulMechanicSurface.h`'s "FIVE methods" comment and any test pinning it.
+- **Layout (L.portable-binding, after L.native-layout).** The `layout.*` rows
+  (`README.md`, "The layout rows") answer every op of core's layout corpora, the
+  same ops `Tests/layout_corpus_ops.h` maps onto `Portable/`. The binding replaces
+  `Portable/`'s layout rules (`InsimulVillageLayout`, `InsimulBuildingFit`, …) by
+  calls to `layout.<op>` with corpus-shaped inputs, and `layout_conformance` runs
+  the same corpus files through the library. Re-vendor the corpus from core at
+  this library's pin, not from `Portable/`'s.
 
 ## Unity
 

@@ -1,0 +1,751 @@
+{
+  "area": "layout-backdrop",
+  "description": "The backdrop round a village's terrain (core src/editor/layout/backdrop.ts; the Unreal plugin's BYOA B7 r2 - r5 backdrop, characterised from the math of its spawn code, now Portable/InsimulVillageLayout). Rings of meshes stood evenly round the terrain's rectangle beyond its edge, near sides the ring's distance out, facing the middle with a +-20 degree turn and a scale jitter hashed from each one's place; frame pieces laid as four strips from the terrain's edge out to the piece's own scaled size. Brightwater Vale's 512 m terrain and the B8 project look's ring (16 meshes, 30 m out, jitter 0.3, sunk 2 m); mesh extents are nominal (the editor measures each mesh). Plan frame: IR (x, z) metres, y up; a heading points along (cos h, sin h).",
+  "version": 1,
+  "sources": [
+    {
+      "characterisedBy": "insimul-unreal tools/verify-unreal insimul_layout_characterise (Source/InsimulEditor/Tests/layout_characterise.cpp), the Portable code of unreal origin/main 6caede7 (BYOA B0-B8)",
+      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
+      "pairing": "BYOA B8 round 5 (unreal/byoa/state/byoa-b8/round-5): houses by role, the 6 m neighbour gap, the seat sinks, the 2.01 m cast, MI_Landscape_01a's layers and its ground paint",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)"
+    }
+  ],
+  "tolerance": 0.000001,
+  "angleKeys": ["heading"],
+  "cases": [
+    {
+      "name": "hash: the look's hash of an id and a salt",
+      "note": "CRC-32 of the id's UTF-16 code units (an FString's TCHARs, core's charCodeAt; beyond the BMP a surrogate pair), seeded salt x 2654435761 + 17; low 24 bits; exact",
+      "op": "lookHash01",
+      "tolerance": 0,
+      "input": {
+        "samples": [
+          ["backdrop.0.0", 1],
+          ["backdrop.0.0", 2],
+          ["backdrop.3.15", 1],
+          ["", 0],
+          ["backdrop.0.7", 4294967295],
+          ["x", 2],
+          ["café.row", 1],
+          ["木.3", 0],
+          ["tree.🌲", 2]
+        ]
+      },
+      "expected": [0.16782283782958984, 0.06734722852706909, 0.4729052186012268, 0.0000010132789611816406, 0.48632270097732544, 0.8386112451553345, 0.49365144968032837, 0.8454347848892212, 0.9052451848983765]
+    },
+    {
+      "name": "ring: the B8 look's mountains round Brightwater",
+      "note": "16 round the rectangle grown by 30 m and each mesh's own half size, from the -x -z corner along +x first",
+      "op": "backdropRing",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "meshHalfExtents": [180, 240, 150, 210],
+        "ring": {
+          "count": 16,
+          "outside": 30,
+          "scale": 1,
+          "scaleJitter": 0.3,
+          "sink": 2
+        },
+        "ringIndex": 0
+      },
+      "expected": [
+        {
+          "heading": 0.6953918108094198,
+          "id": "backdrop.0.0",
+          "mesh": 0,
+          "scale": 0.7404083371162414,
+          "x": -58.455125510692596,
+          "y": -1.229,
+          "z": -163.27350068092346
+        },
+        {
+          "heading": 1.3873588639873162,
+          "id": "backdrop.0.1",
+          "mesh": 1,
+          "scale": 1.1063000917434693,
+          "x": 118.12199449539185,
+          "y": -1.229,
+          "z": -295.5120220184326
+        },
+        {
+          "heading": 1.5628277415265746,
+          "id": "backdrop.0.2",
+          "mesh": 2,
+          "scale": 0.7584941864013672,
+          "x": 355.94353199005127,
+          "y": -1.229,
+          "z": -143.77412796020508
+        },
+        {
+          "heading": 2.2997914812586657,
+          "id": "backdrop.0.3",
+          "mesh": 3,
+          "scale": 1.0857141375541688,
+          "x": 641.4999766647816,
+          "y": -1.229,
+          "z": -257.9999688863754
+        },
+        {
+          "heading": 2.346410164613745,
+          "id": "backdrop.0.4",
+          "mesh": 0,
+          "scale": 0.9710966587066651,
+          "x": 716.7973985671997,
+          "y": -1.229,
+          "z": -89.59804892539978
+        },
+        {
+          "heading": 3.213021579637937,
+          "id": "backdrop.0.5",
+          "mesh": 1,
+          "scale": 1.1870385527610778,
+          "x": 826.8892526626587,
+          "y": -1.229,
+          "z": 113.27768683433533
+        },
+        {
+          "heading": -3.0666123845637974,
+          "id": "backdrop.0.6",
+          "mesh": 2,
+          "scale": 0.9868389725685119,
+          "x": 690.0258458852768,
+          "y": -1.229,
+          "z": 364.5064614713192
+        },
+        {
+          "heading": -2.1550041165378424,
+          "id": "backdrop.0.7",
+          "mesh": 3,
+          "scale": 1.1641089200973511,
+          "x": 786.4628732204437,
+          "y": -1.229,
+          "z": 653.8471549153328
+        },
+        {
+          "heading": -2.130113623562123,
+          "id": "backdrop.0.8",
+          "mesh": 0,
+          "scale": 1.0869134426116944,
+          "x": 617.2333147525787,
+          "y": -1.229,
+          "z": 737.644419670105
+        },
+        {
+          "heading": -2.0701390816287613,
+          "id": "backdrop.0.9",
+          "mesh": 1,
+          "scale": 0.7596386313438416,
+          "x": 373.0783178806305,
+          "y": -1.229,
+          "z": 724.313271522522
+        },
+        {
+          "heading": -1.3712771160735207,
+          "id": "backdrop.0.10",
+          "mesh": 2,
+          "scale": 0.971799898147583,
+          "x": 148.05750381946564,
+          "y": -1.229,
+          "z": 687.7699847221375
+        },
+        {
+          "heading": -0.7003943924695655,
+          "id": "backdrop.0.11",
+          "mesh": 3,
+          "scale": 1.1864806532859802,
+          "x": -145.37070289254189,
+          "y": -1.229,
+          "z": 791.1609371900558
+        },
+        {
+          "heading": -0.7127422152261518,
+          "id": "backdrop.0.12",
+          "mesh": 0,
+          "scale": 0.98651682138443,
+          "x": -207.5730278491974,
+          "y": -1.229,
+          "z": 603.679770886898
+        },
+        {
+          "heading": 0.003137361379566106,
+          "id": "backdrop.0.13",
+          "mesh": 1,
+          "scale": 1.1648693799972534,
+          "x": -309.5686511993408,
+          "y": -1.229,
+          "z": 397.3921627998352
+        },
+        {
+          "heading": -0.06654968203598269,
+          "id": "backdrop.0.14",
+          "mesh": 2,
+          "scale": 0.7407281994819641,
+          "x": -141.10922992229462,
+          "y": -1.229,
+          "z": 156.72269251942635
+        },
+        {
+          "heading": 0.7788816960625935,
+          "id": "backdrop.0.15",
+          "mesh": 3,
+          "scale": 1.1055419206619264,
+          "x": -262.1638033390045,
+          "y": -1.229,
+          "z": -132.6228525042534
+        }
+      ]
+    },
+    {
+      "name": "ring: a second ring, no jitter",
+      "note": "ring 1's ids; one mesh in turn",
+      "op": "backdropRing",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "meshHalfExtents": [40],
+        "ring": {
+          "count": 5,
+          "outside": 80,
+          "scale": 2.5,
+          "scaleJitter": 0,
+          "sink": 0
+        },
+        "ringIndex": 1
+      },
+      "expected": [
+        {
+          "heading": 1.416289603108305,
+          "id": "backdrop.1.0",
+          "mesh": 0,
+          "scale": 2.5,
+          "x": 168.8,
+          "y": 0.771,
+          "z": -180
+        },
+        {
+          "heading": 2.3935475387430993,
+          "id": "backdrop.1.1",
+          "mesh": 0,
+          "scale": 2.5,
+          "x": 692,
+          "y": 0.771,
+          "z": -5.600000000000136
+        },
+        {
+          "heading": -2.338611468437801,
+          "id": "backdrop.1.2",
+          "mesh": 0,
+          "scale": 2.5,
+          "x": 692,
+          "y": 0.771,
+          "z": 692
+        },
+        {
+          "heading": -1.221038479463646,
+          "id": "backdrop.1.3",
+          "mesh": 0,
+          "scale": 2.5,
+          "x": -5.599999999999909,
+          "y": 0.771,
+          "z": 692
+        },
+        {
+          "heading": 0.4951293131326072,
+          "id": "backdrop.1.4",
+          "mesh": 0,
+          "scale": 2.5,
+          "x": -180,
+          "y": 0.771,
+          "z": 168.79999999999927
+        }
+      ]
+    },
+    {
+      "name": "ring: no meshes",
+      "note": "nothing to stand",
+      "op": "backdropRing",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "meshHalfExtents": [],
+        "ring": {
+          "count": 5,
+          "outside": 80,
+          "scale": 2.5,
+          "scaleJitter": 0,
+          "sink": 0
+        },
+        "ringIndex": 2
+      },
+      "expected": []
+    },
+    {
+      "name": "frame: background land round Brightwater",
+      "note": "a 200 m mesh at 6x: 600 m frame, its strips from the edge out, at the lowest edge point less half a metre",
+      "op": "backdropFrame",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "edgeMinY": 1.141,
+        "mesh": {
+          "maxX": 100,
+          "maxZ": 100,
+          "minX": -100,
+          "minZ": -100
+        },
+        "offsetY": -0.5,
+        "pieceScale": {
+          "x": 6,
+          "y": 1,
+          "z": 6
+        }
+      },
+      "expected": {
+        "height": 0.641,
+        "laid": true,
+        "outerHalfX": 600,
+        "outerHalfZ": 600,
+        "strips": [
+          {
+            "scaleX": 6,
+            "scaleY": 1,
+            "scaleZ": 1.725,
+            "side": "S",
+            "x": 256,
+            "x0": -344,
+            "x1": 856,
+            "y": 0.641,
+            "z": -171.5,
+            "z0": -344,
+            "z1": 1
+          },
+          {
+            "scaleX": 6,
+            "scaleY": 1,
+            "scaleZ": 1.725,
+            "side": "N",
+            "x": 256,
+            "x0": -344,
+            "x1": 856,
+            "y": 0.641,
+            "z": 683.5,
+            "z0": 511,
+            "z1": 856
+          },
+          {
+            "scaleX": 1.725,
+            "scaleY": 1,
+            "scaleZ": 2.55,
+            "side": "W",
+            "x": -171.5,
+            "x0": -344,
+            "x1": 1,
+            "y": 0.641,
+            "z": 256,
+            "z0": 1,
+            "z1": 511
+          },
+          {
+            "scaleX": 1.725,
+            "scaleY": 1,
+            "scaleZ": 2.55,
+            "side": "E",
+            "x": 683.5,
+            "x0": 511,
+            "x1": 856,
+            "y": 0.641,
+            "z": 256,
+            "z0": 1,
+            "z1": 511
+          }
+        ]
+      }
+    },
+    {
+      "name": "frame: a piece smaller than the terrain",
+      "note": "never inside the terrain: a metre beyond its edge; no edge sampled: the terrain's lowest point",
+      "op": "backdropFrame",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "edgeMinY": null,
+        "mesh": {
+          "maxX": 10,
+          "maxZ": 10,
+          "minX": -10,
+          "minZ": -10
+        },
+        "offsetY": 0,
+        "pieceScale": {
+          "x": 1,
+          "y": 2,
+          "z": 1
+        }
+      },
+      "expected": {
+        "height": 0.771,
+        "laid": true,
+        "outerHalfX": 257,
+        "outerHalfZ": 257,
+        "strips": [
+          {
+            "scaleX": 25.7,
+            "scaleY": 2,
+            "scaleZ": 0.1,
+            "side": "S",
+            "x": 256,
+            "x0": -1,
+            "x1": 513,
+            "y": 0.771,
+            "z": 0,
+            "z0": -1,
+            "z1": 1
+          },
+          {
+            "scaleX": 25.7,
+            "scaleY": 2,
+            "scaleZ": 0.1,
+            "side": "N",
+            "x": 256,
+            "x0": -1,
+            "x1": 513,
+            "y": 0.771,
+            "z": 512,
+            "z0": 511,
+            "z1": 513
+          },
+          {
+            "scaleX": 0.1,
+            "scaleY": 2,
+            "scaleZ": 25.5,
+            "side": "W",
+            "x": 0,
+            "x0": -1,
+            "x1": 1,
+            "y": 0.771,
+            "z": 256,
+            "z0": 1,
+            "z1": 511
+          },
+          {
+            "scaleX": 0.1,
+            "scaleY": 2,
+            "scaleZ": 25.5,
+            "side": "E",
+            "x": 512,
+            "x0": 511,
+            "x1": 513,
+            "y": 0.771,
+            "z": 256,
+            "z0": 1,
+            "z1": 511
+          }
+        ]
+      }
+    },
+    {
+      "name": "frame: a flat mesh",
+      "note": "flat in plan: it cannot be laid",
+      "op": "backdropFrame",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "edgeMinY": null,
+        "mesh": {
+          "maxX": 10,
+          "maxZ": 0.005,
+          "minX": -10,
+          "minZ": 0
+        },
+        "offsetY": 0,
+        "pieceScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "expected": {
+        "height": 0.771,
+        "laid": false,
+        "outerHalfX": 0,
+        "outerHalfZ": 0,
+        "strips": []
+      }
+    },
+    {
+      "name": "frame: a mesh 0.95 cm deep",
+      "note": "under a centimetre deep in plan: it cannot be laid",
+      "op": "backdropFrame",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "edgeMinY": null,
+        "mesh": {
+          "maxX": 10,
+          "maxZ": 0.0095,
+          "minX": -10,
+          "minZ": 0
+        },
+        "offsetY": 0,
+        "pieceScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "expected": {
+        "height": 0.771,
+        "laid": false,
+        "outerHalfX": 0,
+        "outerHalfZ": 0,
+        "strips": []
+      }
+    },
+    {
+      "name": "frame: a mesh 1.05 cm deep",
+      "note": "over a centimetre deep: it is laid",
+      "op": "backdropFrame",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "edgeMinY": null,
+        "mesh": {
+          "maxX": 10,
+          "maxZ": 0.0105,
+          "minX": -10,
+          "minZ": 0
+        },
+        "offsetY": 0,
+        "pieceScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "expected": {
+        "height": 0.771,
+        "laid": true,
+        "outerHalfX": 257,
+        "outerHalfZ": 257,
+        "strips": [
+          {
+            "scaleX": 25.7,
+            "scaleY": 1,
+            "scaleZ": 190.47619047619045,
+            "side": "S",
+            "x": 256,
+            "x0": -1,
+            "x1": 513,
+            "y": 0.771,
+            "z": -0.9999999999999999,
+            "z0": -1,
+            "z1": 1
+          },
+          {
+            "scaleX": 25.7,
+            "scaleY": 1,
+            "scaleZ": 190.47619047619045,
+            "side": "N",
+            "x": 256,
+            "x0": -1,
+            "x1": 513,
+            "y": 0.771,
+            "z": 511,
+            "z0": 511,
+            "z1": 513
+          },
+          {
+            "scaleX": 0.1,
+            "scaleY": 1,
+            "scaleZ": 48571.428571428565,
+            "side": "W",
+            "x": 0,
+            "x0": -1,
+            "x1": 1,
+            "y": 0.771,
+            "z": 1.0000000000000284,
+            "z0": 1,
+            "z1": 511
+          },
+          {
+            "scaleX": 0.1,
+            "scaleY": 1,
+            "scaleZ": 48571.428571428565,
+            "side": "E",
+            "x": 512,
+            "x0": 511,
+            "x1": 513,
+            "y": 0.771,
+            "z": 1.0000000000000284,
+            "z0": 1,
+            "z1": 511
+          }
+        ]
+      }
+    },
+    {
+      "name": "frame: a mesh 0.95 cm wide",
+      "note": "under a centimetre wide in plan: it cannot be laid",
+      "op": "backdropFrame",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "edgeMinY": null,
+        "mesh": {
+          "maxX": 0.0095,
+          "maxZ": 10,
+          "minX": 0,
+          "minZ": -10
+        },
+        "offsetY": 0,
+        "pieceScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "expected": {
+        "height": 0.771,
+        "laid": false,
+        "outerHalfX": 0,
+        "outerHalfZ": 0,
+        "strips": []
+      }
+    },
+    {
+      "name": "frame: a mesh 1.05 cm wide",
+      "note": "over a centimetre wide: it is laid",
+      "op": "backdropFrame",
+      "input": {
+        "box": {
+          "maxX": 512,
+          "maxZ": 512,
+          "minX": 0,
+          "minY": 0.771,
+          "minZ": 0
+        },
+        "edgeMinY": null,
+        "mesh": {
+          "maxX": 0.0105,
+          "maxZ": 10,
+          "minX": 0,
+          "minZ": -10
+        },
+        "offsetY": 0,
+        "pieceScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      },
+      "expected": {
+        "height": 0.771,
+        "laid": true,
+        "outerHalfX": 257,
+        "outerHalfZ": 257,
+        "strips": [
+          {
+            "scaleX": 48952.38095238095,
+            "scaleY": 1,
+            "scaleZ": 0.1,
+            "side": "S",
+            "x": -1,
+            "x0": -1,
+            "x1": 513,
+            "y": 0.771,
+            "z": 0,
+            "z0": -1,
+            "z1": 1
+          },
+          {
+            "scaleX": 48952.38095238095,
+            "scaleY": 1,
+            "scaleZ": 0.1,
+            "side": "N",
+            "x": -1,
+            "x0": -1,
+            "x1": 513,
+            "y": 0.771,
+            "z": 512,
+            "z0": 511,
+            "z1": 513
+          },
+          {
+            "scaleX": 190.47619047619045,
+            "scaleY": 1,
+            "scaleZ": 25.5,
+            "side": "W",
+            "x": -0.9999999999999999,
+            "x0": -1,
+            "x1": 1,
+            "y": 0.771,
+            "z": 256,
+            "z0": 1,
+            "z1": 511
+          },
+          {
+            "scaleX": 190.47619047619045,
+            "scaleY": 1,
+            "scaleZ": 25.5,
+            "side": "E",
+            "x": 511,
+            "x0": 511,
+            "x1": 513,
+            "y": 0.771,
+            "z": 256,
+            "z0": 1,
+            "z1": 511
+          }
+        ]
+      }
+    }
+  ]
+}

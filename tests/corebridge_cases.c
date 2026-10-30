@@ -1019,6 +1019,10 @@ int main(int argc, char **argv) {
 	strlist table = {0};
 	for (size_t i = 0; i < methods->len; i++) {
 		sl_add(&table, methods->items[i]->s);
+		/* A `layout.*` row is held by core's layout corpora instead (the
+		 * layout_corpus ctest, which fails on a row no corpus case names);
+		 * transcribing them here would re-write a corpus that is copied. */
+		if (strncmp(methods->items[i]->s, "layout.", 7) == 0) continue;
 		if (!sl_has(&called, methods->items[i]->s)) {
 			printf("  [FAIL] surface: method %s is called by no case\n", methods->items[i]->s);
 			surface_bad++;

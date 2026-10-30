@@ -123,9 +123,10 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `c4b46c4` (core
-  `main` after the 2026-10-16 landing of tracks G and E and C0's wasm entry; see the
-  pin's `coreRefNote`).
+  what to quote in a bug report about core behaviour. Today: `4a46789` (core
+  `main` on 2026-10-29, holding the layout and composition rules the `layout.*` rows
+  run; see the pin's `coreRefNote`). The vendor directory also holds core's layout
+  corpora (`corebridge/vendor/core/conformance/`), copied byte for byte at the pin.
 - **Generator:** `corebridge/tools/vendor-core-bundle.mjs` (esbuild), which also
   writes `corebridge/vendor/core/cases/` — core's own conformance corpora at the
   same commit, transcribed into bridge cases by `corebridge/tools/emit-bridge-cases.mjs`.

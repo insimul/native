@@ -1,0 +1,756 @@
+{
+  "area": "layout-composition-transitions",
+  "description": "G11: no hard-edged ground strips. A feather per surface, the edge broken up by a fixed noise, what a hard edge is along a line of samples, and the bound that keeps every surface soft by construction.",
+  "version": 1,
+  "sources": [
+    {
+      "authoredIn": "core",
+      "ruling": "U27 (B9 village composition)",
+      "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
+      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
+      "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
+    }
+  ],
+  "tolerance": 0.000001,
+  "angleKeys": [],
+  "fixtures": {
+    "brightwaterPlan": {
+      "lots": [
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 450.892,
+          "cz": 433.911,
+          "entityId": "bld_6abb84bcf2e499b951eece64_4",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec4"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 418.892,
+          "cz": 416.411,
+          "entityId": "bld_6abb84bcf2e499b951eece64_5",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec5"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 440.392,
+          "cz": 444.411,
+          "entityId": "bld_6abb84bcf2e499b951eece64_6",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec6"
+        },
+        {
+          "awayX": -0.9999999792586128,
+          "awayZ": -0.00020367320369513953,
+          "cx": 450.892,
+          "cz": 422.911,
+          "entityId": "bld_6abb84eef2e499b951eecec0",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec0"
+        },
+        {
+          "awayX": 0.0004073463989416099,
+          "awayZ": -0.9999999170344522,
+          "cx": 429.392,
+          "cz": 444.411,
+          "entityId": "bld_6abb84eef2e499b951eecec1",
+          "halfAcross": 5,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec1"
+        },
+        {
+          "awayX": 0.9999999792586128,
+          "awayZ": -0.00020367320369523912,
+          "cx": 418.892,
+          "cz": 428.411,
+          "entityId": "bld_6abb84eef2e499b951eecec2",
+          "halfAcross": 6,
+          "halfAway": 5,
+          "lotId": "6abb84eef2e499b951eecec2"
+        },
+        {
+          "awayX": 6.123233995736766e-17,
+          "awayZ": 1,
+          "cx": 436.392,
+          "cz": 411.411,
+          "entityId": "bld_6abb84eef2e499b951eecec3",
+          "halfAcross": 7.5,
+          "halfAway": 6,
+          "lotId": "6abb84eef2e499b951eecec3"
+        }
+      ],
+      "strips": [
+        {
+          "closed": false,
+          "entityId": "road.street_lane_0_mouth.street_lane_0_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[423.892, 436.911], [415.892, 436.911]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "road.street_lane_1_mouth.street_lane_1_end",
+          "halfWidth": 2.5,
+          "lotId": "",
+          "points": [[426.392, 417.411], [426.392, 409.411]],
+          "surface": "road"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec0",
+          "points": [[446.3061336151602, 421.88151979115844], [445.23284573785725, 421.64057761462107]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec1",
+          "points": [[426.61259078095065, 440.62089651947815], [425.9620907509604, 439.7338510240369]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec2",
+          "points": [[418.892, 433.111], [418.892, 434.211]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.footpath",
+          "halfWidth": 1.2,
+          "lotId": "6abb84eef2e499b951eecec3",
+          "points": [[430.692, 411.411], [429.592, 411.411]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec4",
+          "points": [[446.220746447034, 434.4300281725518], [445.12747433889297, 434.5515028512341]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec5",
+          "points": [[423.592, 416.411], [424.692, 416.411]],
+          "surface": "path"
+        },
+        {
+          "closed": false,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec6.footpath",
+          "halfWidth": 0.75,
+          "lotId": "6abb84eef2e499b951eecec6",
+          "points": [[436.1132775559257, 442.4661261617845], [435.11187443071685, 442.0109429230531]],
+          "surface": "path"
+        },
+        {
+          "closed": true,
+          "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+          "halfWidth": 0,
+          "lotId": "6abb84eef2e499b951eeced2",
+          "points": [[438.4767608396403, 418.985117150083], [444.917341184305, 427.3199858314138], [429.72466915757536, 439.0597778520685], [423.2840888129107, 430.7249091707377]],
+          "surface": "plaza"
+        }
+      ]
+    }
+  },
+  "cases": [
+    {
+      "name": "coverage: the smoothstep over a feather",
+      "note": "Inside, at the edge, a quarter, half and three quarters out, at and past the feather, and a feather of 0.",
+      "op": "transitionCoverage",
+      "input": {
+        "samples": [[-1, 3], [0, 3], [0.75, 3], [1.5, 3], [2.25, 3], [3, 3], [4, 3], [0.5, 0]]
+      },
+      "expected": [1, 1, 0.84375, 0.5, 0.15625, 0, 0, 0]
+    },
+    {
+      "name": "breakup: the edge wanders by up to 0.3 m",
+      "note": "The breakup at points across Brightwater's square and elsewhere, a metre and a half to a few cells apart (6 m cells): within ±0.3 m.",
+      "op": "edgeBreakup",
+      "input": {
+        "points": [
+          [420, 410],
+          [421.5, 410],
+          [423, 410],
+          [426, 410],
+          [432, 410],
+          [440, 425],
+          [445.2, 433.7],
+          [0, 0],
+          [-17.3, 5.9]
+        ]
+      },
+      "expected": [0.18904807594939832, 0.17758461709967302, 0.14110617248557317, 0.12286309944432791, -0.10271510676239863, 0.0015470160976619463, -0.07295701813531152, 0.018134496108418906, 0.15673546596491095]
+    },
+    {
+      "name": "bounds: the default table is soft on every surface",
+      "note": "Each surface's steepest possible change of coverage per metre under the default rules, all within the 0.75 hard-edge gradient: no hard surface.",
+      "op": "transitionBounds",
+      "input": {},
+      "expected": {
+        "road": 0.5904190089363693,
+        "plaza": 0.688822177092431,
+        "path": 0.688822177092431,
+        "lot": 0.688822177092431,
+        "hard": []
+      }
+    },
+    {
+      "name": "bounds: the paint's own 1 m path feather would be hard",
+      "note": "The same with the path's feather set to the paint's 1 m: the bound is far past 0.75, so path is reported hard — the rule catches a table that brings G11 back.",
+      "op": "transitionBounds",
+      "input": {
+        "ruleOverrides": {
+          "transitions.featherM.path": 1
+        }
+      },
+      "expected": {
+        "road": 0.5904190089363693,
+        "plaza": 0.688822177092431,
+        "path": 2.066466531277293,
+        "lot": 0.688822177092431,
+        "hard": ["path"]
+      }
+    },
+    {
+      "name": "audit: a change of 0.7125 a metre is not an edge",
+      "note": "A ramp of coverage at 0.95 of the 0.75 hard-edge gradient: no edge.",
+      "op": "auditGroundEdges",
+      "pins": ["transitions.maxEdgeGradientPerM:inside"],
+      "input": {
+        "samples": [[0, 0], [1, 0], [2, 0.7125], [3, 0.7125]]
+      },
+      "expected": {
+        "maxGradient": 0.7125,
+        "edges": []
+      }
+    },
+    {
+      "name": "audit: a change of 0.7875 a metre is an edge",
+      "note": "The same at 1.05 of it: one edge, its rise 0.7875.",
+      "op": "auditGroundEdges",
+      "pins": ["transitions.maxEdgeGradientPerM:past"],
+      "input": {
+        "samples": [[0, 0], [1, 0], [2, 0.7875], [3, 0.7875]]
+      },
+      "expected": {
+        "maxGradient": 0.7875,
+        "edges": [
+          {
+            "s0": 1,
+            "s1": 2,
+            "rise": 0.7875,
+            "gradient": 0.7875
+          }
+        ]
+      }
+    },
+    {
+      "name": "audit: a steep change of 0.095 is a flicker, not an edge",
+      "note": "A step of coverage 0.095 over 5 cm (far steeper than the gradient) but under the 0.1 least contrast: no edge.",
+      "op": "auditGroundEdges",
+      "pins": ["transitions.minEdgeContrast:inside"],
+      "input": {
+        "samples": [[0, 0], [1, 0], [1.05, 0.095], [2, 0.095]]
+      },
+      "expected": {
+        "maxGradient": 1.8999999999999984,
+        "edges": []
+      }
+    },
+    {
+      "name": "audit: a steep change of 0.105 is an edge",
+      "note": "The same step at 0.105: an edge.",
+      "op": "auditGroundEdges",
+      "pins": ["transitions.minEdgeContrast:past"],
+      "input": {
+        "samples": [[0, 0], [1, 0], [1.05, 0.105], [2, 0.105]]
+      },
+      "expected": {
+        "maxGradient": 2.099999999999998,
+        "edges": [
+          {
+            "s0": 1,
+            "s1": 1.05,
+            "rise": 0.105,
+            "gradient": 2.099999999999998
+          }
+        ]
+      }
+    },
+    {
+      "name": "audit: a falling run and a rising run are two edges",
+      "note": "Coverage up steeply, flat, then down steeply: two edges, the second with a negative rise; a repeated s is skipped.",
+      "op": "auditGroundEdges",
+      "input": {
+        "samples": [[0, 0], [0.5, 0.5], [1, 1], [1, 1], [3, 1], [3.5, 0.6], [4, 0.2], [6, 0.2]]
+      },
+      "expected": {
+        "maxGradient": 1,
+        "edges": [
+          {
+            "s0": 0,
+            "s1": 1,
+            "rise": 1,
+            "gradient": 1
+          },
+          {
+            "s0": 3,
+            "s1": 4,
+            "rise": -0.8,
+            "gradient": 0.8
+          }
+        ]
+      }
+    },
+    {
+      "name": "audit: across Brightwater's second lane, the paint's own coverage",
+      "note": "The road coverage sampled every 0.1 m Brightwater's second lane as sampleGroundCoverage paints it today: its smoothstep is too short (1.5 m for a road, 1 m otherwise), so the audit finds a hard edge each side.",
+      "op": "coverageAudit",
+      "input": {
+        "plan": {
+          "$fixture": "brightwaterPlan"
+        },
+        "surface": "road",
+        "from": [418, 413],
+        "to": [434, 413],
+        "step": 0.1,
+        "source": "paint"
+      },
+      "expected": {
+        "samples": 161,
+        "maxGradient": 0.9984047407404042,
+        "edges": [
+          {
+            "s0": 4.8,
+            "s1": 5.5,
+            "rise": 0.6491055407407316,
+            "gradient": 0.9984047407403964
+          },
+          {
+            "s0": 11.3,
+            "s1": 12,
+            "rise": -0.6491055407407317,
+            "gradient": 0.9984047407404042
+          }
+        ]
+      }
+    },
+    {
+      "name": "audit: across Brightwater's second lane, the transition coverage",
+      "note": "The same line under the transition table: a road fades out over its feather with its edge broken up, and the audit finds no hard edge.",
+      "op": "coverageAudit",
+      "input": {
+        "plan": {
+          "$fixture": "brightwaterPlan"
+        },
+        "surface": "road",
+        "from": [418, 413],
+        "to": [434, 413],
+        "step": 0.1,
+        "source": "transition"
+      },
+      "expected": {
+        "samples": 161,
+        "maxGradient": 0.4291727918052185,
+        "edges": []
+      }
+    },
+    {
+      "name": "audit: across the smithy's footpath, the paint's own coverage",
+      "note": "The path coverage sampled every 0.1 m the smithy's footpath as sampleGroundCoverage paints it today: its smoothstep is too short (1.5 m for a road, 1 m otherwise), so the audit finds a hard edge each side.",
+      "op": "coverageAudit",
+      "input": {
+        "plan": {
+          "$fixture": "brightwaterPlan"
+        },
+        "surface": "path",
+        "from": [445.8, 426],
+        "to": [445.8, 418],
+        "step": 0.1,
+        "source": "paint"
+      },
+      "expected": {
+        "samples": 81,
+        "maxGradient": 1.4556084437775725,
+        "edges": [
+          {
+            "s0": 2.1,
+            "s1": 2.8,
+            "rise": 0.8590175557209002,
+            "gradient": 1.450104785715722
+          },
+          {
+            "s0": 5.6,
+            "s1": 6.3,
+            "rise": -0.862870116363605,
+            "gradient": 1.4556084437775725
+          }
+        ]
+      }
+    },
+    {
+      "name": "audit: across the smithy's footpath, the transition coverage",
+      "note": "The same line under the transition table: a path fades out over its feather with its edge broken up, and the audit finds no hard edge.",
+      "op": "coverageAudit",
+      "input": {
+        "plan": {
+          "$fixture": "brightwaterPlan"
+        },
+        "surface": "path",
+        "from": [445.8, 426],
+        "to": [445.8, 418],
+        "step": 0.1,
+        "source": "transition"
+      },
+      "expected": {
+        "samples": 81,
+        "maxGradient": 0.5083755054383838,
+        "edges": []
+      }
+    },
+    {
+      "name": "audit: across the bakery's lot, the paint's own coverage",
+      "note": "The lot coverage sampled every 0.1 m the bakery's lot as sampleGroundCoverage paints it today: its smoothstep is too short (1.5 m for a road, 1 m otherwise), so the audit finds a hard edge each side.",
+      "op": "coverageAudit",
+      "input": {
+        "plan": {
+          "$fixture": "brightwaterPlan"
+        },
+        "surface": "lot",
+        "from": [404, 428],
+        "to": [434, 428],
+        "step": 0.1,
+        "source": "paint"
+      },
+      "expected": {
+        "samples": 301,
+        "maxGradient": 1.484458174874068,
+        "edges": [
+          {
+            "s0": 9,
+            "s1": 9.7,
+            "rise": 0.8711207328658415,
+            "gradient": 1.484458174874068
+          },
+          {
+            "s0": 20,
+            "s1": 20.7,
+            "rise": -0.8711206525330993,
+            "gradient": 1.484458060113036
+          }
+        ]
+      }
+    },
+    {
+      "name": "audit: across the bakery's lot, the transition coverage",
+      "note": "The same line under the transition table: a lot fades out over its feather with its edge broken up, and the audit finds no hard edge.",
+      "op": "coverageAudit",
+      "input": {
+        "plan": {
+          "$fixture": "brightwaterPlan"
+        },
+        "surface": "lot",
+        "from": [404, 428],
+        "to": [434, 428],
+        "step": 0.1,
+        "source": "transition"
+      },
+      "expected": {
+        "samples": 301,
+        "maxGradient": 0.5096138468855843,
+        "edges": []
+      }
+    },
+    {
+      "name": "audit: across the square, the paint's own coverage",
+      "note": "The plaza coverage sampled every 0.1 m the square as sampleGroundCoverage paints it today: its smoothstep is too short (1.5 m for a road, 1 m otherwise), so the audit finds a hard edge each side.",
+      "op": "coverageAudit",
+      "input": {
+        "plan": {
+          "$fixture": "brightwaterPlan"
+        },
+        "surface": "plaza",
+        "from": [420, 424],
+        "to": [446, 436],
+        "step": 0.1,
+        "source": "paint"
+      },
+      "expected": {
+        "samples": 288,
+        "maxGradient": 1.3266056402768913,
+        "edges": [
+          {
+            "s0": 7.283630227311314,
+            "s1": 8.081836279619404,
+            "rise": 0.883248282624878,
+            "gradient": 1.322609658862881
+          },
+          {
+            "s0": 20.354254333856275,
+            "s1": 21.052684629625855,
+            "rise": -0.8101802993905738,
+            "gradient": 1.3266056402768913
+          }
+        ]
+      }
+    },
+    {
+      "name": "audit: across the square, the transition coverage",
+      "note": "The same line under the transition table: a plaza fades out over its feather with its edge broken up, and the audit finds no hard edge.",
+      "op": "coverageAudit",
+      "input": {
+        "plan": {
+          "$fixture": "brightwaterPlan"
+        },
+        "surface": "plaza",
+        "from": [420, 424],
+        "to": [446, 436],
+        "step": 0.1,
+        "source": "transition"
+      },
+      "expected": {
+        "samples": 288,
+        "maxGradient": 0.43371814374523543,
+        "edges": []
+      }
+    },
+    {
+      "name": "coverage: Brightwater's ground under the transition table",
+      "note": "Every surface's coverage at points round the square, a lane and a lot: the strips and lots by the table and the breakup, slope, patch, fleck and base as the paint's.",
+      "op": "groundTransitionCoverage",
+      "input": {
+        "plan": {
+          "$fixture": "brightwaterPlan"
+        },
+        "points": [
+          [426.392, 413],
+          [429.5, 413],
+          [431, 413],
+          [434, 428],
+          [425, 428],
+          [430, 430],
+          [446.5, 427],
+          [445.8, 421.8],
+          [445.8, 423.5],
+          [400, 400]
+        ]
+      },
+      "expected": [
+        {
+          "road": 1,
+          "plaza": 0,
+          "path": 0.13317745110186985,
+          "lot": 0.09135525828413427,
+          "slope": 0,
+          "patch": 1,
+          "fleck": 1,
+          "base": 1
+        },
+        {
+          "road": 0.9358677101540678,
+          "plaza": 0,
+          "path": 0.9675364850648742,
+          "lot": 1,
+          "slope": 0,
+          "patch": 0.5325438564515482,
+          "fleck": 0,
+          "base": 1
+        },
+        {
+          "road": 0.38788853280858193,
+          "plaza": 0,
+          "path": 0.9674962588876449,
+          "lot": 1,
+          "slope": 0,
+          "patch": 0.11757405790581131,
+          "fleck": 0,
+          "base": 1
+        },
+        {
+          "road": 0,
+          "plaza": 1,
+          "path": 0,
+          "lot": 0,
+          "slope": 0,
+          "patch": 0,
+          "fleck": 0,
+          "base": 1
+        },
+        {
+          "road": 0,
+          "plaza": 0.6448157377328485,
+          "path": 0,
+          "lot": 0.644289856223544,
+          "slope": 0,
+          "patch": 0,
+          "fleck": 0,
+          "base": 1
+        },
+        {
+          "road": 0,
+          "plaza": 1,
+          "path": 0,
+          "lot": 0,
+          "slope": 0,
+          "patch": 0,
+          "fleck": 0,
+          "base": 1
+        },
+        {
+          "road": 0,
+          "plaza": 0.4463986168619988,
+          "path": 0,
+          "lot": 1,
+          "slope": 0,
+          "patch": 0,
+          "fleck": 0.23202068162915687,
+          "base": 1
+        },
+        {
+          "road": 0,
+          "plaza": 0,
+          "path": 1,
+          "lot": 0.9972877321101287,
+          "slope": 0,
+          "patch": 0,
+          "fleck": 0.029510637555732255,
+          "base": 1
+        },
+        {
+          "road": 0,
+          "plaza": 0,
+          "path": 0.9106515801305938,
+          "lot": 0.9923030710462613,
+          "slope": 0,
+          "patch": 0,
+          "fleck": 1,
+          "base": 1
+        },
+        {
+          "road": 0,
+          "plaza": 0,
+          "path": 0,
+          "lot": 0,
+          "slope": 0,
+          "patch": 0.39477677762872426,
+          "fleck": 0,
+          "base": 1
+        }
+      ]
+    },
+    {
+      "name": "coverage: a point 0.1 m inside a lot's edge, where the edge wanders in, is in its feather",
+      "note": "A lot whose +away edge is at x 18.1; at (18, 11) the broken edge wanders 0.245 m in, so the point 0.1 m inside the lot is 0.145 m past the wandered edge and its lot coverage is under 1. Inside a rectangle the signed distance is to the nearest side (the larger of the two negative distances), not the farther; the lot's middle is 1.",
+      "op": "groundTransitionCoverage",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "lot",
+              "lotId": "lot",
+              "cx": 13.1,
+              "cz": 11,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "points": [[18, 11], [13.1, 11]]
+      },
+      "expected": [
+        {
+          "road": 0,
+          "plaza": 0,
+          "path": 0,
+          "lot": 0.9932130859251714,
+          "slope": 0,
+          "patch": 0.990999089745821,
+          "fleck": 0,
+          "base": 1
+        },
+        {
+          "road": 0,
+          "plaza": 0,
+          "path": 0,
+          "lot": 1,
+          "slope": 0,
+          "patch": 0.6049580776036637,
+          "fleck": 0,
+          "base": 1
+        }
+      ]
+    },
+    {
+      "name": "audit: a steep run that reaches the end of the line is still an edge",
+      "note": "Flat to 2 m, then up by 1 over the last 0.1 m: the steep run is still open at the last sample and is reported, from 2 to 2.1.",
+      "op": "auditGroundEdges",
+      "input": {
+        "samples": [[0, 0], [1, 0], [2, 0], [2.1, 1]]
+      },
+      "expected": {
+        "maxGradient": 9.999999999999991,
+        "edges": [
+          {
+            "s0": 2,
+            "s1": 2.1,
+            "rise": 1,
+            "gradient": 9.999999999999991
+          }
+        ]
+      }
+    },
+    {
+      "name": "audit: a change of exactly 0.75 a metre is not an edge",
+      "note": "A piece exactly at the hard-edge gradient is not steeper than it: no edge, though it changes coverage by 0.75.",
+      "op": "auditGroundEdges",
+      "input": {
+        "samples": [[0, 0], [1, 0.75], [2, 0.75]]
+      },
+      "expected": {
+        "maxGradient": 0.75,
+        "edges": []
+      }
+    },
+    {
+      "name": "audit: a steep change of exactly 0.1 is an edge",
+      "note": "A steep run that changes coverage by exactly the least contrast is an edge: at least the contrast, not more than it.",
+      "op": "auditGroundEdges",
+      "input": {
+        "samples": [[0, 0], [0.1, 0.1], [1, 0.1]]
+      },
+      "expected": {
+        "maxGradient": 1,
+        "edges": [
+          {
+            "s0": 0,
+            "s1": 0.1,
+            "rise": 0.1,
+            "gradient": 1
+          }
+        ]
+      }
+    }
+  ]
+}

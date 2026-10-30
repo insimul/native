@@ -310,7 +310,9 @@ if (nSteps === 0) hard('executed no step');
 
 const methods = JSON.parse((await newRuntime()('core.methods', '{}')).raw).methods;
 const surfaceProblems = [];
-for (const m of methods) if (!called.has(m)) surfaceProblems.push(`method ${m} is called by no case`);
+// A `layout.*` row is held by core's layout corpora instead (the layout_corpus
+// ctest, which fails on a row no corpus case names).
+for (const m of methods) if (!called.has(m) && !m.startsWith('layout.')) surfaceProblems.push(`method ${m} is called by no case`);
 for (const m of called) if (!methods.includes(m) && m !== 'no.such.method') surfaceProblems.push(`a case calls ${m}, which is not in the table`);
 const readme = readFileSync(README, 'utf8');
 const tableStart = readme.indexOf('<!-- BEGIN METHOD TABLE -->');

@@ -1,0 +1,118 @@
+{
+ "area": "layout",
+ "description": "Hand-written: the layout rows' own contract (L.native-layout, ruling U36). What each `layout.<op>` row answers is held by core's layout corpora, copied unchanged into vendor/core/conformance/ and run by the `layout_corpus` ctest (tests/layout_corpus.cpp), which also fails on a row no corpus case names. Here: `layout.ops` reports core's two op lists, and a malformed input is refused by core's own reader, not answered.",
+ "cases": [
+  {
+   "name": "layout.ops reports core's LAYOUT_OPS and COMPOSITION_OPS, in core's order",
+   "steps": [
+    {
+     "call": "layout.ops",
+     "expect": {
+      "layout": [
+       "isDoorPartName",
+       "faceYawOf",
+       "chooseDoorPart",
+       "bodyStature",
+       "fitBuildingToLot",
+       "findFitOverlaps",
+       "settleSeparation",
+       "settleBodies",
+       "settleFittedBuildings",
+       "settleClearance",
+       "clearancePairGap",
+       "markerClearance",
+       "plantWallClearance",
+       "settleBuildingMaxShift",
+       "pairingSeatSink",
+       "layoutObstaclesOf",
+       "plantTrunkOutline",
+       "layoutConstants",
+       "buildGroundPlan",
+       "gradeTerrain",
+       "followSettledBuildings",
+       "pathMouths",
+       "lanternsAtPathMouths",
+       "keepPlantPropsOffPaving",
+       "trimGeneratedPoints",
+       "keepLookNeighbours",
+       "keepStatedRows",
+       "planDistances",
+       "margins",
+       "readGroundLayers",
+       "resolveGroundPaint",
+       "groundNoise",
+       "groundCoverage",
+       "groundLayerWeights",
+       "clump",
+       "lookHash01",
+       "lookNeighbours",
+       "lookPropStands",
+       "backdropRing",
+       "backdropFrame"
+      ],
+      "composition": [
+       "composeLaneNetwork",
+       "transitionCoverage",
+       "edgeBreakup",
+       "groundTransitionCoverage",
+       "transitionBounds",
+       "auditGroundEdges",
+       "coverageAudit",
+       "propPurpose",
+       "groupProps",
+       "auditPropGroups",
+       "trimFloraOffSquare",
+       "yardRole",
+       "composeYards",
+       "lanternsOnRoutes",
+       "foliageKind",
+       "composeFoliage",
+       "auditFoliageSpacing",
+       "assignHouseModels",
+       "seatCapacity",
+       "seatVillagers",
+       "keepClearOfProps",
+       "composeVillage"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "a layout row refuses an input core's reader cannot read",
+   "steps": [
+    {
+     "call": "layout.fitBuildingToLot",
+     "args": {},
+     "expectError": "layout corpus:"
+    }
+   ]
+  },
+  {
+   "name": "a composition row refuses an input core's reader cannot read",
+   "steps": [
+    {
+     "call": "layout.composeVillage",
+     "args": {
+      "plan": 7
+     },
+     "expectError": "composition corpus:"
+    }
+   ]
+  },
+  {
+   "name": "a layout row answers a primitive as the corpus pins it",
+   "steps": [
+    {
+     "call": "layout.isDoorPartName",
+     "args": {
+      "component": "SM_Door_01",
+      "mesh": "SM_Door_01",
+      "owner": ""
+     },
+     "expect": true
+    }
+   ]
+  }
+ ]
+}
