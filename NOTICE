@@ -171,6 +171,49 @@ third clause: BSD-2, not BSD-3. Its disclaimer says "COPYRIGHT OWNER" where the
 SPDX reference says "COPYRIGHT HOLDER" — one word, no operative effect, and
 `BSD-2-Clause` remains the identifier.
 
+### CLP(ℤ) and CLP(B) — Markus Triska
+
+SPDX-License-Identifier: MIT
+Copyright: Copyright (C) 2016-2024 Markus Triska (clpz.pl)
+  Copyright (C) 2019-2025 Markus Triska (clpb.pl)
+Upstream: bundled inside Trealla (`library/clpz.pl`, `library/clpb.pl`)
+Vendored-Path: vendor/trealla/library/clpz.pl
+Vendored-Path: vendor/trealla/library/clpb.pl
+Redistributed-In: libinsimul.a, libinsimul.dylib, insimul.wasm (embedded as C byte arrays)
+License-Text: §5.1
+
+Embedded with the rest of `library/*.pl`, so the MIT permission notice travels
+with every binary. Two more of Triska's files ride along, `library/error.pl`
+and `library/format.pl`; each says "I place this code in the public domain", so
+they carry no notice duty and are recorded here only so nobody has to look.
+
+### abnf and json — Aram Panasenco
+
+SPDX-License-Identifier: BSD-3-Clause
+Copyright: Copyright (c) 2021, Aram Panasenco
+Upstream: bundled inside Trealla (`library/abnf.pl`, `library/json.pl`)
+Vendored-Path: vendor/trealla/library/abnf.pl
+Vendored-Path: vendor/trealla/library/json.pl
+Redistributed-In: libinsimul.a, libinsimul.dylib, insimul.wasm (embedded as C byte arrays)
+License-Text: §5.4
+
+Same live obligation as the BSD-2 standard library — clause 2 asks for the
+notice in the materials shipped with a binary — plus BSD-3's third clause: the
+holder's name may not be used to endorse or promote anything built on it.
+
+### lambda — Ulrich Neumerkel
+
+SPDX-License-Identifier: BSD-2-Clause
+Copyright: Copyright (C) 2009 Ulrich Neumerkel
+Upstream: bundled inside Trealla (`library/lambda.pl`)
+Vendored-Path: vendor/trealla/library/lambda.pl
+Redistributed-In: libinsimul.a, libinsimul.dylib, insimul.wasm (embedded as C byte arrays)
+License-Text: §5.2
+
+Two clauses, BSD-2. Its disclaimer names "Ulrich Neumerkel" where the SPDX
+reference says "COPYRIGHT HOLDERS", and it adds a views-and-conclusions
+sentence; neither changes the identifier or the duty.
+
 ### QuickJS
 
 SPDX-License-Identifier: MIT
@@ -466,7 +509,7 @@ NOTICE rather than from an audit.
 §5  FULL LICENSE TEXTS
 ===============================================================================
 
-MIT, BSD-2-Clause and the Unlicense all travel with every copy, so the texts are
+MIT, BSD-2-Clause, BSD-3-Clause and the Unlicense all travel with every copy, so the texts are
 reproduced here rather than cited by name. This repository's own license —
 Apache-2.0 — is in the `LICENSE` file beside this one. The full texts as
 committed with the vendored source are `vendor/trealla/LICENSE`,
@@ -478,8 +521,8 @@ committed with the vendored source are `vendor/trealla/LICENSE`,
 §5.1  MIT License
 -------------------------------------------------------------------------------
 
-Applies to — Trealla Prolog, imath, isocline, QuickJS, the Emscripten runtime,
-and every crate in §3 for which MIT is elected. The copyright notice for each is
+Applies to — Trealla Prolog, imath, isocline, CLP(ℤ) and CLP(B), QuickJS, the
+Emscripten runtime, and every crate in §3 for which MIT is elected. The copyright notice for each is
 in its stanza above; the permission notice follows once.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -504,8 +547,8 @@ SOFTWARE.
 §5.2  BSD 2-Clause License
 -------------------------------------------------------------------------------
 
-Applies to — the Prolog standard library embedded in every `libinsimul`
-artifact. Copyright holders and authors are named in its stanza above. **Clause
+Applies to — the Prolog standard library and `lambda.pl`, both embedded in every
+`libinsimul` artifact. Copyright holders and authors are named in its stanza above. **Clause
 2 is why this section exists**: a binary shipped without it is a binary shipped
 in breach, and that duty passes to every engine plugin and game that
 redistributes one.
@@ -559,3 +602,35 @@ ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 For more information, please refer to <http://unlicense.org/>
+
+-------------------------------------------------------------------------------
+§5.4  BSD 3-Clause License
+-------------------------------------------------------------------------------
+
+Applies to — `library/abnf.pl` and `library/json.pl` (Aram Panasenco), embedded
+in every `libinsimul` artifact. The copyright notice is in their stanza above.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its contributors
+   may be used to endorse or promote products derived from this software
+   without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.

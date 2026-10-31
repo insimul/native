@@ -10,8 +10,8 @@
     "repeat": 9,
     "cpus": 14,
     "loadAverage1min": "3.92",
-    "swiplRoot": "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-swipl/install",
-    "swiplWasmRoot": "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-swipl/install-wasm"
+    "swiplRoot": "<worktree>/build-swipl/install",
+    "swiplWasmRoot": "<worktree>/build-swipl/install-wasm"
   },
   "world": {
     "files": 6,
@@ -60,7 +60,7 @@
       },
       "runtimePaths": [],
       "wasmPayload": {
-        "buildDir": "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-wasm",
+        "buildDir": "<worktree>/build-wasm",
         "version": "insimul 0.1.0 (git a0a5e9e, engine trealla/v2.106.1/07de013677af760a8bca0594ae4b2bef158a3cde)",
         "files": [
           {
@@ -103,11 +103,11 @@
         "files": 359
       },
       "runtimePaths": [
-        "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-swipl/install/lib/swipl/lib/arm64-darwin/libswipl.dylib",
-        "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-swipl/install/lib/swipl"
+        "<worktree>/build-swipl/install/lib/swipl/lib/arm64-darwin/libswipl.dylib",
+        "<worktree>/build-swipl/install/lib/swipl"
       ],
       "wasmPayload": {
-        "buildDir": "/Users/dldekerlegand/.chief/worktrees/insimul-1518311552/250-swi-prolog-spike-and-measurement/build-wasm-swipl",
+        "buildDir": "<worktree>/build-wasm-swipl",
         "version": "insimul 0.1.0 (git a0a5e9e, engine swipl/10.0.1/e58621a91ab7dd530e1e8185ed518f63d851c414)",
         "files": [
           {
