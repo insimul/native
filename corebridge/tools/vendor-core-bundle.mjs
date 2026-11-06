@@ -19,8 +19,10 @@
 //      or differently-checked-out core cannot leak into the artifact;
 //   2. the bundler — `esbuild` at exactly the version the pin names (resolved
 //      from the core checkout's node_modules; a different version is refused);
-//   3. the npm packages core's bundled modules import (resolved from the same
-//      node_modules; each one's name@version is recorded in VENDORED.json);
+//   3. the npm packages core's bundled modules import (resolved the way Node
+//      resolves them from the checkout: its own node_modules, then each one
+//      above it, then any --node-modules <dir> given; each one's name@version is
+//      recorded in VENDORED.json, and --check --core compares that record);
 //   4. the adapter JS in corebridge/js/ and the case emitter beside this file
 //      (hashed in VENDORED.json's `files`).
 //
@@ -30,6 +32,10 @@
 // in `files`; nothing here parses or rewrites them. tests/layout_corpus.cpp runs
 // them through the `layout.*` rows. `--check` holds each copy to its recorded
 // sha256; `--check --core` holds the copied SET and every byte to core at the pin.
+// The PACK corpus is copied the same way (SP.composer-native, U62(1)):
+// `conformance/packs/composition.json` and the catalog files its `catalog`
+// names (`packs/index.json`, `packs/<id>/pack.json`), at their core paths under
+// vendor/core/; tests/packs_corpus.cpp runs them through the `packs.compose` row.
 //
 // TWO MODES:
 //
@@ -37,8 +43,11 @@
 //       Re-bundle core at the pinned commit and write vendor/core/ (the bundle,
 //       its C array, VENDORED.json and the derived case corpus vendor/core/cases/).
 //       <core git checkout> is any checkout of @insimul/core that HAS the pinned
-//       commit object and an installed node_modules (`npm install` in it); which
-//       commit it has checked out does not matter.
+//       commit object and an installed node_modules (`npm install` in it, or in
+//       a directory above it); which commit it has checked out does not matter.
+//       `--node-modules <dir>` (repeatable) adds a node_modules directory to the
+//       npm lookup after the checkout's own chain, for a checkout whose
+//       packages are installed elsewhere (a loop worktree borrowing them).
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check [--core <checkout>]
 //       Verify the checked-in artifacts are self-consistent and agree with the
@@ -94,6 +103,14 @@ const MANIFEST = path.join(OUT_DIR, 'VENDORED.json');
 // core-relative; each lands at vendor/core/<same path>.
 const LAYOUT_CORPUS_DIRS = ['conformance/layout', 'conformance/layout-composition'];
 
+// core's pack-composition corpus and the pack catalog it composes from
+// (SP.composer-native, U62(1)), copied verbatim the same way: the corpus file,
+// then exactly the files its `catalog` names (`packs/index.json` and each
+// `packs/<id>/pack.json`), each at vendor/core/<same path>. The catalog list is
+// read from the corpus at the pin, so the copy is the set core's own replay uses.
+const PACK_CORPUS_FILE = 'conformance/packs/composition.json';
+const PACK_COPY_ROOTS = ['conformance/packs', 'packs'];
+
 // The adapter JS that is BUNDLED IN — inputs, not outputs, and hashed for the
 // reason spelled out at the top of this file. Paths are relative to BRIDGE, so
 // the manifest reads the same wherever the bridge is checked out.
@@ -119,11 +136,18 @@ const GENERATED_FIXED = [
 
 const args = process.argv.slice(2);
 const coreArg = argValue('--core') ?? process.env.INSIMUL_CORE_DIR ?? null;
+const extraNodeModules = argValues('--node-modules');
 const checkOnly = args.includes('--check');
 
 function argValue(flag) {
   const i = args.indexOf(flag);
   return i >= 0 && i + 1 < args.length ? args[i + 1] : null;
+}
+
+function argValues(flag) {
+  const out = [];
+  for (let i = 0; i < args.length - 1; i++) if (args[i] === flag) out.push(args[i + 1]);
+  return out;
 }
 
 function sha256(text) {
@@ -179,6 +203,53 @@ function layoutFilesAtPin(src) {
   return out;
 }
 
+/** Every *.json under `abs`, recursively, as paths relative to it, sorted. */
+function jsonFilesUnder(abs, rel = '') {
+  if (!fs.existsSync(abs)) return [];
+  const out = [];
+  for (const e of fs.readdirSync(abs, { withFileTypes: true })) {
+    const r = rel ? `${rel}/${e.name}` : e.name;
+    if (e.isDirectory()) out.push(...jsonFilesUnder(path.join(abs, e.name), r));
+    else if (e.name.endsWith('.json')) out.push(r);
+  }
+  return out.sort();
+}
+
+/** The vendored pack corpus and catalog files on disk, as bridge-relative paths, sorted. */
+function packFilesOnDisk() {
+  const out = [];
+  for (const dir of PACK_COPY_ROOTS) {
+    for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) out.push(`vendor/core/${dir}/${f}`);
+  }
+  return out.sort();
+}
+
+/**
+ * core's pack-composition corpus at the pin and the catalog files it names, as
+ * { 'vendor/core/<path>': Buffer }. The catalog is read from the corpus itself
+ * (its `catalog` is what core's replay test composes from), never guessed.
+ */
+function packFilesAtPin(src) {
+  const corpusAbs = path.join(src.root, PACK_CORPUS_FILE);
+  if (!fs.existsSync(corpusAbs)) fail(`core ${src.commit} has no ${PACK_CORPUS_FILE} — the packs.compose row would have no corpus`);
+  const corpus = fs.readFileSync(corpusAbs);
+  const catalog = JSON.parse(corpus.toString('utf8')).catalog;
+  const named = [catalog?.index, ...(Array.isArray(catalog?.manifests) ? catalog.manifests : [])];
+  if (typeof catalog?.index !== 'string' || named.length < 2 || named.some((f) => typeof f !== 'string')) {
+    fail(`${PACK_CORPUS_FILE} at ${src.commit} names no catalog { index, manifests }`);
+  }
+  const out = { [`vendor/core/${PACK_CORPUS_FILE}`]: corpus };
+  for (const rel of named) {
+    if (!PACK_COPY_ROOTS.some((r) => rel.startsWith(`${r}/`)) || rel.split('/').includes('..') || !rel.endsWith('.json')) {
+      fail(`${PACK_CORPUS_FILE} at ${src.commit} names catalog file '${rel}', outside ${PACK_COPY_ROOTS.join(' and ')}`);
+    }
+    const abs = path.join(src.root, rel);
+    if (!fs.existsSync(abs)) fail(`${PACK_CORPUS_FILE} at ${src.commit} names ${rel}, which core does not have`);
+    out[`vendor/core/${rel}`] = fs.readFileSync(abs);
+  }
+  return out;
+}
+
 /** sha256 of each listed bridge-relative file. */
 function hashFiles(list) {
   const out = {};
@@ -217,17 +288,21 @@ function materialize(coreDir, pin) {
   }
   if (full !== pin.coreCommit) fail(`pinned commit resolved to ${full}, not itself`);
 
-  // node_modules: the checkout's own, else the nearest one above it (a hoisted
-  // monorepo install). It must hold the pinned esbuild.
-  let nodeModules = null;
+  // node_modules: the checkout's own and every one above it, in Node's lookup
+  // order (a hoisted monorepo install can put esbuild in one and core's npm
+  // dependencies in another), then any --node-modules given. The bundler is the
+  // FIRST esbuild on that chain, and it must be the pinned one.
+  const chain = [];
   for (let dir = core; ; dir = path.dirname(dir)) {
     const candidate = path.join(dir, 'node_modules');
-    if (fs.existsSync(path.join(candidate, 'esbuild', 'package.json'))) {
-      nodeModules = candidate;
-      break;
-    }
+    if (fs.existsSync(candidate)) chain.push(candidate);
     if (path.dirname(dir) === dir) break;
   }
+  for (const extra of extraNodeModules) {
+    if (!fs.existsSync(extra)) fail(`--node-modules ${extra} does not exist`);
+    chain.push(path.resolve(extra));
+  }
+  const nodeModules = chain.find((d) => fs.existsSync(path.join(d, 'esbuild', 'package.json'))) ?? null;
   if (!nodeModules) fail(`no node_modules with esbuild at or above ${core} — run \`npm install\` there`);
   const esbuildVersion = JSON.parse(
     fs.readFileSync(path.join(nodeModules, 'esbuild', 'package.json'), 'utf8'),
@@ -253,21 +328,35 @@ function materialize(coreDir, pin) {
   return {
     root,
     nodeModules: fs.realpathSync(nodeModules),
+    nodePaths: chain.map((d) => fs.realpathSync(d)),
     commit: full,
     esbuildVersion,
     cleanup: () => fs.rmSync(root, { recursive: true, force: true }),
   };
 }
 
-/** `node_modules/@scope/pkg/x.js` → `@scope/pkg`; `node_modules/pkg/x.js` → `pkg`. */
-function npmPackageOf(nodeModules, abs) {
-  const rel = path.relative(nodeModules, abs).split(path.sep);
-  return rel[0].startsWith('@') ? `${rel[0]}/${rel[1]}` : rel[0];
+/**
+ * An npm module's place by its LAST `node_modules` segment, wherever that
+ * node_modules sits (esbuild reports a symlinked package by its real path, so
+ * the root it was found through is not a prefix of it):
+ * `…/node_modules/@scope/pkg/x.js` → { pkg: '@scope/pkg', dir, rel: '@scope/pkg/x.js' }.
+ * Null for a path outside any node_modules.
+ */
+function npmModuleOf(abs) {
+  const parts = abs.split(path.sep);
+  const i = parts.lastIndexOf('node_modules');
+  if (i < 0 || i + 1 >= parts.length) return null;
+  const n = parts[i + 1].startsWith('@') ? 2 : 1;
+  return {
+    pkg: parts.slice(i + 1, i + 1 + n).join('/'),
+    dir: parts.slice(0, i + 1 + n).join(path.sep),
+    rel: parts.slice(i + 1).join('/'),
+  };
 }
 
 /** Bundle core@pin + the adapter's JS glue into one script at `outfile`. */
 async function bundle(src, outfile) {
-  const { root: core, nodeModules } = src;
+  const { root: core, nodeModules, nodePaths } = src;
   const require = createRequire(path.join(nodeModules, 'esbuild', 'package.json'));
   const esbuild = await import(pathToFileURL(require.resolve('esbuild')).href);
 
@@ -298,8 +387,8 @@ async function bundle(src, outfile) {
     target: 'es2020',
     platform: 'neutral',
     // The extracted tree has no node_modules of its own; npm imports resolve from
-    // the checkout's (and their versions are recorded below).
-    nodePaths: [nodeModules],
+    // the checkout's lookup chain (and their versions are recorded below).
+    nodePaths,
     mainFields: ['module', 'main'],
     outfile,
     legalComments: 'none',
@@ -319,9 +408,8 @@ async function bundle(src, outfile) {
       return `@insimul/core/${path.relative(core, abs).split(path.sep).join('/')}`;
     }
     if (abs.startsWith(`${JS_DIR}${path.sep}`)) return `corebridge/js/${path.basename(abs)}`;
-    if (abs.startsWith(`${nodeModules}${path.sep}`)) {
-      return `npm:${path.relative(nodeModules, abs).split(path.sep).join('/')}`;
-    }
+    const npm = npmModuleOf(abs);
+    if (npm) return `npm:${npm.rel}`;
     return path.basename(abs);
   };
   let text = fs.readFileSync(outfile, 'utf8');
@@ -336,11 +424,12 @@ async function bundle(src, outfile) {
     .map((p) => path.relative(core, p).split(path.sep).join('/'))
     .sort();
   const npmModules = {};
-  for (const p of abs.filter((x) => x.startsWith(`${nodeModules}${path.sep}`))) {
-    const pkg = npmPackageOf(nodeModules, p);
-    npmModules[pkg] = JSON.parse(fs.readFileSync(path.join(nodeModules, pkg, 'package.json'), 'utf8')).version;
+  for (const p of abs.filter((x) => !x.startsWith(`${core}${path.sep}`) && !x.startsWith(`${JS_DIR}${path.sep}`))) {
+    const npm = npmModuleOf(p);
+    if (!npm) continue;
+    npmModules[npm.pkg] = JSON.parse(fs.readFileSync(path.join(npm.dir, 'package.json'), 'utf8')).version;
   }
-  return { coreModules, npmModules };
+  return { coreModules, npmModules: Object.fromEntries(Object.entries(npmModules).sort(([a], [b]) => a.localeCompare(b))) };
 }
 
 /** The derived case corpus, as { fileName: text }. */
@@ -433,6 +522,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The pack corpus and its catalog: the same exact-set replacement.
+    const packs = packFilesAtPin(src);
+    for (const rel of packFilesOnDisk()) if (!(rel in packs)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(packs)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -448,6 +545,7 @@ async function write(coreDir) {
       adapterModules: ADAPTER_MODULES,
       toolInputs: TOOL_INPUTS,
       layoutCorpus: LAYOUT_CORPUS_DIRS,
+      packCorpus: PACK_CORPUS_FILE,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -459,6 +557,7 @@ async function write(coreDir) {
       ...GENERATED_FIXED,
       ...caseFilesOnDisk(),
       ...layoutFilesOnDisk(),
+      ...packFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -468,6 +567,7 @@ async function write(coreDir) {
     console.log(`  npm modules: ${Object.keys(npmModules).length ? JSON.stringify(npmModules) : 'none'}`);
     console.log(`  case files (${Object.keys(cases).length}): ${Object.keys(cases).join(', ')}`);
     console.log(`  layout corpus files (${Object.keys(layout).length}), copied unchanged`);
+    console.log(`  pack corpus and catalog files (${Object.keys(packs).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -505,7 +605,11 @@ async function check(coreDir) {
       fail(`vendor/core/${dir}/ holds no corpus file — the layout gate would run nothing`);
     }
   }
-  const expectedList = [...GENERATED_FIXED, ...caseFiles, ...layoutFiles, ...ADAPTER_MODULES, ...TOOL_INPUTS];
+  const packFiles = packFilesOnDisk();
+  if (!packFiles.includes(`vendor/core/${PACK_CORPUS_FILE}`)) {
+    fail(`vendor/core/${PACK_CORPUS_FILE} is missing — the packs gate would run nothing`);
+  }
+  const expectedList = [...GENERATED_FIXED, ...caseFiles, ...layoutFiles, ...packFiles, ...ADAPTER_MODULES, ...TOOL_INPUTS];
   const hashes = hashFiles(expectedList);
   const inputs = [...ADAPTER_MODULES, ...TOOL_INPUTS];
   for (const rel of expectedList) {
@@ -519,8 +623,8 @@ async function check(coreDir) {
           (inputs.includes(rel)
             ? '  This file is an INPUT to the vendored artifacts — editing it does nothing until you re-vendor:\n' +
               '      node corebridge/tools/vendor-core-bundle.mjs --core <core checkout>'
-            : rel.startsWith('vendor/core/conformance/')
-              ? '  This file is core\'s layout corpus, COPIED at the pin — never edit it here; change it in core, re-pin, re-vendor.'
+            : rel.startsWith('vendor/core/conformance/') || rel.startsWith('vendor/core/packs/')
+              ? '  This file is core\'s, COPIED at the pin — never edit it here; change it in core, re-pin, re-vendor.'
               : '  This file is GENERATED — do not hand-edit it; re-vendor instead.'),
       );
     }
@@ -535,6 +639,7 @@ async function check(coreDir) {
   console.log(
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
+      `${packFiles.length} pack corpus/catalog file(s), ` +
       `core ${manifest.coreCommit}, esbuild ${manifest.esbuild})`,
   );
 
@@ -574,9 +679,19 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const packs = packFilesAtPin(src);
+      const wantPacks = Object.keys(packs).sort();
+      if (JSON.stringify(wantPacks) !== JSON.stringify(packFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s pack corpus and catalog are ${wantPacks.join(', ')} but vendor/core/ holds ${packFiles.join(', ')}`);
+      }
+      for (const rel of wantPacks) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(packs[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       console.log(
-        `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s) ` +
-          `and all ${want.length} layout corpus file(s) byte for byte`,
+        `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
+          `all ${want.length} layout corpus file(s) and all ${wantPacks.length} pack corpus/catalog file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });

@@ -89,7 +89,7 @@ corpus is what proves it.
 | `js/host-text-codec.js` | `TextEncoder`/`TextDecoder` polyfill (byte-for-byte Godot's; core's `identity/kinp.ts` needs one at load). |
 | `core-pin.json` | **The input pin**: the core commit and the esbuild version the bundle is built from. |
 | `vendor/quickjs/` | QuickJS 2025-04-26, unmodified (see `../THIRD_PARTY.md`). |
-| `vendor/core/` | **Generated.** The bundle, its C array, `VENDORED.json` (provenance + sha256 per file) and `cases/` (core's corpora transcribed into bridge cases). Never hand-edit. |
+| `vendor/core/` | **Generated.** The bundle, its C array, `VENDORED.json` (provenance + sha256 per file), `cases/` (core's corpora transcribed into bridge cases), and core's layout corpora, pack-composition corpus and pack catalog (`conformance/`, `packs/`) copied byte for byte. Never hand-edit. |
 | `tools/vendor-core-bundle.mjs` | Produces `vendor/core/` from the pin, and the `--check` drift guard the `core_vendor` ctest runs. |
 | `tools/emit-bridge-cases.mjs` | The transcription of core's corpora into `vendor/core/cases/` (run by the tool above). |
 | `tests/cases/` | Hand-written cases for behaviour no core corpus pins yet. |
@@ -151,6 +151,7 @@ game; **meta** = about the bridge itself.
 | `genre.camera` | `{ value }` → `{ mode }` | `game-genres/resolution` `normalizeCameraMode` | P7 |
 | `genre.resolveGame` | `{ recipe?, world? }` → core's `GameGenreResolution` (refusals are errors with a code) | `game-genres/resolution` `resolveGameGenre` | P7/P9 |
 | `genre.recipes` | `{}` → `{ ids, bindings }` | `game-genres/recipes` | P9 |
+| `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
 | `modules.activate` | `{ ir }` or `{ genre }` or `{}` → `{ source, active, predicatePacks, hostInterfaces, reason }` | `modules/module-activation` | P9 (Godot's fork has the same row) |
 | `modules.table` | `{}` → core's `moduleActivationTable()` | same | P9 |
 | `prolog.packs` | `{ areas? }` → `{ packs: [{ area, prolog, runtimePredicates }], order, unknown }` | `prolog/predicate-packs` | P9 |
@@ -279,6 +280,41 @@ is what sized the JS heap cap (`INSIMULCORE_JS_MEMORY_LIMIT`, 192 MiB,
 `src/insimulcore.c`). A game calls these at authoring or load time, never per
 frame.
 
+### The packs.compose row (SP.composer-native, rulings U62(1) and U79(4))
+
+Core's composer (`src/system-packs/composer.ts`, SP.composer) is one row,
+`packs.compose`: `resolveComposition(request, catalog)`, nothing else. The args
+are a `conformance/packs/composition.json` case's `input` (`recipe`, `world`,
+`game`, `engine`) with `catalog` beside it — `{ index, manifests }`, core's
+`packs/index.json` and each `packs/<id>/pack.json` as JSON, the files that
+corpus's own `catalog` names. Every key but `catalog` is the request and goes to
+core unchanged; the row checks only the catalog's JSON shape. The answer is
+core's `Composition`: the packs (with their source, variant, style, parameters
+and whether they run), the genre settings and activation the game runs with, the
+overrides the composer wrote, and every choice it refused (`refusals`, with
+core's code). A recipe, preset, request or engine core cannot compose is an
+error: `CompositionError: [<code>]` (`invalid-request`, `invalid-preset`,
+`preset-drift`, `unknown-engine`) or `GenreResolutionError: [<code>]`.
+
+The library carries no catalog of its own: an engine sends the one it vendored
+from core at this library's pin (Unreal's re-vendor of `packs/` and
+`conformance/packs/` is SP.composer-unreal part 2). The evidence is core's corpus,
+not a transcription: `vendor/core/conformance/packs/composition.json` and the
+catalog files it names, at their core paths under `vendor/core/`, copied byte for
+byte by `tools/vendor-core-bundle.mjs` and hashed in `VENDORED.json`
+(`core_vendor`; `--check --core` byte-compares them with core). The `packs_corpus`
+ctest (`tests/packs_corpus.cpp`) sends every case through `insimulcore.h` and
+holds it to core's replay rule (the exact answer, or core's code in last_error);
+`packs_corpus_negative` must see it fail a wrong answer and a wrong code. The
+hand cases in `tests/cases/bridge-packs.json` pin the row's own contract (the
+catalog checks, the pass-through, a refusal as a value, the error codes).
+
+**Cost.** The composer imports `system-packs/schema`, which builds core's zod
+schemas at module scope, so the bundle now carries `zod` (3.25.76, MIT;
+`npmModules` in `VENDORED.json`, a NOTICE stanza): at the b38e60d pin the bundle
+grew from 819,818 to 988,816 bytes, of which zod is 129,138 and the composer and
+schema 37,715. The 34 corpus cases take about 35 ms under QuickJS.
+
 `save.decode` / `save.migrate` return core's `migrateSaveFileWithOutcome` outcome
 exactly as core answers it. At the pin core declares `orphanExtensionKeys` and
 `droppedFacts` but leaves both empty ("populated by … sibling stories"; when a
@@ -330,7 +366,7 @@ looks like is now part of the contract:
   <method>: <what was wrong>` (an op failure: `… <method>: ops[<i>] (<op>)
   failed: …`);
 - **a refusal core raises with a machine-readable code** (`GenreResolutionError`,
-  and any op failure wrapping one) reads `insimulcore: <ErrorName>: [<code>]
+  `CompositionError`, and any op failure wrapping one) reads `insimulcore: <ErrorName>: [<code>]
   <message>` — a host reads the code between the brackets and never parses prose;
 - arguments must be a JSON object (or NULL / empty, meaning `{}`).
 

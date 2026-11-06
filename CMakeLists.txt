@@ -643,6 +643,32 @@ add_test(NAME layout_corpus_negative COMMAND insimulcore_layout --only wrong-ans
 set_tests_properties(layout_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "expected WRONGLY to hold a door [^\n]*boolean differs.*layout_corpus: FAIL")
 
+# packs_corpus (SP.composer-native, rulings U62(1) and U79(4)): core's composer
+# as libinsimulcore's `packs.compose` row, held to core's own pack-composition
+# corpus — conformance/packs/composition.json and the packs/ catalog its
+# `catalog` names, COPIED byte for byte into corebridge/vendor/core/ at the pin
+# (sha256s in VENDORED.json, checked by core_vendor; byte-compared with core by
+# `--check --core`). The runner sends each case's `input` with the catalog beside
+# it through insimulcore.h and compares by core's replay rule: an exact answer,
+# or core's `[<code>]` refusal in last_error (tests/packs_corpus.cpp). It also
+# fails when the table has no packs.compose row and when its comparator cannot
+# fail. A pure consumer of insimulcore.h; the JSON reader is
+# tests/radiant/json_value.cpp, used unchanged. Never skips: the corpus is in-repo.
+add_executable(insimulcore_packs tests/packs_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_packs PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_packs PRIVATE insimulcore)
+add_test(NAME packs_corpus COMMAND insimulcore_packs
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance/packs/composition.json)
+# The negative control: the same runner over two deliberately wrong cases
+# (tests/packs-negative/), one wrong answer and one wrong refusal code. It passes
+# only when the runner reports BOTH as failing and the run as failed.
+add_test(NAME packs_corpus_negative COMMAND insimulcore_packs
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/packs-negative/wrong-answer.json)
+set_tests_properties(packs_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "expected WRONGLY to compose to an empty object [^\n]*unexpected key.*refused WRONGLY as an unknown recipe [^\n]*CompositionError: \\[unknown-engine\\].*packs_corpus: FAIL")
+
 # corebridge_sha256: the SHA-256 the C host gives core's save envelope
 # (corebridge/src/insimulcore_sha256.c), against the NIST vectors, at every
 # split point. Compiled straight from the source: the function is internal to

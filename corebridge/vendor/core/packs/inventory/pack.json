@@ -1,0 +1,57 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "inventory",
+  "version": "1.0.0",
+  "name": "Inventory and items",
+  "summary": "Carry, equip, move, use and drop items; containers and pickups.",
+  "kind": "base",
+  "phase": "P6",
+  "catalog": ["items-inventory", "items-equipment", "items-transactions-ledger", "items-containers", "items-world-pickups", "items-use-consumables"],
+  "core": {
+    "modules": ["equipment"],
+    "predicatePacks": ["equipment", "gameplayState"],
+    "genreFeature": "inventory",
+    "corpus": [
+      "conformance/items/transactions.json",
+      "conformance/items/equipping.json",
+      "conformance/prolog/mechanic-equipment.json",
+      "conformance/ui/registry-cases.json"
+    ]
+  },
+  "requires": [{ "id": "hud", "version": "^1" }, { "id": "saves", "version": "^1" }],
+  "parameters": [
+    { "id": "carryCapacity", "type": "number", "min": 0, "maps": "ItemTuning.carryCapacity", "source": "world" },
+    { "id": "defaultSlotCapacity", "type": "integer", "min": 1, "maps": "ItemTuning.defaultSlotCapacity", "source": "world" },
+    { "id": "pausesGame", "type": "boolean", "default": true, "maps": "binding" }
+  ],
+  "extensionPoints": [
+    { "id": "item-requirements", "kind": "prolog-facts", "signature": "item_requires/3", "doc": "an item needs a skill or level to equip" },
+    { "id": "carry-limits", "kind": "prolog-facts", "signature": "carry_capacity/2, item_weight/2" },
+    { "id": "forbid-item-act", "kind": "prolog-forbid", "signature": "forbids/4 (Rule, Actor, Act, Target)", "doc": "world rules that stop an equip, move or use" },
+    { "id": "inventory-panel", "kind": "panel-override", "signature": "UiRegistry key 'inventory'" },
+    { "id": "on-item-moved", "kind": "event-handler", "signature": "item_moved" }
+  ],
+  "events": { "emits": ["item_collected", "item_moved", "item_equipped", "item_unequipped", "item_used", "item_dropped", "inventory_opened"] },
+  "panels": ["inventory", "container"],
+  "styles": {
+    "tokens": ["surface", "surface_alt", "border", "text_primary", "text_secondary", "accent", "quest"],
+    "art": ["item.*", "prop.container.*"],
+    "presets": [
+      { "id": "default", "name": "Insimul" },
+      { "id": "parchment", "name": "Parchment", "tokens": { "surface": "#efe4c8" } }
+    ]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "panels", "kind": "contract" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "Items live in core's ItemLedger; the panel is a view.",
+    "notes": [
+      "Change capacity with the parameters, not code.",
+      "A new restriction on equipping is an item_requires/3 fact or a forbids/4 rule, not panel code."
+    ],
+    "doNot": ["Keep a second item list in engine code: ItemLedger is the source of truth and saves carry it."]
+  }
+}

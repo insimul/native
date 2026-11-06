@@ -1,7 +1,7 @@
 {
   "description": "The ONE input pin of the vendored @insimul/core bundle (corebridge/vendor/core/). tools/vendor-core-bundle.mjs bundles core at exactly `coreCommit` (a `git archive` of that commit, never the checkout's working tree) with exactly `esbuild`, and --check refuses a VENDORED.json that records anything else. Bump both here, then re-vendor.",
-  "coreCommit": "4a4678975fb72a2d2c3f991dd5b67964245e36ab",
+  "coreCommit": "b38e60d3afe3724df3a0dc3505630e55c3f9235c",
   "coreRef": "main",
-  "coreRefNote": "L.native-layout (2026-10-29, ruling U36): the pin moved from c4b46c4 to core main 4a46789, which holds L1's layout rules (bdfe79d, src/editor/layout/) and B9's composition rules (5d05c18 onward, src/editor/layout/composition/) that the layout.* rows run. Before that, the C0 landing (2026-10-16) pinned c4b46c4. To move it again: bump coreCommit and coreRef here, re-vendor, re-run --check --core and the corebridge and layout ctests.",
+  "coreRefNote": "SP.composer-native (2026-11-05, rulings U62(1) and U79(4)): the pin moved from 4a46789 to core main b38e60d, which holds SP.composer's composer (4ca7e9e, src/system-packs/composer.ts) and its corpus (conformance/packs/composition.json, 34 cases, with the packs/ catalog it names) that the packs.compose row runs. Before that, L.native-layout (2026-10-29, ruling U36): the pin moved from c4b46c4 to core main 4a46789, which holds L1's layout rules (bdfe79d, src/editor/layout/) and B9's composition rules (5d05c18 onward, src/editor/layout/composition/) that the layout.* rows run. Before that, the C0 landing (2026-10-16) pinned c4b46c4. To move it again: bump coreCommit and coreRef here, re-vendor, re-run --check --core and the corebridge, layout and packs ctests.",
   "esbuild": "0.28.2"
 }

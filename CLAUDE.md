@@ -441,11 +441,12 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` 4a46789 (2026-10-29,
-  L.native-layout: it holds L1's layout rules and B9's composition rules). Before
-  that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
+  and pin disagree. The pin today is core `main` b38e60d (2026-11-05,
+  SP.composer-native: it holds SP.composer's composer and its corpus). Before
+  that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
+  composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout'`, then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs'`, then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -458,6 +459,23 @@
   through `insimulcore.h`; `layout_corpus_negative` must see it fail a wrong
   answer. `gradeTerrain` at core's 2,049² cap is what sized the JS heap cap
   (192 MiB; it OOMs at 80).
+- **The packs.compose row (SP.composer-native, U62(1)) runs core's composition
+  corpus UNCHANGED**, the same way: `vendor-core-bundle.mjs` copies
+  `conformance/packs/composition.json` and exactly the catalog files its `catalog`
+  names (`packs/index.json`, `packs/<id>/pack.json`) to their core paths under
+  `corebridge/vendor/core/`; `packs_corpus` (`tests/packs_corpus.cpp`) sends each
+  case's `input` with `catalog: { index, manifests }` beside it and holds the answer
+  to core's replay rule (exact JSON, or core's `[<code>]` in last_error);
+  `packs_corpus_negative` must see it fail. The library carries no catalog: a
+  binding sends the one it vendored at this pin.
+- **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
+  builds its schemas with it at module scope, and the composer imports that
+  module). npm imports resolve along the core checkout's `node_modules` chain
+  (its own, then each one above it — a hoisted install keeps esbuild and zod in
+  different ones), plus any `--node-modules <dir>`; a symlinked package is
+  labelled and recorded by its last `node_modules` segment, since esbuild reports
+  its real path. `npmModules` is compared by `--check --core`; NOTICE has its
+  stanza.
 - **macOS realpath trap**: esbuild reports paths it resolves itself through
   symlinks (`/var` → `/private/var`), so the extracted root, `node_modules` and
   `js/` are all `realpathSync`'d before any label is matched by prefix. Without it

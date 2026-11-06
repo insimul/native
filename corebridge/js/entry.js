@@ -92,6 +92,11 @@ import {
 } from '@insimul/core/modules/module-activation';
 import { PREDICATE_PACK_AREAS, PREDICATE_PACKS } from '@insimul/core/prolog/predicate-packs';
 
+// ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
+// Core's composer: a game's recipe, world, pack choices and engine → its packs,
+// settings and activation, over the pack catalog the caller sends.
+import { resolveComposition } from '@insimul/core/system-packs/composer';
+
 // ── village layout and composition (U23, U36: L.native-layout) ────────────────
 // Core's own JSON boundary for its layout rules: `runLayoutOp` /
 // `runCompositionOp` read a corpus input, call the rule, and answer in exactly
@@ -151,6 +156,21 @@ function mapOf(method, value, name) {
 /** Plain-JSON copy of a model's answer (drops undefined, freezes nothing). */
 function plain(value) {
 	return value === undefined ? null : JSON.parse(JSON.stringify(value));
+}
+
+// ── system packs ──────────────────────────────────────────────────────────────
+
+/** The `{ index, manifests }` core's composer takes, checked for shape only. */
+function catalogOf(method, value) {
+	const catalog = needObject(method, value, 'catalog');
+	const index = needObject(method, catalog.index, 'catalog.index');
+	needArray(method, index.packs, 'catalog.index.packs').forEach((row, i) =>
+		needObject(method, row, `catalog.index.packs[${i}]`),
+	);
+	needArray(method, catalog.manifests, 'catalog.manifests').forEach((m, i) =>
+		needObject(method, m, `catalog.manifests[${i}]`),
+	);
+	return { index, manifests: catalog.manifests };
 }
 
 // ── layout ────────────────────────────────────────────────────────────────────
@@ -961,6 +981,25 @@ const METHODS = {
 
 	/** `genre.recipes` → `{ ids, bindings }` — core's recipe → genre bindings. */
 	'genre.recipes': () => ({ ids: [...RECIPE_IDS], bindings: plain(RECIPE_GENRE_BINDINGS) }),
+
+	/**
+	 * `packs.compose { recipe?, world?, game?, engine?, catalog }` → core's
+	 * `resolveComposition(request, catalog)`: the game's packs, its settings and
+	 * activation, the overrides the composer wrote, and every refused choice. The
+	 * args are a `conformance/packs/composition.json` case's `input` with the
+	 * catalog beside it — `{ index, manifests }`, core's `packs/index.json` and
+	 * each `packs/<id>/pack.json` as JSON (the files that corpus's `catalog`
+	 * names); every other key is the request, passed to core unchanged. A choice
+	 * core cannot honour is a refusal IN the answer; a recipe, preset, request
+	 * or engine it cannot is an ERROR whose last_error carries core's code:
+	 * `CompositionError: [<code>] …` or `GenreResolutionError: [<code>] …`.
+	 * The row checks only the catalog's JSON shape (core's TypeScript types
+	 * declare it; JSON cannot).
+	 */
+	'packs.compose': (args) => {
+		const { catalog, ...request } = args;
+		return resolveComposition(request, catalogOf('packs.compose', catalog));
+	},
 
 	/**
 	 * `modules.activate { ir } | { genre } | {}` → `{ source, active,

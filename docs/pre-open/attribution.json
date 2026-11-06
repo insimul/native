@@ -1,12 +1,12 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-l-native-layout",
-    "gitHead": "2f76da632da565154bc08c0b3b9a0a9b0a849965"
+    "root": "native-sp-composer-native",
+    "gitHead": "b05855782f44bb2d323c5c14e8d51c16a68a549c"
   },
   "coverage": {
-    "trackedFiles": 354,
-    "components": 22,
+    "trackedFiles": 363,
+    "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
     "vendoredDirectories": 6,
@@ -80,6 +80,36 @@
       "derivedWork": []
     },
     {
+      "name": "CLP(ℤ) and CLP(B) — Markus Triska",
+      "spdx": "MIT",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": "vendor/trealla/library/clpb.pl",
+      "derivedWork": []
+    },
+    {
+      "name": "abnf and json — Aram Panasenco",
+      "spdx": "BSD-3-Clause",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": "vendor/trealla/library/json.pl",
+      "derivedWork": []
+    },
+    {
+      "name": "lambda — Ulrich Neumerkel",
+      "spdx": "BSD-2-Clause",
+      "package": null,
+      "pinnedVersion": null,
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": "vendor/trealla/library/lambda.pl",
+      "derivedWork": []
+    },
+    {
       "name": "QuickJS",
       "spdx": "MIT",
       "package": null,
@@ -94,9 +124,19 @@
       "spdx": "Apache-2.0",
       "package": null,
       "pinnedVersion": null,
-      "pinnedCommit": "4a4678975fb72a2d2c3f991dd5b67964245e36ab",
+      "pinnedCommit": "b38e60d3afe3724df3a0dc3505630e55c3f9235c",
       "pinSource": "corebridge/vendor/core/VENDORED.json#coreCommit",
       "vendoredPath": "corebridge/vendor/core",
+      "derivedWork": []
+    },
+    {
+      "name": "zod",
+      "spdx": "MIT",
+      "package": null,
+      "pinnedVersion": "3.25.76",
+      "pinnedCommit": null,
+      "pinSource": null,
+      "vendoredPath": null,
       "derivedWork": []
     },
     {

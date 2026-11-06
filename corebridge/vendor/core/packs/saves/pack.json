@@ -1,0 +1,68 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "saves",
+  "version": "1.0.0",
+  "name": "Saves",
+  "summary": "Save slots, autosave and the versioned save file; quest progress travels inside the save.",
+  "kind": "base",
+  "phase": "P1",
+  "catalog": ["saves-slots-autosave", "saves-file-format", "saves-quest-progress"],
+  "core": {
+    "corpus": [
+      "conformance/saves/v1-minimal.json",
+      "conformance/saves/v2-typical.json",
+      "conformance/saves/v2-with-extensions.json",
+      "conformance/saves/integrity-vectors.json",
+      "conformance/ui/save-slot-cases.json",
+      "conformance/events/save-load-cases.json"
+    ]
+  },
+  "requires": [{ "id": "foundation" }],
+  "variants": {
+    "axis": "storage",
+    "default": "local",
+    "options": [
+      { "id": "local", "name": "On this device", "status": "ready" },
+      {
+        "id": "server-synced",
+        "name": "Synced with the server",
+        "status": "port-later",
+        "doc": "Offline and server copies reconciled three-way, with play access (catalog saves-conflict-resolution, saves-player-identity-play-access)."
+      }
+    ]
+  },
+  "parameters": [
+    { "id": "maxSlots", "type": "integer", "min": 1, "maps": "binding", "source": "game", "doc": "How many manual slots the save/load panel shows; today the template token {{MAX_SAVE_SLOTS}}." },
+    { "id": "autosaveIntervalSec", "type": "number", "min": 0, "maps": "binding", "source": "game", "doc": "Seconds between autosaves; 0 turns autosave off." },
+    { "id": "autosaveIndicator", "type": "boolean", "maps": "binding", "source": "game", "doc": "Show the indicator while an autosave is written." }
+  ],
+  "extensionPoints": [
+    { "id": "save-extension", "kind": "save-extension", "signature": "ExtensionContract {owner, describe, defaultValue, migrate?} in extensionRegistry (save-extensions.ts)", "doc": "Another system's state that rides in currentState.extensions and migrates with the file." },
+    { "id": "save-load-panel", "kind": "panel-override", "signature": "UiRegistry key 'save_load'" },
+    { "id": "on-game-saved", "kind": "event-handler", "signature": "game_saved" },
+    { "id": "on-game-loaded", "kind": "event-handler", "signature": "game_loaded" }
+  ],
+  "events": { "emits": ["game_saved", "game_loaded"] },
+  "panels": ["save_load"],
+  "styles": {
+    "tokens": ["surface", "surface_alt", "border", "text_primary", "text_secondary", "accent", "danger"],
+    "presets": [{ "id": "default", "name": "Insimul" }]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "panels", "kind": "contract" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "The save file format, its migrations and the slot messages are core's; the binding writes, reads and shows slots.",
+    "notes": [
+      "Change the slot count or the autosave interval with the parameters, not code.",
+      "A new system's state goes into the save as a registered save extension (extensionRegistry), never as a new top-level field.",
+      "Raise game_saved after a completed write and game_loaded after a read and migration, built with gameSavedEvent / gameLoadedEvent."
+    ],
+    "doNot": [
+      "Change SaveFile or SAVE_FILE_VERSION in engine code: the format and its migrations live in core.",
+      "Write your own corrupted-slot messages: SLOT_MESSAGES is the shared copy."
+    ]
+  }
+}

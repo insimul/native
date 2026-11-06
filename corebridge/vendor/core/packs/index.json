@@ -1,0 +1,1858 @@
+{
+  "schema": "insimul.pack-index/1",
+  "description": "The 48 system packs and the catalog systems each covers (SP.spec Appendix A, approved U51; the starting list, Q13). Every one of the 229 pack systems is assigned exactly once; the other 14 catalog systems are not packs. dependsOn is the pack's requires; a pack's manifest, once authored, must agree with its row (validateSystemPackSet). The composer reads this file. Changes from Appendix A are listed in changes, one line each.",
+  "source": {
+    "spec": "insimul-loops features/sp/SPEC.md Appendix A (a804fc6, approved U51)",
+    "catalog": "insimul-loops features/catalog/catalog.json (e38d941): 243 systems = 229 in packs + 11 world layer + 3 web app"
+  },
+  "packs": [
+    {
+      "id": "foundation",
+      "phase": "P1",
+      "kind": "always-on",
+      "dependsOn": [],
+      "systems": [
+        {
+          "id": "runtime-prolog-engine",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "runtime-game-truth-sync",
+          "decision": "core-only",
+          "core": "P"
+        },
+        {
+          "id": "runtime-game-event-bus",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "runtime-mechanic-hosts",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "gameplay-action-system",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "composer",
+      "phase": "P9a",
+      "kind": "always-on",
+      "dependsOn": [
+        "foundation"
+      ],
+      "systems": [
+        {
+          "id": "genre-registry",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "genre-recipes",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "genre-module-activation",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "rules-world-rules-enforcement",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "genre-mechanics-sample-courtyard",
+          "decision": "port-later",
+          "core": "-"
+        }
+      ]
+    },
+    {
+      "id": "saves",
+      "phase": "P1",
+      "kind": "base",
+      "dependsOn": [
+        "foundation"
+      ],
+      "variantSets": [
+        {
+          "axis": "storage",
+          "options": [
+            {
+              "id": "local"
+            },
+            {
+              "id": "server-synced",
+              "status": "port-later"
+            }
+          ]
+        }
+      ],
+      "systems": [
+        {
+          "id": "saves-slots-autosave",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "saves-file-format",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "saves-conflict-resolution",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "saves-playthrough-management",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "saves-quest-progress",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "saves-player-identity-play-access",
+          "decision": "port",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "hud",
+      "phase": "P2",
+      "kind": "base",
+      "dependsOn": [
+        "foundation"
+      ],
+      "variantSets": [
+        {
+          "axis": "uiLayout",
+          "options": [
+            {
+              "id": "action_rpg"
+            },
+            {
+              "id": "fps"
+            },
+            {
+              "id": "rts"
+            },
+            {
+              "id": "platformer"
+            },
+            {
+              "id": "puzzle"
+            },
+            {
+              "id": "minimal"
+            }
+          ]
+        }
+      ],
+      "systems": [
+        {
+          "id": "ui-hud-shell",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "ui-notifications",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "ui-interaction-prompts",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "ui-contextual-action-menu",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "ui-action-quick-bar",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "genre-hud-layouts",
+          "decision": "port",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "phase": "P2",
+      "kind": "base",
+      "dependsOn": [
+        "hud"
+      ],
+      "systems": [
+        {
+          "id": "ui-minimap",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "ui-compass",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "ui-world-map",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "ui-location-info-hud",
+          "decision": "port",
+          "core": "-"
+        }
+      ]
+    },
+    {
+      "id": "menus-settings",
+      "phase": "P2",
+      "kind": "base",
+      "dependsOn": [
+        "hud"
+      ],
+      "systems": [
+        {
+          "id": "ui-game-pause-menu",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "ui-character-sheet",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "settings-keyboard-bindings",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "settings-audio-graphics-controls",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "settings-feature-module-toggles",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "settings-game-difficulty",
+          "decision": "core-only",
+          "core": "D"
+        },
+        {
+          "id": "settings-voice-input-mode",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "settings-ai-conversation-provider",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "accessibility-flat-screen",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "performance-hardware-quality-autotune",
+          "decision": "port-later",
+          "core": "-"
+        }
+      ]
+    },
+    {
+      "id": "quests",
+      "phase": "P3",
+      "kind": "base",
+      "dependsOn": [
+        "hud",
+        "saves"
+      ],
+      "systems": [
+        {
+          "id": "quest-runtime",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "quest-offer",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "quest-journal-log",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "quest-tracker-hud",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "quest-markers-waypoints",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-completion-rewards",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-post-conditions",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-chains-prerequisites-unlocks",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-reminders",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-objective-fallbacks",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-hints",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-difficulty",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "quest-branching",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-world-objects-hotspots",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "quest-radiant",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "quest-dynamic-quest-board",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-timed-challenges",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-genre-quest-types",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-clues-investigation",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "narrative",
+      "phase": "P3",
+      "kind": "optional",
+      "dependsOn": [
+        "quests"
+      ],
+      "variantSets": [
+        {
+          "axis": "scriptSource",
+          "options": [
+            {
+              "id": "native"
+            },
+            {
+              "id": "ink"
+            },
+            {
+              "id": "yarn"
+            }
+          ]
+        }
+      ],
+      "systems": [
+        {
+          "id": "narrative-imported-scripts",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "narrative-whole-game-scaffold",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "quest-dialogue-goals",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "quest-conversational-actions",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-journal-story-chapters",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "quest-main-missing-writer",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "quest-portfolio-learning-journal",
+          "decision": "port-later",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "time-weather",
+      "phase": "P4",
+      "kind": "base",
+      "dependsOn": [
+        "foundation"
+      ],
+      "systems": [
+        {
+          "id": "time-game-clock",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "time-day-night-visuals",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "time-world-look-driver",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "time-night-lights",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "weather-seasons",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "world-cultural-events",
+          "decision": "port-later",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "phase": "P5",
+      "kind": "base",
+      "dependsOn": [
+        "foundation"
+      ],
+      "systems": [
+        {
+          "id": "audio-ambient-soundscape",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "audio-music",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "audio-sfx-footsteps",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "audio-spatial-door-sounds",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "audio-npc-voice-tts",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "inventory",
+      "phase": "P6",
+      "kind": "base",
+      "dependsOn": [
+        "hud",
+        "saves"
+      ],
+      "systems": [
+        {
+          "id": "items-inventory",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "items-equipment",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "items-transactions-ledger",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "items-containers",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "items-world-pickups",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "items-use-consumables",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "shops",
+      "phase": "P6",
+      "kind": "optional",
+      "dependsOn": [
+        "inventory",
+        "dialogue"
+      ],
+      "systems": [
+        {
+          "id": "economy-shop-merchant",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "economy-business-services",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "economy-business-hours-shifts",
+          "decision": "port",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "interiors",
+      "phase": "P6",
+      "kind": "base",
+      "dependsOn": [
+        "foundation"
+      ],
+      "systems": [
+        {
+          "id": "interiors-building-entry",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "interiors-npcs",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "interiors-lighting-decoration",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "interiors-furniture-interactions",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "traversal-building-collision",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "gameplay-rest-wait",
+          "decision": "port",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "reading",
+      "phase": "P6",
+      "kind": "optional",
+      "dependsOn": [
+        "inventory"
+      ],
+      "systems": [
+        {
+          "id": "ui-document-reader-books",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "ui-library-collected-texts",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "world-notice-board",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "camera",
+      "phase": "P7",
+      "kind": "base",
+      "dependsOn": [
+        "foundation"
+      ],
+      "variantSets": [
+        {
+          "axis": "cameraMode",
+          "options": [
+            {
+              "id": "first_person"
+            },
+            {
+              "id": "third_person"
+            },
+            {
+              "id": "isometric"
+            },
+            {
+              "id": "side_scroll"
+            },
+            {
+              "id": "top_down"
+            },
+            {
+              "id": "fighting"
+            }
+          ]
+        }
+      ],
+      "systems": [
+        {
+          "id": "camera-modes",
+          "decision": "port",
+          "core": "Y"
+        }
+      ]
+    },
+    {
+      "id": "controls",
+      "phase": "P7",
+      "kind": "base",
+      "dependsOn": [
+        "camera"
+      ],
+      "variantSets": [
+        {
+          "axis": "controlScheme",
+          "options": [
+            {
+              "id": "wasd_mouse"
+            },
+            {
+              "id": "point_click"
+            },
+            {
+              "id": "controller"
+            },
+            {
+              "id": "touch"
+            }
+          ]
+        },
+        {
+          "axis": "movementStyle",
+          "options": [
+            {
+              "id": "free"
+            },
+            {
+              "id": "grid"
+            },
+            {
+              "id": "platformer"
+            },
+            {
+              "id": "vehicle"
+            }
+          ]
+        }
+      ],
+      "systems": [
+        {
+          "id": "traversal-player-controller",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "input-gamepad-controller",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "input-point-click-touch",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "traversal-movement-styles",
+          "decision": "port-later",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "photo-mode",
+      "phase": "P7",
+      "kind": "optional",
+      "dependsOn": [
+        "camera",
+        "inventory"
+      ],
+      "systems": [
+        {
+          "id": "gameplay-photography",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "onboarding",
+      "phase": "P8",
+      "kind": "base",
+      "dependsOn": [
+        "hud",
+        "quests"
+      ],
+      "variantSets": [
+        {
+          "axis": "flow",
+          "options": [
+            {
+              "id": "generic"
+            },
+            {
+              "id": "language"
+            }
+          ]
+        }
+      ],
+      "systems": [
+        {
+          "id": "onboarding-title-main-menu",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "onboarding-flow",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "onboarding-tutorial-quest",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "onboarding-contextual-hints",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "onboarding-intro-cutscenes",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "ui-loading-screen",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "ui-playthrough-completion-summary",
+          "decision": "port",
+          "core": "-"
+        }
+      ]
+    },
+    {
+      "id": "vitals",
+      "phase": "P9b",
+      "kind": "base",
+      "dependsOn": [
+        "hud",
+        "saves"
+      ],
+      "systems": [
+        {
+          "id": "combat-player-vitals",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "player-defeat-respawn",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "combat",
+      "phase": "P9b",
+      "kind": "optional",
+      "dependsOn": [
+        "vitals",
+        "inventory"
+      ],
+      "variantSets": [
+        {
+          "axis": "combatStyle",
+          "options": [
+            {
+              "id": "melee"
+            },
+            {
+              "id": "ranged"
+            },
+            {
+              "id": "hybrid"
+            },
+            {
+              "id": "turn_based",
+              "status": "port-later"
+            },
+            {
+              "id": "fighting",
+              "status": "port-later"
+            },
+            {
+              "id": "magic",
+              "status": "blocked"
+            }
+          ]
+        }
+      ],
+      "systems": [
+        {
+          "id": "combat-melee-core",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "combat-ranged",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "combat-fighting",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "combat-turn-based",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "combat-magic-spellcasting",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "combat-status-effects",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "combat-ui-feedback",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "combat-enemy-loot-drops",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "stealth",
+      "phase": "P9b",
+      "kind": "optional",
+      "dependsOn": [
+        "npc-life"
+      ],
+      "systems": [
+        {
+          "id": "stealth-perception-detection",
+          "decision": "port",
+          "core": "Y"
+        }
+      ]
+    },
+    {
+      "id": "stamina",
+      "phase": "P9c",
+      "kind": "optional",
+      "dependsOn": [
+        "vitals"
+      ],
+      "systems": [
+        {
+          "id": "survival-stamina",
+          "decision": "port",
+          "core": "Y"
+        }
+      ]
+    },
+    {
+      "id": "survival-needs",
+      "phase": "P9c",
+      "kind": "optional",
+      "dependsOn": [
+        "stamina",
+        "inventory"
+      ],
+      "systems": [
+        {
+          "id": "survival-needs",
+          "decision": "port",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "gathering",
+      "phase": "P9d",
+      "kind": "optional",
+      "dependsOn": [
+        "inventory"
+      ],
+      "childPacks": "fishing, mining, farming, herbalism, woodcutting",
+      "systems": [
+        {
+          "id": "gathering-action-hotspots",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "gathering-physical-actions",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "gathering-resource-nodes",
+          "decision": "port",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "fishing",
+      "phase": "P9d",
+      "kind": "optional",
+      "dependsOn": [
+        "gathering"
+      ],
+      "systems": [
+        {
+          "id": "gathering-fishing",
+          "decision": "port",
+          "core": "Y"
+        }
+      ]
+    },
+    {
+      "id": "mining",
+      "phase": "P9d",
+      "kind": "optional",
+      "dependsOn": [
+        "gathering"
+      ],
+      "systems": [
+        {
+          "id": "gathering-mining",
+          "decision": "port",
+          "core": "Y"
+        }
+      ]
+    },
+    {
+      "id": "farming",
+      "phase": "P9d",
+      "kind": "optional",
+      "dependsOn": [
+        "gathering",
+        "time-weather"
+      ],
+      "systems": [
+        {
+          "id": "gathering-farming",
+          "decision": "port",
+          "core": "Y"
+        }
+      ]
+    },
+    {
+      "id": "herbalism",
+      "phase": "P9d",
+      "kind": "optional",
+      "dependsOn": [
+        "gathering"
+      ],
+      "systems": [
+        {
+          "id": "gathering-herbalism",
+          "decision": "port-later",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "woodcutting",
+      "phase": "P9d",
+      "kind": "optional",
+      "dependsOn": [
+        "gathering"
+      ],
+      "systems": [
+        {
+          "id": "gathering-woodcutting",
+          "decision": "port-later",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "crafting",
+      "phase": "P9d",
+      "kind": "optional",
+      "dependsOn": [
+        "inventory"
+      ],
+      "systems": [
+        {
+          "id": "crafting-recipes",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "crafting-station-recipes",
+          "decision": "retire",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "business-sim",
+      "phase": "P9d",
+      "kind": "optional",
+      "dependsOn": [
+        "shops"
+      ],
+      "systems": [
+        {
+          "id": "economy-business-lifecycle",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "economy-spending-sinks",
+          "decision": "port-later",
+          "core": "-"
+        }
+      ]
+    },
+    {
+      "id": "traversal",
+      "phase": "P9e",
+      "kind": "optional",
+      "dependsOn": [
+        "controls"
+      ],
+      "systems": [
+        {
+          "id": "traversal-planner",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "traversal-ground-seating",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "traversal-fast-travel",
+          "decision": "port",
+          "core": "Y"
+        }
+      ]
+    },
+    {
+      "id": "vehicles",
+      "phase": "P9e",
+      "kind": "optional",
+      "dependsOn": [
+        "controls"
+      ],
+      "systems": [
+        {
+          "id": "traversal-vehicles",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "traversal-mounts-pets",
+          "decision": "port-later",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "npc-life",
+      "phase": "P9f",
+      "kind": "base",
+      "dependsOn": [
+        "foundation",
+        "time-weather"
+      ],
+      "systems": [
+        {
+          "id": "npc-schedules-routines",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "npc-agent-ai-planner",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "npc-navigation-movement",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "npc-ambient-life",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-occupation-work",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-business-population",
+          "decision": "port",
+          "core": "-"
+        },
+        {
+          "id": "npc-residence-activities",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-ambient-conversations",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-socialization",
+          "decision": "retire",
+          "core": "P"
+        },
+        {
+          "id": "npc-proximity-greetings",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "npc-hold-poses-stations",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-village-staging",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-meeting-places",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-building-approach-points",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-follow-escort",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-belief-knowledge",
+          "decision": "core-only",
+          "core": "Y"
+        },
+        {
+          "id": "npc-slm-decision-advisor",
+          "decision": "core-only",
+          "core": "Y"
+        },
+        {
+          "id": "npc-simulation-lod",
+          "decision": "port",
+          "core": "-"
+        }
+      ]
+    },
+    {
+      "id": "npc-presentation",
+      "phase": "P9f",
+      "kind": "base",
+      "dependsOn": [
+        "npc-life"
+      ],
+      "systems": [
+        {
+          "id": "npc-labels-indicators",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-appearance-variety",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-animation",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "npc-lip-sync",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "npc-attention-idle-life",
+          "decision": "port",
+          "core": "-"
+        }
+      ]
+    },
+    {
+      "id": "ambient-animals",
+      "phase": "P9f",
+      "kind": "optional",
+      "dependsOn": [
+        "npc-life"
+      ],
+      "systems": [
+        {
+          "id": "npc-ambient-animals",
+          "decision": "port",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "dialogue",
+      "phase": "P9g",
+      "kind": "base",
+      "dependsOn": [
+        "npc-life",
+        "hud"
+      ],
+      "variantSets": [
+        {
+          "axis": "provider",
+          "options": [
+            {
+              "id": "server"
+            },
+            {
+              "id": "on-device"
+            },
+            {
+              "id": "auto"
+            }
+          ]
+        }
+      ],
+      "systems": [
+        {
+          "id": "dialogue-npc-chat",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "dialogue-ai-chat-service",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "dialogue-offline-local-ai",
+          "decision": "port-later",
+          "core": "P"
+        },
+        {
+          "id": "dialogue-conversation-history",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "dialogue-social-actions-sidebar",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "dialogue-gestures",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "dialogue-eavesdrop",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "dialogue-voice-input",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "npc-dialogue-context",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "npc-player-memory",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "phase": "P9g",
+      "kind": "optional",
+      "dependsOn": [
+        "dialogue"
+      ],
+      "systems": [
+        {
+          "id": "social-relationships",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "social-romance",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "social-reputation-fines",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "social-gift-giving",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "social-contact-list",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "npc-volition",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "npc-temporary-states",
+          "decision": "port-later",
+          "core": "P"
+        },
+        {
+          "id": "ui-radial-action-wheel",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "economy-haggling-food-ordering",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "language-learning",
+      "phase": "P9h",
+      "kind": "optional",
+      "dependsOn": [
+        "dialogue",
+        "quests"
+      ],
+      "systems": [
+        {
+          "id": "language-vocabulary-bank",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "language-knowledge-collection",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "language-object-identification",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "language-hover-translation",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "language-progress-learning-profile",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "language-adaptive-conversation-difficulty",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "language-cefr-npc-adaptation",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "language-composition-writing",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "language-listening-comprehension",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "language-pronunciation-listen-repeat",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "language-quest-feedback-grammar",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "quest-language-quest-types",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "interaction-world-object-actions",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "language-assessment",
+      "phase": "P9h",
+      "kind": "optional",
+      "dependsOn": [
+        "language-learning"
+      ],
+      "systems": [
+        {
+          "id": "language-assessment-arrival-departure",
+          "decision": "port-later",
+          "core": "P"
+        },
+        {
+          "id": "language-research-instruments",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "language-periodic-speaking-encounters",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "language-proficiency-dashboard",
+          "decision": "port-later",
+          "core": "P"
+        },
+        {
+          "id": "language-cefr-self-select",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "language-npc-exams",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "language-npc-mentors",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "language-srs-review",
+          "decision": "port-later",
+          "core": "P"
+        },
+        {
+          "id": "language-quiz-widget",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "language-activity-observation",
+          "decision": "port-later",
+          "core": "P"
+        },
+        {
+          "id": "language-cefr-localized-ui-text",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "settings-ui-language-immersion",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "audio-environmental-target-language",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "progression-guilds",
+          "decision": "port-later",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "progression",
+      "phase": "P9i",
+      "kind": "optional",
+      "dependsOn": [
+        "hud",
+        "saves"
+      ],
+      "systems": [
+        {
+          "id": "progression-skill-trees",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "progression-xp-levels-achievements",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "progression-level-up-rewards",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "progression-content-gating",
+          "decision": "port-later",
+          "core": "P"
+        },
+        {
+          "id": "progression-feature-modules",
+          "decision": "port",
+          "core": "P"
+        },
+        {
+          "id": "progression-performance-scoring-world-lore",
+          "decision": "core-only",
+          "core": "D"
+        }
+      ]
+    },
+    {
+      "id": "platformer",
+      "phase": "P9j",
+      "kind": "optional",
+      "dependsOn": [
+        "controls"
+      ],
+      "systems": [
+        {
+          "id": "genre-platformer",
+          "decision": "port",
+          "core": "Y"
+        }
+      ]
+    },
+    {
+      "id": "strategy",
+      "phase": "P9j",
+      "kind": "optional",
+      "dependsOn": [
+        "business-sim"
+      ],
+      "systems": [
+        {
+          "id": "genre-strategy",
+          "decision": "port",
+          "core": "Y"
+        }
+      ]
+    },
+    {
+      "id": "puzzle",
+      "phase": "P9j",
+      "kind": "optional",
+      "dependsOn": [
+        "quests"
+      ],
+      "systems": [
+        {
+          "id": "puzzle-rule-module",
+          "decision": "port",
+          "core": "Y"
+        },
+        {
+          "id": "puzzle-minigames",
+          "decision": "port",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "dungeon-runs",
+      "phase": "P9j",
+      "kind": "optional",
+      "dependsOn": [
+        "combat"
+      ],
+      "systems": [
+        {
+          "id": "genre-procedural-dungeon",
+          "decision": "port",
+          "core": "D"
+        },
+        {
+          "id": "genre-roguelike-runs",
+          "decision": "port-later",
+          "core": "P"
+        }
+      ]
+    },
+    {
+      "id": "construction",
+      "phase": "P9j",
+      "kind": "optional",
+      "dependsOn": [
+        "inventory"
+      ],
+      "systems": [
+        {
+          "id": "construction-building-placement",
+          "decision": "port-later",
+          "core": "-"
+        }
+      ]
+    },
+    {
+      "id": "xr",
+      "phase": "P9k",
+      "kind": "optional",
+      "dependsOn": [
+        "controls",
+        "hud"
+      ],
+      "systems": [
+        {
+          "id": "vr-mode-locomotion",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "vr-accessibility-comfort",
+          "decision": "port-later",
+          "core": "P"
+        },
+        {
+          "id": "vr-hand-tracking",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "vr-hud",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "vr-world-space-panels",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "vr-combat-gestures",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "vr-vocabulary-labels",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "ar-vocabulary-cards",
+          "decision": "port-later",
+          "core": "-"
+        },
+        {
+          "id": "vr-ambient-effects",
+          "decision": "port-later",
+          "core": "-"
+        }
+      ]
+    },
+    {
+      "id": "debug-telemetry",
+      "phase": "P10",
+      "kind": "optional",
+      "dependsOn": [
+        "foundation"
+      ],
+      "systems": [
+        {
+          "id": "debug-in-game-console",
+          "decision": "port-later",
+          "core": "P"
+        },
+        {
+          "id": "telemetry-playthrough",
+          "decision": "port-later",
+          "core": "D"
+        },
+        {
+          "id": "telemetry-error-reporting",
+          "decision": "port-later",
+          "core": "-"
+        }
+      ]
+    }
+  ],
+  "notPacks": {
+    "world-layer (track G)": [
+      "world-buildings-streets",
+      "world-terrain-nature-water",
+      "world-town-square-market",
+      "world-building-street-signs",
+      "world-building-info-hover",
+      "world-map-geopolitics",
+      "world-cemetery-gravestones",
+      "world-type-visual-presets",
+      "world-painted-placement",
+      "world-exploration-discovery",
+      "performance-settlement-streaming"
+    ],
+    "web-app": [
+      "webapp-play-surfaces",
+      "webapp-playthrough-inspectors",
+      "world-genealogy-history-displays"
+    ]
+  },
+  "changes": [
+    {
+      "pack": "shops",
+      "change": "dependsOn += dialogue",
+      "note": "SPEC §2.3 requires dialogue (the trade panel opens from a merchant conversation, catalog economy-shop-merchant); the Appendix A row named inventory only."
+    },
+    {
+      "pack": "combat",
+      "change": "variant turn_based: port-later",
+      "note": "SPEC §2.4 marks it port-later and the catalog decides combat-turn-based port-later; the Appendix A variant column listed it among the ready options."
+    },
+    {
+      "pack": "saves",
+      "change": "variant server-synced: port-later",
+      "note": "SPEC §7.2 lists server-synced as a later variant of saves 1.0.0."
+    }
+  ]
+}

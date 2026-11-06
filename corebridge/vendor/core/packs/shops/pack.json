@@ -1,0 +1,36 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "shops",
+  "version": "1.0.0",
+  "name": "Shops and services",
+  "summary": "Buy and sell with merchants; business services and opening hours.",
+  "kind": "optional",
+  "phase": "P6",
+  "catalog": ["economy-shop-merchant", "economy-business-services", "economy-business-hours-shifts"],
+  "core": {
+    "modules": ["business"],
+    "corpus": ["conformance/items/pricing.json", "conformance/ui/trade-cases.json"]
+  },
+  "requires": [{ "id": "inventory", "version": "^1" }, { "id": "dialogue", "version": "^1" }],
+  "enhances": [{ "id": "social" }],
+  "parameters": [
+    { "id": "markupPercent", "type": "number", "maps": "EconomyTuning.markupPercent", "source": "world" },
+    { "id": "sellMarginPercent", "type": "number", "maps": "EconomyTuning.sellMarginPercent", "source": "world" },
+    { "id": "standingPercent", "type": "number", "maps": "EconomyTuning.standingPercent", "source": "world", "doc": "reputation's effect on price; has an effect only when 'social' is installed" }
+  ],
+  "extensionPoints": [
+    { "id": "what-a-vendor-sells", "kind": "prolog-facts", "signature": "sells/2, in_stock/3 (derived; extend via world facts)" },
+    { "id": "refuse-trade", "kind": "prolog-forbid", "signature": "forbids/4 on EconomyTuning.buyAction / sellAction ('buy_item' / 'sell_item')" },
+    { "id": "merchant-panel", "kind": "panel-override", "signature": "UiRegistry key 'merchant'" }
+  ],
+  "events": { "emits": ["item_purchased", "item_sold"], "consumes": ["item_moved"] },
+  "panels": ["merchant"],
+  "styles": { "tokens": ["surface", "accent", "success", "danger"], "art": ["prop.market.*"] },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "panels", "kind": "contract" }
+  ],
+  "assistant": {
+    "notes": ["Prices come from core's Market (resolvePrice). Change them with the parameters or a vendor fact, never by editing the panel's numbers."]
+  }
+}

@@ -240,7 +240,7 @@ Copyright: Copyright 2026 Overpowered Inc.
 Upstream: @insimul/core (`packages/core`) — first-party, the same TypeScript the
   web runtime executes
 Vendored-Path: corebridge/vendor/core
-Pinned-Commit: 4a4678975fb72a2d2c3f991dd5b67964245e36ab
+Pinned-Commit: b38e60d3afe3724df3a0dc3505630e55c3f9235c
 Pin-Source: corebridge/vendor/core/VENDORED.json#coreCommit
 Redistributed-In: libinsimulcore.a, libinsimulcore.dylib (embedded as a C byte array)
 License-Text: LICENSE (beside this file)
@@ -248,11 +248,29 @@ License-Text: LICENSE (beside this file)
 A **generated build artifact**, not third-party source: `@insimul/core` bundled
 to a single script by `corebridge/tools/vendor-core-bundle.mjs` (esbuild, at the
 commit and esbuild version `corebridge/core-pin.json` pins) and embedded as a C
-array. It bundles no npm package (`npmModules` in VENDORED.json is empty). It sits under `vendor/` because that is where generated
+array. It bundles one npm package, `zod` (its own stanza below; `npmModules` in VENDORED.json records it). It sits under `vendor/` because that is where generated
 drops live, and it is attributed here because a reader who finds a `vendor/`
 directory is entitled to know whose code is in it. Zero lines of core are
 re-implemented in this repository, which is the entire reason `libinsimulcore`
 exists.
+
+### zod
+
+SPDX-License-Identifier: MIT
+Copyright: Copyright (c) 2025 Colin McDonnell
+Upstream: https://github.com/colinhacks/zod (npm `zod`)
+Pinned-Version: 3.25.76
+Redistributed-In: libinsimulcore.a, libinsimulcore.dylib (inside the @insimul/core bundle, embedded as a C byte array)
+License-Text: §5.1
+
+Not vendored as source and not a dependency of this repository: `@insimul/core`
+imports it (`src/system-packs/schema.ts` builds the system-pack schemas with it,
+and the composer behind the `packs.compose` row imports that module), so
+`corebridge/tools/vendor-core-bundle.mjs` bundles it into
+`corebridge/vendor/core/insimul-core-bundle.js` from the core checkout's
+installed packages. The version above is the one recorded in
+`corebridge/vendor/core/VENDORED.json` (`npmModules`), which `--check --core`
+compares on every re-bundle; move both together.
 
 ### Emscripten runtime
 

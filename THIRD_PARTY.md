@@ -123,10 +123,17 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `4a46789` (core
-  `main` on 2026-10-29, holding the layout and composition rules the `layout.*` rows
-  run; see the pin's `coreRefNote`). The vendor directory also holds core's layout
-  corpora (`corebridge/vendor/core/conformance/`), copied byte for byte at the pin.
+  what to quote in a bug report about core behaviour. Today: `b38e60d` (core
+  `main` on 2026-11-05, holding the layout and composition rules the `layout.*` rows
+  run and the composer the `packs.compose` row runs; see the pin's `coreRefNote`).
+  The vendor directory also holds core's layout corpora and its pack-composition
+  corpus (`corebridge/vendor/core/conformance/`) and the pack catalog that corpus
+  names (`corebridge/vendor/core/packs/`), copied byte for byte at the pin.
+- **npm packages inside the bundle:** `zod` 3.25.76 (MIT), which core's
+  `system-packs/schema` imports and the composer pulls in; recorded in
+  `VENDORED.json`'s `npmModules` and attributed in `NOTICE`. It is bundled from the
+  core checkout's installed packages (the vendoring tool resolves npm imports along
+  that checkout's `node_modules` chain, plus any `--node-modules <dir>` given).
 - **Generator:** `corebridge/tools/vendor-core-bundle.mjs` (esbuild), which also
   writes `corebridge/vendor/core/cases/` — core's own conformance corpora at the
   same commit, transcribed into bridge cases by `corebridge/tools/emit-bridge-cases.mjs`.

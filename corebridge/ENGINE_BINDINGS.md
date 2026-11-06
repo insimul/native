@@ -64,7 +64,7 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
    the `view` (or the per-step `conditionChanged` / `seasonTurned` in `results`)
    after every advance. Reported to core as a finding; the bridge reproduces core.
 7. **Errors.** On NULL, read `insimul_core_last_error()`; when it contains
-   `[<code>]` (genre resolution refusals today), that bracketed code is the
+   `[<code>]` (genre resolution and pack composition refusals today), that bracketed code is the
    machine-readable reason. Domain outcomes (a corrupt save slot, a refused trade)
    are NOT errors — they come back as values.
 8. **Saves: one hash.** `save.encode` / `save.decode` compute the envelope's
@@ -98,6 +98,18 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   calls to `layout.<op>` with corpus-shaped inputs, and `layout_conformance` runs
   the same corpus files through the library. Re-vendor the corpus from core at
   this library's pin, not from `Portable/`'s.
+- **Packs (SP.composer-unreal, U62(1)).** Part 1 is this library's
+  `packs.compose` row (`README.md`, "The packs.compose row"):
+  `insimul_core_call(core, "packs.compose", { recipe, world, game, engine, catalog })`
+  answers core's `Composition`. The library carries no catalog: part 2
+  re-vendors core's `packs/` (`index.json`, `<id>/pack.json`) and
+  `conformance/packs/` into Unreal from core at this library's pin, and the
+  binding sends `catalog: { index, manifests }` built from those files. Part 3
+  is the Unreal replay target (`test_core_rows_corpus.cpp`) running
+  `composition.json`'s cases through the row by the rule `tests/packs_corpus.cpp`
+  implements here: send each case's `input` with the catalog beside it; an
+  `expected` case answers exactly that JSON, an `expectedError` case fails with
+  `CompositionError: [<code>]` or `GenreResolutionError: [<code>]`.
 
 ## Unity
 

@@ -1,0 +1,36 @@
+{
+ "schema": "insimul.pack-composition-cases/1",
+ "description": "The packs_corpus NEGATIVE CONTROL (tests/packs_corpus.cpp): two cases whose answers are deliberately WRONG, over the same vendored catalog as core's corpus. The ctest passes only when the runner reports both as failing and the run as FAIL.",
+ "catalog": {
+  "index": "packs/index.json",
+  "manifests": [
+   "packs/combat/pack.json",
+   "packs/inventory/pack.json",
+   "packs/saves/pack.json",
+   "packs/shops/pack.json"
+  ]
+ },
+ "cases": [
+  {
+   "name": "expected WRONGLY to compose to an empty object",
+   "claim": "Wrong on purpose: the composition has keys.",
+   "input": {
+    "recipe": null
+   },
+   "expected": {}
+  },
+  {
+   "name": "refused WRONGLY as an unknown recipe",
+   "claim": "Wrong on purpose: core refuses this engine, not the recipe.",
+   "input": {
+    "recipe": null,
+    "engine": {
+     "id": "xbox"
+    }
+   },
+   "expectedError": {
+    "code": "unknown-recipe"
+   }
+  }
+ ]
+}

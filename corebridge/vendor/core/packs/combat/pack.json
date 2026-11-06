@@ -1,0 +1,65 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "combat",
+  "version": "0.1.0",
+  "name": "Combat",
+  "summary": "Attacks resolved by core's combat rules, in one of several styles of play behind one contract.",
+  "kind": "optional",
+  "phase": "P9b",
+  "catalog": [
+    "combat-melee-core",
+    "combat-ranged",
+    "combat-fighting",
+    "combat-turn-based",
+    "combat-magic-spellcasting",
+    "combat-status-effects",
+    "combat-ui-feedback",
+    "combat-enemy-loot-drops"
+  ],
+  "core": {
+    "modules": ["combat"],
+    "predicatePacks": ["combat"],
+    "hostInterfaces": ["ICombatSystem", "ICombatStatSink", "ITrajectoryProbe"],
+    "genreFeature": "combat",
+    "corpus": ["conformance/combat/resolution.json", "conformance/combat/action-table.json", "conformance/prolog/mechanic-combat.json"]
+  },
+  "requires": [{ "id": "vitals" }, { "id": "inventory" }],
+  "variants": {
+    "axis": "combatStyle",
+    "default": "melee",
+    "options": [
+      { "id": "melee", "status": "ready", "genreOverrides": [{ "path": "combatStyle", "value": "melee" }] },
+      { "id": "ranged", "status": "ready", "genreOverrides": [{ "path": "combatStyle", "value": "ranged" }], "doc": "core resolves delivery 'projectile'; ammo, reload and spread have no corpus yet" },
+      { "id": "hybrid", "status": "ready", "genreOverrides": [{ "path": "combatStyle", "value": "hybrid" }] },
+      { "id": "turn_based", "status": "port-later", "genreOverrides": [{ "path": "combatStyle", "value": "turn_based" }], "doc": "no core logic for initiative or an action queue yet" },
+      {
+        "id": "fighting",
+        "status": "port-later",
+        "genreOverrides": [{ "path": "combatStyle", "value": "melee" }, { "path": "cameraMode", "value": "fighting" }],
+        "requires": ["camera:fighting"],
+        "doc": "frame data has no corpus yet"
+      },
+      { "id": "magic", "status": "blocked", "doc": "no module owns mana or spell effects (catalog); shown, not offered" }
+    ]
+  },
+  "parameters": [
+    { "id": "baseDamage", "type": "number", "maps": "CombatTuning.baseDamage", "source": "world" },
+    { "id": "criticalChance", "type": "number", "min": 0, "max": 1, "maps": "CombatTuning.criticalChance", "source": "world" },
+    { "id": "deathAtZero", "type": "boolean", "maps": "CombatTuning.deathAtZero", "source": "world" }
+  ],
+  "extensionPoints": [
+    { "id": "hostility", "kind": "prolog-facts", "signature": "hostile_to/2, effective_against/2 (combat-predicates.ts)" },
+    { "id": "forbid-attack", "kind": "prolog-forbid", "signature": "forbids/4" },
+    { "id": "action-table", "kind": "binding-hook", "signature": "CombatActionTable rows (CombatAction: delivery contact|projectile)" }
+  ],
+  "events": { "emits": ["combat_action", "enemy_defeated"] },
+  "styles": {
+    "tokens": ["danger", "warning", "text_primary"],
+    "art": ["item.weapon.*"],
+    "layouts": ["damage-numbers", "health-bars", "combat-log"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ]
+}
