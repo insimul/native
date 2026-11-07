@@ -124,8 +124,8 @@
     if (typeof value === "string") return value;
     if (value instanceof Error) return `${value.name}: ${value.message}`;
     try {
-      const text2 = JSON.stringify(value);
-      return text2 === void 0 ? String(value) : text2;
+      const text3 = JSON.stringify(value);
+      return text3 === void 0 ? String(value) : text3;
     } catch {
       return String(value);
     }
@@ -207,14 +207,14 @@
   }
 
   // corebridge/js/host-prolog-engine.js
-  function collapseTerm(term) {
-    if (term === null || term === void 0) return null;
-    if (typeof term === "string" || typeof term === "number" || typeof term === "boolean") {
-      return term;
+  function collapseTerm(term4) {
+    if (term4 === null || term4 === void 0) return null;
+    if (typeof term4 === "string" || typeof term4 === "number" || typeof term4 === "boolean") {
+      return term4;
     }
-    if (Array.isArray(term)) return term.length === 0 ? "[]" : ".";
-    if (typeof term === "object" && typeof term.functor === "string") return term.functor;
-    return String(term);
+    if (Array.isArray(term4)) return term4.length === 0 ? "[]" : ".";
+    if (typeof term4 === "object" && typeof term4.functor === "string") return term4.functor;
+    return String(term4);
   }
   var NativePrologEngine = class {
     constructor(id) {
@@ -366,10 +366,10 @@
     buildContentBlocks(facts, rules, contentBlocks, source, lines2);
     return { facts, rules, contentBlocks, errors };
   }
-  function parseTerm(text2) {
-    text2 = text2.trim();
-    if (!text2) return null;
-    const match = text2.match(/^([a-z_][a-z0-9_]*)\s*\(([\s\S]*)\)$/);
+  function parseTerm(text3) {
+    text3 = text3.trim();
+    if (!text3) return null;
+    const match = text3.match(/^([a-z_][a-z0-9_]*)\s*\(([\s\S]*)\)$/);
     if (!match) {
       return null;
     }
@@ -381,16 +381,16 @@
       fact: { predicate, arity: args.length, args, line: 0 }
     };
   }
-  function parseArgList(text2) {
+  function parseArgList(text3) {
     const args = [];
     let current = "";
     let depth = 0;
     let inSingleQuote = false;
     let i = 0;
-    while (i < text2.length) {
-      const ch = text2[i];
+    while (i < text3.length) {
+      const ch = text3[i];
       if (inSingleQuote) {
-        if (ch === "'" && i + 1 < text2.length && text2[i + 1] === "'") {
+        if (ch === "'" && i + 1 < text3.length && text3[i + 1] === "'") {
           current += "''";
           i += 2;
           continue;
@@ -431,31 +431,31 @@
     }
     return args;
   }
-  function parseArg(text2) {
-    text2 = text2.trim();
-    if (text2.startsWith("'") && text2.endsWith("'") && text2.length >= 2) {
-      const inner = text2.slice(1, -1).replace(/''/g, "'");
+  function parseArg(text3) {
+    text3 = text3.trim();
+    if (text3.startsWith("'") && text3.endsWith("'") && text3.length >= 2) {
+      const inner = text3.slice(1, -1).replace(/''/g, "'");
       return { type: "string", value: inner };
     }
-    if (/^-?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?$/.test(text2)) {
-      return { type: "number", value: parseFloat(text2) };
+    if (/^-?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?$/.test(text3)) {
+      return { type: "number", value: parseFloat(text3) };
     }
-    if (/^[A-Z_][A-Za-z0-9_]*$/.test(text2)) {
-      return { type: "variable", value: text2 };
+    if (/^[A-Z_][A-Za-z0-9_]*$/.test(text3)) {
+      return { type: "variable", value: text3 };
     }
-    if (text2.startsWith("[") && text2.endsWith("]")) {
-      const inner = text2.slice(1, -1).trim();
+    if (text3.startsWith("[") && text3.endsWith("]")) {
+      const inner = text3.slice(1, -1).trim();
       if (!inner) return { type: "list", elements: [] };
       const elements = parseArgList(inner);
       return { type: "list", elements };
     }
-    const compMatch = text2.match(/^([a-z_][a-z0-9_]*)\s*\(([\s\S]*)\)$/);
+    const compMatch = text3.match(/^([a-z_][a-z0-9_]*)\s*\(([\s\S]*)\)$/);
     if (compMatch) {
       const functor = compMatch[1];
       const innerArgs = parseArgList(compMatch[2]);
       return { type: "compound", functor, args: innerArgs };
     }
-    return { type: "atom", value: text2 };
+    return { type: "atom", value: text3 };
   }
   function clauseEnds(clause) {
     let inQuote = false;
@@ -509,15 +509,15 @@
         g.endLine = Math.max(g.endLine, fact.line);
       }
     }
-    for (const rule of rules) {
-      const entityArg = rule.head.args[0];
+    for (const rule2 of rules) {
+      const entityArg = rule2.head.args[0];
       if (!entityArg) continue;
       const entityAtom = argToString(entityArg);
       if (!groups.has(entityAtom)) {
-        groups.set(entityAtom, { predicate: rule.head.predicate, startLine: rule.line, endLine: rule.line });
+        groups.set(entityAtom, { predicate: rule2.head.predicate, startLine: rule2.line, endLine: rule2.line });
       } else {
         const g = groups.get(entityAtom);
-        g.endLine = Math.max(g.endLine, rule.line);
+        g.endLine = Math.max(g.endLine, rule2.line);
       }
     }
     Array.from(groups.entries()).forEach(([entityAtom, group]) => {
@@ -762,8 +762,8 @@
       if (obj3.type !== "compound") continue;
       const hasSlot = obj3.args.some((a) => a.type === "variable" && a.value === v);
       if (!hasSlot) continue;
-      const num3 = obj3.args.find((a) => a.type === "number");
-      if (num3 && num3.type === "number") return num3.value;
+      const num5 = obj3.args.find((a) => a.type === "number");
+      if (num5 && num5.type === "number") return num5.value;
     }
     return 1;
   }
@@ -1712,16 +1712,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     toVersion: 3,
     description: "Backfill WorldSnapshot.insimulVersion / engineRevision / snapshotCreatedAt on saves predating version stamping (US-001).",
     migrate(save) {
-      const snapshot = save.worldSnapshot;
-      if (snapshot && typeof snapshot === "object") {
-        if (typeof snapshot.insimulVersion !== "string") {
-          snapshot.insimulVersion = PRE_VERSIONING_SENTINEL;
+      const snapshot2 = save.worldSnapshot;
+      if (snapshot2 && typeof snapshot2 === "object") {
+        if (typeof snapshot2.insimulVersion !== "string") {
+          snapshot2.insimulVersion = PRE_VERSIONING_SENTINEL;
         }
-        if (typeof snapshot.engineRevision !== "string") {
-          snapshot.engineRevision = PRE_VERSIONING_SENTINEL;
+        if (typeof snapshot2.engineRevision !== "string") {
+          snapshot2.engineRevision = PRE_VERSIONING_SENTINEL;
         }
-        if (typeof snapshot.snapshotCreatedAt !== "string") {
-          snapshot.snapshotCreatedAt = PRE_VERSIONING_SENTINEL;
+        if (typeof snapshot2.snapshotCreatedAt !== "string") {
+          snapshot2.snapshotCreatedAt = PRE_VERSIONING_SENTINEL;
         }
       }
       return save;
@@ -1841,6 +1841,25 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     return out;
   }
+  function isRegisteredExtension(key) {
+    return Object.prototype.hasOwnProperty.call(extensionRegistry, key);
+  }
+  function isDevWarningEnabled() {
+    const env = typeof process !== "undefined" && process?.env ? process.env.NODE_ENV : void 0;
+    if (env === "production") return false;
+    return true;
+  }
+  function writeExtension(extensions, key, value) {
+    if (!isRegisteredExtension(key) && isDevWarningEnabled()) {
+      try {
+        console.warn(
+          `[save-extensions] writing unregistered extension "${key}". Register it in shared/save-extensions.ts::extensionRegistry before writing.`
+        );
+      } catch {
+      }
+    }
+    extensions[key] = value;
+  }
 
   // @insimul/core/src/save-file.ts
   var SAVE_FILE_VERSION = 3;
@@ -1923,9 +1942,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       __publicField(this, "nextId", 1);
     }
     /** Enqueue a notification. Returns its id (so a caller can `dismiss` it early). */
-    push(text2, kind = "info", lifetime = DEFAULT_NOTIFICATION_LIFETIME) {
+    push(text3, kind = "info", lifetime = DEFAULT_NOTIFICATION_LIFETIME) {
       const id = this.nextId++;
-      this.items.push({ id, text: text2, kind, remaining: lifetime, color: KIND_COLOR[kind] });
+      this.items.push({ id, text: text3, kind, remaining: lifetime, color: KIND_COLOR[kind] });
       return id;
     }
     /**
@@ -2682,13 +2701,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function getMappingsForEvent(eventType) {
     return eventTypeIndex.get(eventType) || [];
   }
-  function matchesField(rule, eventValue, objectiveValue) {
-    if ((objectiveValue === void 0 || objectiveValue === null || objectiveValue === "") && rule.optional) {
+  function matchesField(rule2, eventValue, objectiveValue) {
+    if ((objectiveValue === void 0 || objectiveValue === null || objectiveValue === "") && rule2.optional) {
       return true;
     }
     if (eventValue === void 0 || eventValue === null) return false;
     if (objectiveValue === void 0 || objectiveValue === null) return false;
-    const comparison = rule.comparison || "exact";
+    const comparison = rule2.comparison || "exact";
     const ev = String(eventValue);
     const ov = String(objectiveValue);
     switch (comparison) {
@@ -2703,8 +2722,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
   }
   function matchesAllFields(mapping, event, objective) {
-    for (const rule of mapping.matchFields) {
-      if (!matchesField(rule, event[rule.eventField], objective[rule.objectiveField])) {
+    for (const rule2 of mapping.matchFields) {
+      if (!matchesField(rule2, event[rule2.eventField], objective[rule2.objectiveField])) {
         return false;
       }
     }
@@ -3538,6 +3557,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       __publicField(this, "onQuestCompleted", null);
       __publicField(this, "onPronunciationFeedback", null);
       __publicField(this, "correctionContext", null);
+      /** The objectives that were locked when the current host event began (`trackHostEvent`); null outside one. */
+      __publicField(this, "lockedAtEventStart", null);
     }
     // ── Quest management ────────────────────────────────────────────────────
     addQuest(quest) {
@@ -3797,6 +3818,32 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       }
       this.handleGameEvent(event);
     }
+    /**
+     * Evaluate several dispatched events as ONE host event (P3.core). Every objective that is locked
+     * (`dependsOn`, `order`) before the first dispatch stays locked, neither completed nor counted,
+     * until the last dispatch has run, whatever the dispatch order and whichever path handles an
+     * event (a type handler, `trackByTrigger`, the generic QAM pass). So one host event never
+     * completes an objective and the one it unlocks, even when it is dispatched as several events
+     * or one event reaches several paths. `trackEvent` on its own keeps its existing behaviour.
+     */
+    trackHostEvent(events) {
+      if (this.lockedAtEventStart !== null) {
+        for (const event of events) this.trackEvent(event);
+        return;
+      }
+      const locked = /* @__PURE__ */ new Set();
+      for (const quest of this.quests) {
+        for (const obj3 of quest.objectives || []) {
+          if (!obj3.completed && this.isObjectiveLocked(quest, obj3)) locked.add(obj3);
+        }
+      }
+      this.lockedAtEventStart = locked;
+      try {
+        for (const event of events) this.trackEvent(event);
+      } finally {
+        this.lockedAtEventStart = null;
+      }
+    }
     // ── Core completion logic ───────────────────────────────────────────────
     completeObjective(questId, objectiveId) {
       const quest = this.quests.find((q) => q.id === questId);
@@ -3821,6 +3868,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * 2. It has an `order` value and any objective with a lower `order` is incomplete.
      */
     isObjectiveLocked(quest, objective) {
+      if (this.lockedAtEventStart?.has(objective)) return true;
       const objectives = quest.objectives || [];
       if (objective.dependsOn && objective.dependsOn.length > 0) {
         for (const depId of objective.dependsOn) {
@@ -4268,7 +4316,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         }
       });
     }
-    trackWritingSubmission(text2, wordCount, questId) {
+    trackWritingSubmission(text3, wordCount, questId) {
       this.trackByTrigger("writing_submitted", questId);
       this.forEachObjective(questId, ["writing", "arrival_writing", "departure_writing"], (quest, obj3) => {
         const minWords = obj3.minWordCount || OBJECTIVE_TYPE_DEFAULTS[obj3.type]?.minWordCount || OBJECTIVE_TYPE_DEFAULTS["writing"]?.minWordCount || 20;
@@ -4278,7 +4326,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       });
       this.forEachObjective(questId, ["write_response", "describe_scene"], (quest, obj3) => {
         if (!obj3.writtenResponses) obj3.writtenResponses = [];
-        obj3.writtenResponses.push(text2);
+        obj3.writtenResponses.push(text3);
         obj3.currentCount = (obj3.currentCount || 0) + 1;
         const minWords = obj3.minWordCount || 0;
         if (minWords > 0 && wordCount < minWords) return;
@@ -4695,6 +4743,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     trackByTrigger(trigger, questId) {
       for (const quest of this.quests) {
         if (questId && quest.id !== questId) continue;
+        if (quest.status && quest.status !== "active") continue;
         for (const obj3 of quest.objectives || []) {
           if (obj3.completed) continue;
           if (obj3.completionTrigger === trigger && !this.isObjectiveLocked(quest, obj3)) {
@@ -5170,7 +5219,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
               objectiveId: objId,
               objectiveType: objective.type,
               position: pos,
-              label: step.locationName || step.instruction
+              label: step.locationName || step.instruction,
+              source: "direction_step"
             };
           }
         }
@@ -5185,7 +5235,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
               objectiveId: objId,
               objectiveType: objective.type,
               position: pos,
-              label: wp.locationName || wp.instruction
+              label: wp.locationName || wp.instruction,
+              source: "navigation_waypoint"
             };
           }
         }
@@ -5196,7 +5247,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           objectiveId: objId,
           objectiveType: objective.type,
           position: explicitPos,
-          label: objective.locationName || objective.npcName
+          label: objective.locationName || objective.npcName,
+          source: "explicit"
         };
       }
       if (objective.destinationPosition) {
@@ -5204,18 +5256,20 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           objectiveId: objId,
           objectiveType: objective.type,
           position: objective.destinationPosition,
-          label: "Destination"
+          label: "Destination",
+          source: "destination"
         };
       }
       const npcId = objective.npcId || objective.escortNpcId;
       if (npcId) {
-        const pos = this.findNpcPosition(npcId, buildingData, npcBuildingMap, npcPositions);
-        if (pos) {
+        const found = this.findNpcPosition(npcId, buildingData, npcBuildingMap, npcPositions);
+        if (found) {
           return {
             objectiveId: objId,
             objectiveType: objective.type,
-            position: pos,
-            label: objective.npcName
+            position: found.position,
+            label: objective.npcName,
+            source: found.live ? "npc" : "npc_building"
           };
         }
       }
@@ -5225,7 +5279,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           objectiveId: objId,
           objectiveType: objective.type,
           position: businessPos.position,
-          label: businessPos.label
+          label: businessPos.label,
+          source: "business"
         };
       }
       const locName = objective.locationName || quest.locationName;
@@ -5236,18 +5291,20 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
             objectiveId: objId,
             objectiveType: objective.type,
             position: pos,
-            label: locName
+            label: locName,
+            source: "location_name"
           };
         }
       }
       if (quest.assignedByCharacterId) {
-        const pos = this.findNpcPosition(quest.assignedByCharacterId, buildingData, npcBuildingMap, npcPositions);
-        if (pos) {
+        const found = this.findNpcPosition(quest.assignedByCharacterId, buildingData, npcBuildingMap, npcPositions);
+        if (found) {
           return {
             objectiveId: objId,
             objectiveType: objective.type,
-            position: pos,
-            label: "Quest Giver"
+            position: found.position,
+            label: "Quest Giver",
+            source: found.live ? "giver" : "giver_building"
           };
         }
       }
@@ -5258,7 +5315,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
             objectiveId: objId,
             objectiveType: objective.type,
             position: nearest.position,
-            label: nearest.name || "Nearby NPC"
+            label: nearest.name || "Nearby NPC",
+            source: "nearest_npc"
           };
         }
       }
@@ -5274,11 +5332,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     findNpcPosition(npcId, buildingData, npcBuildingMap, npcPositions) {
       const npcEntry = npcPositions.find((n) => n.id === npcId);
-      if (npcEntry) return npcEntry.position;
+      if (npcEntry) return { position: npcEntry.position, live: true };
       const buildingId = npcBuildingMap.get(npcId);
       if (buildingId) {
         const building = buildingData.get(buildingId);
-        if (building) return building.position;
+        if (building) return { position: building.position, live: false };
       }
       return null;
     }
@@ -5340,15 +5398,79 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
   };
 
-  // @insimul/core/src/game-engine/logic/GameTimeManager.ts
-  function getTimeOfDay(hour) {
-    if (hour >= 5 && hour < 7) return "dawn";
-    if (hour >= 7 && hour < 10) return "morning";
-    if (hour >= 10 && hour < 14) return "midday";
-    if (hour >= 14 && hour < 17) return "afternoon";
-    if (hour >= 17 && hour < 20) return "evening";
+  // @insimul/core/src/time/clock.ts
+  var BANDS = [
+    { band: "dawn", from: 5, to: 7 },
+    { band: "morning", from: 7, to: 10 },
+    { band: "midday", from: 10, to: 14 },
+    { band: "afternoon", from: 14, to: 17 },
+    { band: "evening", from: 17, to: 20 },
+    { band: "night", from: 20, to: 5 }
+  ];
+  var TIME_OF_DAY_BANDS = Object.freeze(BANDS.map((b) => Object.freeze(b)));
+  var DAYTIME = Object.freeze({ from: 6, to: 18 });
+  var CLOCK_DEFAULTS = Object.freeze({
+    /** Real milliseconds per game hour: 1 real minute is 1 game hour, 24 real minutes a day. */
+    msPerGameHour: 6e4,
+    /** `setMsPerGameHour` never goes below this. */
+    msPerGameHourMin: 1e3,
+    /** The multiplier on the base rate. */
+    timeScale: 1,
+    /** `setTimeScale` clamps to this range. */
+    timeScaleMin: 0.25,
+    timeScaleMax: 16,
+    startHour: 8,
+    startMinute: 0,
+    /** Days are 1-based. */
+    startDay: 1
+  });
+  function wrapHour(hour) {
+    if (!Number.isFinite(hour)) return hour;
+    const h = hour % 24;
+    return h < 0 ? h + 24 : h;
+  }
+  function inBand(h, from, to) {
+    return from <= to ? h >= from && h < to : h >= from || h < to;
+  }
+  function timeOfDayOf(hour) {
+    const h = wrapHour(hour);
+    if (Number.isFinite(h)) {
+      for (const b of TIME_OF_DAY_BANDS) if (inBand(h, b.from, b.to)) return b.band;
+    }
     return "night";
   }
+  function isDaytimeAt(hour) {
+    const h = wrapHour(hour);
+    return Number.isFinite(h) && inBand(h, DAYTIME.from, DAYTIME.to);
+  }
+  function realSecondsPerGameHour(msPerGameHour, timeScale) {
+    return msPerGameHour / (timeScale * 1e3);
+  }
+  function clampTimeScale(scale) {
+    return Math.max(CLOCK_DEFAULTS.timeScaleMin, Math.min(CLOCK_DEFAULTS.timeScaleMax, scale));
+  }
+  function clampMsPerGameHour(ms) {
+    return Math.max(CLOCK_DEFAULTS.msPerGameHourMin, ms);
+  }
+  function carryClockTime(hour, minute, day) {
+    let h = hour;
+    let m = minute;
+    let d = day;
+    if (Number.isFinite(m) && m >= 60) {
+      const carry = Math.floor(m / 60);
+      m -= carry * 60;
+      h += carry;
+    }
+    if (Number.isFinite(h) && h >= 24) {
+      const carry = Math.floor(h / 24);
+      h -= carry * 24;
+      d += carry;
+    }
+    return { hour: h, minute: m, day: d };
+  }
+
+  // @insimul/core/src/game-engine/logic/GameTimeManager.ts
+  var getTimeOfDay = timeOfDayOf;
   var GameTimeManager = class {
     constructor(options = {}) {
       __publicField(this, "_hour");
@@ -5358,13 +5480,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       __publicField(this, "_msPerGameHour");
       __publicField(this, "_paused", false);
       /** Multiplier applied on top of base rate (1 = normal, 2 = 2x, etc.). */
-      __publicField(this, "_timeScale", 1);
+      __publicField(this, "_timeScale", CLOCK_DEFAULTS.timeScale);
       __publicField(this, "_eventBus", null);
       __publicField(this, "_lastTimeOfDay");
-      this._msPerGameHour = options.msPerGameHour ?? 6e4;
-      this._hour = options.startHour ?? 8;
-      this._minute = options.startMinute ?? 0;
-      this._day = options.startDay ?? 1;
+      this._msPerGameHour = options.msPerGameHour ?? CLOCK_DEFAULTS.msPerGameHour;
+      this._hour = options.startHour ?? CLOCK_DEFAULTS.startHour;
+      this._minute = options.startMinute ?? CLOCK_DEFAULTS.startMinute;
+      this._day = options.startDay ?? CLOCK_DEFAULTS.startDay;
       this._lastTimeOfDay = getTimeOfDay(this._hour);
     }
     // ── Wiring ──────────────────────────────────────────────────────────────
@@ -5398,7 +5520,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       return this._msPerGameHour;
     }
     get isDaytime() {
-      return this._hour >= 6 && this._hour < 18;
+      return isDaytimeAt(this._hour);
     }
     /** Fractional hour (0–24), e.g. 8.5 = 8:30 AM. Used for smooth interpolation. */
     get fractionalHour() {
@@ -5410,7 +5532,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     /** Real seconds that elapse per game hour at current settings. */
     get realSecondsPerGameHour() {
-      return this._msPerGameHour / (this._timeScale * 1e3);
+      return realSecondsPerGameHour(this._msPerGameHour, this._timeScale);
     }
     // ── Setters / controls ──────────────────────────────────────────────────
     pause() {
@@ -5420,10 +5542,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       this._paused = false;
     }
     setTimeScale(scale) {
-      this._timeScale = Math.max(0.25, Math.min(16, scale));
+      this._timeScale = clampTimeScale(scale);
     }
     setMsPerGameHour(ms) {
-      this._msPerGameHour = Math.max(1e3, ms);
+      this._msPerGameHour = clampMsPerGameHour(ms);
     }
     /** Advance time by a number of hours (e.g. resting). Fires hour/day/time-of-day events. */
     advanceHours(hours) {
@@ -5491,10 +5613,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         timeScale: this._timeScale
       };
     }
+    /**
+     * Restore a saved state. Does NOT fire events. An hour of 24 or more (a save written while
+     * the old mapping answered "hour 24 of day 1" for 23:59.99) is carried into the day, so it
+     * restores as hour 0 of the next day (`carryClockTime`, the day boundary).
+     */
     restoreState(state) {
-      this._hour = state.hour;
-      this._minute = state.minute;
-      this._day = state.day;
+      const t = carryClockTime(state.hour, state.minute, state.day);
+      this._hour = t.hour;
+      this._minute = t.minute;
+      this._day = t.day;
       this._msPerGameHour = state.msPerGameHour;
       this._paused = state.paused;
       this._timeScale = state.timeScale;
@@ -5518,11 +5646,57 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   };
 
   // @insimul/core/src/identity/kinp.ts
+  var KINP_KINDS = ["ent", "claim", "asset", "world", "agent", "src"];
+  var INSIMUL_NAMESPACE = "insimul";
+  var LOCAL_ID_PASSTHROUGH = /[a-z0-9._-]/;
+  var LOCAL_ID_HEAD = /[a-z0-9]/;
+  var LOCAL_ID_GUARD = "x-";
   var utf8Encoder = new TextEncoder();
   var utf8Decoder = new TextDecoder();
+  function percentEncodeChar(ch) {
+    let out = "";
+    for (const byte of utf8Encoder.encode(ch)) {
+      out += `%${byte.toString(16).toUpperCase().padStart(2, "0")}`;
+    }
+    return out;
+  }
+  function encodeLocalIdBody(raw) {
+    let out = "";
+    for (const ch of raw) {
+      out += LOCAL_ID_PASSTHROUGH.test(ch) ? ch : percentEncodeChar(ch);
+    }
+    return out;
+  }
+  function sanitizeLocalId(raw) {
+    if (!raw) throw new Error("sanitizeLocalId: empty id");
+    const body2 = encodeLocalIdBody(raw);
+    if (LOCAL_ID_HEAD.test(body2[0]) && !body2.startsWith(LOCAL_ID_GUARD)) return body2;
+    const [first, ...rest] = Array.from(raw);
+    return LOCAL_ID_GUARD + percentEncodeChar(first) + encodeLocalIdBody(rest.join(""));
+  }
+  function formatCurie(id) {
+    return `${id.namespace}:${id.kind}:${id.localId}`;
+  }
+  function parseCurie(curie) {
+    const parts = curie.split(":");
+    if (parts.length < 3) throw new Error(`parseCurie: not a CURIE: "${curie}"`);
+    const localId = parts[parts.length - 1];
+    const kind = parts[parts.length - 2];
+    const namespace = parts.slice(0, -2).join(":");
+    if (!KINP_KINDS.includes(kind)) throw new Error(`parseCurie: unknown kind "${kind}" in "${curie}"`);
+    if (!namespace) throw new Error(`parseCurie: empty namespace in "${curie}"`);
+    if (!localId) throw new Error(`parseCurie: empty local id in "${curie}"`);
+    return { kind, namespace, localId };
+  }
   function prologAtom(value) {
     if (/^[a-z][a-zA-Z0-9_]*$/.test(value)) return value;
     return `'${value.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
+  }
+  function formatIdTerm(id) {
+    return `id(${id.kind}, ${prologAtom(id.namespace)}, ${prologAtom(id.localId)})`;
+  }
+  function provisionalEntityId(localId, ns = INSIMUL_NAMESPACE) {
+    return { kind: "ent", namespace: `${ns}:local`, localId: sanitizeLocalId(localId) };
   }
 
   // @insimul/core/src/weather/weather-facts.ts
@@ -5611,22 +5785,45 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
 
   // @insimul/core/src/ai/deterministic-stream.ts
-  function hashSeedString(text2) {
+  function hashSeedString(text3) {
     let h = 2166136261 >>> 0;
-    for (let i = 0; i < text2.length; i++) {
-      h ^= text2.charCodeAt(i);
+    for (let i = 0; i < text3.length; i++) {
+      h ^= text3.charCodeAt(i);
       h = Math.imul(h, 16777619);
     }
     return h >>> 0;
   }
+  function mulberry322(seed) {
+    let a = seed >>> 0;
+    return function next() {
+      a = a + 1831565813 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
   function streamKey(parts) {
     return parts.map((part) => {
-      const text2 = String(part);
-      return `${text2.length}:${text2}`;
+      const text3 = String(part);
+      return `${text3.length}:${text3}`;
     }).join("");
+  }
+  function derivedStream(...parts) {
+    return mulberry322(hashSeedString(streamKey(parts)));
+  }
+  function derivedValue(...parts) {
+    return derivedStream(...parts)();
+  }
+  var DETERMINISTIC_DECIMALS = 4;
+  function roundDeterministic(value, decimals = DETERMINISTIC_DECIMALS) {
+    const scale = 10 ** decimals;
+    return Math.round(value * scale) / scale;
   }
   function compareIds(a, b) {
     return a === b ? 0 : a < b ? -1 : 1;
+  }
+  function clamp01(value) {
+    return value < 0 ? 0 : value > 1 ? 1 : value;
   }
 
   // @insimul/core/src/weather/weather.ts
@@ -5753,10 +5950,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const rows = possibleConditions(climate, seasonId);
     const total = rows.reduce((sum, row) => sum + row.weight, 0);
     if (total <= 0) return null;
-    let roll = weatherRoll(seed, day, PICK_SUBJECT, total);
+    let roll2 = weatherRoll(seed, day, PICK_SUBJECT, total);
     for (const row of rows) {
-      roll -= row.weight;
-      if (roll < 0) return row.condition;
+      roll2 -= row.weight;
+      if (roll2 < 0) return row.condition;
     }
     return rows[rows.length - 1].condition;
   }
@@ -6932,6 +7129,82 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       }
     }
   };
+  function gameBundle(id, name, description, defaultModules, moduleConfigs = {}) {
+    return { id, name, description, defaultModules, compatibleModules: compatibleExcluding(defaultModules), moduleConfigs };
+  }
+  var ACTION_BUNDLE = gameBundle(
+    "action",
+    "Action",
+    "Fast-paced combat and reflexes",
+    ["proficiency", "gamification", "skill-tree", "adaptive-difficulty", "onboarding"],
+    {
+      "proficiency": {
+        tierLabels: ["Rookie", "Fighter", "Veteran", "Elite", "Champion"],
+        dimensions: ["melee", "ranged", "agility", "defense"]
+      },
+      "adaptive-difficulty": {
+        tierLabels: ["Easy", "Normal", "Hard", "Brutal", "Nightmare"]
+      }
+    }
+  );
+  var FIGHTING_BUNDLE = gameBundle(
+    "fighting",
+    "Fighting",
+    "One-on-one combat with combos and special moves",
+    ["performance-scoring", "gamification", "adaptive-difficulty", "onboarding"],
+    {
+      "adaptive-difficulty": {
+        tierLabels: ["Easy", "Normal", "Hard", "Very Hard", "Arcade"]
+      }
+    }
+  );
+  var SHOOTER_BUNDLE = gameBundle(
+    "shooter",
+    "Shooter",
+    "Ranged combat and precision shooting",
+    ["proficiency", "performance-scoring", "gamification", "adaptive-difficulty", "onboarding"],
+    {
+      "proficiency": {
+        tierLabels: ["Recruit", "Marksman", "Sharpshooter", "Sniper", "Legend"],
+        dimensions: ["accuracy", "movement", "tactics"]
+      }
+    }
+  );
+  var SANDBOX_BUNDLE = gameBundle(
+    "sandbox",
+    "Sandbox",
+    "Open-world exploration and creativity",
+    ["proficiency", "gamification", "skill-tree", "world-lore", "onboarding"],
+    {
+      "proficiency": {
+        tierLabels: ["Novice", "Builder", "Crafter", "Artisan", "Master"],
+        dimensions: ["building", "crafting", "gathering", "survival"]
+      }
+    }
+  );
+  var CITY_BUILDING_BUNDLE = gameBundle(
+    "city-building",
+    "City Building",
+    "Urban planning and city management",
+    ["proficiency", "gamification", "adaptive-difficulty", "world-lore", "onboarding"],
+    {
+      "proficiency": {
+        tierLabels: ["Steward", "Planner", "Mayor", "Governor", "Founder"],
+        dimensions: ["economics", "infrastructure", "housing", "services"]
+      }
+    }
+  );
+  var ROGUELIKE_BUNDLE = gameBundle(
+    "roguelike",
+    "Roguelike",
+    "Procedural generation and permadeath",
+    ["proficiency", "gamification", "skill-tree", "adaptive-difficulty", "onboarding"],
+    {
+      "adaptive-difficulty": {
+        tierLabels: ["Easy", "Normal", "Hard", "Ascension", "Torment"]
+      }
+    }
+  );
   var GENRE_BUNDLES = {
     "language-learning": LANGUAGE_LEARNING_BUNDLE,
     "rpg": RPG_BUNDLE,
@@ -6941,7 +7214,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "platformer": PLATFORMER_BUNDLE,
     "adventure": ADVENTURE_BUNDLE,
     "simulation": SIMULATION_BUNDLE,
-    "educational": EDUCATIONAL_BUNDLE
+    "educational": EDUCATIONAL_BUNDLE,
+    "action": ACTION_BUNDLE,
+    "fighting": FIGHTING_BUNDLE,
+    "shooter": SHOOTER_BUNDLE,
+    "sandbox": SANDBOX_BUNDLE,
+    "city-building": CITY_BUILDING_BUNDLE,
+    "roguelike": ROGUELIKE_BUNDLE
   };
   function getGenreBundle(genreId) {
     return GENRE_BUNDLES[genreId];
@@ -11367,10 +11646,13 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         // ranged attack needs the answer; nothing else about it leaves core.
         hostInterface: ["ICombatSystem", "ITrajectoryProbe"],
         conformanceCorpus: ["mechanic-combat"],
-        // The two bundles whose GenreConfig turns combat on (`features.combat`,
+        // The bundles whose GenreConfig turns combat on (`features.combat`,
         // `combatStyle` other than `none`). An adventure or puzzle world does not
-        // consult the combat pack at all — see `module-activation.ts`.
-        genreBundles: ["rpg", "survival"]
+        // consult the combat pack at all — see `module-activation.ts`. P9a.core
+        // added the five registry genres that are about fighting and had no bundle:
+        // action and fighting (melee), shooter (ranged, which is what
+        // `ITrajectoryProbe` is for), sandbox and roguelike (hybrid).
+        genreBundles: ["rpg", "survival", "action", "fighting", "shooter", "sandbox", "roguelike"]
       }
     },
     {
@@ -11452,8 +11734,11 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         conformanceCorpus: ["mechanic-skill"],
         // Skill CHECKS, which is a different thing from the language-learning
         // proficiency stack: `educational` and `language-learning` deliberately do
-        // not select this module even though both track proficiency.
-        genreBundles: ["rpg", "survival"]
+        // not select this module even though both track proficiency. P9a.core:
+        // the four bundleless genres whose registry entry switches `features.skills`
+        // on and grows a fighter — action, shooter, sandbox, roguelike. Fighting
+        // switches skills off (a bout is the character it starts with).
+        genreBundles: ["rpg", "survival", "action", "shooter", "sandbox", "roguelike"]
       }
     },
     {
@@ -11517,8 +11802,11 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         // graph, and the run and the jump are the host's `ILocomotionHost`. It
         // needs no other module's pack — its `energy/3` is the always-active
         // `gameplayState` vocabulary — which is why it can be selected without
-        // `map` (whose jurisdiction clause needs `agentAi`'s `norm/2`).
-        genreBundles: ["rpg", "survival", "adventure", "platformer"]
+        // `map` (whose jurisdiction clause needs `agentAi`'s `norm/2`). P9a.core:
+        // action, shooter, sandbox and roguelike move a body through a world whose
+        // regions it may or may not reach. Fighting is one arena with nothing to
+        // reach, and city-building moves no body at all.
+        genreBundles: ["rpg", "survival", "adventure", "platformer", "action", "shooter", "sandbox", "roguelike"]
       }
     },
     {
@@ -11611,7 +11899,10 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         // the same split `conformance/combat/` and `conformance/skills/` make.
         // `npm run items-corpus` regenerates it.
         conformanceCorpus: ["mechanic-equipment"],
-        genreBundles: ["rpg", "survival"]
+        // The bundles whose registry entry carries an inventory to equip from
+        // (`features.inventory`) and a fight to equip for. P9a.core added action,
+        // shooter, sandbox and roguelike; fighting has no inventory.
+        genreBundles: ["rpg", "survival", "action", "shooter", "sandbox", "roguelike"]
       }
     },
     {
@@ -11667,8 +11958,11 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         // content, and a life simulation is nothing else. A puzzle or strategy
         // world moves pieces the player commands, and a language-learning or
         // educational world's NPCs are conversation partners driven by the
-        // dialogue stack rather than by utility over a world model.
-        genreBundles: ["rpg", "survival", "adventure", "simulation"]
+        // dialogue stack rather than by utility over a world model. P9a.core:
+        // action, shooter and roguelike enemies decide for themselves, and a
+        // sandbox's wildlife and inhabitants do too. A fighting game's one opponent
+        // is a combat roster entry, and a city-building world is strategy's board.
+        genreBundles: ["rpg", "survival", "adventure", "simulation", "action", "shooter", "sandbox", "roguelike"]
       }
     },
     {
@@ -11994,8 +12288,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         hostInterface: ["IAgentActionHost"],
         conformanceCorpus: ["mechanic-crafting"],
         // Making things is what an RPG, a survival game and a town simulation all
-        // do. A puzzle or language-learning world's bread simply exists.
-        genreBundles: ["rpg", "survival", "simulation"]
+        // do. A puzzle or language-learning world's bread simply exists. P9a.core:
+        // sandbox, whose registry entry switches `features.crafting` on.
+        genreBundles: ["rpg", "survival", "simulation", "sandbox"]
       }
     },
     {
@@ -12019,7 +12314,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         conformanceCorpus: ["mechanic-farming"],
         // Fields are a survival mechanic and a simulation's subject. An RPG has
         // farms as scenery and nothing in it turns on whether the barley came up.
-        genreBundles: ["survival", "simulation"]
+        // P9a.core: sandbox, whose `features.resources` is survival's.
+        genreBundles: ["survival", "simulation", "sandbox"]
       }
     },
     {
@@ -12043,7 +12339,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         // the seeded draw is not expressible as a rule at all
         // (`docs/native-production.md` §6, divergence P-1).
         conformanceCorpus: ["mechanic-fishing"],
-        genreBundles: ["survival", "simulation"]
+        // P9a.core: sandbox, with farming, for the same `features.resources`.
+        genreBundles: ["survival", "simulation", "sandbox"]
       }
     },
     {
@@ -12065,7 +12362,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         // A mine is an RPG's dungeon with a purpose, a survival game's iron and a
         // simulation's reason for a town to be where it is — `vein_of_settlement/2`
         // is the fact a settlement whose seam has run out is legible from.
-        genreBundles: ["rpg", "survival", "simulation"]
+        // P9a.core: a sandbox's blocks come out of the ground.
+        genreBundles: ["rpg", "survival", "simulation", "sandbox"]
       }
     },
     {
@@ -12205,7 +12503,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         // are the host's presentation of values the director returns.
         hostInterface: ["IAgentActionHost"],
         conformanceCorpus: ["mechanic-strategy"],
-        genreBundles: ["strategy"]
+        // P9a.core: city-building is the same board seen from above — stockpiles,
+        // holdings and workers (`features.building`, `features.resources`), no combat.
+        genreBundles: ["strategy", "city-building"]
       }
     }
   ];
@@ -12259,8 +12559,21 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     const wanted = new Set(moduleIds);
     return build(genreId, genreId in GENRE_BUNDLES, INSIMUL_MODULES.filter((m) => wanted.has(m.id)).map(describe));
   }
+  var MECHANIC_IDS = new Set(INSIMUL_MODULES.map((m) => m.id));
+  function isMechanicModuleId(id) {
+    return typeof id === "string" && MECHANIC_IDS.has(id);
+  }
+  function resolveWorldActivation(genreId, enabledModules) {
+    const list = Array.isArray(enabledModules) ? enabledModules : [];
+    const unknownModules = [...new Set(list.filter((id) => !isMechanicModuleId(id)).map((id) => String(id)))];
+    const selected = list.filter(isMechanicModuleId);
+    if (selected.length > 0) {
+      return Object.freeze({ ...resolveModuleSet(genreId, selected), source: "enabledModules", unknownModules: Object.freeze(unknownModules) });
+    }
+    return Object.freeze({ ...resolveActiveModules(genreId), source: "genre", unknownModules: Object.freeze(unknownModules) });
+  }
   function activeModulesForWorld(ir) {
-    return resolveActiveModules(ir.meta.genreConfig.id);
+    return resolveWorldActivation(ir.meta.genreConfig.id, ir.meta.enabledModules);
   }
   var MODULE_ACTIVATION_TABLE = Object.freeze(
     Object.fromEntries(Object.keys(GENRE_BUNDLES).map((id) => [id, resolveActiveModules(id)]))
@@ -12314,12 +12627,82 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     const key = value.trim().toLowerCase().replace(/[\s-]+/g, "_");
     return CAMERA_MODES.includes(key) ? key : null;
   }
+  var SHORT_CAMERA_MODES = Object.freeze({
+    first: "first_person",
+    third: "third_person"
+  });
+  function cameraModeOf(value) {
+    const full = normalizeCameraMode(value);
+    if (full) return full;
+    if (typeof value !== "string") return null;
+    const key = value.trim().toLowerCase();
+    return Object.prototype.hasOwnProperty.call(SHORT_CAMERA_MODES, key) ? SHORT_CAMERA_MODES[key] : null;
+  }
+  function decideCameraMode(input) {
+    const notes = [];
+    const worldPerspective = typeof input.worldPerspective === "string" ? input.worldPerspective : null;
+    const worldPlayerCamera = typeof input.worldPlayerCamera === "string" ? input.worldPlayerCamera : null;
+    const fromConfig = normalizeCameraMode(input.configMode);
+    let mode = fromConfig ?? GENRE_REGISTRY[DEFAULT_GENRE_ID].cameraMode;
+    if (!fromConfig) {
+      notes.push({
+        code: "config-camera-invalid",
+        detail: `genreConfig.cameraMode '${String(input.configMode)}' names no camera mode; '${mode}' (the '${DEFAULT_GENRE_ID}' camera) is used`
+      });
+    }
+    let source = "genreConfig.cameraMode";
+    const perspective = normalizeCameraMode(worldPerspective);
+    const playerCamera = cameraModeOf(worldPlayerCamera);
+    const stated = (v) => v !== null && v.trim() !== "";
+    if (input.policy === "world-default") {
+      if (perspective) {
+        mode = perspective;
+        source = "meta.cameraPerspective";
+        if (playerCamera && playerCamera !== perspective) {
+          notes.push({
+            code: "world-player-camera-overridden",
+            detail: `meta.cameraPerspective '${worldPerspective}' wins over player.camera '${worldPlayerCamera}'`
+          });
+        }
+      } else {
+        if (stated(worldPerspective)) {
+          notes.push({
+            code: "world-perspective-ignored",
+            detail: `meta.cameraPerspective '${worldPerspective}' names no camera mode; genreConfig.cameraMode '${mode}' stands`
+          });
+        }
+        if (playerCamera) {
+          mode = playerCamera;
+          source = "player.camera";
+        } else if (stated(worldPlayerCamera)) {
+          notes.push({
+            code: "world-player-camera-ignored",
+            detail: `player.camera '${worldPlayerCamera}' names no camera mode; '${mode}' stands`
+          });
+        }
+      }
+    } else {
+      if (perspective && perspective !== mode) {
+        notes.push({
+          code: "world-perspective-unused",
+          detail: `the recipe decides the camera ('${mode}'); the world's '${worldPerspective}' is only a default`
+        });
+      }
+      if (playerCamera && playerCamera !== mode) {
+        notes.push({
+          code: "world-player-camera-unused",
+          detail: `the recipe decides the camera ('${mode}'); the world's player.camera '${worldPlayerCamera}' is only a default`
+        });
+      }
+    }
+    return { mode, source, notes };
+  }
   function bundleFor(genreId) {
     const bundle = genreId === null ? void 0 : getGenreBundle(genreId);
     return bundle ? { id: bundle.id, featureModules: [...bundle.defaultModules] } : { id: null, featureModules: [] };
   }
-  function activationFor(genreId) {
-    const set = resolveActiveModules(genreId);
+  function activationFor(genreId, enabledModules) {
+    const set = resolveWorldActivation(genreId, enabledModules);
     return {
       genre: set.genre,
       known: set.known,
@@ -12493,15 +12876,15 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     }
     return { binding: bound ?? stated, bound: bound !== void 0 };
   }
-  function worldConfig(world) {
-    const g = world?.meta?.genreConfig;
+  function worldConfig(world2) {
+    const g = world2?.meta?.genreConfig;
     return g !== null && typeof g === "object" && isGenreId(g.id) ? clone(g) : null;
   }
   function resolveGameGenre(request = {}) {
     const notes = [];
-    const world = request.world ?? null;
-    const own = worldConfig(world);
-    const rawPerspective = world?.meta?.cameraPerspective;
+    const world2 = request.world ?? null;
+    const own = worldConfig(world2);
+    const rawPerspective = world2?.meta?.cameraPerspective;
     const worldPerspective = typeof rawPerspective === "string" ? rawPerspective : null;
     let config;
     let configSource;
@@ -12529,7 +12912,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         config = own;
         configSource = "world";
       } else {
-        const r = resolveGenre(world?.meta?.genreConfig?.id);
+        const r = resolveGenre(world2?.meta?.genreConfig?.id);
         config = r.config;
         configSource = "registry-fallback";
         fallback = r.fallback;
@@ -12547,33 +12930,40 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         detail: `the world's genre '${config.id}' is not in the registry: its own settings are kept, and it activates no bundle and no mechanic module`
       });
     }
-    const fromConfig = normalizeCameraMode(config.cameraMode);
-    let mode = fromConfig ?? GENRE_REGISTRY[DEFAULT_GENRE_ID].cameraMode;
-    if (!fromConfig) {
-      notes.push({
-        code: "config-camera-invalid",
-        detail: `genreConfig.cameraMode '${String(config.cameraMode)}' names no camera mode; '${mode}' (the '${DEFAULT_GENRE_ID}' camera) is used`
-      });
-    }
-    let source = "genreConfig.cameraMode";
-    const perspective = normalizeCameraMode(worldPerspective);
-    if (policy2 === "world-default") {
-      if (perspective) {
-        mode = perspective;
-        source = "meta.cameraPerspective";
-      } else if (worldPerspective !== null && worldPerspective.trim() !== "") {
+    const rawPlayerCamera = world2?.player?.camera;
+    const decided = decideCameraMode({
+      configMode: config.cameraMode,
+      policy: policy2,
+      worldPerspective,
+      worldPlayerCamera: typeof rawPlayerCamera === "string" ? rawPlayerCamera : null
+    });
+    notes.push(...decided.notes);
+    const { mode, source } = decided;
+    config.cameraMode = mode;
+    const rawModules = world2?.meta?.enabledModules;
+    const listed = Array.isArray(rawModules) ? rawModules : [];
+    const worldsGame = configSource !== "recipe";
+    const activation = activationFor(declared, worldsGame ? listed : null);
+    if (listed.length > 0) {
+      const mechanic = listed.filter(isMechanicModuleId);
+      const shown = listed.map((id) => String(id)).join(", ");
+      if (!worldsGame) {
         notes.push({
-          code: "world-perspective-ignored",
-          detail: `meta.cameraPerspective '${worldPerspective}' names no camera mode; genreConfig.cameraMode '${mode}' stands`
+          code: "world-modules-unused",
+          detail: `recipe '${recipeOut?.id}' replaces the world's settings, so the world's enabledModules (${shown}) is not used: the recipe's genre decides the modules`
+        });
+      } else if (mechanic.length > 0) {
+        notes.push({
+          code: "world-modules-selected",
+          detail: `the world's enabledModules selects the modules (${activation.modules.join(", ")}) in place of its genre's bundle`
+        });
+      } else {
+        notes.push({
+          code: "world-modules-not-mechanic",
+          detail: `the world's enabledModules (${shown}) names no mechanic module (feature-module ids select none), so its genre decides the modules`
         });
       }
-    } else if (perspective && perspective !== mode) {
-      notes.push({
-        code: "world-perspective-unused",
-        detail: `the recipe decides the camera ('${mode}'); the world's '${worldPerspective}' is only a default`
-      });
     }
-    config.cameraMode = mode;
     return {
       recipe: recipeOut,
       genre: { id: config.id, known, fallback },
@@ -12581,10 +12971,9156 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       config,
       camera: { mode, policy: policy2, source, worldPerspective },
       bundle: known ? bundleFor(config.id) : { id: null, featureModules: [] },
-      activation: activationFor(declared),
+      activation,
       notes
     };
   }
+
+  // @insimul/core/src/ui/compass-model.ts
+  var COMPASS_POINTS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  var RAD_TO_DEG = 180 / Math.PI;
+  function wrapDegrees(degrees) {
+    let r = degrees % 360;
+    if (r < 0) r += 360;
+    if (r >= 360 || r === 0) r = 0;
+    return r;
+  }
+  function compassCardinal(degrees) {
+    return COMPASS_POINTS[Math.round(wrapDegrees(degrees) / 45) % 8];
+  }
+
+  // @insimul/core/src/ui/genre-hud-model.ts
+  var GENRE_HUD_LAYOUTS = Object.freeze([
+    "action_rpg",
+    "fps",
+    "rts",
+    "platformer",
+    "puzzle",
+    "minimal",
+    "fighting"
+  ]);
+  var num = (n, fallback) => typeof n === "number" && Number.isFinite(n) ? n : fallback;
+  var clamp012 = (n, fallback) => Math.max(0, Math.min(1, num(n, fallback)));
+  function formatClock(seconds) {
+    const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
+    const minutes = Math.floor(safe / 60);
+    const secs = Math.floor(safe % 60);
+    return `${minutes}:${secs.toString().padStart(2, "0")}`;
+  }
+  function genreHudConfigOf(config) {
+    const fighting2 = config.cameraMode === "fighting" || config.combatStyle === "fighting";
+    return {
+      layout: fighting2 ? "fighting" : config.uiLayout,
+      showMinimap: config.showMinimap,
+      showHealthBar: config.showHealthBar,
+      showStaminaBar: config.showStaminaBar,
+      showAmmoCounter: config.showAmmoCounter,
+      showCompass: config.showCompass
+    };
+  }
+  function genreHudChrome(config) {
+    return {
+      minimap: config.showMinimap === true,
+      healthBar: config.showHealthBar === true,
+      staminaBar: config.showStaminaBar === true,
+      ammoCounter: config.showAmmoCounter === true,
+      compass: config.showCompass === true
+    };
+  }
+  function isGenreHudLayout(value) {
+    return typeof value === "string" && GENRE_HUD_LAYOUTS.includes(value);
+  }
+  function genreHudView(config, state = {}) {
+    return { layout: config.layout, chrome: genreHudChrome(config), elements: elementsFor(config, state) };
+  }
+  function elementsFor(config, s) {
+    switch (config.layout) {
+      case "fps":
+        return fps(config, s);
+      case "rts":
+        return rts(s);
+      case "platformer":
+        return [
+          { id: "lives", kind: "text", label: "Lives", text: `\u2764\uFE0F x ${num(s.lives, 0)}`, tone: "danger" },
+          {
+            id: "collectibles",
+            kind: "text",
+            label: "Collected",
+            text: `\u2B50 ${num(s.collectibles?.current, 0)} / ${num(s.collectibles?.total, 0)}`,
+            tone: "quest"
+          },
+          timer(s)
+        ];
+      case "puzzle":
+        return [
+          timer(s),
+          { id: "moves", kind: "text", label: "Moves", text: `Moves: ${num(s.moves, 0)}`, tone: "text_secondary" },
+          { id: "hint", kind: "action", label: "Hint", text: "\u{1F4A1} Hint", tone: "accent" }
+        ];
+      case "action_rpg":
+        return config.showStaminaBar ? [{ id: "stamina", kind: "meter", label: "Stamina", text: "", fraction: clamp012(s.stamina, 1), tone: "success" }] : [];
+      case "fighting":
+        return fighting(s);
+      case "minimal":
+      default:
+        return [];
+    }
+  }
+  function timer(s) {
+    return { id: "timer", kind: "text", label: "Time", text: `\u23F1\uFE0F ${formatClock(num(s.timerSeconds, 0))}`, tone: "text_primary" };
+  }
+  function fps(config, s) {
+    const out = [{ id: "crosshair", kind: "reticle", text: "+", tone: "text_primary" }];
+    if (config.showAmmoCounter !== false) {
+      const current = num(s.ammo?.current, 0);
+      const magazine = num(s.ammo?.magazine, 0);
+      const reloading = s.ammo?.reloading === true;
+      out.push({
+        id: "ammo",
+        kind: "text",
+        label: "Ammo",
+        text: reloading ? "RELOADING..." : `${current} / ${num(s.ammo?.total, 0)}`,
+        // Amber while reloading, red on the last quarter magazine.
+        tone: reloading ? "warning" : current <= Math.floor(magazine * 0.25) ? "danger" : "text_primary"
+      });
+      out.push({ id: "weapon", kind: "text", label: "Weapon", text: s.weaponName ?? "", tone: "text_secondary" });
+    }
+    if (config.showCompass !== false) {
+      const heading = (num(s.heading, 0) % 360 + 360) % 360;
+      const shown = Math.round(heading) % 360;
+      out.push({ id: "compass", kind: "text", label: "Compass", text: `Heading: ${shown}\xB0 ${compassCardinal(heading)}`, tone: "text_primary" });
+    }
+    return out;
+  }
+  function rts(s) {
+    const out = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const r of s.resources ?? []) {
+      if (seen.has(r.id)) {
+        const i = out.findIndex((e) => e.id === `resource_${r.id}`);
+        out[i] = { ...out[i], label: r.label, text: r.value };
+        continue;
+      }
+      seen.add(r.id);
+      out.push({ id: `resource_${r.id}`, kind: "text", label: r.label, text: r.value, tone: "warning" });
+    }
+    if (typeof s.unitInfo === "string" && s.unitInfo.length > 0) {
+      out.push({ id: "unit_info", kind: "text", label: "Selection", text: s.unitInfo, tone: "text_primary" });
+    }
+    out.push({
+      id: "build_menu",
+      kind: "action",
+      label: "Build",
+      text: s.buildMenuOpen === true ? "Close build menu" : "Open build menu",
+      tone: "accent"
+    });
+    return out;
+  }
+  function fighterHealthTone(health) {
+    if (health > 0.5) return "success";
+    if (health > 0.25) return "warning";
+    return "danger";
+  }
+  function fighting(s) {
+    const out = [1, 2].map((player) => {
+      const f = s.fighters?.[player - 1];
+      const health = clamp012(f?.health, 1);
+      return {
+        id: `fighter_${player}`,
+        kind: "meter",
+        label: f?.name ?? `Player ${player}`,
+        text: "",
+        fraction: health,
+        tone: fighterHealthTone(health)
+      };
+    });
+    const special = Math.max(0, Math.min(100, num(s.specialMeter, 0)));
+    const clock = num(s.fightTimer, 99);
+    out.push(
+      { id: "round", kind: "text", label: "Round", text: `Round ${num(s.round, 1)}`, tone: "text_primary" },
+      {
+        id: "fight_timer",
+        kind: "text",
+        label: "Time",
+        text: `${Math.max(0, Math.ceil(clock))}`,
+        tone: clock <= 10 ? "danger" : "text_primary"
+      },
+      { id: "special", kind: "meter", label: "Special", text: "", fraction: special / 100, tone: special >= 100 ? "accent_hover" : "accent" }
+    );
+    const combo = s.combo;
+    if (combo && num(combo.hits, 0) > 1) {
+      out.push({ id: "combo", kind: "text", label: "Combo", text: `${combo.hits} HIT COMBO!
+${num(combo.damage, 0)} DMG`, tone: "accent" });
+    }
+    return out;
+  }
+
+  // @insimul/core/src/ui/genre-hud-corpus.ts
+  var GENRE_HUD_OPS = Object.freeze(["config", "view", "genre_view"]);
+  var json = (v) => JSON.parse(JSON.stringify(v));
+  var refusal = (code, field) => ({ ok: false, refusal: { code, field } });
+  function genreConfig(genre) {
+    return typeof genre === "string" && Object.prototype.hasOwnProperty.call(GENRE_REGISTRY, genre) ? GENRE_REGISTRY[genre] : null;
+  }
+  function runGenreHudOp(op, input) {
+    const state = input.state ?? {};
+    switch (op) {
+      case "config": {
+        const g = genreConfig(input.genre);
+        return g ? json({ ok: true, value: genreHudConfigOf(g) }) : refusal("unknown_genre", "genre");
+      }
+      case "view": {
+        const config = input.config;
+        if (!config || !isGenreHudLayout(config.layout)) return refusal("unknown_layout", "config.layout");
+        return json({ ok: true, value: genreHudView(config, state) });
+      }
+      case "genre_view": {
+        const g = genreConfig(input.genre);
+        return g ? json({ ok: true, value: genreHudView(genreHudConfigOf(g), state) }) : refusal("unknown_genre", "genre");
+      }
+      default:
+        throw new Error(`genre-hud corpus: unknown op '${op}'`);
+    }
+  }
+  var FPS = { layout: "fps", showMinimap: false, showHealthBar: true, showStaminaBar: false, showAmmoCounter: true, showCompass: true };
+  var RTS = { layout: "rts", showMinimap: true, showHealthBar: false, showStaminaBar: false, showAmmoCounter: false, showCompass: false };
+  var ACTION = { layout: "action_rpg", showMinimap: true, showHealthBar: true, showStaminaBar: true, showAmmoCounter: false, showCompass: true };
+  var ammo = (current, magazine, total, reloading = false) => ({ ammo: { current, magazine, total, reloading } });
+  var INPUTS = [
+    ...GENRE_IDS.map((genre) => ({ name: `config: ${genre}`, op: "config", input: { genre } })),
+    { name: "config: an unknown genre is refused", op: "config", input: { genre: "mystery" } },
+    ...GENRE_IDS.map((genre) => ({ name: `genre_view: ${genre} at its start values`, op: "genre_view", input: { genre } })),
+    { name: "genre_view: an unknown genre is refused", op: "genre_view", input: { genre: "RPG" } },
+    // FPS
+    { name: "fps: ammo above the last quarter is plain", op: "view", input: { config: FPS, state: { ...ammo(3, 8, 40), weaponName: "Carbine" } } },
+    { name: "fps: ammo on the last quarter (floor of magazine / 4) is danger", op: "view", input: { config: FPS, state: ammo(2, 8, 40) } },
+    { name: "fps: an empty magazine of 0 is danger", op: "view", input: { config: FPS, state: ammo(0, 0, 0) } },
+    { name: "fps: reloading says so, amber", op: "view", input: { config: FPS, state: ammo(0, 8, 40, true) } },
+    { name: "fps: no ammo counter hides ammo and weapon", op: "view", input: { config: { ...FPS, showAmmoCounter: false }, state: ammo(3, 8, 40) } },
+    { name: "fps: an absent ammo flag shows them (Babylon)", op: "view", input: { config: { layout: "fps" }, state: ammo(3, 8, 40) } },
+    { name: "fps: no compass hides the heading", op: "view", input: { config: { ...FPS, showCompass: false } } },
+    { name: "fps: heading 90 is E", op: "view", input: { config: FPS, state: { heading: 90 } } },
+    { name: "fps: heading 450 wraps to 90 E", op: "view", input: { config: FPS, state: { heading: 450 } } },
+    { name: "fps: heading -90 wraps to 270 W", op: "view", input: { config: FPS, state: { heading: -90 } } },
+    { name: "fps: heading 359.6 prints 0 N", op: "view", input: { config: FPS, state: { heading: 359.6 } } },
+    { name: "fps: heading 22.5 rounds clockwise to NE", op: "view", input: { config: FPS, state: { heading: 22.5 } } },
+    // RTS
+    {
+      name: "rts: the resource row in order, the selection, the build button",
+      op: "view",
+      input: { config: RTS, state: { resources: [{ id: "gold", label: "Gold", value: "120" }, { id: "wood", label: "Wood", value: "40" }], unitInfo: "Farmer (3)" } }
+    },
+    {
+      name: "rts: a resource set twice keeps its first place and its last value",
+      op: "view",
+      input: { config: RTS, state: { resources: [{ id: "gold", label: "Gold", value: "1" }, { id: "wood", label: "Wood", value: "2" }, { id: "gold", label: "Gold", value: "9" }] } }
+    },
+    { name: "rts: an empty selection is none; the build menu open", op: "view", input: { config: RTS, state: { unitInfo: "", buildMenuOpen: true } } },
+    // Platformer, puzzle
+    { name: "platformer: lives, collectibles, 125 s is 2:05", op: "view", input: { config: { layout: "platformer" }, state: { lives: 3, collectibles: { current: 2, total: 5 }, timerSeconds: 125.9 } } },
+    { name: "platformer: a negative timer is 0:00", op: "view", input: { config: { layout: "platformer" }, state: { timerSeconds: -4 } } },
+    { name: "puzzle: timer, moves and the hint", op: "view", input: { config: { layout: "puzzle" }, state: { timerSeconds: 61, moves: 14 } } },
+    // Action RPG
+    { name: "action_rpg: the stamina meter at its level", op: "view", input: { config: ACTION, state: { stamina: 0.4 } } },
+    { name: "action_rpg: stamina above 1 is full", op: "view", input: { config: ACTION, state: { stamina: 1.7 } } },
+    { name: "action_rpg: no stamina bar, no elements", op: "view", input: { config: { ...ACTION, showStaminaBar: false }, state: { stamina: 0.4 } } },
+    // Fighting
+    { name: "fighting: start values", op: "view", input: { config: { layout: "fighting" } } },
+    {
+      name: "fighting: named fighters, health 0.6 success and 0.5 warning",
+      op: "view",
+      input: { config: { layout: "fighting" }, state: { fighters: [{ name: "Ryn", health: 0.6 }, { name: "Oda", health: 0.5 }] } }
+    },
+    { name: "fighting: health 0.26 is warning, 0.25 danger", op: "view", input: { config: { layout: "fighting" }, state: { fighters: [{ health: 0.26 }, { health: 0.25 }] } } },
+    { name: "fighting: a full special meter, round 3, 10.2 s left", op: "view", input: { config: { layout: "fighting" }, state: { specialMeter: 140, round: 3, fightTimer: 10.2 } } },
+    { name: "fighting: 10 s left is danger", op: "view", input: { config: { layout: "fighting" }, state: { fightTimer: 10 } } },
+    { name: "fighting: a one-hit combo is no combo", op: "view", input: { config: { layout: "fighting" }, state: { combo: { hits: 1, damage: 12 } } } },
+    { name: "fighting: a three-hit combo", op: "view", input: { config: { layout: "fighting" }, state: { combo: { hits: 3, damage: 47 } } } },
+    // Minimal, chrome, refusal
+    { name: "minimal: no elements; chrome from the flags", op: "view", input: { config: { layout: "minimal", showMinimap: true, showHealthBar: true, showStaminaBar: false, showAmmoCounter: false, showCompass: true } } },
+    { name: "chrome: an absent flag is not shown", op: "view", input: { config: { layout: "minimal" } } },
+    { name: "view: a layout the model does not draw is refused", op: "view", input: { config: { layout: "vr" } } }
+  ];
+
+  // @insimul/core/src/ui/rules-panel-model.ts
+  var DEFAULT_RULE_PRIORITY = 5;
+  var RULES_PANEL_EMPTY_TEXT = "No active rules in this world";
+  var RULE_TYPE_TONES = Object.freeze({
+    trigger: "danger",
+    volition: "accent",
+    trait: "warning",
+    default: "success",
+    pattern: "quest"
+  });
+  var priorityOf = (r) => typeof r.priority === "number" && Number.isFinite(r.priority) ? r.priority : DEFAULT_RULE_PRIORITY;
+  var plural = (n, word) => `${n} ${word}${n !== 1 ? "s" : ""}`;
+  function ruleCard(rule2) {
+    const priority = priorityOf(rule2);
+    const type = typeof rule2.ruleType === "string" ? rule2.ruleType : "";
+    const tags = (rule2.tags ?? []).slice(0, 3);
+    const parts = [];
+    if (rule2.category) parts.push(`\u{1F4C2} ${rule2.category}`);
+    if (tags.length > 0) parts.push(`\u{1F3F7}\uFE0F ${tags.join(", ")}`);
+    const conditions = rule2.conditions?.length ?? 0;
+    const effects = rule2.effects?.length ?? 0;
+    return {
+      id: rule2.id,
+      name: rule2.name,
+      description: rule2.description ? rule2.description : null,
+      typeLabel: type.toUpperCase(),
+      tone: Object.prototype.hasOwnProperty.call(RULE_TYPE_TONES, type) ? RULE_TYPE_TONES[type] : "text_primary",
+      isBase: rule2.isBase === true,
+      priority,
+      priorityBadge: priority === DEFAULT_RULE_PRIORITY ? null : { text: `P${priority}`, tone: priority > DEFAULT_RULE_PRIORITY ? "danger" : "accent" },
+      tagLine: parts.join(" \u2022 "),
+      summary: conditions > 0 || effects > 0 ? `${plural(conditions, "condition")} \u2192 ${plural(effects, "effect")}` : ""
+    };
+  }
+  function activeRules(worldRules, baseRules = []) {
+    return [...worldRules, ...baseRules].filter((r) => r.isActive !== false).sort((a, b) => priorityOf(b) - priorityOf(a));
+  }
+  function rulesPanelView(worldRules, baseRules = []) {
+    const cards = activeRules(worldRules, baseRules).map(ruleCard);
+    return { cards, emptyText: cards.length === 0 ? RULES_PANEL_EMPTY_TEXT : null };
+  }
+  function rulesByCategory(rules, category) {
+    return rules.filter((r) => r.isActive !== false && r.category === category);
+  }
+  function rulesByType(rules, ruleType) {
+    return rules.filter((r) => r.isActive !== false && r.ruleType === ruleType);
+  }
+  function isRuleActive(rules, ruleId) {
+    const rule2 = rules.find((r) => r.id === ruleId);
+    return rule2 ? rule2.isActive !== false : false;
+  }
+
+  // @insimul/core/src/ui/rules-panel-corpus.ts
+  var RULES_PANEL_OPS = Object.freeze(["panel", "card", "byCategory", "byType", "isActive"]);
+  var json2 = (v) => JSON.parse(JSON.stringify(v));
+  var rulesOf = (v) => Array.isArray(v) ? v : [];
+  function runRulesPanelOp(op, input) {
+    switch (op) {
+      case "panel":
+        return json2(rulesPanelView(rulesOf(input.worldRules), rulesOf(input.baseRules)));
+      case "card":
+        return json2(ruleCard(input.rule));
+      case "byCategory":
+        return rulesByCategory(rulesOf(input.rules), String(input.category)).map((r) => r.id);
+      case "byType":
+        return rulesByType(rulesOf(input.rules), String(input.ruleType)).map((r) => r.id);
+      case "isActive":
+        return isRuleActive(rulesOf(input.rules), String(input.ruleId));
+      default:
+        throw new Error(`rules-panel corpus: unknown op '${op}'`);
+    }
+  }
+  var rule = (id, extra = {}) => ({
+    id,
+    name: id.replace(/_/g, " "),
+    description: null,
+    ruleType: "trigger",
+    category: null,
+    priority: 5,
+    tags: [],
+    isActive: true,
+    isBase: false,
+    ...extra
+  });
+  var WORLD = [
+    rule("no_theft", { ruleType: "trigger", category: "legal", priority: 8, tags: ["law", "property", "crime", "extra"], description: "Stealing is punished" }),
+    rule("greet_elders", { ruleType: "volition", category: "social", priority: 5 }),
+    rule("night_curfew", { ruleType: "pattern", category: "legal", priority: 3, isActive: false }),
+    rule("kind_hearted", { ruleType: "trait", priority: 0 })
+  ];
+  var BASE = [rule("base_hunger", { ruleType: "default", isBase: true, priority: 8 }), rule("base_custom", { ruleType: "ritual", isBase: true })];
+  var INPUTS2 = [
+    { name: "panel: world then base, highest priority first, inactive left out, ties in input order", op: "panel", input: { worldRules: WORLD, baseRules: BASE } },
+    { name: "panel: no rules is the empty text", op: "panel", input: { worldRules: [] } },
+    { name: "panel: only inactive rules is the empty text", op: "panel", input: { worldRules: [WORLD[2]] } },
+    { name: "card: badge, tag line of the first three tags, priority above 5 is danger", op: "card", input: { rule: WORLD[0] } },
+    { name: "card: the default priority has no badge; no tags, so the category alone", op: "card", input: { rule: WORLD[1] } },
+    { name: "card: priority 0 is 0, below 5 is accent", op: "card", input: { rule: WORLD[3] } },
+    { name: "card: a missing priority is the default", op: "card", input: { rule: { id: "bare", name: "Bare" } } },
+    { name: "card: a type outside the five is plain", op: "card", input: { rule: BASE[1] } },
+    { name: "card: category only", op: "card", input: { rule: rule("c", { category: "social" }) } },
+    { name: "card: tags only", op: "card", input: { rule: rule("t", { tags: ["a"] }) } },
+    { name: "card: conditions and effects counted, singular and plural", op: "card", input: { rule: rule("ce", { conditions: [{}, {}], effects: [{}] }) } },
+    { name: "card: effects only still counts conditions", op: "card", input: { rule: rule("e", { effects: [{}] }) } },
+    { name: "byCategory: active rules of a category", op: "byCategory", input: { rules: WORLD, category: "legal" } },
+    { name: "byType: active rules of a type, a switched-off one left out", op: "byType", input: { rules: [...WORLD, ...BASE, rule("old_grudge", { ruleType: "trait", isActive: false })], ruleType: "trait" } },
+    { name: "isActive: an active rule", op: "isActive", input: { rules: WORLD, ruleId: "no_theft" } },
+    { name: "isActive: a switched-off rule", op: "isActive", input: { rules: WORLD, ruleId: "night_curfew" } },
+    { name: "isActive: an unknown rule", op: "isActive", input: { rules: WORLD, ruleId: "nope" } }
+  ];
+
+  // @insimul/core/src/skills/skills.ts
+  var SKILL_EFFECT_KINDS = Object.freeze(["unlocks", "modifies", "permits"]);
+  var DEFAULT_SKILL_TUNING = Object.freeze({
+    pointsPerLevel: 1,
+    defaultNodeCost: 1,
+    defaultMaxLevel: 10,
+    // Index = level. 0 and 1 are unused: nobody buys level 0, and a learned skill
+    // starts at 1.
+    levelXp: Object.freeze([0, 0, 100, 250, 450, 700, 1e3, 1350, 1750, 2200, 2700]),
+    advanceAction: "train_skill",
+    unlockAction: "unlock_skill_node"
+  });
+  function skillTuningFromIR(ir) {
+    const d = DEFAULT_SKILL_TUNING;
+    if (!ir) return { ...d };
+    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    return {
+      pointsPerLevel: num5(ir.pointsPerLevel, d.pointsPerLevel),
+      defaultNodeCost: num5(ir.defaultNodeCost, d.defaultNodeCost),
+      defaultMaxLevel: num5(ir.defaultMaxLevel, d.defaultMaxLevel),
+      levelXp: ir.levelXp && ir.levelXp.length > 0 ? [...ir.levelXp] : d.levelXp,
+      advanceAction: ir.advanceAction ?? d.advanceAction,
+      unlockAction: ir.unlockAction ?? d.unlockAction
+    };
+  }
+  function skillDefinitionsFromIR(ir, tuning = skillTuningFromIR(ir)) {
+    return (ir?.skills ?? []).map((skill) => definitionFromIR(skill, tuning));
+  }
+  function definitionFromIR(skill, tuning) {
+    return {
+      id: skill.id,
+      category: skill.category ?? "general",
+      maxLevel: typeof skill.maxLevel === "number" && Number.isFinite(skill.maxLevel) ? skill.maxLevel : tuning.defaultMaxLevel,
+      levelXp: skill.levelXp ? [...skill.levelXp] : void 0,
+      requires: (skill.requires ?? []).map((prereq) => ({
+        skill: prereq.skill,
+        level: prereq.level
+      }))
+    };
+  }
+  function nodeCost(node, tuning) {
+    const cost = Math.floor(node.cost ?? tuning.defaultNodeCost);
+    return Number.isFinite(cost) && cost > 0 ? cost : 0;
+  }
+  function nodeRequirements(node) {
+    const goals = /* @__PURE__ */ new Set();
+    for (const parent of node.parents) goals.add(`skill_unlocked(Actor, ${parent})`);
+    for (const goal of node.requires) goals.add(goal);
+    return [...goals].sort(compareIds);
+  }
+  function xpForLevel(skill, level, tuning) {
+    const curve = skill?.levelXp && skill.levelXp.length > 0 ? skill.levelXp : tuning.levelXp;
+    if (curve.length === 0 || level <= 0) return 0;
+    const price = level < curve.length ? curve[level] : curve[curve.length - 1];
+    const rounded = Math.floor(price);
+    return Number.isFinite(rounded) && rounded > 0 ? rounded : 0;
+  }
+  function maxLevelOf(skill, tuning) {
+    return skill?.maxLevel ?? tuning.defaultMaxLevel;
+  }
+  var SKILL_ADVANCE_REFUSALS = Object.freeze([
+    /** The world declares no such skill. Not a refusal so much as an absence. */
+    "unknown",
+    /** A `skill_requires/3` prerequisite skill is missing or too low. */
+    "prerequisite",
+    /** `skill_capped/2` — already at the world's cap. */
+    "capped",
+    /** Not enough banked `skill_xp/3` for the next level. */
+    "xp",
+    /** `permissible/3` refused it — a norm, a law, a guild that will not teach you. */
+    "forbidden"
+  ]);
+  function resolveAdvance(input) {
+    const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
+    const skill = input.skill;
+    const id = skill?.id ?? input.skillId ?? "";
+    const next = input.level + 1;
+    const price = xpForLevel(skill, next, tuning);
+    const base = {
+      actor: input.actor,
+      skill: id,
+      level: input.level,
+      next,
+      price,
+      banked: input.banked,
+      action: tuning.advanceAction
+    };
+    if (!skill) return { ...base, next: input.level, price: 0, available: false, refusal: "unknown" };
+    const unmet = skill.requires.some((prereq) => (input.levels[prereq.skill] ?? 0) < prereq.level);
+    if (unmet) return { ...base, available: false, refusal: "prerequisite" };
+    if (input.level >= maxLevelOf(skill, tuning)) {
+      return { ...base, next: input.level, available: false, refusal: "capped" };
+    }
+    if (input.banked < price) return { ...base, available: false, refusal: "xp" };
+    return { ...base, available: true };
+  }
+  var SKILL_UNLOCK_REFUSALS = Object.freeze([
+    /** No tree declares such a node. */
+    "unknown",
+    /** `skill_unlocked/2` already holds — a node is taken once. */
+    "owned",
+    /** `skill_points/3` — nothing left in the tree's pool. */
+    "points",
+    /** A `skill_node_requires/2` goal the rules layer did not satisfy. */
+    "requires",
+    /** `permissible/3` refused it — a norm, a law, a guild's own rules. */
+    "forbidden"
+  ]);
+  function resolveUnlock(input) {
+    const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
+    const node = input.node;
+    const base = {
+      actor: input.actor,
+      node: node?.id ?? input.nodeId ?? "",
+      tree: node?.tree ?? "",
+      points: input.points,
+      action: tuning.unlockAction
+    };
+    if (!node) {
+      return { ...base, cost: 0, available: false, refusal: "unknown", requires: [], conditional: false };
+    }
+    const cost = nodeCost(node, tuning);
+    const requires = nodeRequirements(node);
+    const resolution = { ...base, cost, requires, conditional: requires.length > 0 };
+    if (input.unlocked) return { ...resolution, available: false, refusal: "owned" };
+    if (input.points < cost) return { ...resolution, available: false, refusal: "points" };
+    return { ...resolution, available: true };
+  }
+  function treesFundedBy(trees, skill) {
+    return trees.filter((tree) => tree.skill === skill).map((tree) => tree.id).sort(compareIds);
+  }
+  function findNode(trees, nodeId) {
+    for (const tree of trees) {
+      for (const node of tree.nodes) if (node.id === nodeId) return { ...node, tree: tree.id };
+    }
+    return void 0;
+  }
+  function nodeDepth(tree, nodeId, seen = []) {
+    if (seen.includes(nodeId)) return 0;
+    const node = tree.nodes.find((candidate2) => candidate2.id === nodeId);
+    if (!node || node.parents.length === 0) return 0;
+    let deepest = 0;
+    for (const parent of node.parents) {
+      deepest = Math.max(deepest, 1 + nodeDepth(tree, parent, [...seen, nodeId]));
+    }
+    return deepest;
+  }
+
+  // @insimul/core/src/identity/worlds.ts
+  var PLAYTHROUGH_SEPARATOR = "#save-";
+  var ENCODED_SEPARATOR = sanitizeLocalId(`a${PLAYTHROUGH_SEPARATOR}b`).slice(1, -1);
+  function playthroughWorldId(worldMongoId, saveId) {
+    if (!saveId) throw new Error("playthroughWorldId: empty save id");
+    return {
+      kind: "world",
+      namespace: INSIMUL_NAMESPACE,
+      localId: sanitizeLocalId(`${worldMongoId}${PLAYTHROUGH_SEPARATOR}${saveId}`)
+    };
+  }
+  function worldFacts(decl) {
+    const world2 = formatIdTerm(decl.world);
+    const facts = [`world_declared(${world2}).`];
+    if (decl.role) facts.push(`world_role(${world2}, ${decl.role}).`);
+    if (decl.parent) facts.push(`world_parent(${world2}, ${formatIdTerm(decl.parent)}).`);
+    if (decl.inheritsIdentity) facts.push(`world_inherits_identity(${world2}).`);
+    return facts;
+  }
+  var WORLD_CONTEXT_FUNCTOR = "@world";
+  function worldContextTerm(world2) {
+    return `${prologAtom(WORLD_CONTEXT_FUNCTOR)}(${formatIdTerm(world2)})`;
+  }
+
+  // @insimul/core/src/prolog/prolog-fact-serializer.ts
+  var ATOM_RE2 = /^[a-z][a-zA-Z0-9_]*$/;
+  function quoteAtom(s) {
+    return `'${s.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
+  }
+  function serializeArg(arg) {
+    if (typeof arg === "number") {
+      return Number.isFinite(arg) ? String(arg) : quoteAtom(String(arg));
+    }
+    if (arg === "") return quoteAtom("");
+    if (ATOM_RE2.test(arg)) return arg;
+    return quoteAtom(arg);
+  }
+  function serializedFactToProlog(fact) {
+    const args = fact.args.map(serializeArg).join(", ");
+    return `${fact.predicate}(${args}).`;
+  }
+
+  // @insimul/core/src/stamina/stamina.ts
+  var STAMINA_THRESHOLD_NAMES = Object.freeze(["winded", "exhausted"]);
+  var DEFAULT_STAMINA_TUNING = Object.freeze({
+    maxStamina: 100,
+    recoveryRate: 5,
+    combatRecoveryRate: 0,
+    encumberedRecoveryMultiplier: 0.5,
+    windedPercent: 40,
+    exhaustedPercent: 15
+  });
+  function staminaStateOf(current, max, tuning) {
+    if (!(max > 0)) return "fresh";
+    if (current * 100 <= max * tuning.exhaustedPercent) return "exhausted";
+    if (current * 100 <= max * tuning.windedPercent) return "winded";
+    return "fresh";
+  }
+  function canAffordStamina(current, cost) {
+    return current >= cost;
+  }
+  function spendStamina(input) {
+    const { current, max, tuning } = input;
+    const cost = Math.max(0, Math.floor(input.cost));
+    const stateBefore = staminaStateOf(current, max, tuning);
+    if (!canAffordStamina(current, cost)) {
+      return {
+        affordable: false,
+        cost,
+        before: current,
+        after: current,
+        max,
+        spent: 0,
+        stateBefore,
+        state: stateBefore,
+        becameWinded: false,
+        becameExhausted: false
+      };
+    }
+    const after = Math.max(0, current - cost);
+    const state = staminaStateOf(after, max, tuning);
+    return {
+      affordable: true,
+      cost,
+      before: current,
+      after,
+      max,
+      spent: current - after,
+      stateBefore,
+      state,
+      becameWinded: state === "winded" && stateBefore === "fresh",
+      becameExhausted: state === "exhausted" && stateBefore !== "exhausted"
+    };
+  }
+  function staminaRegenRate(input) {
+    const base = Math.max(0, input.rate ?? input.tuning.recoveryRate);
+    if (input.inCombat) return Math.max(0, input.tuning.combatRecoveryRate);
+    if (input.encumbered) return Math.floor(base * input.tuning.encumberedRecoveryMultiplier);
+    return base;
+  }
+  function regenerateStamina(input) {
+    const rate = staminaRegenRate(input);
+    const ticks = Math.max(0, input.ticks);
+    const recovered = Math.max(0, Math.min(input.max - input.current, Math.floor(rate * ticks)));
+    const after = input.current + recovered;
+    return {
+      before: input.current,
+      after,
+      max: input.max,
+      rate,
+      recovered,
+      state: staminaStateOf(after, input.max, input.tuning)
+    };
+  }
+
+  // @insimul/core/src/combat/resolution.ts
+  var DEFAULT_COMBAT_TUNING = Object.freeze({
+    baseDamage: 10,
+    damageVariance: 0.2,
+    criticalChance: 0.1,
+    criticalMultiplier: 2,
+    blockReduction: 0.5,
+    dodgeChance: 0.05,
+    resistMultiplier: 0.5,
+    vulnerableMultiplier: 1.5,
+    deathAtZero: true
+  });
+  function roll(input, phase) {
+    return derivedValue(
+      input.seed,
+      input.tick,
+      input.attacker.id,
+      input.defender.id,
+      input.action.id,
+      phase
+    );
+  }
+  function roundHalfUp(value) {
+    return Math.floor(value + 0.5);
+  }
+  function has(list, value) {
+    return value !== void 0 && list !== void 0 && list.includes(value);
+  }
+  function refusal2(input, outcome, reason, spent = 0) {
+    return {
+      attackerId: input.attacker.id,
+      targetId: input.defender.id,
+      actionId: input.action.id,
+      outcome,
+      reason,
+      isCritical: false,
+      isBlocked: false,
+      isResisted: false,
+      isVulnerable: false,
+      damage: 0,
+      targetHealthBefore: input.defender.health,
+      targetHealthAfter: input.defender.health,
+      targetMaxHealth: input.defender.maxHealth,
+      incapacitated: false,
+      killed: false,
+      statusesApplied: [],
+      staminaCost: staminaCostOf(input),
+      staminaSpent: spent,
+      attackerStaminaAfter: staminaAfter(input, spent)
+    };
+  }
+  function staminaCostOf(input) {
+    return Math.max(0, Math.floor(input.action.staminaCost ?? 0));
+  }
+  function staminaAfter(input, spent) {
+    const stamina = input.attacker.stamina;
+    return stamina === void 0 ? void 0 : Math.max(0, stamina.current - spent);
+  }
+  function resolveAttack(input) {
+    const { attacker, defender, action, tuning } = input;
+    if (input.legality && !input.legality.permitted) {
+      return refusal2(input, "refused", input.legality.reason ?? "not_permitted");
+    }
+    if (!attacker.alive) return refusal2(input, "refused", "attacker_dead");
+    if (attacker.incapacitated) return refusal2(input, "refused", "attacker_incapacitated");
+    if (!defender.alive) return refusal2(input, "refused", "target_dead");
+    if (defender.incapacitated) return refusal2(input, "refused", "target_incapacitated");
+    const staminaCost = staminaCostOf(input);
+    if (staminaCost > 0 && attacker.stamina !== void 0 && !canAffordStamina(attacker.stamina.current, staminaCost)) {
+      return refusal2(input, "exhausted", "insufficient_stamina");
+    }
+    const range = action.range ?? attacker.weapon?.range;
+    if (range !== void 0 && input.separation > range) {
+      return refusal2(input, "out_of_reach", "beyond_reach");
+    }
+    if (action.delivery === "projectile" && input.lineOfFire && !input.lineOfFire.clear) {
+      return refusal2(input, "missed", "line_blocked", staminaCost);
+    }
+    const accuracy = action.accuracy ?? 1;
+    if (accuracy < 1 && roll(input, "accuracy") >= accuracy) {
+      return refusal2(input, "missed", "missed", staminaCost);
+    }
+    const dodgeChance = tuning.dodgeChance + (defender.dodgeBonus ?? 0);
+    if (dodgeChance > 0 && roll(input, "dodge") < dodgeChance) {
+      return refusal2(input, "dodged", "dodged", staminaCost);
+    }
+    const damageType = action.damageType ?? attacker.weapon?.damageType;
+    const isResisted = has(defender.resists, damageType);
+    const isVulnerable = has(defender.vulnerableTo, damageType);
+    const base = action.damage ?? attacker.weapon?.damage ?? tuning.baseDamage;
+    const swing = tuning.damageVariance * (2 * roll(input, "variance") - 1);
+    const varied = roundDeterministic(base * (1 + swing));
+    const isCritical = tuning.criticalChance > 0 && roll(input, "critical") < tuning.criticalChance;
+    const critical = roundDeterministic(isCritical ? varied * tuning.criticalMultiplier : varied);
+    let typed = critical;
+    if (isResisted) typed *= tuning.resistMultiplier;
+    if (isVulnerable) typed *= tuning.vulnerableMultiplier;
+    typed = roundDeterministic(typed);
+    const isBlocked = defender.blocking === true && tuning.blockReduction > 0;
+    const blocked = roundDeterministic(isBlocked ? typed * (1 - tuning.blockReduction) : typed);
+    const mitigated = roundDeterministic(blocked - (defender.armor ?? 0));
+    const damage = Math.max(0, roundHalfUp(mitigated));
+    const before = defender.health;
+    const after = Math.max(0, before - damage);
+    const wentDown = after === 0 && before > 0;
+    const lethal = action.lethal ?? true;
+    const killed = wentDown && lethal && tuning.deathAtZero;
+    return {
+      attackerId: attacker.id,
+      targetId: defender.id,
+      actionId: action.id,
+      outcome: "hit",
+      damageType,
+      isCritical,
+      isBlocked,
+      isResisted,
+      isVulnerable,
+      breakdown: { base, varied, critical, typed, blocked, mitigated },
+      damage,
+      targetHealthBefore: before,
+      targetHealthAfter: after,
+      targetMaxHealth: defender.maxHealth,
+      incapacitated: wentDown,
+      killed,
+      statusesApplied: damage > 0 ? action.appliesStatus ?? [] : [],
+      staminaCost,
+      staminaSpent: staminaCost,
+      attackerStaminaAfter: staminaAfter(input, staminaCost)
+    };
+  }
+  var DEFAULT_DEFENSE_STATUS = "evading";
+  function resolveDefense(input) {
+    const { actor, action } = input;
+    const profile = action.defense;
+    const staminaCost = Math.max(0, Math.floor(action.staminaCost ?? 0));
+    const refused = (outcome, reason) => ({
+      actorId: actor.id,
+      actionId: action.id,
+      outcome,
+      reason,
+      status: profile?.status ?? DEFAULT_DEFENSE_STATUS,
+      magnitude: 0,
+      evasionBonus: 0,
+      window: 0,
+      recovery: profile?.recovery,
+      staminaCost,
+      staminaSpent: 0,
+      actorStaminaAfter: actor.stamina?.current
+    });
+    if (input.legality && !input.legality.permitted) {
+      return refused("refused", input.legality.reason ?? "not_permitted");
+    }
+    if (!profile) return refused("refused", "not_a_defense");
+    if (!actor.alive) return refused("refused", "actor_dead");
+    if (actor.incapacitated) return refused("refused", "actor_incapacitated");
+    if (staminaCost > 0 && actor.stamina !== void 0 && !canAffordStamina(actor.stamina.current, staminaCost)) {
+      return refused("exhausted", "insufficient_stamina");
+    }
+    const evasionBonus = Math.max(0, profile.evasionBonus);
+    return {
+      actorId: actor.id,
+      actionId: action.id,
+      outcome: "evading",
+      status: profile.status ?? DEFAULT_DEFENSE_STATUS,
+      // `has_status/3`'s Magnitude is integral, so the bonus is carried as
+      // percentage points. Half-up, like every other rounding here.
+      magnitude: roundHalfUp(evasionBonus * 100),
+      evasionBonus,
+      window: profile.window,
+      recovery: profile.recovery,
+      staminaCost,
+      staminaSpent: staminaCost,
+      actorStaminaAfter: actor.stamina === void 0 ? void 0 : Math.max(0, actor.stamina.current - staminaCost)
+    };
+  }
+
+  // @insimul/core/src/combat/combat-facts.ts
+  var COMBAT_RESOLUTION_PREDICATES = Object.freeze([
+    "health/3",
+    "alive/1",
+    "incapacitated/1",
+    "in_combat/1",
+    "combat_target/2",
+    "has_status/3",
+    "threat/3"
+  ]);
+  function threatAfterDamage(damage, maxHealth, prior = 0) {
+    if (damage <= 0 || maxHealth <= 0) return clampThreat(prior);
+    return clampThreat(prior + Math.floor(100 * damage / maxHealth));
+  }
+  function clampThreat(level) {
+    if (!Number.isFinite(level) || level < 0) return 0;
+    return level > 100 ? 100 : Math.floor(level);
+  }
+  function attackWasMade(resolution) {
+    return resolution.outcome !== "refused" && resolution.outcome !== "exhausted";
+  }
+  function resolutionFacts(resolution, options = {}) {
+    const delta = { retract: [], assert: [] };
+    if (!attackWasMade(resolution)) return delta;
+    const { attackerId, targetId } = resolution;
+    if (options.enterCombat !== false) {
+      delta.assert.push({ predicate: "in_combat", args: [attackerId] });
+      delta.assert.push({ predicate: "in_combat", args: [targetId] });
+      delta.assert.push({ predicate: "combat_target", args: [attackerId, targetId] });
+    }
+    if (resolution.damage > 0) {
+      delta.retract.push({
+        predicate: "health",
+        args: [targetId, resolution.targetHealthBefore, resolution.targetMaxHealth]
+      });
+      delta.assert.push({
+        predicate: "health",
+        args: [targetId, resolution.targetHealthAfter, resolution.targetMaxHealth]
+      });
+    }
+    for (const applied of resolution.statusesApplied) {
+      delta.assert.push({
+        predicate: "has_status",
+        args: [targetId, applied.status, applied.magnitude]
+      });
+    }
+    if (options.threat !== void 0) {
+      if (options.priorThreat !== void 0) {
+        delta.retract.push({ predicate: "threat", args: [targetId, attackerId, clampThreat(options.priorThreat)] });
+      }
+      delta.assert.push({ predicate: "threat", args: [targetId, attackerId, clampThreat(options.threat)] });
+    }
+    if (resolution.incapacitated || resolution.killed) {
+      delta.assert.push({ predicate: "incapacitated", args: [targetId] });
+      delta.retract.push({ predicate: "in_combat", args: [targetId] });
+      delta.retract.push({ predicate: "combat_target", args: [attackerId, targetId] });
+      delta.assert = delta.assert.filter(
+        (fact) => !(fact.predicate === "in_combat" && fact.args[0] === targetId)
+      );
+      delta.assert = delta.assert.filter(
+        (fact) => !(fact.predicate === "combat_target" && fact.args[1] === targetId)
+      );
+    }
+    if (resolution.killed) {
+      delta.retract.push({ predicate: "alive", args: [targetId] });
+    }
+    return delta;
+  }
+  function defenseFacts(resolution) {
+    const delta = { retract: [], assert: [] };
+    if (resolution.outcome !== "evading") return delta;
+    delta.assert.push({
+      predicate: "has_status",
+      args: [resolution.actorId, resolution.status, resolution.magnitude]
+    });
+    return delta;
+  }
+  function defenseEndFacts(actorId, status, magnitude) {
+    return {
+      retract: [{ predicate: "has_status", args: [actorId, status, magnitude] }],
+      assert: []
+    };
+  }
+
+  // @insimul/core/src/combat/action-table.ts
+  var COMBAT_ACTION_CATEGORY = "combat";
+  function combatActionFrom(row, columns) {
+    const id = columns?.id ?? row?.id;
+    if (!id) throw new Error("combatActionFrom: an action row must have an id");
+    const range = firstNumber(columns?.range, positive(row?.range));
+    const staminaCost = firstNumber(columns?.staminaCost, positive(row?.energyCost));
+    const action = { id };
+    if (columns?.damage !== void 0) action.damage = columns.damage;
+    if (columns?.damageType !== void 0) action.damageType = columns.damageType;
+    if (range !== void 0) action.range = range;
+    if (columns?.accuracy !== void 0) action.accuracy = columns.accuracy;
+    if (columns?.delivery !== void 0) action.delivery = columns.delivery;
+    if (staminaCost !== void 0) action.staminaCost = staminaCost;
+    if (columns?.lethal !== void 0) action.lethal = columns.lethal;
+    if (columns?.appliesStatus !== void 0) {
+      action.appliesStatus = columns.appliesStatus.map(
+        (applied) => ({ ...applied })
+      );
+    }
+    if (columns?.defense !== void 0) action.defense = { ...columns.defense };
+    return action;
+  }
+  var CombatActionTable = class {
+    constructor(actions = []) {
+      __publicField(this, "rows", /* @__PURE__ */ new Map());
+      for (const action of actions) this.define(action);
+    }
+    /**
+     * Add or replace one row. Returns the row as stored, so a caller that built one
+     * from authored data can assert on what the table actually holds.
+     */
+    define(action) {
+      const stored = { ...action };
+      this.rows.set(stored.id, stored);
+      return stored;
+    }
+    /** Add or replace one row from authored columns plus, optionally, its shared row. */
+    defineAuthored(columns, row) {
+      return this.define(combatActionFrom(row, columns));
+    }
+    get(actionId) {
+      const row = this.rows.get(actionId);
+      return row === void 0 ? void 0 : { ...row };
+    }
+    has(actionId) {
+      return this.rows.has(actionId);
+    }
+    /** Every action id, in the order the rows were defined. */
+    ids() {
+      return [...this.rows.keys()];
+    }
+    /** Every row, in the order they were defined. */
+    all() {
+      return [...this.rows.values()].map((row) => ({ ...row }));
+    }
+    get size() {
+      return this.rows.size;
+    }
+    /**
+     * Load a world's rows: every action the creator gave combat columns to, plus
+     * every action block row already in the `combat` category.
+     *
+     * The second half is what stops a world that authored no `CombatIR.actions` from
+     * having an empty table — an action the creator filed under `combat` with a
+     * range and an energy cost is a melee attack, and that is a complete row.
+     * Returns how many rows were loaded.
+     */
+    loadFromIR(actions = [], combat) {
+      const columnsById = /* @__PURE__ */ new Map();
+      for (const columns of combat?.actions ?? []) columnsById.set(columns.id, columns);
+      let loaded = 0;
+      const rowsById = /* @__PURE__ */ new Map();
+      for (const row of actions) {
+        rowsById.set(row.id, row);
+        if (!columnsById.has(row.id) && !isCombatRow(row)) continue;
+        this.define(combatActionFrom(row, columnsById.get(row.id)));
+        loaded += 1;
+      }
+      for (const [id, columns] of columnsById) {
+        if (rowsById.has(id)) continue;
+        this.define(combatActionFrom(void 0, columns));
+        loaded += 1;
+      }
+      return loaded;
+    }
+    /** Every row that crosses the space to reach its target — the ranged ones. */
+    projectileActions() {
+      return this.all().filter((row) => row.delivery === "projectile");
+    }
+    /** Every row that grants its own actor evasion — the dodges. */
+    defensiveActions() {
+      return this.all().filter((row) => row.defense !== void 0);
+    }
+  };
+  function isCombatRow(row) {
+    return row.category === COMBAT_ACTION_CATEGORY || row.actionType === COMBAT_ACTION_CATEGORY;
+  }
+  function combatActionFacts(action) {
+    if (action.range === void 0 || !Number.isFinite(action.range)) return [];
+    return [{ predicate: "action_range", args: [action.id, action.range] }];
+  }
+  function positive(value) {
+    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : void 0;
+  }
+  function firstNumber(...values) {
+    for (const value of values) {
+      if (typeof value === "number" && Number.isFinite(value)) return value;
+    }
+    return void 0;
+  }
+
+  // @insimul/core/src/game-engine/logic/CombatResolver.ts
+  var CombatResolver = class {
+    constructor(config) {
+      __publicField(this, "engine");
+      __publicField(this, "seed");
+      __publicField(this, "tuning");
+      __publicField(this, "combat");
+      __publicField(this, "stamina");
+      __publicField(this, "trajectory");
+      __publicField(this, "eventBus");
+      __publicField(this, "combatants", /* @__PURE__ */ new Map());
+      __publicField(this, "defenses", /* @__PURE__ */ new Map());
+      /** The world's authored action table. Empty until a world loads one. */
+      __publicField(this, "actions");
+      this.engine = config.engine;
+      this.seed = config.seed;
+      this.tuning = config.tuning ?? { ...DEFAULT_COMBAT_TUNING };
+      this.combat = config.combat;
+      this.stamina = config.stamina;
+      this.actions = config.actions ?? new CombatActionTable();
+      this.trajectory = config.trajectory ?? config.host?.trajectory;
+      this.eventBus = config.eventBus;
+      if (config.state) this.restore(config.state);
+    }
+    setEventBus(bus) {
+      this.eventBus = bus;
+    }
+    /** Whether a host wired {@link ICombatSystem}. False means decisions are tracked only. */
+    hasCombatSystem() {
+      return this.combat !== void 0;
+    }
+    /**
+     * Whether a host wired {@link ITrajectoryProbe}. False means nothing obstructs a
+     * shot — the documented fallback, and the mode a turn-based or headless world
+     * runs in.
+     */
+    hasTrajectoryProbe() {
+      return this.trajectory !== void 0;
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    // ── Roster ─────────────────────────────────────────────────────────────
+    /** Add or replace a combatant. Also registers it with the host's system, if any. */
+    register(entity) {
+      const state = {
+        id: entity.id,
+        kind: entity.kind ?? "entity",
+        health: entity.health,
+        maxHealth: entity.maxHealth,
+        alive: entity.alive ?? true,
+        incapacitated: entity.incapacitated ?? false,
+        statuses: [],
+        threat: {},
+        weapon: entity.weapon,
+        armor: entity.armor,
+        resists: entity.resists,
+        vulnerableTo: entity.vulnerableTo,
+        dodgeBonus: entity.dodgeBonus,
+        blocking: entity.blocking
+      };
+      this.combatants.set(entity.id, state);
+      this.combat?.registerEntity({
+        id: state.id,
+        name: state.id,
+        health: state.health,
+        maxHealth: state.maxHealth,
+        damage: state.weapon?.damage
+      });
+      return state;
+    }
+    unregister(entityId) {
+      this.combatants.delete(entityId);
+      this.defenses.delete(entityId);
+      this.combat?.unregisterEntity(entityId);
+    }
+    get(entityId) {
+      return this.combatants.get(entityId);
+    }
+    /** Every combatant, in registration order. */
+    roster() {
+      return [...this.combatants.values()];
+    }
+    /**
+     * Update the stat half of a registration — what is worn, what is held, what is
+     * being guarded against. Called when equipment changes, never on a tick.
+     */
+    setProfile(entityId, patch) {
+      const state = this.combatants.get(entityId);
+      if (!state) return;
+      Object.assign(state, patch);
+    }
+    /** What this entity currently fears the other one at, 0–100. */
+    threatOf(entityId, towardId) {
+      return this.combatants.get(entityId)?.threat[towardId] ?? 0;
+    }
+    // ── The decision ───────────────────────────────────────────────────────
+    /**
+     * Resolve one attack, apply what follows, and report it.
+     *
+     * Order: ask the rules layer, resolve purely, then apply. Nothing is written
+     * before the resolution exists, so a refused or missed attack cannot leave a
+     * half-applied state behind.
+     */
+    async attack(request) {
+      const attacker = this.combatants.get(request.attackerId);
+      const defender = this.combatants.get(request.targetId);
+      if (!attacker || !defender) {
+        throw new Error(
+          `CombatResolver.attack: ${!attacker ? request.attackerId : request.targetId} is not a registered combatant`
+        );
+      }
+      const action = this.actionFor(request.action);
+      const legality = await this.askLegality(attacker.id, defender.id);
+      const lineOfFire = legality?.permitted === false ? void 0 : await this.askLineOfFire(attacker.id, defender.id, action);
+      const resolution = resolveAttack({
+        attacker: snapshot(attacker, this.stamina),
+        defender: snapshot(defender, this.stamina, this.defenses.get(defender.id)),
+        action,
+        tuning: this.tuning,
+        separation: request.separation ?? lineOfFire?.separation ?? 0,
+        seed: this.seed,
+        tick: request.tick,
+        legality,
+        lineOfFire
+      });
+      const stamina = await this.paySwing(attacker.id, resolution);
+      const facts = this.applyResolution(attacker, defender, resolution);
+      const applied = await this.writeFacts(facts, resolution, request.tick);
+      this.announce(resolution, defender);
+      return { resolution, facts, applied, stamina, lineOfFire };
+    }
+    /**
+     * Resolve a request's action into the row that will be used.
+     *
+     * An id is looked up in the authored table; a row is taken as given. Either way
+     * the action's price comes from the shared meter's cost table when the row
+     * carries none — `action/4`'s `EnergyCost`, the same column a climb is priced
+     * in, which is what keeps a dodge and a sprint on one resource (US-2).
+     *
+     * An id with no row is an error, not a silent free action: a game asking for
+     * `crossbow_shot` in a world that never authored one has a content bug, and
+     * resolving it as an unarmed swing would hide it.
+     */
+    actionFor(action) {
+      const row = typeof action === "string" ? this.actions.get(action) : { ...action };
+      if (!row) {
+        throw new Error(
+          `CombatResolver: "${action}" is not a row of the world's combat action table (have: ${this.actions.ids().join(", ") || "none"})`
+        );
+      }
+      return { ...row, staminaCost: row.staminaCost ?? this.stamina?.costOf(row.id) };
+    }
+    /**
+     * Ask the host whether the shot's line is clear.
+     *
+     * Asked only for a `projectile` row, only when a probe is wired, and only once —
+     * this is a decision-path query, not a frame-path one. A probe that throws is
+     * treated as no answer: the host's geometry failing must not stop the rules
+     * layer from resolving a fight, and `ITrajectoryProbe` documents that a thrown
+     * error reads as `clear`.
+     */
+    async askLineOfFire(attackerId, targetId, action) {
+      if (!this.trajectory || action.delivery !== "projectile") return void 0;
+      try {
+        return await this.trajectory.query({
+          attacker: attackerId,
+          target: targetId,
+          action: action.id,
+          range: action.range
+        });
+      } catch {
+        return void 0;
+      }
+    }
+    // ── Defensive actions ──────────────────────────────────────────────────
+    /**
+     * Perform a defensive action — a dodge, a roll, a parry.
+     *
+     * The same table, the same meter and the same gates as a swing (US-3): what
+     * makes this one defensive is that its authored row carries a `defense` profile.
+     * Core decides whether the window opens and how wide it is; the HOST times it
+     * and calls {@link CombatResolver.endDefense} when it closes, which is the whole
+     * of "timing is data the host enforces, not core polling".
+     */
+    async defend(request) {
+      const actor = this.combatants.get(request.actorId);
+      if (!actor) {
+        throw new Error(`CombatResolver.defend: ${request.actorId} is not a registered combatant`);
+      }
+      const action = this.actionFor(request.action);
+      const resolution = resolveDefense({
+        actor: snapshot(actor, this.stamina),
+        action,
+        legality: request.legality
+      });
+      const stamina = this.stamina && resolution.staminaSpent > 0 ? await this.stamina.spend(actor.id, {
+        action: resolution.actionId,
+        cost: resolution.staminaSpent
+      }) : void 0;
+      if (resolution.outcome !== "evading") {
+        return { resolution, facts: { retract: [], assert: [] }, applied: false, stamina };
+      }
+      const previous = this.defenses.get(actor.id);
+      const defense = {
+        actorId: actor.id,
+        actionId: resolution.actionId,
+        status: resolution.status,
+        magnitude: resolution.magnitude,
+        evasionBonus: resolution.evasionBonus,
+        window: resolution.window,
+        openedAt: request.tick
+      };
+      this.defenses.set(actor.id, defense);
+      const facts = defenseFacts(resolution);
+      if (previous) {
+        facts.retract.push(...defenseEndFacts(actor.id, previous.status, previous.magnitude).retract);
+      }
+      const applied = await this.writeDelta(facts);
+      this.eventBus?.emit({
+        type: "combat_action",
+        actionType: resolution.actionId,
+        targetId: actor.id
+      });
+      return { resolution, facts, applied, stamina, defense };
+    }
+    /** The evasion window this actor has open, if any. */
+    activeDefense(actorId) {
+      const defense = this.defenses.get(actorId);
+      return defense === void 0 ? void 0 : { ...defense };
+    }
+    /**
+     * The host says the window elapsed. Core takes the status back off.
+     *
+     * This is the only place a dodge ends, and it is deliberately not a tick: core
+     * holds no clock, and a window measured in frames is the host's to count
+     * (`docs/module-contract.md` §3). Calling it for an actor with no open window is
+     * a no-op, so a host that fires the callback twice does no damage.
+     */
+    async endDefense(actorId) {
+      const defense = this.defenses.get(actorId);
+      if (!defense) return { facts: { retract: [], assert: [] }, applied: false };
+      this.defenses.delete(actorId);
+      const facts = defenseEndFacts(actorId, defense.status, defense.magnitude);
+      const applied = await this.writeDelta(facts);
+      return { facts, applied };
+    }
+    /**
+     * Publish the action table's reach into the KB as `action_range/2`.
+     *
+     * Authored data, asserted at load the way `StaminaPool.publishTuning` asserts
+     * `stamina_threshold/2` — so a `can_perform/3` prerequisite about range reads
+     * the same number the resolution does, without combat inventing a predicate of
+     * its own. Returns how many facts were written.
+     */
+    async publishActionTable(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const action of this.actions.all()) {
+        for (const fact of combatActionFacts(action)) {
+          await engine.assertFact(term(fact));
+          written += 1;
+        }
+      }
+      return written;
+    }
+    /**
+     * Pay for a swing that happened, out of the shared meter.
+     *
+     * The resolution already decided how much (`staminaSpent`, which is zero for
+     * anything that was not a swing); this only tells the pool to move it, so the
+     * arithmetic stays in the pure function four engines reproduce and the memory
+     * stays in the one module that owns it.
+     */
+    async paySwing(attackerId, resolution) {
+      if (!this.stamina || resolution.staminaSpent <= 0) return void 0;
+      return this.stamina.spend(attackerId, {
+        action: resolution.actionId,
+        cost: resolution.staminaSpent
+      });
+    }
+    /**
+     * `can_attack/2`, asked of the KB.
+     *
+     * With no engine wired the attack is not gated — the same "tracked, not
+     * enforced" degradation `EquipmentManager` documents for a missing stat sink.
+     * A KB that is wired but carries no combat facts answers `false` rather than
+     * raising, which is what the pack's `:- dynamic` declarations are for.
+     */
+    async askLegality(attackerId, targetId) {
+      if (!this.engine) return void 0;
+      const goal = `can_attack(${atom2(attackerId)}, ${atom2(targetId)})`;
+      const permitted = await this.engine.queryOnce(goal);
+      return permitted ? { permitted: true } : { permitted: false, reason: "not_permitted" };
+    }
+    /** Move this module's own state to match the resolution, and build the fact delta. */
+    applyResolution(attacker, defender, resolution) {
+      if (!attackWasMade(resolution)) return { retract: [], assert: [] };
+      const priorThreat = defender.threat[attacker.id];
+      const threat = threatAfterDamage(resolution.damage, defender.maxHealth, priorThreat ?? 0);
+      defender.health = resolution.targetHealthAfter;
+      if (resolution.incapacitated) defender.incapacitated = true;
+      if (resolution.killed) defender.alive = false;
+      if (resolution.damage > 0) defender.threat[attacker.id] = threat;
+      for (const applied of resolution.statusesApplied) {
+        const existing = defender.statuses.findIndex((s) => s.status === applied.status);
+        if (existing >= 0) defender.statuses[existing] = { ...applied };
+        else defender.statuses.push({ ...applied });
+      }
+      return resolutionFacts(resolution, {
+        threat: resolution.damage > 0 ? threat : void 0,
+        priorThreat: resolution.damage > 0 ? priorThreat : void 0
+      });
+    }
+    /**
+     * Write the delta into the KB, plus the lifecycle facts a death owes the rest
+     * of the simulation.
+     *
+     * `deceased/3` and `cause_of_death/2` are `prolog/npc-reasoning.ts`'s existing
+     * vocabulary, not combat's: asserting them is what makes `is_grieving/1`,
+     * `has_living_children/1`, `event_candidate(funeral, …)` and `inherits_from/3`
+     * true of someone killed in a fight, without this module naming genealogy,
+     * inheritance or reputation at all.
+     *
+     * They are also what makes a death SURVIVE a reload. `alive/1` is an authored
+     * character fact — it is not in `buildKnownPredicateSignatures()`, so it never
+     * enters a save, and a world that consulted it as content cannot have it
+     * retracted at all. Every other predicate written here (`health/3`,
+     * `incapacitated/1`, `in_combat/1`, `combat_target/2`, `has_status/3`,
+     * `threat/3`, `deceased/3`, `cause_of_death/2`) validates as a runtime fact, so
+     * the retraction is best-effort and `deceased/3` is the load-bearing one.
+     */
+    async writeFacts(delta, resolution, tick) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      const asserts = [...delta.assert];
+      if (resolution.killed) {
+        asserts.push({ predicate: "deceased", args: [resolution.targetId, tick, "combat"] });
+        asserts.push({ predicate: "cause_of_death", args: [resolution.targetId, "combat"] });
+      }
+      return this.writeDelta({ retract: delta.retract, assert: asserts });
+    }
+    /**
+     * Write one delta into the KB, retracting first.
+     *
+     * Retracting a fact the KB never carried is a no-op rather than a failure: a
+     * host with its own persistence, a restored save and a dodge that opened before
+     * the engine was wired all produce one, and none of them is an error.
+     */
+    async writeDelta(delta) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(term(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(term(fact));
+      }
+      return true;
+    }
+    /** Hand the decision to the host and the bus. Everything here is after the fact. */
+    announce(resolution, defender) {
+      if (!attackWasMade(resolution)) return;
+      this.eventBus?.emit({
+        type: "combat_action",
+        actionType: resolution.actionId,
+        targetId: resolution.targetId
+      });
+      if (resolution.damage > 0) this.combat?.applyDamage(resolution.targetId, resolution.damage);
+      if (resolution.killed) {
+        this.combat?.unregisterEntity(resolution.targetId);
+        this.eventBus?.emit({
+          type: "enemy_defeated",
+          entityId: resolution.targetId,
+          enemyType: defender.kind
+        });
+        this.eventBus?.emit({
+          type: "create_truth",
+          characterId: resolution.targetId,
+          title: "Killed in combat",
+          content: `${resolution.targetId} was killed by ${resolution.attackerId}.`,
+          entryType: "event",
+          category: "death"
+        });
+      }
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    serialize() {
+      return {
+        combatants: this.roster().map((state) => ({
+          ...state,
+          statuses: state.statuses.map((s) => ({ ...s })),
+          threat: { ...state.threat }
+        })),
+        // The open windows, but never the TABLE that authored them: rows are world
+        // content, and a save carrying a copy would freeze a creator's balance pass
+        // at the moment the player first pressed New Game.
+        defenses: [...this.defenses.values()].map((defense) => ({ ...defense }))
+      };
+    }
+    /**
+     * Restore a saved fight. Silent — no events, because loading a save is not a
+     * fight happening, and a quest listener counting kills must not fire on load.
+     */
+    restore(state) {
+      this.combatants = /* @__PURE__ */ new Map();
+      for (const entry of state.combatants ?? []) {
+        this.combatants.set(entry.id, {
+          ...entry,
+          statuses: (entry.statuses ?? []).map((s) => ({ ...s })),
+          threat: { ...entry.threat ?? {} }
+        });
+      }
+      this.defenses = /* @__PURE__ */ new Map();
+      for (const defense of state.defenses ?? []) {
+        this.defenses.set(defense.actorId, { ...defense });
+      }
+    }
+  };
+  function snapshot(state, stamina, defense) {
+    const meter = stamina?.get(state.id);
+    return {
+      id: state.id,
+      health: state.health,
+      maxHealth: state.maxHealth,
+      alive: state.alive,
+      incapacitated: state.incapacitated,
+      weapon: state.weapon,
+      armor: state.armor,
+      resists: state.resists,
+      vulnerableTo: state.vulnerableTo,
+      statuses: state.statuses.map((s) => s.status),
+      // An open evasion window is a dodge bonus and nothing more exotic: an evaded
+      // shot comes out `dodged` through the ordinary gate, so the pure resolution
+      // needs no notion of "defending" at all (US-3).
+      dodgeBonus: (state.dodgeBonus ?? 0) + (defense?.evasionBonus ?? 0),
+      blocking: state.blocking,
+      stamina: meter ? { current: meter.current, max: meter.max } : void 0
+    };
+  }
+  function term(fact) {
+    return serializedFactToProlog(fact).replace(/\.$/, "");
+  }
+  function atom2(id) {
+    return serializeArg(id);
+  }
+
+  // @insimul/core/src/game-engine/host-contracts.ts
+  var MOVEMENT_URGENCIES = Object.freeze([
+    "idle",
+    "ordinary",
+    "hurried",
+    "urgent"
+  ]);
+  var MOVEMENT_STANCES = Object.freeze(["standing", "crouching", "prone"]);
+  var ANIMATION_INTENTS = Object.freeze([
+    "idle",
+    "walk",
+    "run",
+    "crouch",
+    "swim",
+    "climb",
+    "jump",
+    "ride",
+    "carry",
+    "sit",
+    "sleep",
+    "eat",
+    "work",
+    "handle",
+    "read",
+    "talk",
+    "listen",
+    "wave",
+    "gesture",
+    "strike",
+    "guard",
+    "cast",
+    "stagger",
+    "collapse"
+  ]);
+  var INFERENCE_REQUEST_KINDS = Object.freeze(["proposal", "utterance"]);
+  var MODEL_RESIDENCIES = Object.freeze(["resident", "on-demand", "absent"]);
+  var INFERENCE_STATUSES = Object.freeze([
+    "pending",
+    "ready",
+    "failed",
+    "unknown"
+  ]);
+  var NULL_HOST_ADAPTER = Object.freeze({});
+
+  // @insimul/core/src/game-engine/action-matrix.ts
+  var ACTION_MATRIX = [
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MOVEMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ─── Parent: move ──────────────────────────────────────────────────────
+    {
+      actionId: "move",
+      animation: "walk",
+      displayName: "Move",
+      category: "movement",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "walk",
+      animation: "walk",
+      displayName: "Walk",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "jog",
+      animation: "run",
+      displayName: "Jog",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "sprint",
+      animation: "run",
+      displayName: "Sprint",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "swim",
+      animation: "swim",
+      displayName: "Swim",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "swim_idle",
+      animation: "swim",
+      displayName: "Tread Water",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "walk_carry",
+      animation: "carry",
+      displayName: "Walk While Carrying",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "walk_formal",
+      animation: "walk",
+      displayName: "Walk Formally",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "drive",
+      animation: "ride",
+      displayName: "Drive",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "crouch_walk",
+      animation: "crouch",
+      displayName: "Crouch Walk",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "crouch_idle",
+      animation: "crouch",
+      displayName: "Crouch",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Parent: jump ──────────────────────────────────────────────────────
+    {
+      actionId: "jump",
+      animation: "jump",
+      displayName: "Jump",
+      category: "movement",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "ninja_jump",
+      animation: "jump",
+      displayName: "Ninja Jump",
+      category: "movement",
+      parentAction: "jump",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "roll",
+      animation: "jump",
+      displayName: "Roll",
+      category: "movement",
+      parentAction: "jump",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "slide",
+      animation: "jump",
+      displayName: "Slide",
+      category: "movement",
+      parentAction: "jump",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "climb",
+      animation: "climb",
+      displayName: "Climb",
+      category: "movement",
+      parentAction: "jump",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // COMBAT
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ─── Parent: attack_enemy ──────────────────────────────────────────────
+    {
+      actionId: "attack_enemy",
+      animation: "strike",
+      displayName: "Attack Enemy",
+      category: "combat",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["combat_action", "enemy_defeated"],
+      objectiveTypes: ["defeat_enemies"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sword_attack",
+      animation: "strike",
+      displayName: "Sword Attack",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sword_combo",
+      animation: "strike",
+      displayName: "Sword Combo",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sword_dash",
+      animation: "strike",
+      displayName: "Sword Dash",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sword_idle",
+      animation: "guard",
+      displayName: "Sword Ready",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "punch",
+      animation: "strike",
+      displayName: "Punch",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "punch_heavy",
+      animation: "strike",
+      displayName: "Heavy Punch",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "melee_hook",
+      animation: "strike",
+      displayName: "Hook Punch",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "shield_bash",
+      animation: "strike",
+      displayName: "Shield Bash",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "shield_dash",
+      animation: "strike",
+      displayName: "Shield Dash",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "pistol_shoot",
+      animation: "strike",
+      displayName: "Shoot Pistol",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "pistol_aim",
+      animation: "guard",
+      displayName: "Aim Pistol",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "pistol_reload",
+      animation: "handle",
+      displayName: "Reload Pistol",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "throw_projectile",
+      animation: "strike",
+      displayName: "Throw Projectile",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "zombie_attack",
+      animation: "strike",
+      displayName: "Zombie Attack",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    // ─── Parent: defend ────────────────────────────────────────────────────
+    {
+      actionId: "defend",
+      animation: "guard",
+      displayName: "Defend",
+      category: "combat",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "shield_block",
+      animation: "guard",
+      displayName: "Shield Block",
+      category: "combat",
+      parentAction: "defend",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "sword_block",
+      animation: "guard",
+      displayName: "Sword Block",
+      category: "combat",
+      parentAction: "defend",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Parent: cast_spell ────────────────────────────────────────────────
+    {
+      actionId: "cast_spell",
+      animation: "cast",
+      displayName: "Cast Spell",
+      category: "combat",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "spell_channel",
+      animation: "cast",
+      displayName: "Channel Spell",
+      category: "combat",
+      parentAction: "cast_spell",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Parent: react ─────────────────────────────────────────────────────
+    {
+      actionId: "react",
+      animation: "stagger",
+      displayName: "React",
+      category: "combat",
+      parentAction: null,
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "die",
+      animation: "collapse",
+      displayName: "Die",
+      category: "combat",
+      parentAction: "react",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "hit_head",
+      animation: "stagger",
+      displayName: "Hit Head",
+      category: "combat",
+      parentAction: "react",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "hit_reaction",
+      animation: "stagger",
+      displayName: "Hit Reaction",
+      category: "combat",
+      parentAction: "react",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "knockback",
+      animation: "stagger",
+      displayName: "Knockback",
+      category: "combat",
+      parentAction: "react",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Creature actions (zombie_idle, zombie_walk share parents above) ──
+    {
+      actionId: "zombie_idle",
+      animation: "idle",
+      displayName: "Zombie Idle",
+      category: "combat",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "zombie_walk",
+      animation: "walk",
+      displayName: "Zombie Walk",
+      category: "combat",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SOCIAL
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ─── Parent: talk_to_npc ───────────────────────────────────────────────
+    {
+      actionId: "talk_to_npc",
+      animation: "talk",
+      displayName: "Talk to NPC",
+      category: "social",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["npc_talked"],
+      objectiveTypes: ["talk_to_npc", "complete_conversation", "conversation_initiation"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "talk",
+      animation: "talk",
+      displayName: "Talk",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "animation",
+      eventTypes: ["npc_talked"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sit_talk",
+      animation: "sit",
+      displayName: "Sit and Talk",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "animation",
+      eventTypes: ["npc_talked"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "phone_call",
+      animation: "talk",
+      displayName: "Phone Call",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "animation",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "greet",
+      animation: "wave",
+      displayName: "Greet",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["npc_greeting", "conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "compliment_npc",
+      animation: "talk",
+      displayName: "Compliment",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: ["build_friendship", "gain_reputation"],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "insult_npc",
+      animation: "talk",
+      displayName: "Insult",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "threaten",
+      animation: "talk",
+      displayName: "Threaten",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "flirt",
+      animation: "talk",
+      displayName: "Flirt",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "romance_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "persuade",
+      animation: "talk",
+      displayName: "Persuade",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "bribe",
+      animation: "talk",
+      displayName: "Bribe",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "gossip",
+      animation: "talk",
+      displayName: "Gossip",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "confess",
+      animation: "talk",
+      displayName: "Confess",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "apologize",
+      animation: "talk",
+      displayName: "Apologize",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "comfort",
+      animation: "talk",
+      displayName: "Comfort",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: ["build_friendship"],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "argue",
+      animation: "talk",
+      displayName: "Argue",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "joke",
+      animation: "talk",
+      displayName: "Tell Joke",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "share_story",
+      animation: "talk",
+      displayName: "Share Story",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "ask_about",
+      animation: "talk",
+      displayName: "Ask About",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    // ─── Parent: express ───────────────────────────────────────────────────
+    {
+      actionId: "express",
+      animation: "talk",
+      displayName: "Express",
+      category: "social",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "call_out",
+      animation: "talk",
+      displayName: "Call Out",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "dance",
+      animation: "gesture",
+      displayName: "Dance",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "fold_arms",
+      animation: "gesture",
+      displayName: "Fold Arms",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "nod_yes",
+      animation: "gesture",
+      displayName: "Nod Yes",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "shake_head_no",
+      animation: "gesture",
+      displayName: "Shake Head No",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Parent: idle ──────────────────────────────────────────────────────
+    {
+      actionId: "idle",
+      animation: "idle",
+      displayName: "Idle",
+      category: "social",
+      parentAction: null,
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "sit_down",
+      animation: "sit",
+      displayName: "Sit Down",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: ["furniture_sat"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "sit_idle",
+      animation: "sit",
+      displayName: "Sit Idle",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "stand_up",
+      animation: "idle",
+      displayName: "Stand Up",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: ["furniture_stood"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "get_up",
+      animation: "idle",
+      displayName: "Get Up",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "lean_railing",
+      animation: "sit",
+      displayName: "Lean on Railing",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Social standalone ─────────────────────────────────────────────────
+    {
+      actionId: "give_gift",
+      animation: "handle",
+      displayName: "Give Gift",
+      category: "social",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["gift_given"],
+      objectiveTypes: ["give_gift", "deliver_item"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "pray",
+      animation: "gesture",
+      displayName: "Pray",
+      category: "social",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "escort_npc",
+      animation: "walk",
+      displayName: "Escort NPC",
+      category: "social",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["escort_started", "escort_completed"],
+      objectiveTypes: ["escort_npc"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "request_quest",
+      animation: "talk",
+      displayName: "Request Quest",
+      category: "social",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["quest_accepted"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "steal",
+      animation: "handle",
+      displayName: "Steal",
+      category: "social",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["item_collected"],
+      objectiveTypes: ["collect_item"],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "eavesdrop",
+      animation: "listen",
+      displayName: "Eavesdrop",
+      category: "social",
+      parentAction: null,
+      interactionMode: "observational",
+      eventTypes: ["conversation_overheard", "vocabulary_overheard"],
+      objectiveTypes: ["observe_activity"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // COMMERCE
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "trade",
+      animation: "handle",
+      displayName: "Trade",
+      category: "commerce",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["item_purchased"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "buy_item",
+      animation: "handle",
+      displayName: "Buy Item",
+      category: "commerce",
+      parentAction: "trade",
+      interactionMode: "physical",
+      eventTypes: ["item_purchased"],
+      objectiveTypes: ["collect_item"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sell_item",
+      animation: "handle",
+      displayName: "Sell Item",
+      category: "commerce",
+      parentAction: "trade",
+      interactionMode: "physical",
+      eventTypes: ["item_purchased"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RESOURCE
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ─── Parent: gather ────────────────────────────────────────────────────
+    {
+      actionId: "gather",
+      animation: "work",
+      displayName: "Gather",
+      category: "resource",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "chop_tree",
+      animation: "work",
+      displayName: "Chop Tree",
+      category: "resource",
+      parentAction: "gather",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "mine_rock",
+      animation: "work",
+      displayName: "Mine Rock",
+      category: "resource",
+      parentAction: "gather",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "fish",
+      animation: "work",
+      displayName: "Fish",
+      category: "resource",
+      parentAction: "gather",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "gather_herb",
+      animation: "work",
+      displayName: "Gather Herb",
+      category: "resource",
+      parentAction: "gather",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action", "collect_item"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    // ─── Parent: farm ──────────────────────────────────────────────────────
+    {
+      actionId: "farm",
+      animation: "work",
+      displayName: "Farm",
+      category: "resource",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "farm_plant",
+      animation: "work",
+      displayName: "Plant Crops",
+      category: "resource",
+      parentAction: "farm",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      priority: "high",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "farm_water",
+      animation: "work",
+      displayName: "Water Crops",
+      category: "resource",
+      parentAction: "farm",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      priority: "high",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "farm_harvest",
+      animation: "work",
+      displayName: "Harvest Crops",
+      category: "resource",
+      parentAction: "farm",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed", "item_collected"],
+      objectiveTypes: ["physical_action", "collect_item"],
+      status: "implemented",
+      priority: "high",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ─── Parent: craft_item ────────────────────────────────────────────────
+    {
+      actionId: "craft_item",
+      animation: "work",
+      displayName: "Craft Item",
+      category: "resource",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["item_crafted"],
+      objectiveTypes: ["craft_item"],
+      status: "partial",
+      priority: "high",
+      requiresTarget: false
+    },
+    {
+      actionId: "cook",
+      animation: "work",
+      displayName: "Cook",
+      category: "resource",
+      parentAction: "craft_item",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed", "item_crafted"],
+      objectiveTypes: ["craft_item", "physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "fix_repair",
+      animation: "work",
+      displayName: "Repair",
+      category: "resource",
+      parentAction: "craft_item",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ─── Parent: work ──────────────────────────────────────────────────────
+    {
+      actionId: "work",
+      animation: "work",
+      displayName: "Work",
+      category: "resource",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["furniture_worked"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "building"
+    },
+    {
+      actionId: "paint",
+      animation: "work",
+      displayName: "Paint",
+      category: "resource",
+      parentAction: "work",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "sweep",
+      animation: "work",
+      displayName: "Sweep",
+      category: "resource",
+      parentAction: "work",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "push_object",
+      animation: "carry",
+      displayName: "Push Object",
+      category: "resource",
+      parentAction: "work",
+      interactionMode: "animation",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ITEMS
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "use_item",
+      animation: "handle",
+      displayName: "Use Item",
+      category: "items",
+      parentAction: null,
+      interactionMode: "inventory",
+      eventTypes: ["item_used"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "consume",
+      animation: "eat",
+      displayName: "Consume",
+      category: "items",
+      parentAction: "use_item",
+      interactionMode: "inventory",
+      eventTypes: ["item_used"],
+      objectiveTypes: ["collect_item"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "equip_item",
+      animation: "handle",
+      displayName: "Equip Item",
+      category: "items",
+      parentAction: "use_item",
+      interactionMode: "inventory",
+      eventTypes: ["item_equipped"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "hold_lantern",
+      animation: "carry",
+      displayName: "Hold Lantern",
+      category: "items",
+      parentAction: "use_item",
+      interactionMode: "animation",
+      eventTypes: ["item_used"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "hold_torch",
+      animation: "carry",
+      displayName: "Hold Torch",
+      category: "items",
+      parentAction: "use_item",
+      interactionMode: "animation",
+      eventTypes: ["item_used"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "drop_item",
+      animation: "handle",
+      displayName: "Drop Item",
+      category: "items",
+      parentAction: null,
+      interactionMode: "inventory",
+      eventTypes: ["item_dropped"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "collect_item",
+      animation: "handle",
+      displayName: "Collect Item",
+      category: "items",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["item_collected"],
+      objectiveTypes: ["collect_item", "collect_text"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "pick_up",
+      animation: "handle",
+      displayName: "Pick Up",
+      category: "items",
+      parentAction: "collect_item",
+      interactionMode: "animation",
+      eventTypes: ["item_collected"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // EXPLORATION
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "travel_to_location",
+      animation: "walk",
+      displayName: "Travel to Location",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["location_visited", "location_discovered"],
+      objectiveTypes: ["visit_location", "discover_location"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "enter_building",
+      animation: "walk",
+      displayName: "Enter Building",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["location_visited"],
+      objectiveTypes: ["visit_location"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "building"
+    },
+    {
+      actionId: "open_container",
+      animation: "handle",
+      displayName: "Open Container",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["container_opened"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "container"
+    },
+    {
+      actionId: "investigate",
+      animation: "handle",
+      displayName: "Investigate",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["investigation_completed", "clue_discovered"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "observe_activity",
+      animation: "listen",
+      displayName: "Observe Activity",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "observational",
+      eventTypes: ["activity_observed"],
+      objectiveTypes: ["observe_activity"],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "take_photo",
+      animation: "handle",
+      displayName: "Take Photo",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["photo_taken"],
+      objectiveTypes: ["photograph_subject", "photograph_activity"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "mount_vehicle",
+      animation: "ride",
+      displayName: "Mount Vehicle",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["vehicle_mounted"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "solve_puzzle",
+      animation: "handle",
+      displayName: "Solve Puzzle",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["puzzle_solved"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "interact",
+      animation: "handle",
+      displayName: "Interact",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LANGUAGE
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "read_sign",
+      animation: "read",
+      displayName: "Read Sign",
+      category: "language",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["sign_read"],
+      objectiveTypes: ["read_sign"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "examine_object",
+      animation: "read",
+      displayName: "Examine Object",
+      category: "language",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["object_examined"],
+      objectiveTypes: ["examine_object", "collect_vocabulary"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "point_and_name",
+      animation: "gesture",
+      displayName: "Point and Name",
+      category: "language",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["object_named"],
+      objectiveTypes: ["point_and_name", "identify_object"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "ask_for_directions",
+      animation: "talk",
+      displayName: "Ask for Directions",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: ["ask_for_directions", "navigate_language", "follow_directions"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "introduce_self",
+      animation: "wave",
+      displayName: "Introduce Yourself",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: ["introduce_self"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "order_food",
+      animation: "talk",
+      displayName: "Order Food",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "food_ordered"],
+      objectiveTypes: ["order_food"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "haggle_price",
+      animation: "talk",
+      displayName: "Haggle Price",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "price_haggled"],
+      objectiveTypes: ["haggle_price"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "describe_scene",
+      animation: "talk",
+      displayName: "Describe Scene",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: ["describe_scene"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "listen_and_repeat",
+      animation: "talk",
+      displayName: "Listen and Repeat",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["utterance_evaluated"],
+      objectiveTypes: ["listen_and_repeat", "pronunciation_check"],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "write_response",
+      animation: "read",
+      displayName: "Write Response",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["writing_submitted"],
+      objectiveTypes: ["write_response", "translation_challenge"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "answer_question",
+      animation: "talk",
+      displayName: "Answer Question",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "questions_answered"],
+      objectiveTypes: ["comprehension_quiz", "listening_comprehension"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "teach_vocabulary",
+      animation: "talk",
+      displayName: "Teach Vocabulary",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "vocabulary_used"],
+      objectiveTypes: ["teach_vocabulary", "teach_phrase"],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "learn_word",
+      animation: "listen",
+      displayName: "Learn Word",
+      category: "language",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["vocabulary_used"],
+      objectiveTypes: ["collect_vocabulary"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "read_book",
+      animation: "read",
+      displayName: "Read Book",
+      category: "language",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["reading_completed", "text_collected"],
+      objectiveTypes: ["read_text", "find_text"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SURVIVAL
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "rest",
+      animation: "sit",
+      displayName: "Rest",
+      category: "survival",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["furniture_sat"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "sleep",
+      animation: "sleep",
+      displayName: "Sleep",
+      category: "survival",
+      parentAction: "rest",
+      interactionMode: "automatic",
+      eventTypes: ["furniture_slept"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "sit",
+      animation: "sit",
+      displayName: "Sit",
+      category: "survival",
+      parentAction: "rest",
+      interactionMode: "automatic",
+      eventTypes: ["furniture_sat"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    }
+  ];
+  var actionIndex = /* @__PURE__ */ new Map();
+  for (const entry of ACTION_MATRIX) {
+    actionIndex.set(entry.actionId, entry);
+  }
+  var eventToActionsIndex = /* @__PURE__ */ new Map();
+  for (const entry of ACTION_MATRIX) {
+    for (const eventType of entry.eventTypes) {
+      const list = eventToActionsIndex.get(eventType) || [];
+      list.push(entry);
+      eventToActionsIndex.set(eventType, list);
+    }
+  }
+  var objectiveToActionsIndex = /* @__PURE__ */ new Map();
+  for (const entry of ACTION_MATRIX) {
+    for (const objType of entry.objectiveTypes) {
+      const list = objectiveToActionsIndex.get(objType) || [];
+      list.push(entry);
+      objectiveToActionsIndex.set(objType, list);
+    }
+  }
+  var childrenIndex = /* @__PURE__ */ new Map();
+  for (const entry of ACTION_MATRIX) {
+    if (entry.parentAction) {
+      const list = childrenIndex.get(entry.parentAction) || [];
+      list.push(entry);
+      childrenIndex.set(entry.parentAction, list);
+    }
+  }
+
+  // @insimul/core/src/ai/action-selection.ts
+  var NO_TARGET = "none";
+  function agentRefKey(agent) {
+    return typeof agent === "string" ? agent : formatCurie(agent);
+  }
+  var DEFAULT_UTILITY_WEIGHTS = Object.freeze({
+    appeal: 1,
+    targetAppeal: 0.3,
+    cost: 0.1,
+    bias: 0.5,
+    jitter: 0.05,
+    costScale: 100,
+    windedCost: 2,
+    exhaustedCost: 5
+  });
+
+  // @insimul/core/src/ai/rule-enforcement.ts
+  var UNCLASSIFIED_NORM = "unclassified";
+  function actFacts(acts) {
+    return acts.map(
+      (act) => `act(${prologAtom(act.event)}, ${prologAtom(agentRefKey(act.actor))}, ${prologAtom(act.action)}, ${prologAtom(act.target ?? NO_TARGET)}).`
+    ).sort(compareIds);
+  }
+  var MAX_ENFORCEMENT_SOLUTIONS = 256;
+  async function checkAction(engine, input) {
+    const agent = agentRefKey(input.agent);
+    const target = input.target ?? NO_TARGET;
+    const gate = await engine.query("current_predicate(forbidden_by/4)", 1);
+    if (gate.success && gate.bindings.length === 0) {
+      return { agent, action: input.action, target, permitted: true, breached: [] };
+    }
+    const breached = await breachedNorms(
+      engine,
+      `forbidden_by(${prologAtom(agent)}, ${prologAtom(input.action)}, ${prologAtom(target)}, Rule)`
+    );
+    return { agent, action: input.action, target, permitted: breached.length === 0, breached };
+  }
+  async function enforceActs(engine, input) {
+    const world2 = worldContextTerm(input.playthrough);
+    const violations = [];
+    const consequenceFacts = [];
+    for (const event of input.events) {
+      const eventAtom = prologAtom(event);
+      for (const breach of await breachesOf(engine, eventAtom)) {
+        const ruleAtom = prologAtom(breach.rule);
+        const actorAtom = prologAtom(breach.actor);
+        const witnesses = await witnessesOf(engine, eventAtom, ruleAtom);
+        const truths = await truthsOf(engine, eventAtom, ruleAtom, breach.actor);
+        const reputation = await reputationOf(engine, eventAtom, ruleAtom);
+        violations.push({
+          event,
+          rule: breach.rule,
+          kind: await normKind(engine, ruleAtom),
+          actor: breach.actor,
+          action: breach.action,
+          target: breach.target,
+          witnesses,
+          truths,
+          reputation
+        });
+        for (const witness of witnesses) {
+          consequenceFacts.push(
+            `violation_record(${eventAtom}, ${ruleAtom}, ${actorAtom}, ${prologAtom(witness)}).`
+          );
+        }
+        for (const truth of truths) {
+          consequenceFacts.push(
+            `claim(${prologAtom(truth.subject)}, ${prologAtom(truth.predicate)}, ${prologAtom(truth.object)}, ${world2}).`
+          );
+        }
+        for (const effect of reputation) {
+          consequenceFacts.push(
+            `reputation_change(${actorAtom}, ${prologAtom(effect.faction)}, ${effect.delta}).`
+          );
+        }
+      }
+    }
+    violations.sort((a, b) => compareIds(a.event, b.event) || compareIds(a.rule, b.rule));
+    consequenceFacts.sort(compareIds);
+    return { tick: input.tick, violations, consequenceFacts };
+  }
+  async function solve(engine, goal) {
+    const result = await engine.query(goal, MAX_ENFORCEMENT_SOLUTIONS);
+    if (!result.success) {
+      throw new Error(`rule enforcement: "${goal}" raised: ${result.error ?? "unknown error"}`);
+    }
+    return result.bindings;
+  }
+  async function breachesOf(engine, eventAtom) {
+    const byKey = /* @__PURE__ */ new Map();
+    for (const binding2 of await solve(
+      engine,
+      `violation_of(${eventAtom}, Rule, Actor, Act, T)`
+    )) {
+      const rule2 = text2(binding2["Rule"]);
+      const actor = text2(binding2["Actor"]);
+      const action = text2(binding2["Act"]);
+      const target = text2(binding2["T"]);
+      if (rule2 === null || actor === null || action === null || target === null) continue;
+      byKey.set(streamKey([rule2, actor, action, target]), { rule: rule2, actor, action, target });
+    }
+    return Array.from(byKey.values()).sort(
+      (a, b) => compareIds(a.rule, b.rule) || compareIds(a.actor, b.actor)
+    );
+  }
+  async function breachedNorms(engine, goal) {
+    const rules = /* @__PURE__ */ new Set();
+    for (const binding2 of await solve(engine, goal)) {
+      const rule2 = text2(binding2["Rule"]);
+      if (rule2 !== null) rules.add(rule2);
+    }
+    const norms = [];
+    for (const rule2 of Array.from(rules).sort(compareIds)) {
+      norms.push({ rule: rule2, kind: await normKind(engine, prologAtom(rule2)) });
+    }
+    return norms;
+  }
+  async function normKind(engine, ruleAtom) {
+    let smallest = null;
+    for (const binding2 of await solve(engine, `norm_kind(${ruleAtom}, K)`)) {
+      const kind = text2(binding2["K"]);
+      if (kind === null) continue;
+      if (smallest === null || compareIds(kind, smallest) < 0) smallest = kind;
+    }
+    return smallest ?? UNCLASSIFIED_NORM;
+  }
+  async function witnessesOf(engine, eventAtom, ruleAtom) {
+    const witnesses = /* @__PURE__ */ new Set();
+    for (const binding2 of await solve(
+      engine,
+      `witnessed_violation(${eventAtom}, ${ruleAtom}, W)`
+    )) {
+      const witness = text2(binding2["W"]);
+      if (witness !== null) witnesses.add(witness);
+    }
+    return Array.from(witnesses).sort(compareIds);
+  }
+  async function truthsOf(engine, eventAtom, ruleAtom, actor) {
+    const byKey = /* @__PURE__ */ new Map();
+    for (const binding2 of await solve(
+      engine,
+      `enforced_truth(${eventAtom}, ${ruleAtom}, _, P, O)`
+    )) {
+      const predicate = text2(binding2["P"]);
+      const object = text2(binding2["O"]);
+      if (predicate === null || object === null) continue;
+      byKey.set(streamKey([predicate, object]), { subject: actor, predicate, object });
+    }
+    return Array.from(byKey.values()).sort(
+      (a, b) => compareIds(a.predicate, b.predicate) || compareIds(a.object, b.object)
+    );
+  }
+  async function reputationOf(engine, eventAtom, ruleAtom) {
+    const rows = /* @__PURE__ */ new Map();
+    for (const binding2 of await solve(
+      engine,
+      `enforced_reputation(${eventAtom}, ${ruleAtom}, _, F, D)`
+    )) {
+      const faction = text2(binding2["F"]);
+      const delta = num2(binding2["D"]);
+      if (faction === null || delta === null) continue;
+      rows.set(streamKey([faction, String(delta)]), { faction, delta });
+    }
+    const byFaction = /* @__PURE__ */ new Map();
+    for (const row of rows.values()) {
+      byFaction.set(row.faction, (byFaction.get(row.faction) ?? 0) + row.delta);
+    }
+    return Array.from(byFaction.entries()).map(([faction, delta]) => ({ faction, delta })).sort((a, b) => compareIds(a.faction, b.faction));
+  }
+  function text2(value) {
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+    return null;
+  }
+  function num2(value) {
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    if (typeof value === "string") {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+  }
+
+  // @insimul/core/src/identity/equivalence.ts
+  function claimFact(subject, predicate, object, world2) {
+    return claimTermFact(subject, predicate, formatIdTerm(object), world2);
+  }
+  function claimTermFact(subject, predicate, objectTerm, world2) {
+    return `claim(${formatIdTerm(subject)}, ${prologAtom(predicate)}, ${objectTerm}, ${worldContextTerm(world2)}).`;
+  }
+
+  // @insimul/core/src/ai/belief-worlds.ts
+  var BELIEF_LOCAL_ID_PREFIX = "belief-";
+  function beliefWorldId(playthrough, agent) {
+    if (playthrough.kind !== "world") {
+      throw new Error(`beliefWorldId: not a world: "${formatCurie(playthrough)}"`);
+    }
+    return {
+      kind: "world",
+      namespace: formatCurie(playthrough),
+      localId: BELIEF_LOCAL_ID_PREFIX + sanitizeLocalId(formatCurie(agent))
+    };
+  }
+  function beliefWorldDeclaration(playthrough, agent) {
+    return {
+      world: beliefWorldId(playthrough, agent),
+      parent: null,
+      role: "belief",
+      inheritsIdentity: false
+    };
+  }
+  function beliefWorldFacts(playthrough, agent) {
+    const declaration = beliefWorldDeclaration(playthrough, agent);
+    return [
+      ...worldFacts(declaration),
+      `agent_belief_world(${formatIdTerm(agent)}, ${formatIdTerm(declaration.world)}).`
+    ];
+  }
+
+  // @insimul/core/src/ai/perception.ts
+  var DEFAULT_PERCEPTION_THRESHOLDS = Object.freeze({
+    clear: 0.6,
+    partial: 0.25,
+    jitter: 0.1
+  });
+  function perceive(input) {
+    const thresholds = { ...DEFAULT_PERCEPTION_THRESHOLDS, ...input.thresholds };
+    const agentsByCurie = /* @__PURE__ */ new Map();
+    for (const agent of input.agents) agentsByCurie.set(formatCurie(agent.agent), agent);
+    const perceptsById = /* @__PURE__ */ new Map();
+    for (const percept of input.percepts) perceptsById.set(percept.id, percept);
+    const pairs = /* @__PURE__ */ new Map();
+    for (const exposure of input.exposures) {
+      const agentCurie = formatCurie(exposure.agent);
+      if (!agentsByCurie.has(agentCurie) || !perceptsById.has(exposure.percept)) continue;
+      const key = streamKey([agentCurie, exposure.percept]);
+      const clarity = clamp01(exposure.clarity);
+      const prev = pairs.get(key);
+      if (prev === void 0 || clarity > prev.clarity) {
+        pairs.set(key, { agentCurie, perceptId: exposure.percept, clarity });
+      }
+    }
+    const perceptions = [];
+    for (const { agentCurie, perceptId, clarity } of pairs.values()) {
+      const agent = agentsByCurie.get(agentCurie);
+      const percept = perceptsById.get(perceptId);
+      const acuity = acuityFor(agent, percept.channel);
+      if (acuity === null) continue;
+      const base = clarity * clamp01(acuity) * clamp01(percept.strength / 100);
+      const noise = thresholds.jitter === 0 ? 0 : (derivedValue(input.seed, input.tick, agentCurie, perceptId) * 2 - 1) * thresholds.jitter;
+      const confidence = roundDeterministic(clamp01(base + noise));
+      const fidelity = fidelityOf(confidence, thresholds);
+      if (fidelity === null) continue;
+      const learned = learnedTriple(percept, fidelity);
+      perceptions.push({
+        agent: agentCurie,
+        percept: perceptId,
+        channel: percept.channel,
+        fidelity,
+        confidence,
+        belief: {
+          subject: formatCurie(learned.subject),
+          predicate: percept.predicate,
+          object: formatCurie(learned.object)
+        }
+      });
+    }
+    perceptions.sort(
+      (a, b) => compareIds(a.agent, b.agent) || compareIds(a.percept, b.percept)
+    );
+    return {
+      perceptions,
+      beliefWorldFacts: beliefWorldFactsFor(input.playthrough, perceptions, agentsByCurie),
+      beliefFacts: beliefFactsFor(input.playthrough, perceptions, agentsByCurie, perceptsById),
+      perceptFacts: perceptFactsFor(perceptions, perceptsById),
+      perceivedFacts: perceptions.map(
+        (p) => `perceived(${formatIdTerm(agentsByCurie.get(p.agent).agent)}, ${prologAtom(p.percept)}, ${p.channel}, ${p.fidelity}).`
+      )
+    };
+  }
+  function acuityFor(agent, channel) {
+    let best = null;
+    for (const sense of agent.senses) {
+      if (sense.channel !== channel) continue;
+      if (best === null || sense.acuity > best) best = sense.acuity;
+    }
+    return best;
+  }
+  function fidelityOf(score, thresholds) {
+    if (score >= thresholds.clear) return "clear";
+    if (score >= thresholds.partial) return "partial";
+    return null;
+  }
+  function learnedTriple(percept, fidelity) {
+    if (fidelity === "clear") return { subject: percept.subject, object: percept.object };
+    return {
+      subject: percept.coarseSubject ?? percept.subject,
+      object: percept.coarseObject ?? percept.object
+    };
+  }
+  function beliefWorldFactsFor(playthrough, perceptions, agentsByCurie) {
+    const seen = /* @__PURE__ */ new Set();
+    const facts = [];
+    for (const perception of perceptions) {
+      if (seen.has(perception.agent)) continue;
+      seen.add(perception.agent);
+      facts.push(...beliefWorldFacts(playthrough, agentsByCurie.get(perception.agent).agent));
+    }
+    return facts;
+  }
+  function beliefFactsFor(playthrough, perceptions, agentsByCurie, perceptsById) {
+    return perceptions.map((perception) => {
+      const percept = perceptsById.get(perception.percept);
+      const learned = learnedTriple(percept, perception.fidelity);
+      const agent = agentsByCurie.get(perception.agent).agent;
+      return claimFact(
+        learned.subject,
+        percept.predicate,
+        learned.object,
+        beliefWorldId(playthrough, agent)
+      );
+    });
+  }
+  function perceptFactsFor(perceptions, perceptsById) {
+    const perceived = new Set(perceptions.map((p) => p.percept));
+    const ids = [...perceptsById.keys()].filter((id) => perceived.has(id) || perceptsById.get(id).actor !== void 0).sort(compareIds);
+    const facts = [];
+    for (const id of ids) {
+      const percept = perceptsById.get(id);
+      const atom3 = prologAtom(id);
+      if (perceived.has(id)) {
+        facts.push(
+          `percept(${atom3}, ${formatIdTerm(percept.subject)}, ${prologAtom(percept.predicate)}, ${formatIdTerm(percept.object)}).`
+        );
+      }
+      facts.push(`percept_channel(${atom3}, ${percept.channel}).`);
+      if (percept.actor) facts.push(`percept_actor(${atom3}, ${formatIdTerm(percept.actor)}).`);
+    }
+    return facts;
+  }
+
+  // @insimul/core/src/perception/detection.ts
+  var DETECTION_STATES = ["unaware", "suspicious", "searching", "alerted"];
+  var DETECTION_THRESHOLD_NAMES = ["suspicious", "searching", "alerted"];
+  function detectionRank(state) {
+    return DETECTION_STATES.indexOf(state);
+  }
+  var DEFAULT_DETECTION_TUNING = Object.freeze({
+    thresholds: Object.freeze({ suspicious: 25, searching: 50, alerted: 80 }),
+    gain: 12,
+    decay: 6,
+    hysteresis: 10,
+    senseWeights: Object.freeze({ sight: 1, hearing: 0.6, smell: 0.3, touch: 1 }),
+    lightFloor: 10,
+    lightReference: 60,
+    coverWeight: 0.75,
+    concealmentMultiplier: 0.35,
+    stanceVisibility: Object.freeze({ standing: 1, crouching: 0.7, prone: 0.45 }),
+    stanceNoise: Object.freeze({ standing: 1, crouching: 0.5, prone: 0.25 }),
+    distractionWeight: 0.75,
+    fidelity: DEFAULT_PERCEPTION_THRESHOLDS
+  });
+  function detectionStateFor(awareness, thresholds) {
+    if (awareness >= thresholds.alerted) return "alerted";
+    if (awareness >= thresholds.searching) return "searching";
+    if (awareness >= thresholds.suspicious) return "suspicious";
+    return "unaware";
+  }
+  function detectionThresholdOf(state, thresholds) {
+    return state === "unaware" ? 0 : thresholds[state];
+  }
+  function nextDetectionState(previous, awareness, tuning) {
+    const raw = detectionStateFor(awareness, tuning.thresholds);
+    if (detectionRank(raw) >= detectionRank(previous)) return raw;
+    const held = detectionThresholdOf(previous, tuning.thresholds) - tuning.hysteresis;
+    return awareness >= held ? previous : raw;
+  }
+  function runDetection(input) {
+    const tuning = input.tuning ?? DEFAULT_DETECTION_TUNING;
+    const targetsByCurie = /* @__PURE__ */ new Map();
+    for (const target of input.targets) targetsByCurie.set(formatCurie(target.id), target);
+    const observersByCurie = /* @__PURE__ */ new Map();
+    for (const observer of input.observers) observersByCurie.set(formatCurie(observer.agent), observer);
+    const percepts = input.targets.map((target) => sightingPercept(target, tuning));
+    const sounds = input.targets.map((target) => soundPercept(target, tuning));
+    const acts = (input.acts ?? []).filter((act) => targetsByCurie.has(formatCurie(act.actor)));
+    const actPercepts = acts.map((act) => actPercept(act));
+    const exposures = [];
+    for (const reading of input.readings) {
+      const observerCurie = formatCurie(reading.observer);
+      const targetCurie = formatCurie(reading.target);
+      if (!observersByCurie.has(observerCurie) || !targetsByCurie.has(targetCurie)) continue;
+      const target = targetsByCurie.get(targetCurie);
+      exposures.push({
+        agent: reading.observer,
+        percept: sightingPerceptId(targetCurie),
+        clarity: sightClarity(reading, target, tuning)
+      });
+      exposures.push({
+        agent: reading.observer,
+        percept: soundPerceptId(targetCurie),
+        clarity: clamp01(reading.audibility ?? 1)
+      });
+      for (const act of acts) {
+        if (formatCurie(act.actor) !== targetCurie) continue;
+        exposures.push({
+          agent: reading.observer,
+          percept: act.event,
+          clarity: actClarity(act, reading, target, tuning)
+        });
+      }
+    }
+    const perception = perceive({
+      seed: input.seed,
+      tick: input.tick,
+      playthrough: input.playthrough,
+      agents: input.observers.map(toPerceivingAgent),
+      percepts: [...percepts, ...sounds, ...actPercepts],
+      exposures,
+      thresholds: tuning.fidelity
+    });
+    const pairs = /* @__PURE__ */ new Map();
+    const pairKey2 = (observer, target) => streamKey([observer, target]);
+    for (const memory of input.memory ?? []) {
+      pairs.set(pairKey2(memory.observer, memory.target), {
+        observer: memory.observer,
+        target: memory.target,
+        prior: { ...memory },
+        perceptions: []
+      });
+    }
+    const actIds = new Set(acts.map((act) => act.event));
+    for (const perceived of perception.perceptions) {
+      if (actIds.has(perceived.percept)) continue;
+      const targetCurie = targetOfPerceptId(perceived.percept);
+      if (targetCurie === null || !targetsByCurie.has(targetCurie)) continue;
+      const key = pairKey2(perceived.agent, targetCurie);
+      const work = pairs.get(key);
+      if (work) work.perceptions.push(perceived);
+      else {
+        pairs.set(key, {
+          observer: perceived.agent,
+          target: targetCurie,
+          prior: void 0,
+          perceptions: [perceived]
+        });
+      }
+    }
+    const decided = [];
+    for (const work of pairs.values()) {
+      const update = resolvePair(work, observersByCurie.get(work.observer), input.tick, tuning);
+      decided.push({
+        update,
+        memory: {
+          observer: update.observer,
+          target: update.target,
+          awareness: update.awareness,
+          state: update.state,
+          believedLocation: update.believedLocation,
+          believedAt: update.believedAt,
+          lastPerceivedTick: update.beliefRefreshed ? input.tick : work.prior?.lastPerceivedTick
+        }
+      });
+    }
+    decided.sort(
+      (a, b) => compareIds(a.update.observer, b.update.observer) || compareIds(a.update.target, b.update.target)
+    );
+    return {
+      updates: decided.map((d) => d.update),
+      memory: decided.map((d) => d.memory),
+      perception
+    };
+  }
+  function resolvePair(work, observer, tick, tuning) {
+    const before = work.prior?.awareness ?? 0;
+    const stateBefore = work.prior?.state ?? "unaware";
+    const perceptions = [...work.perceptions].sort((a, b) => compareIds(a.percept, b.percept));
+    let raw = 0;
+    let confidence = 0;
+    const channels = [];
+    for (const perception of perceptions) {
+      const weight = tuning.senseWeights[perception.channel] ?? 0;
+      raw += perception.confidence * weight;
+      if (perception.confidence > confidence) confidence = perception.confidence;
+      if (!channels.includes(perception.channel)) channels.push(perception.channel);
+    }
+    channels.sort(compareIds);
+    const attention = 1 - clamp01((observer?.distraction ?? 0) / 100) * clamp01(tuning.distractionWeight);
+    const delta = perceptions.length === 0 ? -Math.round(tuning.decay) : Math.round(raw * tuning.gain * attention);
+    const awareness = clampAwareness(before + delta);
+    const state = nextDetectionState(stateBefore, awareness, tuning);
+    const best = strongestPerception(perceptions);
+    const believedLocation = best ? best.belief.object : work.prior?.believedLocation;
+    const believedAt = best ? tick : work.prior?.believedAt;
+    return {
+      observer: work.observer,
+      target: work.target,
+      awarenessBefore: before,
+      awareness,
+      stateBefore,
+      state,
+      changed: state !== stateBefore,
+      channels,
+      confidence: roundDeterministic(confidence),
+      believedLocation,
+      believedAt,
+      beliefRefreshed: best !== void 0
+    };
+  }
+  function strongestPerception(perceptions) {
+    let best;
+    for (const perception of perceptions) {
+      if (best === void 0 || perception.confidence > best.confidence || perception.confidence === best.confidence && compareIds(perception.percept, best.percept) < 0) {
+        best = perception;
+      }
+    }
+    return best;
+  }
+  function clampAwareness(level) {
+    if (!Number.isFinite(level) || level < 0) return 0;
+    return level > 100 ? 100 : Math.round(level);
+  }
+  function sightingPerceptId(targetCurie) {
+    return `sighting:${targetCurie}`;
+  }
+  function soundPerceptId(targetCurie) {
+    return `sound:${targetCurie}`;
+  }
+  function targetOfPerceptId(perceptId) {
+    if (perceptId.startsWith("sighting:")) return perceptId.slice("sighting:".length);
+    if (perceptId.startsWith("sound:")) return perceptId.slice("sound:".length);
+    return null;
+  }
+  function sightingPercept(target, tuning) {
+    const curie = formatCurie(target.id);
+    const stance = target.stance ?? "standing";
+    const strength = 100 * lightFactor(target.light, tuning) * clamp01(tuning.stanceVisibility[stance] ?? 1);
+    return {
+      id: sightingPerceptId(curie),
+      subject: target.id,
+      predicate: "at_location",
+      object: target.location,
+      channel: "sight",
+      strength,
+      coarseObject: target.coarseLocation
+    };
+  }
+  function soundPercept(target, tuning) {
+    const curie = formatCurie(target.id);
+    const stance = target.stance ?? "standing";
+    const strength = clampLevel(target.noise ?? 0) * clamp01(tuning.stanceNoise[stance] ?? 1);
+    return {
+      id: soundPerceptId(curie),
+      subject: target.id,
+      predicate: "at_location",
+      object: target.location,
+      channel: "hearing",
+      strength,
+      coarseObject: target.coarseLocation
+    };
+  }
+  function actPercept(act) {
+    return {
+      id: act.event,
+      subject: act.actor,
+      predicate: act.action,
+      object: act.object,
+      channel: act.channel,
+      strength: clampLevel(act.strength),
+      actor: act.actor,
+      coarseSubject: act.coarseActor,
+      coarseObject: act.coarseObject
+    };
+  }
+  function actClarity(act, reading, target, tuning) {
+    if (act.channel === "hearing") return clamp01(reading.audibility ?? 1);
+    if (act.channel === "sight") return sightClarity(reading, target, tuning);
+    return clamp01(reading.visibility);
+  }
+  function sightClarity(reading, target, tuning) {
+    const cover = 1 - clamp01(reading.cover ?? 0) * clamp01(tuning.coverWeight);
+    const concealment = target.concealed ? clamp01(tuning.concealmentMultiplier) : 1;
+    return clamp01(clamp01(reading.visibility) * cover * concealment);
+  }
+  function lightFactor(light, tuning) {
+    if (light === void 0) return 1;
+    const span = tuning.lightReference - tuning.lightFloor;
+    if (span <= 0) return clampLevel(light) > tuning.lightFloor ? 1 : 0;
+    return clamp01((clampLevel(light) - tuning.lightFloor) / span);
+  }
+  function clampLevel(level) {
+    if (!Number.isFinite(level) || level < 0) return 0;
+    return level > 100 ? 100 : level;
+  }
+  function toPerceivingAgent(observer) {
+    return { agent: observer.agent, senses: observer.senses };
+  }
+  function detectionEntityId(id, namespace) {
+    if (id.split(":").length >= 3) {
+      try {
+        return parseCurie(id);
+      } catch {
+      }
+    }
+    return provisionalEntityId(sanitizeLocalId(id), namespace);
+  }
+
+  // @insimul/core/src/perception/detection-facts.ts
+  var DETECTION_RESOLUTION_PREDICATES = Object.freeze([
+    "awareness/3",
+    "detection_state/3"
+  ]);
+  var DETECTION_AUTHORED_PREDICATES = Object.freeze([
+    "detection_threshold/2"
+  ]);
+  function awarenessFact(observer, target, level) {
+    return `awareness(${formatIdTerm(observer)}, ${formatIdTerm(target)}, ${Math.round(level)}).`;
+  }
+  function detectionStateFact(observer, target, state) {
+    return `detection_state(${formatIdTerm(observer)}, ${formatIdTerm(target)}, ${state}).`;
+  }
+  function detectionFacts(update) {
+    const delta = { retract: [], assert: [] };
+    const observer = parseCurie(update.observer);
+    const target = parseCurie(update.target);
+    if (update.awareness !== update.awarenessBefore) {
+      if (update.awarenessBefore !== 0) {
+        delta.retract.push(awarenessFact(observer, target, update.awarenessBefore));
+      }
+      if (update.awareness !== 0) delta.assert.push(awarenessFact(observer, target, update.awareness));
+    }
+    if (update.changed) {
+      if (update.stateBefore !== "unaware") {
+        delta.retract.push(detectionStateFact(observer, target, update.stateBefore));
+      }
+      if (update.state !== "unaware") {
+        delta.assert.push(detectionStateFact(observer, target, update.state));
+      }
+    }
+    return delta;
+  }
+  function detectionPassFacts(updates) {
+    const delta = { retract: [], assert: [] };
+    for (const update of updates) {
+      const one2 = detectionFacts(update);
+      delta.retract.push(...one2.retract);
+      delta.assert.push(...one2.assert);
+    }
+    return delta;
+  }
+  function detectionThresholdFacts(tuning) {
+    return DETECTION_THRESHOLD_NAMES.map(
+      (name) => `detection_threshold(${name}, ${Math.round(tuning.thresholds[name])}).`
+    );
+  }
+
+  // @insimul/core/src/perception/detection-save.ts
+  var DETECTION_EXTENSION_KEY = "detectionStates";
+  var DETECTION_AUTHORED_FIELDS = Object.freeze([
+    "thresholds",
+    "gain",
+    "decay",
+    "hysteresis",
+    "senseWeights",
+    "lightFloor",
+    "lightReference",
+    "coverWeight",
+    "concealmentMultiplier",
+    "stanceVisibility",
+    "stanceNoise",
+    "distractionWeight",
+    "fidelity"
+  ]);
+  function readDetectionState(extensions) {
+    const raw = extensions?.[DETECTION_EXTENSION_KEY];
+    if (!raw || typeof raw !== "object" || Array.isArray(raw)) return { pairs: [] };
+    const pairs = raw.pairs;
+    if (!Array.isArray(pairs)) return { pairs: [] };
+    return { pairs: pairs.filter(isPairState).map((pair) => ({ ...pair })) };
+  }
+  function writeDetectionState(extensions, state) {
+    const stored = {
+      pairs: (state.pairs ?? []).filter(isPairState).map((pair) => ({ ...pair }))
+    };
+    writeExtension(extensions, DETECTION_EXTENSION_KEY, stored);
+    return stored;
+  }
+  function isPairState(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const pair = value;
+    return typeof pair.observer === "string" && typeof pair.target === "string" && typeof pair.awareness === "number" && typeof pair.state === "string";
+  }
+
+  // @insimul/core/src/perception/stealth-actions.ts
+  var STEALTH_ACTION_CATEGORY = "stealth";
+  var DEFAULT_STEALTH_ACTIONS = Object.freeze([
+    Object.freeze({
+      id: "hide",
+      name: "Hide",
+      energyCost: 5,
+      conceals: true,
+      stance: "crouching",
+      noise: 0,
+      // Breaking contact does not erase what a guard already believes; it costs
+      // them the thread. The ladder's own decay does the rest.
+      awarenessDelta: -10,
+      presence: { channel: "sight", strength: 20 }
+    }),
+    Object.freeze({
+      id: "sneak",
+      name: "Sneak",
+      energyCost: 10,
+      stance: "crouching",
+      noise: 10,
+      presence: { channel: "sight", strength: 30 }
+    }),
+    Object.freeze({
+      id: "distract",
+      name: "Distract",
+      requiresTarget: true,
+      targetType: "person",
+      energyCost: 10,
+      distraction: 60,
+      noise: 70,
+      presence: { channel: "hearing", strength: 70 }
+    }),
+    Object.freeze({
+      id: "take_down",
+      name: "Take down",
+      requiresTarget: true,
+      targetType: "person",
+      energyCost: 30,
+      incapacitates: true,
+      noise: 40,
+      presence: { channel: "sight", strength: 80 }
+    })
+  ]);
+  function stealthActionFrom(row, columns) {
+    const id = columns?.id ?? row?.id;
+    if (!id) throw new Error("stealthActionFrom: an action row must have an id");
+    const action = { id };
+    const name = columns?.name ?? row?.name;
+    if (name) action.name = name;
+    const requiresTarget = columns?.requiresTarget ?? row?.requiresTarget;
+    if (requiresTarget !== void 0 && requiresTarget !== null) {
+      action.requiresTarget = requiresTarget;
+    }
+    const targetType = columns?.targetType ?? row?.targetType;
+    if (targetType) action.targetType = targetType;
+    const energyCost = firstNumber2(columns?.energyCost, positive2(row?.energyCost));
+    if (energyCost !== void 0) action.energyCost = energyCost;
+    if (columns?.presence !== void 0) action.presence = { ...columns.presence };
+    if (columns?.noise !== void 0) action.noise = columns.noise;
+    if (columns?.stance !== void 0) action.stance = columns.stance;
+    if (columns?.conceals !== void 0) action.conceals = columns.conceals;
+    if (columns?.awarenessDelta !== void 0) action.awarenessDelta = columns.awarenessDelta;
+    if (columns?.distraction !== void 0) action.distraction = columns.distraction;
+    if (columns?.incapacitates !== void 0) action.incapacitates = columns.incapacitates;
+    return action;
+  }
+  var StealthActionTable = class {
+    constructor(actions = []) {
+      __publicField(this, "rows", /* @__PURE__ */ new Map());
+      for (const action of actions) this.define(action);
+    }
+    /** Add or replace one row. Returns it as stored. */
+    define(action) {
+      const stored = { ...action };
+      this.rows.set(stored.id, stored);
+      return stored;
+    }
+    /** Add or replace one row from authored columns plus, optionally, its shared row. */
+    defineAuthored(columns, row) {
+      return this.define(stealthActionFrom(row, columns));
+    }
+    get(actionId) {
+      const row = this.rows.get(actionId);
+      return row === void 0 ? void 0 : { ...row };
+    }
+    has(actionId) {
+      return this.rows.has(actionId);
+    }
+    /** Every action id, in the order the rows were defined. */
+    ids() {
+      return [...this.rows.keys()];
+    }
+    /** Every row, in the order they were defined. */
+    all() {
+      return [...this.rows.values()].map((row) => ({ ...row }));
+    }
+    get size() {
+      return this.rows.size;
+    }
+    /**
+     * Load a world's rows: every action the creator gave stealth columns to, plus
+     * every action-block row already in the `stealth` category.
+     *
+     * Returns how many rows were loaded. A world that authored neither gets none —
+     * {@link DEFAULT_STEALTH_ACTIONS} is the caller's fallback to reach for, and it
+     * is deliberately not applied here, because a world that deleted `take_down`
+     * must not have it handed back.
+     */
+    loadFromIR(actions = [], columnRows = []) {
+      const columnsById = /* @__PURE__ */ new Map();
+      for (const columns of columnRows) columnsById.set(columns.id, columns);
+      let loaded = 0;
+      const rowsById = /* @__PURE__ */ new Map();
+      for (const row of actions) {
+        rowsById.set(row.id, row);
+        if (!columnsById.has(row.id) && !isStealthRow(row)) continue;
+        this.define(stealthActionFrom(row, columnsById.get(row.id)));
+        loaded += 1;
+      }
+      for (const [id, columns] of columnsById) {
+        if (rowsById.has(id)) continue;
+        this.define(stealthActionFrom(void 0, columns));
+        loaded += 1;
+      }
+      return loaded;
+    }
+  };
+  function stealthActEffects(action) {
+    const actor = {};
+    if (action.noise !== void 0) actor.noise = clampLevel2(action.noise);
+    if (action.stance !== void 0) actor.stance = action.stance;
+    if (action.conceals !== void 0) actor.concealed = action.conceals;
+    const effects = {
+      actor,
+      awarenessDelta: action.awarenessDelta ?? 0,
+      incapacitates: action.incapacitates === true
+    };
+    if (action.distraction !== void 0) effects.distraction = clampLevel2(action.distraction);
+    return effects;
+  }
+  function stealthActFor(action, context) {
+    if (!action.presence) return void 0;
+    return {
+      event: context.event,
+      actor: context.actor,
+      action: action.id,
+      object: context.object,
+      channel: action.presence.channel,
+      strength: clampLevel2(action.presence.strength),
+      coarseActor: context.coarseActor,
+      coarseObject: context.coarseObject
+    };
+  }
+  function stealthActionFacts(action) {
+    const facts = [
+      {
+        predicate: "action",
+        args: [action.id, action.name ?? action.id, STEALTH_ACTION_CATEGORY, action.energyCost ?? 0]
+      },
+      { predicate: "action_category", args: [action.id, STEALTH_ACTION_CATEGORY] }
+    ];
+    if (action.requiresTarget) facts.push({ predicate: "action_requires_target", args: [action.id] });
+    if (action.targetType) {
+      facts.push({ predicate: "action_target_type", args: [action.id, action.targetType] });
+    }
+    return facts;
+  }
+  function isStealthRow(row) {
+    return row.category === STEALTH_ACTION_CATEGORY || row.actionType === STEALTH_ACTION_CATEGORY;
+  }
+  function positive2(value) {
+    return typeof value === "number" && Number.isFinite(value) && value > 0 ? value : void 0;
+  }
+  function firstNumber2(...values) {
+    for (const value of values) {
+      if (typeof value === "number" && Number.isFinite(value)) return value;
+    }
+    return void 0;
+  }
+  function clampLevel2(level) {
+    if (!Number.isFinite(level) || level < 0) return 0;
+    return level > 100 ? 100 : level;
+  }
+
+  // @insimul/core/src/game-engine/logic/DetectionTracker.ts
+  var DetectionTracker = class {
+    constructor(config) {
+      __publicField(this, "engine");
+      __publicField(this, "seed");
+      __publicField(this, "tuning");
+      __publicField(this, "playthrough");
+      __publicField(this, "namespace");
+      __publicField(this, "probe");
+      __publicField(this, "eventBus");
+      __publicField(this, "observers", /* @__PURE__ */ new Map());
+      __publicField(this, "targets", /* @__PURE__ */ new Map());
+      /** Keyed by the pair's logical identity — see `pairKey` at the foot of this file. */
+      __publicField(this, "memory", /* @__PURE__ */ new Map());
+      /** CURIE → the id the host registered, so a report speaks the host's language. */
+      __publicField(this, "hostIds", /* @__PURE__ */ new Map());
+      /** The last tick {@link DetectionTracker.observe} ran, which is what makes a belief stale. */
+      __publicField(this, "lastTick");
+      /** The world's stealth rows. Authored data — never written to by gameplay. */
+      __publicField(this, "actions");
+      /**
+       * Acts submitted since the last tick, waiting to be published into the pass.
+       *
+       * Queued rather than published on the spot because an act is perceived by the
+       * tick it happened in: publishing one immediately would mean a perception pass
+       * per act, and an observer's exposure would depend on the order the caller
+       * submitted things in.
+       */
+      __publicField(this, "pendingActs", []);
+      this.engine = config.engine;
+      this.seed = config.seed;
+      this.tuning = config.tuning ?? { ...DEFAULT_DETECTION_TUNING };
+      this.actions = new StealthActionTable(config.actions ?? DEFAULT_STEALTH_ACTIONS);
+      this.playthrough = config.playthrough;
+      this.namespace = config.namespace;
+      this.probe = config.probe ?? config.host?.perception;
+      this.eventBus = config.eventBus;
+      if (config.state) this.restore(config.state);
+    }
+    setEventBus(bus) {
+      this.eventBus = bus;
+    }
+    /** Whether a host wired {@link IPerceptionProbe}. False means the caller supplies readings. */
+    hasPerceptionProbe() {
+      return this.probe !== void 0;
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    // ── Roster ─────────────────────────────────────────────────────────────
+    /** Add or replace an observer. */
+    registerObserver(observer) {
+      this.observers.set(observer.id, { ...observer, senses: [...observer.senses] });
+      this.hostIds.set(formatCurie(this.kinpOf(observer.id, observer.kinp)), observer.id);
+    }
+    /** Add or replace a target. */
+    registerTarget(target) {
+      this.targets.set(target.id, { ...target });
+      this.hostIds.set(formatCurie(this.kinpOf(target.id, target.kinp)), target.id);
+    }
+    /**
+     * Update what the host knows about a target between ticks — where they are,
+     * how loud they are, whether they are crouched or concealed.
+     *
+     * Called when the world changes, not on a frame: a host that has a new position
+     * every frame reports the LOCATION it resolves to, and only when it changes.
+     */
+    setTargetState(id, patch) {
+      const target = this.targets.get(id);
+      if (!target) return;
+      Object.assign(target, patch);
+    }
+    /** How distracted an observer is right now, 0–100. */
+    setDistraction(id, distraction) {
+      const observer = this.observers.get(id);
+      if (!observer) return;
+      observer.distraction = distraction;
+    }
+    unregisterObserver(id) {
+      this.observers.delete(id);
+      this.forgetPairs((memory) => this.hostIdOf(memory.observer) === id);
+    }
+    unregisterTarget(id) {
+      this.targets.delete(id);
+      this.forgetPairs((memory) => this.hostIdOf(memory.target) === id);
+    }
+    // ── The decision ───────────────────────────────────────────────────────
+    /**
+     * Run one detection tick and apply what follows.
+     *
+     * Order: gather the host's readings, decide purely, then write. Nothing is
+     * written before the whole pass exists, so a partial tick cannot leave half a
+     * ladder behind.
+     */
+    async observe(request) {
+      const readings = request.readings ?? await this.askProbe(request.tick);
+      const sensed = readings.flatMap((reading) => this.toSensorReading(reading));
+      this.lastTick = request.tick;
+      const pending = this.pendingActs;
+      this.pendingActs = [];
+      const result = runDetection({
+        seed: this.seed,
+        tick: request.tick,
+        playthrough: this.playthrough,
+        observers: [...this.observers.values()].map((o) => this.toObserver(o)),
+        targets: [...this.targets.values()].map((t) => this.toTarget(t)),
+        readings: sensed,
+        acts: pending.map((entry) => entry.act),
+        memory: [...this.memory.values()],
+        tuning: this.tuning
+      });
+      this.memory = /* @__PURE__ */ new Map();
+      for (const memory of result.memory) this.memory.set(pairKey(memory.observer, memory.target), memory);
+      const facts = detectionPassFacts(result.updates);
+      facts.assert.push(
+        ...result.perception.beliefWorldFacts,
+        ...result.perception.perceptFacts,
+        ...result.perception.beliefFacts,
+        ...result.perception.perceivedFacts
+      );
+      for (const entry of pending) facts.assert.push(entry.fact);
+      const applied = await this.writeDelta(facts);
+      const enforcement = await this.enforce(request.tick, pending.map((entry) => entry.act.event));
+      const transitions = result.updates.filter((update) => update.changed);
+      this.announce(transitions);
+      return {
+        updates: result.updates,
+        transitions,
+        facts,
+        applied,
+        perception: result.perception,
+        acts: pending.map((entry) => entry.act),
+        enforcement
+      };
+    }
+    /**
+     * Judge this tick's acts, and make the consequences real.
+     *
+     * Strictly after the write: `violation/5` reads `act/4` and `witness/2` reads
+     * the pass's own `perceived/4` and `percept_actor/2`, so enforcement can only
+     * answer once both are in the KB. What comes back is asserted rather than
+     * returned to the caller to assert, because this module has already committed
+     * the tick — and a `reputation_change/3` the caller forgot to apply would be a
+     * crime that was witnessed and cost nothing.
+     */
+    async enforce(tick, events) {
+      if (!this.engine || events.length === 0) return null;
+      const result = await enforceActs(this.engine, {
+        tick,
+        events,
+        playthrough: this.playthrough
+      });
+      for (const fact of result.consequenceFacts) {
+        await this.engine.assertFact(stripPeriod2(fact));
+      }
+      return result;
+    }
+    // ── Stealth acts ───────────────────────────────────────────────────────
+    /**
+     * The world's stealth rows, as this instance read them.
+     */
+    getActions() {
+      return this.actions.all();
+    }
+    /**
+     * May this actor take this action against this target?
+     *
+     * `ai/rule-enforcement.ts`'s `checkAction`, forwarded with the actor spelled the
+     * way this module spells them. There is deliberately no stealth-private gate:
+     * hiding in a temple is refused by whatever `forbids/4` refuses it with, which
+     * is the same clause that refuses a theft. With no KB wired every action is
+     * permitted — core does not invent a prohibition it cannot read.
+     */
+    async checkStealthAction(actorId, action, targetId) {
+      const agent = this.curieOf(actorId);
+      const target = targetId === void 0 ? NO_TARGET : this.curieOf(targetId);
+      if (!this.engine) {
+        return { agent, action, target, permitted: true, breached: [] };
+      }
+      return checkAction(this.engine, { agent, action, target });
+    }
+    /**
+     * Perform one stealth act.
+     *
+     * Three things happen, in this order and for these reasons:
+     *
+     *  1. **The gate.** {@link checkStealthAction}, unless the caller opted out —
+     *     see {@link StealthActRequest.gated}.
+     *  2. **The row's effects.** What the actor now sounds like, what stance they
+     *     are in, whether they are concealed, what it cost every watcher in
+     *     awareness, what it did to the observer it was aimed at. All of it is said
+     *     in facts that already existed.
+     *  3. **The queue.** The act joins the next {@link DetectionTracker.observe},
+     *     where it is published as a percept in the SAME pass everything else is
+     *     perceived in — and, once that pass has written, judged.
+     *
+     * An act nobody could sense is still an act: it goes into the KB as `act/4`,
+     * it is still a violation if a norm forbade it, and it produces no consequence
+     * at all. That is the mechanic, not a degradation.
+     */
+    async act(request) {
+      const check = await this.checkStealthAction(request.actor, request.action, request.target);
+      const row = this.actions.get(request.action);
+      if (!check.permitted && request.gated !== false) {
+        return {
+          event: request.event,
+          actor: check.agent,
+          action: request.action,
+          target: check.target,
+          check,
+          performed: false
+        };
+      }
+      const effects = row ? stealthActEffects(row) : void 0;
+      if (effects) this.applyEffects(request, effects);
+      const actor = this.kinpOf(
+        request.actor,
+        this.targets.get(request.actor)?.kinp ?? this.observers.get(request.actor)?.kinp
+      );
+      this.hostIds.set(formatCurie(actor), request.actor);
+      const presence = request.presence ?? row?.presence ?? { channel: "sight", strength: 0 };
+      const act = stealthActFor(
+        { id: request.action, presence },
+        {
+          event: request.event,
+          actor,
+          object: this.objectOf(request),
+          coarseActor: request.coarseActor === void 0 ? void 0 : this.kinpOf(request.coarseActor),
+          coarseObject: this.coarseObjectOf(request)
+        }
+      );
+      this.pendingActs.push({
+        act,
+        fact: actFacts([
+          {
+            event: request.event,
+            actor: check.agent,
+            action: request.action,
+            target: check.target === NO_TARGET ? void 0 : check.target
+          }
+        ])[0]
+      });
+      return {
+        event: request.event,
+        actor: check.agent,
+        action: request.action,
+        target: check.target,
+        check,
+        performed: true,
+        effects
+      };
+    }
+    /**
+     * Publish the world's stealth rows into the shared action block.
+     *
+     * `action/4`, `action_category/2`, `action_requires_target/1` and
+     * `action_target_type/2` — four facts, not one of them stealth's own, which is
+     * what makes a sneak enumerate as a candidate and a take-down refusable by an
+     * ordinary norm. Authored data, asserted at load beside `publishTuning`.
+     * Returns how many facts were written.
+     */
+    async publishActions(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const action of this.actions.all()) {
+        for (const fact of stealthActionFacts(action)) {
+          await engine.assertFact(term2(fact));
+          written += 1;
+        }
+      }
+      return written;
+    }
+    /** What the row changed. Everything here is said in a fact that already existed. */
+    applyEffects(request, effects) {
+      if (Object.keys(effects.actor).length > 0) {
+        this.setTargetState(request.actor, effects.actor);
+      }
+      if (effects.awarenessDelta !== 0) {
+        this.adjustAwareness(request.actor, effects.awarenessDelta);
+      }
+      if (request.target !== void 0 && effects.distraction !== void 0) {
+        const observer = this.observers.get(request.target);
+        if (observer) {
+          this.setDistraction(request.target, (observer.distraction ?? 0) + effects.distraction);
+        }
+      }
+      if (request.target !== void 0 && effects.incapacitates) {
+        this.unregisterObserver(request.target);
+      }
+    }
+    /**
+     * Move every observer's awareness of one actor.
+     *
+     * The rung is left where it is: a hide does not un-alert a guard mid-tick, it
+     * moves the level, and the next pass reads it through the same hysteresis
+     * everything else goes through.
+     */
+    adjustAwareness(actorId, delta) {
+      const actorCurie = formatCurie(
+        this.kinpOf(actorId, this.targets.get(actorId)?.kinp ?? this.observers.get(actorId)?.kinp)
+      );
+      for (const memory of this.memory.values()) {
+        if (memory.target !== actorCurie) continue;
+        const level = memory.awareness + delta;
+        memory.awareness = level < 0 ? 0 : level > 100 ? 100 : Math.round(level);
+      }
+    }
+    /** The percept's object: what the act was aimed at, or where the actor is. */
+    objectOf(request) {
+      if (request.target !== void 0) return this.kinpOf(request.target, this.targets.get(request.target)?.kinp ?? this.observers.get(request.target)?.kinp);
+      const location = this.targets.get(request.actor)?.location;
+      return this.kinpOf(location ?? request.actor);
+    }
+    /** The coarse object a PARTIAL perception learns — only ever a coarser PLACE. */
+    coarseObjectOf(request) {
+      if (request.target !== void 0) return void 0;
+      const coarse = this.targets.get(request.actor)?.coarseLocation;
+      return coarse === void 0 ? void 0 : this.kinpOf(coarse);
+    }
+    /**
+     * A host id as the atom the rules layer spells it with.
+     *
+     * A registered entity is its CURIE — the spelling `act/4`, a witness list and
+     * the blackboard all share. Anything else passes through verbatim, because a
+     * target that is not an entity (`ledger`, `door_03`) is already an atom of the
+     * world's own content and minting a KINP id for it would name something that
+     * does not exist.
+     */
+    curieOf(id) {
+      const registration = this.observers.get(id) ?? this.targets.get(id);
+      if (!registration) return id;
+      return formatCurie(this.kinpOf(id, registration.kinp));
+    }
+    /**
+     * Ask the host what every observer's senses can reach of every target.
+     *
+     * One query per pair per DETECTION tick, on the decision path. A probe that
+     * throws or answers `null` for a pair is saying "sensed nothing", which is
+     * different from "sensed badly" and is the same rule `ai/perception.ts` applies
+     * to a missing exposure.
+     */
+    async askProbe(tick) {
+      if (!this.probe) return [];
+      const readings = [];
+      for (const observer of this.observers.values()) {
+        for (const target of this.targets.values()) {
+          if (observer.id === target.id) continue;
+          let reading = null;
+          try {
+            reading = await this.probe.sense({ observer: observer.id, target: target.id, tick }) ?? null;
+          } catch {
+            reading = null;
+          }
+          if (reading) readings.push({ ...reading, observer: observer.id, target: target.id });
+        }
+      }
+      return readings;
+    }
+    // ── What is known ──────────────────────────────────────────────────────
+    /** The rung this observer is on for this target. `unaware` for a pair with no history. */
+    stateOf(observerId, targetId) {
+      return this.pair(observerId, targetId)?.state ?? "unaware";
+    }
+    /** How convinced this observer is, 0–100. */
+    awarenessOf(observerId, targetId) {
+      return this.pair(observerId, targetId)?.awareness ?? 0;
+    }
+    /**
+     * Where this observer BELIEVES the target is, in the host's own ids — not
+     * where the target is.
+     *
+     * `undefined` means they have never perceived them. A value means they
+     * perceived them at `believedAt` and have believed it ever since, however long
+     * ago that was and however wrong it has become — and `stale` says which of the
+     * two it is: `false` only when the belief was refreshed on the most recent
+     * tick this tracker ran.
+     */
+    beliefOf(observerId, targetId) {
+      const memory = this.pair(observerId, targetId);
+      if (!memory?.believedLocation) return void 0;
+      return {
+        location: this.hostIdOf(memory.believedLocation),
+        tick: memory.believedAt,
+        stale: memory.believedAt === void 0 || memory.believedAt !== this.lastTick
+      };
+    }
+    /** Every observer that has noticed this target at all, in canonical order. */
+    observersAwareOf(targetId) {
+      const found = [];
+      for (const memory of this.memory.values()) {
+        if (this.hostIdOf(memory.target) !== targetId || memory.state === "unaware") continue;
+        found.push(this.hostIdOf(memory.observer));
+      }
+      return found.sort();
+    }
+    /** Every pair this tracker remembers, in canonical order. */
+    pairs() {
+      return this.serialize().pairs;
+    }
+    pair(observerId, targetId) {
+      const observer = this.observers.get(observerId);
+      const target = this.targets.get(targetId);
+      return this.memory.get(
+        pairKey(
+          formatCurie(this.kinpOf(observerId, observer?.kinp)),
+          formatCurie(this.kinpOf(targetId, target?.kinp))
+        )
+      );
+    }
+    // ── The KB ─────────────────────────────────────────────────────────────
+    /**
+     * Publish the world's authored bands into the KB as `detection_threshold/2`.
+     *
+     * Authored data, asserted at load the way `StaminaPool.publishTuning` asserts
+     * `stamina_threshold/2` — so a rule that asks whether a guard is past the
+     * `searching` band reads the same number core decided with. Returns how many
+     * facts were written.
+     */
+    async publishTuning(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const fact of detectionThresholdFacts(this.tuning)) {
+        await engine.assertFact(stripPeriod2(fact));
+        written += 1;
+      }
+      return written;
+    }
+    /**
+     * Write one delta into the KB, retracting first.
+     *
+     * Retracting a fact the KB never carried is a no-op rather than a failure: a
+     * host with its own persistence, a restored save and a pair whose first tick
+     * ran before the engine was wired all produce one, and none of them is an
+     * error.
+     */
+    async writeDelta(delta) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(stripPeriod2(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(stripPeriod2(fact));
+      }
+      return true;
+    }
+    /** Hand the transitions to the bus. Everything here is after the fact. */
+    announce(transitions) {
+      for (const update of transitions) {
+        this.eventBus?.emit({
+          type: "detection_changed",
+          observerId: this.hostIdOf(update.observer),
+          targetId: this.hostIdOf(update.target),
+          state: update.state,
+          previousState: update.stateBefore,
+          awareness: update.awareness
+        });
+      }
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    serialize() {
+      const pairs = [...this.memory.values()].map((memory) => ({
+        observer: this.hostIdOf(memory.observer),
+        target: this.hostIdOf(memory.target),
+        awareness: memory.awareness,
+        state: memory.state,
+        believedLocation: memory.believedLocation === void 0 ? void 0 : this.hostIdOf(memory.believedLocation),
+        believedAt: memory.believedAt,
+        lastPerceivedTick: memory.lastPerceivedTick
+      }));
+      pairs.sort((a, b) => a.observer < b.observer ? -1 : a.observer > b.observer ? 1 : a.target < b.target ? -1 : a.target > b.target ? 1 : 0);
+      return { pairs };
+    }
+    /**
+     * Write this playthrough's state into a save's extensions bag — US-2.
+     *
+     * `currentState.extensions.detectionStates`, the registered key and the only
+     * home the state has (`perception/detection-save.ts`). Goes through
+     * `writeDetectionState`, which drops anything that is not a pair, so authored
+     * tuning cannot ride into a save even if a caller handed some in.
+     */
+    saveTo(extensions) {
+      return writeDetectionState(extensions, this.serialize());
+    }
+    /**
+     * Restore from a save's extensions bag. Silent, exactly as
+     * {@link DetectionTracker.restore} is, and tolerant of a bag written before the
+     * key existed.
+     */
+    loadFrom(extensions) {
+      this.restore(readDetectionState(extensions));
+    }
+    /**
+     * Restore a saved playthrough. Silent — no events, because loading a save is
+     * not a guard noticing you, and a quest listener counting alarms must not fire
+     * on load.
+     */
+    restore(state) {
+      this.memory = /* @__PURE__ */ new Map();
+      for (const pair of state.pairs ?? []) {
+        const observer = formatCurie(this.kinpOf(pair.observer, this.observers.get(pair.observer)?.kinp));
+        const target = formatCurie(this.kinpOf(pair.target, this.targets.get(pair.target)?.kinp));
+        this.hostIds.set(observer, pair.observer);
+        this.hostIds.set(target, pair.target);
+        let believedLocation;
+        if (pair.believedLocation !== void 0) {
+          believedLocation = formatCurie(this.kinpOf(pair.believedLocation));
+          this.hostIds.set(believedLocation, pair.believedLocation);
+        }
+        this.memory.set(pairKey(observer, target), {
+          observer,
+          target,
+          awareness: pair.awareness,
+          state: pair.state,
+          believedLocation,
+          believedAt: pair.believedAt,
+          lastPerceivedTick: pair.lastPerceivedTick
+        });
+      }
+    }
+    // ── Identity ───────────────────────────────────────────────────────────
+    /**
+     * The KINP id behind a host id.
+     *
+     * A host that already names its entities with CURIEs gets its own identity
+     * back; anything else is minted provisionally in the configured namespace. The
+     * bridge exists because belief is stamped at a KINP belief world and the
+     * mechanic vocabulary is spoken in `id/3` terms, while a host is entitled to
+     * keep calling its guard `guard_02`.
+     */
+    kinpOf(id, explicit) {
+      return explicit ?? detectionEntityId(id, this.namespace);
+    }
+    /** The host id behind a CURIE, falling back to the CURIE for an id never registered. */
+    hostIdOf(curie) {
+      return this.hostIds.get(curie) ?? curie;
+    }
+    toObserver(registration) {
+      return {
+        agent: this.kinpOf(registration.id, registration.kinp),
+        senses: registration.senses,
+        distraction: registration.distraction
+      };
+    }
+    toTarget(registration) {
+      const location = this.kinpOf(registration.location);
+      this.hostIds.set(formatCurie(location), registration.location);
+      const coarse = registration.coarseLocation === void 0 ? void 0 : this.kinpOf(registration.coarseLocation);
+      if (coarse && registration.coarseLocation) {
+        this.hostIds.set(formatCurie(coarse), registration.coarseLocation);
+      }
+      return {
+        id: this.kinpOf(registration.id, registration.kinp),
+        location,
+        coarseLocation: coarse,
+        light: registration.light,
+        stance: registration.stance,
+        noise: registration.noise,
+        concealed: registration.concealed
+      };
+    }
+    /**
+     * One host reading as the pure pass takes it.
+     *
+     * A reading naming an id that is not registered is DROPPED rather than
+     * guessed at: a host may hold an id for a tick after the entity left, and
+     * inventing a KINP identity for it would put a ghost in the KB.
+     */
+    toSensorReading(reading) {
+      const observer = this.observers.get(reading.observer);
+      const target = this.targets.get(reading.target);
+      if (!observer || !target) return [];
+      if (reading.light !== void 0) target.light = reading.light;
+      if (reading.stance !== void 0) target.stance = reading.stance;
+      if (reading.noise !== void 0) target.noise = reading.noise;
+      return [
+        {
+          observer: this.kinpOf(observer.id, observer.kinp),
+          target: this.kinpOf(target.id, target.kinp),
+          visibility: reading.visibility,
+          cover: reading.cover,
+          audibility: reading.audibility
+        }
+      ];
+    }
+    forgetPairs(matches) {
+      for (const [key, memory] of [...this.memory.entries()]) {
+        if (matches(memory)) this.memory.delete(key);
+      }
+    }
+  };
+  function pairKey(observerCurie, targetCurie) {
+    return `${observerCurie.length}:${observerCurie}${targetCurie.length}:${targetCurie}`;
+  }
+  function stripPeriod2(clause) {
+    return clause.replace(/\.$/, "");
+  }
+  function term2(fact) {
+    return stripPeriod2(serializedFactToProlog(fact));
+  }
+
+  // @insimul/core/src/game-engine/logic/GameEventBus.ts
+  var GameEventBus = class {
+    constructor() {
+      __publicField(this, "handlers", /* @__PURE__ */ new Map());
+      __publicField(this, "globalHandlers", /* @__PURE__ */ new Set());
+    }
+    /**
+     * Subscribe to a specific event type.
+     * Returns an unsubscribe function.
+     */
+    on(type, handler) {
+      if (!this.handlers.has(type)) {
+        this.handlers.set(type, /* @__PURE__ */ new Set());
+      }
+      const wrappedHandler = handler;
+      this.handlers.get(type).add(wrappedHandler);
+      return () => this.handlers.get(type)?.delete(wrappedHandler);
+    }
+    /**
+     * Subscribe to all events.
+     * Returns an unsubscribe function.
+     */
+    onAny(handler) {
+      this.globalHandlers.add(handler);
+      return () => this.globalHandlers.delete(handler);
+    }
+    /**
+     * Emit an event to all registered handlers.
+     */
+    emit(event) {
+      const typeHandlers = this.handlers.get(event.type);
+      if (typeHandlers) {
+        typeHandlers.forEach((handler) => {
+          try {
+            handler(event);
+          } catch (e) {
+            console.error(`[GameEventBus] Error in handler for ${event.type}:`, e);
+          }
+        });
+      }
+      this.globalHandlers.forEach((handler) => {
+        try {
+          handler(event);
+        } catch (e) {
+          console.error(`[GameEventBus] Error in global handler:`, e);
+        }
+      });
+    }
+    /**
+     * Remove all handlers.
+     */
+    dispose() {
+      this.handlers.clear();
+      this.globalHandlers.clear();
+    }
+  };
+
+  // @insimul/core/src/routines/movement.ts
+  var DEFAULT_MOVEMENT_TUNING = Object.freeze({
+    // Above the 50 an ordinary routine block is worth: a shift about to start, a
+    // quest step, an appointment.
+    hurriedAt: 60,
+    // Flight, alarm, a threat. Deliberately high — an NPC that runs everywhere
+    // reads as broken, and `urgent` is the one rung a host may actually run on.
+    urgentAt: 85,
+    // A goal worth nothing much. Zero rather than negative so a world that authors
+    // `priority: 0` gets the stroll it asked for.
+    idleAt: 0,
+    attemptsBeforeReplan: 2
+  });
+  function movementTuningFromIR(ir) {
+    const authored = ir?.movement;
+    return {
+      hurriedAt: intOr2(authored?.hurriedAt, DEFAULT_MOVEMENT_TUNING.hurriedAt),
+      urgentAt: intOr2(authored?.urgentAt, DEFAULT_MOVEMENT_TUNING.urgentAt),
+      idleAt: intOr2(authored?.idleAt, DEFAULT_MOVEMENT_TUNING.idleAt),
+      attemptsBeforeReplan: Math.max(
+        1,
+        intOr2(authored?.attemptsBeforeReplan, DEFAULT_MOVEMENT_TUNING.attemptsBeforeReplan)
+      )
+    };
+  }
+  function urgencyFor(priority, tuning = DEFAULT_MOVEMENT_TUNING) {
+    if (typeof priority !== "number" || !Number.isFinite(priority)) return "ordinary";
+    const value = Math.trunc(priority);
+    if (value >= tuning.urgentAt) return "urgent";
+    if (value >= tuning.hurriedAt) return "hurried";
+    if (value <= tuning.idleAt) return "idle";
+    return "ordinary";
+  }
+  function movementIntent(input) {
+    if (input.suspended === true) return null;
+    if (!input.destination || !input.from) return null;
+    const tuning = input.tuning ?? DEFAULT_MOVEMENT_TUNING;
+    return {
+      actor: input.actor,
+      from: input.from,
+      destination: input.destination,
+      urgency: urgencyFor(input.priority, tuning),
+      stance: input.stance ?? "standing"
+    };
+  }
+  function inPlace(intent) {
+    return intent !== null && intent.from === intent.destination;
+  }
+  var NAVIGATION_FAILURES = Object.freeze([
+    "unplaced",
+    "no_route",
+    "refused",
+    "not_arrived"
+  ]);
+  function shouldReplan(failures, tuning = DEFAULT_MOVEMENT_TUNING) {
+    return failures >= Math.max(1, Math.trunc(tuning.attemptsBeforeReplan));
+  }
+  function nextLeg(route) {
+    return route?.steps[0];
+  }
+  function intOr2(value, fallback) {
+    return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : fallback;
+  }
+
+  // @insimul/core/src/game-engine/logic/LocomotionDirector.ts
+  var LocomotionDirector = class {
+    constructor(config = {}) {
+      __publicField(this, "graph");
+      __publicField(this, "plans");
+      __publicField(this, "tuning");
+      __publicField(this, "eventBus");
+      __publicField(this, "actors", /* @__PURE__ */ new Map());
+      this.graph = config.graph;
+      this.plans = config.plans;
+      this.eventBus = config.eventBus;
+      this.tuning = {
+        ...config.routines === void 0 ? DEFAULT_MOVEMENT_TUNING : movementTuningFromIR(config.routines),
+        ...config.tuning
+      };
+    }
+    setEventBus(bus) {
+      this.eventBus = bus;
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    /** Whether a traversal module is wired. False means nothing can be moved. */
+    hasGraph() {
+      return this.graph !== void 0;
+    }
+    // ── The intent ────────────────────────────────────────────────────────────
+    /**
+     * What core wants of this actor's position, without doing anything about it.
+     *
+     * Pure apart from the one lookup of where they are, and safe to ask at any
+     * cadence — a UI showing "on their way to the forge, in a hurry" asks this.
+     * `null` means core wants nothing: no destination, a preempted routine, or an
+     * actor nobody has placed.
+     */
+    intentFor(agent, destination, request = {}) {
+      const actor = agentRefKey(agent);
+      return movementIntent({
+        actor,
+        from: this.graph?.locationOf(actor),
+        destination,
+        priority: request.priority,
+        stance: request.stance,
+        suspended: request.suspended,
+        tuning: this.tuning
+      });
+    }
+    // ── The attempt ───────────────────────────────────────────────────────────
+    /**
+     * Take this actor one leg closer to where its goal wants it.
+     *
+     * Called on the decision path — once per routine tick, once per plan step,
+     * whenever the caller likes — and never on a frame. The order is the whole of
+     * the module's discipline:
+     *
+     *  1. **Form the intent.** No destination, or a preempted routine, and there is
+     *     nothing to do; that is an outcome, not a failure.
+     *  2. **Ask whether they are already there.** `routine_in_place/1`'s answer.
+     *  3. **Ask the traversal module for a route** over the authored graph and the
+     *     modes this actor has. None is `no_route`.
+     *  4. **Order ONE leg**, with the intent attached, through the same
+     *     `TraversalPlanner.traverse` a player's step goes through — every gate,
+     *     the same meter, the same `ILocomotionHost`.
+     *  5. **Read what came back**, and count it if it failed.
+     */
+    async pursue(agent, destination, request = {}) {
+      const actor = agentRefKey(agent);
+      const from = this.graph?.locationOf(actor);
+      const intent = this.intentFor(actor, destination, request);
+      if (intent === null) {
+        const wanted = destination ?? null;
+        if (wanted !== null && from === void 0) {
+          return this.record(actor, wanted, {
+            actor,
+            destination: wanted,
+            intent: null,
+            location: null,
+            arrived: false,
+            failure: "unplaced",
+            failures: 0,
+            replanned: false
+          });
+        }
+        this.clear(actor);
+        return {
+          actor,
+          destination: wanted,
+          intent: null,
+          location: from ?? null,
+          arrived: false,
+          failures: 0,
+          replanned: false
+        };
+      }
+      if (inPlace(intent)) {
+        this.clear(actor);
+        return {
+          actor,
+          destination: intent.destination,
+          intent,
+          location: intent.from,
+          arrived: true,
+          failures: 0,
+          replanned: false
+        };
+      }
+      const graph = this.graph;
+      const leg = graph === void 0 ? void 0 : nextLeg(graph.route(actor, intent.destination));
+      if (graph === void 0 || leg === void 0) {
+        const refusal3 = graph === void 0 ? void 0 : await this.refusalToward(graph, actor, intent.destination);
+        return this.record(actor, intent.destination, {
+          actor,
+          destination: intent.destination,
+          intent,
+          location: intent.from,
+          arrived: false,
+          failure: refusal3 === void 0 ? "no_route" : "refused",
+          ...refusal3 === void 0 ? {} : { refusal: refusal3 },
+          failures: 0,
+          replanned: false
+        });
+      }
+      const report = await graph.traverse(actor, leg.to, {
+        urgency: intent.urgency,
+        stance: intent.stance
+      });
+      const ordered = {
+        from: leg.from,
+        to: leg.to,
+        mode: leg.mode,
+        link: leg.id,
+        cost: leg.cost
+      };
+      if (!report.permitted) {
+        return this.record(actor, intent.destination, {
+          actor,
+          destination: intent.destination,
+          intent,
+          location: report.location,
+          arrived: false,
+          leg: ordered,
+          failure: "refused",
+          ...report.refusal === void 0 ? {} : { refusal: report.refusal },
+          failures: 0,
+          replanned: false
+        });
+      }
+      if (report.arrival !== void 0 && !report.arrival.arrived) {
+        return this.record(actor, intent.destination, {
+          actor,
+          destination: intent.destination,
+          intent,
+          location: report.location,
+          arrived: false,
+          leg: ordered,
+          report: report.arrival,
+          failure: "not_arrived",
+          failures: 0,
+          replanned: false
+        });
+      }
+      this.clear(actor);
+      return {
+        actor,
+        destination: intent.destination,
+        intent,
+        location: report.location,
+        arrived: report.location === intent.destination,
+        leg: ordered,
+        ...report.arrival === void 0 ? {} : { report: report.arrival },
+        failures: 0,
+        replanned: false
+      };
+    }
+    /**
+     * Which of 122's gates refuses the only way to an ADJACENT destination, or
+     * `undefined` when the destination is not adjacent at all.
+     *
+     * Asked once, and only when a route search already came back empty, so the
+     * ordinary path costs nothing. The answer is `TraversalAffordance.refusal`
+     * verbatim — this module has no vocabulary of its own for why a way is shut and
+     * must never grow one.
+     */
+    async refusalToward(graph, actor, destination) {
+      const toward = (await graph.affordances(actor)).filter((way) => way.to === destination);
+      if (toward.length === 0) return void 0;
+      return toward.sort((a, b) => a.cost - b.cost)[0].refusal;
+    }
+    // ── Failure bookkeeping ───────────────────────────────────────────────────
+    /**
+     * Count one failure, decide whether it is enough to re-plan, and say so.
+     *
+     * The count is per (actor, destination): an NPC that gave up on the mill and is
+     * now failing to reach the forge starts again, because those are two different
+     * things going wrong. Re-planning RESETS it — the plan that was failing is gone,
+     * and holding its failures against the next one would invalidate that one
+     * immediately.
+     */
+    record(actor, destination, outcome) {
+      const state = this.stateOf(actor);
+      if (state.destination !== destination) {
+        state.destination = destination;
+        state.failures = 0;
+      }
+      state.failures += 1;
+      const replanned = shouldReplan(state.failures, this.tuning);
+      const failures = state.failures;
+      if (replanned) {
+        this.plans?.interrupt(actor, "step-blocked");
+        state.failures = 0;
+        state.destination = null;
+      }
+      const settled = { ...outcome, failures, replanned };
+      this.eventBus?.emit({
+        type: "movement_failed",
+        actorId: actor,
+        destination,
+        location: settled.location,
+        failure: settled.failure ?? "no_route",
+        refusal: settled.refusal ?? null,
+        urgency: settled.intent?.urgency ?? null,
+        failures,
+        replanned
+      });
+      return settled;
+    }
+    /** Forget an actor's failures — they got somewhere, or they want nothing. */
+    clear(actor) {
+      const state = this.actors.get(actor);
+      if (state === void 0) return;
+      state.destination = null;
+      state.failures = 0;
+    }
+    /** How many times in a row this actor has failed to reach where it is going. */
+    failuresOf(agent) {
+      return this.actors.get(agentRefKey(agent))?.failures ?? 0;
+    }
+    /** Forget an actor entirely: it died, it despawned, it left the simulation. */
+    forget(agent) {
+      this.actors.delete(agentRefKey(agent));
+    }
+    stateOf(actor) {
+      let state = this.actors.get(actor);
+      if (state === void 0) {
+        state = { actor, destination: null, failures: 0 };
+        this.actors.set(actor, state);
+      }
+      return state;
+    }
+    // ── Save/restore ──────────────────────────────────────────────────────────
+    /** Every actor this director knows, in canonical order. */
+    roster() {
+      return [...this.actors.values()].map((state) => ({ ...state })).sort((a, b) => compareIds(a.actor, b.actor));
+    }
+    /**
+     * The per-playthrough state, and only that: who is failing to get where, and
+     * how often. The thresholds are AUTHORED and are not here — a tuning number
+     * inside a save file is world-template data leaking into a playthrough
+     * (`docs/mechanic-predicates.md` §3).
+     */
+    serialize() {
+      return { actors: this.roster() };
+    }
+    /** Restore a saved playthrough. Silent — no events, no orders. */
+    restore(state) {
+      this.actors = /* @__PURE__ */ new Map();
+      for (const actor of state?.actors ?? []) {
+        if (!actor?.actor) continue;
+        this.actors.set(actor.actor, {
+          actor: actor.actor,
+          destination: actor.destination ?? null,
+          failures: Math.max(0, Math.trunc(actor.failures ?? 0))
+        });
+      }
+    }
+  };
+
+  // @insimul/core/src/routines/routine-facts.ts
+  function emptyRoutineDelta() {
+    return { retract: [], assert: [] };
+  }
+  var ROUTINE_RESOLUTION_PREDICATES = Object.freeze([
+    "follows_routine/2",
+    "routine_suspended/2",
+    "agent_goal/3"
+  ]);
+  var ROUTINE_AUTHORED_FACT_PREDICATES = Object.freeze([
+    "routine/2",
+    "routine_block/2",
+    "routine_block_window/3",
+    "routine_block_day/2",
+    "routine_block_goal/2",
+    "routine_block_place/2",
+    "routine_block_priority/2",
+    "routine_week_length/1"
+  ]);
+  function routineGraphFacts(routines, tuning) {
+    const facts = [`routine_week_length(${Math.max(1, Math.trunc(tuning.weekLength))}).`];
+    for (const routine of routines) {
+      facts.push(`routine(${prologAtom(routine.id)}, ${prologAtom(routine.name)}).`);
+      for (const block of routine.blocks) {
+        const id = prologAtom(block.id);
+        facts.push(`routine_block(${prologAtom(routine.id)}, ${id}).`);
+        facts.push(`routine_block_window(${id}, ${block.startHour}, ${block.endHour}).`);
+        facts.push(`routine_block_goal(${id}, ${prologAtom(block.goal)}).`);
+        facts.push(`routine_block_priority(${id}, ${block.priority}).`);
+        if (block.place !== void 0) {
+          facts.push(`routine_block_place(${id}, ${prologAtom(block.place)}).`);
+        }
+        for (const day of block.days) facts.push(`routine_block_day(${id}, ${day}).`);
+      }
+    }
+    return facts;
+  }
+  function followsRoutineFact(agent, routine) {
+    return `follows_routine(${prologAtom(agent)}, ${prologAtom(routine)}).`;
+  }
+  function routineSuspendedFact(agent, reason) {
+    return `routine_suspended(${prologAtom(agent)}, ${prologAtom(reason)}).`;
+  }
+  function agentGoalFact(agent, goal, priority) {
+    return `agent_goal(${prologAtom(agent)}, ${prologAtom(goal)}, ${Math.trunc(priority)}).`;
+  }
+  function adoptedGoalDelta(agent, before, after) {
+    if (before?.goal === after?.goal && before?.priority === after?.priority) {
+      return emptyRoutineDelta();
+    }
+    return {
+      retract: before === null ? [] : [agentGoalFact(agent, before.goal, before.priority)],
+      assert: after === null ? [] : [agentGoalFact(agent, after.goal, after.priority)]
+    };
+  }
+  function suspensionDelta(agent, before, after) {
+    if (before === after) return emptyRoutineDelta();
+    return {
+      retract: before === null ? [] : [routineSuspendedFact(agent, before)],
+      assert: after === null ? [] : [routineSuspendedFact(agent, after)]
+    };
+  }
+  function assignmentDelta(agent, before, after) {
+    if (before === after) return emptyRoutineDelta();
+    return {
+      retract: before === null ? [] : [followsRoutineFact(agent, before)],
+      assert: after === null ? [] : [followsRoutineFact(agent, after)]
+    };
+  }
+  function mergeRoutineDeltas(...deltas) {
+    const merged = emptyRoutineDelta();
+    for (const delta of deltas) {
+      merged.retract.push(...delta.retract);
+      merged.assert.push(...delta.assert);
+    }
+    return merged;
+  }
+
+  // @insimul/core/src/routines/routines.ts
+  var DEFAULT_ROUTINE_TUNING = Object.freeze({
+    defaultPriority: 50,
+    weekLength: 7
+  });
+  function routineTuningFromIR(ir) {
+    return {
+      defaultPriority: intOr3(ir?.defaultPriority, DEFAULT_ROUTINE_TUNING.defaultPriority),
+      weekLength: Math.max(1, intOr3(ir?.weekLength, DEFAULT_ROUTINE_TUNING.weekLength))
+    };
+  }
+  function routinesFromIR(ir, tuning) {
+    const resolved = tuning ?? routineTuningFromIR(ir);
+    const routines = [];
+    for (const authored of ir?.routines ?? []) {
+      if (!authored?.id) continue;
+      routines.push(resolveRoutine(authored, resolved));
+    }
+    return routines;
+  }
+  function resolveRoutine(authored, tuning) {
+    const blocks = [];
+    for (const block of authored.blocks ?? []) {
+      if (!block?.id || !block.goal) continue;
+      blocks.push(resolveBlock(block, tuning));
+    }
+    return { id: authored.id, name: authored.name ?? authored.id, blocks };
+  }
+  function resolveBlock(block, tuning) {
+    const days = Array.from(
+      new Set((block.days ?? []).map((day) => Math.trunc(day)).filter((day) => day >= 0))
+    ).sort((a, b) => a - b);
+    return {
+      id: block.id,
+      goal: block.goal,
+      startHour: wholeHour(block.startHour, 0),
+      endHour: wholeHour(block.endHour, 24),
+      days,
+      ...block.place ? { place: block.place } : {},
+      priority: intOr3(block.priority, tuning.defaultPriority)
+    };
+  }
+  function weekdayOf(clock, tuning) {
+    const length = Math.max(1, Math.trunc(tuning.weekLength));
+    return (Math.trunc(clock.day) % length + length) % length;
+  }
+  function hourInWindow(hour, startHour, endHour) {
+    const h = Math.trunc(hour);
+    if (startHour < endHour) return h >= startHour && h < endHour;
+    return h >= startHour || h < endHour;
+  }
+  function blockOpen(block, clock, tuning) {
+    if (!hourInWindow(clock.hour, block.startHour, block.endHour)) return false;
+    if (block.days.length === 0) return true;
+    return block.days.includes(weekdayOf(clock, tuning));
+  }
+  function dueBlocks(routine, clock, tuning) {
+    return routine.blocks.filter((block) => blockOpen(block, clock, tuning)).sort((a, b) => a.priority !== b.priority ? b.priority - a.priority : compareIds(a.id, b.id));
+  }
+  function activeBlock(routine, clock, tuning) {
+    return dueBlocks(routine, clock, tuning)[0] ?? null;
+  }
+  function routineIssues(routines, tuning = DEFAULT_ROUTINE_TUNING) {
+    const issues = [];
+    const placeOfGoal = /* @__PURE__ */ new Map();
+    for (const routine of routines) {
+      for (const block of routine.blocks) {
+        const where = `${routine.id}.${block.id}`;
+        if (!block.goal) issues.push(`${where}: block names no goal`);
+        if (block.startHour < 0 || block.startHour > 23) {
+          issues.push(`${where}: startHour ${block.startHour} is not an hour of the day (0-23)`);
+        }
+        if (block.endHour < 0 || block.endHour > 24) {
+          issues.push(`${where}: endHour ${block.endHour} is not an hour of the day (0-24)`);
+        }
+        for (const day of block.days) {
+          if (day >= tuning.weekLength) {
+            issues.push(
+              `${where}: day ${day} is outside a ${tuning.weekLength}-day week, so the block never runs`
+            );
+          }
+        }
+        if (block.place === void 0) continue;
+        const seen = placeOfGoal.get(block.goal);
+        if (seen === void 0) {
+          placeOfGoal.set(block.goal, { place: block.place, block: where });
+        } else if (seen.place !== block.place) {
+          const [first, second] = [{ block: where, place: block.place }, seen].sort(
+            (a, b) => compareIds(a.block, b.block)
+          );
+          issues.push(
+            `${first.block}: goal "${block.goal}" is pursued at "${first.place}" here and at "${second.place}" in ${second.block}. A block's place is a requirement of its GOAL, so one goal in two places can never be satisfied \u2014 author two goals.`
+          );
+        }
+      }
+    }
+    return issues.sort(compareIds);
+  }
+  var SCHEDULE_ACTIVITY_GOALS = Object.freeze([
+    "sleep",
+    "work",
+    "eat",
+    "socialize",
+    "shop",
+    "wander",
+    "idle_at_home",
+    "visit_friend"
+  ]);
+  function intOr3(value, fallback) {
+    return typeof value === "number" && Number.isFinite(value) ? Math.trunc(value) : fallback;
+  }
+  function wholeHour(value, fallback) {
+    if (typeof value !== "number" || !Number.isFinite(value)) return fallback;
+    return Math.trunc(value);
+  }
+
+  // @insimul/core/src/game-engine/logic/RoutineDirector.ts
+  var RoutineDirector = class {
+    constructor(config = {}) {
+      __publicField(this, "engine");
+      __publicField(this, "eventBus");
+      __publicField(this, "plans");
+      __publicField(this, "tuning");
+      __publicField(this, "routines", /* @__PURE__ */ new Map());
+      __publicField(this, "agents", /* @__PURE__ */ new Map());
+      this.engine = config.engine;
+      this.eventBus = config.eventBus;
+      this.plans = config.plans;
+      const authored = config.routines;
+      if (Array.isArray(authored)) {
+        this.tuning = { ...DEFAULT_ROUTINE_TUNING, ...config.tuning };
+        for (const routine of authored) this.routines.set(routine.id, routine);
+      } else {
+        const ir = authored ?? null;
+        this.tuning = { ...routineTuningFromIR(ir), ...config.tuning };
+        for (const routine of routinesFromIR(ir, this.tuning)) this.routines.set(routine.id, routine);
+      }
+    }
+    // ── The authored world ────────────────────────────────────────────────────
+    /** The routine with this id, or `undefined`. Read-only. */
+    routine(id) {
+      return this.routines.get(id);
+    }
+    /** Everything wrong with the routines this world authored. Empty = sound. */
+    issues() {
+      return routineIssues(
+        [...this.routines.values()].sort((a, b) => compareIds(a.id, b.id)),
+        this.tuning
+      );
+    }
+    /**
+     * Publish the authored routines into the KB.
+     *
+     * For load time, and for a caller that wired the KB after the world — exactly
+     * what `TraversalPlanner.publishGraph` is for. Returns how many facts were
+     * written.
+     */
+    async publishRoutines(engine = this.engine) {
+      if (!engine) return 0;
+      const ordered = [...this.routines.values()].sort((a, b) => compareIds(a.id, b.id));
+      const facts = routineGraphFacts(ordered, this.tuning);
+      for (const fact of facts) await engine.assertFact(stripPeriod3(fact));
+      return facts.length;
+    }
+    // ── The roster ────────────────────────────────────────────────────────────
+    /**
+     * Give an NPC a routine, or take one away with `null`.
+     *
+     * Adopting the routine's goal is the next {@link RoutineDirector.tick}'s job and
+     * not this one's: what an NPC wants depends on the clock, and a method that
+     * took a routine would have to take a time too.
+     */
+    async assign(agent, routine) {
+      const key = agentRefKey(agent);
+      const state = this.stateOf(key);
+      if (state.routine === routine) return;
+      const delta = mergeRoutineDeltas(
+        assignmentDelta(key, state.routine, routine),
+        // An NPC that gave up its routine gives up the goal that routine adopted.
+        // A goal somebody else gave it is untouched.
+        routine === null ? adoptedGoalDelta(key, state.adopted, null) : emptyRoutineDelta()
+      );
+      state.routine = routine;
+      if (routine === null) state.adopted = null;
+      await this.writeDelta(delta);
+    }
+    /** The routine this NPC keeps, or `null`. */
+    routineOf(agent) {
+      return this.agents.get(agentRefKey(agent))?.routine ?? null;
+    }
+    /** Forget an NPC entirely: it died, it despawned, it left the simulation. */
+    async forget(agent) {
+      const key = agentRefKey(agent);
+      const state = this.agents.get(key);
+      if (state === void 0) return;
+      this.agents.delete(key);
+      await this.writeDelta(
+        mergeRoutineDeltas(
+          assignmentDelta(key, state.routine, null),
+          adoptedGoalDelta(key, state.adopted, null),
+          suspensionDelta(key, state.suspension?.reason ?? null, null)
+        )
+      );
+    }
+    // ── The tick ──────────────────────────────────────────────────────────────
+    /**
+     * Advance every NPC's routine to this clock.
+     *
+     * Per NPC: resolve the block its routine has open now, work out the goal that
+     * implies, and write the difference. Nothing else. The roster is iterated in
+     * whatever order the caller passed and the RESULT does not depend on it — no
+     * NPC's state is read by another's pass, and outcomes come back sorted.
+     */
+    async tick(clock, agents) {
+      const outcomes = [];
+      let changed = 0;
+      for (const agent of agents) {
+        const outcome = await this.tickAgent(clock, agentRefKey(agent));
+        if (outcome.changed) changed += 1;
+        outcomes.push(outcome);
+      }
+      outcomes.sort((a, b) => compareIds(a.agent, b.agent));
+      return { clock, outcomes, changed };
+    }
+    async tickAgent(clock, agent) {
+      const state = this.stateOf(agent);
+      const routine = state.routine === null ? void 0 : this.routines.get(state.routine);
+      const block = routine === void 0 ? null : activeBlock(routine, clock, this.tuning);
+      const wanted = state.suspension !== null || block === null ? null : goalOf(block);
+      const before = state.adopted;
+      const delta = adoptedGoalDelta(agent, before, wanted);
+      const moved2 = delta.assert.length > 0 || delta.retract.length > 0;
+      const resumed = moved2 && wanted !== null && state.resuming === true;
+      state.adopted = wanted;
+      if (wanted !== null) delete state.resuming;
+      await this.writeDelta(delta);
+      if (moved2) {
+        this.eventBus?.emit({
+          type: "routine_changed",
+          actorId: agent,
+          routineId: state.routine,
+          blockId: block?.id ?? null,
+          goal: wanted?.goal ?? null,
+          priority: wanted?.priority ?? null,
+          destination: block?.place ?? null,
+          previousGoal: before?.goal ?? null,
+          suspended: state.suspension !== null,
+          resumed
+        });
+      }
+      return {
+        agent,
+        routine: state.routine,
+        block: block?.id ?? null,
+        goal: wanted?.goal ?? null,
+        priority: wanted?.priority ?? null,
+        destination: block?.place ?? null,
+        changed: moved2,
+        suspended: state.suspension !== null,
+        resumed
+      };
+    }
+    // ── Interruption ──────────────────────────────────────────────────────────
+    /**
+     * Preempt an NPC's routine — a threat, a conversation, an arrest.
+     *
+     * The reason is the CALLER's atom and core reads it as a label, never as a
+     * decision: what displaced the routine is whatever goal the caller's own system
+     * gave the NPC, and this module's job is only to get out of its way. Preempting
+     * an already-preempted routine keeps the first reason, because what interrupted
+     * it first is the true answer to "what is it doing instead".
+     */
+    async preempt(agent, reason, block) {
+      const key = agentRefKey(agent);
+      const state = this.stateOf(key);
+      if (state.suspension !== null) return;
+      state.suspension = {
+        reason,
+        block: block ?? null,
+        goal: state.adopted?.goal ?? null
+      };
+      const delta = mergeRoutineDeltas(
+        suspensionDelta(key, null, reason),
+        adoptedGoalDelta(key, state.adopted, null)
+      );
+      state.adopted = null;
+      await this.writeDelta(delta);
+      this.plans?.interrupt(key, "external");
+    }
+    /**
+     * Release a preemption. The NEXT tick adopts whichever block is due THEN —
+     * which is what stops a smith resuming the forge at midnight.
+     */
+    async resume(agent) {
+      const key = agentRefKey(agent);
+      const state = this.agents.get(key);
+      if (!state || state.suspension === null) return;
+      const reason = state.suspension.reason;
+      state.suspension = null;
+      state.resuming = true;
+      await this.writeDelta(suspensionDelta(key, reason, null));
+    }
+    /** What preempted this NPC's routine, or `null`. A debug overlay's view. */
+    suspensionOf(agent) {
+      const suspension = this.agents.get(agentRefKey(agent))?.suspension ?? null;
+      return suspension === null ? null : { ...suspension };
+    }
+    /** The goal this NPC's routine has adopted, or `null`. */
+    adoptedGoal(agent) {
+      const adopted = this.agents.get(agentRefKey(agent))?.adopted ?? null;
+      return adopted === null ? null : { ...adopted };
+    }
+    /**
+     * Where this NPC's routine wants it to be at that clock, or `null`.
+     *
+     * A location atom, never a coordinate — `routine_destination/2` in the pack says
+     * the same thing to a rule. Turning the gap between here and there into movement
+     * is US-2's, and there is nothing on this class that could do it.
+     */
+    destinationOf(agent, clock) {
+      const state = this.agents.get(agentRefKey(agent));
+      const routine = state?.routine === null || state === void 0 ? void 0 : this.routines.get(state.routine);
+      if (routine === void 0) return null;
+      return activeBlock(routine, clock, this.tuning)?.place ?? null;
+    }
+    // ── The KB ────────────────────────────────────────────────────────────────
+    /**
+     * Write one delta into the KB, retracting first.
+     *
+     * Retracting a fact the KB never carried is a no-op rather than a failure: a
+     * host with its own persistence, a restored save and an NPC assigned before the
+     * engine was wired all produce one, and none of them is an error.
+     */
+    async writeDelta(delta) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(stripPeriod3(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(stripPeriod3(fact));
+      }
+      return true;
+    }
+    /**
+     * Publish every NPC's runtime facts, for a caller that wired the KB after the
+     * roster — a save restore, a host that builds its world before its engine.
+     */
+    async publishAgents(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const state of this.roster()) {
+        const facts = [];
+        if (state.routine !== null) facts.push(followsRoutineFact(state.agent, state.routine));
+        if (state.suspension !== null) {
+          facts.push(routineSuspendedFact(state.agent, state.suspension.reason));
+        }
+        for (const fact of facts) {
+          await engine.assertFact(stripPeriod3(fact));
+          written += 1;
+        }
+      }
+      return written;
+    }
+    // ── Save/restore ──────────────────────────────────────────────────────────
+    /** Every NPC this director knows, in canonical order. */
+    roster() {
+      return [...this.agents.values()].map((state) => ({ ...state })).sort((a, b) => compareIds(a.agent, b.agent));
+    }
+    /**
+     * The per-playthrough state, and only that: who follows what, what each has
+     * adopted, and what preempted them. The routines, their windows and their
+     * priorities are authored and are NOT here — a tuning number inside a save file
+     * is world-template data leaking into a playthrough
+     * (`docs/mechanic-predicates.md` §3).
+     */
+    serialize() {
+      return { agents: this.roster() };
+    }
+    /**
+     * Restore a saved playthrough. Silent — no events and no KB writes, because
+     * loading a save is not an NPC changing its mind, and re-publishing is what
+     * {@link publishAgents} is for once the engine exists.
+     */
+    restore(state) {
+      this.agents = /* @__PURE__ */ new Map();
+      for (const agent of state?.agents ?? []) {
+        if (!agent?.agent) continue;
+        this.agents.set(agent.agent, {
+          agent: agent.agent,
+          routine: agent.routine ?? null,
+          adopted: agent.adopted ? { ...agent.adopted } : null,
+          suspension: agent.suspension ? { ...agent.suspension } : null,
+          ...agent.resuming ? { resuming: true } : {}
+        });
+      }
+    }
+    stateOf(agent) {
+      let state = this.agents.get(agent);
+      if (state === void 0) {
+        state = { agent, routine: null, adopted: null, suspension: null };
+        this.agents.set(agent, state);
+      }
+      return state;
+    }
+  };
+  function goalOf(block) {
+    return { goal: block.goal, priority: block.priority };
+  }
+  function stripPeriod3(clause) {
+    return clause.replace(/\.$/, "");
+  }
+
+  // @insimul/core/src/skills/skill-effects.ts
+  var SKILL_EFFECT_UNLOCKS = "unlocks";
+  var SKILL_EFFECT_MODIFIES = "modifies";
+  var SKILL_EFFECT_PERMITS = "permits";
+  function effectsOfKind(effects, kind) {
+    return effects.filter((effect) => effect.kind === kind);
+  }
+  function atomArguments(effects, kind) {
+    const atoms = /* @__PURE__ */ new Set();
+    for (const effect of effectsOfKind(effects, kind)) {
+      const first = effect.args[0];
+      if (first !== void 0) atoms.add(String(first));
+    }
+    return [...atoms].sort(compareIds);
+  }
+  function unlockedActions(effects) {
+    return atomArguments(effects, SKILL_EFFECT_UNLOCKS);
+  }
+  function permittedThings(effects) {
+    return atomArguments(effects, SKILL_EFFECT_PERMITS);
+  }
+  function skillModifiers(effects) {
+    const totals = /* @__PURE__ */ new Map();
+    for (const effect of effectsOfKind(effects, SKILL_EFFECT_MODIFIES)) {
+      const [param, amount] = effect.args;
+      if (param === void 0) continue;
+      if (typeof amount !== "number" || !Number.isFinite(amount)) continue;
+      const key = String(param);
+      totals.set(key, (totals.get(key) ?? 0) + amount);
+    }
+    return new Map([...totals].sort(([a], [b]) => compareIds(a, b)));
+  }
+
+  // @insimul/core/src/skills/skill-view.ts
+  function buildSkillView(input) {
+    const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
+    const definitions = new Map((input.skills ?? []).map((skill) => [skill.id, skill]));
+    const actor = input.actor;
+    const unlocked = new Set(actor.unlocked ?? []);
+    const forbidden = new Set(actor.forbidden ?? []);
+    return input.trees.map((tree) => {
+      const definition = definitions.get(tree.skill);
+      const level = actor.levels?.[tree.skill] ?? 0;
+      const maxLevel = maxLevelOf(definition, tuning);
+      const capped = level >= maxLevel;
+      const banked = actor.xp?.[tree.skill] ?? 0;
+      const nextLevel = capped ? level : level + 1;
+      const nextLevelPrice = capped ? 0 : xpForLevel(definition, nextLevel, tuning);
+      const points3 = actor.points?.[tree.id] ?? 0;
+      const nodes = tree.nodes.map(
+        (node) => nodeView({ ...node, tree: tree.id }, { tree, tuning, points: points3, unlocked, forbidden, actor })
+      );
+      return {
+        id: tree.id,
+        skill: tree.skill,
+        label: tree.name ?? tree.id,
+        level,
+        maxLevel,
+        capped,
+        banked,
+        nextLevel,
+        nextLevelPrice,
+        affordable: !capped && banked >= nextLevelPrice,
+        points: points3,
+        spent: nodes.filter((node) => node.taken).reduce((sum, node) => sum + node.cost, 0),
+        nodes,
+        rows: rowsOf(nodes),
+        edges: edgesOf(nodes),
+        taken: nodes.filter((node) => node.taken).length,
+        total: nodes.length
+      };
+    });
+  }
+  function nodeView(node, context) {
+    const resolution = resolveUnlock({
+      actor: context.actor.id,
+      node,
+      points: context.points,
+      unlocked: context.unlocked.has(node.id),
+      tuning: context.tuning
+    });
+    const unmet = [...context.actor.unmet?.[node.id] ?? []];
+    const modifiers = [...skillModifiers(node.effects)].map(([param, amount]) => ({ param, amount }));
+    const view2 = {
+      id: node.id,
+      tree: node.tree,
+      label: node.name ?? node.id,
+      depth: nodeDepth(context.tree, node.id),
+      cost: resolution.cost,
+      parents: [...node.parents],
+      requires: nodeRequirements(node),
+      unmet,
+      taken: context.unlocked.has(node.id),
+      available: resolution.available,
+      conditional: resolution.conditional,
+      effects: node.effects.map((effect) => ({ ...effect, args: [...effect.args] })),
+      unlocks: unlockedActions(node.effects),
+      permits: permittedThings(node.effects),
+      modifies: modifiers
+    };
+    if (node.description !== void 0) view2.description = node.description;
+    if (resolution.refusal !== void 0) view2.refusal = resolution.refusal;
+    if (view2.available && unmet.length > 0) {
+      return { ...view2, available: false, refusal: "requires" };
+    }
+    if (view2.available && context.forbidden.has(node.id)) {
+      return { ...view2, available: false, refusal: "forbidden" };
+    }
+    return view2;
+  }
+  function rowsOf(nodes) {
+    const byDepth = /* @__PURE__ */ new Map();
+    for (const node of nodes) {
+      byDepth.set(node.depth, [...byDepth.get(node.depth) ?? [], node.id]);
+    }
+    return [...byDepth.keys()].sort((a, b) => a - b).map((depth) => [...byDepth.get(depth)].sort(compareIds));
+  }
+  function edgesOf(nodes) {
+    return nodes.flatMap((node) => node.parents.map((parent) => ({ from: parent, to: node.id }))).sort((a, b) => compareIds(a.from, b.from) || compareIds(a.to, b.to));
+  }
+  function skillModifierTotals(effects) {
+    const out = {};
+    for (const [param, amount] of skillModifiers(effects)) out[param] = amount;
+    return out;
+  }
+
+  // @insimul/core/src/prolog/helper-predicates.ts
+  var HELPER_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Helper Predicates \u2014 base rules for action prerequisite evaluation
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 CEFR Level Comparison \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Maps CEFR language proficiency levels to integer ranks for comparison.
+% Usage: cefr_gte(ActualLevel, RequiredLevel) succeeds if ActualLevel >= RequiredLevel
+
+cefr_level_rank(a1, 1).
+cefr_level_rank(a2, 2).
+cefr_level_rank(b1, 3).
+cefr_level_rank(b2, 4).
+cefr_level_rank(c1, 5).
+cefr_level_rank(c2, 6).
+
+cefr_gte(Actual, Required) :-
+  cefr_level_rank(Actual, AR),
+  cefr_level_rank(Required, RR),
+  AR >= RR.
+
+% \u2500\u2500 Weapon Type Classification \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Checks if an item is a weapon of a given type.
+% Requires item_type/2 facts to be asserted for items in the KB.
+
+:- dynamic(item_type/2).
+
+is_weapon_type(ItemId, sword) :- item_type(ItemId, sword).
+is_weapon_type(ItemId, axe) :- item_type(ItemId, axe).
+is_weapon_type(ItemId, bow) :- item_type(ItemId, bow).
+is_weapon_type(ItemId, staff) :- item_type(ItemId, staff).
+is_weapon_type(ItemId, pistol) :- item_type(ItemId, pistol).
+
+% \u2500\u2500 Tool Type Classification \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Checks if an item is a tool of a given type.
+
+is_tool_type(ItemId, fishing_rod) :- item_type(ItemId, fishing_rod).
+is_tool_type(ItemId, pickaxe) :- item_type(ItemId, pickaxe).
+is_tool_type(ItemId, axe) :- item_type(ItemId, axe).
+is_tool_type(ItemId, hoe) :- item_type(ItemId, hoe).
+
+% \u2500\u2500 Skill Tier Names \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Maps integer skill levels to human-readable tier names.
+
+skill_tier_name(1, novice).
+skill_tier_name(2, novice).
+skill_tier_name(3, apprentice).
+skill_tier_name(4, apprentice).
+skill_tier_name(5, journeyman).
+skill_tier_name(6, journeyman).
+skill_tier_name(7, expert).
+skill_tier_name(8, expert).
+skill_tier_name(9, expert).
+skill_tier_name(10, master).
+
+% \u2500\u2500 Skill Level Comparison \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Succeeds if Actor has Skill at Level >= MinLevel.
+
+skill_gte(Actor, Skill, MinLevel) :-
+  has_skill(Actor, Skill, Level),
+  Level >= MinLevel.
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Quest Objective Completion Rules
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+%
+% Bridge between quest_objective/3 goals (generated by quest-converter.ts)
+% and game facts asserted by GamePrologEngine at runtime.
+%
+% objective_complete(Player, QuestId, ObjIndex) succeeds when the game state
+% satisfies the objective goal stored in quest_objective(QuestId, ObjIndex, Goal).
+%
+% This is the critical link that makes quest_complete/2 work:
+%   quest_complete(Player, QuestId) :-
+%       \\+ (quest_objective(QuestId, Idx, _), \\+ objective_complete(Player, QuestId, Idx)).
+
+:- dynamic(collected/3).
+:- dynamic(has/2).
+:- dynamic(has_item/3).
+:- dynamic(visited/2).
+:- dynamic(discovered/2).
+:- dynamic(talked_to/3).
+:- dynamic(delivered/3).
+:- dynamic(defeated/2).
+:- dynamic(crafted/3).
+:- dynamic(vocab_used/3).
+:- dynamic(puzzle_solved/2).
+:- dynamic(reputation_change/3).
+:- dynamic(escorted/3).
+:- dynamic(quest_progress/3).
+:- dynamic(quest_objective/3).
+:- dynamic(objective_complete/3).
+:- dynamic(text_found/2).
+:- dynamic(text_read/2).
+:- dynamic(sign_read/2).
+:- dynamic(scene_described/2).
+:- dynamic(response_written/2).
+:- dynamic(translation_completed/2).
+:- dynamic(pronunciation_passed/2).
+:- dynamic(photo_taken/2).
+:- dynamic(object_examined/2).
+:- dynamic(object_identified/2).
+:- dynamic(object_pointed_named/2).
+:- dynamic(direction_step_done/2).
+:- dynamic(gift_given/3).
+:- dynamic(food_ordered/2).
+:- dynamic(price_haggled/2).
+:- dynamic(npc_conversation_turns/3).
+:- dynamic(action_performed/2).
+:- dynamic(action_completes_objective/2).
+:- dynamic(physical_action_done/2).
+:- dynamic(conversational_action/4).
+:- dynamic(comprehension_done/2).
+:- dynamic(used/2).
+:- dynamic(purchased/3).
+:- dynamic(sold/3).
+:- dynamic(combat_action_done/3).
+:- dynamic(activity_observed/3).
+:- dynamic(assessment_phase_done/4).
+:- dynamic(friendship_tier/3).
+:- dynamic(assessment_completed/2).
+
+% \u2500\u2500 Radiant quest generation (runtime provenance + cooldown bookkeeping) \u2500\u2500
+% Asserted by the radiant slot-filling engine when it emits a quest, and
+% persisted into save.currentState.prologFacts. Declared dynamic so the engine
+% can assert/retract them and so the save-restore fact validator recognises
+% them. The authored template predicates (radiant_template/2 etc.) are
+% consulted from world data and catalogued in predicate-schema.ts instead.
+:- dynamic(radiant_generated/3).
+:- dynamic(radiant_cooldown_until/2).
+
+% \u2500\u2500 Collection objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% collect(Item, Count) \u2014 player collected enough of an item
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, collect(Item, Count)),
+    collected(Player, Item, Qty),
+    Qty >= Count.
+
+% collect with unspecified item \u2014 count total unique items collected
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, collect('', Count)),
+    aggregate_all(count, collected(Player, _, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Visit location \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, visit_location(Location)),
+    visited(Player, Location).
+
+% visit_location with empty target \u2014 any visit counts
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, visit_location('')),
+    visited(Player, _).
+
+% \u2500\u2500 Discover location \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, discover_location(Location)),
+    discovered(Player, Location).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, discover_location('')),
+    discovered(Player, _).
+
+% \u2500\u2500 Talk to NPC \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% talk_to(NPC) \u2014 single conversation
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, talk_to(NPC)),
+    talked_to(Player, NPC, _).
+
+% talk_to(NPC, RequiredTurns) \u2014 conversation with minimum turns
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, talk_to(NPC, RequiredTurns)),
+    talked_to(Player, NPC, Turns),
+    Turns >= RequiredTurns.
+
+% talk_to with empty NPC \u2014 any NPC conversation counts
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, talk_to('')),
+    talked_to(Player, _, _).
+
+% \u2500\u2500 Conversation turns (aggregate) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)),
+    aggregate_all(sum(T), talked_to(Player, _, T), Total),
+    Total >= RequiredTurns.
+
+% Also support npc_conversation_turns for more granular tracking
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)),
+    aggregate_all(sum(T), npc_conversation_turns(Player, _, T), Total),
+    Total >= RequiredTurns.
+
+% \u2500\u2500 Deliver item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, deliver(Item, NPC)),
+    delivered(Player, NPC, Item).
+
+% \u2500\u2500 Defeat enemies \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, defeat(EnemyType, Count)),
+    aggregate_all(count, defeated(Player, EnemyType), Total),
+    Total >= Count.
+
+% defeat with empty type \u2014 any enemy counts
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, defeat('', Count)),
+    aggregate_all(count, defeated(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Vocabulary / learn words \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% learn_words_count(Count) \u2014 player used enough distinct vocabulary words
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, learn_words_count(Count)),
+    aggregate_all(count, vocab_used(Player, _, 1), Total),
+    Total >= Count.
+
+% learn_words([WordList]) \u2014 player used specific words
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, learn_words(WordList)),
+    is_list(WordList),
+    forall(member(Word, WordList), vocab_used(Player, Word, _)).
+
+% \u2500\u2500 Grammar practice \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, practice_grammar(_, Count)),
+    quest_progress(Player, QuestId, Progress),
+    Progress >= Count.
+
+% \u2500\u2500 Craft item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, craft_item(Item, Count)),
+    crafted(Player, Item, Qty),
+    Qty >= Count.
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, craft_item('', Count)),
+    aggregate_all(sum(Q), crafted(Player, _, Q), Total),
+    Total >= Count.
+
+% \u2500\u2500 Escort NPC \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, escort(NPC, Dest)),
+    escorted(Player, NPC, Dest).
+
+% \u2500\u2500 Reputation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, gain_reputation(Faction, Amount)),
+    aggregate_all(sum(D), reputation_change(Player, Faction, D), Total),
+    Total >= Amount.
+
+% \u2500\u2500 Solve puzzle \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, solve_puzzle(PuzzleId)),
+    puzzle_solved(Player, PuzzleId).
+
+% \u2500\u2500 Use item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, use_item(Item)),
+    used(Player, Item).
+
+% \u2500\u2500 Reach skill level \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, reach_level(Skill, Level)),
+    has_skill(Player, Skill, CurrentLevel),
+    CurrentLevel >= Level.
+
+% \u2500\u2500 Survive duration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, survive(Duration)),
+    survived(Player, ActualDuration),
+    ActualDuration >= Duration.
+
+% \u2500\u2500 Find text / read text (language learning) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, find_text(TextId)),
+    text_found(Player, TextId).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, read_text(TextId)),
+    text_read(Player, TextId).
+
+% \u2500\u2500 Examine object \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, examine_object(Count)),
+    aggregate_all(count, object_examined(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Read sign \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, read_sign(Count)),
+    aggregate_all(count, sign_read(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Write response / describe scene \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, write_response(Count)),
+    aggregate_all(count, response_written(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Listen and repeat \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, listen_and_repeat(Count)),
+    aggregate_all(count, pronunciation_passed(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Pronunciation check \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, pronunciation_check(Count)),
+    aggregate_all(count, pronunciation_passed(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Identify / point-and-name \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, identify_object(Count)),
+    aggregate_all(count, object_pointed_named(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Order food \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, order_food(Count)),
+    aggregate_all(count, food_ordered(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Haggle price \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, haggle_price(Count)),
+    aggregate_all(count, price_haggled(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Buy item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, buy_item(Count)),
+    aggregate_all(count, action_performed(Player, buy_item), Total),
+    Total >= Count.
+
+% \u2500\u2500 Sell item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, sell_item(Count)),
+    aggregate_all(count, action_performed(Player, sell_item), Total),
+    Total >= Count.
+
+% \u2500\u2500 Give gift \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, give_gift(NPC)),
+    NPC \\= any,
+    gift_given(Player, NPC, _).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, give_gift(any)),
+    gift_given(Player, _, _).
+
+% \u2500\u2500 Photograph subject \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, photograph(Subject, Count)),
+    Subject \\= any,
+    aggregate_all(count, photo_taken(Player, Subject), Total),
+    Total >= Count.
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, photograph(any, Count)),
+    aggregate_all(count, photo_taken(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Physical action \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, physical_action(Action, Count)),
+    Action \\= '',
+    aggregate_all(count, physical_action_done(Player, Action), Total),
+    Total >= Count.
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, physical_action('', Count)),
+    aggregate_all(count, physical_action_done(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Introduce self \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, introduce_self),
+    conversational_action(Player, _, introduce_self, _).
+
+% \u2500\u2500 Ask for directions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, ask_for_directions(Count)),
+    aggregate_all(count, action_performed(Player, ask_for_directions), Total),
+    Total >= Count.
+
+% \u2500\u2500 Comprehension quiz \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, comprehension_quiz(Count)),
+    aggregate_all(count, comprehension_done(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Translation challenge \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, translation_challenge(Count)),
+    aggregate_all(count, translation_completed(Player, correct), Total),
+    Total >= Count.
+
+% \u2500\u2500 Follow directions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, follow_directions(Count)),
+    aggregate_all(count, direction_step_done(Player, QuestId, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Listening comprehension \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, listening_comprehension(Count)),
+    aggregate_all(count, pronunciation_passed(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Collect vocabulary \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, collect_vocabulary(Count)),
+    aggregate_all(count, vocab_used(Player, _, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Eavesdrop \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(overheard_conversation/4).
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, eavesdrop(Topic)),
+    overheard_conversation(Player, _, _, Topic).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, eavesdrop),
+    overheard_conversation(Player, _, _, _).
+
+% \u2500\u2500 Build friendship \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(friendship_level/3).
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, build_friendship(Count)),
+    aggregate_all(count, (friendship_level(Player, _, Level), Level >= 3), Total),
+    Total >= Count.
+
+% \u2500\u2500 Collect clue \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(clue_found/2).
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, collect_clue(Count)),
+    aggregate_all(count, clue_found(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Assessment objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, complete_assessment),
+    assessment_result(Player, _, _, _, _, _).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, assessment_phase(PhaseType, _Trigger)),
+    quest_progress(Player, QuestId, Progress),
+    Progress >= 100.
+
+% \u2500\u2500 Meta / aggregation objectives (chapter quests) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% vocabulary_activities(Count) \u2014 player completed enough vocab-related actions
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, vocabulary_activities(Count)),
+    aggregate_all(count, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Total),
+    Total >= Count.
+
+% conversation_activities(Count) \u2014 player had enough conversations
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, conversation_activities(Count)),
+    aggregate_all(sum(T), talked_to(Player, _, T), Total),
+    Total >= Count.
+
+% grammar_activities(Count) \u2014 player practiced grammar enough times
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, grammar_activities(Count)),
+    quest_progress(Player, QuestId, Progress),
+    Progress >= Count.
+
+% sustained_conversation(Count) \u2014 long conversation turns
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, sustained_conversation(Count)),
+    npc_conversation_turns(Player, _, Turns),
+    Turns >= Count.
+
+% master_words(Count) \u2014 vocab words used correctly multiple times
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, master_words(Count)),
+    aggregate_all(count, vocab_used(Player, _, 1), Total),
+    Total >= Count.
+
+% learn_new_words(Count) \u2014 distinct vocab words encountered
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, learn_new_words(Count)),
+    aggregate_all(count, vocab_used(Player, _, _), Total),
+    Total >= Count.
+
+% find_vocabulary_items(Count) \u2014 objects examined/identified for vocab
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, find_vocabulary_items(Count)),
+    aggregate_all(count, (object_examined(Player, _) ; object_pointed_named(Player, _)), Total),
+    Total >= Count.
+
+% \u2500\u2500 Equip item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, equip_item(Item)),
+    Item \\= any,
+    equipped(Player, Item, _).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, equip_item(any)),
+    equipped(Player, _, _).
+
+% \u2500\u2500 Drop item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(dropped/2).
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, drop_item(Item)),
+    Item \\= any,
+    action_performed(Player, drop_item).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, drop_item(any)),
+    action_performed(Player, drop_item).
+
+% \u2500\u2500 Combat action (individual moves) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, combat_action(Count)),
+    aggregate_all(count, combat_action_done(Player, _, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Accept quest \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, accept_quest(TargetQuestId)),
+    TargetQuestId \\= any,
+    quest_active(Player, TargetQuestId).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, accept_quest(any)),
+    quest_active(Player, _).
+
+% \u2500\u2500 Observe activity \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, observe_activity(Count)),
+    aggregate_all(count, activity_observed(Player, _, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Generic description-based objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Fallback: if quest_progress has been tracked for this quest, check it
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, objective(_)),
+    quest_progress(Player, QuestId, Progress),
+    Progress >= 100.
+
+% \u2500\u2500 All-objectives-complete meta-rule \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Used by quest_complete when completionCriteria is 'all_objectives'
+all_objectives_done(Player, QuestId) :-
+    \\+ (quest_objective(QuestId, Idx, _),
+         \\+ objective_complete(Player, QuestId, Idx)).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Quest Status & Prerequisite System
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+%
+% quest_status/3 bridges the lifecycle facts asserted by GamePrologEngine
+% (quest_active/2, quest_completed/2, quest_failed/2, quest_abandoned/2)
+% to the status checks used by quest_available/2 rules.
+
+:- dynamic(quest_active/2).
+:- dynamic(quest_completed/2).
+:- dynamic(quest_failed/2).
+:- dynamic(quest_abandoned/2).
+:- dynamic(quest_status/3).
+
+% Derive quest_status from lifecycle facts if not directly asserted
+quest_status(Player, QuestId, active) :-
+    quest_active(Player, QuestId).
+quest_status(Player, QuestId, completed) :-
+    quest_completed(Player, QuestId).
+quest_status(Player, QuestId, failed) :-
+    quest_failed(Player, QuestId).
+quest_status(Player, QuestId, abandoned) :-
+    quest_abandoned(Player, QuestId).
+
+% \u2500\u2500 Cross-quest prerequisite checking \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% all_prereqs_met(Player, QuestId) succeeds if every prerequisite quest
+% has been completed by the player.
+all_prereqs_met(Player, QuestId) :-
+    \\+ (quest_prerequisite(QuestId, PrereqId),
+         PrereqId \\= none,
+         \\+ quest_status(Player, PrereqId, completed)).
+
+% \u2500\u2500 Quest chain ordering \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% next_in_chain(Player, QuestId) \u2014 the next quest in a chain the player
+% can take (all prior chain quests completed).
+next_in_chain(Player, QuestId) :-
+    quest_chain(QuestId, ChainId),
+    quest_chain_order(QuestId, Order),
+    PrevOrder is Order - 1,
+    (PrevOrder < 0 ->
+        true  % first quest in chain
+    ;
+        quest_chain_order(PrevQuest, PrevOrder),
+        quest_chain(PrevQuest, ChainId),
+        quest_status(Player, PrevQuest, completed)
+    ).
+
+% \u2500\u2500 Conditional reward evaluation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% quest_bonus_reward(Player, QuestId, RewardType, Value) \u2014 additional
+% rewards granted based on how the quest was completed.
+:- dynamic(quest_bonus_reward/4).
+
+% Bonus for completing all objectives (not just the minimum)
+quest_bonus_reward(Player, QuestId, bonus_xp, 50) :-
+    all_objectives_done(Player, QuestId).
+
+% Bonus for completing a quest chain
+quest_bonus_reward(Player, QuestId, chain_complete_xp, BonusXP) :-
+    quest_chain(QuestId, ChainId),
+    chain_bonus_xp(ChainId, BonusXP),
+    \\+ (quest_chain(OtherQuest, ChainId),
+         OtherQuest \\= QuestId,
+         \\+ quest_status(Player, OtherQuest, completed)).
+
+:- dynamic(chain_bonus_xp/2).
+
+% \u2500\u2500 Reconciliation helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% quest_should_be_complete(Player, QuestId) \u2014 Prolog believes this quest
+% is done based on game state, even if not yet marked as completed.
+quest_should_be_complete(Player, QuestId) :-
+    quest_active(Player, QuestId),
+    all_objectives_done(Player, QuestId).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Reputation Aggregation
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% reputation(Player, Faction, Total) \u2014 sums all reputation_change/3 facts.
+
+:- dynamic(reputation_record/3).
+
+reputation(Player, Faction, Total) :-
+    aggregate_all(sum(D), reputation_change(Player, Faction, D), Total).
+reputation(Player, Faction, 0) :-
+    \\+ reputation_change(Player, Faction, _).
+
+% reputation_at_least(Player, Faction, MinRep) \u2014 convenience check
+reputation_at_least(Player, Faction, MinRep) :-
+    reputation(Player, Faction, Rep),
+    Rep >= MinRep.
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Text & Reading Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(game_text/1).
+:- dynamic(text_title/2).
+:- dynamic(text_category/2).
+:- dynamic(text_cefr_level/2).
+:- dynamic(text_spawn_location/2).
+:- dynamic(text_chapter/2).
+:- dynamic(text_clue/2).
+:- dynamic(text_vocabulary/4).
+
+% text_available_at(TextId, LocationType) \u2014 texts that can appear at a location type
+text_available_at(TextId, LocationType) :-
+    game_text(TextId),
+    text_spawn_location(TextId, LocationType).
+
+% text_for_level(TextId, CefrLevel) \u2014 texts appropriate for a CEFR level
+text_for_level(TextId, Level) :-
+    game_text(TextId),
+    text_cefr_level(TextId, Level).
+
+% text_has_clue(TextId) \u2014 texts that reveal main quest clues
+text_has_clue(TextId) :-
+    text_clue(TextId, _).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Container Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(container/1).
+:- dynamic(container_type/2).
+:- dynamic(container_locked/1).
+:- dynamic(container_key/2).
+:- dynamic(container_contains/3).
+:- dynamic(container_at_business/2).
+:- dynamic(container_at_residence/2).
+
+% container_accessible(Player, ContainerId) \u2014 can the player open this container?
+container_accessible(Player, ContainerId) :-
+    container(ContainerId),
+    \\+ container_locked(ContainerId).
+container_accessible(Player, ContainerId) :-
+    container(ContainerId),
+    container_locked(ContainerId),
+    container_key(ContainerId, KeyItem),
+    has(Player, KeyItem).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Residence & NPC Location Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(residence/1).
+:- dynamic(residence_owner/2).
+:- dynamic(lives_at/2).
+:- dynamic(home/2).
+:- dynamic(workplace/2).
+:- dynamic(friends/2).
+:- dynamic(coworker/2).
+:- dynamic(enemies/2).
+:- dynamic(knows/2).
+:- dynamic(knows/3).
+:- dynamic(believes/3).
+
+:- dynamic(physical_trait/2).
+:- dynamic(physical_trait/3).
+:- dynamic(mental_trait/2).
+:- dynamic(mental_trait/3).
+:- dynamic(social_attribute/3).
+:- dynamic(has_thought/2).
+:- dynamic(believes_about/3).
+:- dynamic(believes_about/4).
+:- dynamic(college_graduate/1).
+:- dynamic(retired/1).
+:- dynamic(departure_year/2).
+:- dynamic(current_location/2).
+:- dynamic(character_status/2).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Public Building Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(public_building/1).
+:- dynamic(public_building_name/2).
+:- dynamic(public_building_type/2).
+:- dynamic(public_building_of_settlement/2).
+:- dynamic(public_building_on_lot/2).
+:- dynamic(public_building_operational/2).
+:- dynamic(public_building_capacity/2).
+:- dynamic(public_building_employee/2).
+
+% Find buildings of a specific type in a settlement
+public_building_in(SettlementId, BuildingId, Type) :-
+    public_building(BuildingId),
+    public_building_of_settlement(BuildingId, SettlementId),
+    public_building_type(BuildingId, Type).
+
+% Check if a public building is operational
+building_open(BuildingId) :-
+    public_building(BuildingId),
+    public_building_operational(BuildingId, true).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Settlement Detail Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(settlement_district/2).
+:- dynamic(settlement_street/2).
+:- dynamic(settlement_landmark/2).
+:- dynamic(landmark_type/2).
+:- dynamic(settlement_unemployed_count/2).
+:- dynamic(settlement_deceased_count/2).
+:- dynamic(settlement_vacant_lots/2).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Country & State Relationship Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(country_ally/2).
+:- dynamic(country_enemy/2).
+:- dynamic(country_culture/3).
+:- dynamic(cultural_value/3).
+:- dynamic(country_law/2).
+:- dynamic(social_structure/3).
+:- dynamic(state_governor/2).
+:- dynamic(state_local_government/2).
+:- dynamic(state_previous_country/2).
+
+% countries_at_war(A, B) \u2014 bidirectional enemy check
+countries_at_war(A, B) :- country_enemy(A, B).
+countries_at_war(A, B) :- country_enemy(B, A).
+
+% countries_allied(A, B) \u2014 bidirectional alliance check
+countries_allied(A, B) :- country_ally(A, B).
+countries_allied(A, B) :- country_ally(B, A).
+
+% npc_at_home(NpcId) \u2014 NPC is currently at their home residence
+npc_at_home(NpcId) :-
+    home(NpcId, ResId),
+    current_location(NpcId, ResId).
+
+% npc_at_work(NpcId) \u2014 NPC is currently at their workplace
+npc_at_work(NpcId) :-
+    workplace(NpcId, WorkId),
+    current_location(NpcId, WorkId).
+
+% lives_near(Char1, Char2) \u2014 two characters share the same residence
+lives_near(Char1, Char2) :-
+    lives_at(Char1, Res),
+    lives_at(Char2, Res),
+    Char1 \\= Char2.
+
+% knows_about(NpcId, Topic) \u2014 NPC has knowledge about a topic
+knows_about(NpcId, Topic) :-
+    knows(NpcId, Topic).
+knows_about(NpcId, Topic) :-
+    knows(NpcId, Topic, _).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Pronunciation Tracking
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(pronunciation_score/4).
+:- dynamic(pronunciation_passed/2).
+
+% player_avg_pronunciation(Player, Avg) \u2014 average score across all attempts
+player_avg_pronunciation(Player, Avg) :-
+    findall(S, pronunciation_score(Player, _, S, _), Scores),
+    Scores \\= [],
+    insimul_sum_list(Scores, Total),
+    length(Scores, Count),
+    Avg is Total / Count.
+
+% pronunciation_count(Player, Count) \u2014 number of distinct phrases practiced
+pronunciation_count(Player, Count) :-
+    findall(P, pronunciation_passed(Player, P), Phrases),
+    length(Phrases, Count).
+
+% pronunciation_above(Player, Threshold, Count) \u2014 phrases scoring above threshold
+pronunciation_above(Player, Threshold, Count) :-
+    findall(P, (pronunciation_score(Player, P, S, _), S >= Threshold), Phrases),
+    length(Phrases, Count).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Assessment & NPC Exam Results
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(assessment_result/6).
+:- dynamic(player_cefr_level/2).
+:- dynamic(player_cefr_snapshot/3).
+:- dynamic(player_dimension_score/3).
+:- dynamic(phase_score/3).
+:- dynamic(dimension_score/4).
+
+% player_has_assessment(Player, ExamId) \u2014 has the player completed this exam?
+player_has_assessment(Player, ExamId) :-
+    assessment_result(Player, ExamId, _, _, _, _).
+
+% assessment_score_pct(Player, ExamId, Pct) \u2014 score as percentage
+assessment_score_pct(Player, ExamId, Pct) :-
+    assessment_result(Player, ExamId, Score, MaxScore, _, _),
+    MaxScore > 0,
+    Pct is (Score * 100) / MaxScore.
+
+% player_meets_cefr(Player, RequiredLevel) \u2014 does player meet a minimum CEFR?
+% Uses CEFR level ordering (a1 < a2 < b1 < b2 < c1 < c2) via cefr_gte/2.
+player_meets_cefr(Player, RequiredLevel) :-
+    player_cefr_level(Player, ActualLevel),
+    cefr_gte(ActualLevel, RequiredLevel).
+`.trim();
+
+  // @insimul/core/src/prolog/advanced-predicates.ts
+  var DYNAMIC_DECLARATIONS = [
+    // Resource constraints
+    "resource/3",
+    "resource_capacity/3",
+    "resource_production/3",
+    "resource_consumption/3",
+    "resource_trade/4",
+    "resource_price/3",
+    "resource_deficit/3",
+    "resource_surplus/3",
+    // Probabilistic
+    "probability/2",
+    "npc_preference/3",
+    "weighted_choice/3",
+    "decision_factor/4",
+    // Abductive / Mystery
+    "clue/4",
+    "suspect/2",
+    "motive/3",
+    "alibi/3",
+    "evidence_for/3",
+    "evidence_against/3",
+    "mystery/2",
+    "solved/2",
+    "accused/3",
+    "witness/3",
+    "crime/3",
+    // Meta / Governance
+    "law/3",
+    "law_active/2",
+    "law_penalty/3",
+    "law_enforcer/2",
+    "vote/3",
+    "council_member/2",
+    "authority/3",
+    "tax_rate/3",
+    "tax_exempt/2",
+    // Procedural generation
+    "generated_name/2",
+    "name_pattern/2",
+    "terrain_type/2",
+    "biome/2",
+    "climate/2",
+    "building_template/3",
+    "npc_archetype/2",
+    "quest_template/3"
+  ];
+  function getAdvancedDynamicPredicates() {
+    return [...DYNAMIC_DECLARATIONS];
+  }
+
+  // @insimul/core/src/prolog/tott-predicates.ts
+  var DYNAMIC_DECLARATIONS2 = [
+    // Hiring
+    "qualified_for/2",
+    "has_experience/3",
+    "available_position/2",
+    "position_skill_requirement/3",
+    "employed_at/3",
+    "job_level/2",
+    "salary/2",
+    "years_experience/3",
+    // Social dynamics
+    "compatibility/3",
+    "charge/3",
+    "spark/3",
+    "trust/3",
+    "salience/3",
+    "social_desire/2",
+    // Economics
+    "wealth/2",
+    "economic_class/2",
+    "owns_business/2",
+    "market_price/3",
+    "supply/3",
+    "demand/3",
+    "debt/3",
+    "income/2",
+    // Lifecycle
+    "romantic_status/3",
+    "pregnant/3",
+    "education/4",
+    "life_stage/2",
+    "death_probability/2",
+    "dating/3",
+    "married_to/2",
+    "divorced_from/3",
+    "attracted_to/2",
+    // Simulation per-timestep state (asserted by the simulation loop)
+    "birth_chance/2",
+    // birth_chance(MotherId, Probability) — fertility adjusted by child count
+    "random_chance/1",
+    // random_chance(P) — succeeds with probability P (implemented as JS bridge)
+    // General state
+    "current_timestep/1",
+    "current_year/1"
+  ];
+  function getTotTDynamicPredicates() {
+    return [...DYNAMIC_DECLARATIONS2];
+  }
+
+  // @insimul/core/src/prolog/npc-reasoning.ts
+  var DYNAMIC_DECLARATIONS3 = [
+    // Lifecycle
+    "attracted_to/2",
+    "dating/3",
+    "married_to/2",
+    "marriage_date/3",
+    "divorced_from/3",
+    "pregnant/3",
+    "gave_birth/3",
+    "birth_parent/2",
+    "primary_caregiver/2",
+    "stepparent/2",
+    "student/1",
+    "student_of/3",
+    "graduated/3",
+    "mentor/3",
+    "apprentice/3",
+    "has_skill/3",
+    "learning/3",
+    "came_of_age/2",
+    "eligible_for_marriage/1",
+    "eligible_for_work/1",
+    "deceased/3",
+    "cause_of_death/2",
+    "inherits_from/3",
+    "estate_of/2",
+    // Social
+    "friends/2",
+    "enemies/2",
+    "rival/2",
+    "conversation_count/3",
+    "relationship_charge/3",
+    "relationship_trust/3",
+    "current_timestep/1",
+    // Emotional
+    "mood/2",
+    "stress_level/2",
+    "social_desire/2",
+    // Action/dialogue
+    "npc_action_preference/3",
+    "dialogue_topic_preference/3",
+    // Personality
+    "personality/3",
+    // Employment
+    "employed/1",
+    "employed_at/3",
+    "business_needs_worker/2",
+    // Daily schedule
+    "schedule/4",
+    "time_of_day/1",
+    // Quest memory
+    "npc_gave_quest/3",
+    "quest_outcome/3",
+    "npc_quest_count/3",
+    "npc_quest_completed_count/3",
+    "npc_quest_failed_count/3",
+    "npc_quest_abandoned_count/3",
+    // Environment awareness
+    "weather/1",
+    "game_hour/1",
+    "time_period/1",
+    "season/1",
+    // Player progress
+    "player_quests_completed/1",
+    "player_reputation/1",
+    "player_is_new/0",
+    // Active quests
+    "quest_active/2",
+    "quest_completed/2",
+    "quest_failed/2",
+    // Recent events
+    "recent_event/2"
+  ];
+  function getNPCDynamicPredicates() {
+    return [...DYNAMIC_DECLARATIONS3];
+  }
+
+  // @insimul/core/src/prolog/prolog-fact-validator.ts
+  function parseFactSignature(fact) {
+    const trimmed = fact.trim().replace(/\.\s*$/, "").trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith("%")) return null;
+    if (/:-/.test(trimmed)) return null;
+    const atomMatch = trimmed.match(/^([a-z_][\w]*)$/);
+    if (atomMatch) {
+      return { predicate: atomMatch[1], arity: 0, args: [] };
+    }
+    const headMatch = trimmed.match(/^([a-z_][\w]*)\s*\(/);
+    if (!headMatch) return null;
+    const predicate = headMatch[1];
+    const argsStart = headMatch[0].length;
+    const args = splitTopLevelArgs(trimmed.slice(argsStart));
+    if (!args) return null;
+    return { predicate, arity: args.length, args };
+  }
+  function splitTopLevelArgs(body2) {
+    const args = [];
+    let depth = 1;
+    let current = "";
+    let i = 0;
+    while (i < body2.length) {
+      const ch = body2[i];
+      if (ch === "'" || ch === '"') {
+        const quote = ch;
+        current += ch;
+        i++;
+        while (i < body2.length && body2[i] !== quote) {
+          if (body2[i] === "\\" && i + 1 < body2.length) {
+            current += body2[i] + body2[i + 1];
+            i += 2;
+            continue;
+          }
+          current += body2[i];
+          i++;
+        }
+        if (i >= body2.length) return null;
+        current += body2[i];
+        i++;
+        continue;
+      }
+      if (ch === "(" || ch === "[" || ch === "{") {
+        depth++;
+        current += ch;
+        i++;
+        continue;
+      }
+      if (ch === ")" || ch === "]" || ch === "}") {
+        depth--;
+        if (depth === 0) {
+          if (ch !== ")") return null;
+          const rest = body2.slice(i + 1).trim();
+          if (rest.length > 0) return null;
+          const arg = current.trim();
+          if (args.length === 0 && arg.length === 0) return [];
+          args.push(arg);
+          return args;
+        }
+        current += ch;
+        i++;
+        continue;
+      }
+      if (ch === "," && depth === 1) {
+        args.push(current.trim());
+        current = "";
+        i++;
+        continue;
+      }
+      current += ch;
+      i++;
+    }
+    return null;
+  }
+  function inferArgType(raw) {
+    const s = raw.trim();
+    if (!s) return "empty";
+    if (/^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(s)) return "number";
+    if (/^'(?:[^'\\]|\\.)*'$/.test(s)) return "quoted-string";
+    if (/^"(?:[^"\\]|\\.)*"$/.test(s)) return "quoted-string";
+    if (/^[a-z_][\w]*\s*\(/.test(s) && s.endsWith(")")) return "compound";
+    if (/^'(?:[^'\\]|\\.)*'\s*\(/.test(s) && s.endsWith(")")) return "compound";
+    if (s.startsWith("[") && s.endsWith("]")) return "list";
+    if (/^[A-Z_][\w]*$/.test(s)) return "variable";
+    if (/^[a-z][\w]*$/.test(s)) return "atom";
+    return "unknown";
+  }
+  function extractDynamicDeclarations(program) {
+    const out = [];
+    const re = /:-\s*dynamic\s*\(\s*([a-z_][\w]*)\s*\/\s*(\d+)\s*\)/g;
+    let m;
+    while ((m = re.exec(program)) !== null) {
+      out.push(`${m[1]}/${m[2]}`);
+    }
+    return out;
+  }
+  function extractRuleHeads(program) {
+    const out = [];
+    const lines2 = program.split(/\r?\n/);
+    for (const rawLine of lines2) {
+      const line = rawLine.replace(/^\s+/, "");
+      if (!line || line.startsWith("%") || line.startsWith(":-")) continue;
+      const m = line.match(/^([a-z_][\w]*)\s*\(/);
+      if (!m) continue;
+      const parsed = parseFactSignature(line.replace(/\s*:-.*$/, "").replace(/\s*\.\s*$/, ""));
+      if (parsed) out.push(`${parsed.predicate}/${parsed.arity}`);
+    }
+    return out;
+  }
+  function buildKnownPredicateSignatures(extra = []) {
+    const sigs = /* @__PURE__ */ new Set();
+    for (const p of getAdvancedDynamicPredicates()) sigs.add(p);
+    for (const p of getTotTDynamicPredicates()) sigs.add(p);
+    for (const p of getNPCDynamicPredicates()) sigs.add(p);
+    for (const p of extractDynamicDeclarations(HELPER_PREDICATES_PROLOG)) sigs.add(p);
+    for (const p of extractRuleHeads(HELPER_PREDICATES_PROLOG)) sigs.add(p);
+    for (const p of MECHANIC_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of AI_PERCEPTION_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of AI_ACTION_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of AI_ENFORCEMENT_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of AI_PLANNING_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of extra) sigs.add(p);
+    return sigs;
+  }
+  function validatePrologFact(fact, knownSignatures) {
+    const parsed = parseFactSignature(fact);
+    if (!parsed) {
+      return { valid: false, reason: "unparseable fact" };
+    }
+    const { predicate, arity, args } = parsed;
+    const sig = `${predicate}/${arity}`;
+    if (!knownSignatures.has(sig)) {
+      const arityMatches = Array.from(knownSignatures).filter((s) => s.startsWith(`${predicate}/`));
+      const reason = arityMatches.length > 0 ? `arity ${arity} does not match known ${arityMatches.join(", ")}` : "predicate not in current schema";
+      return { valid: false, reason, predicate, arity };
+    }
+    for (const arg of args) {
+      const type = inferArgType(arg);
+      if (type === "variable") {
+        return { valid: false, reason: `unbound variable "${arg}"`, predicate, arity };
+      }
+      if (type === "empty" || type === "unknown") {
+        return { valid: false, reason: `unrecognized argument "${arg}"`, predicate, arity };
+      }
+    }
+    return { valid: true, predicate, arity };
+  }
+
+  // @insimul/core/src/skills/skill-facts.ts
+  function emptySkillDelta() {
+    return { retract: [], assert: [] };
+  }
+  function mergeSkillDeltas(...deltas) {
+    const merged = emptySkillDelta();
+    for (const delta of deltas) {
+      merged.retract.push(...delta.retract);
+      merged.assert.push(...delta.assert);
+    }
+    return merged;
+  }
+  var SKILL_RESOLUTION_PREDICATES = Object.freeze([
+    "skill_xp/3",
+    "skill_points/3",
+    "skill_unlocked/2",
+    "has_skill/3"
+  ]);
+  var SKILL_AUTHORED_PREDICATES = Object.freeze([
+    "skill_defined/2",
+    "skill_max_level/2",
+    "skill_requires/3",
+    "skill_level_xp/3",
+    "skill_tree/2",
+    "skill_node/2",
+    "skill_node_cost/2",
+    "skill_node_requires/2",
+    "skill_node_effect/2"
+  ]);
+  function skillDefinitionFacts(skills, tuning) {
+    const facts = [];
+    for (const skill of skills) {
+      const id = prologAtom(skill.id);
+      facts.push(`skill_defined(${id}, ${prologAtom(skill.category)}).`);
+      facts.push(`skill_max_level(${id}, ${skill.maxLevel}).`);
+      for (const prereq of skill.requires) {
+        facts.push(`skill_requires(${id}, ${prologAtom(prereq.skill)}, ${prereq.level}).`);
+      }
+      for (let level = 2; level <= skill.maxLevel; level += 1) {
+        facts.push(`skill_level_xp(${id}, ${level}, ${xpForLevel(skill, level, tuning)}).`);
+      }
+    }
+    return facts;
+  }
+  function skillTreeFacts(trees, tuning) {
+    const facts = [];
+    for (const tree of trees) {
+      facts.push(`skill_tree(${prologAtom(tree.id)}, ${prologAtom(tree.skill)}).`);
+      for (const node of tree.nodes) {
+        const id = prologAtom(node.id);
+        facts.push(`skill_node(${id}, ${prologAtom(tree.id)}).`);
+        facts.push(`skill_node_cost(${id}, ${nodeCost(node, tuning)}).`);
+        for (const goal of nodeRequirements(node)) {
+          facts.push(`skill_node_requires(${id}, ${goal}).`);
+        }
+        for (const effect of node.effects) {
+          facts.push(`skill_node_effect(${id}, ${effectTerm(effect)}).`);
+        }
+      }
+    }
+    return facts;
+  }
+  function effectTerm(effect) {
+    if (effect.args.length === 0) return prologAtom(effect.kind);
+    const args = effect.args.map(
+      (arg) => typeof arg === "number" ? String(arg) : prologAtom(arg)
+    );
+    return `${prologAtom(effect.kind)}(${args.join(", ")})`;
+  }
+  function skillXpFact(actor, skill, xp) {
+    return `skill_xp(${prologAtom(actor)}, ${prologAtom(skill)}, ${xp}).`;
+  }
+  function hasSkillFact(actor, skill, level) {
+    return `has_skill(${prologAtom(actor)}, ${prologAtom(skill)}, ${level}).`;
+  }
+  function skillPointsFact(actor, tree, points3) {
+    return `skill_points(${prologAtom(actor)}, ${prologAtom(tree)}, ${points3}).`;
+  }
+  function skillUnlockedFact(actor, node) {
+    return `skill_unlocked(${prologAtom(actor)}, ${prologAtom(node)}).`;
+  }
+  function balanceDelta(fact, before, after) {
+    if (before === after) return emptySkillDelta();
+    return {
+      retract: before === void 0 ? [] : [fact(before)],
+      assert: [fact(after)]
+    };
+  }
+  function skillXpDelta(actor, skill, before, after) {
+    return balanceDelta((value) => skillXpFact(actor, skill, value), before, after);
+  }
+  function skillLevelDelta(actor, skill, before, after) {
+    return balanceDelta(
+      (value) => hasSkillFact(actor, skill, value),
+      before === 0 ? void 0 : before,
+      after
+    );
+  }
+  function skillPointsDelta(actor, tree, before, after) {
+    return balanceDelta((value) => skillPointsFact(actor, tree, value), before, after);
+  }
+  function skillUnlockDelta(actor, node) {
+    return { retract: [], assert: [skillUnlockedFact(actor, node)] };
+  }
+  function checkSkillDelta(delta) {
+    const known = buildKnownPredicateSignatures(SKILL_RESOLUTION_PREDICATES);
+    const allowed = new Set(SKILL_RESOLUTION_PREDICATES);
+    for (const clause of [...delta.retract, ...delta.assert]) {
+      const verdict = validatePrologFact(clause, known);
+      if (!verdict.valid) {
+        return {
+          ok: false,
+          reason: `"${clause}" is not a fact this build can carry: ${verdict.reason}`,
+          offending: clause
+        };
+      }
+      const signature = `${verdict.predicate}/${verdict.arity}`;
+      if (!allowed.has(signature)) {
+        return {
+          ok: false,
+          reason: `"${clause}" writes ${signature}, which progression does not own (docs/skill-progression.md \xA78)`,
+          offending: clause
+        };
+      }
+    }
+    return { ok: true, reason: null };
+  }
+
+  // @insimul/core/src/game-engine/logic/SkillProgression.ts
+  var SkillProgression = class {
+    constructor(config = {}) {
+      __publicField(this, "engine");
+      __publicField(this, "tuning");
+      __publicField(this, "eventBus");
+      /** Resolved once at construction, so it cannot be swapped out mid-session. */
+      __publicField(this, "modifierSink");
+      /** Why the last write was refused by the schema gate, or `null`. */
+      __publicField(this, "writeRefusal", null);
+      /** The world's authored content. Never written to by gameplay. */
+      __publicField(this, "skills", /* @__PURE__ */ new Map());
+      __publicField(this, "trees", []);
+      __publicField(this, "actors", /* @__PURE__ */ new Map());
+      this.engine = config.engine;
+      this.tuning = config.tuning ?? { ...DEFAULT_SKILL_TUNING };
+      this.eventBus = config.eventBus;
+      this.modifierSink = config.skillModifiers ?? config.host?.skillModifiers;
+      if (config.skills) this.loadSkills(config.skills);
+      if (config.trees) this.loadTrees(config.trees);
+      if (config.state) this.restore(config.state);
+    }
+    setEventBus(bus) {
+      this.eventBus = bus;
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    // ── The authored world ─────────────────────────────────────────────────
+    /** Replace the authored skills. */
+    loadSkills(skills) {
+      this.skills = new Map(skills.map((skill) => [skill.id, skill]));
+    }
+    /** Replace the authored trees. Node ids are settled against their tree here. */
+    loadTrees(trees) {
+      this.trees = trees.map((tree) => ({
+        ...tree,
+        nodes: tree.nodes.map((node) => ({ ...node, tree: tree.id }))
+      }));
+    }
+    /** The authored skills, as this instance read them. */
+    getSkills() {
+      return [...this.skills.values()].map((skill) => ({ ...skill }));
+    }
+    /** The authored trees, as this instance read them. */
+    getTrees() {
+      return this.trees.map((tree) => ({ ...tree, nodes: tree.nodes.map((node) => ({ ...node })) }));
+    }
+    /**
+     * Publish the world's authored skills and trees into the KB.
+     *
+     * Authored data, asserted at load the way `TraversalPlanner.publishGraph`
+     * asserts the link graph — so a rule that asks `can_unlock/2` walks the same
+     * tree core resolves over, and an authored quest objective can name a node
+     * without a second export of it. Returns how many facts were written.
+     */
+    async publishWorld(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const fact of [
+        ...skillDefinitionFacts([...this.skills.values()], this.tuning),
+        ...skillTreeFacts(this.trees, this.tuning)
+      ]) {
+        await engine.assertFact(stripPeriod4(fact));
+        written += 1;
+      }
+      return written;
+    }
+    // ── Roster ─────────────────────────────────────────────────────────────
+    /** Add or replace an actor, and write their facts. */
+    async register(registration) {
+      const before = this.actors.get(registration.id);
+      const after = {
+        id: registration.id,
+        levels: { ...registration.levels ?? {} },
+        xp: { ...registration.xp ?? {} },
+        points: { ...registration.points ?? {} },
+        unlocked: [...registration.unlocked ?? []]
+      };
+      this.actors.set(registration.id, after);
+      const deltas = [];
+      for (const skill of union(before?.levels, after.levels)) {
+        deltas.push(
+          skillLevelDelta(after.id, skill, before?.levels[skill], after.levels[skill] ?? 0)
+        );
+      }
+      for (const skill of union(before?.xp, after.xp)) {
+        deltas.push(skillXpDelta(after.id, skill, before?.xp[skill], after.xp[skill] ?? 0));
+      }
+      for (const tree of union(before?.points, after.points)) {
+        deltas.push(skillPointsDelta(after.id, tree, before?.points[tree], after.points[tree] ?? 0));
+      }
+      for (const node of after.unlocked) {
+        if (!before?.unlocked.includes(node)) deltas.push(skillUnlockDelta(after.id, node));
+      }
+      const delta = mergeSkillDeltas(...deltas);
+      await this.writeDelta(delta);
+      this.publishModifiers(after.id);
+      return delta;
+    }
+    /**
+     * Forget an actor. Their facts are retracted; the authored world is untouched.
+     *
+     * Retract-only: an actor who left the world has no facts, not facts reading
+     * zero — a `has_skill(gone, smithing, 0)` left behind is a character the rules
+     * layer still thinks is present and merely unskilled.
+     */
+    async unregister(actorId) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptySkillDelta();
+      this.actors.delete(actorId);
+      const delta = { retract: [], assert: [] };
+      for (const [skill, level] of Object.entries(actor.levels)) {
+        delta.retract.push(hasSkillFact(actorId, skill, level));
+      }
+      for (const [skill, xp] of Object.entries(actor.xp)) {
+        delta.retract.push(skillXpFact(actorId, skill, xp));
+      }
+      for (const [tree, points3] of Object.entries(actor.points)) {
+        delta.retract.push(skillPointsFact(actorId, tree, points3));
+      }
+      for (const node of actor.unlocked) delta.retract.push(skillUnlockedFact(actorId, node));
+      await this.writeDelta(delta);
+      if (this.modifierSink) {
+        try {
+          this.modifierSink.applyModifiers(actorId, {});
+        } catch {
+        }
+      }
+      return delta;
+    }
+    /** This actor's level in a skill. `0` for one they have not learned. */
+    levelOf(actorId, skill) {
+      return this.actors.get(actorId)?.levels[skill] ?? 0;
+    }
+    /** This actor's banked, unspent XP in a skill. */
+    xpOf(actorId, skill) {
+      return this.actors.get(actorId)?.xp[skill] ?? 0;
+    }
+    /** What this actor has left to spend in a tree. */
+    pointsOf(actorId, tree) {
+      return this.actors.get(actorId)?.points[tree] ?? 0;
+    }
+    /** Every node this actor has taken, in canonical order. */
+    unlockedNodes(actorId) {
+      return [...this.actors.get(actorId)?.unlocked ?? []].sort(compareIds);
+    }
+    /** Whether `skill_unlocked(Actor, Node)` holds. */
+    hasUnlocked(actorId, node) {
+      return this.actors.get(actorId)?.unlocked.includes(node) ?? false;
+    }
+    /**
+     * What this actor's taken nodes DO — `skill_effect/2` in TypeScript.
+     *
+     * The read every other module makes (US-2), and the reason none of them needs
+     * to know what a tree is: an effect is an authored term, and a module that
+     * cares about `modifies(reach, 2)` asks for effects rather than for nodes.
+     * Canonically ordered by node, so two engines applying them apply them in one
+     * order.
+     */
+    effectsOf(actorId) {
+      const effects = [];
+      for (const node of this.unlockedNodes(actorId)) {
+        const authored = findNode(this.trees, node);
+        if (authored) effects.push(...authored.effects.map((effect) => ({ ...effect })));
+      }
+      return effects;
+    }
+    /**
+     * Every numeric parameter this actor's taken nodes modify, summed (US-2).
+     *
+     * The convenience form of `skillModifiers(effectsOf(actor))`, for a caller that
+     * is about to build a resolution input — `withSkillModifiers` is what applies
+     * it. Reported rather than applied: this module does not know which module a
+     * parameter belongs to, and the one that does is the one already holding the
+     * snapshot.
+     */
+    modifiersOf(actorId) {
+      return skillModifiers(this.effectsOf(actorId));
+    }
+    // ── The host ───────────────────────────────────────────────────────────
+    /** Whether an engine supplied a modifier sink. `false` in a headless world. */
+    hasModifierSink() {
+      return this.modifierSink !== void 0;
+    }
+    /**
+     * Hand an actor's whole current modifier set to the host (US-3).
+     *
+     * The module's only outbound call, and the only one it will ever have: an
+     * effect whose parameter names a field of a snapshot core resolves from is
+     * applied by the module that owns the snapshot (`withSkillModifiers`, US-2),
+     * and an effect whose parameter names a quantity the ENGINE holds — how fast a
+     * body moves, how far it reaches — can only be applied there.
+     *
+     * **Absolute, never a delta.** The whole set is sent every time, so re-applying
+     * it is a no-op and a save load, a re-registration or a replayed unlock cannot
+     * leave the host drifting from core. A host that throws is ignored: an engine
+     * failing to move a speed number may not stop a node from being taken.
+     *
+     * With no actor named, every registered actor is published — what a caller
+     * that has just restored a save wants, and the counterpart of
+     * {@link publishActors}. Returns how many actors were published.
+     */
+    publishModifiers(actorId) {
+      const sink = this.modifierSink;
+      if (!sink) return 0;
+      const actors = actorId === void 0 ? this.roster().map((a) => a.id) : [actorId];
+      let published = 0;
+      for (const id of actors) {
+        if (actorId !== void 0 && !this.actors.has(id)) continue;
+        try {
+          sink.applyModifiers(id, skillModifierTotals(this.effectsOf(id)));
+        } catch {
+        }
+        published += 1;
+      }
+      return published;
+    }
+    /**
+     * The tree a host draws, for one actor — every authored tree, every node's
+     * state, the rows and the edges (US-3).
+     *
+     * A VALUE rather than a hook, which is the whole of `docs/skill-progression.md`
+     * §5: a panel is layout, layout differs legitimately between four engines, and
+     * what may not differ is which nodes are open, what they cost and why the rest
+     * are not. `buildSkillView` is the pure half; this is the half that asks the KB
+     * the two questions a pure function may not — which authored goals are unmet,
+     * and which nodes `permissible/3` refuses.
+     *
+     * One round trip per node, on the decision path: a player opening a screen,
+     * never a frame. A caller with no KB can call `buildSkillView` directly and
+     * gets a view whose gated nodes read `conditional` instead.
+     */
+    async viewOf(actorId) {
+      const actor = this.actors.get(actorId);
+      const unmet = {};
+      const forbidden = [];
+      for (const tree of this.trees) {
+        for (const node of tree.nodes) {
+          const goals = await this.unmetRequirements(actorId, nodeRequirements(node));
+          if (goals.length > 0) unmet[node.id] = goals;
+          const check = await this.checkPermission(actorId, this.tuning.unlockAction, node.id);
+          if (!check.permitted) forbidden.push(node.id);
+        }
+      }
+      const view2 = {
+        id: actorId,
+        levels: actor?.levels ?? {},
+        xp: actor?.xp ?? {},
+        points: actor?.points ?? {},
+        unlocked: this.unlockedNodes(actorId),
+        unmet,
+        forbidden
+      };
+      return buildSkillView({ trees: this.trees, skills: this.getSkills(), tuning: this.tuning, actor: view2 });
+    }
+    // ── XP ─────────────────────────────────────────────────────────────────
+    /**
+     * Bank XP against a skill — what practising, questing or being taught pays.
+     *
+     * How MUCH an action is worth is not decided here and gets no predicate: it is
+     * a property of the action the world authored, handed in by whoever raised the
+     * event. A negative award is read as zero rather than as a punishment; a world
+     * that wants to take skill away authors that, and silently draining a bank is
+     * the bug that would hide.
+     */
+    async award(actorId, skill, amount) {
+      const actor = this.actors.get(actorId);
+      const awarded = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 0;
+      if (!actor || awarded === 0) {
+        return {
+          actor: actorId,
+          skill,
+          awarded: 0,
+          banked: this.xpOf(actorId, skill),
+          advanceable: (await this.canAdvance(actorId, skill)).available,
+          facts: emptySkillDelta(),
+          applied: false
+        };
+      }
+      const before = actor.xp[skill];
+      const banked = (before ?? 0) + awarded;
+      actor.xp[skill] = banked;
+      const facts = skillXpDelta(actorId, skill, before, banked);
+      const applied = await this.writeDelta(facts);
+      return {
+        actor: actorId,
+        skill,
+        awarded,
+        banked,
+        advanceable: (await this.canAdvance(actorId, skill)).available,
+        facts,
+        applied
+      };
+    }
+    /**
+     * Whether this actor may take the next level of a skill, without taking it.
+     *
+     * Every gate in {@link SKILL_ADVANCE_REFUSALS} order: what core knows first —
+     * the skill exists, its `skill_requires/3` prerequisites are met, it is not
+     * capped, the bank affords it — then permissibility. Advancing from 0 to 1 is
+     * LEARNING, which is why `can_learn_skill/2` and `can_advance/2` are one
+     * operation here rather than two entry points a caller has to choose between.
+     */
+    async canAdvance(actorId, skill) {
+      const actor = this.actors.get(actorId);
+      const resolution = resolveAdvance({
+        actor: actorId,
+        skill: this.skills.get(skill),
+        skillId: skill,
+        level: actor?.levels[skill] ?? 0,
+        banked: actor?.xp[skill] ?? 0,
+        levels: actor?.levels ?? {},
+        tuning: this.tuning
+      });
+      if (!resolution.available) return { ...resolution, permitted: false };
+      const check = await this.checkPermission(actorId, this.tuning.advanceAction, skill);
+      if (!check.permitted) {
+        return { ...resolution, available: false, refusal: "forbidden", check, permitted: false };
+      }
+      return { ...resolution, check, permitted: true };
+    }
+    /**
+     * Take the next level of a skill, if every gate allows it.
+     *
+     * The order is the module's discipline, and each step is where it is for a
+     * reason:
+     *
+     *  1. **Decide** ({@link canAdvance}). Nothing has happened yet.
+     *  2. **Spend** the banked XP. The bank is a currency, not a running total —
+     *     `docs/skill-progression.md` §3.
+     *  3. **Raise** `has_skill/3`, which is the fact the rest of the world already
+     *     reads.
+     *  4. **Grant** points to every tree the skill funds, so there is something to
+     *     spend them on.
+     */
+    async advance(actorId, skill) {
+      const decision = await this.canAdvance(actorId, skill);
+      const actor = this.actors.get(actorId);
+      const level = actor?.levels[skill] ?? 0;
+      if (!decision.permitted || !actor) {
+        return {
+          ...decision,
+          performed: false,
+          level,
+          spent: 0,
+          granted: [],
+          facts: emptySkillDelta(),
+          applied: false
+        };
+      }
+      const banked = actor.xp[skill] ?? 0;
+      const remaining = banked - decision.price;
+      const raised = level + 1;
+      actor.xp[skill] = remaining;
+      actor.levels[skill] = raised;
+      const granted = [];
+      const pointDeltas = [];
+      for (const treeId of treesFundedBy(this.trees, skill)) {
+        const before = actor.points[treeId];
+        const after = (before ?? 0) + this.tuning.pointsPerLevel;
+        actor.points[treeId] = after;
+        granted.push({ treeId, points: this.tuning.pointsPerLevel });
+        pointDeltas.push(skillPointsDelta(actorId, treeId, before, after));
+      }
+      const facts = mergeSkillDeltas(
+        skillXpDelta(actorId, skill, banked, remaining),
+        skillLevelDelta(actorId, skill, level, raised),
+        ...pointDeltas
+      );
+      const applied = await this.writeDelta(facts);
+      this.eventBus?.emit({
+        type: "skill_advanced",
+        actorId,
+        skillId: skill,
+        level: raised,
+        spent: decision.price,
+        granted
+      });
+      return {
+        ...decision,
+        performed: true,
+        level: raised,
+        spent: decision.price,
+        granted,
+        facts,
+        applied
+      };
+    }
+    /** What the next level of this skill would cost, or `0` past the cap. */
+    priceOfNextLevel(actorId, skill) {
+      const definition = this.skills.get(skill);
+      const level = this.levelOf(actorId, skill);
+      if (level >= maxLevelOf(definition, this.tuning)) return 0;
+      return xpForLevel(definition, level + 1, this.tuning);
+    }
+    // ── Nodes ──────────────────────────────────────────────────────────────
+    /**
+     * Whether this actor may take a node, without taking it.
+     *
+     * Every gate in {@link SKILL_UNLOCK_REFUSALS} order: the node exists, it is not
+     * already taken, the pool affords it, its authored goals hold, and nothing
+     * forbids it. The two rules-layer rungs come last because they cost a round
+     * trip and because a node nobody can pay for is refused for a reason nobody
+     * needs the KB to explain.
+     */
+    async canUnlock(actorId, nodeId) {
+      const node = findNode(this.trees, nodeId);
+      const resolution = resolveUnlock({
+        actor: actorId,
+        node,
+        nodeId,
+        points: node ? this.pointsOf(actorId, node.tree) : 0,
+        unlocked: this.hasUnlocked(actorId, nodeId),
+        tuning: this.tuning
+      });
+      if (!resolution.available) return { ...resolution, unmet: [], permitted: false };
+      const unmet = await this.unmetRequirements(actorId, resolution.requires);
+      if (unmet.length > 0) {
+        return { ...resolution, available: false, refusal: "requires", unmet, permitted: false };
+      }
+      const check = await this.checkPermission(actorId, resolution.action, nodeId);
+      if (!check.permitted) {
+        return {
+          ...resolution,
+          available: false,
+          refusal: "forbidden",
+          unmet,
+          check,
+          permitted: false
+        };
+      }
+      return { ...resolution, unmet, check, permitted: true };
+    }
+    /**
+     * Take a node, if every gate allows it.
+     *
+     * Spend, then record. What the node DOES is not applied here and never will be:
+     * an effect is an authored term the KB carries, and the module it affects reads
+     * it (US-2). A `SkillProgression` that reached into `CombatResolver` would be
+     * the fork this whole design exists to avoid.
+     */
+    async unlock(actorId, nodeId) {
+      const decision = await this.canUnlock(actorId, nodeId);
+      const actor = this.actors.get(actorId);
+      const node = findNode(this.trees, nodeId);
+      const effects = node?.effects ?? [];
+      if (!decision.permitted || !actor || !node) {
+        return {
+          ...decision,
+          performed: false,
+          remaining: decision.points,
+          effects,
+          facts: emptySkillDelta(),
+          applied: false
+        };
+      }
+      const before = actor.points[node.tree];
+      const remaining = (before ?? 0) - decision.cost;
+      actor.points[node.tree] = remaining;
+      actor.unlocked.push(nodeId);
+      const facts = mergeSkillDeltas(
+        skillPointsDelta(actorId, node.tree, before, remaining),
+        skillUnlockDelta(actorId, nodeId)
+      );
+      const applied = await this.writeDelta(facts);
+      this.publishModifiers(actorId);
+      this.eventBus?.emit({
+        type: "skill_node_unlocked",
+        actorId,
+        nodeId,
+        treeId: node.tree,
+        cost: decision.cost,
+        effects: effects.map((effect) => effectTerm(effect))
+      });
+      return { ...decision, performed: true, remaining, effects, facts, applied };
+    }
+    // ── The gates ──────────────────────────────────────────────────────────
+    /**
+     * The authored goals a node asks that the KB did not satisfy.
+     *
+     * Evaluated by the PACK's own `skill_goal_met/2`, not by a second
+     * implementation here: the pack rebuilds the goal with the actor bound (`=..`),
+     * and reproducing that rebuild in TypeScript is how one guild member's
+     * reputation ends up unlocking the whole roster's node — the correction
+     * `traversal_goal_met/2` already carries.
+     *
+     * With no KB wired every goal is unmet — see the module header for why this
+     * gate fails closed and permissibility fails open.
+     */
+    async unmetRequirements(actorId, requires) {
+      if (requires.length === 0) return [];
+      if (!this.engine) return [...requires];
+      const unmet = [];
+      for (const goal of requires) {
+        let met = false;
+        try {
+          met = await this.engine.queryOnce(`skill_goal_met(${prologAtom(actorId)}, ${goal})`);
+        } catch {
+          met = false;
+        }
+        if (!met) unmet.push(goal);
+      }
+      return unmet;
+    }
+    /**
+     * `permissible/3`'s own input, forwarded with the attempt spelled as the action
+     * it is.
+     *
+     * There is deliberately no progression-private gate: a guild that will not
+     * teach an outsider, a law against training in a besieged city and a norm
+     * against taking the assassin's node are all refused by whatever `forbids/4`
+     * refuses them with, which is the same clause that refuses a theft. With no KB
+     * wired every advancement is permitted; core does not invent a prohibition it
+     * cannot read.
+     */
+    async checkPermission(actorId, action, target) {
+      const subject = target || NO_TARGET;
+      if (!this.engine) {
+        return { agent: actorId, action, target: subject, permitted: true, breached: [] };
+      }
+      return checkAction(this.engine, { agent: actorId, action, target: subject });
+    }
+    // ── The KB ─────────────────────────────────────────────────────────────
+    /**
+     * The last refusal, if the most recent write was refused by the schema gate.
+     *
+     * A refused write returns `false` exactly as a write with no KB behind it
+     * does, so the reason has to be readable somewhere; this is where. It is
+     * cleared by the next write that passes.
+     */
+    lastWriteRefusal() {
+      return this.writeRefusal;
+    }
+    /**
+     * Validate a whole delta and apply it, or apply none of it.
+     *
+     * Public for `BusinessDirector.applyDelta`'s reason: "nothing is partially
+     * written" is the claim a stateful layer most needs falsified against a real
+     * KB rather than taken on trust.
+     */
+    async applyDelta(delta) {
+      return this.writeDelta(delta);
+    }
+    /**
+     * Write one delta into the KB, retracting first — after checking the whole of
+     * it (US-1 of `195-module-v2-narrative-placement-skills`).
+     *
+     * `checkSkillDelta` runs over every clause before the KB is asked for
+     * anything, so a delta that reached outside progression's own vocabulary or
+     * carried an unbound variable is refused **whole** and leaves the KB
+     * byte-identical. Progression is the module that most needs that gate and was
+     * the last of the four to get it: an unlock is a `skill_unlocked/2` that
+     * `skill_effect/2` reads, and `skill_effect/2` is read by combat, traversal
+     * and crafting alike — so a half-written unlock is a modifier applied to every
+     * actor in the world (`docs/skill-progression.md` §8).
+     *
+     * Retracting a fact the KB never carried is a no-op rather than a failure: a
+     * host with its own persistence, a restored save and an actor registered before
+     * the engine was wired all produce one, and none of them is an error.
+     */
+    async writeDelta(delta) {
+      const verdict = checkSkillDelta(delta);
+      if (!verdict.ok) {
+        this.writeRefusal = verdict.reason;
+        return false;
+      }
+      this.writeRefusal = null;
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(stripPeriod4(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(stripPeriod4(fact));
+      }
+      return true;
+    }
+    /**
+     * Publish every registered actor's levels, banks, pools and taken nodes.
+     *
+     * For a caller that wired the KB after the roster — a save restore, a host that
+     * builds its world before its engine. Returns how many facts were written.
+     */
+    async publishActors(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const actor of this.roster()) {
+        const delta = mergeSkillDeltas(
+          ...Object.entries(actor.levels).map(
+            ([skill, level]) => skillLevelDelta(actor.id, skill, void 0, level)
+          ),
+          ...Object.entries(actor.xp).map(([skill, xp]) => skillXpDelta(actor.id, skill, void 0, xp)),
+          ...Object.entries(actor.points).map(
+            ([tree, points3]) => skillPointsDelta(actor.id, tree, void 0, points3)
+          ),
+          ...actor.unlocked.map((node) => skillUnlockDelta(actor.id, node))
+        );
+        for (const fact of delta.assert) {
+          await engine.assertFact(stripPeriod4(fact));
+          written += 1;
+        }
+      }
+      return written;
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    /** Every actor this module knows, in canonical order. */
+    roster() {
+      return [...this.actors.values()].map((actor) => ({
+        id: actor.id,
+        levels: sortedRecord(actor.levels),
+        xp: sortedRecord(actor.xp),
+        points: sortedRecord(actor.points),
+        unlocked: [...actor.unlocked].sort(compareIds)
+      })).sort((a, b) => compareIds(a.id, b.id));
+    }
+    /**
+     * The per-playthrough state, and only that: what each actor has learned,
+     * banked, been granted and taken. The skills, the trees, the curve, the costs
+     * and the effects are authored and are NOT here — a tuning number inside a save
+     * file is world-template data leaking into a playthrough
+     * (`docs/mechanic-predicates.md` §3).
+     */
+    serialize() {
+      return { actors: this.roster() };
+    }
+    /**
+     * Restore a saved playthrough. Silent — no events, because loading a save is
+     * not somebody levelling up, no KB writes, because restoring a save is what
+     * `publishActors` is for once the engine exists, and no host call, because
+     * {@link publishModifiers} is its counterpart on the other seam. A caller that
+     * restores into a live world calls both; one that restores into a world it is
+     * still building calls neither yet.
+     */
+    restore(state) {
+      this.actors = /* @__PURE__ */ new Map();
+      for (const actor of state.actors ?? []) {
+        this.actors.set(actor.id, {
+          id: actor.id,
+          levels: { ...actor.levels ?? {} },
+          xp: { ...actor.xp ?? {} },
+          points: { ...actor.points ?? {} },
+          unlocked: [...actor.unlocked ?? []]
+        });
+      }
+    }
+  };
+  function stripPeriod4(clause) {
+    return clause.replace(/\.$/, "");
+  }
+  function union(before, after) {
+    return [.../* @__PURE__ */ new Set([...Object.keys(before ?? {}), ...Object.keys(after)])].sort(compareIds);
+  }
+  function sortedRecord(record) {
+    const out = {};
+    for (const key of Object.keys(record).sort(compareIds)) out[key] = record[key];
+    return out;
+  }
+
+  // @insimul/core/src/stamina/stamina-facts.ts
+  var STAMINA_RESOLUTION_PREDICATES = Object.freeze(["energy/3"]);
+  var STAMINA_AUTHORED_PREDICATES = Object.freeze([
+    "stamina_threshold/2",
+    "stamina_regen_base/2",
+    "action/4"
+  ]);
+  function energyFacts(actorId, before, after, max) {
+    if (before === after) return { retract: [], assert: [] };
+    return {
+      retract: [{ predicate: "energy", args: [actorId, before, max] }],
+      assert: [{ predicate: "energy", args: [actorId, after, max] }]
+    };
+  }
+  function spendFacts(actorId, spend) {
+    if (!spend.affordable) return { retract: [], assert: [] };
+    return energyFacts(actorId, spend.before, spend.after, spend.max);
+  }
+  function regenFacts(actorId, regen) {
+    return energyFacts(actorId, regen.before, regen.after, regen.max);
+  }
+  function staminaTuningFacts(tuning) {
+    const percent = {
+      winded: tuning.windedPercent,
+      exhausted: tuning.exhaustedPercent
+    };
+    return STAMINA_THRESHOLD_NAMES.map((name) => ({
+      predicate: "stamina_threshold",
+      args: [name, percent[name]]
+    }));
+  }
+  function staminaRegenBaseFact(actorId, rate) {
+    return { predicate: "stamina_regen_base", args: [actorId, rate] };
+  }
+
+  // @insimul/core/src/game-engine/logic/StaminaPool.ts
+  var StaminaPool = class {
+    constructor(config = {}) {
+      __publicField(this, "engine");
+      __publicField(this, "tuning");
+      __publicField(this, "survival");
+      __publicField(this, "survivalActorId");
+      __publicField(this, "costs", /* @__PURE__ */ new Map());
+      __publicField(this, "actors", /* @__PURE__ */ new Map());
+      this.engine = config.engine;
+      this.tuning = config.tuning ?? { ...DEFAULT_STAMINA_TUNING };
+      this.survival = config.survival;
+      this.survivalActorId = config.survivalActorId;
+      for (const [action, cost] of Object.entries(config.costs ?? {})) this.setCost(action, cost);
+      if (config.state) this.restore(config.state);
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    // ── The authored cost table ────────────────────────────────────────────
+    /** Price one action. Authored data, set at load rather than during play. */
+    setCost(actionId, cost) {
+      this.costs.set(actionId, Math.max(0, Math.floor(cost)));
+    }
+    /**
+     * What this action costs. An action the world never priced costs nothing —
+     * silently free rather than an error, because a world that authored no costs at
+     * all is a world with no stamina economy, not a broken one.
+     */
+    costOf(actionId) {
+      return this.costs.get(actionId) ?? 0;
+    }
+    /**
+     * Load the cost table from the IR's action block — `ActionIR.energyCost`, the
+     * authoring surface behind `action/4`'s fourth argument.
+     */
+    loadCosts(actions) {
+      for (const action of actions) {
+        if (typeof action.energyCost === "number" && Number.isFinite(action.energyCost)) {
+          this.setCost(action.id, action.energyCost);
+        }
+      }
+    }
+    /**
+     * Load the cost table from a KB that already consulted the world's action
+     * table. `action/4` IS the cost table (`docs/mechanic-predicates.md` §12 cut
+     * `stamina_cost/2` precisely so there would be only one), so this reads it
+     * rather than a stamina-specific predicate.
+     */
+    async loadCostsFromKb(engine) {
+      const result = await engine.query("action(Id, _, _, Cost)", MAX_ACTION_SOLUTIONS);
+      if (!result.success) return 0;
+      let loaded = 0;
+      for (const binding2 of result.bindings) {
+        const id = typeof binding2["Id"] === "string" ? binding2["Id"] : null;
+        const cost = typeof binding2["Cost"] === "number" ? binding2["Cost"] : Number(binding2["Cost"]);
+        if (id === null || !Number.isFinite(cost)) continue;
+        if (cost > (this.costs.get(id) ?? -Infinity)) this.setCost(id, cost);
+        loaded += 1;
+      }
+      return loaded;
+    }
+    /**
+     * Publish the world's authored thresholds into the KB as `stamina_threshold/2`,
+     * so `winded/1` and `exhausted/1` answer with the same percentages
+     * {@link staminaStateOf} uses.
+     *
+     * Called when a world is loaded, not when one is saved: these are authored
+     * facts, they are not in the save-restore validator's known set, and a
+     * playthrough that reloads gets them from the world again.
+     */
+    async publishTuning(engine = this.engine) {
+      if (!engine) return false;
+      const facts = [...staminaTuningFacts(this.tuning)];
+      for (const actor of this.actors.values()) {
+        if (actor.regenBase !== void 0) facts.push(staminaRegenBaseFact(actor.id, actor.regenBase));
+      }
+      for (const fact of facts) await engine.assertFact(term3(fact));
+      return true;
+    }
+    // ── The roster ─────────────────────────────────────────────────────────
+    /** Add or replace an actor's meter. */
+    register(entry) {
+      const max = entry.max ?? this.tuning.maxStamina;
+      const state = {
+        id: entry.id,
+        max,
+        current: Math.max(0, Math.min(max, entry.current ?? max)),
+        regenBase: entry.regenBase
+      };
+      this.actors.set(entry.id, state);
+      return state;
+    }
+    unregister(actorId) {
+      this.actors.delete(actorId);
+    }
+    get(actorId) {
+      return this.actors.get(actorId);
+    }
+    /** Every actor with a meter, in registration order. */
+    roster() {
+      return [...this.actors.values()];
+    }
+    /** Which band this actor is in — `fresh`, `winded` or `exhausted`. */
+    stateOf(actorId) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return "fresh";
+      return staminaStateOf(actor.current, actor.max, this.tuning);
+    }
+    /**
+     * Whether this actor could pay for this action right now — `can_afford_stamina/2`
+     * without a round trip. An unregistered actor can afford anything: a world that
+     * never gave them a meter does not have one to check.
+     */
+    canAfford(actorId, action, cost) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return true;
+      return canAffordStamina(actor.current, cost ?? this.costOf(action));
+    }
+    // ── The decision ───────────────────────────────────────────────────────
+    /**
+     * Spend an action's cost out of this actor's meter.
+     *
+     * An unaffordable spend moves nothing and writes nothing: `affordable: false`
+     * is the caller's cue to refuse the action, exactly as a `refused` attack is
+     * `CombatResolver`'s. An unregistered actor is not an error either — the spend
+     * reports as affordable and free, so a world can price actions for the actors
+     * it gave meters to without every other caller having to check first.
+     */
+    async spend(actorId, request) {
+      const cost = request.cost ?? this.costOf(request.action);
+      const actor = this.actors.get(actorId);
+      if (!actor) {
+        return {
+          actorId,
+          action: request.action,
+          spend: unmeteredSpend(cost),
+          facts: { retract: [], assert: [] },
+          applied: false
+        };
+      }
+      const spend = spendStamina({
+        current: actor.current,
+        max: actor.max,
+        cost,
+        tuning: this.tuning
+      });
+      if (spend.affordable) actor.current = spend.after;
+      const facts = spendFacts(actorId, spend);
+      const applied = await this.writeFacts(facts);
+      if (spend.spent > 0 && actorId === this.survivalActorId) {
+        this.survival?.consumeStamina(spend.spent);
+      }
+      return { actorId, action: request.action, spend, facts, applied };
+    }
+    /**
+     * Grant rest. The host owns the clock and says how many ticks passed; core
+     * decides only the modifier (`docs/mechanic-predicates.md` §9), which is what
+     * keeps this off a per-frame path across the ABI.
+     */
+    async rest(actorId, request) {
+      const actor = this.actors.get(actorId);
+      if (!actor) {
+        const empty = {
+          before: 0,
+          after: 0,
+          max: 0,
+          rate: 0,
+          recovered: 0,
+          state: "fresh"
+        };
+        return { actorId, regen: empty, facts: { retract: [], assert: [] }, applied: false };
+      }
+      const regen = regenerateStamina({
+        current: actor.current,
+        max: actor.max,
+        ticks: request.ticks,
+        tuning: this.tuning,
+        rate: actor.regenBase,
+        inCombat: request.inCombat,
+        encumbered: request.encumbered
+      });
+      actor.current = regen.after;
+      const facts = regenFacts(actorId, regen);
+      const applied = await this.writeFacts(facts);
+      if (regen.recovered > 0 && actorId === this.survivalActorId) {
+        this.survival?.recoverStamina(regen.recovered);
+      }
+      return { actorId, regen, facts, applied };
+    }
+    /**
+     * Write a delta into the KB. Retract first — `energy/3` is replaced, never
+     * accumulated — and a retraction of a fact the KB never carried is a no-op
+     * rather than a failure, the same way `CombatResolver` treats `health/3`.
+     */
+    async writeFacts(delta) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(term3(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(term3(fact));
+      }
+      return true;
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    /**
+     * The per-playthrough state, as a save carries it: how much each actor has
+     * left. No thresholds, no rates and no costs — those are the world template's,
+     * and a save that carried a copy would freeze a creator's balance pass at the
+     * moment the player first pressed New Game.
+     */
+    serialize() {
+      return { actors: this.roster().map((actor) => ({ ...actor })) };
+    }
+    /** Restore a saved pool. Silent: loading a save is not an actor getting tired. */
+    restore(state) {
+      this.actors = /* @__PURE__ */ new Map();
+      for (const entry of state.actors ?? []) {
+        this.actors.set(entry.id, { ...entry });
+      }
+    }
+  };
+  var MAX_ACTION_SOLUTIONS = 1e3;
+  function unmeteredSpend(cost) {
+    return {
+      affordable: true,
+      cost,
+      before: 0,
+      after: 0,
+      max: 0,
+      spent: 0,
+      stateBefore: "fresh",
+      state: "fresh",
+      becameWinded: false,
+      becameExhausted: false
+    };
+  }
+  function term3(fact) {
+    return serializedFactToProlog(fact).replace(/\.$/, "");
+  }
+
+  // @insimul/core/src/traversal/traversal.ts
+  var TRAVERSAL_MODES = Object.freeze([
+    "walk",
+    "climb",
+    "swim",
+    "jump",
+    "ride",
+    "boat"
+  ]);
+  function traversalLinkId(link) {
+    return link.id ?? `${link.from}>${link.to}:${link.mode}`;
+  }
+  function edgeRequirements(links, from, to) {
+    const goals = /* @__PURE__ */ new Set();
+    for (const link of links) {
+      if (link.from !== from || link.to !== to) continue;
+      for (const goal of link.requires ?? []) goals.add(goal);
+    }
+    return [...goals].sort(compareIds);
+  }
+  var DEFAULT_TRAVERSAL_TUNING = Object.freeze({
+    defaultCost: 5,
+    modeCost: Object.freeze({ walk: 1, climb: 3, swim: 2.5, jump: 2, ride: 0.2, boat: 0.2 }),
+    modeAction: Object.freeze({
+      walk: "walk",
+      climb: "climb",
+      swim: "swim",
+      jump: "jump",
+      ride: "ride",
+      boat: "row"
+    }),
+    defaultAction: "traverse"
+  });
+  function traversalCost(link, tuning) {
+    const base = link.cost ?? tuning.defaultCost;
+    const multiplier = tuning.modeCost[link.mode] ?? 1;
+    const cost = Math.floor(base * multiplier);
+    return Number.isFinite(cost) && cost > 0 ? cost : 0;
+  }
+  function traversalAction(link, tuning) {
+    return link.action ?? tuning.modeAction[link.mode] ?? tuning.defaultAction;
+  }
+  var TRAVERSAL_REFUSALS = Object.freeze([
+    /** No authored link goes that way at all. Not a refusal so much as an absence. */
+    "unreachable",
+    /** `traversal_blocked(From, To)` — the landslide closed the pass. */
+    "blocked",
+    /** `movement_mode(Actor, Mode)` does not hold — you cannot swim. */
+    "mode",
+    /** The host's geometry said no: the gap is too wide from here, the door is barred. */
+    "impassable",
+    /** `can_afford_stamina/2` — nothing left in the meter. */
+    "stamina",
+    /** A `traversal_requires/3` goal the rules layer did not satisfy. */
+    "requires",
+    /** `permissible/3` refused it — a norm, a law, a locked region, 123's skill gates. */
+    "forbidden"
+  ]);
+  function resolveAffordances(input) {
+    const tuning = input.tuning ?? DEFAULT_TRAVERSAL_TUNING;
+    const modes = new Set(input.modes);
+    const blocked = new Set((input.blocked ?? []).map((edge) => edgeKey(edge.from, edge.to)));
+    const affordances = input.links.filter((link) => link.from === input.from).map((link) => {
+      const id = traversalLinkId(link);
+      const cost = traversalCost(link, tuning);
+      const requires = edgeRequirements(input.links, link.from, link.to);
+      const refusal3 = refuse(link, id, cost, { modes, blocked, input });
+      return {
+        id,
+        from: link.from,
+        to: link.to,
+        mode: link.mode,
+        action: traversalAction(link, tuning),
+        cost,
+        available: refusal3 === void 0,
+        refusal: refusal3,
+        requires,
+        conditional: requires.length > 0
+      };
+    });
+    affordances.sort(
+      (a, b) => compareIds(a.to, b.to) || compareIds(a.mode, b.mode) || compareIds(a.id, b.id)
+    );
+    return affordances;
+  }
+  function refuse(link, id, cost, ctx) {
+    if (ctx.blocked.has(edgeKey(link.from, link.to))) return "blocked";
+    if (!ctx.modes.has(link.mode)) return "mode";
+    if (link.geometric && ctx.input.geometry?.[id] === false) return "impassable";
+    const stamina = ctx.input.stamina;
+    if (stamina !== void 0 && stamina.current < cost) return "stamina";
+    return void 0;
+  }
+  function bestAffordance(affordances, to) {
+    let best;
+    for (const affordance of affordances) {
+      if (affordance.to !== to || !affordance.available) continue;
+      if (best === void 0 || affordance.cost < best.cost) best = affordance;
+    }
+    return best;
+  }
+  var DEFAULT_MAX_ROUTE_STEPS = 32;
+  function findRoute(input) {
+    const maxSteps = input.maxSteps ?? DEFAULT_MAX_ROUTE_STEPS;
+    if (input.to === input.from) {
+      return { from: input.from, to: input.to, steps: [], cost: 0, conditional: false };
+    }
+    const settled = /* @__PURE__ */ new Set();
+    let frontier = [
+      { at: input.from, steps: [], cost: 0 }
+    ];
+    while (frontier.length > 0) {
+      frontier.sort(
+        (a, b) => a.cost - b.cost || a.steps.length - b.steps.length || compareIds(a.at, b.at) || compareIds(lastStepId(a.steps), lastStepId(b.steps))
+      );
+      const here = frontier.shift();
+      if (here.at === input.to) {
+        return {
+          from: input.from,
+          to: input.to,
+          steps: here.steps,
+          cost: here.cost,
+          conditional: here.steps.some((step) => step.requires.length > 0)
+        };
+      }
+      if (settled.has(here.at) || here.steps.length >= maxSteps) continue;
+      settled.add(here.at);
+      const next = resolveAffordances({ ...input, from: here.at });
+      frontier = frontier.concat(
+        next.filter((affordance) => affordance.available && !settled.has(affordance.to)).map((affordance) => ({
+          at: affordance.to,
+          cost: here.cost + affordance.cost,
+          steps: [
+            ...here.steps,
+            {
+              id: affordance.id,
+              from: affordance.from,
+              to: affordance.to,
+              mode: affordance.mode,
+              cost: affordance.cost,
+              requires: affordance.requires
+            }
+          ]
+        }))
+      );
+    }
+    return void 0;
+  }
+  function lastStepId(steps) {
+    return steps.length === 0 ? "" : steps[steps.length - 1].id;
+  }
+  function edgeKey(from, to) {
+    return `${from.length}:${from}${to.length}:${to}`;
+  }
+
+  // @insimul/core/src/traversal/traversal-facts.ts
+  function emptyTraversalDelta() {
+    return { retract: [], assert: [] };
+  }
+  var TRAVERSAL_RESOLUTION_PREDICATES = Object.freeze([
+    "movement_mode/2",
+    "traversal_blocked/2",
+    "at_location/2"
+  ]);
+  var TRAVERSAL_AUTHORED_PREDICATES = Object.freeze([
+    "traversal_link/3",
+    "traversal_cost/3",
+    "traversal_requires/3"
+  ]);
+  function traversalLinkFact(link) {
+    return `traversal_link(${prologAtom(link.from)}, ${prologAtom(link.to)}, ${prologAtom(link.mode)}).`;
+  }
+  function traversalGraphFacts(links, tuning) {
+    const facts = links.map((link) => traversalLinkFact(link));
+    const cheapest = /* @__PURE__ */ new Map();
+    const goals = /* @__PURE__ */ new Map();
+    for (const link of links) {
+      const key = `${link.from.length}:${link.from}${link.to.length}:${link.to}`;
+      const cost = traversalCost(link, tuning);
+      const seen = cheapest.get(key);
+      if (seen === void 0 || cost < seen.cost) {
+        cheapest.set(key, { from: link.from, to: link.to, cost });
+      }
+      if ((link.requires ?? []).length === 0) continue;
+      const edge = goals.get(key) ?? { from: link.from, to: link.to, goals: [] };
+      for (const goal of link.requires ?? []) if (!edge.goals.includes(goal)) edge.goals.push(goal);
+      goals.set(key, edge);
+    }
+    for (const edge of cheapest.values()) {
+      facts.push(`traversal_cost(${prologAtom(edge.from)}, ${prologAtom(edge.to)}, ${edge.cost}).`);
+    }
+    for (const edge of goals.values()) {
+      for (const goal of edge.goals) {
+        facts.push(`traversal_requires(${prologAtom(edge.from)}, ${prologAtom(edge.to)}, ${goal}).`);
+      }
+    }
+    return facts;
+  }
+  function movementModeFact(actor, mode) {
+    return `movement_mode(${prologAtom(actor)}, ${prologAtom(mode)}).`;
+  }
+  function traversalBlockedFact(from, to) {
+    return `traversal_blocked(${prologAtom(from)}, ${prologAtom(to)}).`;
+  }
+  function atLocationFact(actor, location) {
+    return `at_location(${prologAtom(actor)}, ${prologAtom(location)}).`;
+  }
+  function movementModeDelta(actor, before, after) {
+    const had = new Set(before);
+    const has2 = new Set(after);
+    return {
+      retract: before.filter((mode) => !has2.has(mode)).map((mode) => movementModeFact(actor, mode)),
+      assert: after.filter((mode) => !had.has(mode)).map((mode) => movementModeFact(actor, mode))
+    };
+  }
+  function arrivalDelta(actor, before, after) {
+    if (before === after) return emptyTraversalDelta();
+    return {
+      retract: before === void 0 ? [] : [atLocationFact(actor, before)],
+      assert: [atLocationFact(actor, after)]
+    };
+  }
+  function mergeTraversalDeltas(...deltas) {
+    const merged = emptyTraversalDelta();
+    for (const delta of deltas) {
+      merged.retract.push(...delta.retract);
+      merged.assert.push(...delta.assert);
+    }
+    return merged;
+  }
+
+  // @insimul/core/src/game-engine/logic/TraversalPlanner.ts
+  var TraversalPlanner = class {
+    constructor(config = {}) {
+      __publicField(this, "engine");
+      __publicField(this, "tuning");
+      __publicField(this, "stamina");
+      __publicField(this, "probe");
+      __publicField(this, "locomotion");
+      __publicField(this, "vehicles");
+      __publicField(this, "eventBus");
+      /** The world's authored graph. Authored data — never written to by gameplay. */
+      __publicField(this, "links", []);
+      __publicField(this, "actors", /* @__PURE__ */ new Map());
+      /** `traversal_blocked/2`, keyed by the directed edge. */
+      __publicField(this, "blocked", /* @__PURE__ */ new Map());
+      this.engine = config.engine;
+      this.tuning = config.tuning ?? { ...DEFAULT_TRAVERSAL_TUNING };
+      this.stamina = config.stamina;
+      this.probe = config.probe ?? config.host?.traversal;
+      this.locomotion = config.locomotion ?? config.host?.locomotion;
+      this.vehicles = config.vehicles;
+      this.eventBus = config.eventBus;
+      if (config.links) this.loadLinks(config.links);
+      if (config.state) this.restore(config.state);
+    }
+    setEventBus(bus) {
+      this.eventBus = bus;
+    }
+    /** Wire the vehicle module in after construction — see {@link DrivenVehicleSource}. */
+    setVehicleSource(vehicles) {
+      this.vehicles = vehicles;
+    }
+    /** Whether a host wired {@link ITraversalProbe}. False means geometric links are passable. */
+    hasTraversalProbe() {
+      return this.probe !== void 0;
+    }
+    /** Whether a host wired {@link ILocomotionHost}. False means every order arrives. */
+    hasLocomotionHost() {
+      return this.locomotion !== void 0;
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    // ── The graph ──────────────────────────────────────────────────────────
+    /** Replace the authored graph. Ids are settled here so nothing downstream re-derives them. */
+    loadLinks(links) {
+      this.links = links.map((link) => ({ ...link, id: traversalLinkId(link) }));
+    }
+    /** The authored graph, as this instance read it. */
+    getLinks() {
+      return this.links.map((link) => ({ ...link }));
+    }
+    /**
+     * Publish the world's authored graph into the KB as `traversal_link/3`,
+     * `traversal_cost/3` and `traversal_requires/3`.
+     *
+     * Authored data, asserted at load the way `StaminaPool.publishTuning` asserts
+     * `stamina_threshold/2` — so a rule that asks `can_traverse/3` walks the same
+     * graph core resolves over. Returns how many facts were written.
+     */
+    async publishGraph(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const fact of traversalGraphFacts(this.links, this.tuning)) {
+        await engine.assertFact(stripPeriod5(fact));
+        written += 1;
+      }
+      return written;
+    }
+    // ── Roster ─────────────────────────────────────────────────────────────
+    /**
+     * Add or replace an actor, and write their `movement_mode/2` facts.
+     *
+     * `location` is where they are. It is a location ATOM: a host that has a
+     * transform resolves it to the place that transform is in and hands over the
+     * name, which is the entire contract between this module and locomotion.
+     */
+    async register(registration) {
+      const before = this.actors.get(registration.id);
+      const modes = [...registration.modes ?? ["walk"]];
+      this.actors.set(registration.id, {
+        id: registration.id,
+        location: registration.location,
+        modes
+      });
+      const delta = mergeTraversalDeltas(
+        movementModeDelta(registration.id, before?.modes ?? [], modes),
+        arrivalDelta(registration.id, before?.location, registration.location)
+      );
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Forget an actor. Their facts are retracted; the graph is untouched. */
+    async unregister(actorId) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      this.actors.delete(actorId);
+      const delta = movementModeDelta(actorId, actor.modes, []);
+      delta.retract.push(atLocationFact(actorId, actor.location));
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Where this actor is, or `undefined` for one that was never registered. */
+    locationOf(actorId) {
+      return this.actors.get(actorId)?.location;
+    }
+    /** Every mode this actor is currently using. */
+    modesOf(actorId) {
+      return [...this.actors.get(actorId)?.modes ?? []];
+    }
+    /**
+     * Replace what modes an actor is using — they mounted, they got into the water,
+     * they put the boat back.
+     *
+     * Replaced rather than added to, because `movement_mode/2` says what an actor is
+     * DOING and a character who is both walking and swimming is two facts that
+     * cannot both be true.
+     */
+    async setModes(actorId, modes) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      const delta = movementModeDelta(actorId, actor.modes, modes);
+      actor.modes = [...modes];
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /**
+     * Record that an actor is somewhere — the ONE thing a host tells core about
+     * where anybody is.
+     *
+     * Called when it becomes true, not on a frame. A host running a path follower at
+     * 60fps calls this once, on arrival, and a host that teleports a character for a
+     * cutscene calls it once too; core cannot tell the two apart and must not be
+     * able to.
+     */
+    async arrive(actorId, location) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      const delta = arrivalDelta(actorId, actor.location, location);
+      actor.location = location;
+      await this.writeDelta(delta);
+      return delta;
+    }
+    // ── Closures ───────────────────────────────────────────────────────────
+    /**
+     * Close a link — "the landslide closed the pass", as `traversal_blocked/2`.
+     *
+     * DIRECTED, exactly as the link is: closing `pass → valley` leaves
+     * `valley → pass` open, and a world that means both closes both.
+     */
+    async block(from, to) {
+      const key = edgeKey(from, to);
+      if (this.blocked.has(key)) return emptyTraversalDelta();
+      this.blocked.set(key, { from, to });
+      const delta = { retract: [], assert: [traversalBlockedFact(from, to)] };
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Reopen a link. Reopening one that was never closed writes nothing. */
+    async unblock(from, to) {
+      const key = edgeKey(from, to);
+      if (!this.blocked.has(key)) return emptyTraversalDelta();
+      this.blocked.delete(key);
+      const delta = { retract: [traversalBlockedFact(from, to)], assert: [] };
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Whether this directed edge is closed. */
+    isBlocked(from, to) {
+      return this.blocked.has(edgeKey(from, to));
+    }
+    // ── The decision ───────────────────────────────────────────────────────
+    /**
+     * Every way out of where this actor is, and whether each is open to them.
+     *
+     * The host is asked about the links a world marked `geometric` and about nothing
+     * else, once per call, on the decision path. Refused ways are kept rather than
+     * filtered: a UI wants to grey out the ford and say why.
+     *
+     * The two rules-layer gates are NOT applied here — an affordance's
+     * `conditional` flag says a requirement is outstanding, and `permissible/3` is
+     * asked when a movement is actually attempted. Asking the KB once per link per
+     * call would be a round trip per candidate on a path an interface polls.
+     */
+    async affordances(actorId) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return [];
+      return resolveAffordances({
+        actor: actorId,
+        from: actor.location,
+        links: this.links,
+        modes: actor.modes,
+        blocked: [...this.blocked.values()],
+        geometry: await this.askProbe(actor),
+        stamina: this.meterOf(actorId),
+        tuning: this.tuning
+      });
+    }
+    /**
+     * `reachable/3`: the cheapest route from where this actor is to `to`, over links
+     * they can currently use, or `undefined`.
+     *
+     * Pure and synchronous — it walks the authored graph and consults neither the
+     * host nor the KB, so a caller can plan over it freely. Whether each leg is
+     * permitted is settled leg by leg, as each is taken.
+     */
+    route(actorId, to) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return void 0;
+      return findRoute({
+        actor: actorId,
+        from: actor.location,
+        to,
+        links: this.links,
+        modes: actor.modes,
+        blocked: [...this.blocked.values()],
+        tuning: this.tuning
+      });
+    }
+    /**
+     * Decide whether this actor may move to an ADJACENT location, without moving
+     * them or spending anything.
+     *
+     * Every gate, in {@link TRAVERSAL_REFUSALS} order: what core knows first, then
+     * the requirement, then permissibility. This is what an NPC's utility layer asks
+     * before it commits and what a UI asks before it offers.
+     */
+    async canTraverse(actorId, to) {
+      const actor = this.actors.get(actorId);
+      if (!actor) {
+        return { actor: actorId, from: "", to, permitted: false, refusal: "unreachable", cost: 0, unmet: [] };
+      }
+      const affordances = await this.affordances(actorId);
+      const chosen = bestAffordance(affordances, to);
+      if (!chosen) {
+        const nearest = affordances.filter((a) => a.to === to).sort((a, b) => refusalRank(b.refusal) - refusalRank(a.refusal) || a.cost - b.cost)[0];
+        return {
+          actor: actorId,
+          from: actor.location,
+          to,
+          permitted: false,
+          refusal: nearest?.refusal ?? "unreachable",
+          affordance: nearest,
+          cost: nearest?.cost ?? 0,
+          unmet: []
+        };
+      }
+      const base = {
+        actor: actorId,
+        from: actor.location,
+        to,
+        affordance: chosen,
+        cost: chosen.cost
+      };
+      const unmet = await this.unmetRequirements(actorId, chosen);
+      if (unmet.length > 0) {
+        return { ...base, permitted: false, refusal: "requires", unmet };
+      }
+      const check = await this.checkPermission(actorId, chosen);
+      if (!check.permitted) {
+        return { ...base, permitted: false, refusal: "forbidden", check, unmet };
+      }
+      return { ...base, permitted: true, check, unmet };
+    }
+    /**
+     * Move this actor to an ADJACENT location, if every gate allows it.
+     *
+     * The order is the whole of the module's discipline, and each step is where it
+     * is for a reason:
+     *
+     *  1. **Decide** ({@link canTraverse}). Nothing has happened yet.
+     *  2. **Charge** the shared meter, with the link's authored cost. A spend that
+     *     cannot be afforded moves nothing and refuses the movement.
+     *  3. **Order** the host to carry it out ({@link ILocomotionHost}). Core has
+     *     already committed; this is not a request for permission.
+     *  4. **Record** where the actor ended up, from the atom the host reported.
+     *
+     * A host that reports `arrived: false` leaves the actor where they were (or
+     * wherever it says they ended up) and **the spend stands**: the climb was
+     * attempted and the effort was expended, which is the answer a simulation gives
+     * and a teleport does not.
+     *
+     * `intent` is US-2 of `125-npc-routines-and-locomotion` — how pressing the
+     * movement is and how the body is carried. It is forwarded onto the order and
+     * read by nothing here; see {@link TraversalIntent}.
+     */
+    async traverse(actorId, to, intent) {
+      const decision = await this.canTraverse(actorId, to);
+      const location = this.actors.get(actorId)?.location ?? decision.from;
+      if (!decision.permitted || !decision.affordance) {
+        return { ...decision, performed: false, location, facts: emptyTraversalDelta(), applied: false };
+      }
+      const affordance = decision.affordance;
+      const spend = await this.stamina?.spend(actorId, {
+        action: affordance.action,
+        cost: affordance.cost
+      });
+      if (spend && !spend.spend.affordable) {
+        return {
+          ...decision,
+          permitted: false,
+          refusal: "stamina",
+          performed: false,
+          spend,
+          location,
+          facts: emptyTraversalDelta(),
+          applied: false
+        };
+      }
+      const arrival = await this.orderLocomotion(actorId, affordance, intent);
+      const landed = arrival.arrived ? to : arrival.location ?? location;
+      const facts = arrivalDelta(actorId, location, landed);
+      const actor = this.actors.get(actorId);
+      if (actor) actor.location = landed;
+      const applied = await this.writeDelta(facts);
+      this.eventBus?.emit({
+        type: "traversal_completed",
+        actorId,
+        from: decision.from,
+        to,
+        mode: affordance.mode,
+        cost: affordance.cost,
+        arrived: arrival.arrived,
+        location: landed
+      });
+      return { ...decision, performed: true, spend, arrival, location: landed, facts, applied };
+    }
+    // ── The gates ──────────────────────────────────────────────────────────
+    /**
+     * The authored goals this link asks of this actor that the KB did not satisfy.
+     *
+     * Evaluated by the PACK's own `traversal_goal_met/2`, not by a second
+     * implementation here: the pack rebuilds the goal with the actor bound (`=..`),
+     * and reproducing that rebuild in TypeScript is how `has_item(Actor, rope, 1)`
+     * ends up satisfied by anyone at all holding a rope
+     * (`prolog/mechanics/traversal-predicates.ts`'s correction to §7).
+     *
+     * With no KB wired every goal is unmet — see the module header for why this gate
+     * fails closed and permissibility fails open.
+     */
+    async unmetRequirements(actorId, affordance) {
+      if (affordance.requires.length === 0) return [];
+      if (!this.engine) return [...affordance.requires];
+      const unmet = [];
+      for (const goal of affordance.requires) {
+        let met = false;
+        try {
+          met = await this.engine.queryOnce(`traversal_goal_met(${prologAtom(actorId)}, ${goal})`);
+        } catch {
+          met = false;
+        }
+        if (!met) unmet.push(goal);
+      }
+      return unmet;
+    }
+    /**
+     * `permissible/3`'s own input, forwarded with the movement spelled as the action
+     * it is.
+     *
+     * There is deliberately no traversal-private gate: climbing the temple wall is
+     * refused by whatever `forbids/4` refuses it with, which is the same clause that
+     * refuses a theft — and it is what lets 123's skill gates and a world's laws
+     * refuse a movement without traversal knowing they exist. With no KB wired every
+     * movement is permitted; core does not invent a prohibition it cannot read.
+     */
+    async checkPermission(actorId, affordance) {
+      const target = affordance.to || NO_TARGET;
+      if (!this.engine) {
+        return { agent: actorId, action: affordance.action, target, permitted: true, breached: [] };
+      }
+      return checkAction(this.engine, { agent: actorId, action: affordance.action, target });
+    }
+    /**
+     * Ask the host about every geometric link out of where this actor is.
+     *
+     * One query per geometric link per call, on the decision path. A probe that
+     * throws is read as "passable" — a host's geometry failing must not strand a
+     * character, which is the same direction `ITrajectoryProbe` degrades in.
+     */
+    async askProbe(actor) {
+      const geometry = {};
+      if (!this.probe) return geometry;
+      for (const link of this.links) {
+        if (!link.geometric || link.from !== actor.location) continue;
+        const id = traversalLinkId(link);
+        let reading = null;
+        try {
+          reading = await this.probe.query({
+            actor: actor.id,
+            from: link.from,
+            to: link.to,
+            mode: link.mode,
+            link: id
+          });
+        } catch {
+          reading = null;
+        }
+        geometry[id] = reading === null ? true : reading.passable;
+      }
+      return geometry;
+    }
+    /**
+     * Hand one order to the host, or take the documented fallback.
+     *
+     * With no locomotion host wired every order arrives: the world state moves and
+     * nothing is animated, which is exactly what a headless simulation wants. A host
+     * that throws is read the same way — core has already spent the meter and
+     * committed the decision, and leaving the actor in limbo because an animation
+     * driver raised is the worse failure.
+     */
+    async orderLocomotion(actorId, affordance, intent) {
+      if (!this.locomotion) return { arrived: true };
+      try {
+        const vehicle = this.vehicles?.drivenBy(actorId);
+        return await this.locomotion.travel({
+          actor: actorId,
+          from: affordance.from,
+          to: affordance.to,
+          mode: affordance.mode,
+          link: affordance.id,
+          cost: affordance.cost,
+          action: affordance.action,
+          // Every order carries a complete intent, so a host never has to guess at
+          // half of one — and four engines never guess differently.
+          urgency: intent?.urgency ?? "ordinary",
+          stance: intent?.stance ?? "standing",
+          ...vehicle === void 0 ? {} : { vehicle }
+        });
+      } catch {
+        return { arrived: true };
+      }
+    }
+    /** This actor's meter, for the pure resolver. `undefined` for an actor with none. */
+    meterOf(actorId) {
+      const actor = this.stamina?.get(actorId);
+      return actor === void 0 ? void 0 : { current: actor.current, max: actor.max };
+    }
+    // ── The KB ─────────────────────────────────────────────────────────────
+    /**
+     * Write one delta into the KB, retracting first.
+     *
+     * Retracting a fact the KB never carried is a no-op rather than a failure: a
+     * host with its own persistence, a restored save and an actor registered before
+     * the engine was wired all produce one, and none of them is an error.
+     */
+    async writeDelta(delta) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(stripPeriod5(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(stripPeriod5(fact));
+      }
+      return true;
+    }
+    /**
+     * Publish every registered actor's `movement_mode/2` and `at_location/2`.
+     *
+     * For a caller that wired the KB after the roster — a save restore, a host that
+     * builds its world before its engine. Returns how many facts were written.
+     */
+    async publishActors(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const actor of this.roster()) {
+        const delta = mergeTraversalDeltas(
+          movementModeDelta(actor.id, [], actor.modes),
+          arrivalDelta(actor.id, void 0, actor.location)
+        );
+        for (const fact of delta.assert) {
+          await engine.assertFact(stripPeriod5(fact));
+          written += 1;
+        }
+      }
+      return written;
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    /** Every actor this planner knows, in canonical order. */
+    roster() {
+      return [...this.actors.values()].map((actor) => ({ ...actor, modes: [...actor.modes] })).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+    }
+    /**
+     * The per-playthrough state, and only that: where everyone is, what they are
+     * doing, and which links this playthrough closed. The graph, the costs and the
+     * requirements are authored and are NOT here — a tuning number inside a save
+     * file is world-template data leaking into a playthrough
+     * (`docs/mechanic-predicates.md` §3).
+     */
+    serialize() {
+      return {
+        actors: this.roster(),
+        blocked: [...this.blocked.values()].sort(
+          (a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : a.to < b.to ? -1 : a.to > b.to ? 1 : 0
+        )
+      };
+    }
+    /**
+     * Restore a saved playthrough. Silent — no events, because loading a save is not
+     * somebody walking somewhere, and no KB writes, because restoring a save is what
+     * `publishActors` is for once the engine exists.
+     */
+    restore(state) {
+      this.actors = /* @__PURE__ */ new Map();
+      for (const actor of state.actors ?? []) {
+        this.actors.set(actor.id, {
+          id: actor.id,
+          location: actor.location,
+          modes: [...actor.modes ?? ["walk"]]
+        });
+      }
+      this.blocked = /* @__PURE__ */ new Map();
+      for (const edge of state.blocked ?? []) {
+        this.blocked.set(edgeKey(edge.from, edge.to), { from: edge.from, to: edge.to });
+      }
+    }
+  };
+  function stripPeriod5(clause) {
+    return clause.replace(/\.$/, "");
+  }
+  function refusalRank(refusal3) {
+    return refusal3 === void 0 ? TRAVERSAL_REFUSALS.length : TRAVERSAL_REFUSALS.indexOf(refusal3);
+  }
+
+  // @insimul/core/src/game-engine/mechanic-runtime.ts
+  var MECHANIC_RUNTIME_LAYERS = Object.freeze([
+    { layer: "stamina", module: "stamina", decisionLayer: "StaminaPool" },
+    { layer: "combat", module: "combat", decisionLayer: "CombatResolver" },
+    { layer: "detection", module: "perception", decisionLayer: "DetectionTracker" },
+    { layer: "traversal", module: "traversal", decisionLayer: "TraversalPlanner" },
+    { layer: "locomotion", module: "routine", decisionLayer: "LocomotionDirector" },
+    { layer: "routines", module: "routine", decisionLayer: "RoutineDirector" },
+    { layer: "skills", module: "skill", decisionLayer: "SkillProgression" }
+  ]);
+  var STAMINA_SPENDERS = ["combat", "traversal"];
+  var BUS_LAYERS = ["combat", "detection", "traversal", "locomotion", "routines", "skills"];
+  function planMechanicRuntime(activation) {
+    const active = new Set(activation.modules.map((m) => m.id));
+    const layers = Object.fromEntries(
+      MECHANIC_RUNTIME_LAYERS.map((entry) => [entry.layer, active.has(entry.module)])
+    );
+    const built = MECHANIC_RUNTIME_LAYERS.filter((entry) => layers[entry.layer]).map((entry) => entry.layer);
+    const owners = new Set(MECHANIC_RUNTIME_LAYERS.map((entry) => entry.module));
+    return {
+      genre: activation.genre,
+      known: activation.known,
+      layers,
+      shared: {
+        eventBus: built.filter((layer) => BUS_LAYERS.includes(layer)),
+        staminaSpenders: layers.stamina ? STAMINA_SPENDERS.filter((layer) => layers[layer]) : [],
+        locomotionGraph: layers.locomotion ? layers.traversal ? "traversal" : "none" : null
+      },
+      notAssembled: activation.modules.map((m) => m.id).filter((id) => !owners.has(id))
+    };
+  }
+  var MechanicRuntime = class {
+    constructor(options) {
+      __publicField(this, "plan");
+      __publicField(this, "events");
+      /** The shared meter. Combat spends it; traversal spends the same one. */
+      __publicField(this, "stamina");
+      __publicField(this, "combat");
+      __publicField(this, "detection");
+      __publicField(this, "traversal");
+      /** Walks {@link traversal} when it exists, and nothing otherwise. */
+      __publicField(this, "locomotion");
+      __publicField(this, "routines");
+      __publicField(this, "skills");
+      const { engine, seed, hosts = {}, adapter } = options;
+      const plan2 = planMechanicRuntime(options.activation);
+      this.plan = plan2;
+      this.events = options.eventBus ?? new GameEventBus();
+      const events = this.events;
+      const stamina = plan2.layers.stamina ? new StaminaPool({ engine, survival: options.survival, survivalActorId: options.survivalActorId }) : null;
+      this.stamina = stamina;
+      const meter = stamina ?? void 0;
+      this.combat = plan2.layers.combat ? new CombatResolver({
+        engine,
+        seed,
+        eventBus: events,
+        stamina: meter,
+        combat: hosts.combat,
+        trajectory: hosts.trajectory,
+        host: adapter
+      }) : null;
+      this.detection = plan2.layers.detection ? new DetectionTracker({
+        engine,
+        seed,
+        eventBus: events,
+        playthrough: playthroughOf(options),
+        probe: hosts.perception,
+        host: adapter
+      }) : null;
+      this.traversal = plan2.layers.traversal ? new TraversalPlanner({
+        engine,
+        eventBus: events,
+        stamina: meter,
+        probe: hosts.traversal,
+        locomotion: hosts.locomotion,
+        host: adapter
+      }) : null;
+      this.locomotion = plan2.layers.locomotion ? new LocomotionDirector({ graph: this.traversal ?? void 0, eventBus: events, routines: options.routines }) : null;
+      this.routines = plan2.layers.routines ? new RoutineDirector({ engine, eventBus: events, routines: options.routines }) : null;
+      this.skills = plan2.layers.skills ? new SkillProgression({ engine, eventBus: events, skillModifiers: hosts.skillModifiers, host: adapter }) : null;
+    }
+  };
+  function createMechanicRuntime(activation, options) {
+    return new MechanicRuntime({ ...options, activation });
+  }
+  function playthroughOf(options) {
+    if (options.playthrough) return options.playthrough;
+    if (options.worldId && options.saveId) return playthroughWorldId(options.worldId, options.saveId);
+    throw new Error(
+      "MechanicRuntime: the perception module is active, so detection needs the playthrough it keys beliefs by (pass `playthrough`, or `worldId` and `saveId`)"
+    );
+  }
+
+  // @insimul/core/src/game-engine/mechanic-runtime-corpus.ts
+  function actorOf(step) {
+    switch (step.op) {
+      case "stamina.register":
+      case "combat.register":
+      case "traversal.register":
+      case "skills.register":
+        return step.id;
+      case "combat.attack":
+        return step.attackerId;
+      case "traversal.traverse":
+      case "skills.award":
+      case "skills.advance":
+        return step.actorId;
+      case "locomotion.pursue":
+        return step.actor;
+      case "routine.assign":
+      case "routine.tick":
+        return step.agent;
+      default:
+        return null;
+    }
+  }
+  async function apply(runtime, step) {
+    switch (step.op) {
+      case "stamina.register": {
+        if (!runtime.stamina) return null;
+        const meter = runtime.stamina.register({ id: step.id, max: step.max, current: step.current });
+        return { max: meter.max };
+      }
+      case "combat.register": {
+        if (!runtime.combat) return null;
+        const state = runtime.combat.register({ id: step.id, health: step.health, maxHealth: step.maxHealth });
+        return { health: state.health };
+      }
+      case "combat.attack": {
+        if (!runtime.combat) return null;
+        const report = await runtime.combat.attack({
+          attackerId: step.attackerId,
+          targetId: step.targetId,
+          action: step.action,
+          tick: step.tick
+        });
+        const r = report.resolution;
+        return {
+          outcome: r.outcome,
+          reason: r.reason ?? null,
+          staminaCost: r.staminaCost,
+          staminaSpent: r.staminaSpent,
+          damage: r.damage,
+          targetHealthAfter: r.targetHealthAfter
+        };
+      }
+      case "traversal.links": {
+        if (!runtime.traversal) return null;
+        runtime.traversal.loadLinks(step.links);
+        return { links: runtime.traversal.getLinks().length };
+      }
+      case "traversal.register": {
+        if (!runtime.traversal) return null;
+        await runtime.traversal.register({ id: step.id, location: step.location, modes: step.modes });
+        return { location: runtime.traversal.locationOf(step.id) ?? null };
+      }
+      case "traversal.traverse": {
+        if (!runtime.traversal) return null;
+        const report = await runtime.traversal.traverse(step.actorId, step.to);
+        return {
+          performed: report.performed,
+          refusal: report.refusal ?? null,
+          cost: report.cost,
+          location: report.location
+        };
+      }
+      case "locomotion.pursue": {
+        if (!runtime.locomotion) return null;
+        const outcome = await runtime.locomotion.pursue(step.actor, step.destination);
+        return {
+          arrived: outcome.arrived,
+          location: outcome.location,
+          failure: outcome.failure ?? null,
+          refusal: outcome.refusal ?? null
+        };
+      }
+      case "detection.observer": {
+        if (!runtime.detection) return null;
+        runtime.detection.registerObserver({ id: step.id, senses: step.senses });
+        return { observer: step.id };
+      }
+      case "detection.target": {
+        if (!runtime.detection) return null;
+        runtime.detection.registerTarget({ id: step.id, location: step.location, light: step.light });
+        return { target: step.id };
+      }
+      case "detection.observe": {
+        if (!runtime.detection) return null;
+        const report = await runtime.detection.observe({ tick: step.tick, readings: step.readings });
+        const pairs = step.readings.map(
+          (r) => `${r.observer}>${r.target}=${runtime.detection.stateOf(r.observer, r.target)}@${runtime.detection.awarenessOf(r.observer, r.target)}`
+        );
+        return { updates: report.updates.length, transitions: report.transitions.length, pairs: pairs.join(",") };
+      }
+      case "routine.assign": {
+        if (!runtime.routines) return null;
+        await runtime.routines.assign(step.agent, step.routine);
+        return { routine: runtime.routines.routineOf(step.agent) };
+      }
+      case "routine.tick": {
+        if (!runtime.routines) return null;
+        const tick = await runtime.routines.tick({ day: step.day, hour: step.hour }, [step.agent]);
+        const o = tick.outcomes[0];
+        return { routine: o.routine, block: o.block, goal: o.goal, destination: o.destination, changed: o.changed };
+      }
+      case "skills.load": {
+        if (!runtime.skills) return null;
+        runtime.skills.loadSkills(skillDefinitionsFromIR({ skills: step.skills }, runtime.skills.getTuning()));
+        return { skills: runtime.skills.getSkills().length };
+      }
+      case "skills.register": {
+        if (!runtime.skills) return null;
+        await runtime.skills.register({ id: step.id, levels: step.levels, xp: step.xp });
+        return { registered: step.id };
+      }
+      case "skills.award": {
+        if (!runtime.skills) return null;
+        const report = await runtime.skills.award(step.actorId, step.skill, step.amount);
+        return { awarded: report.awarded, banked: report.banked, advanceable: report.advanceable };
+      }
+      case "skills.advance": {
+        if (!runtime.skills) return null;
+        const report = await runtime.skills.advance(step.actorId, step.skill);
+        return {
+          performed: report.performed,
+          level: report.level,
+          spent: report.spent,
+          banked: runtime.skills.xpOf(step.actorId, step.skill)
+        };
+      }
+    }
+  }
+  async function runMechanicRuntimeCase(input) {
+    const meta = input.ir.meta;
+    const activation = activeModulesForWorld({
+      meta: { genreConfig: meta.genreConfig, enabledModules: meta.enabledModules }
+    });
+    const runtime = createMechanicRuntime(activation, {
+      seed: input.seed,
+      worldId: "corpus",
+      saveId: "corpus",
+      routines: input.ir.routines
+    });
+    const events = [];
+    runtime.events.onAny((event) => {
+      events.push(event.type);
+    });
+    const steps = [];
+    for (const step of input.steps) {
+      const outcome = await apply(runtime, step);
+      if (outcome === null) {
+        steps.push({ absent: true });
+        continue;
+      }
+      const actor = actorOf(step);
+      const meter = actor && runtime.stamina ? runtime.stamina.get(actor) : void 0;
+      steps.push({ absent: false, outcome, stamina: meter ? meter.current : null });
+    }
+    return { plan: runtime.plan, steps, events };
+  }
+  var ROUTINES = {
+    routines: [
+      {
+        id: "herding",
+        name: "Herding",
+        blocks: [{ id: "pasture", goal: "tend_flock", startHour: 6, endHour: 12, place: "ford", priority: 55 }]
+      }
+    ]
+  };
+  var world = (id, enabledModules) => ({
+    meta: enabledModules === void 0 ? { genreConfig: { id } } : { genreConfig: { id }, enabledModules },
+    routines: ROUTINES
+  });
+  var CLIMBING = { id: "climbing", category: "dexterity", maxLevel: 5, levelXp: [0, 100, 200, 300, 400, 500] };
+  var HEAVY_SWING = { id: "heavy_swing", damage: 6, staminaCost: 4 };
+  var LINKS = [
+    { from: "camp", to: "ford", mode: "walk", cost: 2 },
+    { from: "ford", to: "ridge", mode: "climb", cost: 5 },
+    { from: "ridge", to: "tower", mode: "walk", cost: 2 }
+  ];
+  var SESSION = [
+    { op: "stamina.register", id: "hero", max: 24 },
+    { op: "stamina.register", id: "wren", max: 3 },
+    { op: "combat.register", id: "hero", health: 30, maxHealth: 30 },
+    { op: "combat.register", id: "wolf", health: 20, maxHealth: 20 },
+    { op: "traversal.links", links: LINKS },
+    { op: "traversal.register", id: "hero", location: "camp", modes: ["walk", "climb"] },
+    { op: "traversal.register", id: "wren", location: "camp", modes: ["walk", "climb"] },
+    { op: "combat.attack", attackerId: "hero", targetId: "wolf", action: HEAVY_SWING, tick: 1 },
+    { op: "traversal.traverse", actorId: "hero", to: "ford" },
+    { op: "traversal.traverse", actorId: "hero", to: "ridge" },
+    { op: "combat.attack", attackerId: "hero", targetId: "wolf", action: HEAVY_SWING, tick: 2 },
+    { op: "traversal.traverse", actorId: "hero", to: "tower" },
+    { op: "locomotion.pursue", actor: "wren", destination: "ford" },
+    { op: "locomotion.pursue", actor: "wren", destination: "ridge" },
+    // The three layers the steps above never touch, each read back through its own state and the one bus:
+    // the wolf watches the hero three ticks and turns suspicious (perception), wren keeps its routine (routine), the hero learns a skill.
+    { op: "detection.observer", id: "wolf", senses: [{ channel: "sight", acuity: 1 }] },
+    { op: "detection.target", id: "hero", location: "tower", light: 100 },
+    { op: "detection.observe", tick: 3, readings: [{ observer: "wolf", target: "hero", visibility: 1 }] },
+    { op: "detection.observe", tick: 4, readings: [{ observer: "wolf", target: "hero", visibility: 1 }] },
+    { op: "detection.observe", tick: 5, readings: [{ observer: "wolf", target: "hero", visibility: 1 }] },
+    { op: "routine.assign", agent: "wren", routine: "herding" },
+    { op: "routine.tick", agent: "wren", day: 1, hour: 9 },
+    { op: "skills.load", skills: [CLIMBING] },
+    { op: "skills.register", id: "hero", levels: { climbing: 0 } },
+    { op: "skills.award", actorId: "hero", skill: "climbing", amount: 120 },
+    { op: "skills.advance", actorId: "hero", skill: "climbing" }
+  ];
+  var INPUTS3 = [
+    {
+      name: "survival: one meter, one graph, one bus",
+      claim: "survival activates stamina, combat, traversal and routine: the swing (4), the walk (2) and the climb (15) draw on the one meter (24 \u2192 3), so the second swing is refused as exhausted by what the climb spent; the NPC walks a leg through the same planner on its own meter (3 \u2192 1) and its climb is refused for stamina; no perception, so the detection steps are absent; the NPC adopts its herding goal from the IR's routines and the hero buys climbing 1, both on the one bus",
+      input: { ir: world("survival"), seed: 7, steps: SESSION }
+    },
+    {
+      name: "rpg: no stamina module, no meter",
+      claim: "rpg activates combat, traversal, perception, skill and routine but not stamina: no pool is built, so nothing is metered, both swings land, the climb and the NPC's climb are made and nothing is refused for stamina; the wolf turns suspicious on its third tick, the NPC adopts the herding goal only the IR's routines author, and the hero buys climbing 1 (120 banked, 100 spent): detection_changed, routine_changed and skill_advanced on the same bus as combat and traversal",
+      input: { ir: world("rpg"), seed: 7, steps: SESSION }
+    },
+    {
+      name: "fighting: combat alone",
+      claim: "fighting activates combat only: every stamina, traversal and locomotion step is absent and both swings land unmetered",
+      input: { ir: world("fighting"), seed: 7, steps: SESSION }
+    },
+    {
+      name: "simulation: routines with no graph",
+      claim: "simulation activates routine without traversal: the locomotion director is built over no graph, so a pursuit is answered as unplaced and nothing moves, while the routine director still adopts the herding goal at the ford",
+      input: { ir: world("simulation"), seed: 7, steps: SESSION }
+    },
+    {
+      name: "a world's own selection drives the runtime",
+      claim: "meta.enabledModules naming combat, stamina and traversal assembles exactly those over the genre (adventure would build no combat and no meter): one pool spent by both (the climb leaves 3, the second swing is exhausted), no routine so no locomotion",
+      input: { ir: world("adventure", ["traversal", "stamina", "combat"]), seed: 7, steps: SESSION }
+    },
+    {
+      name: "puzzle: nothing assembled",
+      claim: "puzzle activates no layer this assembly owns: every step is absent, the bus is silent, puzzle is listed as not assembled",
+      input: { ir: world("puzzle"), seed: 7, steps: SESSION }
+    }
+  ];
 
   // npm:zod/v3/external.js
   var external_exports = {};
@@ -12852,8 +22388,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     "not_finite"
   ]);
   var quotelessJson = (obj3) => {
-    const json2 = JSON.stringify(obj3, null, 2);
-    return json2.replace(/"([^"]+)":/g, "$1:");
+    const json4 = JSON.stringify(obj3, null, 2);
+    return json4.replace(/"([^"]+)":/g, "$1:");
   };
   var ZodError = class _ZodError extends Error {
     get errors() {
@@ -17042,7 +26578,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     if (request === null || typeof request !== "object") throw new CompositionError("invalid-request", "a request is an object");
     const refusals = [];
     const notes = [];
-    const refuse2 = (code, pack, detail) => {
+    const refuse3 = (code, pack, detail) => {
       refusals.push({ code, pack, detail });
     };
     const rows = new Map(catalog.index.packs.map((p) => [p.id, p]));
@@ -17089,12 +26625,12 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     for (const id of Object.keys(game).sort((a, b) => (order.get(a) ?? 1e9) - (order.get(b) ?? 1e9) || a.localeCompare(b))) {
       const g = game[id] ?? {};
       if (!known.has(id)) {
-        refuse2("unknown-pack", id, `the pack index has no pack '${id}'`);
+        refuse3("unknown-pack", id, `the pack index has no pack '${id}'`);
         continue;
       }
       const presetHas = source.has(id);
       if (g.enabled === false) {
-        if (source.get(id) === "always-on") refuse2("always-on", id, `'${id}' is always on and cannot be switched off`);
+        if (source.get(id) === "always-on") refuse3("always-on", id, `'${id}' is always on and cannot be switched off`);
         else if (presetHas) disabled.add(id);
       } else if (g.enabled === true && !presetHas) {
         source.set(id, "game");
@@ -17130,14 +26666,14 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       const id = queue.shift();
       for (const dep of requiresOf(id)) {
         if (!known.has(dep)) {
-          refuse2("unknown-pack", id, `'${id}' requires '${dep}', which the pack index does not list`);
+          refuse3("unknown-pack", id, `'${id}' requires '${dep}', which the pack index does not list`);
           continue;
         }
         if (!requiredBy.has(dep)) requiredBy.set(dep, /* @__PURE__ */ new Set());
         requiredBy.get(dep)?.add(id);
         if (!installed.has(dep)) {
           if (disabled.has(dep)) {
-            refuse2("required-by", dep, `'${dep}' cannot be switched off: '${id}' requires it`);
+            refuse3("required-by", dep, `'${dep}' cannot be switched off: '${id}' requires it`);
             disabled.delete(dep);
           } else source.set(dep, source.get(dep) ?? "dependency");
           installed.add(dep);
@@ -17148,7 +26684,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     let changes = 0;
     for (const id of [.../* @__PURE__ */ new Set([...switchedOn, ...disabled, ...retuned])].sort((a, b) => (order.get(a) ?? 0) - (order.get(b) ?? 0))) {
       if (switchedOn.has(id) || disabled.has(id) || installed.has(id)) changes += 1;
-      else refuse2("not-installed", id, `'${id}' is not installed, so its variant, style and parameters do nothing; switch it on first`);
+      else refuse3("not-installed", id, `'${id}' is not installed, so its variant, style and parameters do nothing; switch it on first`);
     }
     const sorted = [];
     const placed = /* @__PURE__ */ new Set();
@@ -17414,6 +26950,24 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       predicatePacks: [...set.predicatePacks],
       hostInterfaces: [...set.hostInterfaces]
     };
+    for (const note of base.notes) {
+      if (note.code === "world-modules-selected" || note.code === "world-modules-not-mechanic" || note.code === "world-modules-unused") {
+        notes.push({ code: note.code, pack: null, detail: note.detail });
+      }
+    }
+    if (base.notes.some((note) => note.code === "world-modules-selected")) {
+      const selected = new Set(activation.modules);
+      for (const p of packs) {
+        const mods = modulesOf(p.id);
+        if (p.active && mods.length > 0 && !mods.some((mod) => selected.has(mod))) {
+          notes.push({
+            code: "world-modules-pack-outside",
+            pack: p.id,
+            detail: `'${p.id}' runs, but the world's enabledModules selects none of its modules (${mods.join(", ")}), so none of them is activated`
+          });
+        }
+      }
+    }
     const cameraByGame = applied.some((o) => o.path === "cameraMode");
     return {
       recipe: base.recipe,
@@ -17480,7 +27034,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   function isRecord(v) {
     return typeof v === "object" && v !== null && !Array.isArray(v);
   }
-  function positive(v) {
+  function positive3(v) {
     return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
   }
   function readFitLot(raw) {
@@ -17488,8 +27042,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     const frontage = raw.frontageYaw;
     const hasFrontage = typeof frontage === "number" && Number.isFinite(frontage);
     return {
-      width: positive(raw.width),
-      depth: positive(raw.depth),
+      width: positive3(raw.width),
+      depth: positive3(raw.depth),
       frontageYaw: hasFrontage ? normalizeYaw(frontage) : 0,
       hasFrontage
     };
@@ -18186,6 +27740,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   var CLEARANCE_INSIDE_TOLERANCE_M = 0.02;
   var PLANT_TRUNK_HALF_M = 0.25;
   var BANNER_ARCHETYPE_PREFIX = "prop.structural.banner";
+  var START_CLEAR_RADIUS_M = 1;
+  var START_CLEAR_SIDES = 16;
+  var START_CLEAR_PUSH_M = 1e-3;
   var SETTLE_DEFAULT_ITERATIONS = 128;
   var SLACK = 1e-4;
   var neighbourPairGap = (a, b) => Math.max(a.gap, b.gap);
@@ -18222,8 +27779,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     if (ca === CLEARANCE_PROP && cb === CLEARANCE_PLANT) return 0.3;
     return -1;
   }
-  function settlePairGapOf(rule) {
-    return rule === "neighbour" ? neighbourPairGap : (a, b) => clearancePairGap(a.class, a.gap, b.class, b.gap);
+  function settlePairGapOf(rule2) {
+    return rule2 === "neighbour" ? neighbourPairGap : (a, b) => clearancePairGap(a.class, a.gap, b.class, b.gap);
   }
   function obstaclePieces(obstacles2) {
     const out = [];
@@ -18472,10 +28029,53 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       gap: markerClearanceM(item.archetype ?? "", item.height ?? 0, item.longestPlan ?? 0)
     };
   }
-  function settleClearance(items, obstacles2, iterations = SETTLE_DEFAULT_ITERATIONS) {
+  function startClearOutline(x, z, radius = START_CLEAR_RADIUS_M) {
+    const sides = START_CLEAR_SIDES;
+    const corner = radius / Math.cos(Math.PI / sides);
+    const out = [];
+    for (let i = 0; i < sides; i += 1) {
+      const a = 2 * Math.PI * i / sides + Math.PI / sides;
+      out.push([x + corner * Math.cos(a), z + corner * Math.sin(a)]);
+    }
+    return out;
+  }
+  function keepClearOfStart(outline, start, radius = START_CLEAR_RADIUS_M) {
+    const d = [0, 0];
+    if (outline.length < 3 || !(radius > 0)) return d;
+    const ground = startClearOutline(start.x, start.z, radius);
+    let at = outline.map((c) => [c[0], c[1]]);
+    for (let pass = 0; pass < 3; pass += 1) {
+      const sep = planSeparation(ground, at);
+      if (sep.gap >= 0) break;
+      const push = -sep.gap + START_CLEAR_PUSH_M;
+      d[0] += sep.axis[0] * push;
+      d[1] += sep.axis[1] * push;
+      at = moved(at, [sep.axis[0] * push, sep.axis[1] * push]);
+    }
+    return d;
+  }
+  function settleClearance(items, obstacles2, iterations = SETTLE_DEFAULT_ITERATIONS, playerStart = null) {
     const bodies = items.map(clearanceBodyOf);
     const moves = settleBodies(bodies, obstacles2, settlePairGapOf("clearance"), iterations);
-    return { moves, setAsides: clearanceSetAsides(bodies, moves) };
+    if (playerStart === null) return { moves, setAsides: clearanceSetAsides(bodies, moves) };
+    const startMoves = [];
+    const startCovered = [];
+    for (let i = 0; i < bodies.length; i += 1) {
+      const at = moved(bodies[i].outline, [moves[i].dx, moves[i].dz]);
+      const off = keepClearOfStart(at, playerStart);
+      if (off[0] === 0 && off[1] === 0) continue;
+      if (bodies[i].class === CLEARANCE_BUILDING) {
+        const ground = startClearOutline(playerStart.x, playerStart.z);
+        startCovered.push({ index: i, entityId: items[i].entityId, inside: quantizeMillimetre(-planSeparation(ground, at).gap) });
+        continue;
+      }
+      const dx = quantizeMillimetre(off[0]);
+      const dz = quantizeMillimetre(off[1]);
+      moves[i].dx = quantizeMillimetre(moves[i].dx + dx);
+      moves[i].dz = quantizeMillimetre(moves[i].dz + dz);
+      startMoves.push({ index: i, entityId: items[i].entityId, dx, dz });
+    }
+    return { moves, setAsides: clearanceSetAsides(bodies, moves), startMoves, startCovered };
   }
 
   // @insimul/core/src/editor/layout/pairing.ts
@@ -18501,10 +28101,10 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     }
     return t;
   })();
-  function strCrc32(text2, crc = 0) {
+  function strCrc32(text3, crc = 0) {
     let c = ~crc >>> 0;
-    for (let i = 0; i < text2.length; i += 1) {
-      const ch = text2.charCodeAt(i);
+    for (let i = 0; i < text3.length; i += 1) {
+      const ch = text3.charCodeAt(i);
       for (let b = 0; b < 4; b += 1) {
         const byte = ch >>> 8 * b & 255;
         c = (CRC_TABLE[(c ^ byte) & 255] ^ c >>> 8) >>> 0;
@@ -19089,17 +28689,17 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     const d = latticeValue01(fx + 1, fz + 1, salt);
     return (a + (b - a) * u) * (1 - v) + (c + (d - c) * u) * v;
   }
-  function clamp01(v) {
+  function clamp013(v) {
     return v < 0 ? 0 : v > 1 ? 1 : v;
   }
   function smooth(edge0, edge1, x) {
-    const t = clamp01((x - edge0) / (edge1 - edge0));
+    const t = clamp013((x - edge0) / (edge1 - edge0));
     return t * t * (3 - 2 * t);
   }
   function groundNoise01(x, z, cell, salt) {
     if (!Number.isFinite(x) || !Number.isFinite(z) || !(cell > 0)) return 0.5;
     const second = Math.imul(salt >>> 0, 31) + 7 >>> 0;
-    return clamp01(0.68 * valueNoise(x, z, cell, salt >>> 0) + 0.32 * valueNoise(x, z, cell * 0.43, second));
+    return clamp013(0.68 * valueNoise(x, z, cell, salt >>> 0) + 0.32 * valueNoise(x, z, cell * 0.43, second));
   }
   var GROUND_PATCH_CELL_M = 16;
   var GROUND_FLECK_CELL_M = 6;
@@ -19115,13 +28715,13 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     return smooth(0.58, 0.68, groundNoise01(x, z, GROUND_FLECK_CELL_M, FLECK_SALT));
   }
   function clumpWeight(x, z, clumping, cell) {
-    const c = clamp01(Number.isFinite(clumping) ? clumping : 0);
+    const c = clamp013(Number.isFinite(clumping) ? clumping : 0);
     if (c <= 0) return 1;
     const n = smooth(0.36, 0.64, groundNoise01(x, z, cell > 0 ? cell : DEFAULT_CLUMP_CELL_M, CLUMP_SALT));
     return 1 - c + 2 * c * n;
   }
   function clumpThins(x, z, clumping, cell) {
-    const c = clamp01(Number.isFinite(clumping) ? clumping : 0);
+    const c = clamp013(Number.isFinite(clumping) ? clumping : 0);
     if (c <= 0) return false;
     const keep = clumpWeight(x, z, c, cell) / (1 + c);
     return latticeValue01(roundHalfAway(x * 100), roundHalfAway(z * 100), THIN_SALT) >= keep;
@@ -19146,7 +28746,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         c.layer = l;
         const s = v.strength;
         if (typeof s === "number" && Number.isFinite(s)) {
-          c.strength = clamp01(s);
+          c.strength = clamp013(s);
           c.hasStrength = true;
         }
       } else if (v === null) {
@@ -19217,26 +28817,26 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       if (authoredSet.has(s)) return;
       rules[s] = { layer, strength, why: layer === "" ? "none" : "by-name" };
     };
-    const has = (w, word) => w.includes(word);
-    let base = firstLayer(layers, (w) => has(w, "grass") && !has(w, "lush"));
-    if (base === "") base = firstLayer(layers, (w) => has(w, "grass"));
+    const has2 = (w, word) => w.includes(word);
+    let base = firstLayer(layers, (w) => has2(w, "grass") && !has2(w, "lush"));
+    if (base === "") base = firstLayer(layers, (w) => has2(w, "grass"));
     if (base === "") base = layers[0];
     infer("base", base, 1);
-    let road = firstLayer(layers, (w) => has(w, "dirt") && !has(w, "rocky") && !has(w, "rock"));
-    if (road === "") road = firstLayer(layers, (w) => has(w, "mud"));
-    if (road === "") road = firstLayer(layers, (w) => has(w, "gravel") || has(w, "path") || has(w, "road") || has(w, "sand"));
+    let road = firstLayer(layers, (w) => has2(w, "dirt") && !has2(w, "rocky") && !has2(w, "rock"));
+    if (road === "") road = firstLayer(layers, (w) => has2(w, "mud"));
+    if (road === "") road = firstLayer(layers, (w) => has2(w, "gravel") || has2(w, "path") || has2(w, "road") || has2(w, "sand"));
     const roadNow = rules.road.layer;
     infer("road", road, 1);
     const roadLayer = authoredSet.has("road") ? roadNow : road;
-    const path = firstLayer(layers, (w) => has(w, "mud"));
+    const path = firstLayer(layers, (w) => has2(w, "mud"));
     infer("path", path === "" ? roadLayer : path, 1);
-    let plaza = firstLayer(layers, (w) => (has(w, "rocky") || has(w, "rock")) && has(w, "dirt"));
+    let plaza = firstLayer(layers, (w) => (has2(w, "rocky") || has2(w, "rock")) && has2(w, "dirt"));
     if (plaza === "") {
-      plaza = firstLayer(layers, (w) => has(w, "stone") || has(w, "cobble") || has(w, "cobblestone") || has(w, "paving") || has(w, "gravel") || has(w, "rocky"));
+      plaza = firstLayer(layers, (w) => has2(w, "stone") || has2(w, "cobble") || has2(w, "cobblestone") || has2(w, "paving") || has2(w, "gravel") || has2(w, "rocky"));
     }
     infer("plaza", plaza === "" ? roadLayer : plaza, 1);
     infer("lot", roadLayer, LOT_DEFAULT_STRENGTH);
-    const slope = firstLayer(layers, (w) => (has(w, "rock") || has(w, "rocks") || has(w, "cliff")) && !has(w, "dirt") && !has(w, "rocky"));
+    const slope = firstLayer(layers, (w) => (has2(w, "rock") || has2(w, "rocks") || has2(w, "cliff")) && !has2(w, "dirt") && !has2(w, "rocky"));
     infer("slope", slope, 1);
     infer("patch", "", 1);
     infer("fleck", "", 1);
@@ -19291,7 +28891,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       if (s === "base") continue;
       const layer = paintLayerIndex(paint, s);
       if (layer < 0) continue;
-      const take = clamp01(coverage[s]) * clamp01(paint.rules[s].strength) * left;
+      const take = clamp013(coverage[s]) * clamp013(paint.rules[s].strength) * left;
       share[layer] += take;
       left -= take;
     }
@@ -19327,7 +28927,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     if (!Array.isArray(v)) bad(`${what} is not an array`);
     return v;
   }
-  function num(o, k) {
+  function num3(o, k) {
     const v = o[k];
     if (typeof v !== "number") bad(`'${k}' is not a number`);
     return v;
@@ -19361,9 +28961,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   function grid(v) {
     const o = obj(v, "a terrain grid");
     return {
-      resolution: num(o, "resolution"),
-      sizeX: num(o, "sizeX"),
-      sizeZ: num(o, "sizeZ"),
+      resolution: num3(o, "resolution"),
+      sizeX: num3(o, "sizeX"),
+      sizeZ: num3(o, "sizeZ"),
       heights: arr(o.heights, "heights")
     };
   }
@@ -19397,7 +28997,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       seatSink: numOr(o, "seatSink", d.seatSink),
       neighbourGap: numOr(o, "neighbourGap", d.neighbourGap)
     };
-    if (present(o, "doorYaw")) p.doorYaw = num(o, "doorYaw");
+    if (present(o, "doorYaw")) p.doorYaw = num3(o, "doorYaw");
     return p;
   }
   function fitInput(v) {
@@ -19410,9 +29010,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       lot: present(o, "lot") ? readFitLot(o.lot) : null,
       lotCentre: present(o, "lotCentre") ? point(o.lotCentre) : null,
       node: vec(o.node),
-      nodeHeading: num(o, "nodeHeading"),
+      nodeHeading: num3(o, "nodeHeading"),
       nodeScale: vec(o.nodeScale),
-      geometry: { scale: vec(g.scale), yaw: num(g, "yaw"), offset: vec(g.offset) },
+      geometry: { scale: vec(g.scale), yaw: num3(g, "yaw"), offset: vec(g.offset) },
       policy: policy(o.policy),
       bounds: b === null ? null : { min: vec(b.min), max: vec(b.max) },
       door: door(o.door),
@@ -19441,9 +29041,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       entityId: str(o, "entityId"),
       lotId: str(o, "lotId"),
       outline: points(o.outline),
-      mass: num(o, "mass"),
-      maxShift: num(o, "maxShift"),
-      obstacleGap: num(o, "obstacleGap"),
+      mass: num3(o, "mass"),
+      maxShift: num3(o, "maxShift"),
+      obstacleGap: num3(o, "obstacleGap"),
       class: numOr(o, "class", 0),
       gap: numOr(o, "gap", 0)
     };
@@ -19492,12 +29092,12 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       return {
         entityId: str(l, "entityId"),
         lotId: str(l, "lotId"),
-        cx: num(l, "cx"),
-        cz: num(l, "cz"),
-        halfAcross: num(l, "halfAcross"),
-        halfAway: num(l, "halfAway"),
-        awayX: num(l, "awayX"),
-        awayZ: num(l, "awayZ")
+        cx: num3(l, "cx"),
+        cz: num3(l, "cz"),
+        halfAcross: num3(l, "halfAcross"),
+        halfAway: num3(l, "halfAway"),
+        awayX: num3(l, "awayX"),
+        awayZ: num3(l, "awayZ")
       };
     }) : [];
     return { strips, lots, terrain: present(o, "terrain") ? grid(o.terrain) : null };
@@ -19508,12 +29108,12 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       return {
         entityId: str(o, "entityId"),
         building: bool(o, "building"),
-        cx: num(o, "cx"),
-        cz: num(o, "cz"),
-        halfX: num(o, "halfX"),
-        halfZ: num(o, "halfZ"),
-        axisX: num(o, "axisX"),
-        axisZ: num(o, "axisZ")
+        cx: num3(o, "cx"),
+        cz: num3(o, "cz"),
+        halfX: num3(o, "halfX"),
+        halfZ: num3(o, "halfZ"),
+        axisX: num3(o, "axisX"),
+        axisZ: num3(o, "axisZ")
       };
     });
   }
@@ -19627,7 +29227,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       case "chooseDoorPart":
         return doorJson(chooseDoorPart(arr(i.parts, "parts").map(candidate), vec(i.boundsMin), vec(i.boundsMax)));
       case "bodyStature":
-        return bodyStature(num(i, "boundsHeight"), numOr(i, "headBoneHeight", 0), numOr(i, "crownTop", 0));
+        return bodyStature(num3(i, "boundsHeight"), numOr(i, "headBoneHeight", 0), numOr(i, "crownTop", 0));
       case "fitBuildingToLot":
         return fitJson(fitBuildingToLot(fitInput(input)));
       case "findFitOverlaps": {
@@ -19645,19 +29245,19 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         return { gap: s.gap, axis: [s.axis[0], s.axis[1]] };
       }
       case "settleBodies": {
-        const rule = str(i, "rule");
-        if (rule !== "neighbour" && rule !== "clearance") bad(`unknown settle rule '${rule}'`);
+        const rule2 = str(i, "rule");
+        if (rule2 !== "neighbour" && rule2 !== "clearance") bad(`unknown settle rule '${rule2}'`);
         return movesJson(settleBodies(
           arr(i.bodies, "bodies").map(body),
           obstacles(i.obstacles),
-          settlePairGapOf(rule),
+          settlePairGapOf(rule2),
           numOr(i, "iterations", SETTLE_DEFAULT_ITERATIONS)
         ));
       }
       case "settleFittedBuildings":
         return movesJson(settleFittedBuildings(arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a fitted footprint");
-          return { entityId: str(o, "entityId"), lotId: str(o, "lotId"), corners: points(o.corners), neighbourGap: num(o, "neighbourGap") };
+          return { entityId: str(o, "entityId"), lotId: str(o, "lotId"), corners: points(o.corners), neighbourGap: num3(o, "neighbourGap") };
         }), obstacles(i.obstacles)));
       case "settleClearance": {
         const items = arr(i.items, "items").map((x) => {
@@ -19675,23 +29275,36 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
           item.crownRadius = numOr(o, "crownRadius", 1);
           return item;
         });
-        const r = settleClearance(items, obstacles(i.obstacles));
-        return { moves: movesJson(r.moves), setAsides: r.setAsides.map((s) => ({ index: s.index, buildingId: s.buildingId, inside: s.inside })) };
+        const start = present(i, "playerStart") ? vec(i.playerStart) : null;
+        const r = settleClearance(items, obstacles(i.obstacles), SETTLE_DEFAULT_ITERATIONS, start);
+        const out = {
+          moves: movesJson(r.moves),
+          setAsides: r.setAsides.map((s) => ({ index: s.index, buildingId: s.buildingId, inside: s.inside }))
+        };
+        if (start !== null) {
+          out.startMoves = (r.startMoves ?? []).map((m) => ({ index: m.index, entityId: m.entityId, dx: m.dx, dz: m.dz }));
+          out.startCovered = (r.startCovered ?? []).map((c) => ({ index: c.index, entityId: c.entityId, inside: c.inside }));
+        }
+        return out;
+      }
+      case "startClearOutline": {
+        const s = vec(i.playerStart);
+        return { startClearRadiusM: START_CLEAR_RADIUS_M, outline: startClearOutline(s.x, s.z).map(pt) };
       }
       case "clearancePairGap":
-        return clearancePairGap(num(i, "classA"), num(i, "gapA"), num(i, "classB"), num(i, "gapB"));
+        return clearancePairGap(num3(i, "classA"), num3(i, "gapA"), num3(i, "classB"), num3(i, "gapB"));
       case "plantTrunkOutline":
         return points(i.points).map((q) => plantTrunkOutline(q[0], q[1]).map(pt));
       case "layoutConstants":
         return { pairingNeighbourGap: PAIRING_NEIGHBOUR_GAP_M, crownRadius: CROWN_RADIUS_M };
       case "markerClearance":
-        return markerClearanceM(str(i, "archetype"), num(i, "height"), num(i, "longestPlan"));
+        return markerClearanceM(str(i, "archetype"), num3(i, "height"), num3(i, "longestPlan"));
       case "plantWallClearance":
-        return plantWallClearanceM(num(i, "crownRadius"));
+        return plantWallClearanceM(num3(i, "crownRadius"));
       case "settleBuildingMaxShift":
-        return settleBuildingMaxShiftM(num(i, "neighbourGap"));
+        return settleBuildingMaxShiftM(num3(i, "neighbourGap"));
       case "pairingSeatSink":
-        return pairingSeatSink(num(i, "bottom"), present(i, "doorFoot") ? num(i, "doorFoot") : null, num(i, "factor"));
+        return pairingSeatSink(num3(i, "bottom"), present(i, "doorFoot") ? num3(i, "doorFoot") : null, num3(i, "factor"));
       case "layoutObstaclesOf":
         return layoutObstaclesOf(arr(i.nodes, "nodes").map(layoutNode)).map(obstacleJson);
       // ── ground plan ──
@@ -19725,7 +29338,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
             lotId: str(o, "lotId"),
             shiftX: numOr(o, "shiftX", 0),
             shiftZ: numOr(o, "shiftZ", 0),
-            door: d === null ? null : { x: num(d, "x"), z: num(d, "z"), faceX: num(d, "faceX"), faceZ: num(d, "faceZ") }
+            door: d === null ? null : { x: num3(d, "x"), z: num3(d, "z"), faceX: num3(d, "faceX"), faceZ: num3(d, "faceZ") }
           };
         });
         const f = followSettledBuildings(plan(i.plan), settled);
@@ -19742,7 +29355,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       case "lanternsAtPathMouths": {
         const mouths = arr(i.mouths, "mouths").map((x) => {
           const o = obj(x, "a mouth");
-          return { pathId: str(o, "pathId"), x: num(o, "x"), z: num(o, "z"), dirX: num(o, "dirX"), dirZ: num(o, "dirZ"), halfWidth: num(o, "halfWidth") };
+          return { pathId: str(o, "pathId"), x: num3(o, "x"), z: num3(o, "z"), dirX: num3(o, "dirX"), dirZ: num3(o, "dirZ"), halfWidth: num3(o, "halfWidth") };
         });
         return lanternsAtPathMouths(mouths, points(i.lanterns)).map((l) => ({ ...l }));
       }
@@ -19768,14 +29381,14 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
           const r = q.length > 2 ? q[2] : 0;
           if (op === "trimGeneratedPoints") {
             const flat = p ?? { strips: [], lots: [], terrain: null };
-            return trimJson(present(i, "clumping") ? trimGeneratedPointClumped(flat, area, px, pz, r, obs, num(i, "clumping"), num(i, "clumpCell")) : trimGeneratedPoint(flat, area, px, pz, r, obs));
+            return trimJson(present(i, "clumping") ? trimGeneratedPointClumped(flat, area, px, pz, r, obs, num3(i, "clumping"), num3(i, "clumpCell")) : trimGeneratedPoint(flat, area, px, pz, r, obs));
           }
           if (op === "keepLookNeighbours") return trimJson(keepLookNeighbour(p, obs, px, pz, r));
           return trimJson(keepStatedRow(obs, px, pz));
         });
       }
       case "lookPropStands": {
-        const d = num(i, "density");
+        const d = num3(i, "density");
         return arr(i.entityIds, "entityIds").map((id) => lookPropStands(id, d));
       }
       case "lookNeighbours": {
@@ -19784,14 +29397,14 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         const paving = present(i, "paving") ? arr(i.paving, "paving").map(layoutNode).map((n) => ({ kind: n.kind, entityId: n.entityId, path: n.path ?? [], width: n.width ?? 0, closed: n.closed === true })) : [];
         const p = present(i, "plan") ? plan(i.plan) : null;
         const obs = groundObstacles(i.obstacles);
-        const radius = num(i, "radius");
+        const radius = num3(i, "radius");
         return arr(i.rows, "rows").map((x) => {
           const q = arr(x, "a row");
           const r = lookNeighbours(
             str(i, "layerId"),
             { x: q[0], z: q[1], yaw: q[2] },
-            { density: num(look, "density"), clumping: num(look, "clumping"), clumpCell: num(look, "clumpCell"), jitter: num(look, "jitter") },
-            t === null ? null : { sizeX: num(t, "sizeX"), sizeZ: num(t, "sizeZ") },
+            { density: num3(look, "density"), clumping: num3(look, "clumping"), clumpCell: num3(look, "clumpCell"), jitter: num3(look, "jitter") },
+            t === null ? null : { sizeX: num3(t, "sizeX"), sizeZ: num3(t, "sizeZ") },
             p,
             paving,
             obs,
@@ -19834,8 +29447,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         return points(i.points).map((q) => groundLayerWeights(paint, sampleGroundCoverage(p, q[0], q[1])));
       }
       case "clump": {
-        const c = num(i, "clumping");
-        const cell = num(i, "cell");
+        const c = num3(i, "clumping");
+        const cell = num3(i, "cell");
         return points(i.points).map((q) => ({ weight: clumpWeight(q[0], q[1], c, cell), thins: clumpThins(q[0], q[1], c, cell) }));
       }
       // ── backdrop ──
@@ -19848,9 +29461,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         const box = obj(i.box, "a box");
         const ring = obj(i.ring, "a ring");
         return backdropRing(
-          { minX: num(box, "minX"), minZ: num(box, "minZ"), maxX: num(box, "maxX"), maxZ: num(box, "maxZ"), minY: num(box, "minY") },
-          { count: num(ring, "count"), outside: num(ring, "outside"), scale: num(ring, "scale"), scaleJitter: num(ring, "scaleJitter"), sink: num(ring, "sink") },
-          num(i, "ringIndex"),
+          { minX: num3(box, "minX"), minZ: num3(box, "minZ"), maxX: num3(box, "maxX"), maxZ: num3(box, "maxZ"), minY: num3(box, "minY") },
+          { count: num3(ring, "count"), outside: num3(ring, "outside"), scale: num3(ring, "scale"), scaleJitter: num3(ring, "scaleJitter"), sink: num3(ring, "sink") },
+          num3(i, "ringIndex"),
           arr(i.meshHalfExtents, "meshHalfExtents")
         ).map((p) => ({ ...p }));
       }
@@ -19858,11 +29471,11 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         const box = obj(i.box, "a box");
         const m = obj(i.mesh, "a mesh");
         const f = backdropFrame(
-          { minX: num(box, "minX"), minZ: num(box, "minZ"), maxX: num(box, "maxX"), maxZ: num(box, "maxZ"), minY: num(box, "minY") },
-          { minX: num(m, "minX"), minZ: num(m, "minZ"), maxX: num(m, "maxX"), maxZ: num(m, "maxZ") },
+          { minX: num3(box, "minX"), minZ: num3(box, "minZ"), maxX: num3(box, "maxX"), maxZ: num3(box, "maxZ"), minY: num3(box, "minY") },
+          { minX: num3(m, "minX"), minZ: num3(m, "minZ"), maxX: num3(m, "maxX"), maxZ: num3(m, "maxZ") },
           vec(i.pieceScale),
-          num(i, "offsetY"),
-          present(i, "edgeMinY") ? num(i, "edgeMinY") : null
+          num3(i, "offsetY"),
+          present(i, "edgeMinY") ? num3(i, "edgeMinY") : null
         );
         return { laid: f.laid, outerHalfX: f.outerHalfX, outerHalfZ: f.outerHalfZ, height: f.height, strips: f.strips.map((s) => ({ ...s })) };
       }
@@ -19889,6 +29502,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     "layoutObstaclesOf",
     "plantTrunkOutline",
     "layoutConstants",
+    "startClearOutline",
     "buildGroundPlan",
     "gradeTerrain",
     "followSettledBuildings",
@@ -21529,13 +31143,13 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   // @insimul/core/src/editor/layout/composition/transitions.ts
   var BREAKUP_SALT = 1162102597;
   var NOISE_SLOPE_BOUND = 1.875 * Math.SQRT2 * (0.68 + 0.32 / 0.43);
-  function clamp012(v) {
+  function clamp014(v) {
     return v < 0 ? 0 : v > 1 ? 1 : v;
   }
   function transitionCoverage(distance, feather) {
     if (distance <= 0) return 1;
     if (!(feather > 0) || distance >= feather) return 0;
-    const t = clamp012(distance / feather);
+    const t = clamp014(distance / feather);
     return 1 - t * t * (3 - 2 * t);
   }
   function edgeBreakup(x, z, rules = DEFAULT_COMPOSITION_RULES) {
@@ -21619,7 +31233,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     if (!Array.isArray(v)) bad2(`${what} is not an array`);
     return v;
   }
-  function num2(o, k) {
+  function num4(o, k) {
     const v = o[k];
     if (typeof v !== "number") bad2(`'${k}' is not a number`);
     return v;
@@ -21641,9 +31255,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     if (v === void 0 || v === null) return null;
     const t = obj2(v, "terrain");
     return {
-      resolution: num2(t, "resolution"),
-      sizeX: num2(t, "sizeX"),
-      sizeZ: num2(t, "sizeZ"),
+      resolution: num4(t, "resolution"),
+      sizeX: num4(t, "sizeX"),
+      sizeZ: num4(t, "sizeZ"),
       heights: arr2(t.heights, "terrain.heights")
     };
   }
@@ -21656,7 +31270,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       surface,
       lotId: typeof s.lotId === "string" ? s.lotId : "",
       points: points2(s.points, "a strip's points"),
-      halfWidth: num2(s, "halfWidth"),
+      halfWidth: num4(s, "halfWidth"),
       closed: s.closed === true
     };
   }
@@ -21665,12 +31279,12 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     return {
       entityId: str2(l, "entityId"),
       lotId: typeof l.lotId === "string" ? l.lotId : "",
-      cx: num2(l, "cx"),
-      cz: num2(l, "cz"),
-      halfAcross: num2(l, "halfAcross"),
-      halfAway: num2(l, "halfAway"),
-      awayX: num2(l, "awayX"),
-      awayZ: num2(l, "awayZ")
+      cx: num4(l, "cx"),
+      cz: num4(l, "cz"),
+      halfAcross: num4(l, "halfAcross"),
+      halfAway: num4(l, "halfAway"),
+      awayX: num4(l, "awayX"),
+      awayZ: num4(l, "awayZ")
     };
   }
   function compositionPlan(v) {
@@ -21685,7 +31299,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     if (typeof v !== "string" || !TRANSITION_SURFACES.includes(v)) bad2(`unknown transition surface ${JSON.stringify(v)}`);
     return v;
   }
-  function json(v) {
+  function json3(v) {
     return JSON.parse(JSON.stringify(v));
   }
   function applyRuleOverrides(rules, input) {
@@ -21701,7 +31315,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   function doorsOf(v) {
     return arr2(v ?? [], "doors").map((d) => {
       const o = obj2(d, "a door");
-      return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z"), heading: num2(o, "heading") };
+      return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
     });
   }
   function groupingInput(i) {
@@ -21714,7 +31328,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   function propsOf(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num2(o, "x"), z: num2(o, "z"), radius: num2(o, "radius") };
+      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
     });
   }
   function plannedOn(i) {
@@ -21728,7 +31342,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   function spotsOf(v, what) {
     return arr2(v ?? [], what).map((p) => {
       const o = obj2(p, what);
-      return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z") };
+      return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z") };
     });
   }
   var postsOf = (v) => spotsOf(v, "posts");
@@ -21737,13 +31351,13 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   function foliageOf(v) {
     return arr2(v ?? [], "foliage").map((p) => {
       const o = obj2(p, "a foliage prop");
-      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num2(o, "x"), z: num2(o, "z") };
+      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num4(o, "x"), z: num4(o, "z") };
     });
   }
   function villagersOf(v) {
     return arr2(v ?? [], "villagers").map((p) => {
       const o = obj2(p, "a villager");
-      return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z"), target: typeof o.target === "string" ? o.target : null };
+      return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), target: typeof o.target === "string" ? o.target : null };
     });
   }
   function outlinedBuildings(v) {
@@ -21755,13 +31369,13 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   function reachProps(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z"), radius: num2(o, "radius") };
+      return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
     });
   }
   function seatsOf(v) {
     return arr2(v ?? [], "seats").map((s) => {
       const o = obj2(s, "a seat");
-      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num2(o, "x"), z: num2(o, "z"), heading: num2(o, "heading"), length: num2(o, "length") };
+      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading"), length: num4(o, "length") };
     });
   }
   function modelsOf(v) {
@@ -21771,7 +31385,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         if (typeof s !== "string" || !HOUSE_SIDES.includes(s)) bad2(`unknown house side ${JSON.stringify(s)}`);
         return s;
       });
-      return { id: str2(o, "id"), width: num2(o, "width"), depth: num2(o, "depth"), blank };
+      return { id: str2(o, "id"), width: num4(o, "width"), depth: num4(o, "depth"), blank };
     });
   }
   function runCompositionOp(op, input, rules = DEFAULT_COMPOSITION_RULES) {
@@ -21779,7 +31393,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     const r = applyRuleOverrides(rules, i);
     switch (op) {
       case "composeLaneNetwork":
-        return json(
+        return json3(
           composeLaneNetwork(
             {
               plan: plannedOn(i),
@@ -21800,7 +31414,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         return points2(i.points, "points").map((p) => edgeBreakup(p[0], p[1], r));
       case "groundTransitionCoverage": {
         const plan2 = compositionPlan(i.plan);
-        return points2(i.points, "points").map((p) => json(groundTransitionCoverage(plan2, p[0], p[1], r)));
+        return points2(i.points, "points").map((p) => json3(groundTransitionCoverage(plan2, p[0], p[1], r)));
       }
       case "transitionBounds": {
         const out = {};
@@ -21809,7 +31423,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         return out;
       }
       case "auditGroundEdges":
-        return json(auditGroundEdges(arr2(i.samples, "samples").map((s) => point2(s, "an [s, w] sample")), r));
+        return json3(auditGroundEdges(arr2(i.samples, "samples").map((s) => point2(s, "an [s, w] sample")), r));
       case "coverageAudit": {
         const source = str2(i, "source");
         if (source !== "transition" && source !== "paint") bad2(`unknown coverage source '${source}'`);
@@ -21818,11 +31432,11 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
           surfaceOf(i.surface),
           point2(i.from, "from"),
           point2(i.to, "to"),
-          num2(i, "step"),
+          num4(i, "step"),
           source,
           r
         );
-        return json({ samples: profile.length, ...auditGroundEdges(profile, r) });
+        return json3({ samples: profile.length, ...auditGroundEdges(profile, r) });
       }
       case "propPurpose":
         return arr2(i.archetypes, "archetypes").map((a) => {
@@ -21830,9 +31444,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
           return propPurpose(a, r);
         });
       case "groupProps":
-        return json(groupProps(groupingInput(i), r));
+        return json3(groupProps(groupingInput(i), r));
       case "auditPropGroups":
-        return json(auditPropGroups(groupingInput(i), r));
+        return json3(auditPropGroups(groupingInput(i), r));
       case "trimFloraOffSquare":
         return trimFloraOffSquare(compositionPlan(i.plan), points2(i.points, "points"), r);
       case "yardRole":
@@ -21845,7 +31459,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
           const o = obj2(b, "a building");
           return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
         });
-        return json(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
+        return json3(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
       }
       case "lanternsOnRoutes": {
         const routes = i.routes === void 0 ? [] : compositionPlan({ strips: i.routes }).strips;
@@ -21854,7 +31468,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
           const o = obj2(q, "a line");
           return { entityId: str2(o, "entityId"), points: points2(o.points, "a line's points") };
         });
-        return json(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
+        return json3(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
       }
       case "foliageKind":
         return arr2(i.archetypes, "archetypes").map((a) => {
@@ -21862,28 +31476,28 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
           return foliageKind(a, r);
         });
       case "composeFoliage":
-        return json(composeFoliage({ plan: compositionPlan(i.plan ?? {}), buildings: outlinedBuildings(i.buildings), foliage: foliageOf(i.foliage) }, r));
+        return json3(composeFoliage({ plan: compositionPlan(i.plan ?? {}), buildings: outlinedBuildings(i.buildings), foliage: foliageOf(i.foliage) }, r));
       case "auditFoliageSpacing":
-        return json(auditFoliageSpacing(points2(i.points, "points"), r));
+        return json3(auditFoliageSpacing(points2(i.points, "points"), r));
       case "assignHouseModels": {
         const houses = arr2(i.houses ?? [], "houses").map((h) => {
           const o = obj2(h, "a house");
-          return { entityId: str2(o, "entityId"), x: num2(o, "x"), z: num2(o, "z"), heading: num2(o, "heading") };
+          return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
         });
-        return json(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: modelsOf(i.models) }, r));
+        return json3(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: modelsOf(i.models) }, r));
       }
       case "seatCapacity":
         return seatsOf(i.seats).map((s) => seatCapacity(s, r));
       case "seatVillagers":
-        return json(seatVillagers({ seats: seatsOf(i.seats), sitters: sittersOf(i.sitters), props: reachProps(i.props) }, r));
+        return json3(seatVillagers({ seats: seatsOf(i.seats), sitters: sittersOf(i.sitters), props: reachProps(i.props) }, r));
       case "keepClearOfProps":
-        return json(keepClearOfProps({ villagers: villagersOf(i.villagers), props: reachProps(i.props) }, r));
+        return json3(keepClearOfProps({ villagers: villagersOf(i.villagers), props: reachProps(i.props) }, r));
       case "composeVillage": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
           return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), outline: points2(o.outline, "an outline") };
         });
-        return json(
+        return json3(
           composeVillage(
             {
               plan: plannedOn(i),
@@ -21934,25 +31548,25 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   ];
 
   // corebridge/js/entry.js
-  function refuse(method, message) {
+  function refuse2(method, message) {
     return new Error(`insimulcore: ${method}: ${message}`);
   }
   function needObject(method, value, name) {
     if (value === null || typeof value !== "object" || Array.isArray(value)) {
-      throw refuse(method, `\`${name}\` must be a JSON object`);
+      throw refuse2(method, `\`${name}\` must be a JSON object`);
     }
     return value;
   }
   function needArray(method, value, name) {
-    if (!Array.isArray(value)) throw refuse(method, `\`${name}\` must be an array`);
+    if (!Array.isArray(value)) throw refuse2(method, `\`${name}\` must be an array`);
     return value;
   }
   function needString(method, value, name) {
-    if (typeof value !== "string") throw refuse(method, `\`${name}\` must be a string`);
+    if (typeof value !== "string") throw refuse2(method, `\`${name}\` must be a string`);
     return value;
   }
   function needNumber(method, value, name) {
-    if (typeof value !== "number" || !Number.isFinite(value)) throw refuse(method, `\`${name}\` must be a finite number`);
+    if (typeof value !== "number" || !Number.isFinite(value)) throw refuse2(method, `\`${name}\` must be a finite number`);
     return value;
   }
   function optNumber(method, value, name) {
@@ -21960,7 +31574,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   }
   function oneOf(method, value, allowed, name) {
     if (!allowed.includes(value)) {
-      throw refuse(method, `\`${name}\` must be one of ${allowed.join(", ")} (got ${JSON.stringify(value)})`);
+      throw refuse2(method, `\`${name}\` must be one of ${allowed.join(", ")} (got ${JSON.stringify(value)})`);
     }
     return value;
   }
@@ -21971,6 +31585,64 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
   function plain(value) {
     return value === void 0 ? null : JSON.parse(JSON.stringify(value));
   }
+  function coded(code, checks) {
+    try {
+      return checks();
+    } catch (err) {
+      if (err && typeof err === "object" && typeof err.code !== "string") err.code = code;
+      throw err;
+    }
+  }
+  function opOf(method, op, ops) {
+    return coded("unknown-op", () => oneOf(method, op, ops, "op"));
+  }
+  function optArray(method, input, name, objects) {
+    if (input[name] === void 0 || input[name] === null) return;
+    needArray(method, input[name], name).forEach((item, i) => {
+      if (objects) needObject(method, item, `${name}[${i}]`);
+    });
+  }
+  var RULES_PANEL_INPUTS = {
+    panel: (m, input) => {
+      optArray(m, input, "worldRules", true);
+      optArray(m, input, "baseRules", true);
+    },
+    card: (m, input) => needObject(m, input.rule, "rule"),
+    byCategory: (m, input) => {
+      needRules(m, input);
+      needString(m, input.category, "category");
+    },
+    byType: (m, input) => {
+      needRules(m, input);
+      needString(m, input.ruleType, "ruleType");
+    },
+    isActive: (m, input) => {
+      needRules(m, input);
+      needString(m, input.ruleId, "ruleId");
+    }
+  };
+  function needRules(method, input) {
+    needArray(method, input.rules, "rules");
+    optArray(method, input, "rules", true);
+  }
+  var MECHANIC_STEP_OPS = [
+    "stamina.register",
+    "combat.register",
+    "combat.attack",
+    "traversal.links",
+    "traversal.register",
+    "traversal.traverse",
+    "locomotion.pursue",
+    "detection.observer",
+    "detection.target",
+    "detection.observe",
+    "routine.assign",
+    "routine.tick",
+    "skills.load",
+    "skills.register",
+    "skills.award",
+    "skills.advance"
+  ];
   function catalogOf(method, value) {
     const catalog = needObject(method, value, "catalog");
     const index = needObject(method, catalog.index, "catalog.index");
@@ -22562,7 +32234,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       const results = await applyOps(m, s, args, {
         update: ({ clock }, op) => {
           const ms = needNumber(m, op.deltaMs, "deltaMs");
-          if (ms < 0) throw refuse(m, "`deltaMs` must not be negative");
+          if (ms < 0) throw refuse2(m, "`deltaMs` must not be negative");
           return clock.update(ms);
         },
         advanceHours: ({ clock }, op) => clock.advanceHours(needNumber(m, op.hours, "hours")),
@@ -22668,6 +32340,86 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     "genre.resolveGame": (args) => resolveGameGenre({ recipe: args.recipe ?? null, world: args.world ?? null }),
     /** `genre.recipes` → `{ ids, bindings }` — core's recipe → genre bindings. */
     "genre.recipes": () => ({ ids: [...RECIPE_IDS], bindings: plain(RECIPE_GENRE_BINDINGS) }),
+    // ── the genre HUD and the world rules panel (P9a) ──
+    // Each row is one of core's corpus runners and nothing else: the args are
+    // `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and
+    // the answer is in that case's `expected` shape (key sets included; a key core
+    // leaves undefined is absent). A domain refusal core's runner answers is a
+    // VALUE, as the corpus pins it (`{ ok: false, refusal: { code, field } }`); an
+    // op the runner does not declare, or an input the row cannot pass on, is an
+    // ERROR with a code (`[unknown-op]`, `[invalid-input]`).
+    /**
+     * `ui.genreHud { op: 'config'|'view'|'genre_view', ...input }` → core's
+     * `runGenreHudOp(op, input)` (`ui/genre-hud-corpus`): `config { genre }` → `{ ok,
+     * value: GenreHudConfig }`; `view { config, state? }` → `{ ok, value:
+     * GenreHudView }`; `genre_view { genre, state? }` → the view of that genre's own
+     * config. Refusal values: `unknown_genre`, `unknown_layout`. The row checks only
+     * `op` (core's `GENRE_HUD_OPS`): core's runner reads every input it is given.
+     */
+    "ui.genreHud": (args) => {
+      const { op, ...input } = args;
+      return runGenreHudOp(opOf("ui.genreHud", op, GENRE_HUD_OPS), input);
+    },
+    /**
+     * `ui.rulesPanel { op: 'panel'|'card'|'byCategory'|'byType'|'isActive', ...input }`
+     * → core's `runRulesPanelOp(op, input)` (`ui/rules-panel-corpus`): `panel {
+     * worldRules?, baseRules? }` → `RulesPanelView`; `card { rule }` → `RuleCard`;
+     * `byCategory { rules, category }` / `byType { rules, ruleType }` → rule ids;
+     * `isActive { rules, ruleId }` → boolean. `op` is checked against core's
+     * `RULES_PANEL_OPS`, and each op's fields against the JSON types core's
+     * `PanelRule` declares (RULES_PANEL_INPUTS above) as `[invalid-input]`.
+     */
+    "ui.rulesPanel": (args) => {
+      const m = "ui.rulesPanel";
+      const { op, ...input } = args;
+      opOf(m, op, RULES_PANEL_OPS);
+      coded("invalid-input", () => RULES_PANEL_INPUTS[op](m, input));
+      return runRulesPanelOp(op, input);
+    },
+    // ── the mechanic runtime (P9a) ──
+    /**
+     * `mechanics.run { ir, seed, steps }` → `{ plan, steps, events }` — core's
+     * `runMechanicRuntimeCase` (`game-engine/mechanic-runtime-corpus`): the World
+     * IR's activation (`meta.genreConfig`, `meta.enabledModules`) assembles core's
+     * `createMechanicRuntime` (with `ir.routines` handed to the routine and
+     * locomotion directors), the steps run in order on its seven layers with no
+     * Prolog engine, and the answer is `conformance/modules/mechanic-runtime.json`'s
+     * `expected`: the plan, one result per step (`{ absent: true }` on a layer the
+     * world did not activate, else `{ absent: false, outcome, stamina }`) and the
+     * type of every event the one bus carried. Pure and seeded, like `weather.run`.
+     * Step ops: every op of core's `MechanicStep` (MECHANIC_STEP_OPS above). The row
+     * checks the IR's shape, the seed and each step's `op` (`[invalid-input]`,
+     * `[unknown-op]`); a step's own fields go to core unchanged.
+     *
+     * Why a stateless `.run` and not a `mechanics.create`/`.apply` session pair:
+     * core defines the one operation as `{ ir, seed, steps }` → `{ plan, steps,
+     * events }` and exports it; the per-step answer (`outcome`, `stamina`) is a
+     * projection core keeps private to that runner, so a session would have to
+     * restate it here, and THE ROWS DECIDE NOTHING. A live game session also needs
+     * the layers' hosts (trajectory, perception, locomotion), which are engine
+     * callbacks that cannot cross this ABI — those are the per-system rows of
+     * P9b–P9j.
+     */
+    "mechanics.run": (args) => {
+      const m = "mechanics.run";
+      const input = coded("invalid-input", () => {
+        const ir = needObject(m, args.ir, "ir");
+        const meta = needObject(m, ir.meta, "ir.meta");
+        needString(m, needObject(m, meta.genreConfig, "ir.meta.genreConfig").id, "ir.meta.genreConfig.id");
+        if (meta.enabledModules !== void 0 && meta.enabledModules !== null) {
+          needArray(m, meta.enabledModules, "ir.meta.enabledModules");
+        }
+        if (ir.routines !== void 0 && ir.routines !== null) needObject(m, ir.routines, "ir.routines");
+        const seed = typeof args.seed === "string" ? args.seed : needNumber(m, args.seed, "seed");
+        const steps = needArray(m, args.steps, "steps");
+        steps.forEach((step, i) => needObject(m, step, `steps[${i}]`));
+        return { ir, seed, steps };
+      });
+      input.steps.forEach(
+        (step, i) => coded("unknown-op", () => oneOf(m, step.op, MECHANIC_STEP_OPS, `steps[${i}].op`))
+      );
+      return runMechanicRuntimeCase(input);
+    },
     /**
      * `packs.compose { recipe?, world?, game?, engine?, catalog }` → core's
      * `resolveComposition(request, catalog)`: the game's packs, its settings and
@@ -22748,6 +32500,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     "layout.layoutObstaclesOf": layoutRow("layoutObstaclesOf"),
     "layout.plantTrunkOutline": layoutRow("plantTrunkOutline"),
     "layout.layoutConstants": layoutRow("layoutConstants"),
+    // PL.start-clearance (U78): the start's clear ground, new in LAYOUT_OPS at core f9aef13.
+    "layout.startClearOutline": layoutRow("startClearOutline"),
     "layout.buildGroundPlan": layoutRow("buildGroundPlan"),
     "layout.gradeTerrain": layoutRow("gradeTerrain"),
     "layout.followSettledBuildings": layoutRow("followSettledBuildings"),

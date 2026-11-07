@@ -123,12 +123,15 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `b38e60d` (core
-  `main` on 2026-11-05, holding the layout and composition rules the `layout.*` rows
-  run and the composer the `packs.compose` row runs; see the pin's `coreRefNote`).
-  The vendor directory also holds core's layout corpora and its pack-composition
-  corpus (`corebridge/vendor/core/conformance/`) and the pack catalog that corpus
-  names (`corebridge/vendor/core/packs/`), copied byte for byte at the pin.
+  what to quote in a bug report about core behaviour. Today: `f9aef13` (core
+  `main` on 2026-11-07, holding the layout and composition rules the `layout.*` rows
+  run, the composer the `packs.compose` row runs, and P9a.core's genre HUD, rules
+  panel and mechanic runtime the `ui.genreHud`, `ui.rulesPanel` and `mechanics.run`
+  rows run; see the pin's `coreRefNote`).
+  The vendor directory also holds core's layout corpora, its pack-composition
+  corpus and its P9a corpora (`corebridge/vendor/core/conformance/`) and the pack
+  catalog that corpus names (`corebridge/vendor/core/packs/`), copied byte for byte
+  at the pin.
 - **npm packages inside the bundle:** `zod` 3.25.76 (MIT), which core's
   `system-packs/schema` imports and the composer pulls in; recorded in
   `VENDORED.json`'s `npmModules` and attributed in `NOTICE`. It is bundled from the

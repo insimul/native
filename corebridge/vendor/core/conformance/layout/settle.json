@@ -1,6 +1,6 @@
 {
   "area": "layout-settle",
-  "description": "Settling a village apart (core src/editor/layout/settle.ts and pairing.ts; the Unreal plugin's BYOA B7 r4 - B8 r5 settle, characterised from its Portable code). The smallest change that parts what stands too close: each pair short of the gap its rule asks, and each body inside its clearance of an obstacle, pushed apart along the axis that separates them most, the lighter taking the larger share, repeated until nothing is short or nothing can move, every body within its own limit; shifts quantized to the millimetre. The neighbour rule (fitted buildings: the larger of two gaps, 0.25 m off other lots' paving, a limit that grows with the gap) on Brightwater Vale's ring of seven pack houses at 1, 4.5 and 6 m and on its real fits; the clearance rule (props out of each other and the walls, plant trunks off walls and paving, set-asides) on its props, whose positions and archetypes are the world's and whose sizes are nominal (the editor measures each bound asset); the pairing's seat sink; and the rules' tables. Plan frame: IR (x, z) metres.",
+  "description": "Settling a village apart (core src/editor/layout/settle.ts and pairing.ts; the Unreal plugin's BYOA B7 r4 - B8 r5 settle, characterised from its Portable code). The smallest change that parts what stands too close: each pair short of the gap its rule asks, and each body inside its clearance of an obstacle, pushed apart along the axis that separates them most, the lighter taking the larger share, repeated until nothing is short or nothing can move, every body within its own limit; shifts quantized to the millimetre. The neighbour rule (fitted buildings: the larger of two gaps, 0.25 m off other lots' paving, a limit that grows with the gap) on Brightwater Vale's ring of seven pack houses at 1, 4.5 and 6 m and on its real fits; the clearance rule (props out of each other and the walls, plant trunks off walls and paving, set-asides) on its props, whose positions and archetypes are the world's and at the sizes the editor measured (by entity id where the editor's build stood the prop, else its archetype's measured size); the player start's clear ground (startClearRadiusM, 1 m round the IR's player.startPosition: a prop or plant the settle left on it moved off by the least move, a building on it named, set-asides read where the items end); the pairing's seat sink; and the rules' tables. Plan frame: IR (x, z) metres.",
   "version": 1,
   "sources": [
     {
@@ -9,6 +9,17 @@
       "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
       "pairing": "BYOA B8 round 5 (unreal/byoa/state/byoa-b8/round-5): houses by role, the 6 m neighbour gap, the seat sinks, the 2.01 m cast, MI_Landscape_01a's layers and its ground paint",
       "world": "Brightwater Vale (6abb84ae358820954abf1ea2)"
+    },
+    {
+      "cases": "the 'start clearance:' cases (PL.start-clearance, operator rulings U78 and U79(4))",
+      "writtenBy": "core src/editor/layout/settle.ts settleClearance and startClearOutline (npm run layout-corpus -- --write semantics: core's own answers), synthetic inputs",
+      "crossCheckedAgainst": "the Unreal plugin's interim engine copy at unreal main e859b55 (P0.unreal.openframe): Portable/InsimulBuildingFit KeepClearOfStart and StartClearOutline (kStartClearRadiusM 1.0) applied after SettleClearance as FinishPropClearance applies them; every move and the outline agree. Two deliberate differences, which the engine's binding takes from this corpus when it re-vendors: set-asides are read after the start's move (the interim copy reads them before), and a building on the start is named in startCovered (the interim copy logs a FINDING)"
+    },
+    {
+      "cases": "'neighbours: Brightwater's seven fitted houses', 'clearance: Brightwater's props round its settled houses' and the four 'seat sink:' cases of House_03 and House_Large (PL.layout-standins, operator ruling U80(3))",
+      "measuredBy": "the Unreal editor at unreal 86857a0 (P0.unreal.u23-boxes round 1, WV0 run 2, 2026-11-05): the 36 GB Mac's tools/probe_u23.py over the paired level PairedBrightwater. The houses as building-fit.json's source says (House_03's bottom -5.3567 m, BP_House_02's: its seat sink 0.72, was 0.81). Each clearance prop's plan length (its own forward axis), depth and height are CalculateComponentsBoundingBoxInLocalSpace over its colliding primitives times |scale|, to the centimetre as standins.txt states them (19 archetypes, e.g. barrel 0.71 x 0.73 x 0.99, lantern 0.24 x 0.97 x 2.92, bench 0.55 x 1.85 x 0.62, well 1.64 x 2.07 x 2.31, where the nominal sizes by kind were 0.6 x 0.6 x 0.9, 0.3 x 0.3 x 2.6, 1.6 x 0.5 x 0.5 and 1.6 x 1.6 x 1.2): 73 of the 85 props by their own entity id; the 12 the editor's newer world export did not stand (an anvil and 11 walls) by their archetype's measured size (anvil 0.33 x 0.35 x 0.48; wall 2.00 x 0.14 x 1.52, the more often measured of its two). Each prop keeps its characterised centre and axes",
+      "record": "$LOOPS_HOME/unreal/state/wv0-1104/p0-unreal-u23-boxes/round-1-builder.md (\"Results\"), standins.txt and runs/main-86857a0-r2/probe.json",
+      "writtenBy": "core scripts/restand-layout-corpus.ts --write (scripts/layout-standins.ts): the measured values set, then every expected answer, and every input that is another case's answer (the characteriser's chain), re-derived by core's projection; a value is rewritten only where it moved past the file's tolerance"
     }
   ],
   "tolerance": 0.000001,
@@ -697,7 +708,7 @@
       "input": {
         "buildings": [
           {
-            "corners": [[459.00587385207274, 440.0013299879037], [445.89064588250073, 439.99865876735055], [445.8931260833178, 427.82130445412577], [459.0083540528897, 427.82397567467893]],
+            "corners": [[456.5557265751901, 439.8565758613559], [445.8908519719944, 439.85440371213343], [445.89327341101693, 427.96555958132456], [456.55814801421263, 427.96773173054703]],
             "entityId": "bld_6abb84bcf2e499b951eece64_4",
             "lotId": "6abb84eef2e499b951eecec4",
             "neighbourGap": 6
@@ -709,7 +720,7 @@
             "neighbourGap": 6
           },
           {
-            "corners": [[434.3000175597363, 452.52363324675963], [434.3053600007318, 439.4084060932717], [446.48271355623086, 439.41336649480274], [446.47737111523537, 452.5285936482906]],
+            "corners": [[434.4452707126271, 450.073515503233], [434.44961501098203, 439.4086415636502], [446.3384584020175, 439.4134844415949], [446.3341141036626, 450.07835838117774]],
             "entityId": "bld_6abb84bcf2e499b951eece64_6",
             "lotId": "6abb84eef2e499b951eecec6",
             "neighbourGap": 6
@@ -727,7 +738,7 @@
             "neighbourGap": 6
           },
           {
-            "corners": [[410.7756459471103, 422.32397567467893], [423.89087391668227, 422.32130445412577], [423.8933541174992, 434.49865876735055], [410.77812614792725, 434.5013299879037]],
+            "corners": [[413.22585198578736, 422.46773173054703], [423.89072658898306, 422.46555958132456], [423.89314802800567, 434.35440371213343], [413.22827342480997, 434.3565758613559]],
             "entityId": "bld_6abb84eef2e499b951eecec2",
             "lotId": "6abb84eef2e499b951eecec2",
             "neighbourGap": 6
@@ -745,48 +756,48 @@
       },
       "expected": [
         {
-          "dx": 0.004,
-          "dz": 0.969,
+          "dx": 0.003,
+          "dz": 0.912,
           "entityId": "bld_6abb84bcf2e499b951eece64_4",
           "limited": false,
-          "short": 0.16,
+          "short": 0.077,
           "shortOf": "bld_6abb84bcf2e499b951eece64_6"
         },
         {
           "dx": -0.751,
-          "dz": -6.03,
+          "dz": -5.742,
           "entityId": "bld_6abb84bcf2e499b951eece64_5",
           "limited": false,
           "short": 0,
           "shortOf": ""
         },
         {
-          "dx": 1.25,
-          "dz": 7.395,
+          "dx": 1.814,
+          "dz": 7.277,
           "entityId": "bld_6abb84bcf2e499b951eece64_6",
           "limited": true,
-          "short": 0.16,
+          "short": 0.077,
           "shortOf": "bld_6abb84bcf2e499b951eece64_4"
         },
         {
-          "dx": 4.945,
-          "dz": -5.639,
+          "dx": 4.996,
+          "dz": -5.594,
           "entityId": "bld_6abb84eef2e499b951eecec0",
           "limited": true,
-          "short": 0.102,
+          "short": 0.051,
           "shortOf": "bld_6abb84eef2e499b951eecec3"
         },
         {
-          "dx": -5.438,
-          "dz": 2.155,
+          "dx": -4.73,
+          "dz": 2.047,
           "entityId": "bld_6abb84eef2e499b951eecec1",
           "limited": false,
           "short": 0,
           "shortOf": ""
         },
         {
-          "dx": -1.167,
-          "dz": -0.339,
+          "dx": -1.054,
+          "dz": -0.195,
           "entityId": "bld_6abb84eef2e499b951eecec2",
           "limited": false,
           "short": 0,
@@ -794,10 +805,10 @@
         },
         {
           "dx": 0.649,
-          "dz": -0.11,
+          "dz": -0.21,
           "entityId": "bld_6abb84eef2e499b951eecec3",
           "limited": false,
-          "short": 0.102,
+          "short": 0.051,
           "shortOf": "bld_6abb84eef2e499b951eecec0"
         }
       ]
@@ -1380,37 +1391,37 @@
           {
             "entityId": "bld_6abb84bcf2e499b951eece64_4",
             "kind": "building",
-            "outline": [[459.00987385207276, 440.97032998790377], [445.89464588250075, 440.9676587673506], [445.8971260833178, 428.7903044541259], [459.0123540528897, 428.792975674679]]
+            "outline": [[456.55872657519006, 440.7685758613559], [445.89385197199437, 440.7664037121334], [445.8962734110169, 428.87755958132453], [456.5611480142126, 428.879731730547]]
           },
           {
             "entityId": "bld_6abb84bcf2e499b951eece64_5",
             "kind": "building",
-            "outline": [[412.82080370500114, 404.7803641288587], [423.13991446136845, 404.7782624024681], [423.14219630161534, 415.9817008428932], [412.82308554524803, 415.98380256928385]]
+            "outline": [[412.82080370500114, 405.0683641288587], [423.13991446136845, 405.06626240246806], [423.14219630161534, 416.2697008428932], [412.82308554524803, 416.2718025692838]]
           },
           {
             "entityId": "bld_6abb84bcf2e499b951eece64_6",
             "kind": "building",
-            "outline": [[435.5500175597363, 459.9186332467596], [435.5553600007318, 446.8034060932717], [447.73271355623086, 446.8083664948028], [447.72737111523537, 459.92359364829065]]
+            "outline": [[436.25927071262714, 457.350515503233], [436.26361501098205, 446.68564156365017], [448.15245840201754, 446.6904844415949], [448.14811410366264, 457.3553583811777]]
           },
           {
             "entityId": "bld_6abb84eef2e499b951eecec0",
             "kind": "building",
-            "outline": [[461.1549144547519, 422.8748025692839], [450.8358036983846, 422.87270084289327], [450.8380855386315, 411.66926240246806], [461.1571962949988, 411.67136412885867]]
+            "outline": [[461.20591445475196, 422.9198025692839], [450.8868036983846, 422.9177008428932], [450.8890855386315, 411.7142624024681], [461.20819629499886, 411.71636412885874]]
           },
           {
             "entityId": "bld_6abb84eef2e499b951eecec1",
             "kind": "building",
-            "outline": [[418.350114430252, 451.882773203702], [418.3543178829461, 441.56366308943274], [429.5577556262466, 441.5682267698318], [429.55355217355253, 451.88733688410116]]
+            "outline": [[419.058114430252, 451.7747732037021], [419.06231788294605, 441.4556630894328], [430.26575562624663, 441.46022676983193], [430.26155217355256, 451.7793368841012]]
           },
           {
             "entityId": "bld_6abb84eef2e499b951eecec2",
             "kind": "building",
-            "outline": [[409.60864594711035, 421.98497567467894], [422.7238739166823, 421.98230445412577], [422.7263541174992, 434.15965876735055], [409.6111261479273, 434.1623299879037]]
+            "outline": [[412.1718519857874, 422.27273173054704], [422.8367265889831, 422.27055958132456], [422.8391480280057, 434.15940371213344], [412.17427342481, 434.1615758613559]]
           },
           {
             "entityId": "bld_6abb84eef2e499b951eecec3",
             "kind": "building",
-            "outline": [[444.93943722855, 405.27424860145004], [444.93943722855, 417.30075139855006], [429.14256277145, 417.30075139855006], [429.14256277145, 405.27424860145004]]
+            "outline": [[444.93943722855, 405.17424860145], [444.93943722855, 417.20075139855], [429.14256277145, 417.20075139855], [429.14256277145, 405.17424860145]]
           },
           {
             "crownRadius": 0.6,
@@ -1456,12 +1467,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.145,
             "entityId": "nature.104",
-            "height": 1,
+            "height": 0.14,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[495.27440220443316, 476.6289565882671], [495.83004341173296, 476.05340220443316], [496.4055977955669, 476.60904341173296], [495.8499565882671, 477.1845977955669]]
+            "longestPlan": 0.5,
+            "outline": [[495.55942928622886, 476.54968135478873], [495.760849223875, 476.34104289064896], [496.1205707137712, 476.6883186452113], [495.91915077612504, 476.8969571093511]]
           },
           {
             "crownRadius": 2.5,
@@ -1711,12 +1722,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.22440000000000002,
             "entityId": "nature.142",
-            "height": 1,
+            "height": 0.27,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[298.757905074005, 379.2743502310676], [299.1156497689324, 379.98990507400504], [298.400094925995, 380.34764976893246], [298.0423502310676, 379.63209492599503]]
+            "longestPlan": 0.51,
+            "outline": [[298.70870331508127, 379.50019129668414], [298.9054628972914, 379.8937464602997], [298.44929668491875, 380.12180870331593], [298.25253710270863, 379.72825353970035]]
           },
           {
             "crownRadius": 2.5,
@@ -1756,12 +1767,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.145,
             "entityId": "nature.149",
-            "height": 1,
+            "height": 0.14,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[333.86434165162154, 379.52346091734967], [333.14453908265034, 379.1743416516216], [333.4936583483784, 378.4545390826504], [334.2134609173496, 378.80365834837846]]
+            "longestPlan": 0.5,
+            "outline": [[333.700364445086, 379.2772161697167], [333.4394360138339, 379.1506604358903], [333.65763555491395, 378.70078383028334], [333.918563986166, 378.82733956410976]]
           },
           {
             "crownRadius": 2.5,
@@ -1891,12 +1902,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 2.9546999999999994,
             "entityId": "nature.169",
-            "height": 1,
+            "height": 0.82,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[380.33239204301873, 502.6351950356151], [381.0698049643849, 502.9453920430187], [380.75960795698126, 503.6828049643849], [380.0221950356151, 503.37260795698126]]
+            "longestPlan": 2.01,
+            "outline": [[379.90461851808584, 502.09181688794393], [381.75736848301835, 502.87118686904563], [381.18738148191414, 504.22618311205605], [379.33463151698163, 503.44681313095435]]
           },
           {
             "crownRadius": 0.6,
@@ -1924,12 +1935,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 2.9546999999999994,
             "entityId": "nature.173",
-            "height": 1,
+            "height": 0.82,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[374.31684766141535, 312.35556551546193], [374.86543448453807, 312.93784766141533], [374.28315233858467, 313.48643448453805], [373.73456551546195, 312.90415233858465]]
+            "longestPlan": 2.01,
+            "outline": [[374.14580952504673, 311.685493910402], [375.52413391814264, 313.14847780210994], [374.4541904749533, 314.156506089598], [373.0758660818574, 312.69352219789005]]
           },
           {
             "crownRadius": 2.5,
@@ -1939,12 +1950,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 1.7574,
             "entityId": "nature.175",
-            "height": 1,
+            "height": 0.44,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[418.7238619682802, 294.5674372798912], [419.5225627201088, 294.52186196828023], [419.56813803171974, 295.32056272010885], [418.7694372798911, 295.3661380317198]]
+            "longestPlan": 2.02,
+            "outline": [[418.65416763528435, 293.9604218765049], [419.52275470289794, 293.910858725128], [419.63783236471556, 295.92757812349515], [418.769245297102, 295.97714127487205]]
           },
           {
             "crownRadius": 0.6,
@@ -2122,12 +2133,12 @@
           },
           {
             "archetype": "prop.rock.mossy",
-            "area": 0.6400000000000001,
+            "area": 0.9384,
             "entityId": "nature.201",
-            "height": 1,
+            "height": 0.41,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[307.27979893920644, 441.9523683384505], [307.8376316615495, 442.5257989392065], [307.26420106079354, 443.08363166154953], [306.7063683384505, 442.5102010607936]]
+            "longestPlan": 1.02,
+            "outline": [[307.31680819263465, 441.83265904407165], [307.95831582332914, 442.49210423494105], [307.22719180736533, 443.2033409559284], [306.58568417667084, 442.543895765059]]
           },
           {
             "crownRadius": 2.5,
@@ -2173,12 +2184,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.2346,
             "entityId": "nature.209",
-            "height": 1,
+            "height": 0.25,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[318.8129407472538, 378.92173155855943], [319.61226844144056, 378.8889407472538], [319.6450592527462, 379.6882684414406], [318.8457315585594, 379.7210592527462]]
+            "longestPlan": 0.51,
+            "outline": [[318.98874121681763, 379.05964165572834], [319.448354640975, 379.0407869392276], [319.46925878318234, 379.5503583442717], [319.00964535902494, 379.5692130607724]]
           },
           {
             "crownRadius": 2.5,
@@ -2242,12 +2253,12 @@
           },
           {
             "archetype": "prop.rock.mossy",
-            "area": 0.6400000000000001,
+            "area": 0.5858,
             "entityId": "nature.219",
-            "height": 1,
+            "height": 0.28,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[381.7906035970445, 366.57337861702575], [381.23462138297424, 367.1486035970444], [380.65939640295557, 366.5926213829742], [381.2153786170258, 366.0173964029555]]
+            "longestPlan": 1.01,
+            "outline": [[381.7896543212373, 366.72544471737507], [381.3865672160364, 367.1424828278886], [380.6603456787627, 366.44055528262487], [381.06343278396366, 366.0235171721113]]
           },
           {
             "crownRadius": 2.5,
@@ -2281,12 +2292,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.22440000000000002,
             "entityId": "nature.224",
-            "height": 1,
+            "height": 0.27,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[404.7772159565967, 320.4820660494713], [404.8839339505287, 319.68921595659674], [405.67678404340325, 319.7959339505287], [405.5700660494713, 320.5887840434033]]
+            "longestPlan": 0.51,
+            "outline": [[404.9449315845649, 320.3230174149747], [405.0036264812275, 319.8869498638937], [405.509068415435, 319.95498258502533], [405.45037351877244, 320.39105013610634]]
           },
           {
             "crownRadius": 0.6,
@@ -2332,12 +2343,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 2.9546999999999994,
             "entityId": "nature.231",
-            "height": 1,
+            "height": 0.82,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[334.2273296031693, 331.5441753303125], [333.8138246696875, 330.85932960316933], [334.4986703968307, 330.4458246696875], [334.9121753303125, 331.1306703968307]]
+            "longestPlan": 2.01,
+            "outline": [[334.25326356087373, 332.23524510235995], [333.21433241550073, 330.5145702129129], [334.47273643912627, 329.75475489764005], [335.51166758449926, 331.47542978708714]]
           },
           {
             "crownRadius": 0.6,
@@ -2359,12 +2370,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 2.9546999999999994,
             "entityId": "nature.235",
-            "height": 1,
+            "height": 0.82,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[406.67496520160836, 291.71175226430273], [406.28624773569726, 292.4109652016084], [405.5870347983916, 292.0222477356973], [405.9757522643027, 291.32303479839163]]
+            "longestPlan": 2.01,
+            "outline": [[407.26172820270045, 291.3457479193156], [406.28507556959875, 293.10252042429613], [405.0002717972995, 292.3882520806844], [405.9769244304012, 290.6314795757039]]
           },
           {
             "crownRadius": 0.6,
@@ -2494,12 +2505,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 2.9546999999999994,
             "entityId": "nature.255",
-            "height": 1,
+            "height": 0.82,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[358.91370820674274, 375.55529497192305], [358.5597050280769, 376.2727082067427], [357.84229179325723, 375.9187050280769], [358.19629497192307, 375.2012917932572]]
+            "longestPlan": 2.01,
+            "outline": [[359.48183990268967, 375.16099004415696], [358.5924069162917, 376.9634907966415], [357.2741600973104, 376.313009955843], [358.1635930837084, 374.5105092033584]]
           },
           {
             "crownRadius": 2.5,
@@ -2545,12 +2556,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.22440000000000002,
             "entityId": "nature.262",
-            "height": 1,
+            "height": 0.27,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[340.7367382469561, 405.42730867574244], [341.2476913242576, 404.8117382469561], [341.8632617530439, 405.32269132425756], [341.35230867574245, 405.9382617530439]]
+            "longestPlan": 0.51,
+            "outline": [[340.96327482956644, 405.38141557452644], [341.24429902208226, 405.04285183869393], [341.6367251704336, 405.36858442547356], [341.35570097791776, 405.70714816130607]]
           },
           {
             "crownRadius": 2.5,
@@ -2560,12 +2571,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.145,
             "entityId": "nature.264",
-            "height": 1,
+            "height": 0.14,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[467.83109502615514, 289.4044491453372], [468.52255085466277, 289.00209502615513], [468.92490497384483, 289.69355085466276], [468.2334491453372, 290.0959049738448]]
+            "longestPlan": 0.5,
+            "outline": [[468.12693796883855, 289.4058467376931], [468.37759070667255, 289.2599933694896], [468.6290620311613, 289.6921532623069], [468.3784092933273, 289.83800663051034]]
           },
           {
             "crownRadius": 2.5,
@@ -2587,12 +2598,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.2107,
             "entityId": "nature.268",
-            "height": 1,
+            "height": 0.2,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[375.04093910937445, 479.1539659348974], [374.38503406510256, 478.6959391093744], [374.84306089062557, 478.04003406510253], [375.49896593489746, 478.49806089062554]]
+            "longestPlan": 0.49,
+            "outline": [[374.97800376533166, 478.92096562916754], [374.6254548040355, 478.67477621044895], [374.90599623466835, 478.2730343708324], [375.25854519596453, 478.519223789551]]
           },
           {
             "crownRadius": 0.6,
@@ -2782,12 +2793,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.145,
             "entityId": "nature.297",
-            "height": 1,
+            "height": 0.14,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[303.3866025714787, 411.6434105947698], [304.0485894052302, 412.0926025714787], [303.5993974285213, 412.7545894052302], [302.9374105947698, 412.3053974285213]]
+            "longestPlan": 0.5,
+            "outline": [[303.5133873791041, 411.91071306867417], [303.753357606339, 412.07354516023116], [303.4726126208959, 412.48728693132585], [303.23264239366097, 412.32445483976886]]
           },
           {
             "crownRadius": 2.5,
@@ -2869,12 +2880,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 1.7574,
             "entityId": "nature.309",
-            "height": 1,
+            "height": 0.44,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[454.6887500507502, 509.21433130555124], [455.48766869444876, 509.1727500507501], [455.5292499492499, 509.9716686944487], [454.7303313055513, 510.0132499492498]]
+            "longestPlan": 2.02,
+            "outline": [[454.6220916533025, 508.60697501962863], [455.49091567832465, 508.5617554050324], [455.59590834669757, 510.5790249803713], [454.7270843216754, 510.62424459496754]]
           },
           {
             "crownRadius": 2.5,
@@ -2950,12 +2961,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.2107,
             "entityId": "nature.320",
-            "height": 1,
+            "height": 0.2,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[368.1152674247193, 492.2578292666303], [367.6961707333697, 492.93926742471933], [367.0147325752807, 492.5201707333697], [367.4338292666303, 491.8387325752807]]
+            "longestPlan": 0.49,
+            "outline": [[367.886322671715, 492.33421185673944], [367.66105820011455, 492.70048486671226], [367.243677328285, 492.4437881432606], [367.46894179988544, 492.07751513328776]]
           },
           {
             "crownRadius": 0.6,
@@ -2983,12 +2994,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 2.6724,
             "entityId": "nature.325",
-            "height": 1,
+            "height": 0.25,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[383.169243889259, 369.68869124885725], [383.3153087511427, 370.475243889259], [382.52875611074097, 370.6213087511427], [382.38269124885727, 369.83475611074095]]
+            "longestPlan": 2.04,
+            "outline": [[383.7322640108449, 369.3247773267693], [383.97144522217945, 370.61275727542716], [381.96573598915506, 370.9852226732306], [381.7265547778205, 369.6972427245728]]
           },
           {
             "crownRadius": 0.6,
@@ -3106,12 +3117,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 2.6724,
             "entityId": "nature.343",
-            "height": 1,
+            "height": 0.25,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[480.03082739737346, 313.23968864002563], [480.66331135997433, 312.74982739737345], [481.1531726026265, 313.3823113599743], [480.52068864002564, 313.8721726026265]]
+            "longestPlan": 2.04,
+            "outline": [[479.44958067123906, 312.90565684010534], [480.4852731599979, 312.10350905526246], [481.7344193287609, 313.7163431598946], [480.69872684000205, 314.5184909447375]]
           },
           {
             "crownRadius": 0.6,
@@ -3169,12 +3180,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.2346,
             "entityId": "nature.352",
-            "height": 1,
+            "height": 0.25,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[324.12286594794887, 479.4754014014743], [323.4995985985257, 478.97386594794887], [324.00113405205116, 478.3505985985257], [324.6244014014743, 478.85213405205116]]
+            "longestPlan": 0.51,
+            "outline": [[324.08132493714794, 479.25585791051725], [323.7229462112296, 478.96747502474005], [324.0426750628521, 478.5701420894828], [324.4010537887704, 478.85852497525997]]
           },
           {
             "crownRadius": 0.6,
@@ -3520,12 +3531,12 @@
           },
           {
             "archetype": "prop.rock.stone",
-            "area": 0.6400000000000001,
+            "area": 0.22440000000000002,
             "entityId": "nature.404",
-            "height": 1,
+            "height": 0.27,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[321.7838176242949, 460.81548567565983], [322.0055143243402, 460.04681762429493], [322.7741823757051, 460.26851432434023], [322.5524856756598, 461.03718237570513]]
+            "longestPlan": 0.51,
+            "outline": [[321.97302046611503, 460.68271789098594], [322.0949536511399, 460.2599504627352], [322.58497953388496, 460.4012821090141], [322.4630463488601, 460.82404953726484]]
           },
           {
             "crownRadius": 0.6,
@@ -3619,12 +3630,12 @@
           },
           {
             "archetype": "prop.rock.boulder",
-            "area": 0.6400000000000001,
+            "area": 2.6724,
             "entityId": "nature.419",
-            "height": 1,
+            "height": 0.25,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[432.7057799960426, 323.230029738001], [433.002970261999, 323.9727799960426], [432.2602200039574, 324.269970261999], [431.963029738001, 323.5272200039574]]
+            "longestPlan": 2.04,
+            "outline": [[433.1866820487512, 322.76295563713416], [433.6733311092547, 323.9792091846772], [431.7793179512488, 324.73704436286584], [431.2926688907453, 323.5207908153228]]
           },
           {
             "crownRadius": 0.6,
@@ -3820,12 +3831,12 @@
           },
           {
             "archetype": "prop.rock",
-            "area": 0.6400000000000001,
+            "area": 0.8160000000000001,
             "entityId": "nature.449",
-            "height": 1,
+            "height": 0.45,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[459.5519058740641, 489.6412881383162], [459.0232600430612, 489.0408436484895], [459.6237045328879, 488.5121978174866], [460.15235036389083, 489.1126423073133]]
+            "longestPlan": 1.02,
+            "outline": [[459.4693447567129, 489.71397694007914], [458.94069892571, 489.1135324502524], [459.7062656502391, 488.4395090157237], [460.234911481242, 489.0399535055504]]
           },
           {
             "crownRadius": 2.5,
@@ -3835,12 +3846,12 @@
           },
           {
             "archetype": "prop.rock",
-            "area": 0.6400000000000001,
+            "area": 0.9191,
             "entityId": "nature.450",
-            "height": 1,
+            "height": 0.5,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[464.66119206921894, 453.4882441003321], [463.9608740987993, 453.10152102071646], [464.34759717841496, 452.40120305029683], [465.0479151488346, 452.7879261299125]]
+            "longestPlan": 1.01,
+            "outline": [[464.6585815254857, 453.6067480456732], [463.86196983413345, 453.16685054261046], [464.3502077221482, 452.2826991049557], [465.14681941350045, 452.7225966080185]]
           },
           {
             "crownRadius": 2.5,
@@ -4750,12 +4761,12 @@
           },
           {
             "archetype": "prop.rock.mossy",
-            "area": 0.6400000000000001,
+            "area": 0.8160000000000001,
             "entityId": "nature.8",
-            "height": 1,
+            "height": 0.45,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[357.77495710515217, 483.5945648120261], [358.42043518797396, 483.1219571051522], [358.89304289484784, 483.767435187974], [358.24756481202604, 484.2400428948479]]
+            "longestPlan": 1.02,
+            "outline": [[357.70997354545693, 483.50581157563806], [358.35545162827884, 483.0332038687642], [358.9580264545431, 483.856188424362], [358.31254837172116, 484.3287961312359]]
           },
           {
             "crownRadius": 0.6,
@@ -4795,12 +4806,12 @@
           },
           {
             "archetype": "prop.rock.mossy",
-            "area": 0.6400000000000001,
+            "area": 0.8160000000000001,
             "entityId": "nature.86",
-            "height": 1,
+            "height": 0.45,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[491.02257239549857, 313.49030776060874], [490.44569223939124, 314.04457239549856], [489.8914276045014, 313.4676922393912], [490.46830776060875, 312.9134276045014]]
+            "longestPlan": 1.02,
+            "outline": [[491.0987837827959, 313.5696287820735], [490.5219036266886, 314.1238934169633], [489.81521621720407, 313.3883712179265], [490.3920963733114, 312.83410658303666]]
           },
           {
             "crownRadius": 2.5,
@@ -4864,12 +4875,12 @@
           },
           {
             "archetype": "prop.rock.mossy",
-            "area": 0.6400000000000001,
+            "area": 0.8160000000000001,
             "entityId": "nature.96",
-            "height": 1,
+            "height": 0.45,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[333.6590211688036, 454.7596791883394], [334.4443208116606, 454.6070211688036], [334.5969788311964, 455.3923208116606], [333.8116791883394, 455.54497883119643]]
+            "longestPlan": 1.02,
+            "outline": [[333.6380306911174, 454.65170048744653], [334.42333033397443, 454.4990424679107], [334.61796930888255, 455.5002995125535], [333.83266966602554, 455.6529575320893]]
           },
           {
             "crownRadius": 2.5,
@@ -4891,507 +4902,507 @@
           },
           {
             "archetype": "prop.container.crate",
-            "area": 0.6400000000000001,
+            "area": 0.9801,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.goods.0",
-            "height": 0.8,
+            "height": 0.66,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[446.9684719078946, 417.2244758905488], [446.4969598837548, 417.87075478629856], [445.850680988005, 417.3992427621588], [446.3221930121448, 416.752963866409]]
+            "longestPlan": 0.99,
+            "outline": [[447.1012095796315, 417.2037223245451], [446.5177134497585, 418.00349245803545], [445.71794331626813, 417.4199963281625], [446.3014394461411, 416.6202261946721]]
           },
           {
             "archetype": "prop.vegetation.planter",
-            "area": 1,
+            "area": 3.2369999999999997,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.planter.1",
-            "height": 0.6,
+            "height": 0.8,
             "kind": "prop",
-            "longestPlan": 1,
-            "outline": [[444.988541580553, 423.8463173284323], [444.40107380760634, 423.0370697669598], [445.2103213690788, 422.44960199401316], [445.79778914202547, 423.25884955548565]]
+            "longestPlan": 1.95,
+            "outline": [[445.0005370774167, 424.424574285204], [443.85497492017083, 422.84654154033274], [445.1983258722151, 421.8713450372413], [446.34388802946097, 423.4493777821126]]
           },
           {
             "archetype": "prop.structural.sign",
-            "area": 0.09,
+            "area": 0.23279999999999998,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.sign",
-            "height": 2.2,
+            "height": 2.92,
             "kind": "prop",
-            "longestPlan": 0.3,
-            "outline": [[445.08151015589993, 423.912602601639], [444.7887952802718, 423.84689109894697], [444.8545067829638, 423.55417622331885], [445.14722165859195, 423.61988772601086]]
+            "longestPlan": 0.97,
+            "outline": [[444.9788608236644, 424.23289639582106], [444.7446889231619, 424.1803271936675], [444.9571561151994, 423.23388242913677], [445.19132801570186, 423.28645163129033]]
           },
           {
             "archetype": "prop.container.barrel",
-            "area": 0.36,
+            "area": 0.5183,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.0",
-            "height": 0.9,
+            "height": 0.99,
             "kind": "prop",
-            "longestPlan": 0.6,
-            "outline": [[429.2164204065, 437.23077583346003], [429.69314177304705, 436.86644529853675], [430.05747230797033, 437.3431666650838], [429.5807509414233, 437.7074972000071]]
+            "longestPlan": 0.73,
+            "outline": [[429.1332518066165, 437.21252798445204], [429.69737209036384, 436.7814035181262], [430.1406409078538, 437.3614145140918], [429.5765206241065, 437.79253898041765]]
           },
           {
             "archetype": "prop.container.crate",
-            "area": 0.6400000000000001,
+            "area": 0.9801,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.1",
-            "height": 0.8,
+            "height": 0.66,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[422.16060672751485, 442.06938962093375], [422.9425969996514, 442.238183028044], [422.7738035925412, 443.02017330018055], [421.9918133204046, 442.8513798930703]]
+            "longestPlan": 0.99,
+            "outline": [[422.087789599793, 441.95648405902324], [423.0555025615619, 442.1653659003221], [422.84662072026305, 443.13307886209105], [421.8789077584941, 442.9241970207922]]
           },
           {
             "archetype": "prop.structural.lantern",
-            "area": 0.09,
+            "area": 0.23279999999999998,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.lantern",
-            "height": 2.6,
+            "height": 2.92,
             "kind": "prop",
-            "longestPlan": 0.3,
-            "outline": [[422.4999253020865, 442.70679744209167], [422.2580038033298, 442.8842065411799], [422.0805947042416, 442.64228504242317], [422.3225162029983, 442.46487594333496]]
+            "longestPlan": 0.97,
+            "outline": [[422.67383997952606, 442.9946840256122], [422.4803027805207, 443.13661130488276], [421.90668002680206, 442.35439845890266], [422.10021722580746, 442.2124711796321]]
           },
           {
             "archetype": "prop.vegetation.planter",
-            "area": 1,
+            "area": 3.2369999999999997,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.planter.0",
-            "height": 0.6,
+            "height": 0.8,
             "kind": "prop",
-            "longestPlan": 1,
-            "outline": [[426.7549876133396, 438.54570919256923], [427.752348312667, 438.4731031636369], [427.8249543415993, 439.47046386296427], [426.82759364227195, 439.5430698918966]]
+            "longestPlan": 1.95,
+            "outline": [[426.2572812916115, 438.2510680255341], [428.20213465529974, 438.109486269116], [428.32266066332744, 439.7651050299994], [426.3778072996392, 439.9066867864175]]
           },
           {
             "archetype": "prop.structural.sign",
-            "area": 0.09,
+            "area": 0.23279999999999998,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.sign",
-            "height": 2.2,
+            "height": 2.92,
             "kind": "prop",
-            "longestPlan": 0.3,
-            "outline": [[427.74155777514864, 438.86293362851274], [427.5641486760604, 438.621012129756], [427.80607017481714, 438.4436030306678], [427.98347927390535, 438.6855245294245]]
+            "longestPlan": 0.97,
+            "outline": [[427.45367119162813, 439.0368483059523], [427.31174391235754, 438.8433111069469], [428.09395675833764, 438.2696883532283], [428.23588403760823, 438.46322555223367]]
           },
           {
             "archetype": "prop.furniture.anvil",
-            "area": 0.27999999999999997,
+            "area": 0.11549999999999999,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work",
-            "height": 0.8,
+            "height": 0.48,
             "kind": "prop",
-            "longestPlan": 0.7,
-            "outline": [[423.33589848112365, 442.15575402825687], [422.77141498402466, 442.56970859279613], [422.5348695185736, 442.24714659445385], [423.0993530156726, 441.8331920299146]]
+            "longestPlan": 0.35,
+            "outline": [[423.1719294652996, 442.2449961811316], [422.9058158166672, 442.4401461901287], [422.6988385343975, 442.1579044415792], [422.96495218302994, 441.96275443258213]]
           },
           {
             "archetype": "prop.furniture.anvil",
-            "area": 0.27999999999999997,
+            "area": 0.11549999999999999,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84e9f2e499b951eece72",
-            "height": 0.8,
+            "height": 0.48,
             "kind": "prop",
-            "longestPlan": 0.7,
-            "outline": [[424.06435099404666, 441.3735411822768], [423.4998674969477, 441.7874957468161], [423.2633220314966, 441.4649337484738], [423.8278055285956, 441.05097918393454]]
+            "longestPlan": 0.35,
+            "outline": [[423.90038197822264, 441.4627833351515], [423.6342683295902, 441.6579333441486], [423.4272910473205, 441.3756915955991], [423.69340469595295, 441.18054158660203]]
           },
           {
             "archetype": "prop.furniture.anvil",
-            "area": 0.27999999999999997,
+            "area": 0.11549999999999999,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84ecf2e499b951eecea3",
-            "height": 0.8,
+            "height": 0.48,
             "kind": "prop",
-            "longestPlan": 0.7,
-            "outline": [[428.66085947042416, 438.00276829959995], [428.09637597332517, 438.4167228641392], [427.8598305078741, 438.09416086579694], [428.4243140049731, 437.68020630125767]]
+            "longestPlan": 0.35,
+            "outline": [[428.49689045460013, 438.09201045247465], [428.2307768059677, 438.28716046147173], [428.023799523698, 438.00491871292223], [428.28991317233044, 437.80976870392516]]
           },
           {
             "archetype": "prop.structural.banner",
-            "area": 0.81,
+            "area": 1.1664,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.banner",
-            "height": 1.1,
+            "height": 0.66,
             "kind": "prop",
-            "longestPlan": 0.9,
-            "outline": [[413.042, 433.411], [413.94199999999995, 433.411], [413.94199999999995, 434.311], [413.042, 434.311]]
+            "longestPlan": 1.08,
+            "outline": [[412.95199999999994, 433.32099999999997], [414.032, 433.32099999999997], [414.032, 434.401], [412.95199999999994, 434.401]]
           },
           {
             "archetype": "prop.structural.lantern",
-            "area": 0.09,
+            "area": 0.23279999999999998,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.lantern",
-            "height": 2.6,
+            "height": 2.92,
             "kind": "prop",
-            "longestPlan": 0.3,
-            "outline": [[424.442, 433.861], [424.74199999999996, 433.861], [424.74199999999996, 434.16099999999994], [424.442, 434.16099999999994]]
+            "longestPlan": 0.97,
+            "outline": [[424.472, 433.52599999999995], [424.712, 433.52599999999995], [424.712, 434.496], [424.472, 434.496]]
           },
           {
             "archetype": "prop.structural.banner",
-            "area": 0.81,
+            "area": 1.1664,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.banner",
-            "height": 1.1,
+            "height": 0.66,
             "kind": "prop",
-            "longestPlan": 0.9,
-            "outline": [[430.392, 404.061], [430.392, 404.96099999999996], [429.492, 404.96099999999996], [429.492, 404.061]]
+            "longestPlan": 1.08,
+            "outline": [[430.482, 403.97099999999995], [430.482, 405.051], [429.402, 405.051], [429.402, 403.97099999999995]]
           },
           {
             "archetype": "prop.container.barrel",
-            "area": 0.36,
+            "area": 0.5183,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.goods.1",
-            "height": 0.9,
+            "height": 0.99,
             "kind": "prop",
-            "longestPlan": 0.6,
-            "outline": [[429.38589893348626, 418.2608616089684], [429.6691915158617, 417.7319520583163], [430.1981010665138, 418.0152446406918], [429.91480848413835, 418.54415419134386]]
+            "longestPlan": 0.73,
+            "outline": [[429.30263191211446, 418.2786549546875], [429.63786146792546, 417.6527786530825], [430.2813680878856, 417.9974512949727], [429.9461385320746, 418.62332759657767]]
           },
           {
             "archetype": "prop.structural.lantern",
-            "area": 0.09,
+            "area": 0.23279999999999998,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.lantern",
-            "height": 2.6,
+            "height": 2.92,
             "kind": "prop",
-            "longestPlan": 0.3,
-            "outline": [[429.942, 418.461], [429.942, 418.76099999999997], [429.64200000000005, 418.76099999999997], [429.64200000000005, 418.461]]
+            "longestPlan": 0.97,
+            "outline": [[430.27700000000004, 418.491], [430.27700000000004, 418.731], [429.307, 418.731], [429.307, 418.491]]
           },
           {
             "archetype": "prop.container.cauldron",
-            "area": 0.81,
+            "area": 0.3844,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.work",
-            "height": 0.7,
+            "height": 0.88,
             "kind": "prop",
-            "longestPlan": 0.9,
-            "outline": [[430.242, 417.36100000000005], [430.242, 418.261], [429.34200000000004, 418.261], [429.34200000000004, 417.36100000000005]]
+            "longestPlan": 0.62,
+            "outline": [[430.10200000000003, 417.50100000000003], [430.10200000000003, 418.12100000000004], [429.482, 418.12100000000004], [429.482, 417.50100000000003]]
           },
           {
             "archetype": "prop.vegetation.planter",
-            "area": 1,
+            "area": 3.2369999999999997,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.0",
-            "height": 0.6,
+            "height": 0.8,
             "kind": "prop",
-            "longestPlan": 1,
-            "outline": [[446.19894633546653, 436.0293625381092], [445.4827779848604, 436.72729010855613], [444.7848504144134, 436.01112175795], [445.5010187650196, 435.31319418750303]]
+            "longestPlan": 1.95,
+            "outline": [[446.769442400252, 435.9341824978469], [445.3729141165699, 437.29514126021854], [444.21435434962797, 436.10630179821226], [445.61088263331004, 434.7453430358406]]
           },
           {
             "archetype": "prop.vegetation.planter",
-            "area": 1,
+            "area": 3.2369999999999997,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.1",
-            "height": 0.6,
+            "height": 0.8,
             "kind": "prop",
-            "longestPlan": 1,
-            "outline": [[445.8580118173767, 432.9218773941636], [445.2773173465606, 433.73599896466993], [444.46319577605425, 433.15530449385386], [445.0438902468703, 432.3411829233475]]
+            "longestPlan": 1.95,
+            "outline": [[446.4025018092814, 432.72679882354237], [445.27014759119004, 434.31433588602965], [443.91870578414955, 433.35038306447507], [445.0510600022409, 431.7628460019878]]
           },
           {
             "archetype": "prop.furniture.bench.a",
-            "area": 0.8,
+            "area": 1.0175,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.bench",
-            "height": 0.5,
+            "height": 0.62,
             "kind": "prop",
-            "longestPlan": 1.6,
-            "outline": [[424.392, 420.711], [424.392, 419.111], [424.892, 419.111], [424.892, 420.711]]
+            "longestPlan": 1.85,
+            "outline": [[423.717, 420.186], [423.717, 419.636], [425.567, 419.636], [425.567, 420.186]]
           },
           {
             "archetype": "prop.container.barrel",
-            "area": 0.36,
+            "area": 0.5183,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.goods.0",
-            "height": 0.9,
+            "height": 0.99,
             "kind": "prop",
-            "longestPlan": 0.6,
-            "outline": [[412.99264475640877, 413.4002814219524], [412.6795335946153, 412.8884597729765], [413.1913552435912, 412.575348611183], [413.5044664053847, 413.0871702601589]]
+            "longestPlan": 0.73,
+            "outline": [[412.9658992676008, 413.48111878230276], [412.59538439281187, 412.875463164348], [413.2181007323992, 412.49451125083266], [413.5886156071881, 413.1001668687874]]
           },
           {
             "archetype": "prop.structural.banner",
-            "area": 0.81,
+            "area": 1.1664,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.0",
-            "height": 1.1,
+            "height": 0.66,
             "kind": "prop",
-            "longestPlan": 0.9,
-            "outline": [[425.4619209417423, 429.86348754422215], [426.01222369271045, 430.5756440454751], [425.3000671914575, 431.12594679644326], [424.74976444048934, 430.4137902951903]]
+            "longestPlan": 1.08,
+            "outline": [[425.4781063167707, 429.73724161900003], [426.13846961793257, 430.59182942050353], [425.2838818164291, 431.2521927216654], [424.6235185152672, 430.3976049201619]]
           },
           {
             "archetype": "prop.structural.banner",
-            "area": 0.81,
+            "area": 0.1936,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.1",
-            "height": 1.1,
+            "height": 0.68,
             "kind": "prop",
-            "longestPlan": 0.9,
-            "outline": [[430.5573167840403, 436.4575292224902], [431.1076195350085, 437.16968572374316], [430.39546303375556, 437.71998847471133], [429.8451602827874, 437.0078319734584]]
+            "longestPlan": 0.44,
+            "outline": [[430.51595415896753, 436.78015769805785], [430.78499105944087, 437.12832309867036], [430.43682565882835, 437.3973599991437], [430.167788758355, 437.0491945985312]]
           },
           {
             "archetype": "prop.furniture.bench",
-            "area": 0.8,
+            "area": 1.0175,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.bench.0",
-            "height": 0.5,
+            "height": 0.62,
             "kind": "prop",
-            "longestPlan": 1.6,
-            "outline": [[436.5267228778761, 425.9472262456653], [435.2606668756486, 426.9255422473865], [434.9549431251107, 426.5298997466904], [436.2209991273382, 425.5515837449692]]
+            "longestPlan": 1.85,
+            "outline": [[436.5240253153714, 426.80235355966977], [436.0888185646057, 427.1386496852614], [434.9576406876154, 425.6747724326859], [435.3928474383811, 425.3384763070943]]
           },
           {
             "archetype": "prop.container.barrel",
-            "area": 0.36,
+            "area": 0.5183,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0",
-            "height": 0.9,
+            "height": 0.99,
             "kind": "prop",
-            "longestPlan": 0.6,
-            "outline": [[432.2921406506477, 429.563169552241], [432.27169005703314, 430.162820928643], [431.67203868063115, 430.14237033502843], [431.6924892742457, 429.54271895862644]]
+            "longestPlan": 0.73,
+            "outline": [[432.3589775208393, 429.51041699037904], [432.3347776517287, 430.2200044524547], [431.60520181043955, 430.1951228968904], [431.62940167955014, 429.4855354348147]]
           },
           {
             "archetype": "prop.container.crate",
-            "area": 0.6400000000000001,
+            "area": 0.9801,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.1",
-            "height": 0.8,
+            "height": 0.66,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[433.38294081418127, 429.5103003190726], [433.4724071978164, 430.3052819328218], [432.6774255840672, 430.3947483164569], [432.58795920043207, 429.5997667027077]]
+            "longestPlan": 0.99,
+            "outline": [[433.4667207477573, 429.4052721193832], [433.5774353975058, 430.3890618663978], [432.59364565049117, 430.4997765161463], [432.48293100074267, 429.5159867691317]]
           },
           {
             "archetype": "prop.container.barrel",
-            "area": 0.36,
+            "area": 0.5183,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.2",
-            "height": 0.9,
+            "height": 0.99,
             "kind": "prop",
-            "longestPlan": 0.6,
-            "outline": [[432.54310608682624, 430.29020372172175], [432.7998753391412, 430.83248552214076], [432.2575935387222, 431.0892547744557], [432.00082428640724, 430.5469729740367]]
+            "longestPlan": 0.73,
+            "outline": [[432.5783161004095, 430.21267788768256], [432.8821597156488, 430.85437801817835], [432.22238352513904, 431.1667806084949], [431.9185399098997, 430.5250804779991]]
           },
           {
             "archetype": "prop.container.crate",
-            "area": 0.6400000000000001,
+            "area": 0.5963999999999999,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.3",
-            "height": 0.8,
+            "height": 0.31,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[433.79328596272677, 429.81877292349384], [434.10383354197455, 430.55603827668995], [433.36656818877844, 430.8665858559377], [433.05602060953066, 430.1293205027416]]
+            "longestPlan": 0.84,
+            "outline": [[433.7440510971283, 429.81780959099666], [434.07012605533845, 430.59193821185255], [433.4158030543769, 430.8675491884349], [433.08972809616677, 430.093420567579]]
           },
           {
             "archetype": "prop.container.barrel",
-            "area": 0.36,
+            "area": 0.5183,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4",
-            "height": 0.9,
+            "height": 0.99,
             "kind": "prop",
-            "longestPlan": 0.6,
-            "outline": [[432.6532265853363, 430.31152167125026], [432.16002845240774, 429.9698264829965], [432.5017236406615, 429.4766283500679], [432.9949217735901, 429.8183235383217]]
+            "longestPlan": 0.73,
+            "outline": [[432.66141943546063, 430.39627352790745], [432.07780164482847, 429.9919342218072], [432.4935307905372, 429.39187649341073], [433.07714858116935, 429.796215799511]]
           },
           {
             "archetype": "prop.container.barrel",
-            "area": 0.36,
+            "area": 0.5183,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.5",
-            "height": 0.9,
+            "height": 0.99,
             "kind": "prop",
-            "longestPlan": 0.6,
-            "outline": [[432.76067406556274, 429.45198635201837], [433.3556708997129, 429.3746638627201], [433.43299338901113, 429.9696606968703], [432.837996554861, 430.0469831861685]]
+            "longestPlan": 0.73,
+            "outline": [[432.69775608609166, 429.39461625650443], [433.40183567316933, 429.3031179775015], [433.4959113684822, 430.0270307923842], [432.79183178140454, 430.1185290713872]]
           },
           {
             "archetype": "prop.structural.lantern",
-            "area": 0.09,
+            "area": 0.23279999999999998,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.0",
-            "height": 2.6,
+            "height": 2.92,
             "kind": "prop",
-            "longestPlan": 0.3,
-            "outline": [[438.4857527146561, 418.9149805249596], [438.66918696497885, 419.15236602537726], [438.4318014645612, 419.3358002757], [438.24836721423844, 419.0984147752824]]
+            "longestPlan": 0.97,
+            "outline": [[438.7691766151547, 418.73388416214095], [438.9159240154129, 418.9237925624751], [438.14837756406257, 419.5168966385187], [438.0016301638044, 419.3269882381845]]
           },
           {
             "archetype": "prop.structural.lantern",
-            "area": 0.09,
+            "area": 0.23279999999999998,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.1",
-            "height": 2.6,
+            "height": 2.92,
             "kind": "prop",
-            "longestPlan": 0.3,
-            "outline": [[438.8694060486644, 431.6774484640802], [439.0528402989872, 431.91483396449786], [438.81545479856953, 432.0982682148206], [438.63202054824677, 431.860882714403]]
+            "longestPlan": 0.97,
+            "outline": [[439.15282994916305, 431.49635210126155], [439.2995773494212, 431.6862605015957], [438.5320308980709, 432.2793645776393], [438.38528349781274, 432.0894561773051]]
           },
           {
             "archetype": "prop.structural.lantern",
-            "area": 0.09,
+            "area": 0.23279999999999998,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.2",
-            "height": 2.6,
+            "height": 2.92,
             "kind": "prop",
-            "longestPlan": 0.3,
-            "outline": [[425.0339076909892, 429.30958804324763], [425.217341941312, 429.5469735436653], [424.97995644089434, 429.73040779398804], [424.7965221905716, 429.4930222935704]]
+            "longestPlan": 0.97,
+            "outline": [[425.31733159148786, 429.12849168042897], [425.464078991746, 429.3184000807631], [424.6965325403957, 429.9115041568067], [424.54978514013754, 429.72159575647254]]
           },
           {
             "archetype": "prop.structural.lantern",
-            "area": 0.09,
+            "area": 0.23279999999999998,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.3",
-            "height": 2.6,
+            "height": 2.92,
             "kind": "prop",
-            "longestPlan": 0.3,
-            "outline": [[431.3521985354388, 437.4861997243], [431.53563278576155, 437.7235852247176], [431.2982472853439, 437.9070194750404], [431.11481303502114, 437.66963397462274]]
+            "longestPlan": 0.97,
+            "outline": [[431.6356224359374, 437.3051033614813], [431.7823698361956, 437.4950117618155], [431.0148233848453, 438.08811583785905], [430.8680759845871, 437.8982074375249]]
           },
           {
             "archetype": "prop.container.cauldron",
-            "area": 0.81,
+            "area": 0.3844,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch",
-            "height": 0.7,
+            "height": 0.88,
             "kind": "prop",
-            "longestPlan": 0.9,
-            "outline": [[436.9640732361701, 432.9812806894891], [436.09893770982563, 432.73320706925375], [436.347011330061, 431.86807154290926], [437.21214685640547, 432.1161451631446]]
+            "longestPlan": 0.62,
+            "outline": [[436.8680858285531, 432.80811482224334], [436.2721035770714, 432.6372196616367], [436.442998737678, 432.041237410155], [437.0389809891597, 432.21213257076164]]
           },
           {
             "archetype": "prop.furniture.stall",
-            "area": 6,
+            "area": 3.2125,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.awning",
-            "height": 2.4,
+            "height": 0.94,
             "kind": "prop",
-            "longestPlan": 3,
-            "outline": [[437.821797471206, 433.799393845863], [434.938012383391, 432.97248177841203], [435.4892870950251, 431.04995838653537], [438.3730721828401, 431.8768704539863]]
+            "longestPlan": 2.57,
+            "outline": [[437.71849021501066, 433.37965867838545], [435.2480476564492, 432.67127067393585], [435.59259435122044, 431.4696935540129], [438.0630369097819, 432.1780815584625]]
           },
           {
             "archetype": "prop.container.crate",
-            "area": 0.6400000000000001,
+            "area": 0.3948,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.0",
-            "height": 0.8,
+            "height": 0.31,
             "kind": "prop",
-            "longestPlan": 0.8,
-            "outline": [[438.5056470723609, 433.2297477302535], [437.70581924669426, 433.24634439526255], [437.6892225816852, 432.44651656959593], [438.48905040735184, 432.4299199045869]]
+            "longestPlan": 0.84,
+            "outline": [[438.52221970584446, 433.0643683245845], [437.6824004888945, 433.081794822844], [437.67264994820164, 432.61189597526493], [438.51246916515163, 432.5944694770054]]
           },
           {
             "archetype": "prop.container.barrel",
-            "area": 0.36,
+            "area": 0.5183,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.1",
-            "height": 0.9,
+            "height": 0.99,
             "kind": "prop",
-            "longestPlan": 0.6,
-            "outline": [[435.3004917251751, 432.42650127573114], [434.79836854595067, 432.0980620684407], [435.1268077532411, 431.59593888921626], [435.62893093246555, 431.9243780965067]]
+            "longestPlan": 0.73,
+            "outline": [[435.3109387691476, 432.5110048808154], [434.716759673732, 432.12235181885507], [435.11636070926863, 431.511435284132], [435.71053980468423, 431.90008834609233]]
           },
           {
             "archetype": "prop.furniture.stall.produce",
-            "area": 6,
+            "area": 6.635699999999999,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0",
-            "height": 2.4,
+            "height": 1.45,
             "kind": "prop",
-            "longestPlan": 3,
-            "outline": [[431.0494720765729, 429.653077668852], [432.8838145798002, 432.02693267302845], [431.30124457701584, 433.24982767518], [429.46690207378856, 430.8759726710035]]
+            "longestPlan": 3.03,
+            "outline": [[431.11547243918903, 429.5831208812289], [432.9681583674486, 431.98071443544717], [431.2352442143997, 433.31978446280306], [429.3825582861401, 430.9221909085848]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.back.1",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[440.27993150947935, 419.1925297337812], [441.5028265116309, 420.77509973656555], [441.2654410112132, 420.9585339868883], [440.0425460090617, 419.375963984104]]
+            "outline": [[440.21662870936797, 419.2414455338673], [441.4395237115195, 420.82401553665164], [441.3287438113246, 420.9096181868022], [440.1058488091731, 419.3270481840179]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.back.2",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[441.50282651163093, 420.77509973656555], [442.72572151378245, 422.3576697393499], [442.4883360133648, 422.54110398967265], [441.2654410112133, 420.9585339868883]]
+            "outline": [[441.4395237115195, 420.82401553665164], [442.662418713671, 422.406585539436], [442.55163881347613, 422.49218818958656], [441.3287438113246, 420.9096181868022]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.3",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[432.4593980790534, 421.9920001553732], [434.04196808183775, 420.7691051532217], [434.2254023321605, 421.00649065363933], [432.6428323293762, 422.22938565579085]]
+            "outline": [[432.5083138791395, 422.0553029554846], [434.09088388192384, 420.8324079533331], [434.1764865320744, 420.94318785352795], [432.5939165292901, 422.16608285567946]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.4",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[430.8768280762691, 423.2148951575248], [432.4593980790534, 421.99200015537326], [432.6428323293762, 422.2293856557909], [431.06026232659184, 423.4522806579424]]
+            "outline": [[430.92574387635517, 423.2781979576362], [432.5083138791395, 422.0553029554847], [432.5939165292901, 422.1660828556796], [431.01134652650575, 423.3889778578311]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.6",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[427.7116880707004, 425.66068516182787], [429.29425807348474, 424.43779015967635], [429.4776923238075, 424.675175660094], [427.89512232102317, 425.8980706622455]]
+            "outline": [[427.7606038707865, 425.72398796193926], [429.34317387357083, 424.50109295978774], [429.4287765237214, 424.6118728599826], [427.8462065209371, 425.83476786213413]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.left.7",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[426.12911806791607, 426.8835801639794], [427.7116880707004, 425.66068516182787], [427.89512232102317, 425.8980706622455], [426.31255231823883, 427.12096566439703]]
+            "outline": [[426.17803386800216, 426.9468829640908], [427.7606038707865, 425.72398796193926], [427.8462065209371, 425.83476786213413], [426.26363651815274, 427.05766286428565]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.2",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[443.6548819320839, 429.9384198360206], [442.0723119292996, 431.16131483817213], [441.8888776789768, 430.9239293377545], [443.47144768176116, 429.70103433560297]]
+            "outline": [[443.60596613199783, 429.8751170359092], [442.0233961292135, 431.09801203806074], [441.9377934790629, 430.9872321378659], [443.52036348184726, 429.76433713571436]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.3",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[442.0723119292996, 431.16131483817213], [440.48974192651525, 432.38420984032365], [440.3063076761925, 432.146824339906], [441.8888776789768, 430.9239293377545]]
+            "outline": [[442.0233961292135, 431.09801203806074], [440.44082612642916, 432.32090704021226], [440.3552234762786, 432.2101271400174], [441.9377934790629, 430.9872321378659]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.4",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[440.48974192651525, 432.3842098403237], [438.9071719237309, 433.6071048424752], [438.72373767340815, 433.3697193420576], [440.3063076761925, 432.14682433990606]]
+            "outline": [[440.44082612642916, 432.3209070402123], [438.8582561236448, 433.54380204236384], [438.77265347349424, 433.43302214216897], [440.3552234762786, 432.21012714001745]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.6",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[437.3246019209466, 434.8299998446268], [435.74203191816224, 436.0528948467783], [435.5585976678395, 435.81550934636067], [437.1411676706238, 434.59261434420915]]
+            "outline": [[437.2756861208605, 434.7666970445154], [435.69311611807615, 435.9895920466669], [435.60751346792557, 435.87881214647206], [437.1900834707099, 434.65591714432054]]
           },
           {
             "archetype": "prop.structural.well",
-            "area": 2.5600000000000005,
+            "area": 3.3947999999999996,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.well",
-            "height": 1.2,
+            "height": 2.31,
             "kind": "prop",
-            "longestPlan": 1.6,
-            "outline": [[429.23311332337727, 427.1389494144287], [430.21142932509844, 428.4050054166562], [428.9453733228709, 429.38332141837736], [427.96705732114975, 428.11726541614985]]
+            "longestPlan": 2.07,
+            "outline": [[429.40683634868293, 426.979433551648], [430.4096102504471, 428.2771409539312], [428.77165029756526, 429.54283728115803], [427.7688763958011, 428.2451298788748]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.0",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[423.892, 439.811], [421.892, 439.811], [421.892, 439.511], [423.892, 439.511]]
+            "outline": [[423.892, 439.731], [421.892, 439.731], [421.892, 439.591], [423.892, 439.591]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.1",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[421.892, 439.811], [419.892, 439.811], [419.892, 439.511], [421.892, 439.511]]
+            "outline": [[421.892, 439.731], [419.892, 439.731], [419.892, 439.591], [421.892, 439.591]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.2",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[419.892, 439.811], [417.892, 439.811], [417.892, 439.511], [419.892, 439.511]]
+            "outline": [[419.892, 439.731], [417.892, 439.731], [417.892, 439.591], [419.892, 439.591]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.2814,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.3",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
-            "longestPlan": 2,
-            "outline": [[417.892, 439.811], [415.892, 439.811], [415.892, 439.511], [417.892, 439.511]]
+            "longestPlan": 2.01,
+            "outline": [[417.897, 439.731], [415.887, 439.731], [415.887, 439.591], [417.897, 439.591]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.28,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.gate.6abb84eef2e499b951eeced2.1.0",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
             "longestPlan": 2,
-            "outline": [[420.7528333122399, 440.911], [420.7528333122399, 438.911], [421.05283331223984, 438.911], [421.05283331223984, 440.911]]
+            "outline": [[420.83283331223987, 440.911], [420.83283331223987, 438.911], [420.97283331223986, 438.911], [420.97283331223986, 440.911]]
           },
           {
             "archetype": "prop.structural.wall",
-            "area": 0.6,
+            "area": 0.2814,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_1.frontage.0.3",
-            "height": 1.2,
+            "height": 1.52,
             "kind": "prop",
-            "longestPlan": 2,
-            "outline": [[423.492, 411.411], [423.492, 409.411], [423.792, 409.411], [423.792, 411.411]]
+            "longestPlan": 2.01,
+            "outline": [[423.572, 411.416], [423.572, 409.406], [423.712, 409.406], [423.712, 411.416]]
           }
         ],
         "obstacles": {
@@ -5429,7 +5440,7 @@
             "dz": 0,
             "entityId": "bld_6abb84eef2e499b951eecec0",
             "limited": false,
-            "short": 0.555,
+            "short": 0.606,
             "shortOf": "nature.184"
           },
           {
@@ -5445,8 +5456,8 @@
             "dz": 0,
             "entityId": "bld_6abb84eef2e499b951eecec2",
             "limited": false,
-            "short": 0.468,
-            "shortOf": "nature.459"
+            "short": 0,
+            "shortOf": ""
           },
           {
             "dx": 0,
@@ -5793,7 +5804,7 @@
             "shortOf": ""
           },
           {
-            "dx": -2.416,
+            "dx": -1.708,
             "dz": -0.001,
             "entityId": "nature.136",
             "limited": false,
@@ -6066,7 +6077,7 @@
           },
           {
             "dx": 0,
-            "dz": -0.482,
+            "dz": -0.437,
             "entityId": "nature.167",
             "limited": false,
             "short": 0,
@@ -6221,7 +6232,7 @@
             "dz": 0.001,
             "entityId": "nature.184",
             "limited": true,
-            "short": 0.555,
+            "short": 0.606,
             "shortOf": "bld_6abb84eef2e499b951eecec0"
           },
           {
@@ -6321,7 +6332,7 @@
             "shortOf": ""
           },
           {
-            "dx": 0.243,
+            "dx": 0.294,
             "dz": 0,
             "entityId": "nature.196",
             "limited": false,
@@ -6393,7 +6404,7 @@
             "shortOf": ""
           },
           {
-            "dx": 2.383,
+            "dx": 2.434,
             "dz": 0,
             "entityId": "nature.203",
             "limited": false,
@@ -7121,7 +7132,7 @@
             "shortOf": ""
           },
           {
-            "dx": -1.902,
+            "dx": -1.851,
             "dz": 0,
             "entityId": "nature.286",
             "limited": false,
@@ -7925,7 +7936,7 @@
             "dz": -3,
             "entityId": "nature.376",
             "limited": true,
-            "short": 0.421,
+            "short": 0.376,
             "shortOf": "bld_6abb84eef2e499b951eecec0"
           },
           {
@@ -8282,7 +8293,7 @@
           },
           {
             "dx": 0,
-            "dz": -0.898,
+            "dz": -0.853,
             "entityId": "nature.416",
             "limited": false,
             "short": 0,
@@ -8313,8 +8324,8 @@
             "shortOf": ""
           },
           {
-            "dx": 2.509,
-            "dz": 0.001,
+            "dx": 0,
+            "dz": 0.589,
             "entityId": "nature.42",
             "limited": false,
             "short": 0,
@@ -8385,7 +8396,7 @@
             "shortOf": ""
           },
           {
-            "dx": -0.689,
+            "dx": 0,
             "dz": 0,
             "entityId": "nature.428",
             "limited": false,
@@ -8593,11 +8604,11 @@
             "shortOf": ""
           },
           {
-            "dx": 1.834,
-            "dz": 2.374,
+            "dx": 1.906,
+            "dz": 2.317,
             "entityId": "nature.451",
             "limited": true,
-            "short": 0.917,
+            "short": 0.919,
             "shortOf": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza"
           },
           {
@@ -8610,7 +8621,7 @@
           },
           {
             "dx": 0,
-            "dz": -0.09,
+            "dz": -0.198,
             "entityId": "nature.453",
             "limited": false,
             "short": 0,
@@ -8650,19 +8661,19 @@
           },
           {
             "dx": 0,
-            "dz": -2.311,
+            "dz": -2.023,
             "entityId": "nature.458",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -3,
-            "dz": 0.001,
+            "dx": -0.905,
+            "dz": 0,
             "entityId": "nature.459",
-            "limited": true,
-            "short": 0.468,
-            "shortOf": "bld_6abb84eef2e499b951eecec2"
+            "limited": false,
+            "short": 0,
+            "shortOf": ""
           },
           {
             "dx": 0,
@@ -9985,73 +9996,17 @@
             "shortOf": ""
           },
           {
-            "dx": 0.006,
-            "dz": -0.025,
+            "dx": 0.047,
+            "dz": -0.034,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.planter.1",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.061,
-            "dz": 0.274,
+            "dx": -0.659,
+            "dz": 0.479,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.sign",
-            "limited": false,
-            "short": 0,
-            "shortOf": ""
-          },
-          {
-            "dx": -0.008,
-            "dz": 0.006,
-            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.0",
-            "limited": false,
-            "short": 0,
-            "shortOf": ""
-          },
-          {
-            "dx": -0.092,
-            "dz": -1.909,
-            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.1",
-            "limited": false,
-            "short": 0,
-            "shortOf": ""
-          },
-          {
-            "dx": -0.415,
-            "dz": -1.469,
-            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.lantern",
-            "limited": false,
-            "short": 0,
-            "shortOf": ""
-          },
-          {
-            "dx": -0.121,
-            "dz": 0.009,
-            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.planter.0",
-            "limited": false,
-            "short": 0,
-            "shortOf": ""
-          },
-          {
-            "dx": 0.186,
-            "dz": 0.798,
-            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.sign",
-            "limited": false,
-            "short": 0,
-            "shortOf": ""
-          },
-          {
-            "dx": 0.222,
-            "dz": -1.249,
-            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work",
-            "limited": false,
-            "short": 0,
-            "shortOf": ""
-          },
-          {
-            "dx": 0.125,
-            "dz": -0.372,
-            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84e9f2e499b951eece72",
             "limited": false,
             "short": 0,
             "shortOf": ""
@@ -10059,6 +10014,62 @@
           {
             "dx": 0,
             "dz": 0,
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.0",
+            "limited": false,
+            "short": 0,
+            "shortOf": ""
+          },
+          {
+            "dx": 0.102,
+            "dz": -1.944,
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.goods.1",
+            "limited": false,
+            "short": 0,
+            "shortOf": ""
+          },
+          {
+            "dx": -0.619,
+            "dz": -1.83,
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.lantern",
+            "limited": false,
+            "short": 0,
+            "shortOf": ""
+          },
+          {
+            "dx": 0.004,
+            "dz": 0.09,
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.planter.0",
+            "limited": false,
+            "short": 0,
+            "shortOf": ""
+          },
+          {
+            "dx": -0.686,
+            "dz": -0.783,
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.sign",
+            "limited": false,
+            "short": 0,
+            "shortOf": ""
+          },
+          {
+            "dx": 0.337,
+            "dz": -1.133,
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work",
+            "limited": false,
+            "short": 0,
+            "shortOf": ""
+          },
+          {
+            "dx": 0.052,
+            "dz": -0.388,
+            "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84e9f2e499b951eece72",
+            "limited": false,
+            "short": 0,
+            "shortOf": ""
+          },
+          {
+            "dx": 0.077,
+            "dz": -0.057,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.work.6abb84ecf2e499b951eecea3",
             "limited": false,
             "short": 0,
@@ -10066,7 +10077,7 @@
           },
           {
             "dx": 0,
-            "dz": 0.901,
+            "dz": 0.991,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.banner",
             "limited": false,
             "short": 0,
@@ -10074,7 +10085,7 @@
           },
           {
             "dx": 0,
-            "dz": 0.426,
+            "dz": 0.913,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.lantern",
             "limited": false,
             "short": 0,
@@ -10082,23 +10093,23 @@
           },
           {
             "dx": 0,
-            "dz": 0,
+            "dz": -0.027,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.banner",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": 0.071,
-            "dz": 0.669,
+            "dx": 0,
+            "dz": 0.368,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.goods.1",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.283,
-            "dz": 0.634,
+            "dx": 0,
+            "dz": 0.55,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.lantern",
             "limited": false,
             "short": 0,
@@ -10106,14 +10117,14 @@
           },
           {
             "dx": 0,
-            "dz": 0.09,
+            "dz": -0.15,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.work",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.453,
+            "dx": -1.025,
             "dz": 0,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.0",
             "limited": false,
@@ -10121,7 +10132,7 @@
             "shortOf": ""
           },
           {
-            "dx": -0.112,
+            "dx": -0.657,
             "dz": 0,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.planter.1",
             "limited": false,
@@ -10137,7 +10148,7 @@
             "shortOf": ""
           },
           {
-            "dx": -0.832,
+            "dx": -0.916,
             "dz": 0,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.goods.0",
             "limited": false,
@@ -10145,16 +10156,16 @@
             "shortOf": ""
           },
           {
-            "dx": 0.161,
-            "dz": 0.161,
+            "dx": 0.285,
+            "dz": 0.187,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.0",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.026,
-            "dz": -0.308,
+            "dx": -0.316,
+            "dz": -1.357,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.banner.1",
             "limited": false,
             "short": 0,
@@ -10169,48 +10180,48 @@
             "shortOf": ""
           },
           {
-            "dx": -0.354,
-            "dz": -0.219,
+            "dx": -0.046,
+            "dz": -0.735,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.0",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": 0.479,
-            "dz": -0.304,
+            "dx": 0.732,
+            "dz": -0.322,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.1",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": 0.091,
-            "dz": 0.167,
+            "dx": 0.271,
+            "dz": 0.077,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.2",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": 0.098,
-            "dz": 0.239,
+            "dx": 0.129,
+            "dz": 0.349,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.3",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.381,
-            "dz": 0.262,
+            "dx": -0.598,
+            "dz": 0.13,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.4",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.354,
-            "dz": -0.117,
+            "dx": -0.235,
+            "dz": 0.018,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.goods.5",
             "limited": false,
             "short": 0,
@@ -10225,64 +10236,64 @@
             "shortOf": ""
           },
           {
-            "dx": 0,
-            "dz": 0,
+            "dx": -0.013,
+            "dz": 0.01,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.1",
             "limited": false,
-            "short": 0,
-            "shortOf": ""
+            "short": 0.028,
+            "shortOf": "nature.451"
           },
           {
-            "dx": -1.451,
-            "dz": -1.878,
+            "dx": -1.429,
+            "dz": -1.85,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.2",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": 1.431,
-            "dz": 1.852,
+            "dx": 0.86,
+            "dz": 0.691,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.lantern.3",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.364,
-            "dz": 1.27,
+            "dx": -0.243,
+            "dz": 0.846,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": 0.011,
-            "dz": -0.182,
+            "dx": 0.035,
+            "dz": -0.099,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.awning",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": 0.516,
-            "dz": 0.053,
+            "dx": 0.3,
+            "dz": 0.086,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.0",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.447,
-            "dz": -0.128,
+            "dx": -0.265,
+            "dz": -0.076,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.pitch.stock.1",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.002,
-            "dz": 0.001,
+            "dx": -0.072,
+            "dz": 0.056,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.stall.0",
             "limited": false,
             "short": 0,
@@ -10353,8 +10364,8 @@
             "shortOf": ""
           },
           {
-            "dx": 0.06,
-            "dz": 0.16,
+            "dx": -0.04,
+            "dz": 0.031,
             "entityId": "prop.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.wall.right.4",
             "limited": false,
             "short": 0,
@@ -10393,7 +10404,7 @@
             "shortOf": ""
           },
           {
-            "dx": 0.006,
+            "dx": 0.009,
             "dz": 0,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.2",
             "limited": false,
@@ -10401,7 +10412,7 @@
             "shortOf": ""
           },
           {
-            "dx": -0.044,
+            "dx": -0.046,
             "dz": 0,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.frontage.0.3",
             "limited": false,
@@ -10410,18 +10421,18 @@
           },
           {
             "dx": 0,
-            "dz": 0.475,
+            "dz": 0.395,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_0.gate.6abb84eef2e499b951eeced2.1.0",
             "limited": false,
             "short": 0,
             "shortOf": ""
           },
           {
-            "dx": -0.023,
+            "dx": -0.014,
             "dz": 0,
             "entityId": "prop.6abb84bcf2e499b951eece64.street_lane_1.frontage.0.3",
             "limited": false,
-            "short": 0.422,
+            "short": 0.333,
             "shortOf": "nature.457"
           }
         ],
@@ -10429,12 +10440,12 @@
           {
             "buildingId": "bld_6abb84eef2e499b951eecec0",
             "index": 102,
-            "inside": 0.05527719082829208
+            "inside": 0.10628635506458295
           },
           {
             "buildingId": "bld_6abb84bcf2e499b951eece64_5",
             "index": 405,
-            "inside": 0.04952295293446696
+            "inside": 0.04946429505184824
           }
         ]
       }
@@ -10646,6 +10657,350 @@
           }
         ],
         "setAsides": []
+      }
+    },
+    {
+      "name": "start clearance: a crate and a sapling on the start are moved off it, a barrel beside it is left",
+      "note": "playerStart is the IR's player.startPosition; no prop or plant is left within 1 m of it (startClearRadiusM): the crate standing on it is moved off by the least move (+x, a millimetre past touching), the sapling's trunk 15 cm on it is moved -z, the barrel 1.7 m away and the house hold still; startMoves names each move the start made",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "house",
+            "kind": "building",
+            "outline": [[14, 16], [18, 16], [18, 24], [14, 24]]
+          },
+          {
+            "entityId": "crate.start",
+            "kind": "prop",
+            "outline": [[9.9, 19.8], [10.700000000000001, 19.8], [10.700000000000001, 20.599999999999998], [9.9, 20.599999999999998]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          },
+          {
+            "entityId": "barrel.beside",
+            "kind": "prop",
+            "outline": [[7.7, 19.7], [8.3, 19.7], [8.3, 20.3], [7.7, 20.3]],
+            "area": 0.36,
+            "archetype": "prop.container.barrel",
+            "height": 0.9,
+            "longestPlan": 0.6
+          },
+          {
+            "entityId": "sapling.start",
+            "kind": "plant",
+            "outline": [[9.75, 18.65], [10.25, 18.65], [10.25, 19.15], [9.75, 19.15]],
+            "crownRadius": 1.5
+          }
+        ],
+        "obstacles": [],
+        "playerStart": {
+          "x": 10,
+          "y": 0,
+          "z": 20
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "crate.start",
+            "dx": 1.101,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "barrel.beside",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "sapling.start",
+            "dx": 0,
+            "dz": -0.151,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "setAsides": [],
+        "startMoves": [
+          {
+            "index": 1,
+            "entityId": "crate.start",
+            "dx": 1.101,
+            "dz": 0
+          },
+          {
+            "index": 3,
+            "entityId": "sapling.start",
+            "dx": 0,
+            "dz": -0.151
+          }
+        ],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: a crate 0.5 cm inside the start's metre is moved",
+      "note": "its face 0.995 m from the start along +x (the clear ground's edge there is at 1 m): moved 6 mm, a millimetre past touching",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "crate.inside",
+            "kind": "prop",
+            "outline": [[10.995, 19.6], [11.795, 19.6], [11.795, 20.4], [10.995, 20.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          }
+        ],
+        "obstacles": [],
+        "playerStart": {
+          "x": 10,
+          "y": 0,
+          "z": 20
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "crate.inside",
+            "dx": 0.006,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "setAsides": [],
+        "startMoves": [
+          {
+            "index": 0,
+            "entityId": "crate.inside",
+            "dx": 0.006,
+            "dz": 0
+          }
+        ],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: a crate 0.5 cm outside the start's metre is left",
+      "note": "its face 1.005 m from the start along +x: clear, no move, startMoves empty",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "crate.outside",
+            "kind": "prop",
+            "outline": [[11.004999999999999, 19.6], [11.805, 19.6], [11.805, 20.4], [11.004999999999999, 20.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          }
+        ],
+        "obstacles": [],
+        "playerStart": {
+          "x": 10,
+          "y": 0,
+          "z": 20
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "crate.outside",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "setAsides": [],
+        "startMoves": [],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: a building on the start holds still and is named",
+      "note": "a building is never moved for the start: startCovered names it and how far it reaches into the clear ground (0.5 m); the barrel on the start is still moved off",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "house.start",
+            "kind": "building",
+            "outline": [[9.4, 20.5], [14, 20.5], [14, 26], [9.4, 26]]
+          },
+          {
+            "entityId": "barrel.start",
+            "kind": "prop",
+            "outline": [[9.299999999999999, 19.4], [9.9, 19.4], [9.9, 20], [9.299999999999999, 20]],
+            "area": 0.36,
+            "archetype": "prop.container.barrel",
+            "height": 0.9,
+            "longestPlan": 0.6
+          }
+        ],
+        "obstacles": [],
+        "playerStart": {
+          "x": 10,
+          "y": 0,
+          "z": 20
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house.start",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "barrel.start",
+            "dx": -0.901,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "setAsides": [],
+        "startMoves": [
+          {
+            "index": 1,
+            "entityId": "barrel.start",
+            "dx": -0.901,
+            "dz": 0
+          }
+        ],
+        "startCovered": [
+          {
+            "index": 0,
+            "entityId": "house.start",
+            "inside": 0.5
+          }
+        ]
+      }
+    },
+    {
+      "name": "start clearance: a barrel moved off the start into a house is set aside",
+      "note": "the settle parts the barrel 15 cm from the wall (-x 5 cm); the start then moves it +x 0.451 m, into the house: set-asides are read where the items end, the start's move included, so it is set aside",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "house.east",
+            "kind": "building",
+            "outline": [[11.3, 17], [16, 17], [16, 23], [11.3, 23]]
+          },
+          {
+            "entityId": "barrel.wall",
+            "kind": "prop",
+            "outline": [[10.6, 19.7], [11.200000000000001, 19.7], [11.200000000000001, 20.3], [10.6, 20.3]],
+            "area": 0.36,
+            "archetype": "prop.container.barrel",
+            "height": 0.9,
+            "longestPlan": 0.6
+          }
+        ],
+        "obstacles": [],
+        "playerStart": {
+          "x": 10,
+          "y": 0,
+          "z": 20
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house.east",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "barrel.wall",
+            "dx": 0.401,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "setAsides": [
+          {
+            "index": 1,
+            "buildingId": "house.east",
+            "inside": 0.30100000000000016
+          }
+        ],
+        "startMoves": [
+          {
+            "index": 1,
+            "entityId": "barrel.wall",
+            "dx": 0.451,
+            "dz": 0
+          }
+        ],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: the start's clear ground",
+      "note": "startClearRadiusM (1 m) and the 16-sided polygon round the circle the clearance reads it as (edges touching the circle, first corner at pi/16 from +x, counter-clockwise), round the IR's player.startPosition",
+      "op": "startClearOutline",
+      "input": {
+        "playerStart": {
+          "x": 10,
+          "y": 0,
+          "z": 20
+        }
+      },
+      "expected": {
+        "startClearRadiusM": 1,
+        "outline": [
+          [11, 20.19891236737966],
+          [10.847759065022574, 20.56645449735052],
+          [10.566454497350522, 20.847759065022572],
+          [10.198912367379657, 21],
+          [9.801087632620343, 21],
+          [9.433545502649478, 20.847759065022572],
+          [9.152240934977426, 20.56645449735052],
+          [9, 20.19891236737966],
+          [9, 19.80108763262034],
+          [9.152240934977426, 19.43354550264948],
+          [9.433545502649478, 19.152240934977428],
+          [9.80108763262034, 19],
+          [10.198912367379657, 19],
+          [10.566454497350522, 19.152240934977428],
+          [10.847759065022574, 19.43354550264948],
+          [11, 19.80108763262034]
+        ]
       }
     },
     {
@@ -11308,11 +11663,11 @@
       "note": "the pairing's seat sink at its proposal's fitted factor: the floor a step over the ground",
       "op": "pairingSeatSink",
       "input": {
-        "bottom": -5.9508,
+        "bottom": -5.3567,
         "doorFoot": -4.093,
         "factor": 0.862254
       },
-      "expected": 0.81
+      "expected": 0.72
     },
     {
       "name": "seat sink: House_01 on bld_6abb84bcf2e499b951eece64_5's lot",
@@ -11330,11 +11685,11 @@
       "note": "the pairing's seat sink at its proposal's fitted factor: the floor a step over the ground",
       "op": "pairingSeatSink",
       "input": {
-        "bottom": -5.9508,
+        "bottom": -5.3567,
         "doorFoot": -4.093,
         "factor": 0.862254
       },
-      "expected": 0.81
+      "expected": 0.72
     },
     {
       "name": "seat sink: House_01 on bld_6abb84eef2e499b951eecec0's lot",
@@ -11363,11 +11718,11 @@
       "note": "the pairing's seat sink at its proposal's fitted factor: the floor a step over the ground",
       "op": "pairingSeatSink",
       "input": {
-        "bottom": -5.9508,
+        "bottom": -5.3567,
         "doorFoot": -4.093,
         "factor": 0.862254
       },
-      "expected": 0.81
+      "expected": 0.72
     },
     {
       "name": "seat sink: House_Large on bld_6abb84eef2e499b951eecec3's lot",

@@ -13,6 +13,8 @@
       "conformance/saves/v2-typical.json",
       "conformance/saves/v2-with-extensions.json",
       "conformance/saves/integrity-vectors.json",
+      "conformance/saves/village-state.json",
+      "conformance/saves/slots.json",
       "conformance/ui/save-slot-cases.json",
       "conformance/events/save-load-cases.json"
     ]
@@ -57,6 +59,7 @@
     "summary": "The save file format, its migrations and the slot messages are core's; the binding writes, reads and shows slots.",
     "notes": [
       "Change the slot count or the autosave interval with the parameters, not code.",
+      "Slot rules (delete, Continue, autosave, F5/F9 quick save and load, the indicator) are core's SaveSlotsSession (save-slots.ts); the binding does the I/O each step names and draws the rows and the indicator.",
       "A new system's state goes into the save as a registered save extension (extensionRegistry), never as a new top-level field.",
       "Raise game_saved after a completed write and game_loaded after a read and migration, built with gameSavedEvent / gameLoadedEvent."
     ],

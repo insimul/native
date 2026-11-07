@@ -89,7 +89,7 @@ corpus is what proves it.
 | `js/host-text-codec.js` | `TextEncoder`/`TextDecoder` polyfill (byte-for-byte Godot's; core's `identity/kinp.ts` needs one at load). |
 | `core-pin.json` | **The input pin**: the core commit and the esbuild version the bundle is built from. |
 | `vendor/quickjs/` | QuickJS 2025-04-26, unmodified (see `../THIRD_PARTY.md`). |
-| `vendor/core/` | **Generated.** The bundle, its C array, `VENDORED.json` (provenance + sha256 per file), `cases/` (core's corpora transcribed into bridge cases), and core's layout corpora, pack-composition corpus and pack catalog (`conformance/`, `packs/`) copied byte for byte. Never hand-edit. |
+| `vendor/core/` | **Generated.** The bundle, its C array, `VENDORED.json` (provenance + sha256 per file), `cases/` (core's corpora transcribed into bridge cases), and core's layout corpora, pack-composition corpus, pack catalog and P9a corpora (`conformance/`, `packs/`) copied byte for byte. Never hand-edit. |
 | `tools/vendor-core-bundle.mjs` | Produces `vendor/core/` from the pin, and the `--check` drift guard the `core_vendor` ctest runs. |
 | `tools/emit-bridge-cases.mjs` | The transcription of core's corpora into `vendor/core/cases/` (run by the tool above). |
 | `tests/cases/` | Hand-written cases for behaviour no core corpus pins yet. |
@@ -151,10 +151,13 @@ game; **meta** = about the bridge itself.
 | `genre.camera` | `{ value }` → `{ mode }` | `game-genres/resolution` `normalizeCameraMode` | P7 |
 | `genre.resolveGame` | `{ recipe?, world? }` → core's `GameGenreResolution` (refusals are errors with a code) | `game-genres/resolution` `resolveGameGenre` | P7/P9 |
 | `genre.recipes` | `{}` → `{ ids, bindings }` | `game-genres/recipes` | P9 |
+| `ui.genreHud` | `{ op: config, view or genre_view, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }`; an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`) | P9a.native (U84) |
+| `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
 | `modules.activate` | `{ ir }` or `{ genre }` or `{}` → `{ source, active, predicatePacks, hostInterfaces, reason }` | `modules/module-activation` | P9 (Godot's fork has the same row) |
 | `modules.table` | `{}` → core's `moduleActivationTable()` | same | P9 |
 | `prolog.packs` | `{ areas? }` → `{ packs: [{ area, prolog, runtimePredicates }], order, unknown }` | `prolog/predicate-packs` | P9 |
+| `mechanics.run` | `{ ir: { meta: { genreConfig, enabledModules? }, routines? }, seed, steps }` (a `conformance/modules/mechanic-runtime.json` case's `input`) → `{ plan, steps, events }`; a malformed IR, seed or step is an error `[invalid-input]`, a step op core's runner does not apply `[unknown-op]` | `game-engine/mechanic-runtime-corpus` `runMechanicRuntimeCase` over `game-engine/mechanic-runtime` `createMechanicRuntime` | P9a.native (U84) |
 | `layout.ops` | `{}` → `{ layout, composition }` — core's `LAYOUT_OPS` and `COMPOSITION_OPS` | `editor/layout/corpus`, `editor/layout/composition/corpus` | L.native-layout (U36) |
 | `layout.isDoorPartName` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('isDoorPartName')` | L.native-layout |
 | `layout.faceYawOf` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('faceYawOf')` | L.native-layout |
@@ -174,6 +177,7 @@ game; **meta** = about the bridge itself.
 | `layout.layoutObstaclesOf` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('layoutObstaclesOf')` | L.native-layout |
 | `layout.plantTrunkOutline` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('plantTrunkOutline')` | L.native-layout |
 | `layout.layoutConstants` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('layoutConstants')` | L.native-layout |
+| `layout.startClearOutline` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('startClearOutline')` | P9a.native (core's PL.start-clearance, U78) |
 | `layout.buildGroundPlan` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('buildGroundPlan')` | L.native-layout |
 | `layout.gradeTerrain` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('gradeTerrain')` | L.native-layout |
 | `layout.followSettledBuildings` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('followSettledBuildings')` | L.native-layout |
@@ -325,6 +329,72 @@ outcome `significant`. Filling them is core work with a core corpus case; the
 bridge picks it up by re-pinning, and no binding (Babylon's included) fills them
 itself.
 
+### The P9a rows: the genre HUD, the rules panel, the mechanic runtime (P9a.native, U84)
+
+Three of core's P9a corpus runners are rows, each core's own JSON boundary and
+nothing else, as the layout rows are:
+
+- **`ui.genreHud { op, ...input }`** is `runGenreHudOp(op, input)`: `config {
+  genre }` (the registry entry's HUD config), `view { config, state? }` (core's
+  `genreHudView`: which base HUD parts show and the genre's own elements, text
+  and tone formatted by core) and `genre_view { genre, state? }`.
+- **`ui.rulesPanel { op, ...input }`** is `runRulesPanelOp(op, input)`: `panel {
+  worldRules?, baseRules? }`, `card { rule }`, `byCategory { rules, category }`,
+  `byType { rules, ruleType }`, `isActive { rules, ruleId }`.
+- **`mechanics.run { ir, seed, steps }`** is `runMechanicRuntimeCase`: the IR's
+  activation assembles core's `createMechanicRuntime` (`ir.routines` handed to the
+  routine and locomotion directors), the steps run in order on its seven layers
+  with no Prolog engine (`stamina.register`; `combat.register`, `combat.attack`;
+  `traversal.links`, `traversal.register`, `traversal.traverse`;
+  `locomotion.pursue`; `detection.observer`, `detection.target`,
+  `detection.observe`; `routine.assign`, `routine.tick`; `skills.load`,
+  `skills.register`, `skills.award`, `skills.advance`), and the answer is the
+  plan, one result per step (`{ absent: true }` on a layer the world did not
+  activate) and every event type the one bus carried.
+
+So **the args are a corpus case's `op` and `input` (or its `input`) and the answer
+is its `expected`**, key sets included. A domain refusal core's runner answers is
+a VALUE, as the corpus pins it (`{ ok: false, refusal: { code: "unknown_genre",
+field } }`); what the row itself refuses is an ERROR with a code (see "Errors"):
+`[unknown-op]` for an op core's runner does not declare (`GENRE_HUD_OPS`,
+`RULES_PANEL_OPS`, the 16 step ops of core's `MechanicStep`), `[invalid-input]`
+for an input of the wrong JSON type (the rules-panel fields core's `PanelRule`
+types; the mechanic IR, seed and steps). Core's runners would otherwise answer a
+misspelt rules field as an empty panel, and a mechanic step op they do not know
+as `{ absent: false }` with no outcome.
+
+**Why `mechanics.run` is stateless and not a `mechanics.create`/`.apply` session.**
+The session rows above hold a core model whose methods answer JSON-ready values.
+The mechanic runtime's per-step answer (`outcome`, `stamina`) is a projection core
+keeps private to its corpus runner; the one thing core exports is the whole
+replay, `{ ir, seed, steps }` → `{ plan, steps, events }`. A session would have to
+restate that projection here, and the rows decide nothing. It is named and shaped
+like `weather.run`, the other seeded corpus replay. A live game session also needs
+the layers' hosts (trajectory probe, perception, locomotion, skill modifiers),
+which are engine callbacks that cannot cross this ABI: those are the per-system
+rows of P9b–P9j. When core exports a per-step function, a session pair can wrap
+it without restating anything.
+
+The evidence is core's corpora, not a transcription:
+`vendor/core/conformance/ui/genre-hud-cases.json` (63 cases),
+`ui/rules-panel-cases.json` (17) and `modules/mechanic-runtime.json` (6 cases,
+25 steps each), copied byte for byte by `tools/vendor-core-bundle.mjs` and hashed
+in `VENDORED.json` (`core_vendor`; `--check --core` byte-compares them with core).
+`tests/p9a_corpus.cpp` sends every case through `insimulcore.h` and compares
+exactly; it is three ctests, `genre_hud_corpus`, `rules_panel_corpus` and
+`mechanic_runtime_corpus`, so removing one row turns its own test red, and it
+also fails when a UI corpus declares an op (`ops`) no case exercises.
+`p9a_corpus_negative` must see it fail one wrong answer per row
+(`tests/p9a-negative/`). The hand cases in `tests/cases/bridge-p9a.json` pin the
+rows' own contract (the coded errors, a refusal as a value).
+
+**Cost.** The three rows bring core's HUD and rules-panel models and the whole
+mechanic assembly (the seven layers' directors, combat resolution, perception,
+traversal, routines, skills, and the Prolog helper text those modules import):
+47 core modules. At the f9aef13 pin the bundle grew from 1,005,516 bytes (the pin
+bump alone, from 988,816 at b38e60d) to 1,391,854. The 86 cases take about 60 ms
+under QuickJS.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
@@ -368,6 +438,9 @@ looks like is now part of the contract:
 - **a refusal core raises with a machine-readable code** (`GenreResolutionError`,
   `CompositionError`, and any op failure wrapping one) reads `insimulcore: <ErrorName>: [<code>]
   <message>` — a host reads the code between the brackets and never parses prose;
+- **a caller error the P9a rows refuse** (`ui.genreHud`, `ui.rulesPanel`,
+  `mechanics.run`) carries a code the same way: `insimulcore: Error: [<code>]
+  insimulcore: <method>: <what was wrong>`, with `unknown-op` or `invalid-input`;
 - arguments must be a JSON object (or NULL / empty, meaning `{}`).
 
 A domain outcome is not an error: a save slot that does not load is

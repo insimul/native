@@ -36,6 +36,11 @@
 // `conformance/packs/composition.json` and the catalog files its `catalog`
 // names (`packs/index.json`, `packs/<id>/pack.json`), at their core paths under
 // vendor/core/; tests/packs_corpus.cpp runs them through the `packs.compose` row.
+// The P9a corpora are copied the same way (P9a.native, U84):
+// `conformance/ui/genre-hud-cases.json`, `conformance/ui/rules-panel-cases.json`
+// and `conformance/modules/mechanic-runtime.json`, at their core paths under
+// vendor/core/; tests/p9a_corpus.cpp runs them through the `ui.genreHud`,
+// `ui.rulesPanel` and `mechanics.run` rows.
 //
 // TWO MODES:
 //
@@ -110,6 +115,16 @@ const LAYOUT_CORPUS_DIRS = ['conformance/layout', 'conformance/layout-compositio
 // read from the corpus at the pin, so the copy is the set core's own replay uses.
 const PACK_CORPUS_FILE = 'conformance/packs/composition.json';
 const PACK_COPY_ROOTS = ['conformance/packs', 'packs'];
+
+// core's P9a corpora (P9a.native, U84), copied verbatim the same way: exactly
+// these files, each at vendor/core/<same path>. The directories they sit in are
+// listed so a file left behind by an earlier pin is seen (and removed) too.
+const P9A_CORPUS_FILES = [
+  'conformance/modules/mechanic-runtime.json',
+  'conformance/ui/genre-hud-cases.json',
+  'conformance/ui/rules-panel-cases.json',
+];
+const P9A_COPY_ROOTS = ['conformance/modules', 'conformance/ui'];
 
 // The adapter JS that is BUNDLED IN — inputs, not outputs, and hashed for the
 // reason spelled out at the top of this file. Paths are relative to BRIDGE, so
@@ -222,6 +237,26 @@ function packFilesOnDisk() {
     for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) out.push(`vendor/core/${dir}/${f}`);
   }
   return out.sort();
+}
+
+/** The vendored P9a corpus files on disk, as bridge-relative paths, sorted. */
+function p9aFilesOnDisk() {
+  const out = [];
+  for (const dir of P9A_COPY_ROOTS) {
+    for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) out.push(`vendor/core/${dir}/${f}`);
+  }
+  return out.sort();
+}
+
+/** core's P9a corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
+function p9aFilesAtPin(src) {
+  const out = {};
+  for (const rel of P9A_CORPUS_FILES) {
+    const abs = path.join(src.root, rel);
+    if (!fs.existsSync(abs)) fail(`core ${src.commit} has no ${rel} — the P9a rows would have no corpus`);
+    out[`vendor/core/${rel}`] = fs.readFileSync(abs);
+  }
+  return out;
 }
 
 /**
@@ -530,6 +565,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The P9a corpora: the same exact-set replacement.
+    const p9a = p9aFilesAtPin(src);
+    for (const rel of p9aFilesOnDisk()) if (!(rel in p9a)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(p9a)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -546,6 +589,7 @@ async function write(coreDir) {
       toolInputs: TOOL_INPUTS,
       layoutCorpus: LAYOUT_CORPUS_DIRS,
       packCorpus: PACK_CORPUS_FILE,
+      p9aCorpus: P9A_CORPUS_FILES,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -558,6 +602,7 @@ async function write(coreDir) {
       ...caseFilesOnDisk(),
       ...layoutFilesOnDisk(),
       ...packFilesOnDisk(),
+      ...p9aFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -568,6 +613,7 @@ async function write(coreDir) {
     console.log(`  case files (${Object.keys(cases).length}): ${Object.keys(cases).join(', ')}`);
     console.log(`  layout corpus files (${Object.keys(layout).length}), copied unchanged`);
     console.log(`  pack corpus and catalog files (${Object.keys(packs).length}), copied unchanged`);
+    console.log(`  P9a corpus files (${Object.keys(p9a).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -609,7 +655,19 @@ async function check(coreDir) {
   if (!packFiles.includes(`vendor/core/${PACK_CORPUS_FILE}`)) {
     fail(`vendor/core/${PACK_CORPUS_FILE} is missing — the packs gate would run nothing`);
   }
-  const expectedList = [...GENERATED_FIXED, ...caseFiles, ...layoutFiles, ...packFiles, ...ADAPTER_MODULES, ...TOOL_INPUTS];
+  const p9aFiles = p9aFilesOnDisk();
+  for (const rel of P9A_CORPUS_FILES) {
+    if (!p9aFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the P9a gate would run nothing`);
+  }
+  const expectedList = [
+    ...GENERATED_FIXED,
+    ...caseFiles,
+    ...layoutFiles,
+    ...packFiles,
+    ...p9aFiles,
+    ...ADAPTER_MODULES,
+    ...TOOL_INPUTS,
+  ];
   const hashes = hashFiles(expectedList);
   const inputs = [...ADAPTER_MODULES, ...TOOL_INPUTS];
   for (const rel of expectedList) {
@@ -639,7 +697,7 @@ async function check(coreDir) {
   console.log(
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
-      `${packFiles.length} pack corpus/catalog file(s), ` +
+      `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
       `core ${manifest.coreCommit}, esbuild ${manifest.esbuild})`,
   );
 
@@ -689,9 +747,20 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const p9a = p9aFilesAtPin(src);
+      const wantP9a = Object.keys(p9a).sort();
+      if (JSON.stringify(wantP9a) !== JSON.stringify(p9aFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s P9a corpora are ${wantP9a.join(', ')} but vendor/core/ holds ${p9aFiles.join(', ')}`);
+      }
+      for (const rel of wantP9a) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(p9a[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       console.log(
         `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
-          `all ${want.length} layout corpus file(s) and all ${wantPacks.length} pack corpus/catalog file(s) byte for byte`,
+          `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s) and all ` +
+          `${wantP9a.length} P9a corpus file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });

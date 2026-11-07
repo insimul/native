@@ -92,6 +92,15 @@ import {
 } from '@insimul/core/modules/module-activation';
 import { PREDICATE_PACK_AREAS, PREDICATE_PACKS } from '@insimul/core/prolog/predicate-packs';
 
+// ── the genre HUD, the rules panel and the mechanic runtime (P9a) ─────────────
+// Core's own JSON boundaries for its P9a corpora: `runGenreHudOp` /
+// `runRulesPanelOp` answer a `conformance/ui/{genre-hud,rules-panel}-cases.json`
+// case in exactly the shape the file pins, and `runMechanicRuntimeCase` replays a
+// `conformance/modules/mechanic-runtime.json` case over `createMechanicRuntime`.
+import { GENRE_HUD_OPS, runGenreHudOp } from '@insimul/core/ui/genre-hud-corpus';
+import { RULES_PANEL_OPS, runRulesPanelOp } from '@insimul/core/ui/rules-panel-corpus';
+import { runMechanicRuntimeCase } from '@insimul/core/game-engine/mechanic-runtime-corpus';
+
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
 // settings and activation, over the pack catalog the caller sends.
@@ -157,6 +166,96 @@ function mapOf(method, value, name) {
 function plain(value) {
 	return value === undefined ? null : JSON.parse(JSON.stringify(value));
 }
+
+/**
+ * Run boundary checks so that whatever they refuse carries `code` (the P9a rows:
+ * README.md "Errors"). `asRejection` then writes it as `insimulcore: Error:
+ * [<code>] insimulcore: <method>: <what was wrong>`, so a host reads the code
+ * between the brackets as it reads core's own. Only the row's checks run inside
+ * `checks`, never a core call, so a core error is never relabelled.
+ */
+function coded(code, checks) {
+	try {
+		return checks();
+	} catch (err) {
+		if (err && typeof err === 'object' && typeof err.code !== 'string') err.code = code;
+		throw err;
+	}
+}
+
+/** `op` as one of the ops core's corpus runner declares, refused as `[unknown-op]`. */
+function opOf(method, op, ops) {
+	return coded('unknown-op', () => oneOf(method, op, ops, 'op'));
+}
+
+// ── the genre HUD, the rules panel and the mechanic runtime (P9a) ─────────────
+
+/** `input[name]` is absent, null or an array (of objects when `objects`). */
+function optArray(method, input, name, objects) {
+	if (input[name] === undefined || input[name] === null) return;
+	needArray(method, input[name], name).forEach((item, i) => {
+		if (objects) needObject(method, item, `${name}[${i}]`);
+	});
+}
+
+/**
+ * The fields each rules-panel op reads, checked for the JSON type core's
+ * `PanelRule` and its function signatures declare. Core's runner itself reads a
+ * non-array as no rules and `String()`s a key, so without these a misspelt field
+ * would answer an empty panel rather than fail.
+ */
+const RULES_PANEL_INPUTS = {
+	panel: (m, input) => {
+		optArray(m, input, 'worldRules', true);
+		optArray(m, input, 'baseRules', true);
+	},
+	card: (m, input) => needObject(m, input.rule, 'rule'),
+	byCategory: (m, input) => {
+		needRules(m, input);
+		needString(m, input.category, 'category');
+	},
+	byType: (m, input) => {
+		needRules(m, input);
+		needString(m, input.ruleType, 'ruleType');
+	},
+	isActive: (m, input) => {
+		needRules(m, input);
+		needString(m, input.ruleId, 'ruleId');
+	},
+};
+
+/** `input.rules`: present, an array of objects. */
+function needRules(method, input) {
+	needArray(method, input.rules, 'rules');
+	optArray(method, input, 'rules', true);
+}
+
+/**
+ * Every step op core's mechanic-runtime corpus runner applies (its `MechanicStep`
+ * union in `game-engine/mechanic-runtime-corpus.ts`, a TypeScript type JSON cannot
+ * carry). Core's runner has no default case, so an op outside this list would be
+ * answered `{ absent: false }` with no outcome instead of failing: the row refuses
+ * it as `[unknown-op]`. `mechanic_runtime_corpus` goes red when core's corpus names
+ * an op this list lacks.
+ */
+const MECHANIC_STEP_OPS = [
+	'stamina.register',
+	'combat.register',
+	'combat.attack',
+	'traversal.links',
+	'traversal.register',
+	'traversal.traverse',
+	'locomotion.pursue',
+	'detection.observer',
+	'detection.target',
+	'detection.observe',
+	'routine.assign',
+	'routine.tick',
+	'skills.load',
+	'skills.register',
+	'skills.award',
+	'skills.advance',
+];
 
 // ── system packs ──────────────────────────────────────────────────────────────
 
@@ -982,6 +1081,91 @@ const METHODS = {
 	/** `genre.recipes` → `{ ids, bindings }` — core's recipe → genre bindings. */
 	'genre.recipes': () => ({ ids: [...RECIPE_IDS], bindings: plain(RECIPE_GENRE_BINDINGS) }),
 
+	// ── the genre HUD and the world rules panel (P9a) ──
+	// Each row is one of core's corpus runners and nothing else: the args are
+	// `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and
+	// the answer is in that case's `expected` shape (key sets included; a key core
+	// leaves undefined is absent). A domain refusal core's runner answers is a
+	// VALUE, as the corpus pins it (`{ ok: false, refusal: { code, field } }`); an
+	// op the runner does not declare, or an input the row cannot pass on, is an
+	// ERROR with a code (`[unknown-op]`, `[invalid-input]`).
+
+	/**
+	 * `ui.genreHud { op: 'config'|'view'|'genre_view', ...input }` → core's
+	 * `runGenreHudOp(op, input)` (`ui/genre-hud-corpus`): `config { genre }` → `{ ok,
+	 * value: GenreHudConfig }`; `view { config, state? }` → `{ ok, value:
+	 * GenreHudView }`; `genre_view { genre, state? }` → the view of that genre's own
+	 * config. Refusal values: `unknown_genre`, `unknown_layout`. The row checks only
+	 * `op` (core's `GENRE_HUD_OPS`): core's runner reads every input it is given.
+	 */
+	'ui.genreHud': (args) => {
+		const { op, ...input } = args;
+		return runGenreHudOp(opOf('ui.genreHud', op, GENRE_HUD_OPS), input);
+	},
+
+	/**
+	 * `ui.rulesPanel { op: 'panel'|'card'|'byCategory'|'byType'|'isActive', ...input }`
+	 * → core's `runRulesPanelOp(op, input)` (`ui/rules-panel-corpus`): `panel {
+	 * worldRules?, baseRules? }` → `RulesPanelView`; `card { rule }` → `RuleCard`;
+	 * `byCategory { rules, category }` / `byType { rules, ruleType }` → rule ids;
+	 * `isActive { rules, ruleId }` → boolean. `op` is checked against core's
+	 * `RULES_PANEL_OPS`, and each op's fields against the JSON types core's
+	 * `PanelRule` declares (RULES_PANEL_INPUTS above) as `[invalid-input]`.
+	 */
+	'ui.rulesPanel': (args) => {
+		const m = 'ui.rulesPanel';
+		const { op, ...input } = args;
+		opOf(m, op, RULES_PANEL_OPS);
+		coded('invalid-input', () => RULES_PANEL_INPUTS[op](m, input));
+		return runRulesPanelOp(op, input);
+	},
+
+	// ── the mechanic runtime (P9a) ──
+
+	/**
+	 * `mechanics.run { ir, seed, steps }` → `{ plan, steps, events }` — core's
+	 * `runMechanicRuntimeCase` (`game-engine/mechanic-runtime-corpus`): the World
+	 * IR's activation (`meta.genreConfig`, `meta.enabledModules`) assembles core's
+	 * `createMechanicRuntime` (with `ir.routines` handed to the routine and
+	 * locomotion directors), the steps run in order on its seven layers with no
+	 * Prolog engine, and the answer is `conformance/modules/mechanic-runtime.json`'s
+	 * `expected`: the plan, one result per step (`{ absent: true }` on a layer the
+	 * world did not activate, else `{ absent: false, outcome, stamina }`) and the
+	 * type of every event the one bus carried. Pure and seeded, like `weather.run`.
+	 * Step ops: every op of core's `MechanicStep` (MECHANIC_STEP_OPS above). The row
+	 * checks the IR's shape, the seed and each step's `op` (`[invalid-input]`,
+	 * `[unknown-op]`); a step's own fields go to core unchanged.
+	 *
+	 * Why a stateless `.run` and not a `mechanics.create`/`.apply` session pair:
+	 * core defines the one operation as `{ ir, seed, steps }` → `{ plan, steps,
+	 * events }` and exports it; the per-step answer (`outcome`, `stamina`) is a
+	 * projection core keeps private to that runner, so a session would have to
+	 * restate it here, and THE ROWS DECIDE NOTHING. A live game session also needs
+	 * the layers' hosts (trajectory, perception, locomotion), which are engine
+	 * callbacks that cannot cross this ABI — those are the per-system rows of
+	 * P9b–P9j.
+	 */
+	'mechanics.run': (args) => {
+		const m = 'mechanics.run';
+		const input = coded('invalid-input', () => {
+			const ir = needObject(m, args.ir, 'ir');
+			const meta = needObject(m, ir.meta, 'ir.meta');
+			needString(m, needObject(m, meta.genreConfig, 'ir.meta.genreConfig').id, 'ir.meta.genreConfig.id');
+			if (meta.enabledModules !== undefined && meta.enabledModules !== null) {
+				needArray(m, meta.enabledModules, 'ir.meta.enabledModules');
+			}
+			if (ir.routines !== undefined && ir.routines !== null) needObject(m, ir.routines, 'ir.routines');
+			const seed = typeof args.seed === 'string' ? args.seed : needNumber(m, args.seed, 'seed');
+			const steps = needArray(m, args.steps, 'steps');
+			steps.forEach((step, i) => needObject(m, step, `steps[${i}]`));
+			return { ir, seed, steps };
+		});
+		input.steps.forEach((step, i) =>
+			coded('unknown-op', () => oneOf(m, step.op, MECHANIC_STEP_OPS, `steps[${i}].op`)),
+		);
+		return runMechanicRuntimeCase(input);
+	},
+
 	/**
 	 * `packs.compose { recipe?, world?, game?, engine?, catalog }` → core's
 	 * `resolveComposition(request, catalog)`: the game's packs, its settings and
@@ -1068,6 +1252,8 @@ const METHODS = {
 	'layout.layoutObstaclesOf': layoutRow('layoutObstaclesOf'),
 	'layout.plantTrunkOutline': layoutRow('plantTrunkOutline'),
 	'layout.layoutConstants': layoutRow('layoutConstants'),
+	// PL.start-clearance (U78): the start's clear ground, new in LAYOUT_OPS at core f9aef13.
+	'layout.startClearOutline': layoutRow('startClearOutline'),
 	'layout.buildGroundPlan': layoutRow('buildGroundPlan'),
 	'layout.gradeTerrain': layoutRow('gradeTerrain'),
 	'layout.followSettledBuildings': layoutRow('followSettledBuildings'),

@@ -60,7 +60,7 @@
     {
      "call": "quest.completion.apply",
      "args": {"session": 1, "ops": [{"op": "revealHint", "questId": "q3", "objectiveId": "read"}, {"op": "revealHint", "questId": "q3", "objectiveId": "read"}, {"op": "revealHint", "questId": "nope", "objectiveId": "read"}, {"op": "trackByTrigger", "trigger": "reading_completed"}]},
-     "expect": {"results": ["Look near the well", null, null, null], "events": [{"type": "objectiveCompleted", "questId": "q3", "objectiveId": "read"}, {"type": "objectiveCompleted", "questId": "q4", "objectiveId": "x"}, {"type": "questCompleted", "questId": "q4"}], "view": {"$subset": {"quests": [{"$subset": {"id": "q3", "available": ["report"], "locked": []}}, {"$subset": {"id": "q4", "complete": true}}]}}}
+     "expect": {"results": ["Look near the well", null, null, null], "events": [{"type": "objectiveCompleted", "questId": "q3", "objectiveId": "read"}], "view": {"$subset": {"quests": [{"$subset": {"id": "q3", "available": ["report"], "locked": []}}, {"$subset": {"id": "q4", "complete": false, "available": ["x"]}}]}}}
     },
     {
      "call": "quest.completion.apply",
@@ -189,9 +189,9 @@
      },
      "expect": {
       "waypoints": [
-       {"objectiveId": "q1_o1", "objectiveType": "visit_location", "position": {"x": 10, "y": 0, "z": 10}, "label": "Well", "alpha": 1},
-       {"objectiveId": "q1_o2", "objectiveType": "talk_to_npc", "position": {"x": 300, "y": 0, "z": 0}, "label": "Paul", "alpha": 0.2},
-       {"objectiveId": "q1_o3", "objectiveType": "order_food", "position": {"x": -20, "y": 0, "z": 5}, "label": "Dubois Bakery", "alpha": 1}
+       {"objectiveId": "q1_o1", "objectiveType": "visit_location", "position": {"x": 10, "y": 0, "z": 10}, "label": "Well", "source": "explicit", "alpha": 1},
+       {"objectiveId": "q1_o2", "objectiveType": "talk_to_npc", "position": {"x": 300, "y": 0, "z": 0}, "label": "Paul", "source": "npc_building", "alpha": 0.2},
+       {"objectiveId": "q1_o3", "objectiveType": "order_food", "position": {"x": -20, "y": 0, "z": 5}, "label": "Dubois Bakery", "source": "business", "alpha": 1}
       ],
       "compass": {"angle": {"$approx": 0.7853981633974483, "$tol": 1e-12}, "distance": {"$approx": 14.142135623730951, "$tol": 1e-12}, "label": "Well", "objectiveType": "visit_location"}
      }
@@ -213,8 +213,8 @@
      },
      "expect": {
       "waypoints": [
-       {"objectiveId": "q2_talk", "objectiveType": "complete_conversation", "position": {"x": 10, "y": 0, "z": -10}, "label": "Ann", "alpha": 1},
-       {"objectiveId": "q2_see", "objectiveType": "talk_to_npc", "position": {"x": 10, "y": 0, "z": -10}, "label": "Ann", "alpha": 1}
+       {"objectiveId": "q2_talk", "objectiveType": "complete_conversation", "position": {"x": 10, "y": 0, "z": -10}, "label": "Ann", "source": "nearest_npc", "alpha": 1},
+       {"objectiveId": "q2_see", "objectiveType": "talk_to_npc", "position": {"x": 10, "y": 0, "z": -10}, "label": "Ann", "source": "npc", "alpha": 1}
       ],
       "compass": {"angle": {"$approx": -0.9269908169872414, "$tol": 1e-12}, "distance": {"$approx": 14.142135623730951, "$tol": 1e-12}, "label": "Ann", "objectiveType": "complete_conversation"}
      }
@@ -222,7 +222,7 @@
     {
      "call": "quest.waypoints",
      "args": {"quest": {"id": "q3", "title": "Here", "status": "active", "questType": "x", "objectives": [{"id": "o", "type": "visit_location", "completed": false, "position": {"x": 10, "y": 0, "z": 10}}]}, "player": {"x": 9, "y": 0, "z": 9.5}, "forwardAngle": 2},
-     "expect": {"waypoints": [{"objectiveId": "q3_o", "objectiveType": "visit_location", "position": {"x": 10, "y": 0, "z": 10}, "alpha": 0}], "compass": {"angle": 0, "distance": {"$approx": 1.118033988749895, "$tol": 1e-12}, "label": "visit_location", "objectiveType": "visit_location"}}
+     "expect": {"waypoints": [{"objectiveId": "q3_o", "objectiveType": "visit_location", "position": {"x": 10, "y": 0, "z": 10}, "source": "explicit", "alpha": 0}], "compass": {"angle": 0, "distance": {"$approx": 1.118033988749895, "$tol": 1e-12}, "label": "visit_location", "objectiveType": "visit_location"}}
     },
     {
      "call": "quest.waypoints",

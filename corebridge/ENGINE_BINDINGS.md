@@ -64,7 +64,8 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
    the `view` (or the per-step `conditionChanged` / `seasonTurned` in `results`)
    after every advance. Reported to core as a finding; the bridge reproduces core.
 7. **Errors.** On NULL, read `insimul_core_last_error()`; when it contains
-   `[<code>]` (genre resolution and pack composition refusals today), that bracketed code is the
+   `[<code>]` (genre resolution and pack composition refusals today, and the P9a
+   rows' own `[unknown-op]` / `[invalid-input]`), that bracketed code is the
    machine-readable reason. Domain outcomes (a corrupt save slot, a refused trade)
    are NOT errors — they come back as values.
 8. **Saves: one hash.** `save.encode` / `save.decode` compute the envelope's
@@ -110,6 +111,25 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   implements here: send each case's `input` with the catalog beside it; an
   `expected` case answers exactly that JSON, an `expectedError` case fails with
   `CompositionError: [<code>]` or `GenreResolutionError: [<code>]`.
+- **P9a (Unreal's P9a cell, after P9a.native).** Three rows (`README.md`, "The
+  P9a rows"): `ui.genreHud { op, ...input }` (the genre HUD view-model: bind the
+  HUD to its `view`), `ui.rulesPanel { op, ...input }` (the world rules panel: draw
+  its `panel` and `card` answers) and `mechanics.run { ir, seed, steps }` (core's
+  mechanic runtime assembly replayed: `{ plan, steps, events }`). Re-vendor
+  `conformance/ui/{genre-hud-cases,rules-panel-cases}.json` and
+  `conformance/modules/mechanic-runtime.json` from core at this library's pin, and
+  have the replay target send each case the way `tests/p9a_corpus.cpp` does: `{
+  "op": <case op>, ...<case input> }` to the two UI rows, the case's `input` to
+  `mechanics.run`, each answer compared exactly with `expected` (key sets
+  included; a domain refusal is the VALUE `{ ok: false, refusal }`, never an
+  error). `mechanics.run` is a replay, not a live runtime: the decision layers
+  `InsimulMechanicSurface.h` marks `BridgeHasNoRow` still need per-system rows
+  (P9b–P9j). The existing `genre.*`, `modules.*` and `packs.compose` rows answer
+  the six genres P9a.core added and `meta.enabledModules` with no row change.
+- **Layout: one more op.** Core f9aef13 added `startClearOutline` to `LAYOUT_OPS`
+  (PL.start-clearance, U78): the `layout.startClearOutline` row answers it, and
+  `Tests/layout_corpus_ops.h` needs the matching entry when Unreal re-vendors
+  `conformance/layout/settle.json`.
 
 ## Unity
 

@@ -1,0 +1,68 @@
+{
+  "area": "ui-rules-panel",
+  "description": "NEGATIVE CONTROL for the p9a_corpus ctest (not core's corpus): core's case 'isActive: an active rule' from conformance/ui/rules-panel-cases.json with its answer deliberately wrong (false). p9a_corpus_negative passes only when the runner reports this case as differing.",
+  "ops": [
+    "isActive"
+  ],
+  "cases": [
+    {
+      "name": "isActive: an active rule, expected WRONGLY inactive",
+      "op": "isActive",
+      "input": {
+        "rules": [
+          {
+            "id": "no_theft",
+            "name": "no theft",
+            "description": "Stealing is punished",
+            "ruleType": "trigger",
+            "category": "legal",
+            "priority": 8,
+            "tags": [
+              "law",
+              "property",
+              "crime",
+              "extra"
+            ],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "greet_elders",
+            "name": "greet elders",
+            "description": null,
+            "ruleType": "volition",
+            "category": "social",
+            "priority": 5,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "night_curfew",
+            "name": "night curfew",
+            "description": null,
+            "ruleType": "pattern",
+            "category": "legal",
+            "priority": 3,
+            "tags": [],
+            "isActive": false,
+            "isBase": false
+          },
+          {
+            "id": "kind_hearted",
+            "name": "kind hearted",
+            "description": null,
+            "ruleType": "trait",
+            "category": null,
+            "priority": 0,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          }
+        ],
+        "ruleId": "no_theft"
+      },
+      "expected": false
+    }
+  ]
+}

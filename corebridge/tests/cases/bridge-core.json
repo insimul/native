@@ -76,11 +76,13 @@
        "layout.settleClearance",
        "layout.settleFittedBuildings",
        "layout.settleSeparation",
+       "layout.startClearOutline",
        "layout.transitionBounds",
        "layout.transitionCoverage",
        "layout.trimFloraOffSquare",
        "layout.trimGeneratedPoints",
        "layout.yardRole",
+       "mechanics.run",
        "modules.activate",
        "modules.table",
        "packs.compose",
@@ -101,6 +103,7 @@
        "save.rules",
        "session.dispose",
        "session.list",
+       "ui.genreHud",
        "ui.journal.apply",
        "ui.journal.create",
        "ui.loading.apply",
@@ -109,6 +112,7 @@
        "ui.notifications.create",
        "ui.pause.apply",
        "ui.pause.create",
+       "ui.rulesPanel",
        "ui.saveSlots",
        "ui.trade",
        "weather.apply",
@@ -140,7 +144,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 106}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 110}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -186,7 +190,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 106}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 110}}}}
    ]
   },
   {

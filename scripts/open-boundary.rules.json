@@ -354,6 +354,33 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/genre-hud-corpus",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.genreHud row (P9a.native, rulings U84 and U79(4)), exactly as the packs.compose row's specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-p9a-native (Features Gauntlet P9a.native)",
+      "reviewedAt": "2026-11-07"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/rules-panel-corpus",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.rulesPanel row (P9a.native, rulings U84 and U79(4)), exactly as the packs.compose row's specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-p9a-native (Features Gauntlet P9a.native)",
+      "reviewedAt": "2026-11-07"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/mechanic-runtime-corpus",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the mechanics.run row (P9a.native, rulings U84 and U79(4)), exactly as the packs.compose row's specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-p9a-native (Features Gauntlet P9a.native)",
+      "reviewedAt": "2026-11-07"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/game-genres/registry",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

@@ -1,0 +1,2501 @@
+{
+  "description": "World IR meta → the mechanic runtime its activation assembles (core's createMechanicRuntime): which layers exist, what they share (one stamina pool spent by combat and traversal, the traversal planner as the locomotion graph, one event bus), and a scripted session over it with no Prolog engine that drives every layer (stamina, combat, traversal, locomotion, detection, routines, skills; ir.routines goes to the routine and locomotion directors). A step on a layer the world did not activate is { absent: true }. DERIVED by npm run module-activation from src/game-engine; see docs/module-contract.md §7.6.",
+  "caseFormat": 1,
+  "cases": [
+    {
+      "name": "survival: one meter, one graph, one bus",
+      "claim": "survival activates stamina, combat, traversal and routine: the swing (4), the walk (2) and the climb (15) draw on the one meter (24 → 3), so the second swing is refused as exhausted by what the climb spent; the NPC walks a leg through the same planner on its own meter (3 → 1) and its climb is refused for stamina; no perception, so the detection steps are absent; the NPC adopts its herding goal from the IR's routines and the hero buys climbing 1, both on the one bus",
+      "input": {
+        "ir": {
+          "meta": {
+            "genreConfig": {
+              "id": "survival"
+            }
+          },
+          "routines": {
+            "routines": [
+              {
+                "id": "herding",
+                "name": "Herding",
+                "blocks": [
+                  {
+                    "id": "pasture",
+                    "goal": "tend_flock",
+                    "startHour": 6,
+                    "endHour": 12,
+                    "place": "ford",
+                    "priority": 55
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "seed": 7,
+        "steps": [
+          {
+            "op": "stamina.register",
+            "id": "hero",
+            "max": 24
+          },
+          {
+            "op": "stamina.register",
+            "id": "wren",
+            "max": 3
+          },
+          {
+            "op": "combat.register",
+            "id": "hero",
+            "health": 30,
+            "maxHealth": 30
+          },
+          {
+            "op": "combat.register",
+            "id": "wolf",
+            "health": 20,
+            "maxHealth": 20
+          },
+          {
+            "op": "traversal.links",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 2
+              },
+              {
+                "from": "ford",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 5
+              },
+              {
+                "from": "ridge",
+                "to": "tower",
+                "mode": "walk",
+                "cost": 2
+              }
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "hero",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "wren",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 1
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ford"
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ridge"
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 2
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "tower"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ford"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ridge"
+          },
+          {
+            "op": "detection.observer",
+            "id": "wolf",
+            "senses": [
+              {
+                "channel": "sight",
+                "acuity": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.target",
+            "id": "hero",
+            "location": "tower",
+            "light": 100
+          },
+          {
+            "op": "detection.observe",
+            "tick": 3,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 4,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 5,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "routine.assign",
+            "agent": "wren",
+            "routine": "herding"
+          },
+          {
+            "op": "routine.tick",
+            "agent": "wren",
+            "day": 1,
+            "hour": 9
+          },
+          {
+            "op": "skills.load",
+            "skills": [
+              {
+                "id": "climbing",
+                "category": "dexterity",
+                "maxLevel": 5,
+                "levelXp": [
+                  0,
+                  100,
+                  200,
+                  300,
+                  400,
+                  500
+                ]
+              }
+            ]
+          },
+          {
+            "op": "skills.register",
+            "id": "hero",
+            "levels": {
+              "climbing": 0
+            }
+          },
+          {
+            "op": "skills.award",
+            "actorId": "hero",
+            "skill": "climbing",
+            "amount": 120
+          },
+          {
+            "op": "skills.advance",
+            "actorId": "hero",
+            "skill": "climbing"
+          }
+        ]
+      },
+      "expected": {
+        "plan": {
+          "genre": "survival",
+          "known": true,
+          "layers": {
+            "stamina": true,
+            "combat": true,
+            "detection": false,
+            "traversal": true,
+            "locomotion": true,
+            "routines": true,
+            "skills": true
+          },
+          "shared": {
+            "eventBus": [
+              "combat",
+              "traversal",
+              "locomotion",
+              "routines",
+              "skills"
+            ],
+            "staminaSpenders": [
+              "combat",
+              "traversal"
+            ],
+            "locomotionGraph": "traversal"
+          },
+          "notAssembled": [
+            "equipment",
+            "agentAi",
+            "map",
+            "weather",
+            "business",
+            "crafting",
+            "farming",
+            "fishing",
+            "mining"
+          ]
+        },
+        "steps": [
+          {
+            "absent": false,
+            "outcome": {
+              "max": 24
+            },
+            "stamina": 24
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "max": 3
+            },
+            "stamina": 3
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "health": 30
+            },
+            "stamina": 24
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "health": 20
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "links": 3
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "location": "camp"
+            },
+            "stamina": 24
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "location": "camp"
+            },
+            "stamina": 3
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "outcome": "hit",
+              "reason": null,
+              "staminaCost": 4,
+              "staminaSpent": 4,
+              "damage": 6,
+              "targetHealthAfter": 14
+            },
+            "stamina": 20
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "refusal": null,
+              "cost": 2,
+              "location": "ford"
+            },
+            "stamina": 18
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "refusal": null,
+              "cost": 15,
+              "location": "ridge"
+            },
+            "stamina": 3
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "outcome": "exhausted",
+              "reason": "insufficient_stamina",
+              "staminaCost": 4,
+              "staminaSpent": 0,
+              "damage": 0,
+              "targetHealthAfter": 14
+            },
+            "stamina": 3
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "refusal": null,
+              "cost": 2,
+              "location": "tower"
+            },
+            "stamina": 1
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "arrived": true,
+              "location": "ford",
+              "failure": null,
+              "refusal": null
+            },
+            "stamina": 1
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "arrived": false,
+              "location": "ford",
+              "failure": "refused",
+              "refusal": "stamina"
+            },
+            "stamina": 1
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "routine": "herding"
+            },
+            "stamina": 1
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "routine": "herding",
+              "block": "pasture",
+              "goal": "tend_flock",
+              "destination": "ford",
+              "changed": true
+            },
+            "stamina": 1
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "skills": 1
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "registered": "hero"
+            },
+            "stamina": 1
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "awarded": 120,
+              "banked": 120,
+              "advanceable": true
+            },
+            "stamina": 1
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "level": 1,
+              "spent": 100,
+              "banked": 20
+            },
+            "stamina": 1
+          }
+        ],
+        "events": [
+          "combat_action",
+          "traversal_completed",
+          "traversal_completed",
+          "traversal_completed",
+          "traversal_completed",
+          "movement_failed",
+          "routine_changed",
+          "skill_advanced"
+        ]
+      }
+    },
+    {
+      "name": "rpg: no stamina module, no meter",
+      "claim": "rpg activates combat, traversal, perception, skill and routine but not stamina: no pool is built, so nothing is metered, both swings land, the climb and the NPC's climb are made and nothing is refused for stamina; the wolf turns suspicious on its third tick, the NPC adopts the herding goal only the IR's routines author, and the hero buys climbing 1 (120 banked, 100 spent): detection_changed, routine_changed and skill_advanced on the same bus as combat and traversal",
+      "input": {
+        "ir": {
+          "meta": {
+            "genreConfig": {
+              "id": "rpg"
+            }
+          },
+          "routines": {
+            "routines": [
+              {
+                "id": "herding",
+                "name": "Herding",
+                "blocks": [
+                  {
+                    "id": "pasture",
+                    "goal": "tend_flock",
+                    "startHour": 6,
+                    "endHour": 12,
+                    "place": "ford",
+                    "priority": 55
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "seed": 7,
+        "steps": [
+          {
+            "op": "stamina.register",
+            "id": "hero",
+            "max": 24
+          },
+          {
+            "op": "stamina.register",
+            "id": "wren",
+            "max": 3
+          },
+          {
+            "op": "combat.register",
+            "id": "hero",
+            "health": 30,
+            "maxHealth": 30
+          },
+          {
+            "op": "combat.register",
+            "id": "wolf",
+            "health": 20,
+            "maxHealth": 20
+          },
+          {
+            "op": "traversal.links",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 2
+              },
+              {
+                "from": "ford",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 5
+              },
+              {
+                "from": "ridge",
+                "to": "tower",
+                "mode": "walk",
+                "cost": 2
+              }
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "hero",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "wren",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 1
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ford"
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ridge"
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 2
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "tower"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ford"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ridge"
+          },
+          {
+            "op": "detection.observer",
+            "id": "wolf",
+            "senses": [
+              {
+                "channel": "sight",
+                "acuity": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.target",
+            "id": "hero",
+            "location": "tower",
+            "light": 100
+          },
+          {
+            "op": "detection.observe",
+            "tick": 3,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 4,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 5,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "routine.assign",
+            "agent": "wren",
+            "routine": "herding"
+          },
+          {
+            "op": "routine.tick",
+            "agent": "wren",
+            "day": 1,
+            "hour": 9
+          },
+          {
+            "op": "skills.load",
+            "skills": [
+              {
+                "id": "climbing",
+                "category": "dexterity",
+                "maxLevel": 5,
+                "levelXp": [
+                  0,
+                  100,
+                  200,
+                  300,
+                  400,
+                  500
+                ]
+              }
+            ]
+          },
+          {
+            "op": "skills.register",
+            "id": "hero",
+            "levels": {
+              "climbing": 0
+            }
+          },
+          {
+            "op": "skills.award",
+            "actorId": "hero",
+            "skill": "climbing",
+            "amount": 120
+          },
+          {
+            "op": "skills.advance",
+            "actorId": "hero",
+            "skill": "climbing"
+          }
+        ]
+      },
+      "expected": {
+        "plan": {
+          "genre": "rpg",
+          "known": true,
+          "layers": {
+            "stamina": false,
+            "combat": true,
+            "detection": true,
+            "traversal": true,
+            "locomotion": true,
+            "routines": true,
+            "skills": true
+          },
+          "shared": {
+            "eventBus": [
+              "combat",
+              "detection",
+              "traversal",
+              "locomotion",
+              "routines",
+              "skills"
+            ],
+            "staminaSpenders": [],
+            "locomotionGraph": "traversal"
+          },
+          "notAssembled": [
+            "equipment",
+            "agentAi",
+            "map",
+            "volition",
+            "weather",
+            "business",
+            "crafting",
+            "mining",
+            "dialogue"
+          ]
+        },
+        "steps": [
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "health": 30
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "health": 20
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "links": 3
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "location": "camp"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "location": "camp"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "outcome": "hit",
+              "reason": null,
+              "staminaCost": 4,
+              "staminaSpent": 4,
+              "damage": 6,
+              "targetHealthAfter": 14
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "refusal": null,
+              "cost": 2,
+              "location": "ford"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "refusal": null,
+              "cost": 15,
+              "location": "ridge"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "outcome": "hit",
+              "reason": null,
+              "staminaCost": 4,
+              "staminaSpent": 4,
+              "damage": 6,
+              "targetHealthAfter": 8
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "refusal": null,
+              "cost": 2,
+              "location": "tower"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "arrived": true,
+              "location": "ford",
+              "failure": null,
+              "refusal": null
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "arrived": true,
+              "location": "ridge",
+              "failure": null,
+              "refusal": null
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "observer": "wolf"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "target": "hero"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "updates": 1,
+              "transitions": 0,
+              "pairs": "wolf>hero=unaware@12"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "updates": 1,
+              "transitions": 0,
+              "pairs": "wolf>hero=unaware@23"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "updates": 1,
+              "transitions": 1,
+              "pairs": "wolf>hero=suspicious@35"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "routine": "herding"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "routine": "herding",
+              "block": "pasture",
+              "goal": "tend_flock",
+              "destination": "ford",
+              "changed": true
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "skills": 1
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "registered": "hero"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "awarded": 120,
+              "banked": 120,
+              "advanceable": true
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "level": 1,
+              "spent": 100,
+              "banked": 20
+            },
+            "stamina": null
+          }
+        ],
+        "events": [
+          "combat_action",
+          "traversal_completed",
+          "traversal_completed",
+          "combat_action",
+          "traversal_completed",
+          "traversal_completed",
+          "traversal_completed",
+          "detection_changed",
+          "routine_changed",
+          "skill_advanced"
+        ]
+      }
+    },
+    {
+      "name": "fighting: combat alone",
+      "claim": "fighting activates combat only: every stamina, traversal and locomotion step is absent and both swings land unmetered",
+      "input": {
+        "ir": {
+          "meta": {
+            "genreConfig": {
+              "id": "fighting"
+            }
+          },
+          "routines": {
+            "routines": [
+              {
+                "id": "herding",
+                "name": "Herding",
+                "blocks": [
+                  {
+                    "id": "pasture",
+                    "goal": "tend_flock",
+                    "startHour": 6,
+                    "endHour": 12,
+                    "place": "ford",
+                    "priority": 55
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "seed": 7,
+        "steps": [
+          {
+            "op": "stamina.register",
+            "id": "hero",
+            "max": 24
+          },
+          {
+            "op": "stamina.register",
+            "id": "wren",
+            "max": 3
+          },
+          {
+            "op": "combat.register",
+            "id": "hero",
+            "health": 30,
+            "maxHealth": 30
+          },
+          {
+            "op": "combat.register",
+            "id": "wolf",
+            "health": 20,
+            "maxHealth": 20
+          },
+          {
+            "op": "traversal.links",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 2
+              },
+              {
+                "from": "ford",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 5
+              },
+              {
+                "from": "ridge",
+                "to": "tower",
+                "mode": "walk",
+                "cost": 2
+              }
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "hero",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "wren",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 1
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ford"
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ridge"
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 2
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "tower"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ford"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ridge"
+          },
+          {
+            "op": "detection.observer",
+            "id": "wolf",
+            "senses": [
+              {
+                "channel": "sight",
+                "acuity": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.target",
+            "id": "hero",
+            "location": "tower",
+            "light": 100
+          },
+          {
+            "op": "detection.observe",
+            "tick": 3,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 4,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 5,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "routine.assign",
+            "agent": "wren",
+            "routine": "herding"
+          },
+          {
+            "op": "routine.tick",
+            "agent": "wren",
+            "day": 1,
+            "hour": 9
+          },
+          {
+            "op": "skills.load",
+            "skills": [
+              {
+                "id": "climbing",
+                "category": "dexterity",
+                "maxLevel": 5,
+                "levelXp": [
+                  0,
+                  100,
+                  200,
+                  300,
+                  400,
+                  500
+                ]
+              }
+            ]
+          },
+          {
+            "op": "skills.register",
+            "id": "hero",
+            "levels": {
+              "climbing": 0
+            }
+          },
+          {
+            "op": "skills.award",
+            "actorId": "hero",
+            "skill": "climbing",
+            "amount": 120
+          },
+          {
+            "op": "skills.advance",
+            "actorId": "hero",
+            "skill": "climbing"
+          }
+        ]
+      },
+      "expected": {
+        "plan": {
+          "genre": "fighting",
+          "known": true,
+          "layers": {
+            "stamina": false,
+            "combat": true,
+            "detection": false,
+            "traversal": false,
+            "locomotion": false,
+            "routines": false,
+            "skills": false
+          },
+          "shared": {
+            "eventBus": [
+              "combat"
+            ],
+            "staminaSpenders": [],
+            "locomotionGraph": null
+          },
+          "notAssembled": []
+        },
+        "steps": [
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "health": 30
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "health": 20
+            },
+            "stamina": null
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "outcome": "hit",
+              "reason": null,
+              "staminaCost": 4,
+              "staminaSpent": 4,
+              "damage": 6,
+              "targetHealthAfter": 14
+            },
+            "stamina": null
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "outcome": "hit",
+              "reason": null,
+              "staminaCost": 4,
+              "staminaSpent": 4,
+              "damage": 6,
+              "targetHealthAfter": 8
+            },
+            "stamina": null
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          }
+        ],
+        "events": [
+          "combat_action",
+          "combat_action"
+        ]
+      }
+    },
+    {
+      "name": "simulation: routines with no graph",
+      "claim": "simulation activates routine without traversal: the locomotion director is built over no graph, so a pursuit is answered as unplaced and nothing moves, while the routine director still adopts the herding goal at the ford",
+      "input": {
+        "ir": {
+          "meta": {
+            "genreConfig": {
+              "id": "simulation"
+            }
+          },
+          "routines": {
+            "routines": [
+              {
+                "id": "herding",
+                "name": "Herding",
+                "blocks": [
+                  {
+                    "id": "pasture",
+                    "goal": "tend_flock",
+                    "startHour": 6,
+                    "endHour": 12,
+                    "place": "ford",
+                    "priority": 55
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "seed": 7,
+        "steps": [
+          {
+            "op": "stamina.register",
+            "id": "hero",
+            "max": 24
+          },
+          {
+            "op": "stamina.register",
+            "id": "wren",
+            "max": 3
+          },
+          {
+            "op": "combat.register",
+            "id": "hero",
+            "health": 30,
+            "maxHealth": 30
+          },
+          {
+            "op": "combat.register",
+            "id": "wolf",
+            "health": 20,
+            "maxHealth": 20
+          },
+          {
+            "op": "traversal.links",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 2
+              },
+              {
+                "from": "ford",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 5
+              },
+              {
+                "from": "ridge",
+                "to": "tower",
+                "mode": "walk",
+                "cost": 2
+              }
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "hero",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "wren",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 1
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ford"
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ridge"
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 2
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "tower"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ford"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ridge"
+          },
+          {
+            "op": "detection.observer",
+            "id": "wolf",
+            "senses": [
+              {
+                "channel": "sight",
+                "acuity": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.target",
+            "id": "hero",
+            "location": "tower",
+            "light": 100
+          },
+          {
+            "op": "detection.observe",
+            "tick": 3,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 4,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 5,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "routine.assign",
+            "agent": "wren",
+            "routine": "herding"
+          },
+          {
+            "op": "routine.tick",
+            "agent": "wren",
+            "day": 1,
+            "hour": 9
+          },
+          {
+            "op": "skills.load",
+            "skills": [
+              {
+                "id": "climbing",
+                "category": "dexterity",
+                "maxLevel": 5,
+                "levelXp": [
+                  0,
+                  100,
+                  200,
+                  300,
+                  400,
+                  500
+                ]
+              }
+            ]
+          },
+          {
+            "op": "skills.register",
+            "id": "hero",
+            "levels": {
+              "climbing": 0
+            }
+          },
+          {
+            "op": "skills.award",
+            "actorId": "hero",
+            "skill": "climbing",
+            "amount": 120
+          },
+          {
+            "op": "skills.advance",
+            "actorId": "hero",
+            "skill": "climbing"
+          }
+        ]
+      },
+      "expected": {
+        "plan": {
+          "genre": "simulation",
+          "known": true,
+          "layers": {
+            "stamina": false,
+            "combat": false,
+            "detection": false,
+            "traversal": false,
+            "locomotion": true,
+            "routines": true,
+            "skills": false
+          },
+          "shared": {
+            "eventBus": [
+              "locomotion",
+              "routines"
+            ],
+            "staminaSpenders": [],
+            "locomotionGraph": "none"
+          },
+          "notAssembled": [
+            "agentAi",
+            "map",
+            "volition",
+            "weather",
+            "business",
+            "crafting",
+            "farming",
+            "fishing",
+            "mining"
+          ]
+        },
+        "steps": [
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "arrived": false,
+              "location": null,
+              "failure": "unplaced",
+              "refusal": null
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "arrived": false,
+              "location": null,
+              "failure": "unplaced",
+              "refusal": null
+            },
+            "stamina": null
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "routine": "herding"
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "routine": "herding",
+              "block": "pasture",
+              "goal": "tend_flock",
+              "destination": "ford",
+              "changed": true
+            },
+            "stamina": null
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          }
+        ],
+        "events": [
+          "movement_failed",
+          "movement_failed",
+          "routine_changed"
+        ]
+      }
+    },
+    {
+      "name": "a world's own selection drives the runtime",
+      "claim": "meta.enabledModules naming combat, stamina and traversal assembles exactly those over the genre (adventure would build no combat and no meter): one pool spent by both (the climb leaves 3, the second swing is exhausted), no routine so no locomotion",
+      "input": {
+        "ir": {
+          "meta": {
+            "genreConfig": {
+              "id": "adventure"
+            },
+            "enabledModules": [
+              "traversal",
+              "stamina",
+              "combat"
+            ]
+          },
+          "routines": {
+            "routines": [
+              {
+                "id": "herding",
+                "name": "Herding",
+                "blocks": [
+                  {
+                    "id": "pasture",
+                    "goal": "tend_flock",
+                    "startHour": 6,
+                    "endHour": 12,
+                    "place": "ford",
+                    "priority": 55
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "seed": 7,
+        "steps": [
+          {
+            "op": "stamina.register",
+            "id": "hero",
+            "max": 24
+          },
+          {
+            "op": "stamina.register",
+            "id": "wren",
+            "max": 3
+          },
+          {
+            "op": "combat.register",
+            "id": "hero",
+            "health": 30,
+            "maxHealth": 30
+          },
+          {
+            "op": "combat.register",
+            "id": "wolf",
+            "health": 20,
+            "maxHealth": 20
+          },
+          {
+            "op": "traversal.links",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 2
+              },
+              {
+                "from": "ford",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 5
+              },
+              {
+                "from": "ridge",
+                "to": "tower",
+                "mode": "walk",
+                "cost": 2
+              }
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "hero",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "wren",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 1
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ford"
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ridge"
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 2
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "tower"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ford"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ridge"
+          },
+          {
+            "op": "detection.observer",
+            "id": "wolf",
+            "senses": [
+              {
+                "channel": "sight",
+                "acuity": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.target",
+            "id": "hero",
+            "location": "tower",
+            "light": 100
+          },
+          {
+            "op": "detection.observe",
+            "tick": 3,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 4,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 5,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "routine.assign",
+            "agent": "wren",
+            "routine": "herding"
+          },
+          {
+            "op": "routine.tick",
+            "agent": "wren",
+            "day": 1,
+            "hour": 9
+          },
+          {
+            "op": "skills.load",
+            "skills": [
+              {
+                "id": "climbing",
+                "category": "dexterity",
+                "maxLevel": 5,
+                "levelXp": [
+                  0,
+                  100,
+                  200,
+                  300,
+                  400,
+                  500
+                ]
+              }
+            ]
+          },
+          {
+            "op": "skills.register",
+            "id": "hero",
+            "levels": {
+              "climbing": 0
+            }
+          },
+          {
+            "op": "skills.award",
+            "actorId": "hero",
+            "skill": "climbing",
+            "amount": 120
+          },
+          {
+            "op": "skills.advance",
+            "actorId": "hero",
+            "skill": "climbing"
+          }
+        ]
+      },
+      "expected": {
+        "plan": {
+          "genre": "adventure",
+          "known": true,
+          "layers": {
+            "stamina": true,
+            "combat": true,
+            "detection": false,
+            "traversal": true,
+            "locomotion": false,
+            "routines": false,
+            "skills": false
+          },
+          "shared": {
+            "eventBus": [
+              "combat",
+              "traversal"
+            ],
+            "staminaSpenders": [
+              "combat",
+              "traversal"
+            ],
+            "locomotionGraph": null
+          },
+          "notAssembled": []
+        },
+        "steps": [
+          {
+            "absent": false,
+            "outcome": {
+              "max": 24
+            },
+            "stamina": 24
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "max": 3
+            },
+            "stamina": 3
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "health": 30
+            },
+            "stamina": 24
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "health": 20
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "links": 3
+            },
+            "stamina": null
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "location": "camp"
+            },
+            "stamina": 24
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "location": "camp"
+            },
+            "stamina": 3
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "outcome": "hit",
+              "reason": null,
+              "staminaCost": 4,
+              "staminaSpent": 4,
+              "damage": 6,
+              "targetHealthAfter": 14
+            },
+            "stamina": 20
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "refusal": null,
+              "cost": 2,
+              "location": "ford"
+            },
+            "stamina": 18
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "refusal": null,
+              "cost": 15,
+              "location": "ridge"
+            },
+            "stamina": 3
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "outcome": "exhausted",
+              "reason": "insufficient_stamina",
+              "staminaCost": 4,
+              "staminaSpent": 0,
+              "damage": 0,
+              "targetHealthAfter": 14
+            },
+            "stamina": 3
+          },
+          {
+            "absent": false,
+            "outcome": {
+              "performed": true,
+              "refusal": null,
+              "cost": 2,
+              "location": "tower"
+            },
+            "stamina": 1
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          }
+        ],
+        "events": [
+          "combat_action",
+          "traversal_completed",
+          "traversal_completed",
+          "traversal_completed"
+        ]
+      }
+    },
+    {
+      "name": "puzzle: nothing assembled",
+      "claim": "puzzle activates no layer this assembly owns: every step is absent, the bus is silent, puzzle is listed as not assembled",
+      "input": {
+        "ir": {
+          "meta": {
+            "genreConfig": {
+              "id": "puzzle"
+            }
+          },
+          "routines": {
+            "routines": [
+              {
+                "id": "herding",
+                "name": "Herding",
+                "blocks": [
+                  {
+                    "id": "pasture",
+                    "goal": "tend_flock",
+                    "startHour": 6,
+                    "endHour": 12,
+                    "place": "ford",
+                    "priority": 55
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "seed": 7,
+        "steps": [
+          {
+            "op": "stamina.register",
+            "id": "hero",
+            "max": 24
+          },
+          {
+            "op": "stamina.register",
+            "id": "wren",
+            "max": 3
+          },
+          {
+            "op": "combat.register",
+            "id": "hero",
+            "health": 30,
+            "maxHealth": 30
+          },
+          {
+            "op": "combat.register",
+            "id": "wolf",
+            "health": 20,
+            "maxHealth": 20
+          },
+          {
+            "op": "traversal.links",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 2
+              },
+              {
+                "from": "ford",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 5
+              },
+              {
+                "from": "ridge",
+                "to": "tower",
+                "mode": "walk",
+                "cost": 2
+              }
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "hero",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "traversal.register",
+            "id": "wren",
+            "location": "camp",
+            "modes": [
+              "walk",
+              "climb"
+            ]
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 1
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ford"
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "ridge"
+          },
+          {
+            "op": "combat.attack",
+            "attackerId": "hero",
+            "targetId": "wolf",
+            "action": {
+              "id": "heavy_swing",
+              "damage": 6,
+              "staminaCost": 4
+            },
+            "tick": 2
+          },
+          {
+            "op": "traversal.traverse",
+            "actorId": "hero",
+            "to": "tower"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ford"
+          },
+          {
+            "op": "locomotion.pursue",
+            "actor": "wren",
+            "destination": "ridge"
+          },
+          {
+            "op": "detection.observer",
+            "id": "wolf",
+            "senses": [
+              {
+                "channel": "sight",
+                "acuity": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.target",
+            "id": "hero",
+            "location": "tower",
+            "light": 100
+          },
+          {
+            "op": "detection.observe",
+            "tick": 3,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 4,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "detection.observe",
+            "tick": 5,
+            "readings": [
+              {
+                "observer": "wolf",
+                "target": "hero",
+                "visibility": 1
+              }
+            ]
+          },
+          {
+            "op": "routine.assign",
+            "agent": "wren",
+            "routine": "herding"
+          },
+          {
+            "op": "routine.tick",
+            "agent": "wren",
+            "day": 1,
+            "hour": 9
+          },
+          {
+            "op": "skills.load",
+            "skills": [
+              {
+                "id": "climbing",
+                "category": "dexterity",
+                "maxLevel": 5,
+                "levelXp": [
+                  0,
+                  100,
+                  200,
+                  300,
+                  400,
+                  500
+                ]
+              }
+            ]
+          },
+          {
+            "op": "skills.register",
+            "id": "hero",
+            "levels": {
+              "climbing": 0
+            }
+          },
+          {
+            "op": "skills.award",
+            "actorId": "hero",
+            "skill": "climbing",
+            "amount": 120
+          },
+          {
+            "op": "skills.advance",
+            "actorId": "hero",
+            "skill": "climbing"
+          }
+        ]
+      },
+      "expected": {
+        "plan": {
+          "genre": "puzzle",
+          "known": true,
+          "layers": {
+            "stamina": false,
+            "combat": false,
+            "detection": false,
+            "traversal": false,
+            "locomotion": false,
+            "routines": false,
+            "skills": false
+          },
+          "shared": {
+            "eventBus": [],
+            "staminaSpenders": [],
+            "locomotionGraph": null
+          },
+          "notAssembled": [
+            "puzzle"
+          ]
+        },
+        "steps": [
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          },
+          {
+            "absent": true
+          }
+        ],
+        "events": []
+      }
+    }
+  ]
+}

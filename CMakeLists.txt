@@ -669,6 +669,40 @@ add_test(NAME packs_corpus_negative COMMAND insimulcore_packs
 set_tests_properties(packs_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "expected WRONGLY to compose to an empty object [^\n]*unexpected key.*refused WRONGLY as an unknown recipe [^\n]*CompositionError: \\[unknown-engine\\].*packs_corpus: FAIL")
 
+# p9a corpora (P9a.native, rulings U84 and U79(4)): core's genre HUD, world rules
+# panel and mechanic runtime as libinsimulcore's `ui.genreHud`, `ui.rulesPanel`
+# and `mechanics.run` rows, held to core's own corpora —
+# conformance/ui/genre-hud-cases.json, conformance/ui/rules-panel-cases.json and
+# conformance/modules/mechanic-runtime.json, COPIED byte for byte into
+# corebridge/vendor/core/conformance/ at the pin (sha256s in VENDORED.json,
+# checked by core_vendor; byte-compared with core by `--check --core`). The
+# runner sends every case through insimulcore.h and compares exactly
+# (tests/p9a_corpus.cpp); it also fails when a row is missing from the table, when
+# a UI corpus declares an op no case exercises, and when its comparator cannot
+# fail. One ctest per row, so removing a row turns its own test red. A pure
+# consumer of insimulcore.h; the JSON reader is tests/radiant/json_value.cpp, used
+# unchanged. Never skips: the corpora are in-repo.
+add_executable(insimulcore_p9a tests/p9a_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_p9a PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_p9a PRIVATE insimulcore)
+set(INSIMUL_P9A_CORPUS ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance)
+add_test(NAME genre_hud_corpus COMMAND insimulcore_p9a
+  genre-hud=${INSIMUL_P9A_CORPUS}/ui/genre-hud-cases.json)
+add_test(NAME rules_panel_corpus COMMAND insimulcore_p9a
+  rules-panel=${INSIMUL_P9A_CORPUS}/ui/rules-panel-cases.json)
+add_test(NAME mechanic_runtime_corpus COMMAND insimulcore_p9a
+  mechanics=${INSIMUL_P9A_CORPUS}/modules/mechanic-runtime.json)
+# The negative control: the same runner over three deliberately wrong one-case
+# files (tests/p9a-negative/), one per row. It passes only when the runner reports
+# ALL THREE cases as differing and the run as failed — not on any non-zero exit,
+# which a missing file or a crash would also give.
+add_test(NAME p9a_corpus_negative COMMAND insimulcore_p9a
+  genre-hud=${CMAKE_CURRENT_SOURCE_DIR}/tests/p9a-negative/genre-hud-wrong.json
+  rules-panel=${CMAKE_CURRENT_SOURCE_DIR}/tests/p9a-negative/rules-panel-wrong.json
+  mechanics=${CMAKE_CURRENT_SOURCE_DIR}/tests/p9a-negative/mechanics-wrong.json)
+set_tests_properties(p9a_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "expected WRONGLY without a compass [^\n]*showCompass: boolean differs.*expected WRONGLY inactive [^\n]*\\$: boolean differs.*expected WRONGLY to deal 7 [^\n]*damage: 7 != 6.*p9a_corpus: FAIL")
+
 # corebridge_sha256: the SHA-256 the C host gives core's save envelope
 # (corebridge/src/insimulcore_sha256.c), against the NIST vectors, at every
 # split point. Compiled straight from the source: the function is internal to

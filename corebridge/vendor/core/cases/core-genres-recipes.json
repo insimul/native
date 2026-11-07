@@ -3,9 +3,9 @@
  "description": "core's recipe → game resolution corpus through genre.resolveGame; a refusal is an error carrying core's code",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "b38e60d3afe3724df3a0dc3505630e55c3f9235c",
+  "coreCommit": "f9aef13ecea289696c44ab8a299786f253c42fea",
   "files": {
-   "conformance/genres/recipes.json": "ca9aaf2443909d68abe07596799d597abfa48ec6f2ee92d878e6c94ae7fa4c64"
+   "conformance/genres/recipes.json": "ceaf4fae3d110389852fd37434999dadafe15ab5847b3b0b0d3e8ca589f065d3"
   }
  },
  "cases": [
@@ -3160,6 +3160,1147 @@
    ]
   },
   {
+   "name": "rpg-adventure by id on aldermoor-selects-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "rpg-adventure",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "traversal",
+         "combat",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "rpg-adventure",
+       "bound": true
+      },
+      "genre": {
+       "id": "rpg",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "world",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "camera": {
+       "mode": "third_person",
+       "policy": "world-default",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "rpg",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "gamification",
+        "skill-tree",
+        "adaptive-difficulty",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "rpg",
+       "known": true,
+       "modules": [
+        "combat",
+        "traversal"
+       ],
+       "predicatePacks": [
+        "combat",
+        "traversal",
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-config-kept",
+        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
+       },
+       {
+        "code": "world-modules-selected",
+        "detail": "the world's enabledModules selects the modules (combat, traversal) in place of its genre's bundle"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "rpg-adventure by its genre block on aldermoor-selects-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "rpg-adventure",
+       "genre": {
+        "id": "adventure",
+        "config": {
+         "id": "adventure",
+         "name": "Adventure",
+         "description": "Exploration, narrative, and puzzle-solving",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "tropical-pirate",
+         "features": {
+          "inventory": true,
+          "crafting": false,
+          "dialogue": true,
+          "combat": true,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": true,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "overrides": [],
+        "keepWorldConfigFor": [
+         "rpg",
+         "adventure"
+        ],
+        "recommendFor": [
+         "rpg",
+         "adventure"
+        ],
+        "howItPlays": "Behind the player · Moves freely · Keyboard and mouse · Close combat · Adventure screen"
+       }
+      },
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "traversal",
+         "combat",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "rpg-adventure",
+       "bound": true
+      },
+      "genre": {
+       "id": "rpg",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "world",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "camera": {
+       "mode": "third_person",
+       "policy": "world-default",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "rpg",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "gamification",
+        "skill-tree",
+        "adaptive-difficulty",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "rpg",
+       "known": true,
+       "modules": [
+        "combat",
+        "traversal"
+       ],
+       "predicatePacks": [
+        "combat",
+        "traversal",
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-config-kept",
+        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
+       },
+       {
+        "code": "world-modules-selected",
+        "detail": "the world's enabledModules selects the modules (combat, traversal) in place of its genre's bundle"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "rpg-adventure by id on aldermoor-wizard-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "rpg-adventure",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "knowledge-acquisition",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "rpg-adventure",
+       "bound": true
+      },
+      "genre": {
+       "id": "rpg",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "world",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "camera": {
+       "mode": "third_person",
+       "policy": "world-default",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "rpg",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "gamification",
+        "skill-tree",
+        "adaptive-difficulty",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "rpg",
+       "known": true,
+       "modules": [
+        "combat",
+        "perception",
+        "skill",
+        "traversal",
+        "equipment",
+        "agentAi",
+        "routine",
+        "map",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "combat",
+        "perception",
+        "skill",
+        "traversal",
+        "equipment",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "IPerceptionProbe",
+        "ISkillModifierSink",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "ICombatStatSink",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-config-kept",
+        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
+       },
+       {
+        "code": "world-modules-not-mechanic",
+        "detail": "the world's enabledModules (knowledge-acquisition, proficiency) names no mechanic module (feature-module ids select none), so its genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "rpg-adventure by its genre block on aldermoor-wizard-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "rpg-adventure",
+       "genre": {
+        "id": "adventure",
+        "config": {
+         "id": "adventure",
+         "name": "Adventure",
+         "description": "Exploration, narrative, and puzzle-solving",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "tropical-pirate",
+         "features": {
+          "inventory": true,
+          "crafting": false,
+          "dialogue": true,
+          "combat": true,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": true,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "overrides": [],
+        "keepWorldConfigFor": [
+         "rpg",
+         "adventure"
+        ],
+        "recommendFor": [
+         "rpg",
+         "adventure"
+        ],
+        "howItPlays": "Behind the player · Moves freely · Keyboard and mouse · Close combat · Adventure screen"
+       }
+      },
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "knowledge-acquisition",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "rpg-adventure",
+       "bound": true
+      },
+      "genre": {
+       "id": "rpg",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "world",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "camera": {
+       "mode": "third_person",
+       "policy": "world-default",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "rpg",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "gamification",
+        "skill-tree",
+        "adaptive-difficulty",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "rpg",
+       "known": true,
+       "modules": [
+        "combat",
+        "perception",
+        "skill",
+        "traversal",
+        "equipment",
+        "agentAi",
+        "routine",
+        "map",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "combat",
+        "perception",
+        "skill",
+        "traversal",
+        "equipment",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "IPerceptionProbe",
+        "ISkillModifierSink",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "ICombatStatSink",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-config-kept",
+        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
+       },
+       {
+        "code": "world-modules-not-mechanic",
+        "detail": "the world's enabledModules (knowledge-acquisition, proficiency) names no mechanic module (feature-module ids select none), so its genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "rpg-adventure by id on no-genre-world-selects-dialogue",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "rpg-adventure",
+      "world": {
+       "meta": {
+        "cameraPerspective": null,
+        "enabledModules": [
+         "dialogue"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "rpg-adventure",
+       "bound": true
+      },
+      "genre": {
+       "id": "adventure",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "adventure",
+       "name": "Adventure",
+       "description": "Exploration, narrative, and puzzle-solving",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "tropical-pirate",
+       "features": {
+        "inventory": true,
+        "crafting": false,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "camera": {
+       "mode": "third_person",
+       "policy": "world-default",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "adventure",
+       "featureModules": [
+        "knowledge-acquisition",
+        "gamification",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "adventure",
+       "known": true,
+       "modules": [
+        "perception",
+        "traversal",
+        "agentAi",
+        "routine",
+        "map",
+        "volition",
+        "weather",
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "perception",
+        "traversal",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "dialogue",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IPerceptionProbe",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'rpg-adventure' replaces the world's settings, so the world's enabledModules (dialogue) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "rpg-adventure by its genre block on no-genre-world-selects-dialogue",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "rpg-adventure",
+       "genre": {
+        "id": "adventure",
+        "config": {
+         "id": "adventure",
+         "name": "Adventure",
+         "description": "Exploration, narrative, and puzzle-solving",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "tropical-pirate",
+         "features": {
+          "inventory": true,
+          "crafting": false,
+          "dialogue": true,
+          "combat": true,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": true,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "overrides": [],
+        "keepWorldConfigFor": [
+         "rpg",
+         "adventure"
+        ],
+        "recommendFor": [
+         "rpg",
+         "adventure"
+        ],
+        "howItPlays": "Behind the player · Moves freely · Keyboard and mouse · Close combat · Adventure screen"
+       }
+      },
+      "world": {
+       "meta": {
+        "cameraPerspective": null,
+        "enabledModules": [
+         "dialogue"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "rpg-adventure",
+       "bound": true
+      },
+      "genre": {
+       "id": "adventure",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "adventure",
+       "name": "Adventure",
+       "description": "Exploration, narrative, and puzzle-solving",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "tropical-pirate",
+       "features": {
+        "inventory": true,
+        "crafting": false,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "camera": {
+       "mode": "third_person",
+       "policy": "world-default",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "adventure",
+       "featureModules": [
+        "knowledge-acquisition",
+        "gamification",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "adventure",
+       "known": true,
+       "modules": [
+        "perception",
+        "traversal",
+        "agentAi",
+        "routine",
+        "map",
+        "volition",
+        "weather",
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "perception",
+        "traversal",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "dialogue",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IPerceptionProbe",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'rpg-adventure' replaces the world's settings, so the world's enabledModules (dialogue) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
    "name": "rpg-adventure by id on no-world",
    "steps": [
     {
@@ -6092,6 +7233,992 @@
        ]
       },
       "notes": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle by id on aldermoor-selects-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "puzzle",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "traversal",
+         "combat",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "puzzle",
+       "bound": true
+      },
+      "genre": {
+       "id": "puzzle",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "puzzle",
+       "name": "Puzzle",
+       "description": "Logic challenges and problem-solving",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "puzzle",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": false,
+        "skills": false
+       },
+       "questTypes": [
+        "puzzle"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "expert"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "puzzle",
+       "featureModules": [
+        "pattern-recognition",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "puzzle",
+       "known": true,
+       "modules": [
+        "puzzle"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "puzzle",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'puzzle' replaces the world's settings, so the world's enabledModules (traversal, combat, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle by its genre block on aldermoor-selects-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "puzzle",
+       "genre": {
+        "id": "puzzle",
+        "config": {
+         "id": "puzzle",
+         "name": "Puzzle",
+         "description": "Logic challenges and problem-solving",
+         "cameraMode": "isometric",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "none",
+         "movementStyle": "free",
+         "uiLayout": "puzzle",
+         "defaultWorldType": "generic",
+         "features": {
+          "inventory": false,
+          "crafting": false,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": false,
+          "skills": false
+         },
+         "questTypes": [
+          "puzzle"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "expert"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": false,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": false
+        },
+        "overrides": [],
+        "keepWorldConfigFor": [],
+        "recommendFor": [
+         "puzzle"
+        ],
+        "howItPlays": "Angled view from above · Moves freely · Keyboard and mouse · No combat · Puzzle screen"
+       }
+      },
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "traversal",
+         "combat",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "puzzle",
+       "bound": true
+      },
+      "genre": {
+       "id": "puzzle",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "puzzle",
+       "name": "Puzzle",
+       "description": "Logic challenges and problem-solving",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "puzzle",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": false,
+        "skills": false
+       },
+       "questTypes": [
+        "puzzle"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "expert"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "puzzle",
+       "featureModules": [
+        "pattern-recognition",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "puzzle",
+       "known": true,
+       "modules": [
+        "puzzle"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "puzzle",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'puzzle' replaces the world's settings, so the world's enabledModules (traversal, combat, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle by id on aldermoor-wizard-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "puzzle",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "knowledge-acquisition",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "puzzle",
+       "bound": true
+      },
+      "genre": {
+       "id": "puzzle",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "puzzle",
+       "name": "Puzzle",
+       "description": "Logic challenges and problem-solving",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "puzzle",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": false,
+        "skills": false
+       },
+       "questTypes": [
+        "puzzle"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "expert"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "puzzle",
+       "featureModules": [
+        "pattern-recognition",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "puzzle",
+       "known": true,
+       "modules": [
+        "puzzle"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "puzzle",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'puzzle' replaces the world's settings, so the world's enabledModules (knowledge-acquisition, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle by its genre block on aldermoor-wizard-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "puzzle",
+       "genre": {
+        "id": "puzzle",
+        "config": {
+         "id": "puzzle",
+         "name": "Puzzle",
+         "description": "Logic challenges and problem-solving",
+         "cameraMode": "isometric",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "none",
+         "movementStyle": "free",
+         "uiLayout": "puzzle",
+         "defaultWorldType": "generic",
+         "features": {
+          "inventory": false,
+          "crafting": false,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": false,
+          "skills": false
+         },
+         "questTypes": [
+          "puzzle"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "expert"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": false,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": false
+        },
+        "overrides": [],
+        "keepWorldConfigFor": [],
+        "recommendFor": [
+         "puzzle"
+        ],
+        "howItPlays": "Angled view from above · Moves freely · Keyboard and mouse · No combat · Puzzle screen"
+       }
+      },
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "knowledge-acquisition",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "puzzle",
+       "bound": true
+      },
+      "genre": {
+       "id": "puzzle",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "puzzle",
+       "name": "Puzzle",
+       "description": "Logic challenges and problem-solving",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "puzzle",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": false,
+        "skills": false
+       },
+       "questTypes": [
+        "puzzle"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "expert"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "puzzle",
+       "featureModules": [
+        "pattern-recognition",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "puzzle",
+       "known": true,
+       "modules": [
+        "puzzle"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "puzzle",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'puzzle' replaces the world's settings, so the world's enabledModules (knowledge-acquisition, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle by id on no-genre-world-selects-dialogue",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "puzzle",
+      "world": {
+       "meta": {
+        "cameraPerspective": null,
+        "enabledModules": [
+         "dialogue"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "puzzle",
+       "bound": true
+      },
+      "genre": {
+       "id": "puzzle",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "puzzle",
+       "name": "Puzzle",
+       "description": "Logic challenges and problem-solving",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "puzzle",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": false,
+        "skills": false
+       },
+       "questTypes": [
+        "puzzle"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "expert"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "puzzle",
+       "featureModules": [
+        "pattern-recognition",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "puzzle",
+       "known": true,
+       "modules": [
+        "puzzle"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "puzzle",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'puzzle' replaces the world's settings, so the world's enabledModules (dialogue) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "puzzle by its genre block on no-genre-world-selects-dialogue",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "puzzle",
+       "genre": {
+        "id": "puzzle",
+        "config": {
+         "id": "puzzle",
+         "name": "Puzzle",
+         "description": "Logic challenges and problem-solving",
+         "cameraMode": "isometric",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "none",
+         "movementStyle": "free",
+         "uiLayout": "puzzle",
+         "defaultWorldType": "generic",
+         "features": {
+          "inventory": false,
+          "crafting": false,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": false,
+          "skills": false
+         },
+         "questTypes": [
+          "puzzle"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "expert"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": false,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": false
+        },
+        "overrides": [],
+        "keepWorldConfigFor": [],
+        "recommendFor": [
+         "puzzle"
+        ],
+        "howItPlays": "Angled view from above · Moves freely · Keyboard and mouse · No combat · Puzzle screen"
+       }
+      },
+      "world": {
+       "meta": {
+        "cameraPerspective": null,
+        "enabledModules": [
+         "dialogue"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "puzzle",
+       "bound": true
+      },
+      "genre": {
+       "id": "puzzle",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "puzzle",
+       "name": "Puzzle",
+       "description": "Logic challenges and problem-solving",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "free",
+       "uiLayout": "puzzle",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": false,
+        "skills": false
+       },
+       "questTypes": [
+        "puzzle"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "expert"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": false,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "puzzle",
+       "featureModules": [
+        "pattern-recognition",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "puzzle",
+       "known": true,
+       "modules": [
+        "puzzle"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "puzzle",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'puzzle' replaces the world's settings, so the world's enabledModules (dialogue) is not used: the recipe's genre decides the modules"
+       }
+      ]
      }
     }
    ]
@@ -9077,6 +11204,1019 @@
    ]
   },
   {
+   "name": "platformer by id on aldermoor-selects-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "platformer",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "traversal",
+         "combat",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "platformer",
+       "bound": true
+      },
+      "genre": {
+       "id": "platformer",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "platformer",
+       "name": "Platformer",
+       "description": "Jumping and navigating levels",
+       "cameraMode": "side_scroll",
+       "movementPlane": "xy",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "platformer",
+       "uiLayout": "platformer",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": false,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "platformer"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1.5,
+       "gravityMultiplier": 1.2,
+       "showMinimap": false,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "side_scroll",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "platformer",
+       "featureModules": [
+        "performance-scoring",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "platformer",
+       "known": true,
+       "modules": [
+        "traversal",
+        "platformer"
+       ],
+       "predicatePacks": [
+        "traversal",
+        "gameplayState",
+        "platformer",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'platformer' replaces the world's settings, so the world's enabledModules (traversal, combat, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "platformer by its genre block on aldermoor-selects-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "platformer",
+       "genre": {
+        "id": "platformer",
+        "config": {
+         "id": "platformer",
+         "name": "Platformer",
+         "description": "Jumping and navigating levels",
+         "cameraMode": "side_scroll",
+         "movementPlane": "xy",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "none",
+         "movementStyle": "platformer",
+         "uiLayout": "platformer",
+         "defaultWorldType": "generic",
+         "features": {
+          "inventory": false,
+          "crafting": false,
+          "dialogue": false,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "platformer"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1.5,
+         "gravityMultiplier": 1.2,
+         "showMinimap": false,
+         "showHealthBar": true,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": false
+        },
+        "overrides": [
+         {
+          "path": "combatStyle",
+          "value": "none",
+          "why": "The registry's platformer sets combatStyle melee while its features.combat is false; every engine's combat gate reads features.combat, so no combat runs, and the recipe's How it plays line must not promise Close combat. The registry entry itself is unchanged."
+         }
+        ],
+        "keepWorldConfigFor": [],
+        "recommendFor": [
+         "platformer"
+        ],
+        "howItPlays": "Side view · Runs and jumps · Keyboard and mouse · No combat · Platformer screen"
+       }
+      },
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "traversal",
+         "combat",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "platformer",
+       "bound": true
+      },
+      "genre": {
+       "id": "platformer",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "platformer",
+       "name": "Platformer",
+       "description": "Jumping and navigating levels",
+       "cameraMode": "side_scroll",
+       "movementPlane": "xy",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "platformer",
+       "uiLayout": "platformer",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": false,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "platformer"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1.5,
+       "gravityMultiplier": 1.2,
+       "showMinimap": false,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "side_scroll",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "platformer",
+       "featureModules": [
+        "performance-scoring",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "platformer",
+       "known": true,
+       "modules": [
+        "traversal",
+        "platformer"
+       ],
+       "predicatePacks": [
+        "traversal",
+        "gameplayState",
+        "platformer",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'platformer' replaces the world's settings, so the world's enabledModules (traversal, combat, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "platformer by id on aldermoor-wizard-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "platformer",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "knowledge-acquisition",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "platformer",
+       "bound": true
+      },
+      "genre": {
+       "id": "platformer",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "platformer",
+       "name": "Platformer",
+       "description": "Jumping and navigating levels",
+       "cameraMode": "side_scroll",
+       "movementPlane": "xy",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "platformer",
+       "uiLayout": "platformer",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": false,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "platformer"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1.5,
+       "gravityMultiplier": 1.2,
+       "showMinimap": false,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "side_scroll",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "platformer",
+       "featureModules": [
+        "performance-scoring",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "platformer",
+       "known": true,
+       "modules": [
+        "traversal",
+        "platformer"
+       ],
+       "predicatePacks": [
+        "traversal",
+        "gameplayState",
+        "platformer",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'platformer' replaces the world's settings, so the world's enabledModules (knowledge-acquisition, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "platformer by its genre block on aldermoor-wizard-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "platformer",
+       "genre": {
+        "id": "platformer",
+        "config": {
+         "id": "platformer",
+         "name": "Platformer",
+         "description": "Jumping and navigating levels",
+         "cameraMode": "side_scroll",
+         "movementPlane": "xy",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "none",
+         "movementStyle": "platformer",
+         "uiLayout": "platformer",
+         "defaultWorldType": "generic",
+         "features": {
+          "inventory": false,
+          "crafting": false,
+          "dialogue": false,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "platformer"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1.5,
+         "gravityMultiplier": 1.2,
+         "showMinimap": false,
+         "showHealthBar": true,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": false
+        },
+        "overrides": [
+         {
+          "path": "combatStyle",
+          "value": "none",
+          "why": "The registry's platformer sets combatStyle melee while its features.combat is false; every engine's combat gate reads features.combat, so no combat runs, and the recipe's How it plays line must not promise Close combat. The registry entry itself is unchanged."
+         }
+        ],
+        "keepWorldConfigFor": [],
+        "recommendFor": [
+         "platformer"
+        ],
+        "howItPlays": "Side view · Runs and jumps · Keyboard and mouse · No combat · Platformer screen"
+       }
+      },
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "knowledge-acquisition",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "platformer",
+       "bound": true
+      },
+      "genre": {
+       "id": "platformer",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "platformer",
+       "name": "Platformer",
+       "description": "Jumping and navigating levels",
+       "cameraMode": "side_scroll",
+       "movementPlane": "xy",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "platformer",
+       "uiLayout": "platformer",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": false,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "platformer"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1.5,
+       "gravityMultiplier": 1.2,
+       "showMinimap": false,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "side_scroll",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "platformer",
+       "featureModules": [
+        "performance-scoring",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "platformer",
+       "known": true,
+       "modules": [
+        "traversal",
+        "platformer"
+       ],
+       "predicatePacks": [
+        "traversal",
+        "gameplayState",
+        "platformer",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'platformer' replaces the world's settings, so the world's enabledModules (knowledge-acquisition, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "platformer by id on no-genre-world-selects-dialogue",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "platformer",
+      "world": {
+       "meta": {
+        "cameraPerspective": null,
+        "enabledModules": [
+         "dialogue"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "platformer",
+       "bound": true
+      },
+      "genre": {
+       "id": "platformer",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "platformer",
+       "name": "Platformer",
+       "description": "Jumping and navigating levels",
+       "cameraMode": "side_scroll",
+       "movementPlane": "xy",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "platformer",
+       "uiLayout": "platformer",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": false,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "platformer"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1.5,
+       "gravityMultiplier": 1.2,
+       "showMinimap": false,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "side_scroll",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "platformer",
+       "featureModules": [
+        "performance-scoring",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "platformer",
+       "known": true,
+       "modules": [
+        "traversal",
+        "platformer"
+       ],
+       "predicatePacks": [
+        "traversal",
+        "gameplayState",
+        "platformer",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'platformer' replaces the world's settings, so the world's enabledModules (dialogue) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "platformer by its genre block on no-genre-world-selects-dialogue",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "platformer",
+       "genre": {
+        "id": "platformer",
+        "config": {
+         "id": "platformer",
+         "name": "Platformer",
+         "description": "Jumping and navigating levels",
+         "cameraMode": "side_scroll",
+         "movementPlane": "xy",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "none",
+         "movementStyle": "platformer",
+         "uiLayout": "platformer",
+         "defaultWorldType": "generic",
+         "features": {
+          "inventory": false,
+          "crafting": false,
+          "dialogue": false,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "platformer"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1.5,
+         "gravityMultiplier": 1.2,
+         "showMinimap": false,
+         "showHealthBar": true,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": false
+        },
+        "overrides": [
+         {
+          "path": "combatStyle",
+          "value": "none",
+          "why": "The registry's platformer sets combatStyle melee while its features.combat is false; every engine's combat gate reads features.combat, so no combat runs, and the recipe's How it plays line must not promise Close combat. The registry entry itself is unchanged."
+         }
+        ],
+        "keepWorldConfigFor": [],
+        "recommendFor": [
+         "platformer"
+        ],
+        "howItPlays": "Side view · Runs and jumps · Keyboard and mouse · No combat · Platformer screen"
+       }
+      },
+      "world": {
+       "meta": {
+        "cameraPerspective": null,
+        "enabledModules": [
+         "dialogue"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "platformer",
+       "bound": true
+      },
+      "genre": {
+       "id": "platformer",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "platformer",
+       "name": "Platformer",
+       "description": "Jumping and navigating levels",
+       "cameraMode": "side_scroll",
+       "movementPlane": "xy",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "none",
+       "movementStyle": "platformer",
+       "uiLayout": "platformer",
+       "defaultWorldType": "generic",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": false,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "platformer"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1.5,
+       "gravityMultiplier": 1.2,
+       "showMinimap": false,
+       "showHealthBar": true,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "side_scroll",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "platformer",
+       "featureModules": [
+        "performance-scoring",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "platformer",
+       "known": true,
+       "modules": [
+        "traversal",
+        "platformer"
+       ],
+       "predicatePacks": [
+        "traversal",
+        "gameplayState",
+        "platformer",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'platformer' replaces the world's settings, so the world's enabledModules (dialogue) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
    "name": "platformer by id on no-world",
    "steps": [
     {
@@ -11976,6 +15116,989 @@
    ]
   },
   {
+   "name": "strategy by id on aldermoor-selects-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "strategy",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "traversal",
+         "combat",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "strategy",
+       "bound": true
+      },
+      "genre": {
+       "id": "strategy",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "strategy",
+       "name": "Strategy",
+       "description": "Tactical decision-making and resource management",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "point_click",
+       "combatStyle": "none",
+       "movementStyle": "grid",
+       "uiLayout": "rts",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "strategy"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 0,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "strategy",
+       "featureModules": [
+        "proficiency",
+        "gamification",
+        "adaptive-difficulty",
+        "world-lore",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "strategy",
+       "known": true,
+       "modules": [
+        "strategy"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "strategy",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'strategy' replaces the world's settings, so the world's enabledModules (traversal, combat, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy by its genre block on aldermoor-selects-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "strategy",
+       "genre": {
+        "id": "strategy",
+        "config": {
+         "id": "strategy",
+         "name": "Strategy",
+         "description": "Tactical decision-making and resource management",
+         "cameraMode": "isometric",
+         "movementPlane": "free",
+         "controlScheme": "point_click",
+         "combatStyle": "none",
+         "movementStyle": "grid",
+         "uiLayout": "rts",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": false,
+          "crafting": false,
+          "dialogue": true,
+          "combat": false,
+          "building": true,
+          "resources": true,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "strategy"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 0,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": false
+        },
+        "overrides": [],
+        "keepWorldConfigFor": [],
+        "recommendFor": [
+         "strategy"
+        ],
+        "howItPlays": "Angled view from above · Moves square by square · Point and click · No combat · Strategy screen · Has: building, resources"
+       }
+      },
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "traversal",
+         "combat",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "strategy",
+       "bound": true
+      },
+      "genre": {
+       "id": "strategy",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "strategy",
+       "name": "Strategy",
+       "description": "Tactical decision-making and resource management",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "point_click",
+       "combatStyle": "none",
+       "movementStyle": "grid",
+       "uiLayout": "rts",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "strategy"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 0,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "strategy",
+       "featureModules": [
+        "proficiency",
+        "gamification",
+        "adaptive-difficulty",
+        "world-lore",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "strategy",
+       "known": true,
+       "modules": [
+        "strategy"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "strategy",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'strategy' replaces the world's settings, so the world's enabledModules (traversal, combat, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy by id on aldermoor-wizard-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "strategy",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "knowledge-acquisition",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "strategy",
+       "bound": true
+      },
+      "genre": {
+       "id": "strategy",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "strategy",
+       "name": "Strategy",
+       "description": "Tactical decision-making and resource management",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "point_click",
+       "combatStyle": "none",
+       "movementStyle": "grid",
+       "uiLayout": "rts",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "strategy"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 0,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "strategy",
+       "featureModules": [
+        "proficiency",
+        "gamification",
+        "adaptive-difficulty",
+        "world-lore",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "strategy",
+       "known": true,
+       "modules": [
+        "strategy"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "strategy",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'strategy' replaces the world's settings, so the world's enabledModules (knowledge-acquisition, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy by its genre block on aldermoor-wizard-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "strategy",
+       "genre": {
+        "id": "strategy",
+        "config": {
+         "id": "strategy",
+         "name": "Strategy",
+         "description": "Tactical decision-making and resource management",
+         "cameraMode": "isometric",
+         "movementPlane": "free",
+         "controlScheme": "point_click",
+         "combatStyle": "none",
+         "movementStyle": "grid",
+         "uiLayout": "rts",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": false,
+          "crafting": false,
+          "dialogue": true,
+          "combat": false,
+          "building": true,
+          "resources": true,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "strategy"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 0,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": false
+        },
+        "overrides": [],
+        "keepWorldConfigFor": [],
+        "recommendFor": [
+         "strategy"
+        ],
+        "howItPlays": "Angled view from above · Moves square by square · Point and click · No combat · Strategy screen · Has: building, resources"
+       }
+      },
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "knowledge-acquisition",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "strategy",
+       "bound": true
+      },
+      "genre": {
+       "id": "strategy",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "strategy",
+       "name": "Strategy",
+       "description": "Tactical decision-making and resource management",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "point_click",
+       "combatStyle": "none",
+       "movementStyle": "grid",
+       "uiLayout": "rts",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "strategy"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 0,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "strategy",
+       "featureModules": [
+        "proficiency",
+        "gamification",
+        "adaptive-difficulty",
+        "world-lore",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "strategy",
+       "known": true,
+       "modules": [
+        "strategy"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "strategy",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'strategy' replaces the world's settings, so the world's enabledModules (knowledge-acquisition, proficiency) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy by id on no-genre-world-selects-dialogue",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": "strategy",
+      "world": {
+       "meta": {
+        "cameraPerspective": null,
+        "enabledModules": [
+         "dialogue"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "strategy",
+       "bound": true
+      },
+      "genre": {
+       "id": "strategy",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "strategy",
+       "name": "Strategy",
+       "description": "Tactical decision-making and resource management",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "point_click",
+       "combatStyle": "none",
+       "movementStyle": "grid",
+       "uiLayout": "rts",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "strategy"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 0,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "strategy",
+       "featureModules": [
+        "proficiency",
+        "gamification",
+        "adaptive-difficulty",
+        "world-lore",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "strategy",
+       "known": true,
+       "modules": [
+        "strategy"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "strategy",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'strategy' replaces the world's settings, so the world's enabledModules (dialogue) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "strategy by its genre block on no-genre-world-selects-dialogue",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": {
+       "id": "strategy",
+       "genre": {
+        "id": "strategy",
+        "config": {
+         "id": "strategy",
+         "name": "Strategy",
+         "description": "Tactical decision-making and resource management",
+         "cameraMode": "isometric",
+         "movementPlane": "free",
+         "controlScheme": "point_click",
+         "combatStyle": "none",
+         "movementStyle": "grid",
+         "uiLayout": "rts",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": false,
+          "crafting": false,
+          "dialogue": true,
+          "combat": false,
+          "building": true,
+          "resources": true,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "strategy"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 0,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": false
+        },
+        "overrides": [],
+        "keepWorldConfigFor": [],
+        "recommendFor": [
+         "strategy"
+        ],
+        "howItPlays": "Angled view from above · Moves square by square · Point and click · No combat · Strategy screen · Has: building, resources"
+       }
+      },
+      "world": {
+       "meta": {
+        "cameraPerspective": null,
+        "enabledModules": [
+         "dialogue"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": {
+       "id": "strategy",
+       "bound": true
+      },
+      "genre": {
+       "id": "strategy",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "recipe",
+      "config": {
+       "id": "strategy",
+       "name": "Strategy",
+       "description": "Tactical decision-making and resource management",
+       "cameraMode": "isometric",
+       "movementPlane": "free",
+       "controlScheme": "point_click",
+       "combatStyle": "none",
+       "movementStyle": "grid",
+       "uiLayout": "rts",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": false,
+        "crafting": false,
+        "dialogue": true,
+        "combat": false,
+        "building": true,
+        "resources": true,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "strategy"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 0,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      },
+      "camera": {
+       "mode": "isometric",
+       "policy": "recipe",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "strategy",
+       "featureModules": [
+        "proficiency",
+        "gamification",
+        "adaptive-difficulty",
+        "world-lore",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "strategy",
+       "known": true,
+       "modules": [
+        "strategy"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "strategy",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-unused",
+        "detail": "recipe 'strategy' replaces the world's settings, so the world's enabledModules (dialogue) is not used: the recipe's genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
    "name": "strategy by id on no-world",
    "steps": [
     {
@@ -13470,6 +17593,462 @@
    ]
   },
   {
+   "name": "no recipe on aldermoor-selects-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": null,
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "traversal",
+         "combat",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": null,
+      "genre": {
+       "id": "rpg",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "world",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "camera": {
+       "mode": "third_person",
+       "policy": "world-default",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "rpg",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "gamification",
+        "skill-tree",
+        "adaptive-difficulty",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "rpg",
+       "known": true,
+       "modules": [
+        "combat",
+        "traversal"
+       ],
+       "predicatePacks": [
+        "combat",
+        "traversal",
+        "gameplayState",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "ITraversalProbe",
+        "ILocomotionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-selected",
+        "detail": "the world's enabledModules selects the modules (combat, traversal) in place of its genre's bundle"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "no recipe on aldermoor-wizard-modules",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": null,
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "name": "RPG",
+         "description": "Role-playing game with character progression, quests, and story",
+         "cameraMode": "third_person",
+         "movementPlane": "free",
+         "controlScheme": "wasd_mouse",
+         "combatStyle": "melee",
+         "movementStyle": "free",
+         "uiLayout": "action_rpg",
+         "defaultWorldType": "medieval-fantasy",
+         "features": {
+          "inventory": true,
+          "crafting": true,
+          "dialogue": true,
+          "combat": false,
+          "building": false,
+          "resources": false,
+          "permadeath": false,
+          "quests": true,
+          "experience": true,
+          "skills": true
+         },
+         "questTypes": [
+          "rpg"
+         ],
+         "difficultyLevels": [
+          "easy",
+          "normal",
+          "hard",
+          "legendary"
+         ],
+         "defaultPlayerSpeed": 1,
+         "defaultJumpHeight": 1,
+         "gravityMultiplier": 1,
+         "showMinimap": true,
+         "showHealthBar": false,
+         "showStaminaBar": false,
+         "showAmmoCounter": false,
+         "showCompass": true
+        },
+        "cameraPerspective": null,
+        "enabledModules": [
+         "knowledge-acquisition",
+         "proficiency"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": null,
+      "genre": {
+       "id": "rpg",
+       "known": true,
+       "fallback": null
+      },
+      "configSource": "world",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": false,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "camera": {
+       "mode": "third_person",
+       "policy": "world-default",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": "rpg",
+       "featureModules": [
+        "knowledge-acquisition",
+        "proficiency",
+        "gamification",
+        "skill-tree",
+        "adaptive-difficulty",
+        "world-lore",
+        "conversation-analytics",
+        "onboarding"
+       ]
+      },
+      "activation": {
+       "genre": "rpg",
+       "known": true,
+       "modules": [
+        "combat",
+        "perception",
+        "skill",
+        "traversal",
+        "equipment",
+        "agentAi",
+        "routine",
+        "map",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "combat",
+        "perception",
+        "skill",
+        "traversal",
+        "equipment",
+        "gameplayState",
+        "agentAi",
+        "routine",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue",
+        "script",
+        "placement",
+        "map",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "IPerceptionProbe",
+        "ISkillModifierSink",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "ICombatStatSink",
+        "IAgentActionHost",
+        "IWeatherSink"
+       ]
+      },
+      "notes": [
+       {
+        "code": "world-modules-not-mechanic",
+        "detail": "the world's enabledModules (knowledge-acquisition, proficiency) names no mechanic module (feature-module ids select none), so its genre decides the modules"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "no recipe on no-genre-world-selects-dialogue",
+   "steps": [
+    {
+     "call": "genre.resolveGame",
+     "args": {
+      "recipe": null,
+      "world": {
+       "meta": {
+        "cameraPerspective": null,
+        "enabledModules": [
+         "dialogue"
+        ]
+       }
+      }
+     },
+     "expect": {
+      "recipe": null,
+      "genre": {
+       "id": "rpg",
+       "known": false,
+       "fallback": {
+        "reason": "no-genre",
+        "requested": null,
+        "to": "rpg"
+       }
+      },
+      "configSource": "registry-fallback",
+      "config": {
+       "id": "rpg",
+       "name": "RPG",
+       "description": "Role-playing game with character progression, quests, and story",
+       "cameraMode": "third_person",
+       "movementPlane": "free",
+       "controlScheme": "wasd_mouse",
+       "combatStyle": "melee",
+       "movementStyle": "free",
+       "uiLayout": "action_rpg",
+       "defaultWorldType": "medieval-fantasy",
+       "features": {
+        "inventory": true,
+        "crafting": true,
+        "dialogue": true,
+        "combat": true,
+        "building": false,
+        "resources": false,
+        "permadeath": false,
+        "quests": true,
+        "experience": true,
+        "skills": true
+       },
+       "questTypes": [
+        "rpg"
+       ],
+       "difficultyLevels": [
+        "easy",
+        "normal",
+        "hard",
+        "legendary"
+       ],
+       "defaultPlayerSpeed": 1,
+       "defaultJumpHeight": 1,
+       "gravityMultiplier": 1,
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      },
+      "camera": {
+       "mode": "third_person",
+       "policy": "world-default",
+       "source": "genreConfig.cameraMode",
+       "worldPerspective": null
+      },
+      "bundle": {
+       "id": null,
+       "featureModules": []
+      },
+      "activation": {
+       "genre": "",
+       "known": false,
+       "modules": [
+        "dialogue"
+       ],
+       "predicatePacks": [
+        "gameplayState",
+        "dialogue",
+        "script",
+        "placement",
+        "scaffold"
+       ],
+       "hostInterfaces": [
+        "IAgentActionHost"
+       ]
+      },
+      "notes": [
+       {
+        "code": "no-genre",
+        "detail": "the world carries no genre; the 'rpg' settings are used"
+       },
+       {
+        "code": "world-modules-selected",
+        "detail": "the world's enabledModules selects the modules (dialogue) in place of its genre's bundle"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
    "name": "no recipe on no-world",
    "steps": [
     {
@@ -13687,20 +18266,45 @@
        "worldPerspective": "first_person"
       },
       "bundle": {
-       "id": null,
-       "featureModules": []
+       "id": "shooter",
+       "featureModules": [
+        "proficiency",
+        "performance-scoring",
+        "gamification",
+        "adaptive-difficulty",
+        "onboarding"
+       ]
       },
       "activation": {
        "genre": "shooter",
-       "known": false,
-       "modules": [],
+       "known": true,
+       "modules": [
+        "combat",
+        "skill",
+        "traversal",
+        "equipment",
+        "agentAi"
+       ],
        "predicatePacks": [
+        "combat",
+        "skill",
+        "traversal",
+        "equipment",
         "gameplayState",
+        "agentAi",
         "script",
         "placement",
         "scaffold"
        ],
-       "hostInterfaces": []
+       "hostInterfaces": [
+        "ICombatSystem",
+        "ITrajectoryProbe",
+        "ISkillModifierSink",
+        "ITraversalProbe",
+        "ILocomotionHost",
+        "ICombatStatSink",
+        "IAgentActionHost"
+       ]
       },
       "notes": []
      }

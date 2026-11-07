@@ -15,7 +15,9 @@
       "conformance/items/transactions.json",
       "conformance/items/equipping.json",
       "conformance/prolog/mechanic-equipment.json",
-      "conformance/ui/registry-cases.json"
+      "conformance/ui/registry-cases.json",
+      "conformance/ui/inventory-cases.json",
+      "conformance/props/containers.json"
     ]
   },
   "requires": [{ "id": "hud", "version": "^1" }, { "id": "saves", "version": "^1" }],

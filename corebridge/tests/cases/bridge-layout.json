@@ -27,6 +27,7 @@
        "layoutObstaclesOf",
        "plantTrunkOutline",
        "layoutConstants",
+       "startClearOutline",
        "buildGroundPlan",
        "gradeTerrain",
        "followSettledBuildings",

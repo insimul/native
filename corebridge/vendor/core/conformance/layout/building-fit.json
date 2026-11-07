@@ -1,6 +1,6 @@
 {
   "area": "layout-building-fit",
-  "description": "Buildings fitted to their lots (core src/editor/layout/building-fit.ts; the Unreal plugin's BYOA B2/B7/B8 fit, characterised from its Portable code before core implemented it). The door finder's part rule, a body's stature for the door hold, the fit itself (one uniform factor within the binding's limits, held up so the door leaf is doorClearance x the tallest body, the footprint centred on its lot plus the settle, the door turned to the street, the seat on the ground) and the overlaps of fitted footprints with each other and the paving. Brightwater Vale's seven lots carry the B8 pairing's houses as measured in the test project (House_01 for the farm, the smithy and the third home; House_03, the nearest measured house, standing for House_02 on the bakery and two homes; House_Large for the restaurant), the 6 m neighbour gap, the seat sinks the pairing writes and the 2.01 m cast; the rest are the degraded cases. Plan frame: IR (x, z) metres, y up, a heading points along (cos h, sin h); asset-local geometry in core's convention (x right, y up, z forward, metres), placed forward along the heading and right along heading + pi/2.",
+  "description": "Buildings fitted to their lots (core src/editor/layout/building-fit.ts; the Unreal plugin's BYOA B2/B7/B8 fit, characterised from its Portable code before core implemented it). The door finder's part rule, a body's stature for the door hold, the fit itself (one uniform factor within the binding's limits, held up so the door leaf is doorClearance x the tallest body, the footprint centred on its lot plus the settle, the door turned to the street, the seat on the ground) and the overlaps of fitted footprints with each other and the paving. Brightwater Vale's seven lots carry the B8 pairing's houses as the editor measured them in the village it builds (House_01, BP_House_01, for the farm, the smithy and the third home; House_03 standing for BP_House_02 on the bakery and two homes, with BP_House_02's own bounds and door parts; House_Large, BP_House_Large_03, for the restaurant), the 6 m neighbour gap, the seat sinks the pairing writes and the 2.01 m cast; the rest are the degraded cases. Plan frame: IR (x, z) metres, y up, a heading points along (cos h, sin h); asset-local geometry in core's convention (x right, y up, z forward, metres), placed forward along the heading and right along heading + pi/2.",
   "version": 1,
   "sources": [
     {
@@ -9,6 +9,12 @@
       "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
       "pairing": "BYOA B8 round 5 (unreal/byoa/state/byoa-b8/round-5): houses by role, the 6 m neighbour gap, the seat sinks, the 2.01 m cast, MI_Landscape_01a's layers and its ground paint",
       "world": "Brightwater Vale (6abb84ae358820954abf1ea2)"
+    },
+    {
+      "cases": "'door: House_03, a leaf wins over its wall's opening; a flat hatch is no door' (renamed from 'door: House_03, a leaf wins over a nearer side opening': the side opening is not in BP_House_02), the two 'door: House_Large' cases, the seven 'brightwater:' and seven 'brightwater settled:' fits, 'fit: the large house, held over a wider range' and the two Brightwater 'overlaps:' cases (PL.layout-standins, operator ruling U80(3))",
+      "measuredBy": "the Unreal editor at unreal 86857a0 (P0.unreal.u23-boxes round 1, WV0 run 2, 2026-11-05): the 36 GB Mac's tools/probe_u23.py over the paired level PairedBrightwater, MeshPartsOf's union of visible static-mesh parts in the actor's unscaled local cm. House_03 (the stand-in for BP_House_02) takes BP_House_02's bounds [-494.66, -631.06, -535.67]..[742.2, 747.75, 405.72] cm and its 3 door-named parts (BP_Door2_SM_Door_2_StaticMeshComponent0 [356.86, 15.28, -409.3]..[480.43, 72.54, -176.19], SM_Wall_Door / SM_Wall_Door_02 [343.13, -138.16, -402.19]..[374.08, 168.51, -51.48], SM_Door_B [-494.66, 5.44, -358.67]..[-262.46, 230.82, -344.49]; it was House_01's parts plus StaticMesh13); House_Large takes BP_House_Large_03's bounds [-607.4, -817.58, -212.3]..[738.67, 950.49, 955.8] cm (its 5 door parts measured identical). House_01 is unchanged: BP_House_01 measured equal to it, bounds and door parts, the method's control. Core's re-derived wanted factors equal the editor's fit reports (0.725268 on _4 and _6, 0.808473 on the bakery, 0.769645 on House_01's three, 0.848368 on the restaurant)",
+      "record": "$LOOPS_HOME/unreal/state/wv0-1104/p0-unreal-u23-boxes/round-1-builder.md (\"Results\"), standins.txt and runs/main-86857a0-r2/probe.json",
+      "writtenBy": "core scripts/restand-layout-corpus.ts --write (scripts/layout-standins.ts): the measured values set, then every expected answer, and every input that is another case's answer (the characteriser's chain), re-derived by core's projection; a value is rewritten only where it moved past the file's tolerance"
     }
   ],
   "tolerance": 0.000001,
@@ -300,19 +306,19 @@
       }
     },
     {
-      "name": "door: House_03, a leaf wins over a nearer side opening",
-      "note": "the extra side wall with a door opening is nearer the outline, but a leaf marks the entrance",
+      "name": "door: House_03, a leaf wins over its wall's opening; a flat hatch is no door",
+      "note": "BP_House_02 as the editor measured it: of its three door-named parts the leaf and the wall with a door opening stand up and the back's SM_Door_B lies flat, and a leaf comes before an opening",
       "op": "chooseDoorPart",
       "input": {
         "boundsMax": {
-          "x": 8.2508,
-          "y": 3.9164,
-          "z": 7.1166
+          "x": 7.4775,
+          "y": 4.0572,
+          "z": 7.422000000000001
         },
         "boundsMin": {
-          "x": -5.8719,
-          "y": -5.9508,
-          "z": -8.0938
+          "x": -6.310599999999999,
+          "y": -5.3567,
+          "z": -4.9466
         },
         "parts": [
           {
@@ -333,82 +339,37 @@
           {
             "component": "SM_Wall_Door",
             "max": {
-              "x": 1.6883000000000001,
-              "y": -0.5112,
-              "z": 3.7422000000000004
+              "x": 1.6850999999999998,
+              "y": -0.5147999999999999,
+              "z": 3.7407999999999997
             },
-            "mesh": "SM_Wall_Door",
+            "mesh": "SM_Wall_Door_02",
             "min": {
-              "x": -1.3783,
-              "y": -4.0184,
-              "z": 3.4326999999999996
+              "x": -1.3816,
+              "y": -4.0219,
+              "z": 3.4313
             },
             "owner": ""
           },
           {
             "component": "SM_Door_B",
             "max": {
-              "x": -2.3742,
-              "y": -3.9736000000000002,
-              "z": 3.4265
+              "x": 2.3082,
+              "y": -3.4449,
+              "z": -2.6245999999999996
             },
             "mesh": "SM_Door_B",
             "min": {
-              "x": -4.7141,
-              "y": -4.1152999999999995,
-              "z": 1.1965999999999999
-            },
-            "owner": ""
-          },
-          {
-            "component": "SM_Wall_Door5_StaticMeshComponent0",
-            "max": {
-              "x": 2.2901,
-              "y": 2.4238,
-              "z": -4.343500000000001
-            },
-            "mesh": "SM_Wall",
-            "min": {
-              "x": -2.3039,
-              "y": -1.1501000000000001,
-              "z": -4.6681
-            },
-            "owner": ""
-          },
-          {
-            "component": "SM_Roof",
-            "max": {
-              "x": 7.1213,
-              "y": 3.9164,
-              "z": 4.4262
-            },
-            "mesh": "SM_Roof_02",
-            "min": {
-              "x": -5.8222000000000005,
-              "y": -1.0239,
-              "z": -4.5456
-            },
-            "owner": ""
-          },
-          {
-            "component": "StaticMesh13",
-            "max": {
-              "x": 6.551900000000001,
-              "y": -0.5424,
-              "z": 3.4745999999999997
-            },
-            "mesh": "SM_Wall_Door_02",
-            "min": {
-              "x": 6.2424,
-              "y": -4.0495,
-              "z": -0.41479999999999995
+              "x": 0.054400000000000004,
+              "y": -3.5867,
+              "z": -4.9466
             },
             "owner": ""
           }
         ]
       },
       "expected": {
-        "candidates": 4,
+        "candidates": 3,
         "hasPosition": true,
         "height": 2.3311,
         "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -427,12 +388,12 @@
       "op": "chooseDoorPart",
       "input": {
         "boundsMax": {
-          "x": 9.4706,
-          "y": 12.7972,
+          "x": 9.5049,
+          "y": 9.558,
           "z": 7.386699999999999
         },
         "boundsMin": {
-          "x": -8.2101,
+          "x": -8.1758,
           "y": -2.123,
           "z": -6.074
         },
@@ -534,12 +495,12 @@
       "op": "chooseDoorPart",
       "input": {
         "boundsMax": {
-          "x": 9.4706,
-          "y": 12.7972,
+          "x": 9.5049,
+          "y": 9.558,
           "z": 7.386699999999999
         },
         "boundsMin": {
-          "x": -8.2101,
+          "x": -8.1758,
           "y": -2.123,
           "z": -6.074
         },
@@ -1274,19 +1235,19 @@
       "input": {
         "bounds": {
           "max": {
-            "x": 8.2508,
-            "y": 3.9164,
-            "z": 7.1166
+            "x": 7.4775,
+            "y": 4.0572,
+            "z": 7.422000000000001
           },
           "min": {
-            "x": -5.8719,
-            "y": -5.9508,
-            "z": -8.0938
+            "x": -6.310599999999999,
+            "y": -5.3567,
+            "z": -4.9466
           }
         },
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -1339,7 +1300,7 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
         "settleShift": [0, 0]
       },
@@ -1348,7 +1309,7 @@
         "applied": true,
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -1365,9 +1326,9 @@
         "doorHeight": 2.0100002993999997,
         "doorHeld": true,
         "doorWorld": {
-          "x": 445.891754207917,
-          "y": 10.304358094435273,
-          "z": 434.5569738862187
+          "x": 445.89203734104234,
+          "y": 10.369541833183217,
+          "z": 434.03444800904737
         },
         "factor": 0.862254,
         "fixupHeading": 1.5707963267948957,
@@ -1376,14 +1337,14 @@
           "y": 0.862254,
           "z": 0.862254
         },
-        "footprint": [[459.00587385207274, 440.0013299879037], [445.89064588250073, 439.99865876735055], [445.8931260833178, 427.82130445412577], [459.0083540528897, 427.82397567467893]],
+        "footprint": [[456.5557265751901, 439.8565758613559], [445.8908519719944, 439.85440371213343], [445.89327341101693, 427.96555958132456], [456.55814801421263, 427.96773173054703]],
         "heading": -3.1413889803846904,
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 452.0279937831623,
-          "y": 13.833563716435272,
-          "z": 434.9368394130706
+          "x": 452.2916092824258,
+          "y": 13.898747455183216,
+          "z": 434.414367169647
         },
         "lot": {
           "depth": 10,
@@ -1392,9 +1353,9 @@
         },
         "notes": ["door-held"],
         "offsetFromNode": {
-          "x": 1.02799378316231,
-          "y": 3.7205158634720963,
-          "z": 0.9368394130705565
+          "x": 1.2916092824257817,
+          "y": 3.78569960222004,
+          "z": 0.4143671696469937
         },
         "outcome": "misfit",
         "policy": {
@@ -1403,11 +1364,11 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
         "required": {
-          "across": 12.177,
-          "away": 13.115
+          "across": 11.889,
+          "away": 10.665
         },
         "scale": {
           "x": 0.862254,
@@ -1416,15 +1377,15 @@
         },
         "seat": {
           "float": 0,
-          "foundation": 1.6018954812000001,
-          "groundMax": 10.304358094435273,
-          "groundMin": 9.57244356855846,
+          "foundation": 1.0896303798,
+          "groundMax": 10.369541833183217,
+          "groundMin": 9.572455463315285,
           "sampled": true,
-          "sink": 0.8699809553231888
+          "sink": 0.29254400993206886
         },
         "settleShift": [0, 0],
         "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.657462
+        "wantedFactor": 0.725268
       }
     },
     {
@@ -1594,19 +1555,19 @@
       "input": {
         "bounds": {
           "max": {
-            "x": 8.2508,
-            "y": 3.9164,
-            "z": 7.1166
+            "x": 7.4775,
+            "y": 4.0572,
+            "z": 7.422000000000001
           },
           "min": {
-            "x": -5.8719,
-            "y": -5.9508,
-            "z": -8.0938
+            "x": -6.310599999999999,
+            "y": -5.3567,
+            "z": -4.9466
           }
         },
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -1659,7 +1620,7 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
         "settleShift": [0, 0]
       },
@@ -1668,7 +1629,7 @@
         "applied": true,
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -1685,9 +1646,9 @@
         "doorHeight": 2.0100002993999997,
         "doorHeld": true,
         "doorWorld": {
-          "x": 439.7470445432594,
-          "y": 10.33249542584935,
-          "z": 439.4106227440582
+          "x": 440.2695703519262,
+          "y": 10.329798180543103,
+          "z": 439.41101230169704
         },
         "factor": 0.862254,
         "fixupHeading": 1.5707963267948966,
@@ -1696,14 +1657,14 @@
           "y": 0.862254,
           "z": 0.862254
         },
-        "footprint": [[434.3000175597363, 452.52363324675963], [434.3053600007318, 439.4084060932717], [446.48271355623086, 439.41336649480274], [446.47737111523537, 452.5285936482906]],
+        "footprint": [[434.4452707126271, 450.073515503233], [434.44961501098203, 439.4086415636502], [446.3384584020175, 439.4134844415949], [446.3341141036626, 450.07835838117774]],
         "heading": -1.5703889803846898,
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 439.36592923671355,
-          "y": 13.86170104784935,
-          "z": 445.54678482360055
+          "x": 439.888347777887,
+          "y": 13.859003802543102,
+          "z": 445.81050673099185
         },
         "lot": {
           "depth": 10,
@@ -1712,9 +1673,9 @@
         },
         "notes": ["door-held"],
         "offsetFromNode": {
-          "x": -0.634070763286436,
-          "y": 3.9410397375693527,
-          "z": 1.5467848236005375
+          "x": -0.11165222211297987,
+          "y": 3.9383424922631054,
+          "z": 1.8105067309918468
         },
         "outcome": "misfit",
         "policy": {
@@ -1723,11 +1684,11 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
         "required": {
-          "across": 12.177,
-          "away": 13.115
+          "across": 11.889,
+          "away": 10.665
         },
         "scale": {
           "x": 0.862254,
@@ -1736,15 +1697,15 @@
         },
         "seat": {
           "float": 0,
-          "foundation": 1.6018954812000001,
-          "groundMax": 10.33249542584935,
-          "groundMin": 9.72895766583669,
+          "foundation": 1.0896303798,
+          "groundMax": 10.329798180543103,
+          "groundMin": 9.72894007105088,
           "sampled": true,
-          "sink": 0.998357721187341
+          "sink": 0.4887722703077788
         },
         "settleShift": [0, 0],
         "streetHeading": -1.5703889803846898,
-        "wantedFactor": 0.657462
+        "wantedFactor": 0.725268
       }
     },
     {
@@ -2074,19 +2035,19 @@
       "input": {
         "bounds": {
           "max": {
-            "x": 8.2508,
-            "y": 3.9164,
-            "z": 7.1166
+            "x": 7.4775,
+            "y": 4.0572,
+            "z": 7.422000000000001
           },
           "min": {
-            "x": -5.8719,
-            "y": -5.9508,
-            "z": -8.0938
+            "x": -6.310599999999999,
+            "y": -5.3567,
+            "z": -4.9466
           }
         },
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -2139,7 +2100,7 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
         "settleShift": [0, 0]
       },
@@ -2148,7 +2109,7 @@
         "applied": true,
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -2165,9 +2126,9 @@
         "doorHeight": 2.0100002993999997,
         "doorHeld": true,
         "doorWorld": {
-          "x": 423.89198224209844,
-          "y": 10.155342306309722,
-          "z": 427.76298933525766
+          "x": 423.8919119580311,
+          "y": 10.275517279829561,
+          "z": 428.28551528441056
         },
         "factor": 0.862254,
         "fixupHeading": 1.5707963267948966,
@@ -2176,14 +2137,14 @@
           "y": 0.862254,
           "z": 0.862254
         },
-        "footprint": [[410.7756459471103, 422.32397567467893], [423.89087391668227, 422.32130445412577], [423.8933541174992, 434.49865876735055], [410.77812614792725, 434.5013299879037]],
+        "footprint": [[413.22585198578736, 422.46773173054703], [423.89072658898306, 422.46555958132456], [423.89314802800567, 434.35440371213343], [413.22827342480997, 434.3565758613559]],
         "heading": -0.00020367320510339404,
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 417.7555884390952,
-          "y": 13.68454792830972,
-          "z": 427.3856234150156
+          "x": 417.4921857888897,
+          "y": 13.80472290182956,
+          "z": 427.90820299791625
         },
         "lot": {
           "depth": 10,
@@ -2192,9 +2153,9 @@
         },
         "notes": ["door-held"],
         "offsetFromNode": {
-          "x": -1.244411560904773,
-          "y": 3.7197641134586945,
-          "z": -0.6143765849844204
+          "x": -1.5078142111103148,
+          "y": 3.839939086978534,
+          "z": -0.09179700208375152
         },
         "outcome": "misfit",
         "policy": {
@@ -2203,11 +2164,11 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
         "required": {
-          "across": 12.177,
-          "away": 13.115
+          "across": 11.889,
+          "away": 10.665
         },
         "scale": {
           "x": 0.862254,
@@ -2216,15 +2177,15 @@
         },
         "seat": {
           "float": 0,
-          "foundation": 1.6018954812000001,
-          "groundMax": 10.075374781038287,
-          "groundMin": 9.85098216488172,
+          "foundation": 1.0896303798,
+          "groundMax": 10.13469546061403,
+          "groundMin": 9.97042077348556,
           "sampled": true,
-          "sink": 1.2975353397719993
+          "sink": 0.7845338734560006
         },
         "settleShift": [0, 0],
         "streetHeading": -0.00020367320510339404,
-        "wantedFactor": 0.657462
+        "wantedFactor": 0.808473
       }
     },
     {
@@ -2234,12 +2195,12 @@
       "input": {
         "bounds": {
           "max": {
-            "x": 9.4706,
-            "y": 12.7972,
+            "x": 9.5049,
+            "y": 9.558,
             "z": 7.386699999999999
           },
           "min": {
-            "x": -8.2101,
+            "x": -8.1758,
             "y": -2.123,
             "z": -6.074
           }
@@ -2325,7 +2286,7 @@
         "doorHeight": 2.0100012141,
         "doorHeld": true,
         "doorWorld": {
-          "x": 440.78251738729995,
+          "x": 440.8131628252,
           "y": 10.415877448711091,
           "z": 417.4107513985501
         },
@@ -2341,7 +2302,7 @@
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 436.95509875325,
+          "x": 436.98574419115,
           "y": 11.439506550811092,
           "z": 410.81108212345003
         },
@@ -2352,7 +2313,7 @@
         },
         "notes": ["door-held"],
         "offsetFromNode": {
-          "x": 0.9550987532499857,
+          "x": 0.9857441911499905,
           "y": 1.0021901218829,
           "z": -0.18891787654996733
         },
@@ -2394,19 +2355,19 @@
       "input": {
         "bounds": {
           "max": {
-            "x": 8.2508,
-            "y": 3.9164,
-            "z": 7.1166
+            "x": 7.4775,
+            "y": 4.0572,
+            "z": 7.422000000000001
           },
           "min": {
-            "x": -5.8719,
-            "y": -5.9508,
-            "z": -8.0938
+            "x": -6.310599999999999,
+            "y": -5.3567,
+            "z": -4.9466
           }
         },
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -2459,16 +2420,16 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
-        "settleShift": [0.004, 0.969]
+        "settleShift": [0.003, 0.912]
       },
       "expected": {
         "aligned": true,
         "applied": true,
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -2485,9 +2446,9 @@
         "doorHeight": 2.0100002993999997,
         "doorHeld": true,
         "doorWorld": {
-          "x": 445.89575420791704,
-          "y": 10.253053584890768,
-          "z": 435.5259738862187
+          "x": 445.8950373410423,
+          "y": 10.28378473180578,
+          "z": 434.94644800904734
         },
         "factor": 0.862254,
         "fixupHeading": 1.5707963267948957,
@@ -2496,14 +2457,14 @@
           "y": 0.862254,
           "z": 0.862254
         },
-        "footprint": [[459.00987385207276, 440.97032998790377], [445.89464588250075, 440.9676587673506], [445.8971260833178, 428.7903044541259], [459.0123540528897, 428.792975674679]],
+        "footprint": [[456.55872657519006, 440.7685758613559], [445.89385197199437, 440.7664037121334], [445.8962734110169, 428.87755958132453], [456.5611480142126, 428.879731730547]],
         "heading": -3.1413889803846904,
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 452.0319937831623,
-          "y": 13.782259206890767,
-          "z": 435.90583941307057
+          "x": 452.29460928242577,
+          "y": 13.812990353805779,
+          "z": 435.32636716964697
         },
         "lot": {
           "depth": 10,
@@ -2512,9 +2473,9 @@
         },
         "notes": ["door-held", "settled"],
         "offsetFromNode": {
-          "x": 1.0319937831623247,
-          "y": 3.669211353927592,
-          "z": 1.905839413070571
+          "x": 1.2946092824257676,
+          "y": 3.699942500842603,
+          "z": 1.3263671696469714
         },
         "outcome": "misfit",
         "policy": {
@@ -2523,11 +2484,11 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
         "required": {
-          "across": 12.177,
-          "away": 13.115
+          "across": 11.889,
+          "away": 10.665
         },
         "scale": {
           "x": 0.862254,
@@ -2536,15 +2497,15 @@
         },
         "seat": {
           "float": 0,
-          "foundation": 1.6018954812000001,
-          "groundMax": 10.253053584890768,
-          "groundMin": 9.551688477042074,
+          "foundation": 1.0896303798,
+          "groundMax": 10.28378473180578,
+          "groundMin": 9.55284086214899,
           "sampled": true,
-          "sink": 0.9005303733513063
+          "sink": 0.35868651014321173
         },
-        "settleShift": [0.004, 0.9689999999999999],
+        "settleShift": [0.003, 0.912],
         "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.657462
+        "wantedFactor": 0.725268
       }
     },
     {
@@ -2621,7 +2582,7 @@
           "scaleMin": 0.5,
           "seatSink": 0.72
         },
-        "settleShift": [-0.751, -6.03]
+        "settleShift": [-0.751, -5.742]
       },
       "expected": {
         "aligned": true,
@@ -2646,8 +2607,8 @@
         "doorHeld": true,
         "doorWorld": {
           "x": 423.1410227867847,
-          "y": 10.316652035630336,
-          "z": 410.2199472836
+          "y": 10.300101847686205,
+          "z": 410.50794728359995
         },
         "factor": 0.862254,
         "fixupHeading": 1.5707963267948966,
@@ -2656,14 +2617,14 @@
           "y": 0.862254,
           "z": 0.862254
         },
-        "footprint": [[412.82080370500114, 404.7803641288587], [423.13991446136845, 404.7782624024681], [423.14219630161534, 415.9817008428932], [412.82308554524803, 415.98380256928385]],
+        "footprint": [[412.82080370500114, 405.0683641288587], [423.13991446136845, 405.06626240246806], [423.14219630161534, 416.2697008428932], [412.82308554524803, 416.2718025692838]],
         "heading": -0.00020367320510339404,
         "issues": ["too-large"],
         "limited": false,
         "location": {
           "x": 416.7412966176433,
-          "y": 13.845857657630336,
-          "z": 409.8426349971056
+          "y": 13.829307469686205,
+          "z": 410.13063499710563
         },
         "lot": {
           "depth": 10,
@@ -2673,8 +2634,8 @@
         "notes": ["door-held", "settled"],
         "offsetFromNode": {
           "x": -2.258703382356689,
-          "y": 3.953581517108702,
-          "z": -6.157365002894367
+          "y": 3.9370313291645704,
+          "z": -5.869365002894369
         },
         "outcome": "misfit",
         "policy": {
@@ -2697,12 +2658,12 @@
         "seat": {
           "float": 0,
           "foundation": 1.0896303797999995,
-          "groundMax": 10.316652035630336,
-          "groundMin": 9.7540300417713,
+          "groundMax": 10.300101847686205,
+          "groundMin": 9.746073814409096,
           "sampled": true,
-          "sink": 0.5270083859409624
+          "sink": 0.5356023465228912
         },
-        "settleShift": [-0.7509999999999999, -6.03],
+        "settleShift": [-0.7509999999999999, -5.742],
         "streetHeading": -0.00020367320510339404,
         "wantedFactor": 0.769645
       }
@@ -2714,19 +2675,19 @@
       "input": {
         "bounds": {
           "max": {
-            "x": 8.2508,
-            "y": 3.9164,
-            "z": 7.1166
+            "x": 7.4775,
+            "y": 4.0572,
+            "z": 7.422000000000001
           },
           "min": {
-            "x": -5.8719,
-            "y": -5.9508,
-            "z": -8.0938
+            "x": -6.310599999999999,
+            "y": -5.3567,
+            "z": -4.9466
           }
         },
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -2779,16 +2740,16 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
-        "settleShift": [1.25, 7.395]
+        "settleShift": [1.814, 7.277]
       },
       "expected": {
         "aligned": true,
         "applied": true,
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -2805,9 +2766,9 @@
         "doorHeight": 2.0100002993999997,
         "doorHeld": true,
         "doorWorld": {
-          "x": 440.9970445432594,
-          "y": 10.49826439754282,
-          "z": 446.8056227440582
+          "x": 442.0835703519262,
+          "y": 10.407588084129237,
+          "z": 446.68801230169703
         },
         "factor": 0.862254,
         "fixupHeading": 1.5707963267948966,
@@ -2816,14 +2777,14 @@
           "y": 0.862254,
           "z": 0.862254
         },
-        "footprint": [[435.5500175597363, 459.9186332467596], [435.5553600007318, 446.8034060932717], [447.73271355623086, 446.8083664948028], [447.72737111523537, 459.92359364829065]],
+        "footprint": [[436.25927071262714, 457.350515503233], [436.26361501098205, 446.68564156365017], [448.15245840201754, 446.6904844415949], [448.14811410366264, 457.3553583811777]],
         "heading": -1.5703889803846898,
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 440.61592923671355,
-          "y": 14.02747001954282,
-          "z": 452.9417848236005
+          "x": 441.70234777788704,
+          "y": 13.936793706129237,
+          "z": 453.08750673099183
         },
         "lot": {
           "depth": 10,
@@ -2832,9 +2793,9 @@
         },
         "notes": ["door-held", "settled"],
         "offsetFromNode": {
-          "x": 0.615929236713564,
-          "y": 4.1068087092628245,
-          "z": 8.941784823600537
+          "x": 1.7023477778870415,
+          "y": 4.01613239584924,
+          "z": 9.087506730991834
         },
         "outcome": "misfit",
         "policy": {
@@ -2843,11 +2804,11 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
         "required": {
-          "across": 12.177,
-          "away": 13.115
+          "across": 11.889,
+          "away": 10.665
         },
         "scale": {
           "x": 0.862254,
@@ -2856,15 +2817,15 @@
         },
         "seat": {
           "float": 0,
-          "foundation": 1.6018954812000001,
-          "groundMax": 10.49826439754282,
-          "groundMin": 9.820667545649826,
+          "foundation": 1.0896303798,
+          "groundMax": 10.407588084129237,
+          "groundMin": 9.817658233736848,
           "sampled": true,
-          "sink": 0.9242986293070055
+          "sink": 0.4997005294076118
         },
-        "settleShift": [1.25, 7.395],
+        "settleShift": [1.814, 7.277],
         "streetHeading": -1.5703889803846898,
-        "wantedFactor": 0.657462
+        "wantedFactor": 0.725268
       }
     },
     {
@@ -2941,7 +2902,7 @@
           "scaleMin": 0.5,
           "seatSink": 0.72
         },
-        "settleShift": [4.945, -5.639]
+        "settleShift": [4.996, -5.594]
       },
       "expected": {
         "aligned": true,
@@ -2965,9 +2926,9 @@
         "doorHeight": 2.0100002993999997,
         "doorHeld": true,
         "doorWorld": {
-          "x": 450.83691202380083,
-          "y": 10.26439457998382,
-          "z": 417.4310159617614
+          "x": 450.8879120238008,
+          "y": 10.257603881357552,
+          "z": 417.47601596176133
         },
         "factor": 0.862254,
         "fixupHeading": 1.5707963267948957,
@@ -2976,14 +2937,14 @@
           "y": 0.862254,
           "z": 0.862254
         },
-        "footprint": [[461.1549144547519, 422.8748025692839], [450.8358036983846, 422.87270084289327], [450.8380855386315, 411.66926240246806], [461.1571962949988, 411.67136412885867]],
+        "footprint": [[461.20591445475196, 422.9198025692839], [450.8868036983846, 422.9177008428932], [450.8890855386315, 411.7142624024681], [461.20819629499886, 411.71636412885874]],
         "heading": -3.1413889803846904,
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 457.2364839651842,
-          "y": 13.79360020198382,
-          "z": 417.81093512236095
+          "x": 457.28748396518426,
+          "y": 13.786809503357551,
+          "z": 417.85593512236096
         },
         "lot": {
           "depth": 10,
@@ -2992,9 +2953,9 @@
         },
         "notes": ["door-held", "settled"],
         "offsetFromNode": {
-          "x": 6.236483965184234,
-          "y": 4.097439145268196,
-          "z": -5.18906487763903
+          "x": 6.287483965184265,
+          "y": 4.090648446641927,
+          "z": -5.144064877639039
         },
         "outcome": "misfit",
         "policy": {
@@ -3017,12 +2978,12 @@
         "seat": {
           "float": 0,
           "foundation": 1.0896303797999995,
-          "groundMax": 10.26439457998382,
-          "groundMin": 9.707079115036594,
+          "groundMax": 10.257603881357552,
+          "groundMin": 9.703491974018991,
           "sampled": true,
-          "sink": 0.5323149148527727
+          "sink": 0.5355184724614404
         },
-        "settleShift": [4.945, -5.638999999999999],
+        "settleShift": [4.996, -5.594],
         "streetHeading": -3.1413889803846904,
         "wantedFactor": 0.769645
       }
@@ -3101,7 +3062,7 @@
           "scaleMin": 0.5,
           "seatSink": 0.72
         },
-        "settleShift": [-5.438, 2.155]
+        "settleShift": [-4.73, 2.047]
       },
       "expected": {
         "aligned": true,
@@ -3125,9 +3086,9 @@
         "doorHeight": 2.0100002993999997,
         "doorHeld": true,
         "doorWorld": {
-          "x": 423.79600242547366,
-          "y": 10.443236975688443,
-          "z": 441.56587974021915
+          "x": 424.5040024254737,
+          "y": 10.634094028696346,
+          "z": 441.4578797402193
         },
         "factor": 0.862254,
         "fixupHeading": 1.5707963267948966,
@@ -3136,14 +3097,14 @@
           "y": 0.862254,
           "z": 0.862254
         },
-        "footprint": [[418.350114430252, 451.882773203702], [418.3543178829461, 441.56366308943274], [429.5577556262466, 441.5682267698318], [429.55355217355253, 451.88733688410116]],
+        "footprint": [[419.058114430252, 451.7747732037021], [419.06231788294605, 441.4556630894328], [430.26575562624663, 441.46022676983193], [430.26155217355256, 451.7793368841012]],
         "heading": -1.5703889803846898,
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 423.4147798514345,
-          "y": 13.972442597688442,
-          "z": 447.965374169514
+          "x": 424.12277985143453,
+          "y": 14.163299650696345,
+          "z": 447.8573741695141
         },
         "lot": {
           "depth": 10,
@@ -3152,9 +3113,9 @@
         },
         "notes": ["door-held", "settled"],
         "offsetFromNode": {
-          "x": -5.585220148565495,
-          "y": 3.7593991885582136,
-          "z": 3.965374169514034
+          "x": -4.8772201485654705,
+          "y": 3.9502562415661178,
+          "z": 3.8573741695141166
         },
         "outcome": "misfit",
         "policy": {
@@ -3177,12 +3138,12 @@
         "seat": {
           "float": 0,
           "foundation": 1.0896303797999995,
-          "groundMax": 10.443236975688443,
-          "groundMin": 9.777542592096378,
+          "groundMax": 10.634094028696346,
+          "groundMin": 9.891256315989835,
           "sampled": true,
-          "sink": 0.42393599620793565
+          "sink": 0.34679266709349044
         },
-        "settleShift": [-5.438, 2.155],
+        "settleShift": [-4.73, 2.047],
         "streetHeading": -1.5703889803846898,
         "wantedFactor": 0.769645
       }
@@ -3194,19 +3155,19 @@
       "input": {
         "bounds": {
           "max": {
-            "x": 8.2508,
-            "y": 3.9164,
-            "z": 7.1166
+            "x": 7.4775,
+            "y": 4.0572,
+            "z": 7.422000000000001
           },
           "min": {
-            "x": -5.8719,
-            "y": -5.9508,
-            "z": -8.0938
+            "x": -6.310599999999999,
+            "y": -5.3567,
+            "z": -4.9466
           }
         },
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -3259,16 +3220,16 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
-        "settleShift": [-1.167, -0.339]
+        "settleShift": [-1.054, -0.195]
       },
       "expected": {
         "aligned": true,
         "applied": true,
         "castHeight": 2.01,
         "door": {
-          "candidates": 4,
+          "candidates": 3,
           "hasPosition": true,
           "height": 2.3311,
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
@@ -3285,9 +3246,9 @@
         "doorHeight": 2.0100002993999997,
         "doorHeld": true,
         "doorWorld": {
-          "x": 422.72498224209846,
-          "y": 10.197830778822738,
-          "z": 427.42398933525766
+          "x": 422.8379119580311,
+          "y": 10.235374873248452,
+          "z": 428.09051528441057
         },
         "factor": 0.862254,
         "fixupHeading": 1.5707963267948966,
@@ -3296,14 +3257,14 @@
           "y": 0.862254,
           "z": 0.862254
         },
-        "footprint": [[409.60864594711035, 421.98497567467894], [422.7238739166823, 421.98230445412577], [422.7263541174992, 434.15965876735055], [409.6111261479273, 434.1623299879037]],
+        "footprint": [[412.1718519857874, 422.27273173054704], [422.8367265889831, 422.27055958132456], [422.8391480280057, 434.15940371213344], [412.17427342481, 434.1615758613559]],
         "heading": -0.00020367320510339404,
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 416.58858843909525,
-          "y": 13.727036400822737,
-          "z": 427.0466234150156
+          "x": 416.4381857888897,
+          "y": 13.76458049524845,
+          "z": 427.71320299791626
         },
         "lot": {
           "depth": 10,
@@ -3312,9 +3273,9 @@
         },
         "notes": ["door-held", "settled"],
         "offsetFromNode": {
-          "x": -2.411411560904744,
-          "y": 3.762252585971711,
-          "z": -0.9533765849844349
+          "x": -2.5618142111102884,
+          "y": 3.7997966803974244,
+          "z": -0.2867970020837447
         },
         "outcome": "misfit",
         "policy": {
@@ -3323,11 +3284,11 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.81
+          "seatSink": 0.72
         },
         "required": {
-          "across": 12.177,
-          "away": 13.115
+          "across": 11.889,
+          "away": 10.665
         },
         "scale": {
           "x": 0.862254,
@@ -3336,15 +3297,15 @@
         },
         "seat": {
           "float": 0,
-          "foundation": 1.6018954812000001,
-          "groundMax": 10.172614291931016,
-          "groundMin": 9.893470637394737,
+          "foundation": 1.0896303798,
+          "groundMax": 10.092143848905353,
+          "groundMin": 9.930278366904451,
           "sampled": true,
-          "sink": 1.2975353397719993
+          "sink": 0.7845338734560006
         },
-        "settleShift": [-1.167, -0.3390000000000001],
+        "settleShift": [-1.054, -0.195],
         "streetHeading": -0.00020367320510339404,
-        "wantedFactor": 0.657462
+        "wantedFactor": 0.808473
       }
     },
     {
@@ -3354,12 +3315,12 @@
       "input": {
         "bounds": {
           "max": {
-            "x": 9.4706,
-            "y": 12.7972,
+            "x": 9.5049,
+            "y": 9.558,
             "z": 7.386699999999999
           },
           "min": {
-            "x": -8.2101,
+            "x": -8.1758,
             "y": -2.123,
             "z": -6.074
           }
@@ -3421,7 +3382,7 @@
           "scaleMin": 0.5,
           "seatSink": 0.66
         },
-        "settleShift": [0.649, -0.11]
+        "settleShift": [0.649, -0.21]
       },
       "expected": {
         "aligned": true,
@@ -3445,9 +3406,9 @@
         "doorHeight": 2.0100012141,
         "doorHeld": true,
         "doorWorld": {
-          "x": 441.43151738729995,
-          "y": 10.349584399580857,
-          "z": 417.30075139855006
+          "x": 441.4621628252,
+          "y": 10.346851715941904,
+          "z": 417.20075139855
         },
         "factor": 0.893453,
         "fixupHeading": 1.5707963267948966,
@@ -3456,14 +3417,14 @@
           "y": 0.893453,
           "z": 0.893453
         },
-        "footprint": [[444.93943722855, 405.27424860145004], [444.93943722855, 417.30075139855006], [429.14256277145, 417.30075139855006], [429.14256277145, 405.27424860145004]],
+        "footprint": [[444.93943722855, 405.17424860145], [444.93943722855, 417.20075139855], [429.14256277145, 417.20075139855], [429.14256277145, 405.17424860145]],
         "heading": 1.5707963267948966,
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 437.60409875325,
-          "y": 11.373213501680858,
-          "z": 410.70108212345
+          "x": 437.63474419115,
+          "y": 11.370480818041903,
+          "z": 410.60108212345
         },
         "lot": {
           "depth": 12,
@@ -3472,9 +3433,9 @@
         },
         "notes": ["door-held", "settled"],
         "offsetFromNode": {
-          "x": 1.6040987532500004,
-          "y": 0.9358970727526662,
-          "z": -0.2989178765499673
+          "x": 1.6347441911499914,
+          "y": 0.9331643891137098,
+          "z": -0.39891787655000144
         },
         "outcome": "misfit",
         "policy": {
@@ -3497,12 +3458,12 @@
         "seat": {
           "float": 0,
           "foundation": 0.8731716169000002,
-          "groundMax": 10.349584399580857,
-          "groundMin": 9.740961885893011,
+          "groundMax": 10.346851715941904,
+          "groundMin": 9.74127325361517,
           "sampled": true,
-          "sink": 0.2645491032121515
+          "sink": 0.26759315457326593
         },
-        "settleShift": [0.649, -0.11],
+        "settleShift": [0.649, -0.21],
         "streetHeading": 1.5707963267948966,
         "wantedFactor": 0.848368
       }
@@ -5408,12 +5369,12 @@
       "input": {
         "bounds": {
           "max": {
-            "x": 9.4706,
-            "y": 12.7972,
+            "x": 9.5049,
+            "y": 9.558,
             "z": 7.386699999999999
           },
           "min": {
-            "x": -8.2101,
+            "x": -8.1758,
             "y": -2.123,
             "z": -6.074
           }
@@ -5499,7 +5460,7 @@
         "doorHeight": 2.0100012141,
         "doorHeld": true,
         "doorWorld": {
-          "x": 440.78251738729995,
+          "x": 440.8131628252,
           "y": 10.545779439859013,
           "z": 417.4107513985501
         },
@@ -5515,7 +5476,7 @@
         "issues": ["too-large"],
         "limited": false,
         "location": {
-          "x": 436.95509875325,
+          "x": 436.98574419115,
           "y": 11.569408541959014,
           "z": 410.81108212345003
         },
@@ -5526,7 +5487,7 @@
         },
         "notes": ["door-held"],
         "offsetFromNode": {
-          "x": 0.9550987532499857,
+          "x": 0.9857441911499905,
           "y": 1.1320921130308215,
           "z": -0.18891787654996733
         },
@@ -7327,7 +7288,7 @@
       "input": {
         "buildings": [
           {
-            "corners": [[459.00587385207274, 440.0013299879037], [445.89064588250073, 439.99865876735055], [445.8931260833178, 427.82130445412577], [459.0083540528897, 427.82397567467893]],
+            "corners": [[456.5557265751901, 439.8565758613559], [445.8908519719944, 439.85440371213343], [445.89327341101693, 427.96555958132456], [456.55814801421263, 427.96773173054703]],
             "entityId": "bld_6abb84bcf2e499b951eece64_4",
             "lotId": "6abb84eef2e499b951eecec4"
           },
@@ -7337,7 +7298,7 @@
             "lotId": "6abb84eef2e499b951eecec5"
           },
           {
-            "corners": [[434.3000175597363, 452.52363324675963], [434.3053600007318, 439.4084060932717], [446.48271355623086, 439.41336649480274], [446.47737111523537, 452.5285936482906]],
+            "corners": [[434.4452707126271, 450.073515503233], [434.44961501098203, 439.4086415636502], [446.3384584020175, 439.4134844415949], [446.3341141036626, 450.07835838117774]],
             "entityId": "bld_6abb84bcf2e499b951eece64_6",
             "lotId": "6abb84eef2e499b951eecec6"
           },
@@ -7352,7 +7313,7 @@
             "lotId": "6abb84eef2e499b951eecec1"
           },
           {
-            "corners": [[410.7756459471103, 422.32397567467893], [423.89087391668227, 422.32130445412577], [423.8933541174992, 434.49865876735055], [410.77812614792725, 434.5013299879037]],
+            "corners": [[413.22585198578736, 422.46773173054703], [423.89072658898306, 422.46555958132456], [423.89314802800567, 434.35440371213343], [413.22827342480997, 434.3565758613559]],
             "entityId": "bld_6abb84eef2e499b951eecec2",
             "lotId": "6abb84eef2e499b951eecec2"
           },
@@ -7447,37 +7408,37 @@
       },
       "expected": [
         {
-          "depth": 0.5855334006235466,
+          "depth": 0.4411015648248622,
           "entityId": "bld_6abb84bcf2e499b951eece64_4",
           "with": "bld_6abb84bcf2e499b951eece64_6",
           "withKind": "building"
         },
         {
-          "depth": 0.6903968474553039,
+          "depth": 0.5461417532552559,
           "entityId": "bld_6abb84bcf2e499b951eece64_4",
           "with": "bld_6abb84eef2e499b951eecec0",
           "withKind": "building"
         },
         {
-          "depth": 0.5855334006235466,
+          "depth": 0.4411015648248622,
           "entityId": "bld_6abb84bcf2e499b951eece64_6",
           "with": "bld_6abb84bcf2e499b951eece64_4",
           "withKind": "building"
         },
         {
-          "depth": 0.6903975319210076,
+          "depth": 0.5461424377210164,
           "entityId": "bld_6abb84bcf2e499b951eece64_6",
           "with": "bld_6abb84eef2e499b951eecec1",
           "withKind": "building"
         },
         {
-          "depth": 0.6903968474553039,
+          "depth": 0.5461417532552559,
           "entityId": "bld_6abb84eef2e499b951eecec0",
           "with": "bld_6abb84bcf2e499b951eece64_4",
           "withKind": "building"
         },
         {
-          "depth": 0.6903975319210076,
+          "depth": 0.5461424377210164,
           "entityId": "bld_6abb84eef2e499b951eecec1",
           "with": "bld_6abb84bcf2e499b951eece64_6",
           "withKind": "building"
@@ -7489,16 +7450,10 @@
           "withKind": "footpath"
         },
         {
-          "depth": 0.6084966802812346,
+          "depth": 0.608319971681226,
           "entityId": "bld_6abb84eef2e499b951eecec2",
           "with": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
           "withKind": "plaza"
-        },
-        {
-          "depth": 0.08928847881289181,
-          "entityId": "bld_6abb84eef2e499b951eecec2",
-          "with": "road.street_lane_0_mouth.street_lane_0_end",
-          "withKind": "road"
         },
         {
           "depth": 0.3984372285499944,
@@ -7515,37 +7470,37 @@
       "input": {
         "buildings": [
           {
-            "corners": [[459.00987385207276, 440.97032998790377], [445.89464588250075, 440.9676587673506], [445.8971260833178, 428.7903044541259], [459.0123540528897, 428.792975674679]],
+            "corners": [[456.55872657519006, 440.7685758613559], [445.89385197199437, 440.7664037121334], [445.8962734110169, 428.87755958132453], [456.5611480142126, 428.879731730547]],
             "entityId": "bld_6abb84bcf2e499b951eece64_4",
             "lotId": "6abb84eef2e499b951eecec4"
           },
           {
-            "corners": [[412.82080370500114, 404.7803641288587], [423.13991446136845, 404.7782624024681], [423.14219630161534, 415.9817008428932], [412.82308554524803, 415.98380256928385]],
+            "corners": [[412.82080370500114, 405.0683641288587], [423.13991446136845, 405.06626240246806], [423.14219630161534, 416.2697008428932], [412.82308554524803, 416.2718025692838]],
             "entityId": "bld_6abb84bcf2e499b951eece64_5",
             "lotId": "6abb84eef2e499b951eecec5"
           },
           {
-            "corners": [[435.5500175597363, 459.9186332467596], [435.5553600007318, 446.8034060932717], [447.73271355623086, 446.8083664948028], [447.72737111523537, 459.92359364829065]],
+            "corners": [[436.25927071262714, 457.350515503233], [436.26361501098205, 446.68564156365017], [448.15245840201754, 446.6904844415949], [448.14811410366264, 457.3553583811777]],
             "entityId": "bld_6abb84bcf2e499b951eece64_6",
             "lotId": "6abb84eef2e499b951eecec6"
           },
           {
-            "corners": [[461.1549144547519, 422.8748025692839], [450.8358036983846, 422.87270084289327], [450.8380855386315, 411.66926240246806], [461.1571962949988, 411.67136412885867]],
+            "corners": [[461.20591445475196, 422.9198025692839], [450.8868036983846, 422.9177008428932], [450.8890855386315, 411.7142624024681], [461.20819629499886, 411.71636412885874]],
             "entityId": "bld_6abb84eef2e499b951eecec0",
             "lotId": "6abb84eef2e499b951eecec0"
           },
           {
-            "corners": [[418.350114430252, 451.882773203702], [418.3543178829461, 441.56366308943274], [429.5577556262466, 441.5682267698318], [429.55355217355253, 451.88733688410116]],
+            "corners": [[419.058114430252, 451.7747732037021], [419.06231788294605, 441.4556630894328], [430.26575562624663, 441.46022676983193], [430.26155217355256, 451.7793368841012]],
             "entityId": "bld_6abb84eef2e499b951eecec1",
             "lotId": "6abb84eef2e499b951eecec1"
           },
           {
-            "corners": [[409.60864594711035, 421.98497567467894], [422.7238739166823, 421.98230445412577], [422.7263541174992, 434.15965876735055], [409.6111261479273, 434.1623299879037]],
+            "corners": [[412.1718519857874, 422.27273173054704], [422.8367265889831, 422.27055958132456], [422.8391480280057, 434.15940371213344], [412.17427342481, 434.1615758613559]],
             "entityId": "bld_6abb84eef2e499b951eecec2",
             "lotId": "6abb84eef2e499b951eecec2"
           },
           {
-            "corners": [[444.93943722855, 405.27424860145004], [444.93943722855, 417.30075139855006], [429.14256277145, 417.30075139855006], [429.14256277145, 405.27424860145004]],
+            "corners": [[444.93943722855, 405.17424860145], [444.93943722855, 417.20075139855], [429.14256277145, 417.20075139855], [429.14256277145, 405.17424860145]],
             "entityId": "bld_6abb84eef2e499b951eecec3",
             "lotId": "6abb84eef2e499b951eecec3"
           }

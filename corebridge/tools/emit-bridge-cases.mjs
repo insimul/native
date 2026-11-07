@@ -422,9 +422,14 @@ function genres(root, coreCommit) {
 
 	const r3 = reader(root);
 	const activation = r3.json('conformance/modules/genre-activation.json');
+	// P9a.core's world-path corpus (core f9aef13 on): a World IR's meta → the
+	// `active` of `modules.activate { ir }`, with core's `source` and
+	// `unknownModules` (WorldActiveModuleSet). Its description names that row.
+	const world = r3.json('conformance/modules/world-activation.json');
 	out['core-modules-activation.json'] = caseFile(
 		'modules-activation',
-		"core's committed activation table through modules.table, and each genre's row through modules.activate",
+		"core's committed activation table through modules.table, each genre's row through modules.activate, and " +
+			"core's world-activation corpus (a World IR's meta.genreConfig and meta.enabledModules) through modules.activate { ir }",
 		coreCommit,
 		r3.files,
 		[
@@ -437,12 +442,19 @@ function genres(root, coreCommit) {
 						args: { genre },
 						expect: { source: 'genre', active: row, predicatePacks: row.predicatePacks, hostInterfaces: row.hostInterfaces, reason: '' },
 					},
+					// Through a World IR the set is core's WorldActiveModuleSet: the
+					// genre's row plus `source` and `unknownModules`, which
+					// world-activation.json (below) pins exactly.
 					{
 						call: 'modules.activate',
 						args: { ir: { meta: { genreConfig: { id: genre } } } },
-						expect: sub({ source: 'worldIr', active: row }),
+						expect: sub({ source: 'worldIr', active: sub(row) }),
 					},
 				],
+			})),
+			...world.cases.map((c) => ({
+				name: `modules.activate { ir }: ${c.name}`,
+				steps: [{ call: 'modules.activate', args: { ir: c.input.ir }, expect: sub({ source: 'worldIr', active: c.expected }) }],
 			})),
 		],
 	);

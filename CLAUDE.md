@@ -441,12 +441,13 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` b38e60d (2026-11-05,
-  SP.composer-native: it holds SP.composer's composer and its corpus). Before
-  that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
+  and pin disagree. The pin today is core `main` f9aef13 (2026-11-07,
+  P9a.native: it holds P9a.core's genre HUD, rules panel and mechanic runtime and
+  their corpora). Before that, b38e60d (2026-11-05, SP.composer-native: it holds
+  SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs'`, then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'`, then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -468,6 +469,17 @@
   to core's replay rule (exact JSON, or core's `[<code>]` in last_error);
   `packs_corpus_negative` must see it fail. The library carries no catalog: a
   binding sends the one it vendored at this pin.
+- **The P9a rows (P9a.native, U84) run core's P9a corpora UNCHANGED**, the same
+  way: `vendor-core-bundle.mjs` copies `conformance/ui/genre-hud-cases.json`,
+  `conformance/ui/rules-panel-cases.json` and `conformance/modules/mechanic-runtime.json`;
+  `tests/p9a_corpus.cpp` sends `{ op, ...input }` to `ui.genreHud` / `ui.rulesPanel`
+  and `input` to `mechanics.run`, compared exactly; one ctest per row
+  (`genre_hud_corpus`, `rules_panel_corpus`, `mechanic_runtime_corpus`) and
+  `p9a_corpus_negative`. A domain refusal those corpora pin is a VALUE; the rows'
+  own refusals are errors with a code (`[unknown-op]`, `[invalid-input]`).
+  `mechanics.run` is a stateless replay (core's `runMechanicRuntimeCase`), not a
+  session: core keeps the per-step projection private, so a session would restate
+  it (corebridge/README.md, "The P9a rows").
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

@@ -1,0 +1,826 @@
+{
+  "area": "ui-rules-panel",
+  "description": "The world rules panel (P9a.core; catalog rules-world-rules-enforcement, its panel half), moved from Babylon's BabylonRulesPanel.ts: the active rules (world then base, isActive not false), highest priority first, ties in input order, each a card (type badge upper case with a tone by type, base marker, priority badge when not 5, tag line, conditions → effects summary). Runner: src/ui/rules-panel-corpus.ts. Compare exactly, object key sets included. Regenerate with npm run genre-hud-corpus; npm run genre-hud-corpus:check fails on any difference. See docs/game-genres.md §7.",
+  "version": 1,
+  "ops": [
+    "panel",
+    "card",
+    "byCategory",
+    "byType",
+    "isActive"
+  ],
+  "contract": {
+    "defaultPriority": 5,
+    "priorityRule": "a missing or non-finite priority is 5; 0 is 0",
+    "typeTones": {
+      "trigger": "danger",
+      "volition": "accent",
+      "trait": "warning",
+      "default": "success",
+      "pattern": "quest",
+      "other": "text_primary"
+    },
+    "badgeRule": "priority badge P<n> when n != 5: danger above 5, accent below",
+    "emptyText": "No active rules in this world"
+  },
+  "cases": [
+    {
+      "name": "panel: world then base, highest priority first, inactive left out, ties in input order",
+      "op": "panel",
+      "input": {
+        "worldRules": [
+          {
+            "id": "no_theft",
+            "name": "no theft",
+            "description": "Stealing is punished",
+            "ruleType": "trigger",
+            "category": "legal",
+            "priority": 8,
+            "tags": [
+              "law",
+              "property",
+              "crime",
+              "extra"
+            ],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "greet_elders",
+            "name": "greet elders",
+            "description": null,
+            "ruleType": "volition",
+            "category": "social",
+            "priority": 5,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "night_curfew",
+            "name": "night curfew",
+            "description": null,
+            "ruleType": "pattern",
+            "category": "legal",
+            "priority": 3,
+            "tags": [],
+            "isActive": false,
+            "isBase": false
+          },
+          {
+            "id": "kind_hearted",
+            "name": "kind hearted",
+            "description": null,
+            "ruleType": "trait",
+            "category": null,
+            "priority": 0,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          }
+        ],
+        "baseRules": [
+          {
+            "id": "base_hunger",
+            "name": "base hunger",
+            "description": null,
+            "ruleType": "default",
+            "category": null,
+            "priority": 8,
+            "tags": [],
+            "isActive": true,
+            "isBase": true
+          },
+          {
+            "id": "base_custom",
+            "name": "base custom",
+            "description": null,
+            "ruleType": "ritual",
+            "category": null,
+            "priority": 5,
+            "tags": [],
+            "isActive": true,
+            "isBase": true
+          }
+        ]
+      },
+      "expected": {
+        "cards": [
+          {
+            "id": "no_theft",
+            "name": "no theft",
+            "description": "Stealing is punished",
+            "typeLabel": "TRIGGER",
+            "tone": "danger",
+            "isBase": false,
+            "priority": 8,
+            "priorityBadge": {
+              "text": "P8",
+              "tone": "danger"
+            },
+            "tagLine": "📂 legal • 🏷️ law, property, crime",
+            "summary": ""
+          },
+          {
+            "id": "base_hunger",
+            "name": "base hunger",
+            "description": null,
+            "typeLabel": "DEFAULT",
+            "tone": "success",
+            "isBase": true,
+            "priority": 8,
+            "priorityBadge": {
+              "text": "P8",
+              "tone": "danger"
+            },
+            "tagLine": "",
+            "summary": ""
+          },
+          {
+            "id": "greet_elders",
+            "name": "greet elders",
+            "description": null,
+            "typeLabel": "VOLITION",
+            "tone": "accent",
+            "isBase": false,
+            "priority": 5,
+            "priorityBadge": null,
+            "tagLine": "📂 social",
+            "summary": ""
+          },
+          {
+            "id": "base_custom",
+            "name": "base custom",
+            "description": null,
+            "typeLabel": "RITUAL",
+            "tone": "text_primary",
+            "isBase": true,
+            "priority": 5,
+            "priorityBadge": null,
+            "tagLine": "",
+            "summary": ""
+          },
+          {
+            "id": "kind_hearted",
+            "name": "kind hearted",
+            "description": null,
+            "typeLabel": "TRAIT",
+            "tone": "warning",
+            "isBase": false,
+            "priority": 0,
+            "priorityBadge": {
+              "text": "P0",
+              "tone": "accent"
+            },
+            "tagLine": "",
+            "summary": ""
+          }
+        ],
+        "emptyText": null
+      }
+    },
+    {
+      "name": "panel: no rules is the empty text",
+      "op": "panel",
+      "input": {
+        "worldRules": []
+      },
+      "expected": {
+        "cards": [],
+        "emptyText": "No active rules in this world"
+      }
+    },
+    {
+      "name": "panel: only inactive rules is the empty text",
+      "op": "panel",
+      "input": {
+        "worldRules": [
+          {
+            "id": "night_curfew",
+            "name": "night curfew",
+            "description": null,
+            "ruleType": "pattern",
+            "category": "legal",
+            "priority": 3,
+            "tags": [],
+            "isActive": false,
+            "isBase": false
+          }
+        ]
+      },
+      "expected": {
+        "cards": [],
+        "emptyText": "No active rules in this world"
+      }
+    },
+    {
+      "name": "card: badge, tag line of the first three tags, priority above 5 is danger",
+      "op": "card",
+      "input": {
+        "rule": {
+          "id": "no_theft",
+          "name": "no theft",
+          "description": "Stealing is punished",
+          "ruleType": "trigger",
+          "category": "legal",
+          "priority": 8,
+          "tags": [
+            "law",
+            "property",
+            "crime",
+            "extra"
+          ],
+          "isActive": true,
+          "isBase": false
+        }
+      },
+      "expected": {
+        "id": "no_theft",
+        "name": "no theft",
+        "description": "Stealing is punished",
+        "typeLabel": "TRIGGER",
+        "tone": "danger",
+        "isBase": false,
+        "priority": 8,
+        "priorityBadge": {
+          "text": "P8",
+          "tone": "danger"
+        },
+        "tagLine": "📂 legal • 🏷️ law, property, crime",
+        "summary": ""
+      }
+    },
+    {
+      "name": "card: the default priority has no badge; no tags, so the category alone",
+      "op": "card",
+      "input": {
+        "rule": {
+          "id": "greet_elders",
+          "name": "greet elders",
+          "description": null,
+          "ruleType": "volition",
+          "category": "social",
+          "priority": 5,
+          "tags": [],
+          "isActive": true,
+          "isBase": false
+        }
+      },
+      "expected": {
+        "id": "greet_elders",
+        "name": "greet elders",
+        "description": null,
+        "typeLabel": "VOLITION",
+        "tone": "accent",
+        "isBase": false,
+        "priority": 5,
+        "priorityBadge": null,
+        "tagLine": "📂 social",
+        "summary": ""
+      }
+    },
+    {
+      "name": "card: priority 0 is 0, below 5 is accent",
+      "op": "card",
+      "input": {
+        "rule": {
+          "id": "kind_hearted",
+          "name": "kind hearted",
+          "description": null,
+          "ruleType": "trait",
+          "category": null,
+          "priority": 0,
+          "tags": [],
+          "isActive": true,
+          "isBase": false
+        }
+      },
+      "expected": {
+        "id": "kind_hearted",
+        "name": "kind hearted",
+        "description": null,
+        "typeLabel": "TRAIT",
+        "tone": "warning",
+        "isBase": false,
+        "priority": 0,
+        "priorityBadge": {
+          "text": "P0",
+          "tone": "accent"
+        },
+        "tagLine": "",
+        "summary": ""
+      }
+    },
+    {
+      "name": "card: a missing priority is the default",
+      "op": "card",
+      "input": {
+        "rule": {
+          "id": "bare",
+          "name": "Bare"
+        }
+      },
+      "expected": {
+        "id": "bare",
+        "name": "Bare",
+        "description": null,
+        "typeLabel": "",
+        "tone": "text_primary",
+        "isBase": false,
+        "priority": 5,
+        "priorityBadge": null,
+        "tagLine": "",
+        "summary": ""
+      }
+    },
+    {
+      "name": "card: a type outside the five is plain",
+      "op": "card",
+      "input": {
+        "rule": {
+          "id": "base_custom",
+          "name": "base custom",
+          "description": null,
+          "ruleType": "ritual",
+          "category": null,
+          "priority": 5,
+          "tags": [],
+          "isActive": true,
+          "isBase": true
+        }
+      },
+      "expected": {
+        "id": "base_custom",
+        "name": "base custom",
+        "description": null,
+        "typeLabel": "RITUAL",
+        "tone": "text_primary",
+        "isBase": true,
+        "priority": 5,
+        "priorityBadge": null,
+        "tagLine": "",
+        "summary": ""
+      }
+    },
+    {
+      "name": "card: category only",
+      "op": "card",
+      "input": {
+        "rule": {
+          "id": "c",
+          "name": "c",
+          "description": null,
+          "ruleType": "trigger",
+          "category": "social",
+          "priority": 5,
+          "tags": [],
+          "isActive": true,
+          "isBase": false
+        }
+      },
+      "expected": {
+        "id": "c",
+        "name": "c",
+        "description": null,
+        "typeLabel": "TRIGGER",
+        "tone": "danger",
+        "isBase": false,
+        "priority": 5,
+        "priorityBadge": null,
+        "tagLine": "📂 social",
+        "summary": ""
+      }
+    },
+    {
+      "name": "card: tags only",
+      "op": "card",
+      "input": {
+        "rule": {
+          "id": "t",
+          "name": "t",
+          "description": null,
+          "ruleType": "trigger",
+          "category": null,
+          "priority": 5,
+          "tags": [
+            "a"
+          ],
+          "isActive": true,
+          "isBase": false
+        }
+      },
+      "expected": {
+        "id": "t",
+        "name": "t",
+        "description": null,
+        "typeLabel": "TRIGGER",
+        "tone": "danger",
+        "isBase": false,
+        "priority": 5,
+        "priorityBadge": null,
+        "tagLine": "🏷️ a",
+        "summary": ""
+      }
+    },
+    {
+      "name": "card: conditions and effects counted, singular and plural",
+      "op": "card",
+      "input": {
+        "rule": {
+          "id": "ce",
+          "name": "ce",
+          "description": null,
+          "ruleType": "trigger",
+          "category": null,
+          "priority": 5,
+          "tags": [],
+          "isActive": true,
+          "isBase": false,
+          "conditions": [
+            {},
+            {}
+          ],
+          "effects": [
+            {}
+          ]
+        }
+      },
+      "expected": {
+        "id": "ce",
+        "name": "ce",
+        "description": null,
+        "typeLabel": "TRIGGER",
+        "tone": "danger",
+        "isBase": false,
+        "priority": 5,
+        "priorityBadge": null,
+        "tagLine": "",
+        "summary": "2 conditions → 1 effect"
+      }
+    },
+    {
+      "name": "card: effects only still counts conditions",
+      "op": "card",
+      "input": {
+        "rule": {
+          "id": "e",
+          "name": "e",
+          "description": null,
+          "ruleType": "trigger",
+          "category": null,
+          "priority": 5,
+          "tags": [],
+          "isActive": true,
+          "isBase": false,
+          "effects": [
+            {}
+          ]
+        }
+      },
+      "expected": {
+        "id": "e",
+        "name": "e",
+        "description": null,
+        "typeLabel": "TRIGGER",
+        "tone": "danger",
+        "isBase": false,
+        "priority": 5,
+        "priorityBadge": null,
+        "tagLine": "",
+        "summary": "0 conditions → 1 effect"
+      }
+    },
+    {
+      "name": "byCategory: active rules of a category",
+      "op": "byCategory",
+      "input": {
+        "rules": [
+          {
+            "id": "no_theft",
+            "name": "no theft",
+            "description": "Stealing is punished",
+            "ruleType": "trigger",
+            "category": "legal",
+            "priority": 8,
+            "tags": [
+              "law",
+              "property",
+              "crime",
+              "extra"
+            ],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "greet_elders",
+            "name": "greet elders",
+            "description": null,
+            "ruleType": "volition",
+            "category": "social",
+            "priority": 5,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "night_curfew",
+            "name": "night curfew",
+            "description": null,
+            "ruleType": "pattern",
+            "category": "legal",
+            "priority": 3,
+            "tags": [],
+            "isActive": false,
+            "isBase": false
+          },
+          {
+            "id": "kind_hearted",
+            "name": "kind hearted",
+            "description": null,
+            "ruleType": "trait",
+            "category": null,
+            "priority": 0,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          }
+        ],
+        "category": "legal"
+      },
+      "expected": [
+        "no_theft"
+      ]
+    },
+    {
+      "name": "byType: active rules of a type, a switched-off one left out",
+      "op": "byType",
+      "input": {
+        "rules": [
+          {
+            "id": "no_theft",
+            "name": "no theft",
+            "description": "Stealing is punished",
+            "ruleType": "trigger",
+            "category": "legal",
+            "priority": 8,
+            "tags": [
+              "law",
+              "property",
+              "crime",
+              "extra"
+            ],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "greet_elders",
+            "name": "greet elders",
+            "description": null,
+            "ruleType": "volition",
+            "category": "social",
+            "priority": 5,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "night_curfew",
+            "name": "night curfew",
+            "description": null,
+            "ruleType": "pattern",
+            "category": "legal",
+            "priority": 3,
+            "tags": [],
+            "isActive": false,
+            "isBase": false
+          },
+          {
+            "id": "kind_hearted",
+            "name": "kind hearted",
+            "description": null,
+            "ruleType": "trait",
+            "category": null,
+            "priority": 0,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "base_hunger",
+            "name": "base hunger",
+            "description": null,
+            "ruleType": "default",
+            "category": null,
+            "priority": 8,
+            "tags": [],
+            "isActive": true,
+            "isBase": true
+          },
+          {
+            "id": "base_custom",
+            "name": "base custom",
+            "description": null,
+            "ruleType": "ritual",
+            "category": null,
+            "priority": 5,
+            "tags": [],
+            "isActive": true,
+            "isBase": true
+          },
+          {
+            "id": "old_grudge",
+            "name": "old grudge",
+            "description": null,
+            "ruleType": "trait",
+            "category": null,
+            "priority": 5,
+            "tags": [],
+            "isActive": false,
+            "isBase": false
+          }
+        ],
+        "ruleType": "trait"
+      },
+      "expected": [
+        "kind_hearted"
+      ]
+    },
+    {
+      "name": "isActive: an active rule",
+      "op": "isActive",
+      "input": {
+        "rules": [
+          {
+            "id": "no_theft",
+            "name": "no theft",
+            "description": "Stealing is punished",
+            "ruleType": "trigger",
+            "category": "legal",
+            "priority": 8,
+            "tags": [
+              "law",
+              "property",
+              "crime",
+              "extra"
+            ],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "greet_elders",
+            "name": "greet elders",
+            "description": null,
+            "ruleType": "volition",
+            "category": "social",
+            "priority": 5,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "night_curfew",
+            "name": "night curfew",
+            "description": null,
+            "ruleType": "pattern",
+            "category": "legal",
+            "priority": 3,
+            "tags": [],
+            "isActive": false,
+            "isBase": false
+          },
+          {
+            "id": "kind_hearted",
+            "name": "kind hearted",
+            "description": null,
+            "ruleType": "trait",
+            "category": null,
+            "priority": 0,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          }
+        ],
+        "ruleId": "no_theft"
+      },
+      "expected": true
+    },
+    {
+      "name": "isActive: a switched-off rule",
+      "op": "isActive",
+      "input": {
+        "rules": [
+          {
+            "id": "no_theft",
+            "name": "no theft",
+            "description": "Stealing is punished",
+            "ruleType": "trigger",
+            "category": "legal",
+            "priority": 8,
+            "tags": [
+              "law",
+              "property",
+              "crime",
+              "extra"
+            ],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "greet_elders",
+            "name": "greet elders",
+            "description": null,
+            "ruleType": "volition",
+            "category": "social",
+            "priority": 5,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "night_curfew",
+            "name": "night curfew",
+            "description": null,
+            "ruleType": "pattern",
+            "category": "legal",
+            "priority": 3,
+            "tags": [],
+            "isActive": false,
+            "isBase": false
+          },
+          {
+            "id": "kind_hearted",
+            "name": "kind hearted",
+            "description": null,
+            "ruleType": "trait",
+            "category": null,
+            "priority": 0,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          }
+        ],
+        "ruleId": "night_curfew"
+      },
+      "expected": false
+    },
+    {
+      "name": "isActive: an unknown rule",
+      "op": "isActive",
+      "input": {
+        "rules": [
+          {
+            "id": "no_theft",
+            "name": "no theft",
+            "description": "Stealing is punished",
+            "ruleType": "trigger",
+            "category": "legal",
+            "priority": 8,
+            "tags": [
+              "law",
+              "property",
+              "crime",
+              "extra"
+            ],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "greet_elders",
+            "name": "greet elders",
+            "description": null,
+            "ruleType": "volition",
+            "category": "social",
+            "priority": 5,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          },
+          {
+            "id": "night_curfew",
+            "name": "night curfew",
+            "description": null,
+            "ruleType": "pattern",
+            "category": "legal",
+            "priority": 3,
+            "tags": [],
+            "isActive": false,
+            "isBase": false
+          },
+          {
+            "id": "kind_hearted",
+            "name": "kind hearted",
+            "description": null,
+            "ruleType": "trait",
+            "category": null,
+            "priority": 0,
+            "tags": [],
+            "isActive": true,
+            "isBase": false
+          }
+        ],
+        "ruleId": "nope"
+      },
+      "expected": false
+    }
+  ]
+}

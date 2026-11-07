@@ -1,0 +1,2508 @@
+{
+  "area": "ui-genre-hud",
+  "description": "The genre HUD view-model (P9a.core; catalog genre-hud-layouts): a genre's uiLayout and show* flags → which base HUD parts show (chrome) and the genre's own elements, in reading order, with text and tone (a colour role) formatted by the model. Moved from Babylon's genre-hud-model.ts, plus a fighting layout (a genre seen through the fighting camera, or fighting in the fighting style). Runner: src/ui/genre-hud-corpus.ts. Ops: config {genre} → genreHudConfigOf(the registry entry); view {config, state?} → genreHudView; genre_view {genre, state?} → the view of that genre's own config. Refusals {ok:false, refusal:{code, field}}: unknown_genre, unknown_layout. Compare exactly, object key sets included. Regenerate with npm run genre-hud-corpus; npm run genre-hud-corpus:check fails on any difference. See docs/game-genres.md §6.",
+  "version": 1,
+  "ops": [
+    "config",
+    "view",
+    "genre_view"
+  ],
+  "contract": {
+    "layouts": [
+      "action_rpg",
+      "fps",
+      "rts",
+      "platformer",
+      "puzzle",
+      "minimal",
+      "fighting"
+    ],
+    "fightingRule": "layout is 'fighting' when cameraMode is 'fighting' or combatStyle is 'fighting'; else uiLayout",
+    "chromeRule": "each base HUD part shows exactly when its show* flag is true",
+    "fpsRule": "showAmmoCounter and showCompass hide their elements only when false (absent shows them, as Babylon did)",
+    "ammoToneRule": "reloading: warning; current <= floor(magazine * 0.25): danger; else text_primary",
+    "headingRule": "heading wrapped into [0, 360), printed rounded (360 prints 0); point = compassCardinal",
+    "fighterToneRule": "health > 0.5 success; > 0.25 warning; else danger",
+    "comboRule": "shown only when hits > 1"
+  },
+  "cases": [
+    {
+      "name": "config: rpg",
+      "op": "config",
+      "input": {
+        "genre": "rpg"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config: action",
+      "op": "config",
+      "input": {
+        "genre": "action"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config: fighting",
+      "op": "config",
+      "input": {
+        "genre": "fighting"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config: platformer",
+      "op": "config",
+      "input": {
+        "genre": "platformer"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "platformer",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config: strategy",
+      "op": "config",
+      "input": {
+        "genre": "strategy"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "rts",
+          "showMinimap": true,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config: survival",
+      "op": "config",
+      "input": {
+        "genre": "survival"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config: shooter",
+      "op": "config",
+      "input": {
+        "genre": "shooter"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config: sandbox",
+      "op": "config",
+      "input": {
+        "genre": "sandbox"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config: city-building",
+      "op": "config",
+      "input": {
+        "genre": "city-building"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "rts",
+          "showMinimap": true,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config: simulation",
+      "op": "config",
+      "input": {
+        "genre": "simulation"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "minimal",
+          "showMinimap": false,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config: puzzle",
+      "op": "config",
+      "input": {
+        "genre": "puzzle"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "puzzle",
+          "showMinimap": false,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config: language-learning",
+      "op": "config",
+      "input": {
+        "genre": "language-learning"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "minimal",
+          "showMinimap": true,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config: educational",
+      "op": "config",
+      "input": {
+        "genre": "educational"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "minimal",
+          "showMinimap": true,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config: adventure",
+      "op": "config",
+      "input": {
+        "genre": "adventure"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config: roguelike",
+      "op": "config",
+      "input": {
+        "genre": "roguelike"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config: an unknown genre is refused",
+      "op": "config",
+      "input": {
+        "genre": "mystery"
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unknown_genre",
+          "field": "genre"
+        }
+      }
+    },
+    {
+      "name": "genre_view: rpg at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "rpg"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": true,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "stamina",
+              "kind": "meter",
+              "label": "Stamina",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: action at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "action"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": true,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "stamina",
+              "kind": "meter",
+              "label": "Stamina",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: fighting at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "fighting"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Player 1",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 1",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "99",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: platformer at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "platformer"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "platformer",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "lives",
+              "kind": "text",
+              "label": "Lives",
+              "text": "❤️ x 0",
+              "tone": "danger"
+            },
+            {
+              "id": "collectibles",
+              "kind": "text",
+              "label": "Collected",
+              "text": "⭐ 0 / 0",
+              "tone": "quest"
+            },
+            {
+              "id": "timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "⏱️ 0:00",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: strategy at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "strategy"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "rts",
+          "chrome": {
+            "minimap": true,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "build_menu",
+              "kind": "action",
+              "label": "Build",
+              "text": "Open build menu",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: survival at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "survival"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": true,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "stamina",
+              "kind": "meter",
+              "label": "Stamina",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: shooter at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "shooter"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "0 / 0",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 0° N",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: sandbox at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "sandbox"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": true,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "stamina",
+              "kind": "meter",
+              "label": "Stamina",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: city-building at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "city-building"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "rts",
+          "chrome": {
+            "minimap": true,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "build_menu",
+              "kind": "action",
+              "label": "Build",
+              "text": "Open build menu",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: simulation at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "simulation"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "minimal",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": []
+        }
+      }
+    },
+    {
+      "name": "genre_view: puzzle at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "puzzle"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "puzzle",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "⏱️ 0:00",
+              "tone": "text_primary"
+            },
+            {
+              "id": "moves",
+              "kind": "text",
+              "label": "Moves",
+              "text": "Moves: 0",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "hint",
+              "kind": "action",
+              "label": "Hint",
+              "text": "💡 Hint",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "genre_view: language-learning at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "language-learning"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "minimal",
+          "chrome": {
+            "minimap": true,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": []
+        }
+      }
+    },
+    {
+      "name": "genre_view: educational at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "educational"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "minimal",
+          "chrome": {
+            "minimap": true,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": []
+        }
+      }
+    },
+    {
+      "name": "genre_view: adventure at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "adventure"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": []
+        }
+      }
+    },
+    {
+      "name": "genre_view: roguelike at its start values",
+      "op": "genre_view",
+      "input": {
+        "genre": "roguelike"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": []
+        }
+      }
+    },
+    {
+      "name": "genre_view: an unknown genre is refused",
+      "op": "genre_view",
+      "input": {
+        "genre": "RPG"
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unknown_genre",
+          "field": "genre"
+        }
+      }
+    },
+    {
+      "name": "fps: ammo above the last quarter is plain",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "ammo": {
+            "current": 3,
+            "magazine": 8,
+            "total": 40,
+            "reloading": false
+          },
+          "weaponName": "Carbine"
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "3 / 40",
+              "tone": "text_primary"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "Carbine",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 0° N",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: ammo on the last quarter (floor of magazine / 4) is danger",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "ammo": {
+            "current": 2,
+            "magazine": 8,
+            "total": 40,
+            "reloading": false
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "2 / 40",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 0° N",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: an empty magazine of 0 is danger",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "ammo": {
+            "current": 0,
+            "magazine": 0,
+            "total": 0,
+            "reloading": false
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "0 / 0",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 0° N",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: reloading says so, amber",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "ammo": {
+            "current": 0,
+            "magazine": 8,
+            "total": 40,
+            "reloading": true
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "RELOADING...",
+              "tone": "warning"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 0° N",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: no ammo counter hides ammo and weapon",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": true
+        },
+        "state": {
+          "ammo": {
+            "current": 3,
+            "magazine": 8,
+            "total": 40,
+            "reloading": false
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 0° N",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: an absent ammo flag shows them (Babylon)",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps"
+        },
+        "state": {
+          "ammo": {
+            "current": 3,
+            "magazine": 8,
+            "total": 40,
+            "reloading": false
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "3 / 40",
+              "tone": "text_primary"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 0° N",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: no compass hides the heading",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": false
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "0 / 0",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: heading 90 is E",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "heading": 90
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "0 / 0",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 90° E",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: heading 450 wraps to 90 E",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "heading": 450
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "0 / 0",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 90° E",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: heading -90 wraps to 270 W",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "heading": -90
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "0 / 0",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 270° W",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: heading 359.6 prints 0 N",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "heading": 359.6
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "0 / 0",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 0° N",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fps: heading 22.5 rounds clockwise to NE",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fps",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "heading": 22.5
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "0 / 0",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 23° NE",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "rts: the resource row in order, the selection, the build button",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "rts",
+          "showMinimap": true,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        },
+        "state": {
+          "resources": [
+            {
+              "id": "gold",
+              "label": "Gold",
+              "value": "120"
+            },
+            {
+              "id": "wood",
+              "label": "Wood",
+              "value": "40"
+            }
+          ],
+          "unitInfo": "Farmer (3)"
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "rts",
+          "chrome": {
+            "minimap": true,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "resource_gold",
+              "kind": "text",
+              "label": "Gold",
+              "text": "120",
+              "tone": "warning"
+            },
+            {
+              "id": "resource_wood",
+              "kind": "text",
+              "label": "Wood",
+              "text": "40",
+              "tone": "warning"
+            },
+            {
+              "id": "unit_info",
+              "kind": "text",
+              "label": "Selection",
+              "text": "Farmer (3)",
+              "tone": "text_primary"
+            },
+            {
+              "id": "build_menu",
+              "kind": "action",
+              "label": "Build",
+              "text": "Open build menu",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "rts: a resource set twice keeps its first place and its last value",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "rts",
+          "showMinimap": true,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        },
+        "state": {
+          "resources": [
+            {
+              "id": "gold",
+              "label": "Gold",
+              "value": "1"
+            },
+            {
+              "id": "wood",
+              "label": "Wood",
+              "value": "2"
+            },
+            {
+              "id": "gold",
+              "label": "Gold",
+              "value": "9"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "rts",
+          "chrome": {
+            "minimap": true,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "resource_gold",
+              "kind": "text",
+              "label": "Gold",
+              "text": "9",
+              "tone": "warning"
+            },
+            {
+              "id": "resource_wood",
+              "kind": "text",
+              "label": "Wood",
+              "text": "2",
+              "tone": "warning"
+            },
+            {
+              "id": "build_menu",
+              "kind": "action",
+              "label": "Build",
+              "text": "Open build menu",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "rts: an empty selection is none; the build menu open",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "rts",
+          "showMinimap": true,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        },
+        "state": {
+          "unitInfo": "",
+          "buildMenuOpen": true
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "rts",
+          "chrome": {
+            "minimap": true,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "build_menu",
+              "kind": "action",
+              "label": "Build",
+              "text": "Close build menu",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "platformer: lives, collectibles, 125 s is 2:05",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "platformer"
+        },
+        "state": {
+          "lives": 3,
+          "collectibles": {
+            "current": 2,
+            "total": 5
+          },
+          "timerSeconds": 125.9
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "platformer",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "lives",
+              "kind": "text",
+              "label": "Lives",
+              "text": "❤️ x 3",
+              "tone": "danger"
+            },
+            {
+              "id": "collectibles",
+              "kind": "text",
+              "label": "Collected",
+              "text": "⭐ 2 / 5",
+              "tone": "quest"
+            },
+            {
+              "id": "timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "⏱️ 2:05",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "platformer: a negative timer is 0:00",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "platformer"
+        },
+        "state": {
+          "timerSeconds": -4
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "platformer",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "lives",
+              "kind": "text",
+              "label": "Lives",
+              "text": "❤️ x 0",
+              "tone": "danger"
+            },
+            {
+              "id": "collectibles",
+              "kind": "text",
+              "label": "Collected",
+              "text": "⭐ 0 / 0",
+              "tone": "quest"
+            },
+            {
+              "id": "timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "⏱️ 0:00",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "puzzle: timer, moves and the hint",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "puzzle"
+        },
+        "state": {
+          "timerSeconds": 61,
+          "moves": 14
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "puzzle",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "⏱️ 1:01",
+              "tone": "text_primary"
+            },
+            {
+              "id": "moves",
+              "kind": "text",
+              "label": "Moves",
+              "text": "Moves: 14",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "hint",
+              "kind": "action",
+              "label": "Hint",
+              "text": "💡 Hint",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "action_rpg: the stamina meter at its level",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "action_rpg",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": true
+        },
+        "state": {
+          "stamina": 0.4
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": true,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "stamina",
+              "kind": "meter",
+              "label": "Stamina",
+              "text": "",
+              "fraction": 0.4,
+              "tone": "success"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "action_rpg: stamina above 1 is full",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "action_rpg",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": true
+        },
+        "state": {
+          "stamina": 1.7
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": true,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "stamina",
+              "kind": "meter",
+              "label": "Stamina",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "action_rpg: no stamina bar, no elements",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "action_rpg",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": true
+        },
+        "state": {
+          "stamina": 0.4
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": []
+        }
+      }
+    },
+    {
+      "name": "fighting: start values",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fighting"
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Player 1",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 1",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "99",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fighting: named fighters, health 0.6 success and 0.5 warning",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fighting"
+        },
+        "state": {
+          "fighters": [
+            {
+              "name": "Ryn",
+              "health": 0.6
+            },
+            {
+              "name": "Oda",
+              "health": 0.5
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Ryn",
+              "text": "",
+              "fraction": 0.6,
+              "tone": "success"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Oda",
+              "text": "",
+              "fraction": 0.5,
+              "tone": "warning"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 1",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "99",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fighting: health 0.26 is warning, 0.25 danger",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fighting"
+        },
+        "state": {
+          "fighters": [
+            {
+              "health": 0.26
+            },
+            {
+              "health": 0.25
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Player 1",
+              "text": "",
+              "fraction": 0.26,
+              "tone": "warning"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 0.25,
+              "tone": "danger"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 1",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "99",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fighting: a full special meter, round 3, 10.2 s left",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fighting"
+        },
+        "state": {
+          "specialMeter": 140,
+          "round": 3,
+          "fightTimer": 10.2
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Player 1",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 3",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "11",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 1,
+              "tone": "accent_hover"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fighting: 10 s left is danger",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fighting"
+        },
+        "state": {
+          "fightTimer": 10
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Player 1",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 1",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "10",
+              "tone": "danger"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fighting: a one-hit combo is no combo",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fighting"
+        },
+        "state": {
+          "combo": {
+            "hits": 1,
+            "damage": 12
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Player 1",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 1",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "99",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "fighting: a three-hit combo",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "fighting"
+        },
+        "state": {
+          "combo": {
+            "hits": 3,
+            "damage": 47
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Player 1",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 1",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "99",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            },
+            {
+              "id": "combo",
+              "kind": "text",
+              "label": "Combo",
+              "text": "3 HIT COMBO!\n47 DMG",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "minimal: no elements; chrome from the flags",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "minimal",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": true
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "minimal",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": true
+          },
+          "elements": []
+        }
+      }
+    },
+    {
+      "name": "chrome: an absent flag is not shown",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "minimal"
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "minimal",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": []
+        }
+      }
+    },
+    {
+      "name": "view: a layout the model does not draw is refused",
+      "op": "view",
+      "input": {
+        "config": {
+          "layout": "vr"
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unknown_layout",
+          "field": "config.layout"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,657 @@
+{
+ "area": "p9a",
+ "description": "Hand-written: the P9a rows' own contract (P9a.native, U84) — the op each row passes to core's corpus runner, a domain refusal as a VALUE, and the row's own refusals as errors with a code ([unknown-op], [invalid-input]) as a host reads them in last_error. Core's own corpora (conformance/ui/genre-hud-cases.json, conformance/ui/rules-panel-cases.json, conformance/modules/mechanic-runtime.json) are run whole by the genre_hud_corpus, rules_panel_corpus and mechanic_runtime_corpus ctests (tests/p9a_corpus.cpp), not transcribed here.",
+ "cases": [
+  {
+   "name": "ui.genreHud: `op` and the case input go to core's runner; a refusal is a value",
+   "steps": [
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "config",
+      "genre": "rpg"
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "layout": "action_rpg",
+       "showMinimap": true,
+       "showHealthBar": true,
+       "showStaminaBar": true,
+       "showAmmoCounter": false,
+       "showCompass": true
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "config",
+      "genre": "mystery"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unknown_genre",
+       "field": "genre"
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "view",
+      "config": {
+       "layout": "vr"
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unknown_layout",
+       "field": "config.layout"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui.genreHud: an op core's runner does not declare is [unknown-op]",
+   "steps": [
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "genre": "rpg"
+     },
+     "expectError": "insimulcore: Error: [unknown-op] insimulcore: ui.genreHud: `op` must be one of config, view, genre_view (got undefined)"
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "layout",
+      "genre": "rpg"
+     },
+     "expectError": "insimulcore: Error: [unknown-op] insimulcore: ui.genreHud: `op` must be one of config, view, genre_view (got \"layout\")"
+    }
+   ]
+  },
+  {
+   "name": "ui.rulesPanel: `op` and the case input go to core's runner",
+   "steps": [
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "isActive",
+      "rules": [
+       {
+        "id": "no_theft",
+        "name": "no theft",
+        "description": "Stealing is punished",
+        "ruleType": "trigger",
+        "category": "legal",
+        "priority": 8,
+        "tags": [
+         "law",
+         "property",
+         "crime",
+         "extra"
+        ],
+        "isActive": true,
+        "isBase": false
+       },
+       {
+        "id": "greet_elders",
+        "name": "greet elders",
+        "description": null,
+        "ruleType": "volition",
+        "category": "social",
+        "priority": 5,
+        "tags": [],
+        "isActive": true,
+        "isBase": false
+       },
+       {
+        "id": "night_curfew",
+        "name": "night curfew",
+        "description": null,
+        "ruleType": "pattern",
+        "category": "legal",
+        "priority": 3,
+        "tags": [],
+        "isActive": false,
+        "isBase": false
+       },
+       {
+        "id": "kind_hearted",
+        "name": "kind hearted",
+        "description": null,
+        "ruleType": "trait",
+        "category": null,
+        "priority": 0,
+        "tags": [],
+        "isActive": true,
+        "isBase": false
+       }
+      ],
+      "ruleId": "no_theft"
+     },
+     "expect": true
+    },
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "isActive",
+      "rules": [
+       {
+        "id": "no_theft",
+        "name": "no theft",
+        "description": "Stealing is punished",
+        "ruleType": "trigger",
+        "category": "legal",
+        "priority": 8,
+        "tags": [
+         "law",
+         "property",
+         "crime",
+         "extra"
+        ],
+        "isActive": true,
+        "isBase": false
+       },
+       {
+        "id": "greet_elders",
+        "name": "greet elders",
+        "description": null,
+        "ruleType": "volition",
+        "category": "social",
+        "priority": 5,
+        "tags": [],
+        "isActive": true,
+        "isBase": false
+       },
+       {
+        "id": "night_curfew",
+        "name": "night curfew",
+        "description": null,
+        "ruleType": "pattern",
+        "category": "legal",
+        "priority": 3,
+        "tags": [],
+        "isActive": false,
+        "isBase": false
+       },
+       {
+        "id": "kind_hearted",
+        "name": "kind hearted",
+        "description": null,
+        "ruleType": "trait",
+        "category": null,
+        "priority": 0,
+        "tags": [],
+        "isActive": true,
+        "isBase": false
+       }
+      ],
+      "ruleId": "night_curfew"
+     },
+     "expect": false
+    },
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "byCategory",
+      "rules": [
+       {
+        "id": "no_theft",
+        "name": "no theft",
+        "description": "Stealing is punished",
+        "ruleType": "trigger",
+        "category": "legal",
+        "priority": 8,
+        "tags": [
+         "law",
+         "property",
+         "crime",
+         "extra"
+        ],
+        "isActive": true,
+        "isBase": false
+       },
+       {
+        "id": "greet_elders",
+        "name": "greet elders",
+        "description": null,
+        "ruleType": "volition",
+        "category": "social",
+        "priority": 5,
+        "tags": [],
+        "isActive": true,
+        "isBase": false
+       },
+       {
+        "id": "night_curfew",
+        "name": "night curfew",
+        "description": null,
+        "ruleType": "pattern",
+        "category": "legal",
+        "priority": 3,
+        "tags": [],
+        "isActive": false,
+        "isBase": false
+       },
+       {
+        "id": "kind_hearted",
+        "name": "kind hearted",
+        "description": null,
+        "ruleType": "trait",
+        "category": null,
+        "priority": 0,
+        "tags": [],
+        "isActive": true,
+        "isBase": false
+       }
+      ],
+      "category": "legal"
+     },
+     "expect": [
+      "no_theft"
+     ]
+    },
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "panel"
+     },
+     "expect": {
+      "cards": [],
+      "emptyText": "No active rules in this world"
+     }
+    }
+   ]
+  },
+  {
+   "name": "ui.rulesPanel: an unknown op is [unknown-op]; a field of the wrong JSON type is [invalid-input]",
+   "steps": [
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "sort",
+      "rules": []
+     },
+     "expectError": "insimulcore: Error: [unknown-op] insimulcore: ui.rulesPanel: `op` must be one of panel, card, byCategory, byType, isActive (got \"sort\")"
+    },
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "card"
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: ui.rulesPanel: `rule` must be a JSON object"
+    },
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "panel",
+      "worldRules": {
+       "no_theft": {}
+      }
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: ui.rulesPanel: `worldRules` must be an array"
+    },
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "panel",
+      "baseRules": [
+       "no_theft"
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: ui.rulesPanel: `baseRules[0]` must be a JSON object"
+    },
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "byType",
+      "rules": [
+       {
+        "id": "no_theft",
+        "name": "no theft",
+        "description": "Stealing is punished",
+        "ruleType": "trigger",
+        "category": "legal",
+        "priority": 8,
+        "tags": [
+         "law",
+         "property",
+         "crime",
+         "extra"
+        ],
+        "isActive": true,
+        "isBase": false
+       },
+       {
+        "id": "greet_elders",
+        "name": "greet elders",
+        "description": null,
+        "ruleType": "volition",
+        "category": "social",
+        "priority": 5,
+        "tags": [],
+        "isActive": true,
+        "isBase": false
+       },
+       {
+        "id": "night_curfew",
+        "name": "night curfew",
+        "description": null,
+        "ruleType": "pattern",
+        "category": "legal",
+        "priority": 3,
+        "tags": [],
+        "isActive": false,
+        "isBase": false
+       },
+       {
+        "id": "kind_hearted",
+        "name": "kind hearted",
+        "description": null,
+        "ruleType": "trait",
+        "category": null,
+        "priority": 0,
+        "tags": [],
+        "isActive": true,
+        "isBase": false
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: ui.rulesPanel: `ruleType` must be a string"
+    },
+    {
+     "call": "ui.rulesPanel",
+     "args": {
+      "op": "isActive",
+      "ruleId": "no_theft"
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: ui.rulesPanel: `rules` must be an array"
+    }
+   ]
+  },
+  {
+   "name": "mechanics.run: a fighting world's first swing lands unmetered; its stamina step is absent",
+   "steps": [
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "fighting"
+        }
+       },
+       "routines": {
+        "routines": [
+         {
+          "id": "herding",
+          "name": "Herding",
+          "blocks": [
+           {
+            "id": "pasture",
+            "goal": "tend_flock",
+            "startHour": 6,
+            "endHour": 12,
+            "place": "ford",
+            "priority": 55
+           }
+          ]
+         }
+        ]
+       }
+      },
+      "seed": 7,
+      "steps": [
+       {
+        "op": "stamina.register",
+        "id": "hero",
+        "max": 24
+       },
+       {
+        "op": "combat.register",
+        "id": "hero",
+        "health": 30,
+        "maxHealth": 30
+       },
+       {
+        "op": "combat.register",
+        "id": "wolf",
+        "health": 20,
+        "maxHealth": 20
+       },
+       {
+        "op": "combat.attack",
+        "attackerId": "hero",
+        "targetId": "wolf",
+        "action": {
+         "id": "heavy_swing",
+         "damage": 6,
+         "staminaCost": 4
+        },
+        "tick": 1
+       }
+      ]
+     },
+     "expect": {
+      "plan": {
+       "genre": "fighting",
+       "known": true,
+       "layers": {
+        "stamina": false,
+        "combat": true,
+        "detection": false,
+        "traversal": false,
+        "locomotion": false,
+        "routines": false,
+        "skills": false
+       },
+       "shared": {
+        "eventBus": [
+         "combat"
+        ],
+        "staminaSpenders": [],
+        "locomotionGraph": null
+       },
+       "notAssembled": []
+      },
+      "steps": [
+       {
+        "absent": true
+       },
+       {
+        "absent": false,
+        "outcome": {
+         "health": 30
+        },
+        "stamina": null
+       },
+       {
+        "absent": false,
+        "outcome": {
+         "health": 20
+        },
+        "stamina": null
+       },
+       {
+        "absent": false,
+        "outcome": {
+         "outcome": "hit",
+         "reason": null,
+         "staminaCost": 4,
+         "staminaSpent": 4,
+         "damage": 6,
+         "targetHealthAfter": 14
+        },
+        "stamina": null
+       }
+      ],
+      "events": [
+       "combat_action"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "mechanics.run: the IR, seed and steps are checked at the boundary as [invalid-input]",
+   "steps": [
+    {
+     "call": "mechanics.run",
+     "args": {
+      "seed": 7,
+      "steps": []
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: mechanics.run: `ir` must be a JSON object"
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {}
+      },
+      "seed": 7,
+      "steps": []
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: mechanics.run: `ir.meta.genreConfig` must be a JSON object"
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {}
+       }
+      },
+      "seed": 7,
+      "steps": []
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: mechanics.run: `ir.meta.genreConfig.id` must be a string"
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        },
+        "enabledModules": "combat"
+       }
+      },
+      "seed": 7,
+      "steps": []
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: mechanics.run: `ir.meta.enabledModules` must be an array"
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        }
+       }
+      },
+      "seed": true,
+      "steps": []
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: mechanics.run: `seed` must be a finite number"
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        }
+       }
+      },
+      "seed": 7
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: mechanics.run: `steps` must be an array"
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        }
+       }
+      },
+      "seed": 7,
+      "steps": [
+       "combat.attack"
+      ]
+     },
+     "expectError": "insimulcore: Error: [invalid-input] insimulcore: mechanics.run: `steps[0]` must be a JSON object"
+    }
+   ]
+  },
+  {
+   "name": "mechanics.run: a step op core's runner does not apply is [unknown-op], not an empty answer",
+   "steps": [
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        }
+       }
+      },
+      "seed": 7,
+      "steps": [
+       {
+        "op": "stamina.register",
+        "id": "hero",
+        "max": 5
+       },
+       {
+        "op": "combat.flee",
+        "actorId": "hero"
+       }
+      ]
+     },
+     "expectError": "insimulcore: Error: [unknown-op] insimulcore: mechanics.run: `steps[1].op` must be one of stamina.register, combat.register, combat.attack, traversal.links, traversal.register, traversal.traverse, locomotion.pursue, detection.observer, detection.target, detection.observe, routine.assign, routine.tick, skills.load, skills.register, skills.award, skills.advance (got \"combat.flee\")"
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "puzzle"
+        }
+       }
+      },
+      "seed": "s",
+      "steps": []
+     },
+     "expect": {
+      "plan": {
+       "$subset": {
+        "genre": "puzzle",
+        "notAssembled": [
+         "puzzle"
+        ]
+       }
+      },
+      "steps": [],
+      "events": []
+     }
+    }
+   ]
+  }
+ ]
+}
