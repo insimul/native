@@ -362,8 +362,9 @@ for an input of the wrong JSON type (the rules-panel fields core's `PanelRule`
 types; the mechanic IR's `meta.genreConfig.id`, the seed and the steps). Core's
 runners would otherwise answer a misspelt rules field as an empty panel, and a
 mechanic step op they do not know as `{ absent: false }` with no outcome. The
-rows refuse only what core leaves untyped or would answer silently wrong: the
-IR's `meta.enabledModules` is `unknown` in core's `MechanicRuntimeInput`, and
+rows refuse only inputs core's types declare and its runners would answer
+silently wrong, never one core types loosely and answers on purpose: the IR's
+`meta.enabledModules` is `unknown` in core's `MechanicRuntimeInput`, and
 core's `conformance/modules/world-activation.json` ("rpg with a string") pins
 that a list that is not an array selects nothing and the genre decides, so
 `mechanics.run` passes it to core unchecked and answers that IR exactly as
