@@ -122,7 +122,18 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   "op": <case op>, ...<case input> }` to the two UI rows, the case's `input` to
   `mechanics.run`, each answer compared exactly with `expected` (key sets
   included; a domain refusal is the VALUE `{ ok: false, refusal }`, never an
-  error). `mechanics.run` is a replay, not a live runtime: the decision layers
+  error). The rows are stricter than core's runners in one place a binding
+  must know: `ui.rulesPanel` refuses a `worldRules`, `baseRules` or `rules` that
+  is not an array of objects (`rules` is required by `byCategory`, `byType` and
+  `isActive`), a `card` `rule` that is not an object, and a `category`,
+  `ruleType` or `ruleId` that is not a string, as an ERROR `[invalid-input]`, where core's `runRulesPanelOp` would read a
+  non-array as no rules and `String()` a key. Send the JSON types core's
+  `PanelRule` declares. `mechanics.run` passes `meta.enabledModules` to core
+  unchecked (a non-array list: the genre decides, as `modules.activate` answers),
+  and refuses only a missing `meta.genreConfig.id`, a seed or a step of the wrong
+  JSON type, and a step op outside core's `MechanicStep` union (`[unknown-op]`;
+  that list is a hand copy in `js/entry.js`, guarded by `mechanic_runtime_corpus`).
+  `mechanics.run` is a replay, not a live runtime: the decision layers
   `InsimulMechanicSurface.h` marks `BridgeHasNoRow` still need per-system rows
   (P9b–P9j). The existing `genre.*`, `modules.*` and `packs.compose` rows answer
   the six genres P9a.core added and `meta.enabledModules` with no row change.

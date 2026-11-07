@@ -157,7 +157,7 @@ game; **meta** = about the bridge itself.
 | `modules.activate` | `{ ir }` or `{ genre }` or `{}` → `{ source, active, predicatePacks, hostInterfaces, reason }` | `modules/module-activation` | P9 (Godot's fork has the same row) |
 | `modules.table` | `{}` → core's `moduleActivationTable()` | same | P9 |
 | `prolog.packs` | `{ areas? }` → `{ packs: [{ area, prolog, runtimePredicates }], order, unknown }` | `prolog/predicate-packs` | P9 |
-| `mechanics.run` | `{ ir: { meta: { genreConfig, enabledModules? }, routines? }, seed, steps }` (a `conformance/modules/mechanic-runtime.json` case's `input`) → `{ plan, steps, events }`; a malformed IR, seed or step is an error `[invalid-input]`, a step op core's runner does not apply `[unknown-op]` | `game-engine/mechanic-runtime-corpus` `runMechanicRuntimeCase` over `game-engine/mechanic-runtime` `createMechanicRuntime` | P9a.native (U84) |
+| `mechanics.run` | `{ ir: { meta: { genreConfig, enabledModules? }, routines? }, seed, steps }` (a `conformance/modules/mechanic-runtime.json` case's `input`) → `{ plan, steps, events }`; an IR without a `meta.genreConfig.id`, a seed or a step of the wrong JSON type is an error `[invalid-input]`, a step op core's runner does not apply `[unknown-op]`; `meta.enabledModules` goes to core unchecked (not an array: the genre decides, as `modules.activate` answers) | `game-engine/mechanic-runtime-corpus` `runMechanicRuntimeCase` over `game-engine/mechanic-runtime` `createMechanicRuntime` | P9a.native (U84) |
 | `layout.ops` | `{}` → `{ layout, composition }` — core's `LAYOUT_OPS` and `COMPOSITION_OPS` | `editor/layout/corpus`, `editor/layout/composition/corpus` | L.native-layout (U36) |
 | `layout.isDoorPartName` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('isDoorPartName')` | L.native-layout |
 | `layout.faceYawOf` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('faceYawOf')` | L.native-layout |
@@ -359,9 +359,15 @@ field } }`); what the row itself refuses is an ERROR with a code (see "Errors"):
 `[unknown-op]` for an op core's runner does not declare (`GENRE_HUD_OPS`,
 `RULES_PANEL_OPS`, the 16 step ops of core's `MechanicStep`), `[invalid-input]`
 for an input of the wrong JSON type (the rules-panel fields core's `PanelRule`
-types; the mechanic IR, seed and steps). Core's runners would otherwise answer a
-misspelt rules field as an empty panel, and a mechanic step op they do not know
-as `{ absent: false }` with no outcome.
+types; the mechanic IR's `meta.genreConfig.id`, the seed and the steps). Core's
+runners would otherwise answer a misspelt rules field as an empty panel, and a
+mechanic step op they do not know as `{ absent: false }` with no outcome. The
+rows refuse only what core leaves untyped or would answer silently wrong: the
+IR's `meta.enabledModules` is `unknown` in core's `MechanicRuntimeInput`, and
+core's `conformance/modules/world-activation.json` ("rpg with a string") pins
+that a list that is not an array selects nothing and the genre decides, so
+`mechanics.run` passes it to core unchecked and answers that IR exactly as
+`modules.activate { ir }` does.
 
 **Why `mechanics.run` is stateless and not a `mechanics.create`/`.apply` session.**
 The session rows above hold a core model whose methods answer JSON-ready values.
@@ -392,7 +398,7 @@ rows' own contract (the coded errors, a refusal as a value).
 mechanic assembly (the seven layers' directors, combat resolution, perception,
 traversal, routines, skills, and the Prolog helper text those modules import):
 47 core modules. At the f9aef13 pin the bundle grew from 1,005,516 bytes (the pin
-bump alone, from 988,816 at b38e60d) to 1,391,854. The 86 cases take about 60 ms
+bump alone, from 988,816 at b38e60d) to 1,392,156. The 86 cases take about 60 ms
 under QuickJS.
 
 ### What the feature phases asked for and core does not have yet

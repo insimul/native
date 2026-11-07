@@ -1134,7 +1134,11 @@ const METHODS = {
 	 * type of every event the one bus carried. Pure and seeded, like `weather.run`.
 	 * Step ops: every op of core's `MechanicStep` (MECHANIC_STEP_OPS above). The row
 	 * checks the IR's shape, the seed and each step's `op` (`[invalid-input]`,
-	 * `[unknown-op]`); a step's own fields go to core unchanged.
+	 * `[unknown-op]`); a step's own fields go to core unchanged. `meta.enabledModules`
+	 * goes to core unchecked, as core types it (`unknown`): a list that is not an
+	 * array selects nothing and the genre decides, exactly as `modules.activate { ir }`
+	 * answers the same IR (core's `conformance/modules/world-activation.json`, "rpg
+	 * with a string").
 	 *
 	 * Why a stateless `.run` and not a `mechanics.create`/`.apply` session pair:
 	 * core defines the one operation as `{ ir, seed, steps }` → `{ plan, steps,
@@ -1151,9 +1155,6 @@ const METHODS = {
 			const ir = needObject(m, args.ir, 'ir');
 			const meta = needObject(m, ir.meta, 'ir.meta');
 			needString(m, needObject(m, meta.genreConfig, 'ir.meta.genreConfig').id, 'ir.meta.genreConfig.id');
-			if (meta.enabledModules !== undefined && meta.enabledModules !== null) {
-				needArray(m, meta.enabledModules, 'ir.meta.enabledModules');
-			}
 			if (ir.routines !== undefined && ir.routines !== null) needObject(m, ir.routines, 'ir.routines');
 			const seed = typeof args.seed === 'string' ? args.seed : needNumber(m, args.seed, 'seed');
 			const steps = needArray(m, args.steps, 'steps');

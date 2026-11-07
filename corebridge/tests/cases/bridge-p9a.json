@@ -540,22 +540,6 @@
        "meta": {
         "genreConfig": {
          "id": "rpg"
-        },
-        "enabledModules": "combat"
-       }
-      },
-      "seed": 7,
-      "steps": []
-     },
-     "expectError": "insimulcore: Error: [invalid-input] insimulcore: mechanics.run: `ir.meta.enabledModules` must be an array"
-    },
-    {
-     "call": "mechanics.run",
-     "args": {
-      "ir": {
-       "meta": {
-        "genreConfig": {
-         "id": "rpg"
         }
        }
       },
@@ -594,6 +578,274 @@
       ]
      },
      "expectError": "insimulcore: Error: [invalid-input] insimulcore: mechanics.run: `steps[0]` must be a JSON object"
+    }
+   ]
+  },
+  {
+   "name": "mechanics.run: a `meta.enabledModules` that is not an array selects nothing and the genre decides, as core's world-activation corpus ('rpg with a string') and modules.activate { ir } answer; an array selects",
+   "steps": [
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        }
+       }
+      },
+      "seed": 7,
+      "steps": []
+     },
+     "expect": {
+      "plan": {
+       "genre": "rpg",
+       "known": true,
+       "layers": {
+        "stamina": false,
+        "combat": true,
+        "detection": true,
+        "traversal": true,
+        "locomotion": true,
+        "routines": true,
+        "skills": true
+       },
+       "shared": {
+        "eventBus": [
+         "combat",
+         "detection",
+         "traversal",
+         "locomotion",
+         "routines",
+         "skills"
+        ],
+        "staminaSpenders": [],
+        "locomotionGraph": "traversal"
+       },
+       "notAssembled": [
+        "equipment",
+        "agentAi",
+        "map",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue"
+       ]
+      },
+      "steps": [],
+      "events": []
+     }
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        },
+        "enabledModules": "combat"
+       }
+      },
+      "seed": 7,
+      "steps": []
+     },
+     "expect": {
+      "plan": {
+       "genre": "rpg",
+       "known": true,
+       "layers": {
+        "stamina": false,
+        "combat": true,
+        "detection": true,
+        "traversal": true,
+        "locomotion": true,
+        "routines": true,
+        "skills": true
+       },
+       "shared": {
+        "eventBus": [
+         "combat",
+         "detection",
+         "traversal",
+         "locomotion",
+         "routines",
+         "skills"
+        ],
+        "staminaSpenders": [],
+        "locomotionGraph": "traversal"
+       },
+       "notAssembled": [
+        "equipment",
+        "agentAi",
+        "map",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue"
+       ]
+      },
+      "steps": [],
+      "events": []
+     }
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        },
+        "enabledModules": 7
+       }
+      },
+      "seed": 7,
+      "steps": []
+     },
+     "expect": {
+      "plan": {
+       "genre": "rpg",
+       "known": true,
+       "layers": {
+        "stamina": false,
+        "combat": true,
+        "detection": true,
+        "traversal": true,
+        "locomotion": true,
+        "routines": true,
+        "skills": true
+       },
+       "shared": {
+        "eventBus": [
+         "combat",
+         "detection",
+         "traversal",
+         "locomotion",
+         "routines",
+         "skills"
+        ],
+        "staminaSpenders": [],
+        "locomotionGraph": "traversal"
+       },
+       "notAssembled": [
+        "equipment",
+        "agentAi",
+        "map",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue"
+       ]
+      },
+      "steps": [],
+      "events": []
+     }
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        },
+        "enabledModules": {
+         "a": 1
+        }
+       }
+      },
+      "seed": 7,
+      "steps": []
+     },
+     "expect": {
+      "plan": {
+       "genre": "rpg",
+       "known": true,
+       "layers": {
+        "stamina": false,
+        "combat": true,
+        "detection": true,
+        "traversal": true,
+        "locomotion": true,
+        "routines": true,
+        "skills": true
+       },
+       "shared": {
+        "eventBus": [
+         "combat",
+         "detection",
+         "traversal",
+         "locomotion",
+         "routines",
+         "skills"
+        ],
+        "staminaSpenders": [],
+        "locomotionGraph": "traversal"
+       },
+       "notAssembled": [
+        "equipment",
+        "agentAi",
+        "map",
+        "volition",
+        "weather",
+        "business",
+        "crafting",
+        "mining",
+        "dialogue"
+       ]
+      },
+      "steps": [],
+      "events": []
+     }
+    },
+    {
+     "call": "mechanics.run",
+     "args": {
+      "ir": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg"
+        },
+        "enabledModules": [
+         "combat"
+        ]
+       }
+      },
+      "seed": 7,
+      "steps": []
+     },
+     "expect": {
+      "plan": {
+       "genre": "rpg",
+       "known": true,
+       "layers": {
+        "stamina": false,
+        "combat": true,
+        "detection": false,
+        "traversal": false,
+        "locomotion": false,
+        "routines": false,
+        "skills": false
+       },
+       "shared": {
+        "eventBus": [
+         "combat"
+        ],
+        "staminaSpenders": [],
+        "locomotionGraph": null
+       },
+       "notAssembled": []
+      },
+      "steps": [],
+      "events": []
+     }
     }
    ]
   },
