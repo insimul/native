@@ -464,7 +464,7 @@ pin the rows' own contract (results in a batch, the effects, the errors).
 **Cost.** The rows bring three core modules, `save-slots`, `ui/save-indicator-model`
 and `game-engine/logic/KeyboardMap` (the slot model was already in; 138 → 141): at the fc88be9 pin the bundle went from 1,402,117
 bytes (the pin bump alone, from 1,392,156 at f9aef13) to 1,422,744. The 83 driven
-cases take about 25 ms under QuickJS.
+cases take about 20 ms under QuickJS.
 
 ### What the feature phases asked for and core does not have yet
 
