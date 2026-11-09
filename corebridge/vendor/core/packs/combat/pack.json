@@ -21,7 +21,16 @@
     "predicatePacks": ["combat"],
     "hostInterfaces": ["ICombatSystem", "ICombatStatSink", "ITrajectoryProbe"],
     "genreFeature": "combat",
-    "corpus": ["conformance/combat/resolution.json", "conformance/combat/action-table.json", "conformance/prolog/mechanic-combat.json"]
+    "corpus": [
+      "conformance/combat/resolution.json",
+      "conformance/combat/action-table.json",
+      "conformance/prolog/mechanic-combat.json",
+      "conformance/combat/timing.json",
+      "conformance/combat/ranged.json",
+      "conformance/combat/status-effects.json",
+      "conformance/combat/loot-drops.json",
+      "conformance/combat/feedback.json"
+    ]
   },
   "requires": [{ "id": "vitals" }, { "id": "inventory" }],
   "variants": {
@@ -29,7 +38,7 @@
     "default": "melee",
     "options": [
       { "id": "melee", "status": "ready", "genreOverrides": [{ "path": "combatStyle", "value": "melee" }] },
-      { "id": "ranged", "status": "ready", "genreOverrides": [{ "path": "combatStyle", "value": "ranged" }], "doc": "core resolves delivery 'projectile'; ammo, reload and spread have no corpus yet" },
+      { "id": "ranged", "status": "ready", "genreOverrides": [{ "path": "combatStyle", "value": "ranged" }], "doc": "core resolves delivery 'projectile'; ammo, reload, fire rate and spread are core's (conformance/combat/ranged.json)" },
       { "id": "hybrid", "status": "ready", "genreOverrides": [{ "path": "combatStyle", "value": "hybrid" }] },
       { "id": "turn_based", "status": "port-later", "genreOverrides": [{ "path": "combatStyle", "value": "turn_based" }], "doc": "no core logic for initiative or an action queue yet" },
       {

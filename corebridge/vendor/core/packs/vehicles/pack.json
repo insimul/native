@@ -1,0 +1,53 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "vehicles",
+  "version": "0.1.0",
+  "name": "Vehicles",
+  "summary": "World vehicles an actor boards, drives and gets out of (a skiff, a cart) that lend their driver a traversal mode, and personal vehicles a rider cycles through (on foot, bicycle, horse) that change the controller's pace.",
+  "kind": "optional",
+  "phase": "P9e",
+  "catalog": ["traversal-vehicles"],
+  "core": {
+    "corpus": [
+      "conformance/traversal/vehicles.json",
+      "conformance/traversal/mounts.json",
+      "conformance/traversal/session.json",
+      "conformance/traversal/save.json"
+    ]
+  },
+  "requires": [{ "id": "controls" }],
+  "enhances": [{ "id": "traversal" }],
+  "parameters": [
+    { "id": "mountedStrafePermille", "type": "integer", "min": 0, "maps": "PersonalVehicleTuning.mountedStrafePermille", "source": "core-default", "doc": "strafe while mounted, in thousandths of the mounted walk (Babylon 800)" },
+    { "id": "mountedBackPermille", "type": "integer", "min": 0, "maps": "PersonalVehicleTuning.mountedBackPermille", "source": "core-default", "doc": "back while mounted, in thousandths of the mounted walk (Babylon 500)" }
+  ],
+  "extensionPoints": [
+    { "id": "world-vehicles", "kind": "prolog-facts", "signature": "WorldIR.traversal.vehicles {id, mode, owner, location, seats, actions}", "doc": "what a world's vehicles are, who owns them and what mode each lends" },
+    { "id": "theft-norms", "kind": "prolog-forbid", "signature": "forbids/4 over board/drive with vehicle_owner/2", "doc": "taking somebody else's cart is a fact the enforcer can see" },
+    { "id": "personal-kinds", "kind": "binding-hook", "signature": "personalVehicleTuning({kinds, cycle, onFoot}) (src/traversal/personal-vehicles.ts)", "doc": "a world's own personal vehicle kinds and the cycle order, merged over Babylon's by id; a parameter-level hook, not Prolog facts" }
+  ],
+  "events": { "emits": ["vehicle_state_changed", "vehicle_mounted", "vehicle_dismounted"] },
+  "styles": {
+    "tokens": ["accent"],
+    "layouts": ["vehicle-indicator"],
+    "art": ["prop.vehicle.*"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "VehicleRegistry (src/game-engine/logic/) owns who is aboard and driving a world vehicle; src/traversal/personal-vehicles.ts owns the cycle key's on foot, bicycle, horse; the engine moves the meshes and applies the pace factors to its own controller.",
+    "notes": [
+      "Bind the cycle to KEY_CYCLE_VEHICLE (KeyB). Switching straight from one kind to the next raises only vehicle_mounted, as Babylon did.",
+      "A horse lends ride (personalVehicleModes): give the planner the modes it returns; a bicycle is a pace only.",
+      "Pace factors are thousandths of the controller's own walk, run and turn rates.",
+      "Without the traversal pack, vehicles still decides who is aboard, who drives and who rides which kind, with its events and pace factors; but no planner takes the modes a vehicle lends, and nothing is saved, because the riding rows and the registry's state live in the traversal save extension that traversal owns. A preset that wants either carries traversal too.",
+      "Rideable animals, pets and wild animals (traversal-mounts-pets) are port-later: see docs/traversal-systems.md for the contract note; do not generate them from this pack."
+    ],
+    "doNot": [
+      "Let a rider aboard a world vehicle get on a horse (in_vehicle).",
+      "Store a vehicle's speed or heading in core: the state that changes is who is aboard, who drives and where it is."
+    ]
+  }
+}

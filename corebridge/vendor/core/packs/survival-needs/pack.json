@@ -1,0 +1,54 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "survival-needs",
+  "version": "0.1.0",
+  "name": "Survival needs",
+  "summary": "Hunger, thirst, temperature and sleep decay over time and are restored by eating, drinking, sleeping and items; HUD bars flash on warning, critical and restored, and saves keep the readings.",
+  "kind": "optional",
+  "phase": "P9c",
+  "catalog": ["survival-needs"],
+  "core": {
+    "hostInterfaces": ["ISurvivalSystem"],
+    "corpus": [
+      "conformance/survival/needs.json",
+      "conformance/survival/hud.json"
+    ],
+    "saveExtensions": ["survivalNeeds"]
+  },
+  "requires": [{ "id": "stamina" }, { "id": "inventory" }],
+  "parameters": [
+    { "id": "tickMs", "type": "integer", "min": 1, "maps": "SurvivalTuning.tickMs", "source": "core-default" },
+    { "id": "damageEnabled", "type": "boolean", "maps": "SurvivalTuning.damageEnabled", "source": "world" },
+    { "id": "globalDamageMultiplier", "type": "number", "min": 0, "maps": "SurvivalTuning.globalDamageMultiplier", "source": "world" },
+    { "id": "temperatureEnvironmentDriven", "type": "boolean", "maps": "SurvivalTuning.temperatureEnvironmentDriven", "source": "world" },
+    { "id": "criticalAtBothExtremes", "type": "boolean", "maps": "SurvivalTuning.criticalAtBothExtremes", "source": "world" },
+    { "id": "temperatureDriftPerSecond", "type": "number", "min": 0, "maps": "SurvivalTuning.temperatureDriftPerSecond", "source": "core-default" },
+    { "id": "satisfiedFraction", "type": "number", "min": 0, "max": 1, "maps": "SurvivalTuning.satisfiedFraction", "source": "core-default" },
+    { "id": "hudFlashMs", "type": "integer", "min": 0, "maps": "SurvivalTuning.hudFlashMs", "source": "core-default" },
+    { "id": "showSurvivalBars", "type": "boolean", "default": false, "maps": "binding", "doc": "Godot's UI flag: the bars show only when the world opts in" }
+  ],
+  "extensionPoints": [
+    { "id": "need-items", "kind": "binding-hook", "signature": "ItemDefinition.effects { hunger | thirst | temperature | sleep: number } -> consumeForNeeds", "doc": "food, drink and remedies restore needs through their authored effects" },
+    { "id": "restore-actions", "kind": "binding-hook", "signature": "SurvivalTuning.restoreActions { action: { need, amount } }", "doc": "eat, drink, sleep and any action a world adds" },
+    { "id": "need-modifiers", "kind": "binding-hook", "signature": "SurvivalIR.modifierPresets -> applyNeedModifier", "doc": "well fed, cold, sick: a multiplier on one need's decay" },
+    { "id": "survival-save", "kind": "save-extension", "signature": "survivalNeeds" },
+    { "id": "survival-host", "kind": "host-slot", "signature": "ISurvivalSystem.update / restoreNeed / setTemperature", "doc": "the host's clock calls advanceSurvival; the arithmetic is core's" }
+  ],
+  "styles": {
+    "tokens": ["success", "warning", "danger", "text_primary"],
+    "layouts": ["survival-bars"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "Needs are core's (src/survival/needs.ts): decay per whole tick, bands, deprivation damage, restores and the save block; the HUD bars are survivalHudView (src/survival/survival-hud.ts). Stamina is the stamina pack's meter, not a need.",
+    "notes": [
+      "Pass the host's play clock to advanceSurvival; never decay per frame in engine code.",
+      "Hand advanceSurvival's hurt to hurtPlayer (the vitals pack), not to a health number of your own.",
+      "Decay rates, thresholds and presets are the world's (WorldIR.survival); the knobs here are parameters."
+    ],
+    "doNot": ["Treat stamina as a fifth need: StaminaPool owns it.", "Pick bar colours in engine code: tone and flash come from the view."]
+  }
+}

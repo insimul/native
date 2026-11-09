@@ -390,6 +390,60 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/props/containers",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-props-rows (Features Gauntlet PL.native-props-rows)",
+      "reviewedAt": "2026-11-09"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/props/documents",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-props-rows (Features Gauntlet PL.native-props-rows)",
+      "reviewedAt": "2026-11-09"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/props/doors",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-props-rows (Features Gauntlet PL.native-props-rows)",
+      "reviewedAt": "2026-11-09"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/props/notice-board",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-props-rows (Features Gauntlet PL.native-props-rows)",
+      "reviewedAt": "2026-11-09"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/NoticeGenerator",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-props-rows (Features Gauntlet PL.native-props-rows)",
+      "reviewedAt": "2026-11-09"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/inventory-model",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-props-rows (Features Gauntlet PL.native-props-rows)",
+      "reviewedAt": "2026-11-09"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/game-genres/registry",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the Features Round C0 method table, exactly as the radiant specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core at the commit corebridge/core-pin.json pins (an open repo, open→open), and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

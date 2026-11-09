@@ -35,6 +35,7 @@
   },
   "parameters": [
     { "id": "maxSlots", "type": "integer", "min": 1, "maps": "binding", "source": "game", "doc": "How many manual slots the save/load panel shows; today the template token {{MAX_SAVE_SLOTS}}." },
+    { "id": "quickSlot", "type": "integer", "min": 0, "maps": "binding", "source": "core-default", "doc": "The slot F5 writes and F9 reads. Unset (the default): a dedicated quick slot after the manual slots, titled \"Quick save\" in the slot list, so F5 never writes over a manual save (PL.quick-slot, U88(5)). Set: that manual slot's 0-based index (0 is \"Slot 1\", the old behaviour); it must be below maxSlots, or the session refuses it (quick_slot_out_of_range) and the game has no quick slot. The session key is quickSlot too (SAVES_PACK_PARAMETERS in save-slots.ts)." },
     { "id": "autosaveIntervalSec", "type": "number", "min": 0, "maps": "binding", "source": "game", "doc": "Seconds between autosaves; 0 turns autosave off." },
     { "id": "autosaveIndicator", "type": "boolean", "maps": "binding", "source": "game", "doc": "Show the indicator while an autosave is written." }
   ],
@@ -58,8 +59,9 @@
   "assistant": {
     "summary": "The save file format, its migrations and the slot messages are core's; the binding writes, reads and shows slots.",
     "notes": [
-      "Change the slot count or the autosave interval with the parameters, not code.",
-      "Slot rules (delete, Continue, autosave, F5/F9 quick save and load, the indicator) are core's SaveSlotsSession (save-slots.ts); the binding does the I/O each step names and draws the rows and the indicator.",
+      "Change the slot count, the quick slot or the autosave interval with the parameters, not code. Pass the parameters to resolveSaveSlotsConfig as they are: maxSlots is read as the session's slotCount (SAVES_PACK_PARAMETERS, the one mapping).",
+      "The quick slot is dedicated by default: index maxSlots, after the manual slots, stored apart from them (a name of its own, not slot_<index>, so a later maxSlots change never turns the quick save into a manual slot). Report it to the session at that index.",
+      "Slot rules (delete, Continue, autosave, F5/F9 quick save and load, the indicator) are core's SaveSlotsSession (save-slots.ts); the binding does the I/O each step names and draws the rows, the indicator and the delete prompt (askDelete, then confirmDelete or cancelDelete). Delete's words are core's SAVE_SLOT_DELETE_WORDS (save-indicator-model.ts): bind the table, never copy the words.",
       "A new system's state goes into the save as a registered save extension (extensionRegistry), never as a new top-level field.",
       "Raise game_saved after a completed write and game_loaded after a read and migration, built with gameSavedEvent / gameLoadedEvent."
     ],

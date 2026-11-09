@@ -1,0 +1,1012 @@
+{
+  "area": "props-containers",
+  "description": "Container rules (Features WV2, P6.core; CROSS-ENGINE-FEATURES §4, 6. Inventory, shop, props, interiors; catalog items-containers): whether a chest, barrel or crate can be opened, unlocked, taken from or put into, whether it is due to respawn, and which are at a place. The moves themselves are the trade model's (ui/trade-cases.json); this is the gate in front of them. Ops: view {container, context?} -> {view}; unlock {container, context?} -> {result, container}; move {container, move: {kind: take} | {kind: put, itemId}, context?} -> {refusal}; at {containers, location} -> {ids}; respawn {container, now} -> {due}. context is {playerItemIds?, buildings?: [{id, interior: bool}], now?}. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "core game-engine/logic/ContainerManager.ts (toState defaults, isFull, canUnlock, unlock, shouldRespawn, getContainersAtLocation), now delegating shouldRespawn to src/props/containers.ts.",
+    "core ContainerIR (ir-types.ts): buildingId, location interior | outdoor.",
+    "pipelines origin/main 9b6a897: pipelines/game-export/ir-generator.ts generateContainerPlacements (every container location interior) and interior: null on every building; Godot merge finding M2-4 (219 Aldermoor containers inside solid houses)."
+  ],
+  "contract": {
+    "defaultCapacity": 10,
+    "states": [
+      "open",
+      "locked",
+      "unreachable"
+    ],
+    "refusals": [
+      "unknown_building",
+      "no_interior",
+      "locked",
+      "full"
+    ],
+    "unlockResults": [
+      "unlocked",
+      "not_locked",
+      "no_key_item",
+      "key_missing"
+    ],
+    "normalise": "capacity 10 unless a finite number is stated; items [] unless an array; locked and respawns false unless stated (ContainerManager.toState)",
+    "reach": "a container at location interior is reachable only when its buildingId names a listed building that states an interior; unlisted -> unknown_building, no interior -> no_interior; outdoor or no location is always reachable. Interiors are stated by pipelines/atelier, never invented",
+    "order": "unknown_building / no_interior, then locked, then (a put) full",
+    "capacity": "slots, not quantities: full when items.length >= capacity; slotsFree = max(0, capacity - items.length); a put that stacks onto an entry with the same itemId is allowed when full",
+    "unlock": "unreachable -> its refusal; not locked -> not_locked; no keyItemId -> no_key_item; key not held -> key_missing; else unlocked and the record comes back with locked false. Lock picking is P9b",
+    "respawn": "due when respawns, lastOpenedAt and now are valid times, respawnTimeMinutes > 0 and (now - lastOpenedAt) / 60000 >= respawnTimeMinutes; now is an ISO date-time or epoch milliseconds the host passes",
+    "at": "ids in input order of containers whose businessId, residenceId or lotId equals a non-empty one of the location"
+  },
+  "cases": [
+    {
+      "name": "view: an unlocked outdoor chest is open, with ContainerManager's default capacity 10",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "open",
+          "refusal": null,
+          "canUnlock": false,
+          "capacity": 10,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: a locked chest without its key is locked and cannot be unlocked",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": true,
+          "keyItemId": "key_cellar"
+        },
+        "context": {
+          "playerItemIds": [
+            "bread"
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "locked",
+          "refusal": "locked",
+          "canUnlock": false,
+          "capacity": 10,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: a locked chest with its key in hand can be unlocked",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": true,
+          "keyItemId": "key_cellar"
+        },
+        "context": {
+          "playerItemIds": [
+            "key_cellar"
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "locked",
+          "refusal": "locked",
+          "canUnlock": true,
+          "capacity": 10,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: a locked chest with no key item can never be unlocked by key",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": true
+        },
+        "context": {
+          "playerItemIds": [
+            "key_cellar"
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "locked",
+          "refusal": "locked",
+          "canUnlock": false,
+          "capacity": 10,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: capacity counts slots, not quantities",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "a",
+              "quantity": 50
+            },
+            {
+              "itemId": "b",
+              "quantity": 1
+            }
+          ],
+          "capacity": 2
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "open",
+          "refusal": null,
+          "canUnlock": false,
+          "capacity": 2,
+          "slotsUsed": 2,
+          "slotsFree": 0,
+          "full": true,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: more slots than capacity is full with no slots free",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "a",
+              "quantity": 1
+            },
+            {
+              "itemId": "b",
+              "quantity": 1
+            }
+          ],
+          "capacity": 1
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "open",
+          "refusal": null,
+          "canUnlock": false,
+          "capacity": 1,
+          "slotsUsed": 2,
+          "slotsFree": 0,
+          "full": true,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: no items and no capacity stated",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "crate_0"
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "crate_0",
+          "state": "open",
+          "refusal": null,
+          "canUnlock": false,
+          "capacity": 10,
+          "slotsUsed": 0,
+          "slotsFree": 10,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: an interior container in a building that states an interior is open",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "location": "interior",
+          "buildingId": "b_inn"
+        },
+        "context": {
+          "buildings": [
+            {
+              "id": "b_inn",
+              "interior": true
+            },
+            {
+              "id": "b_house",
+              "interior": false
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "open",
+          "refusal": null,
+          "canUnlock": false,
+          "capacity": 10,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: an interior container in a building that states no interior is unreachable (no_interior)",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "location": "interior",
+          "buildingId": "b_house"
+        },
+        "context": {
+          "buildings": [
+            {
+              "id": "b_inn",
+              "interior": true
+            },
+            {
+              "id": "b_house",
+              "interior": false
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "unreachable",
+          "refusal": "no_interior",
+          "canUnlock": false,
+          "capacity": 10,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: unreachable wins over locked",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "location": "interior",
+          "buildingId": "b_house",
+          "locked": true,
+          "keyItemId": "k"
+        },
+        "context": {
+          "buildings": [
+            {
+              "id": "b_inn",
+              "interior": true
+            },
+            {
+              "id": "b_house",
+              "interior": false
+            }
+          ],
+          "playerItemIds": [
+            "k"
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "unreachable",
+          "refusal": "no_interior",
+          "canUnlock": false,
+          "capacity": 10,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: an interior container whose building the world does not list is unreachable (unknown_building)",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "location": "interior",
+          "buildingId": "b_gone"
+        },
+        "context": {
+          "buildings": [
+            {
+              "id": "b_inn",
+              "interior": true
+            },
+            {
+              "id": "b_house",
+              "interior": false
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "unreachable",
+          "refusal": "unknown_building",
+          "canUnlock": false,
+          "capacity": 10,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "view: an outdoor container ignores its building's interior",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "location": "outdoor",
+          "buildingId": "b_house"
+        },
+        "context": {
+          "buildings": [
+            {
+              "id": "b_inn",
+              "interior": true
+            },
+            {
+              "id": "b_house",
+              "interior": false
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "open",
+          "refusal": null,
+          "canUnlock": false,
+          "capacity": 10,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    },
+    {
+      "name": "unlock: with the key it comes back unlocked",
+      "op": "unlock",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": true,
+          "keyItemId": "key_cellar"
+        },
+        "context": {
+          "playerItemIds": [
+            "key_cellar"
+          ]
+        }
+      },
+      "expected": {
+        "result": "unlocked",
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": false,
+          "keyItemId": "key_cellar"
+        }
+      }
+    },
+    {
+      "name": "unlock: without the key it is unchanged",
+      "op": "unlock",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": true,
+          "keyItemId": "key_cellar"
+        },
+        "context": {
+          "playerItemIds": []
+        }
+      },
+      "expected": {
+        "result": "key_missing",
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": true,
+          "keyItemId": "key_cellar"
+        }
+      }
+    },
+    {
+      "name": "unlock: a container with no key item is not unlocked",
+      "op": "unlock",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": true
+        }
+      },
+      "expected": {
+        "result": "no_key_item",
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": true
+        }
+      }
+    },
+    {
+      "name": "unlock: an unlocked container is not_locked and unchanged",
+      "op": "unlock",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "expected": {
+        "result": "not_locked",
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "unlock: an unreachable container is not unlocked",
+      "op": "unlock",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "location": "interior",
+          "buildingId": "b_house",
+          "locked": true,
+          "keyItemId": "k"
+        },
+        "context": {
+          "buildings": [
+            {
+              "id": "b_inn",
+              "interior": true
+            },
+            {
+              "id": "b_house",
+              "interior": false
+            }
+          ],
+          "playerItemIds": [
+            "k"
+          ]
+        }
+      },
+      "expected": {
+        "result": "no_interior",
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "location": "interior",
+          "buildingId": "b_house",
+          "locked": true,
+          "keyItemId": "k"
+        }
+      }
+    },
+    {
+      "name": "move: take from an open container",
+      "op": "move",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ]
+        },
+        "move": {
+          "kind": "take"
+        }
+      },
+      "expected": {
+        "refusal": null
+      }
+    },
+    {
+      "name": "move: take from a locked container is refused",
+      "op": "move",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "locked": true
+        },
+        "move": {
+          "kind": "take"
+        }
+      },
+      "expected": {
+        "refusal": "locked"
+      }
+    },
+    {
+      "name": "move: put a new item into a full container is refused",
+      "op": "move",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "capacity": 1
+        },
+        "move": {
+          "kind": "put",
+          "itemId": "apple"
+        }
+      },
+      "expected": {
+        "refusal": "full"
+      }
+    },
+    {
+      "name": "move: put onto a held stack in a full container is allowed",
+      "op": "move",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "capacity": 1
+        },
+        "move": {
+          "kind": "put",
+          "itemId": "bread"
+        }
+      },
+      "expected": {
+        "refusal": null
+      }
+    },
+    {
+      "name": "move: put into an unreachable container is refused no_interior",
+      "op": "move",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "location": "interior",
+          "buildingId": "b_house"
+        },
+        "move": {
+          "kind": "put",
+          "itemId": "bread"
+        },
+        "context": {
+          "buildings": [
+            {
+              "id": "b_inn",
+              "interior": true
+            },
+            {
+              "id": "b_house",
+              "interior": false
+            }
+          ]
+        }
+      },
+      "expected": {
+        "refusal": "no_interior"
+      }
+    },
+    {
+      "name": "at: containers at a business, a residence or a lot, in input order",
+      "op": "at",
+      "input": {
+        "containers": [
+          {
+            "id": "c1",
+            "businessId": "biz_1"
+          },
+          {
+            "id": "c2",
+            "residenceId": "res_1"
+          },
+          {
+            "id": "c3",
+            "lotId": "lot_1"
+          },
+          {
+            "id": "c4",
+            "businessId": "biz_2",
+            "lotId": "lot_1"
+          }
+        ],
+        "location": {
+          "businessId": "biz_1",
+          "lotId": "lot_1"
+        }
+      },
+      "expected": {
+        "ids": [
+          "c1",
+          "c3",
+          "c4"
+        ]
+      }
+    },
+    {
+      "name": "at: an empty location matches nothing",
+      "op": "at",
+      "input": {
+        "containers": [
+          {
+            "id": "c1",
+            "businessId": "biz_1"
+          }
+        ],
+        "location": {}
+      },
+      "expected": {
+        "ids": []
+      }
+    },
+    {
+      "name": "respawn: due when the stated minutes have passed since it was opened",
+      "op": "respawn",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "respawns": true,
+          "respawnTimeMinutes": 60,
+          "lastOpenedAt": "2026-11-06T10:00:00.000Z"
+        },
+        "now": "2026-11-06T11:00:00.000Z"
+      },
+      "expected": {
+        "due": true
+      }
+    },
+    {
+      "name": "respawn: not due a minute early",
+      "op": "respawn",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "respawns": true,
+          "respawnTimeMinutes": 60,
+          "lastOpenedAt": "2026-11-06T10:00:00.000Z"
+        },
+        "now": "2026-11-06T10:59:00.000Z"
+      },
+      "expected": {
+        "due": false
+      }
+    },
+    {
+      "name": "respawn: now as epoch milliseconds",
+      "op": "respawn",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "respawns": true,
+          "respawnTimeMinutes": 1,
+          "lastOpenedAt": "1970-01-01T00:00:00.000Z"
+        },
+        "now": 60000
+      },
+      "expected": {
+        "due": true
+      }
+    },
+    {
+      "name": "respawn: never for a container that does not respawn",
+      "op": "respawn",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "respawns": false,
+          "respawnTimeMinutes": 1,
+          "lastOpenedAt": "2026-11-06T10:00:00.000Z"
+        },
+        "now": "2026-11-07T10:00:00.000Z"
+      },
+      "expected": {
+        "due": false
+      }
+    },
+    {
+      "name": "respawn: never without a positive respawn time",
+      "op": "respawn",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "respawns": true,
+          "respawnTimeMinutes": 0,
+          "lastOpenedAt": "2026-11-06T10:00:00.000Z"
+        },
+        "now": "2026-11-07T10:00:00.000Z"
+      },
+      "expected": {
+        "due": false
+      }
+    },
+    {
+      "name": "respawn: never when it was never opened",
+      "op": "respawn",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "respawns": true,
+          "respawnTimeMinutes": 5
+        },
+        "now": "2026-11-07T10:00:00.000Z"
+      },
+      "expected": {
+        "due": false
+      }
+    },
+    {
+      "name": "respawn: never when now is not a date",
+      "op": "respawn",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ],
+          "respawns": true,
+          "respawnTimeMinutes": 5,
+          "lastOpenedAt": "2026-11-06T10:00:00.000Z"
+        },
+        "now": "soon"
+      },
+      "expected": {
+        "due": false
+      }
+    }
+  ]
+}

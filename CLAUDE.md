@@ -441,17 +441,20 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` fc88be9 (2026-11-09,
-  PL.native-catchup: every core item the Unreal-first queue landed through
-  PL.house-blank-sides, among them core's `MECHANIC_STEP_OPS` that `mechanics.run`
-  imports, the World IR's `['none']` modules form, and P1.core-slots'
-  `SaveSlotsSession` with its corpus that the `saves.slots.*` rows run). Before
-  that, f9aef13 (2026-11-07, P9a.native: it holds P9a.core's genre HUD, rules
+  and pin disagree. The pin today is core `main` ac229a7 (2026-11-09,
+  PL.native-props-rows: every core item the Unreal-first queue landed through
+  PL.pickup-placement, among them PL.slots-delete-states' delete prompt and
+  PL.quick-slot's dedicated quick slot that the `saves.slots.*` rows answer, and
+  P6.core's props and inventory logic with its corpora that the `props.*` and
+  `inventory.*` rows run). Before that, fc88be9 (2026-11-09, PL.native-catchup:
+  core's `MECHANIC_STEP_OPS` that `mechanics.run` imports, the World IR's
+  `['none']` modules form, and P1.core-slots' `SaveSlotsSession` with its corpus
+  that the `saves.slots.*` rows run). Before that, f9aef13 (2026-11-07, P9a.native: it holds P9a.core's genre HUD, rules
   panel and mechanic runtime and their corpora); before that, b38e60d (2026-11-05, SP.composer-native: it holds
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (the saves-slots corpus ctests match `corpus`), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (the saves-slots and props corpus ctests match `corpus`), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -494,6 +497,22 @@
   undriven, with a measured reason printed per case. Any other undrivable case
   fails the run — do not widen that exemption, add a way to drive the case.
   `saves_slots_corpus_negative` must see it fail.
+- **The props and inventory rows (PL.native-props-rows, U89(2)) run core's P6
+  corpora UNCHANGED**, copied the same way (`PROPS_CORPUS_FILES`:
+  `conformance/props/{containers,documents,doors,notice-board}.json` and
+  `conformance/ui/inventory-cases.json`; the inventory file shares
+  `conformance/ui/` with the P9a corpora, so a file there belongs to the list that
+  names it). `tests/props_corpus.cpp` drives EVERY case through the rows, one
+  ctest per file (`props_*_corpus`, `inventory_corpus`) plus
+  `props_corpus_negative`; no case may go undriven. Stateless rows answer one
+  core function each; `props.reader.*`, `props.board.*` and `inventory.*` are
+  sessions. The reader's and board's `apply` send every op to core's `step`
+  (`applySteps` in `js/host-sessions.js`), because core answers an unknown action
+  as its refusal VALUE `unknown_action` — do not route them through `applyOps`'
+  op table, which would turn that value into an error. `props.contract` answers
+  each corpus file's data tables from core's constants; never restate one in
+  `entry.js`. `ui.trade` (core's `TradeModel`) is a different model from the
+  inventory panel and stays its own row.
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

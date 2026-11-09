@@ -1,0 +1,240 @@
+{
+  "area": "props-documents",
+  "description": "The negative control for props_corpus (tests/props_corpus.cpp): cases in props/documents.json's shape whose expectations are DELIBERATELY WRONG. props_corpus_negative passes only when the runner reports every one as differing and the run as failed. One case, through the props.reader session.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "hand-written; each case is core's (conformance/props/documents.json) with one expected value changed, named by its new name"
+  ],
+  "contract": {
+    "kinds": [
+      "book",
+      "journal",
+      "letter",
+      "flyer",
+      "recipe",
+      "notice",
+      "sign"
+    ],
+    "refusals": [
+      "missing_field",
+      "unknown_kind",
+      "bad_pages",
+      "bad_chars_per_page"
+    ],
+    "refusalOrder": [
+      "missing_field id",
+      "missing_field title",
+      "unknown_kind",
+      "bad_pages",
+      "bad_chars_per_page"
+    ],
+    "kind": "kind, else textCategory (each must be one of kinds), else a NoticeArticle: documentType story or poem is book, anything else notice",
+    "pages": "authored pages (a non-empty array of {content, contentTranslation?}) are kept; otherwise body (else text) is paginated, each page with contentTranslation '', except that a single page carries bodyTranslation; a paginated body of more than one page keeps bodyTranslation whole in translation",
+    "paginate": "a charsPerPage that is not a whole number >= 1 is defaultCharsPerPage (documentOf refuses it first); windows of charsPerPage UTF-16 code units; a window short of the end breaks after the last space or newline at an index from its end down to start + floor(charsPerPage / 2); pages trimmed; a page empty after trimming is dropped; no page at all is one empty page",
+    "defaultCharsPerPage": 800,
+    "quizXp": {
+      "A1": 10,
+      "A2": 15,
+      "B1": 25,
+      "B2": 40
+    },
+    "defaultQuizXp": 10,
+    "cefr": "cefrLevel when non-empty, else difficulty beginner A1, intermediate A2, advanced B1 (difficultyToCefr), else null",
+    "questions": "comprehensionQuestions, else the one comprehensionQuestion; a question whose correctIndex is not an index of its options is dropped; the reader asks the first",
+    "vocabulary": "vocabularyHighlights {word, translation}, else vocabularyWords {word, meaning}; an entry with no word is dropped",
+    "sign": "kind sign: never collectible, readingXp 0, no questions",
+    "readingXp": "a stated finite readingXp > 0, else 0",
+    "phases": [
+      "reading",
+      "quiz",
+      "answered",
+      "closed"
+    ],
+    "actions": [
+      "next",
+      "prev",
+      "answer",
+      "close"
+    ],
+    "reader": "reading: prev moves back (not below 0); next moves on; next on the last page is Done: document_read, then (unless alreadyRead) document_collected when collectible and reading_xp when > 0, then vocabulary_added and clue_discovered when there are any; then quiz when a question is asked (none when alreadyAnswered), else closed with document_closed. quiz: answer {index} once -> question_answered {correct, xp: quizXp or 0}, phase answered. close at any phase but closed -> document_closed. Refusals: closed (any action once closed), not_reading (prev/next outside reading), not_quiz, bad_index, unknown_action"
+  },
+  "cases": [
+    {
+      "name": "read: expected WRONGLY page 2 after next on a two-page document",
+      "op": "read",
+      "input": {
+        "document": {
+          "id": "text_1",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "textCategory": "book",
+          "cefrLevel": "A2",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "vocabularyHighlights": [
+            {
+              "word": "pain",
+              "translation": "bread",
+              "partOfSpeech": "noun"
+            }
+          ],
+          "comprehensionQuestions": [
+            {
+              "question": "Qui?",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "targetLanguage": "French",
+          "authorName": "Marie",
+          "clueText": null,
+          "difficulty": "intermediate",
+          "tags": [],
+          "spawnLocationHint": "bakery",
+          "isMainQuest": false
+        },
+        "steps": [
+          {
+            "op": "next"
+          },
+          {
+            "op": "next"
+          },
+          {
+            "op": "answer",
+            "index": 1
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "phase": "reading",
+          "page": 0,
+          "pageCount": 2,
+          "content": "Page un.",
+          "contentTranslation": "Page one.",
+          "canPrev": false,
+          "canNext": true,
+          "nextLabel": "next",
+          "question": null,
+          "answer": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": []
+            },
+            "view": {
+              "phase": "reading",
+              "page": 2,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": true,
+              "canNext": true,
+              "nextLabel": "done",
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "document_read",
+                  "id": "text_1"
+                },
+                {
+                  "type": "document_collected",
+                  "id": "text_1",
+                  "kind": "book"
+                },
+                {
+                  "type": "vocabulary_added",
+                  "id": "text_1",
+                  "words": [
+                    {
+                      "word": "pain",
+                      "translation": "bread"
+                    }
+                  ]
+                }
+              ]
+            },
+            "view": {
+              "phase": "quiz",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "question_answered",
+                  "id": "text_1",
+                  "index": 1,
+                  "correct": false,
+                  "xp": 0
+                }
+              ]
+            },
+            "view": {
+              "phase": "answered",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": {
+                "index": 1,
+                "correct": false
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

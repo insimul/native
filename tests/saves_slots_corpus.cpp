@@ -13,13 +13,16 @@
 //   run        {init, steps}  `saves.slots.create` with `init` (its `view` is the
 //              case's `start`), then ONE `saves.slots.apply` per step, so the view
 //              after every step is the session's own. A step `{save: i}` is the op
-//              `{op: "save", slot: i}`; likewise `load`/`delete` (`slot`), `key`
-//              (`code`), `tick` (`delta`; null stays null, the non-finite tick),
-//              `continue` (no field) and `finished` (its object's fields, spread).
+//              `{op: "save", slot: i}`; likewise `load`/`delete`/`ask_delete`
+//              (`slot`), `key` (`code`), `tick` (`delta`; null stays null, the
+//              non-finite tick), `continue`/`confirm_delete`/`cancel_delete` (no
+//              field) and `finished` (its object's fields, spread).
 //   config     {config}       `saves.slots.create { config }`: its answer's
 //              `config` is core's `resolveSaveSlotsConfig`, the session's own.
-//   continue   {slots, slotCount}  `saves.slots.create { config: { slotCount },
-//              slots }`: the view's `continueSlot`. Only when `slotCount` is a
+//   continue   {slots, slotCount}  `saves.slots.create { config: { slotCount,
+//              quickSlot: null }, slots }`: the view's `continueSlot` (no quick
+//              slot, so the session's table is exactly `slotCount` slots, as core's
+//              `continueSlot(slots, slotCount)` reads them). Only when `slotCount` is a
 //              positive integer (it then resolves to itself); otherwise the case
 //              cannot be driven and the run FAILS.
 //   rows       {slots, config, activeSlot, busy}  `saves.slots.create { config,
@@ -328,14 +331,14 @@ std::string op_of_step(const JsonValue &step, std::string &why) {
 	const JsonValue &v = *step.object_items[0].second;
 	ObjectText op;
 	op.add("op", "\"" + k + "\"");
-	if (k == "save" || k == "load" || k == "delete") {
+	if (k == "save" || k == "load" || k == "delete" || k == "ask_delete") {
 		op.add("slot", v);
 	} else if (k == "key") {
 		op.add("code", v);
 	} else if (k == "tick") {
 		op.add("delta", v);
-	} else if (k == "continue") {
-		// core's runner reads no value for `continue`; the op has no field.
+	} else if (k == "continue" || k == "confirm_delete" || k == "cancel_delete") {
+		// core's runner reads no value for these steps; the op has no field.
 	} else if (k == "finished") {
 		if (!v.is_object() || !v.find("ok") || v.find("ok")->type != JsonType::Bool || v.find("op")) {
 			why = "a finished step the row cannot take (not an object with a boolean ok): " + json_of(step);
@@ -379,8 +382,13 @@ bool drive(Caller &c, const std::string &op, const JsonValue &input, Driven &out
 			why = "slotCount is not a positive integer, so no session config resolves to it";
 			return false;
 		}
+		// core's `continue` op is `continueSlot(slots, slotCount)` over exactly
+		// `slotCount` slots. A session's table holds the dedicated quick slot too
+		// (index slotCount, the default since core's PL.quick-slot), so the session
+		// is opened with no quick slot: its table is then exactly those slots.
 		ObjectText config;
 		config.add("slotCount", *n);
+		config.add("quickSlot", "null");
 		ObjectText args;
 		args.add("config", config.done());
 		if (input.find("slots")) args.add("slots", *input.find("slots"));

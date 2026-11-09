@@ -1,0 +1,32 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "stealth",
+  "version": "0.1.0",
+  "name": "Stealth and perception",
+  "summary": "Each observer's suspicion of the player and where it believes the player is, from what its senses reach; stealth actions and trespass.",
+  "kind": "optional",
+  "phase": "P9b",
+  "catalog": ["stealth-perception-detection"],
+  "core": {
+    "modules": ["perception"],
+    "predicatePacks": ["perception"],
+    "hostInterfaces": ["IPerceptionProbe"],
+    "corpus": [
+      "conformance/stealth/detection.json",
+      "conformance/stealth/actions.json",
+      "conformance/prolog/mechanic-perception.json"
+    ]
+  },
+  "requires": [{ "id": "npc-life" }],
+  "extensionPoints": [
+    { "id": "trespass", "kind": "prolog-facts", "signature": "perception pack trespass rules (perception-predicates.ts)" }
+  ],
+  "styles": {
+    "tokens": ["warning", "danger", "text_secondary"],
+    "layouts": ["detection-indicator"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ]
+}

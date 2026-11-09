@@ -1,0 +1,2179 @@
+{
+  "area": "props-documents",
+  "description": "The document model (Features WV2, P6.core; catalog ui-document-reader-books, ui-library-collected-texts): books, journals, letters, flyers, recipes, notices and signs read into one shape, and the reader panel as a state machine. Ops: document {document, options?: {charsPerPage}} -> {ok, document} | {ok: false, refusal}; paginate {text, charsPerPage?} -> {pages}; read {document, options?, open?: {alreadyRead, alreadyAnswered}, steps: [{op: next | prev | answer (index) | close}]} -> {initial, steps: [{result, view}]} (or the refusal). Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "babylon origin/main bfcdeb2: packages/babylon/src/engine/game-engine/rendering/DocumentReadingPanel.ts (468 lines): Previous/Next, Done on the last page, read/vocabulary/clue on finishing, one quiz answer per opening, CEFR_XP A1 10, A2 15, B1 25, B2 40, else 10.",
+    "unreal origin/main d2d204a: templates/source/ui/InsimulDocumentReader.cpp (CharsPerPage 800, the word-boundary split, trimmed pages).",
+    "core TextIR (ir-types.ts), NoticeArticle (runtime-types.ts), GameTextTypes.ts noticeArticleToGameText and difficultyToCefr."
+  ],
+  "contract": {
+    "kinds": [
+      "book",
+      "journal",
+      "letter",
+      "flyer",
+      "recipe",
+      "notice",
+      "sign"
+    ],
+    "refusals": [
+      "missing_field",
+      "unknown_kind",
+      "bad_pages",
+      "bad_chars_per_page"
+    ],
+    "refusalOrder": [
+      "missing_field id",
+      "missing_field title",
+      "unknown_kind",
+      "bad_pages",
+      "bad_chars_per_page"
+    ],
+    "kind": "kind, else textCategory (each must be one of kinds), else a NoticeArticle: documentType story or poem is book, anything else notice",
+    "pages": "authored pages (a non-empty array of {content, contentTranslation?}) are kept; otherwise body (else text) is paginated, each page with contentTranslation '', except that a single page carries bodyTranslation; a paginated body of more than one page keeps bodyTranslation whole in translation",
+    "paginate": "a charsPerPage that is not a whole number >= 1 is defaultCharsPerPage (documentOf refuses it first); windows of charsPerPage UTF-16 code units; a window short of the end breaks after the last space or newline at an index from its end down to start + floor(charsPerPage / 2); pages trimmed; a page empty after trimming is dropped; no page at all is one empty page",
+    "defaultCharsPerPage": 800,
+    "quizXp": {
+      "A1": 10,
+      "A2": 15,
+      "B1": 25,
+      "B2": 40
+    },
+    "defaultQuizXp": 10,
+    "cefr": "cefrLevel when non-empty, else difficulty beginner A1, intermediate A2, advanced B1 (difficultyToCefr), else null",
+    "questions": "comprehensionQuestions, else the one comprehensionQuestion; a question whose correctIndex is not an index of its options is dropped; the reader asks the first",
+    "vocabulary": "vocabularyHighlights {word, translation}, else vocabularyWords {word, meaning}; an entry with no word is dropped",
+    "sign": "kind sign: never collectible, readingXp 0, no questions",
+    "readingXp": "a stated finite readingXp > 0, else 0",
+    "phases": [
+      "reading",
+      "quiz",
+      "answered",
+      "closed"
+    ],
+    "actions": [
+      "next",
+      "prev",
+      "answer",
+      "close"
+    ],
+    "reader": "reading: prev moves back (not below 0); next moves on; next on the last page is Done: document_read, then (unless alreadyRead) document_collected when collectible and reading_xp when > 0, then vocabulary_added and clue_discovered when there are any; then quiz when a question is asked (none when alreadyAnswered), else closed with document_closed. quiz: answer {index} once -> question_answered {correct, xp: quizXp or 0}, phase answered. close at any phase but closed -> document_closed. Refusals: closed (any action once closed), not_reading (prev/next outside reading), not_quiz, bad_index, unknown_action"
+  },
+  "cases": [
+    {
+      "name": "document: a TextIR book keeps its authored pages, CEFR A2 quiz XP 15",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "text_1",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "textCategory": "book",
+          "cefrLevel": "A2",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "vocabularyHighlights": [
+            {
+              "word": "pain",
+              "translation": "bread",
+              "partOfSpeech": "noun"
+            }
+          ],
+          "comprehensionQuestions": [
+            {
+              "question": "Qui?",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "targetLanguage": "French",
+          "authorName": "Marie",
+          "clueText": null,
+          "difficulty": "intermediate",
+          "tags": [],
+          "spawnLocationHint": "bakery",
+          "isMainQuest": false
+        }
+      },
+      "expected": {
+        "ok": true,
+        "document": {
+          "id": "text_1",
+          "kind": "book",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "pagesFrom": "authored",
+          "translation": "",
+          "vocabulary": [
+            {
+              "word": "pain",
+              "translation": "bread"
+            }
+          ],
+          "questions": [
+            {
+              "question": "Qui?",
+              "questionTranslation": "",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "clue": null,
+          "cefr": "A2",
+          "author": "Marie",
+          "readingXp": 0,
+          "quizXp": 15,
+          "collectible": true
+        }
+      }
+    },
+    {
+      "name": "document: a notice article becomes a one-page notice with its translation on the page",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "notice_s1_0",
+          "title": "Pain frais",
+          "titleTranslation": "Fresh bread",
+          "body": "Du pain chaque matin.",
+          "bodyTranslation": "Bread every morning.",
+          "difficulty": "beginner",
+          "vocabularyWords": [
+            {
+              "word": "pain",
+              "meaning": "bread"
+            }
+          ],
+          "comprehensionQuestion": {
+            "question": "Quand?",
+            "questionTranslation": "When?",
+            "options": [
+              "Le soir",
+              "Le matin"
+            ],
+            "correctIndex": 1
+          },
+          "author": {
+            "characterId": "npc_baker",
+            "name": "Paul",
+            "occupation": "baker"
+          },
+          "readingXp": 10,
+          "documentType": "notice"
+        }
+      },
+      "expected": {
+        "ok": true,
+        "document": {
+          "id": "notice_s1_0",
+          "kind": "notice",
+          "title": "Pain frais",
+          "titleTranslation": "Fresh bread",
+          "pages": [
+            {
+              "content": "Du pain chaque matin.",
+              "contentTranslation": "Bread every morning."
+            }
+          ],
+          "pagesFrom": "paginated",
+          "translation": "",
+          "vocabulary": [
+            {
+              "word": "pain",
+              "translation": "bread"
+            }
+          ],
+          "questions": [
+            {
+              "question": "Quand?",
+              "questionTranslation": "When?",
+              "options": [
+                "Le soir",
+                "Le matin"
+              ],
+              "correctIndex": 1
+            }
+          ],
+          "clue": null,
+          "cefr": "A1",
+          "author": "Paul",
+          "readingXp": 10,
+          "quizXp": 10,
+          "collectible": true
+        }
+      }
+    },
+    {
+      "name": "document: a notice of documentType story is a book (noticeArticleToGameText's rule)",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "notice_s1_0",
+          "title": "Pain frais",
+          "titleTranslation": "Fresh bread",
+          "body": "Du pain chaque matin.",
+          "bodyTranslation": "Bread every morning.",
+          "difficulty": "beginner",
+          "vocabularyWords": [
+            {
+              "word": "pain",
+              "meaning": "bread"
+            }
+          ],
+          "comprehensionQuestion": {
+            "question": "Quand?",
+            "questionTranslation": "When?",
+            "options": [
+              "Le soir",
+              "Le matin"
+            ],
+            "correctIndex": 1
+          },
+          "author": {
+            "characterId": "npc_baker",
+            "name": "Paul",
+            "occupation": "baker"
+          },
+          "readingXp": 10,
+          "documentType": "story"
+        }
+      },
+      "expected": {
+        "ok": true,
+        "document": {
+          "id": "notice_s1_0",
+          "kind": "book",
+          "title": "Pain frais",
+          "titleTranslation": "Fresh bread",
+          "pages": [
+            {
+              "content": "Du pain chaque matin.",
+              "contentTranslation": "Bread every morning."
+            }
+          ],
+          "pagesFrom": "paginated",
+          "translation": "",
+          "vocabulary": [
+            {
+              "word": "pain",
+              "translation": "bread"
+            }
+          ],
+          "questions": [
+            {
+              "question": "Quand?",
+              "questionTranslation": "When?",
+              "options": [
+                "Le soir",
+                "Le matin"
+              ],
+              "correctIndex": 1
+            }
+          ],
+          "clue": null,
+          "cefr": "A1",
+          "author": "Paul",
+          "readingXp": 10,
+          "quizXp": 10,
+          "collectible": true
+        }
+      }
+    },
+    {
+      "name": "document: a sign is read in place: never collected, no reading XP, no question",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "sign_inn",
+          "kind": "sign",
+          "title": "The Gilded Goose",
+          "body": "Rooms and meals. Open late.",
+          "comprehensionQuestion": {
+            "question": "Q",
+            "options": [
+              "a"
+            ],
+            "correctIndex": 0
+          },
+          "readingXp": 5
+        }
+      },
+      "expected": {
+        "ok": true,
+        "document": {
+          "id": "sign_inn",
+          "kind": "sign",
+          "title": "The Gilded Goose",
+          "titleTranslation": "",
+          "pages": [
+            {
+              "content": "Rooms and meals. Open late.",
+              "contentTranslation": ""
+            }
+          ],
+          "pagesFrom": "paginated",
+          "translation": "",
+          "vocabulary": [],
+          "questions": [],
+          "clue": null,
+          "cefr": null,
+          "author": null,
+          "readingXp": 0,
+          "quizXp": 10,
+          "collectible": false
+        }
+      }
+    },
+    {
+      "name": "document: a long body is paginated; the whole translation stays on the document",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "notice_s1_0",
+          "title": "Pain frais",
+          "titleTranslation": "Fresh bread",
+          "body": "one two three four five six seven eight nine ten eleven twelve",
+          "bodyTranslation": "un deux trois",
+          "difficulty": "beginner",
+          "vocabularyWords": [
+            {
+              "word": "pain",
+              "meaning": "bread"
+            }
+          ],
+          "comprehensionQuestion": {
+            "question": "Quand?",
+            "questionTranslation": "When?",
+            "options": [
+              "Le soir",
+              "Le matin"
+            ],
+            "correctIndex": 1
+          },
+          "author": {
+            "characterId": "npc_baker",
+            "name": "Paul",
+            "occupation": "baker"
+          },
+          "readingXp": 0,
+          "documentType": "notice"
+        },
+        "options": {
+          "charsPerPage": 20
+        }
+      },
+      "expected": {
+        "ok": true,
+        "document": {
+          "id": "notice_s1_0",
+          "kind": "notice",
+          "title": "Pain frais",
+          "titleTranslation": "Fresh bread",
+          "pages": [
+            {
+              "content": "one two three four",
+              "contentTranslation": ""
+            },
+            {
+              "content": "five six seven eight",
+              "contentTranslation": ""
+            },
+            {
+              "content": "nine ten eleven",
+              "contentTranslation": ""
+            },
+            {
+              "content": "twelve",
+              "contentTranslation": ""
+            }
+          ],
+          "pagesFrom": "paginated",
+          "translation": "un deux trois",
+          "vocabulary": [
+            {
+              "word": "pain",
+              "translation": "bread"
+            }
+          ],
+          "questions": [
+            {
+              "question": "Quand?",
+              "questionTranslation": "When?",
+              "options": [
+                "Le soir",
+                "Le matin"
+              ],
+              "correctIndex": 1
+            }
+          ],
+          "clue": null,
+          "cefr": "A1",
+          "author": "Paul",
+          "readingXp": 0,
+          "quizXp": 10,
+          "collectible": true
+        }
+      }
+    },
+    {
+      "name": "document: CEFR from the difficulty when no level is stated; an unlisted level gives quiz XP 10",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "text_1",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "textCategory": "book",
+          "cefrLevel": "",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "vocabularyHighlights": [
+            {
+              "word": "pain",
+              "translation": "bread",
+              "partOfSpeech": "noun"
+            }
+          ],
+          "comprehensionQuestions": [
+            {
+              "question": "Qui?",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "targetLanguage": "French",
+          "authorName": "Marie",
+          "clueText": null,
+          "difficulty": "advanced",
+          "tags": [],
+          "spawnLocationHint": "bakery",
+          "isMainQuest": false
+        }
+      },
+      "expected": {
+        "ok": true,
+        "document": {
+          "id": "text_1",
+          "kind": "book",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "pagesFrom": "authored",
+          "translation": "",
+          "vocabulary": [
+            {
+              "word": "pain",
+              "translation": "bread"
+            }
+          ],
+          "questions": [
+            {
+              "question": "Qui?",
+              "questionTranslation": "",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "clue": null,
+          "cefr": "B1",
+          "author": "Marie",
+          "readingXp": 0,
+          "quizXp": 25,
+          "collectible": true
+        }
+      }
+    },
+    {
+      "name": "document: an unknown CEFR level gives the default quiz XP",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "text_1",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "textCategory": "book",
+          "cefrLevel": "C2",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "vocabularyHighlights": [
+            {
+              "word": "pain",
+              "translation": "bread",
+              "partOfSpeech": "noun"
+            }
+          ],
+          "comprehensionQuestions": [
+            {
+              "question": "Qui?",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "targetLanguage": "French",
+          "authorName": "Marie",
+          "clueText": null,
+          "difficulty": "intermediate",
+          "tags": [],
+          "spawnLocationHint": "bakery",
+          "isMainQuest": false
+        }
+      },
+      "expected": {
+        "ok": true,
+        "document": {
+          "id": "text_1",
+          "kind": "book",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "pagesFrom": "authored",
+          "translation": "",
+          "vocabulary": [
+            {
+              "word": "pain",
+              "translation": "bread"
+            }
+          ],
+          "questions": [
+            {
+              "question": "Qui?",
+              "questionTranslation": "",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "clue": null,
+          "cefr": "C2",
+          "author": "Marie",
+          "readingXp": 0,
+          "quizXp": 10,
+          "collectible": true
+        }
+      }
+    },
+    {
+      "name": "document: a question whose right answer is not among its options is not asked",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "text_1",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "textCategory": "book",
+          "cefrLevel": "A2",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "vocabularyHighlights": [
+            {
+              "word": "pain",
+              "translation": "bread",
+              "partOfSpeech": "noun"
+            }
+          ],
+          "comprehensionQuestions": [
+            {
+              "question": "Q",
+              "options": [
+                "a"
+              ],
+              "correctIndex": 3
+            }
+          ],
+          "targetLanguage": "French",
+          "authorName": "Marie",
+          "clueText": null,
+          "difficulty": "intermediate",
+          "tags": [],
+          "spawnLocationHint": "bakery",
+          "isMainQuest": false
+        }
+      },
+      "expected": {
+        "ok": true,
+        "document": {
+          "id": "text_1",
+          "kind": "book",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "pagesFrom": "authored",
+          "translation": "",
+          "vocabulary": [
+            {
+              "word": "pain",
+              "translation": "bread"
+            }
+          ],
+          "questions": [],
+          "clue": null,
+          "cefr": "A2",
+          "author": "Marie",
+          "readingXp": 0,
+          "quizXp": 15,
+          "collectible": true
+        }
+      }
+    },
+    {
+      "name": "document: a document with no text has one empty page",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "empty",
+          "title": "Nothing",
+          "kind": "letter"
+        }
+      },
+      "expected": {
+        "ok": true,
+        "document": {
+          "id": "empty",
+          "kind": "letter",
+          "title": "Nothing",
+          "titleTranslation": "",
+          "pages": [
+            {
+              "content": "",
+              "contentTranslation": ""
+            }
+          ],
+          "pagesFrom": "paginated",
+          "translation": "",
+          "vocabulary": [],
+          "questions": [],
+          "clue": null,
+          "cefr": null,
+          "author": null,
+          "readingXp": 0,
+          "quizXp": 10,
+          "collectible": true
+        }
+      }
+    },
+    {
+      "name": "document: refused without an id",
+      "op": "document",
+      "input": {
+        "document": {
+          "title": "T"
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "missing_field",
+          "field": "id"
+        }
+      }
+    },
+    {
+      "name": "document: refused without a title",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "x"
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "missing_field",
+          "field": "title"
+        }
+      }
+    },
+    {
+      "name": "document: refused for a kind outside the list",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "x",
+          "title": "T",
+          "kind": "scroll"
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unknown_kind",
+          "field": "kind"
+        }
+      }
+    },
+    {
+      "name": "document: refused for an unknown textCategory",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "x",
+          "title": "T",
+          "textCategory": "poem"
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unknown_kind",
+          "field": "textCategory"
+        }
+      }
+    },
+    {
+      "name": "document: refused for pages that are not {content} records",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "x",
+          "title": "T",
+          "kind": "book",
+          "pages": [
+            "a page"
+          ]
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "bad_pages",
+          "field": "pages"
+        }
+      }
+    },
+    {
+      "name": "document: refused for a page size below 1",
+      "op": "document",
+      "input": {
+        "document": {
+          "id": "sign_inn",
+          "kind": "sign",
+          "title": "The Gilded Goose",
+          "body": "Rooms and meals. Open late."
+        },
+        "options": {
+          "charsPerPage": 0
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "bad_chars_per_page",
+          "field": "charsPerPage"
+        }
+      }
+    },
+    {
+      "name": "paginate: short text is one page",
+      "op": "paginate",
+      "input": {
+        "text": "Hello there.",
+        "charsPerPage": 800
+      },
+      "expected": {
+        "pages": [
+          "Hello there."
+        ]
+      }
+    },
+    {
+      "name": "paginate: breaks after the last space in the back half of the window, pages trimmed",
+      "op": "paginate",
+      "input": {
+        "text": "one two three four five six seven eight nine ten eleven twelve",
+        "charsPerPage": 20
+      },
+      "expected": {
+        "pages": [
+          "one two three four",
+          "five six seven eight",
+          "nine ten eleven",
+          "twelve"
+        ]
+      }
+    },
+    {
+      "name": "paginate: a newline is a break too",
+      "op": "paginate",
+      "input": {
+        "text": "aaaaaaaaaa\nbbbbbbbbbbbbbbbb",
+        "charsPerPage": 15
+      },
+      "expected": {
+        "pages": [
+          "aaaaaaaaaa",
+          "bbbbbbbbbbbbbbb",
+          "b"
+        ]
+      }
+    },
+    {
+      "name": "paginate: no break in the back half cuts the word at the window",
+      "op": "paginate",
+      "input": {
+        "text": "abcdefghijklmnopqrstuvwxyz",
+        "charsPerPage": 10
+      },
+      "expected": {
+        "pages": [
+          "abcdefghij",
+          "klmnopqrst",
+          "uvwxyz"
+        ]
+      }
+    },
+    {
+      "name": "paginate: the character right after the window counts as a break",
+      "op": "paginate",
+      "input": {
+        "text": "abcdefghij klm",
+        "charsPerPage": 10
+      },
+      "expected": {
+        "pages": [
+          "abcdefghij",
+          "klm"
+        ]
+      }
+    },
+    {
+      "name": "paginate: a page that trims to nothing is dropped",
+      "op": "paginate",
+      "input": {
+        "text": "abc                              def",
+        "charsPerPage": 10
+      },
+      "expected": {
+        "pages": [
+          "abc",
+          "def"
+        ]
+      }
+    },
+    {
+      "name": "paginate: empty text is one empty page",
+      "op": "paginate",
+      "input": {
+        "text": "",
+        "charsPerPage": 10
+      },
+      "expected": {
+        "pages": [
+          ""
+        ]
+      }
+    },
+    {
+      "name": "paginate: a page size of 0 or a fraction is the default 800",
+      "op": "paginate",
+      "input": {
+        "text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word end",
+        "charsPerPage": 0
+      },
+      "expected": {
+        "pages": [
+          "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+          "word word word word word word word word word word end"
+        ]
+      }
+    },
+    {
+      "name": "paginate: the default is 800 characters (Unreal's CharsPerPage)",
+      "op": "paginate",
+      "input": {
+        "text": "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word end"
+      },
+      "expected": {
+        "pages": [
+          "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word",
+          "word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word word end"
+        ]
+      }
+    },
+    {
+      "name": "read: page through, Done raises read, collected, vocabulary, then the quiz; a right answer earns the CEFR XP",
+      "op": "read",
+      "input": {
+        "document": {
+          "id": "text_1",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "textCategory": "book",
+          "cefrLevel": "A2",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "vocabularyHighlights": [
+            {
+              "word": "pain",
+              "translation": "bread",
+              "partOfSpeech": "noun"
+            }
+          ],
+          "comprehensionQuestions": [
+            {
+              "question": "Qui?",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "targetLanguage": "French",
+          "authorName": "Marie",
+          "clueText": "The baker hides the key.",
+          "difficulty": "intermediate",
+          "tags": [],
+          "spawnLocationHint": "bakery",
+          "isMainQuest": false
+        },
+        "steps": [
+          {
+            "op": "prev"
+          },
+          {
+            "op": "next"
+          },
+          {
+            "op": "prev"
+          },
+          {
+            "op": "next"
+          },
+          {
+            "op": "next"
+          },
+          {
+            "op": "answer",
+            "index": 0
+          },
+          {
+            "op": "answer",
+            "index": 1
+          },
+          {
+            "op": "close"
+          },
+          {
+            "op": "next"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "phase": "reading",
+          "page": 0,
+          "pageCount": 2,
+          "content": "Page un.",
+          "contentTranslation": "Page one.",
+          "canPrev": false,
+          "canNext": true,
+          "nextLabel": "next",
+          "question": null,
+          "answer": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": []
+            },
+            "view": {
+              "phase": "reading",
+              "page": 0,
+              "pageCount": 2,
+              "content": "Page un.",
+              "contentTranslation": "Page one.",
+              "canPrev": false,
+              "canNext": true,
+              "nextLabel": "next",
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": []
+            },
+            "view": {
+              "phase": "reading",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": true,
+              "canNext": true,
+              "nextLabel": "done",
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": []
+            },
+            "view": {
+              "phase": "reading",
+              "page": 0,
+              "pageCount": 2,
+              "content": "Page un.",
+              "contentTranslation": "Page one.",
+              "canPrev": false,
+              "canNext": true,
+              "nextLabel": "next",
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": []
+            },
+            "view": {
+              "phase": "reading",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": true,
+              "canNext": true,
+              "nextLabel": "done",
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "document_read",
+                  "id": "text_1"
+                },
+                {
+                  "type": "document_collected",
+                  "id": "text_1",
+                  "kind": "book"
+                },
+                {
+                  "type": "vocabulary_added",
+                  "id": "text_1",
+                  "words": [
+                    {
+                      "word": "pain",
+                      "translation": "bread"
+                    }
+                  ]
+                },
+                {
+                  "type": "clue_discovered",
+                  "id": "text_1",
+                  "clue": "The baker hides the key."
+                }
+              ]
+            },
+            "view": {
+              "phase": "quiz",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "question_answered",
+                  "id": "text_1",
+                  "index": 0,
+                  "correct": true,
+                  "xp": 15
+                }
+              ]
+            },
+            "view": {
+              "phase": "answered",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": {
+                "index": 0,
+                "correct": true
+              }
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "not_quiz",
+                "field": "op"
+              }
+            },
+            "view": {
+              "phase": "answered",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": {
+                "index": 0,
+                "correct": true
+              }
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "document_closed",
+                  "id": "text_1"
+                }
+              ]
+            },
+            "view": {
+              "phase": "closed",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": null,
+              "answer": {
+                "index": 0,
+                "correct": true
+              }
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "closed",
+                "field": "op"
+              }
+            },
+            "view": {
+              "phase": "closed",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": null,
+              "answer": {
+                "index": 0,
+                "correct": true
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "read: a wrong answer earns 0",
+      "op": "read",
+      "input": {
+        "document": {
+          "id": "text_1",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "textCategory": "book",
+          "cefrLevel": "A2",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "vocabularyHighlights": [
+            {
+              "word": "pain",
+              "translation": "bread",
+              "partOfSpeech": "noun"
+            }
+          ],
+          "comprehensionQuestions": [
+            {
+              "question": "Qui?",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "targetLanguage": "French",
+          "authorName": "Marie",
+          "clueText": null,
+          "difficulty": "intermediate",
+          "tags": [],
+          "spawnLocationHint": "bakery",
+          "isMainQuest": false
+        },
+        "steps": [
+          {
+            "op": "next"
+          },
+          {
+            "op": "next"
+          },
+          {
+            "op": "answer",
+            "index": 1
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "phase": "reading",
+          "page": 0,
+          "pageCount": 2,
+          "content": "Page un.",
+          "contentTranslation": "Page one.",
+          "canPrev": false,
+          "canNext": true,
+          "nextLabel": "next",
+          "question": null,
+          "answer": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": []
+            },
+            "view": {
+              "phase": "reading",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": true,
+              "canNext": true,
+              "nextLabel": "done",
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "document_read",
+                  "id": "text_1"
+                },
+                {
+                  "type": "document_collected",
+                  "id": "text_1",
+                  "kind": "book"
+                },
+                {
+                  "type": "vocabulary_added",
+                  "id": "text_1",
+                  "words": [
+                    {
+                      "word": "pain",
+                      "translation": "bread"
+                    }
+                  ]
+                }
+              ]
+            },
+            "view": {
+              "phase": "quiz",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "question_answered",
+                  "id": "text_1",
+                  "index": 1,
+                  "correct": false,
+                  "xp": 0
+                }
+              ]
+            },
+            "view": {
+              "phase": "answered",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": {
+                "index": 1,
+                "correct": false
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "read: a document read before raises read but no first-read rewards",
+      "op": "read",
+      "input": {
+        "document": {
+          "id": "notice_s1_0",
+          "title": "Pain frais",
+          "titleTranslation": "Fresh bread",
+          "body": "Du pain chaque matin.",
+          "bodyTranslation": "Bread every morning.",
+          "difficulty": "beginner",
+          "vocabularyWords": [
+            {
+              "word": "pain",
+              "meaning": "bread"
+            }
+          ],
+          "comprehensionQuestion": {
+            "question": "Quand?",
+            "questionTranslation": "When?",
+            "options": [
+              "Le soir",
+              "Le matin"
+            ],
+            "correctIndex": 1
+          },
+          "author": {
+            "characterId": "npc_baker",
+            "name": "Paul",
+            "occupation": "baker"
+          },
+          "readingXp": 10,
+          "documentType": "notice"
+        },
+        "open": {
+          "alreadyRead": true
+        },
+        "steps": [
+          {
+            "op": "next"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "phase": "reading",
+          "page": 0,
+          "pageCount": 1,
+          "content": "Du pain chaque matin.",
+          "contentTranslation": "Bread every morning.",
+          "canPrev": false,
+          "canNext": true,
+          "nextLabel": "done",
+          "question": null,
+          "answer": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "document_read",
+                  "id": "notice_s1_0"
+                },
+                {
+                  "type": "vocabulary_added",
+                  "id": "notice_s1_0",
+                  "words": [
+                    {
+                      "word": "pain",
+                      "translation": "bread"
+                    }
+                  ]
+                }
+              ]
+            },
+            "view": {
+              "phase": "quiz",
+              "page": 0,
+              "pageCount": 1,
+              "content": "Du pain chaque matin.",
+              "contentTranslation": "Bread every morning.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Quand?",
+                "questionTranslation": "When?",
+                "options": [
+                  "Le soir",
+                  "Le matin"
+                ],
+                "correctIndex": 1
+              },
+              "answer": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "read: a notice read the first time grants its reading XP; no quiz once answered, so Done closes",
+      "op": "read",
+      "input": {
+        "document": {
+          "id": "notice_s1_0",
+          "title": "Pain frais",
+          "titleTranslation": "Fresh bread",
+          "body": "Du pain chaque matin.",
+          "bodyTranslation": "Bread every morning.",
+          "difficulty": "beginner",
+          "vocabularyWords": [
+            {
+              "word": "pain",
+              "meaning": "bread"
+            }
+          ],
+          "comprehensionQuestion": {
+            "question": "Quand?",
+            "questionTranslation": "When?",
+            "options": [
+              "Le soir",
+              "Le matin"
+            ],
+            "correctIndex": 1
+          },
+          "author": {
+            "characterId": "npc_baker",
+            "name": "Paul",
+            "occupation": "baker"
+          },
+          "readingXp": 10,
+          "documentType": "notice"
+        },
+        "open": {
+          "alreadyAnswered": true
+        },
+        "steps": [
+          {
+            "op": "next"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "phase": "reading",
+          "page": 0,
+          "pageCount": 1,
+          "content": "Du pain chaque matin.",
+          "contentTranslation": "Bread every morning.",
+          "canPrev": false,
+          "canNext": true,
+          "nextLabel": "done",
+          "question": null,
+          "answer": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "document_read",
+                  "id": "notice_s1_0"
+                },
+                {
+                  "type": "document_collected",
+                  "id": "notice_s1_0",
+                  "kind": "notice"
+                },
+                {
+                  "type": "reading_xp",
+                  "id": "notice_s1_0",
+                  "amount": 10
+                },
+                {
+                  "type": "vocabulary_added",
+                  "id": "notice_s1_0",
+                  "words": [
+                    {
+                      "word": "pain",
+                      "translation": "bread"
+                    }
+                  ]
+                },
+                {
+                  "type": "document_closed",
+                  "id": "notice_s1_0"
+                }
+              ]
+            },
+            "view": {
+              "phase": "closed",
+              "page": 0,
+              "pageCount": 1,
+              "content": "Du pain chaque matin.",
+              "contentTranslation": "Bread every morning.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": null,
+              "answer": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "read: a sign closes on Done and raises only read and closed",
+      "op": "read",
+      "input": {
+        "document": {
+          "id": "sign_inn",
+          "kind": "sign",
+          "title": "The Gilded Goose",
+          "body": "Rooms and meals. Open late."
+        },
+        "steps": [
+          {
+            "op": "next"
+          },
+          {
+            "op": "next"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "phase": "reading",
+          "page": 0,
+          "pageCount": 1,
+          "content": "Rooms and meals. Open late.",
+          "contentTranslation": "",
+          "canPrev": false,
+          "canNext": true,
+          "nextLabel": "done",
+          "question": null,
+          "answer": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "document_read",
+                  "id": "sign_inn"
+                },
+                {
+                  "type": "document_closed",
+                  "id": "sign_inn"
+                }
+              ]
+            },
+            "view": {
+              "phase": "closed",
+              "page": 0,
+              "pageCount": 1,
+              "content": "Rooms and meals. Open late.",
+              "contentTranslation": "",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "closed",
+                "field": "op"
+              }
+            },
+            "view": {
+              "phase": "closed",
+              "page": 0,
+              "pageCount": 1,
+              "content": "Rooms and meals. Open late.",
+              "contentTranslation": "",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": null,
+              "answer": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "read: answering outside the quiz, a bad index and an unknown action are refused",
+      "op": "read",
+      "input": {
+        "document": {
+          "id": "text_1",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "textCategory": "book",
+          "cefrLevel": "A2",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "vocabularyHighlights": [
+            {
+              "word": "pain",
+              "translation": "bread",
+              "partOfSpeech": "noun"
+            }
+          ],
+          "comprehensionQuestions": [
+            {
+              "question": "Qui?",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "targetLanguage": "French",
+          "authorName": "Marie",
+          "clueText": null,
+          "difficulty": "intermediate",
+          "tags": [],
+          "spawnLocationHint": "bakery",
+          "isMainQuest": false
+        },
+        "steps": [
+          {
+            "op": "answer",
+            "index": 0
+          },
+          {
+            "op": "turn"
+          },
+          {
+            "op": "next"
+          },
+          {
+            "op": "next"
+          },
+          {
+            "op": "answer",
+            "index": 9
+          },
+          {
+            "op": "answer",
+            "index": 0.5
+          },
+          {
+            "op": "prev"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "phase": "reading",
+          "page": 0,
+          "pageCount": 2,
+          "content": "Page un.",
+          "contentTranslation": "Page one.",
+          "canPrev": false,
+          "canNext": true,
+          "nextLabel": "next",
+          "question": null,
+          "answer": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "not_quiz",
+                "field": "op"
+              }
+            },
+            "view": {
+              "phase": "reading",
+              "page": 0,
+              "pageCount": 2,
+              "content": "Page un.",
+              "contentTranslation": "Page one.",
+              "canPrev": false,
+              "canNext": true,
+              "nextLabel": "next",
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "unknown_action",
+                "field": "op"
+              }
+            },
+            "view": {
+              "phase": "reading",
+              "page": 0,
+              "pageCount": 2,
+              "content": "Page un.",
+              "contentTranslation": "Page one.",
+              "canPrev": false,
+              "canNext": true,
+              "nextLabel": "next",
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": []
+            },
+            "view": {
+              "phase": "reading",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": true,
+              "canNext": true,
+              "nextLabel": "done",
+              "question": null,
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "document_read",
+                  "id": "text_1"
+                },
+                {
+                  "type": "document_collected",
+                  "id": "text_1",
+                  "kind": "book"
+                },
+                {
+                  "type": "vocabulary_added",
+                  "id": "text_1",
+                  "words": [
+                    {
+                      "word": "pain",
+                      "translation": "bread"
+                    }
+                  ]
+                }
+              ]
+            },
+            "view": {
+              "phase": "quiz",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "bad_index",
+                "field": "index"
+              }
+            },
+            "view": {
+              "phase": "quiz",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "bad_index",
+                "field": "index"
+              }
+            },
+            "view": {
+              "phase": "quiz",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "not_reading",
+                "field": "op"
+              }
+            },
+            "view": {
+              "phase": "quiz",
+              "page": 1,
+              "pageCount": 2,
+              "content": "Page deux.",
+              "contentTranslation": "Page two.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": {
+                "question": "Qui?",
+                "questionTranslation": "",
+                "options": [
+                  "Le boulanger",
+                  "Le maire"
+                ],
+                "correctIndex": 0
+              },
+              "answer": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "read: closing early raises closed and nothing else",
+      "op": "read",
+      "input": {
+        "document": {
+          "id": "text_1",
+          "title": "Le boulanger",
+          "titleTranslation": "The baker",
+          "textCategory": "book",
+          "cefrLevel": "A2",
+          "pages": [
+            {
+              "content": "Page un.",
+              "contentTranslation": "Page one."
+            },
+            {
+              "content": "Page deux.",
+              "contentTranslation": "Page two."
+            }
+          ],
+          "vocabularyHighlights": [
+            {
+              "word": "pain",
+              "translation": "bread",
+              "partOfSpeech": "noun"
+            }
+          ],
+          "comprehensionQuestions": [
+            {
+              "question": "Qui?",
+              "options": [
+                "Le boulanger",
+                "Le maire"
+              ],
+              "correctIndex": 0
+            }
+          ],
+          "targetLanguage": "French",
+          "authorName": "Marie",
+          "clueText": null,
+          "difficulty": "intermediate",
+          "tags": [],
+          "spawnLocationHint": "bakery",
+          "isMainQuest": false
+        },
+        "steps": [
+          {
+            "op": "close"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "phase": "reading",
+          "page": 0,
+          "pageCount": 2,
+          "content": "Page un.",
+          "contentTranslation": "Page one.",
+          "canPrev": false,
+          "canNext": true,
+          "nextLabel": "next",
+          "question": null,
+          "answer": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "document_closed",
+                  "id": "text_1"
+                }
+              ]
+            },
+            "view": {
+              "phase": "closed",
+              "page": 0,
+              "pageCount": 2,
+              "content": "Page un.",
+              "contentTranslation": "Page one.",
+              "canPrev": false,
+              "canNext": false,
+              "nextLabel": null,
+              "question": null,
+              "answer": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "read: a refused document gives its refusal",
+      "op": "read",
+      "input": {
+        "document": {
+          "id": "x"
+        },
+        "steps": [
+          {
+            "op": "next"
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "missing_field",
+          "field": "title"
+        }
+      }
+    }
+  ]
+}

@@ -43,7 +43,11 @@
 // `ui.rulesPanel` and `mechanics.run` rows. The save-slots corpus is copied the
 // same way (PL.native-catchup, P1.core-slots): `conformance/saves/slots.json` at
 // its core path under vendor/core/; tests/saves_slots_corpus.cpp drives it
-// through the `saves.slots.create` / `saves.slots.apply` session rows.
+// through the `saves.slots.create` / `saves.slots.apply` session rows. The P6
+// corpora are copied the same way (PL.native-props-rows, U89(2)):
+// `conformance/props/{containers,documents,doors,notice-board}.json` and
+// `conformance/ui/inventory-cases.json`; tests/props_corpus.cpp drives them
+// through the `props.*` and `inventory.*` rows.
 //
 // TWO MODES:
 //
@@ -133,6 +137,21 @@ const P9A_COPY_ROOTS = ['conformance/modules', 'conformance/ui'];
 // verbatim the same way. Only `slots.json` of `conformance/saves/`: the rest of
 // that directory is the save-file corpora emit-bridge-cases.mjs transcribes.
 const SAVES_CORPUS_FILES = ['conformance/saves/slots.json'];
+
+// core's P6 corpora (PL.native-props-rows, U89(2); P6.core), copied verbatim the
+// same way: the four props files and the inventory panel's cases. The inventory
+// file shares `conformance/ui/` with the P9a corpora, so a file there belongs to
+// the set that LISTS it (p9aFilesOnDisk leaves these out); `conformance/props/`
+// is the props set's alone, so a file left there by an earlier pin is seen too.
+// pickup-placement.json, also in conformance/props/, has no row yet and is not
+// copied (and would be removed if found).
+const PROPS_CORPUS_FILES = [
+  'conformance/props/containers.json',
+  'conformance/props/documents.json',
+  'conformance/props/doors.json',
+  'conformance/props/notice-board.json',
+  'conformance/ui/inventory-cases.json',
+];
 
 // The adapter JS that is BUNDLED IN — inputs, not outputs, and hashed for the
 // reason spelled out at the top of this file. Paths are relative to BRIDGE, so
@@ -251,7 +270,9 @@ function packFilesOnDisk() {
 function p9aFilesOnDisk() {
   const out = [];
   for (const dir of P9A_COPY_ROOTS) {
-    for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) out.push(`vendor/core/${dir}/${f}`);
+    for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) {
+      if (!PROPS_CORPUS_FILES.includes(`${dir}/${f}`)) out.push(`vendor/core/${dir}/${f}`);
+    }
   }
   return out.sort();
 }
@@ -268,6 +289,26 @@ function savesFilesOnDisk() {
     for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) out.push(`vendor/core/${dir}/${f}`);
   }
   return out.sort();
+}
+
+/**
+ * The vendored P6 corpus files on disk, sorted: every file under a directory only
+ * the props set copies into, and the listed files in a directory it shares.
+ */
+function propsFilesOnDisk() {
+  const out = [];
+  for (const dir of new Set(PROPS_CORPUS_FILES.map((rel) => path.dirname(rel)))) {
+    const shared = P9A_COPY_ROOTS.includes(dir);
+    for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) {
+      if (!shared || PROPS_CORPUS_FILES.includes(`${dir}/${f}`)) out.push(`vendor/core/${dir}/${f}`);
+    }
+  }
+  return out.sort();
+}
+
+/** core's P6 corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
+function propsFilesAtPin(src) {
+  return filesAtPin(src, PROPS_CORPUS_FILES, 'the props.* and inventory.* rows');
 }
 
 /** core's save-slots corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
@@ -608,6 +649,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The P6 corpora: the same exact-set replacement.
+    const props = propsFilesAtPin(src);
+    for (const rel of propsFilesOnDisk()) if (!(rel in props)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(props)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -626,6 +675,7 @@ async function write(coreDir) {
       packCorpus: PACK_CORPUS_FILE,
       p9aCorpus: P9A_CORPUS_FILES,
       savesCorpus: SAVES_CORPUS_FILES,
+      propsCorpus: PROPS_CORPUS_FILES,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -640,6 +690,7 @@ async function write(coreDir) {
       ...packFilesOnDisk(),
       ...p9aFilesOnDisk(),
       ...savesFilesOnDisk(),
+      ...propsFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -652,6 +703,7 @@ async function write(coreDir) {
     console.log(`  pack corpus and catalog files (${Object.keys(packs).length}), copied unchanged`);
     console.log(`  P9a corpus files (${Object.keys(p9a).length}), copied unchanged`);
     console.log(`  save-slots corpus files (${Object.keys(saves).length}), copied unchanged`);
+    console.log(`  P6 props and inventory corpus files (${Object.keys(props).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -701,6 +753,13 @@ async function check(coreDir) {
   for (const rel of SAVES_CORPUS_FILES) {
     if (!savesFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the save-slots gate would run nothing`);
   }
+  const propsFiles = propsFilesOnDisk();
+  for (const rel of PROPS_CORPUS_FILES) {
+    if (!propsFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the props corpus gate would run nothing`);
+  }
+  // conformance/ui/ is shared by the P9a and P6 sets: a file belongs to exactly one.
+  const claimedTwice = propsFiles.filter((rel) => p9aFiles.includes(rel));
+  if (claimedTwice.length) fail(`${claimedTwice.join(', ')} is listed as both a P9a and a P6 corpus file`);
   const expectedList = [
     ...GENERATED_FIXED,
     ...caseFiles,
@@ -708,6 +767,7 @@ async function check(coreDir) {
     ...packFiles,
     ...p9aFiles,
     ...savesFiles,
+    ...propsFiles,
     ...ADAPTER_MODULES,
     ...TOOL_INPUTS,
   ];
@@ -741,7 +801,8 @@ async function check(coreDir) {
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
-      `${savesFiles.length} save-slots corpus file(s), core ${manifest.coreCommit}, esbuild ${manifest.esbuild})`,
+      `${savesFiles.length} save-slots and ${propsFiles.length} P6 props/inventory corpus file(s), core ${manifest.coreCommit}, ` +
+      `esbuild ${manifest.esbuild})`,
   );
 
   if (coreDir) {
@@ -810,10 +871,21 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const props = propsFilesAtPin(src);
+      const wantProps = Object.keys(props).sort();
+      if (JSON.stringify(wantProps) !== JSON.stringify(propsFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s P6 corpora are ${wantProps.join(', ')} but vendor/core/ holds ${propsFiles.join(', ')}`);
+      }
+      for (const rel of wantProps) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(props[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       console.log(
         `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
           `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s), all ` +
-          `${wantP9a.length} P9a corpus file(s) and all ${wantSaves.length} save-slots corpus file(s) byte for byte`,
+          `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save-slots corpus file(s) and all ` +
+          `${wantProps.length} P6 props/inventory corpus file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });

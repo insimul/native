@@ -1,0 +1,53 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "gathering",
+  "version": "0.1.0",
+  "name": "Gathering",
+  "summary": "Resource nodes that deplete and respawn, timed physical actions with energy, XP and rewards, and the action hotspots where a player reaches them; fishing, mining and farming install on top of it.",
+  "kind": "optional",
+  "phase": "P9d",
+  "catalog": ["gathering-resource-nodes", "gathering-physical-actions", "gathering-action-hotspots"],
+  "core": {
+    "corpus": [
+      "conformance/gathering/nodes.json",
+      "conformance/gathering/actions.json",
+      "conformance/gathering/hotspots.json",
+      "conformance/gathering/save.json"
+    ],
+    "saveExtensions": ["gathering"]
+  },
+  "requires": [{ "id": "inventory" }],
+  "enhances": [{ "id": "stamina" }],
+  "parameters": [
+    { "id": "defaultMaxAmount", "type": "integer", "min": 1, "maps": "ResourceTuning.defaultMaxAmount", "source": "core-default" },
+    { "id": "defaultRespawnMs", "type": "integer", "min": 0, "maps": "ResourceTuning.defaultRespawnMs", "source": "core-default" },
+    { "id": "defaultGatherMs", "type": "integer", "min": 1, "maps": "ResourceTuning.defaultGatherMs", "source": "core-default" },
+    { "id": "toolsRequired", "type": "boolean", "maps": "ResourceTuning.toolsRequired", "source": "world", "doc": "false is a sandbox: no node asks for an axe or a pickaxe" },
+    { "id": "energyCostPercent", "type": "integer", "min": 0, "maps": "PhysicalActionTuning.energyCostPercent", "source": "world" },
+    { "id": "energyGate", "type": "boolean", "maps": "PhysicalActionTuning.energyGate", "source": "world", "doc": "false lets a tired actor act; the cost is still reported" }
+  ],
+  "extensionPoints": [
+    { "id": "resource-kinds-and-nodes", "kind": "prolog-facts", "signature": "WorldIR.resources {definitions, gatheringNodes}", "doc": "what a world's nodes hold and how fast they come back; never engine code" },
+    { "id": "action-table", "kind": "prolog-facts", "signature": "physicalActionTuning({actions}) (src/gathering/physical-actions.ts)", "doc": "a world's own action, reward rows or places, merged over Babylon's table by id" },
+    { "id": "hotspot-rules", "kind": "prolog-facts", "signature": "generateHotspots(locations, rules) (src/gathering/hotspots.ts)", "doc": "where hotspots are placed and what vocabulary each teaches" }
+  ],
+  "events": { "emits": ["physical_action_completed"] },
+  "styles": {
+    "tokens": ["accent", "success", "warning"],
+    "layouts": ["progress-bar", "action-prompt"],
+    "art": ["prop.resource.*", "prop.hotspot.*"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "Resource nodes, physical actions and hotspots are pure functions in src/gathering/ over the host's clock; the engine draws nodes and hotspots, plays the clip and the progress bar, and adds the yielded items to the inventory.",
+    "notes": [
+      "A node's size and respawn time are authored in WorldIR.resources; the action table is Babylon's, overridable by id.",
+      "Fishing, mining, farming and crafting actions name a production craft on completion: call ProductionDirector, which decides what comes up.",
+      "Spend a completion's energyCost through the stamina pool, not a second energy number."
+    ],
+    "doNot": ["Roll rewards with an engine RNG: the roll is keyed on (seed, actor, action, attempt, item).", "Keep a separate resource store beside the inventory."]
+  }
+}

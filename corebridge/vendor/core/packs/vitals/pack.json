@@ -1,0 +1,42 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "vitals",
+  "version": "0.1.0",
+  "name": "Health, energy and gold",
+  "summary": "The player's health, energy and gold, and what happens at zero health: defeat, respawn and recovery from a fall out of the world.",
+  "kind": "base",
+  "phase": "P9b",
+  "catalog": ["combat-player-vitals", "player-defeat-respawn"],
+  "core": {
+    "predicatePacks": ["gameplayState"],
+    "corpus": [
+      "conformance/combat/vitals.json",
+      "conformance/combat/defeat-respawn.json",
+      "conformance/prolog/mechanic-gameplay-state.json"
+    ]
+  },
+  "requires": [{ "id": "hud" }, { "id": "saves", "version": "^1" }],
+  "parameters": [
+    { "id": "respawnHealthFraction", "type": "number", "min": 0, "max": 1, "maps": "RespawnSettings.respawnHealthFraction", "source": "world" },
+    { "id": "fallResetDepth", "type": "number", "maps": "RespawnSettings.fallResetDepth", "source": "world" }
+  ],
+  "extensionPoints": [
+    { "id": "energy-costs", "kind": "prolog-facts", "signature": "action/4 (EnergyCost)", "doc": "what a dialogue or social action spends from energy/3" }
+  ],
+  "styles": {
+    "tokens": ["success", "warning", "danger", "text_primary"],
+    "layouts": ["vitals-bars", "gold-readout", "defeat-notice"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "Vitals and defeat are core's (src/combat/vitals.ts, defeat-respawn.ts); the HUD bars and the defeat notice are views of them.",
+    "notes": [
+      "Bars take their tone from vitalsView; do not pick colours in engine code.",
+      "Respawn health and the fall depth are parameters, not code."
+    ],
+    "doNot": ["Keep a second health number in engine code: health/3 and PlayerState carry it."]
+  }
+}

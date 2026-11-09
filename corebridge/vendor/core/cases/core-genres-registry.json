@@ -3,10 +3,10 @@
  "description": "core's genre resolution corpus through genre.resolve (and the registry ids through genre.registry)",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "fc88be9070ec961208f10d7bf9f3856a6ce2f0b1",
+  "coreCommit": "ac229a731186272f7612980165de0243b4bd7b1f",
   "files": {
    "conformance/genres/camera.json": "a2eca78d3c8b3271648aaa61d5a91fe4c5dc61b331a04444d4d6f3d99ca5ba61",
-   "conformance/genres/registry.json": "c85caacb469a4475f4da8a28c62335a7f33c9066ce7ce3000da576b372bf0e5c"
+   "conformance/genres/registry.json": "38ef2b82f3bad688726661c34abaa6d9b7252f13b00f8fe540ff75b1433c64ea"
   }
  },
  "cases": [
@@ -1307,7 +1307,7 @@
        "cameraMode": "third_person",
        "movementPlane": "free",
        "controlScheme": "wasd_mouse",
-       "combatStyle": "none",
+       "combatStyle": "melee",
        "movementStyle": "free",
        "uiLayout": "action_rpg",
        "defaultWorldType": "tropical-pirate",

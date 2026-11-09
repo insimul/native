@@ -730,6 +730,44 @@ add_test(NAME saves_slots_corpus_negative COMMAND insimulcore_saves_slots
 set_tests_properties(saves_slots_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "expected WRONGLY to resolve no config to four slots [^\n]*slotCount: 4 != 3.*expected WRONGLY to delete an empty slot [^\n]*unexpected key 'refusal'.*saves_slots_corpus: FAIL")
 
+# props_corpus (PL.native-props-rows, rulings U89(2) and U36): core's P6 logic —
+# containers, documents and the reader, doors, the notice board and the notices a
+# settlement posts, and the inventory panel's view-model — as libinsimulcore's
+# `props.*` and `inventory.*` rows, held to core's own corpora:
+# conformance/props/{containers,documents,doors,notice-board}.json and
+# conformance/ui/inventory-cases.json, COPIED byte for byte into
+# corebridge/vendor/core/conformance/ at the pin (sha256 in VENDORED.json, checked
+# by core_vendor; byte-compared with core by `--check --core`). One ctest per file;
+# every case is driven through the rows (the stateful ops one apply per step) and
+# compared by the corpora's rule, and each file's contract tables are held to
+# `props.contract` (tests/props_corpus.cpp). A run fails on a missing row, an op
+# no case drives, a session left open, and a comparator that cannot fail. A pure
+# consumer of insimulcore.h; the JSON reader is tests/radiant/json_value.cpp,
+# used unchanged. Never skips: the corpora are in-repo.
+add_executable(insimulcore_props_corpus tests/props_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_props_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_props_corpus PRIVATE insimulcore)
+set(INSIMUL_PROPS_CORPUS ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance)
+add_test(NAME props_containers_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/containers.json)
+add_test(NAME props_documents_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/documents.json)
+add_test(NAME props_doors_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/doors.json)
+add_test(NAME props_notice_board_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/notice-board.json)
+add_test(NAME inventory_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/ui/inventory-cases.json)
+# The negative control: the same runner over five deliberately wrong files
+# (tests/props-negative/), one per corpus file, one wrong case each (two through
+# a stateless row, two through a session, one through the door session), plus a
+# wrong contract table and four container ops with no case. It passes only when
+# the runner reports the table, the undriven op, every wrong case and the run as
+# failed, in that order.
+add_test(NAME props_corpus_negative COMMAND insimulcore_props_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/containers-wrong.json
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/documents-wrong.json
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/doors-wrong.json
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/notice-board-wrong.json
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/inventory-wrong.json)
+set_tests_properties(props_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract.defaultCapacity: 12 != 10.*expected WRONGLY a capacity of 12 [^\n]*capacity: 12 != 10.*op unlock of area props-containers: no case of it was driven.*expected WRONGLY page 2 after next [^\n]*page: 2 != 1.*expected WRONGLY to enter a locked door without its key [^\n]*boolean differs.*expected WRONGLY two notices for one NPC [^\n]*length 2 != 1.*expected WRONGLY four loaves [^\n]*quantity: 4 != 5.*props_corpus: FAIL")
+
 # corebridge_sha256: the SHA-256 the C host gives core's save envelope
 # (corebridge/src/insimulcore_sha256.c), against the NIST vectors, at every
 # split point. Compiled straight from the source: the function is internal to

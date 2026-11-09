@@ -1,0 +1,2051 @@
+{
+  "area": "props-doors",
+  "description": "The door model (Features WV2, P6.core; catalog interiors-building-entry): a building's front door, its state, the prompt, and the handoff enter interior X / exit to Y that an engine turns into its scene change. Interiors are stated by pipelines/atelier (BuildingIR.interior), never invented: a building that states none has a no_interior door that never opens. Ops: door {building} -> {door}; prompt {buildings, player: {position, inside?}} -> {prompt}; session {buildings, inside?, playerItemIds?, steps: [{op: enter, building} | {op: exit} | {op: prompt, position}]} -> {steps: [{result, inside} | {prompt}]}. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "babylon origin/main bfcdeb2: packages/babylon/src/engine/game-engine/rendering/BuildingEntrySystem.ts (804 lines): the front-face door, the 0.5 m stand-off, DOOR_PROXIMITY_RADIUS 2.0 on the ground plane, the nearest door, the label, the exit facing outward.",
+    "godot origin/main 6599874: templates/scripts/systems/building_entry_system.gd (798 lines): the same front-centre door.",
+    "pipelines origin/main 9b6a897: pipelines/game-export/ir-generator.ts writes interior: null on every building (no interior is stated today).",
+    "core BuildingIR, InteriorLayoutIR, InteriorDoorIR (ir-types.ts); editor/layout/building-fit.ts doorWorld and doorHeading (the measured door point and facing a host passes as door and doorYaw = pi/2 - doorHeading; the Unreal plugin's DoorWorldYawDegrees, which InsimulSceneSpawn orients its door socket by)."
+  ],
+  "contract": {
+    "states": [
+      "closed",
+      "locked",
+      "no_interior"
+    ],
+    "actions": [
+      "enter",
+      "exit"
+    ],
+    "refusals": [
+      "unknown_action",
+      "missing_field",
+      "unknown_building",
+      "already_inside",
+      "not_inside",
+      "no_interior",
+      "locked"
+    ],
+    "promptRadiusM": 2,
+    "standoffM": 0.5,
+    "doorPoint": "door (the layout's measured point) when given, else position + (sin r, cos r) * depth / 2; numbers rounded to 1e-9",
+    "facing": "the door's outward yaw f (it faces world (sin f, cos f), like rotation): doorYaw when a finite number (from building-fit: pi/2 - doorHeading, whose heading points along (cos h, sin h)); else, when door is given, the footprint face nearest it; else r. Nearest face: along = dx sin r + dz cos r, across = dx cos r - dz sin r (d = door - position); halfAlong = depth / 2, halfAcross = width / 2 (a missing or non-positive one takes the other, both missing 1); |across| / halfAcross > |along| / halfAlong picks right (across > 0, r + pi/2) or left (r - pi/2), else back (along < 0, r + pi) or front (r)",
+    "outside": "doorPoint + (sin f, cos f) * standoffM, yaw f (rounded to 1e-9): the player stands outside the door's own face, facing out through it",
+    "state": "no interior stated (null or absent) -> no_interior; else locked when the host says so; else closed",
+    "label": "name, else businessType, else spec.buildingRole, else Building (first non-empty)",
+    "prompt": "inside: exit for the building the player is in (null if unlisted); outside: the nearest door not no_interior with ground-plane distance strictly < promptRadiusM, the first listed on a tie",
+    "enter": "refusals in order: missing_field building, already_inside, unknown_building, no_interior, locked (without keyItemId held); else enter_interior {building, interior: interior:<id>, interiorFunction, arrive: the first entrance door's position (interior frame) or null when none is listed, entrance, unlocked}",
+    "exit": "not_inside, unknown_building; else exit_to_exterior {building, arrive: outside, yaw}"
+  },
+  "cases": [
+    {
+      "name": "door: the front-centre point on local +Z, the stand-off 0.5 m outward, facing outward",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_inn",
+          "position": {
+            "x": 10,
+            "y": 0,
+            "z": 20
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Tavern",
+            "depth": 8
+          },
+          "interior": {
+            "function": "business.tavern",
+            "doors": [
+              {
+                "id": "d_stair",
+                "kind": "stair",
+                "fromRoomId": "r1",
+                "toRoomId": "r2",
+                "position": {
+                  "x": 4,
+                  "y": 0,
+                  "z": 5
+                }
+              },
+              {
+                "id": "d_front",
+                "kind": "entrance",
+                "fromRoomId": "",
+                "toRoomId": "r1",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 0.2
+                }
+              }
+            ]
+          },
+          "name": "The Gilded Goose"
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_inn",
+          "state": "closed",
+          "doorAt": {
+            "x": 10,
+            "y": 0,
+            "z": 24
+          },
+          "outside": {
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 24.5
+            },
+            "yaw": 0
+          },
+          "label": "The Gilded Goose",
+          "interiorFunction": "business.tavern"
+        }
+      }
+    },
+    {
+      "name": "door: turned a quarter, the door faces world +X",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_house",
+          "position": {
+            "x": -10,
+            "y": 2,
+            "z": 0
+          },
+          "rotation": 1.5707963267948966,
+          "spec": {
+            "buildingRole": "House",
+            "depth": 6
+          },
+          "interior": {
+            "function": "residence"
+          }
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_house",
+          "state": "closed",
+          "doorAt": {
+            "x": -7,
+            "y": 2,
+            "z": 0
+          },
+          "outside": {
+            "position": {
+              "x": -6.5,
+              "y": 2,
+              "z": 0
+            },
+            "yaw": 1.570796327
+          },
+          "label": "House",
+          "interiorFunction": "residence"
+        }
+      }
+    },
+    {
+      "name": "door: a building that states no interior is no_interior",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_house",
+          "position": {
+            "x": -10,
+            "y": 2,
+            "z": 0
+          },
+          "rotation": 1.5707963267948966,
+          "spec": {
+            "buildingRole": "House",
+            "depth": 6
+          },
+          "interior": null
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_house",
+          "state": "no_interior",
+          "doorAt": {
+            "x": -7,
+            "y": 2,
+            "z": 0
+          },
+          "outside": {
+            "position": {
+              "x": -6.5,
+              "y": 2,
+              "z": 0
+            },
+            "yaw": 1.570796327
+          },
+          "label": "House",
+          "interiorFunction": null
+        }
+      }
+    },
+    {
+      "name": "door: a host-locked door is locked",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_inn",
+          "position": {
+            "x": 10,
+            "y": 0,
+            "z": 20
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Tavern",
+            "depth": 8
+          },
+          "interior": {
+            "function": "business.tavern",
+            "doors": [
+              {
+                "id": "d_stair",
+                "kind": "stair",
+                "fromRoomId": "r1",
+                "toRoomId": "r2",
+                "position": {
+                  "x": 4,
+                  "y": 0,
+                  "z": 5
+                }
+              },
+              {
+                "id": "d_front",
+                "kind": "entrance",
+                "fromRoomId": "",
+                "toRoomId": "r1",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 0.2
+                }
+              }
+            ]
+          },
+          "name": "The Gilded Goose",
+          "locked": true
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_inn",
+          "state": "locked",
+          "doorAt": {
+            "x": 10,
+            "y": 0,
+            "z": 24
+          },
+          "outside": {
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 24.5
+            },
+            "yaw": 0
+          },
+          "label": "The Gilded Goose",
+          "interiorFunction": "business.tavern"
+        }
+      }
+    },
+    {
+      "name": "door: the layout's measured door point wins over the front-centre rule",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_inn",
+          "position": {
+            "x": 10,
+            "y": 0,
+            "z": 20
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Tavern",
+            "depth": 8
+          },
+          "interior": {
+            "function": "business.tavern",
+            "doors": [
+              {
+                "id": "d_stair",
+                "kind": "stair",
+                "fromRoomId": "r1",
+                "toRoomId": "r2",
+                "position": {
+                  "x": 4,
+                  "y": 0,
+                  "z": 5
+                }
+              },
+              {
+                "id": "d_front",
+                "kind": "entrance",
+                "fromRoomId": "",
+                "toRoomId": "r1",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 0.2
+                }
+              }
+            ]
+          },
+          "name": "The Gilded Goose",
+          "door": {
+            "x": 11,
+            "y": 0.1,
+            "z": 24.2
+          }
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_inn",
+          "state": "closed",
+          "doorAt": {
+            "x": 11,
+            "y": 0.1,
+            "z": 24.2
+          },
+          "outside": {
+            "position": {
+              "x": 11,
+              "y": 0.1,
+              "z": 24.7
+            },
+            "yaw": 0
+          },
+          "label": "The Gilded Goose",
+          "interiorFunction": "business.tavern"
+        }
+      }
+    },
+    {
+      "name": "door: a measured door on the back face exits outside it, facing out (its doorYaw)",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_box",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "House",
+            "depth": 8,
+            "width": 6
+          },
+          "interior": {
+            "function": "residence",
+            "doors": []
+          },
+          "door": {
+            "x": 0,
+            "y": 0,
+            "z": -4
+          },
+          "doorYaw": 3.141592653589793
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_box",
+          "state": "closed",
+          "doorAt": {
+            "x": 0,
+            "y": 0,
+            "z": -4
+          },
+          "outside": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": -4.5
+            },
+            "yaw": 3.141592654
+          },
+          "label": "House",
+          "interiorFunction": "residence"
+        }
+      }
+    },
+    {
+      "name": "door: a measured door on a side face exits outside it, facing out (its doorYaw)",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_box",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "House",
+            "depth": 8,
+            "width": 6
+          },
+          "interior": {
+            "function": "residence",
+            "doors": []
+          },
+          "door": {
+            "x": 3,
+            "y": 0,
+            "z": 0
+          },
+          "doorYaw": 1.5707963267948966
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_box",
+          "state": "closed",
+          "doorAt": {
+            "x": 3,
+            "y": 0,
+            "z": 0
+          },
+          "outside": {
+            "position": {
+              "x": 3.5,
+              "y": 0,
+              "z": 0
+            },
+            "yaw": 1.570796327
+          },
+          "label": "House",
+          "interiorFunction": "residence"
+        }
+      }
+    },
+    {
+      "name": "door: doorYaw wins over the face the door point is nearest",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_box",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "House",
+            "depth": 8,
+            "width": 6
+          },
+          "interior": {
+            "function": "residence",
+            "doors": []
+          },
+          "door": {
+            "x": 0,
+            "y": 0,
+            "z": -4
+          },
+          "doorYaw": 1.5707963267948966
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_box",
+          "state": "closed",
+          "doorAt": {
+            "x": 0,
+            "y": 0,
+            "z": -4
+          },
+          "outside": {
+            "position": {
+              "x": 0.5,
+              "y": 0,
+              "z": -4
+            },
+            "yaw": 1.570796327
+          },
+          "label": "House",
+          "interiorFunction": "residence"
+        }
+      }
+    },
+    {
+      "name": "door: with no doorYaw, a measured back door faces out through the back face",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_box",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "House",
+            "depth": 8,
+            "width": 6
+          },
+          "interior": {
+            "function": "residence",
+            "doors": []
+          },
+          "door": {
+            "x": 0.4,
+            "y": 0,
+            "z": -4
+          }
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_box",
+          "state": "closed",
+          "doorAt": {
+            "x": 0.4,
+            "y": 0,
+            "z": -4
+          },
+          "outside": {
+            "position": {
+              "x": 0.4,
+              "y": 0,
+              "z": -4.5
+            },
+            "yaw": 3.141592654
+          },
+          "label": "House",
+          "interiorFunction": "residence"
+        }
+      }
+    },
+    {
+      "name": "door: with no doorYaw, a measured door on the left face of a turned building faces out through it",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_box",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": 1.5707963267948966,
+          "spec": {
+            "buildingRole": "House",
+            "depth": 8,
+            "width": 6
+          },
+          "interior": {
+            "function": "residence",
+            "doors": []
+          },
+          "door": {
+            "x": 0.5,
+            "y": 0,
+            "z": 3
+          }
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_box",
+          "state": "closed",
+          "doorAt": {
+            "x": 0.5,
+            "y": 0,
+            "z": 3
+          },
+          "outside": {
+            "position": {
+              "x": 0.5,
+              "y": 0,
+              "z": 3.5
+            },
+            "yaw": 0
+          },
+          "label": "House",
+          "interiorFunction": "residence"
+        }
+      }
+    },
+    {
+      "name": "door: with no doorYaw, the face is chosen against each half-extent (width 6, depth 8)",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_box",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "House",
+            "depth": 8,
+            "width": 6
+          },
+          "interior": {
+            "function": "residence",
+            "doors": []
+          },
+          "door": {
+            "x": 2.9,
+            "y": 0,
+            "z": 3.5
+          }
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_box",
+          "state": "closed",
+          "doorAt": {
+            "x": 2.9,
+            "y": 0,
+            "z": 3.5
+          },
+          "outside": {
+            "position": {
+              "x": 3.4,
+              "y": 0,
+              "z": 3.5
+            },
+            "yaw": 1.570796327
+          },
+          "label": "House",
+          "interiorFunction": "residence"
+        }
+      }
+    },
+    {
+      "name": "door: a doorYaw that is not a number is ignored, and no door point is the front rule",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_box",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "House",
+            "depth": 8,
+            "width": 6
+          },
+          "interior": {
+            "function": "residence",
+            "doors": []
+          },
+          "doorYaw": "back"
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_box",
+          "state": "closed",
+          "doorAt": {
+            "x": 0,
+            "y": 0,
+            "z": 4
+          },
+          "outside": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 4.5
+            },
+            "yaw": 0
+          },
+          "label": "House",
+          "interiorFunction": "residence"
+        }
+      }
+    },
+    {
+      "name": "door: the label falls back to the business type, the role, then Building",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b0",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": 0,
+          "interior": {}
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b0",
+          "state": "closed",
+          "doorAt": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "outside": {
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0.5
+            },
+            "yaw": 0
+          },
+          "label": "Building",
+          "interiorFunction": null
+        }
+      }
+    },
+    {
+      "name": "door: the business type labels a door with no name",
+      "op": "door",
+      "input": {
+        "building": {
+          "id": "b_inn",
+          "position": {
+            "x": 10,
+            "y": 0,
+            "z": 20
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Tavern",
+            "depth": 8
+          },
+          "interior": {
+            "function": "business.tavern",
+            "doors": [
+              {
+                "id": "d_stair",
+                "kind": "stair",
+                "fromRoomId": "r1",
+                "toRoomId": "r2",
+                "position": {
+                  "x": 4,
+                  "y": 0,
+                  "z": 5
+                }
+              },
+              {
+                "id": "d_front",
+                "kind": "entrance",
+                "fromRoomId": "",
+                "toRoomId": "r1",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 0.2
+                }
+              }
+            ]
+          },
+          "name": null,
+          "businessType": "Bakery"
+        }
+      },
+      "expected": {
+        "door": {
+          "id": "b_inn",
+          "state": "closed",
+          "doorAt": {
+            "x": 10,
+            "y": 0,
+            "z": 24
+          },
+          "outside": {
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 24.5
+            },
+            "yaw": 0
+          },
+          "label": "Bakery",
+          "interiorFunction": "business.tavern"
+        }
+      }
+    },
+    {
+      "name": "prompt: the nearest door strictly within 2 m prompts enter",
+      "op": "prompt",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          },
+          {
+            "id": "b_inn2",
+            "position": {
+              "x": 12,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          }
+        ],
+        "player": {
+          "position": {
+            "x": 11.2,
+            "y": 0,
+            "z": 24.5
+          }
+        }
+      },
+      "expected": {
+        "prompt": {
+          "building": "b_inn2",
+          "action": "enter",
+          "label": "The Gilded Goose",
+          "state": "closed",
+          "distance": 0.943398113
+        }
+      }
+    },
+    {
+      "name": "prompt: exactly 2 m away does not prompt",
+      "op": "prompt",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          }
+        ],
+        "player": {
+          "position": {
+            "x": 10,
+            "y": 0,
+            "z": 26
+          }
+        }
+      },
+      "expected": {
+        "prompt": null
+      }
+    },
+    {
+      "name": "prompt: height is ignored (ground plane)",
+      "op": "prompt",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          }
+        ],
+        "player": {
+          "position": {
+            "x": 10,
+            "y": 30,
+            "z": 25
+          }
+        }
+      },
+      "expected": {
+        "prompt": {
+          "building": "b_inn",
+          "action": "enter",
+          "label": "The Gilded Goose",
+          "state": "closed",
+          "distance": 1
+        }
+      }
+    },
+    {
+      "name": "prompt: a no_interior door never prompts",
+      "op": "prompt",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_house",
+            "position": {
+              "x": -10,
+              "y": 2,
+              "z": 0
+            },
+            "rotation": 1.5707963267948966,
+            "spec": {
+              "buildingRole": "House",
+              "depth": 6
+            },
+            "interior": null
+          }
+        ],
+        "player": {
+          "position": {
+            "x": -7,
+            "y": 2,
+            "z": 0
+          }
+        }
+      },
+      "expected": {
+        "prompt": null
+      }
+    },
+    {
+      "name": "prompt: a locked door prompts, with its state",
+      "op": "prompt",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose",
+            "locked": true
+          }
+        ],
+        "player": {
+          "position": {
+            "x": 10,
+            "y": 0,
+            "z": 24.5
+          }
+        }
+      },
+      "expected": {
+        "prompt": {
+          "building": "b_inn",
+          "action": "enter",
+          "label": "The Gilded Goose",
+          "state": "locked",
+          "distance": 0.5
+        }
+      }
+    },
+    {
+      "name": "prompt: on a tie the first listed wins",
+      "op": "prompt",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_a",
+            "position": {
+              "x": 9,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          },
+          {
+            "id": "b_b",
+            "position": {
+              "x": 11,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          }
+        ],
+        "player": {
+          "position": {
+            "x": 10,
+            "y": 0,
+            "z": 24
+          }
+        }
+      },
+      "expected": {
+        "prompt": {
+          "building": "b_a",
+          "action": "enter",
+          "label": "The Gilded Goose",
+          "state": "closed",
+          "distance": 1
+        }
+      }
+    },
+    {
+      "name": "prompt: inside, the prompt is the exit of the building the player is in",
+      "op": "prompt",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          }
+        ],
+        "player": {
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "inside": "b_inn"
+        }
+      },
+      "expected": {
+        "prompt": {
+          "building": "b_inn",
+          "action": "exit",
+          "label": "The Gilded Goose",
+          "state": "closed",
+          "distance": null
+        }
+      }
+    },
+    {
+      "name": "session: enter hands off to the stated interior at its entrance; exit to the outside point",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          },
+          {
+            "id": "b_house",
+            "position": {
+              "x": -10,
+              "y": 2,
+              "z": 0
+            },
+            "rotation": 1.5707963267948966,
+            "spec": {
+              "buildingRole": "House",
+              "depth": 6
+            },
+            "interior": null
+          }
+        ],
+        "steps": [
+          {
+            "op": "prompt",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 24.4
+            }
+          },
+          {
+            "op": "enter",
+            "building": "b_inn"
+          },
+          {
+            "op": "prompt",
+            "position": {
+              "x": 3,
+              "y": 0,
+              "z": 1
+            }
+          },
+          {
+            "op": "enter",
+            "building": "b_inn"
+          },
+          {
+            "op": "exit"
+          },
+          {
+            "op": "exit"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "prompt": {
+              "building": "b_inn",
+              "action": "enter",
+              "label": "The Gilded Goose",
+              "state": "closed",
+              "distance": 0.4
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "handoff": {
+                "op": "enter_interior",
+                "building": "b_inn",
+                "interior": "interior:b_inn",
+                "interiorFunction": "business.tavern",
+                "arrive": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 0.2
+                },
+                "entrance": "d_front",
+                "unlocked": false
+              },
+              "inside": "b_inn"
+            },
+            "inside": "b_inn"
+          },
+          {
+            "prompt": {
+              "building": "b_inn",
+              "action": "exit",
+              "label": "The Gilded Goose",
+              "state": "closed",
+              "distance": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "already_inside",
+                "field": "op"
+              }
+            },
+            "inside": "b_inn"
+          },
+          {
+            "result": {
+              "ok": true,
+              "handoff": {
+                "op": "exit_to_exterior",
+                "building": "b_inn",
+                "arrive": {
+                  "x": 10,
+                  "y": 0,
+                  "z": 24.5
+                },
+                "yaw": 0
+              },
+              "inside": null
+            },
+            "inside": null
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "not_inside",
+                "field": "op"
+              }
+            },
+            "inside": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: a building with no interior refuses entry with no_interior and the player stays outside",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_house",
+            "position": {
+              "x": -10,
+              "y": 2,
+              "z": 0
+            },
+            "rotation": 1.5707963267948966,
+            "spec": {
+              "buildingRole": "House",
+              "depth": 6
+            },
+            "interior": null
+          }
+        ],
+        "steps": [
+          {
+            "op": "enter",
+            "building": "b_house"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "no_interior",
+                "field": "building"
+              }
+            },
+            "inside": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: an interior that lists no entrance hands off with arrive null",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "residence",
+              "doors": []
+            },
+            "name": "The Gilded Goose"
+          }
+        ],
+        "steps": [
+          {
+            "op": "enter",
+            "building": "b_inn"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "handoff": {
+                "op": "enter_interior",
+                "building": "b_inn",
+                "interior": "interior:b_inn",
+                "interiorFunction": "residence",
+                "arrive": null,
+                "entrance": null,
+                "unlocked": false
+              },
+              "inside": "b_inn"
+            },
+            "inside": "b_inn"
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: a locked door opens only with its key, and says it was unlocked",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose",
+            "locked": true,
+            "keyItemId": "key_inn"
+          },
+          {
+            "id": "b_shut",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose",
+            "locked": true
+          }
+        ],
+        "playerItemIds": [
+          "key_inn"
+        ],
+        "steps": [
+          {
+            "op": "enter",
+            "building": "b_shut"
+          },
+          {
+            "op": "enter",
+            "building": "b_inn"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "locked",
+                "field": "building"
+              }
+            },
+            "inside": null
+          },
+          {
+            "result": {
+              "ok": true,
+              "handoff": {
+                "op": "enter_interior",
+                "building": "b_inn",
+                "interior": "interior:b_inn",
+                "interiorFunction": "business.tavern",
+                "arrive": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 0.2
+                },
+                "entrance": "d_front",
+                "unlocked": true
+              },
+              "inside": "b_inn"
+            },
+            "inside": "b_inn"
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: a locked door without the key is refused",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose",
+            "locked": true,
+            "keyItemId": "key_inn"
+          }
+        ],
+        "steps": [
+          {
+            "op": "enter",
+            "building": "b_inn"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "locked",
+                "field": "building"
+              }
+            },
+            "inside": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: refusals: unknown action, no building, unknown building, exit while outside",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          }
+        ],
+        "steps": [
+          {
+            "op": "knock",
+            "building": "b_inn"
+          },
+          {
+            "op": "enter"
+          },
+          {
+            "op": "enter",
+            "building": "b_none"
+          },
+          {
+            "op": "exit"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "unknown_action",
+                "field": "op"
+              }
+            },
+            "inside": null
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "missing_field",
+                "field": "building"
+              }
+            },
+            "inside": null
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "unknown_building",
+                "field": "building"
+              }
+            },
+            "inside": null
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "not_inside",
+                "field": "op"
+              }
+            },
+            "inside": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: starting inside, exit goes to that building's door",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose"
+          },
+          {
+            "id": "b_house",
+            "position": {
+              "x": -10,
+              "y": 2,
+              "z": 0
+            },
+            "rotation": 1.5707963267948966,
+            "spec": {
+              "buildingRole": "House",
+              "depth": 6
+            },
+            "interior": {
+              "function": "residence"
+            }
+          }
+        ],
+        "inside": "b_house",
+        "steps": [
+          {
+            "op": "exit"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "handoff": {
+                "op": "exit_to_exterior",
+                "building": "b_house",
+                "arrive": {
+                  "x": -6.5,
+                  "y": 2,
+                  "z": 0
+                },
+                "yaw": 1.570796327
+              },
+              "inside": null
+            },
+            "inside": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: exit from a building whose measured door is on the back hands off outside the back face",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_box",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "depth": 8,
+              "width": 6
+            },
+            "interior": {
+              "function": "residence",
+              "doors": []
+            },
+            "door": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "doorYaw": 3.141592653589793
+          }
+        ],
+        "steps": [
+          {
+            "op": "enter",
+            "building": "b_box"
+          },
+          {
+            "op": "exit"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "handoff": {
+                "op": "enter_interior",
+                "building": "b_box",
+                "interior": "interior:b_box",
+                "interiorFunction": "residence",
+                "arrive": null,
+                "entrance": null,
+                "unlocked": false
+              },
+              "inside": "b_box"
+            },
+            "inside": "b_box"
+          },
+          {
+            "result": {
+              "ok": true,
+              "handoff": {
+                "op": "exit_to_exterior",
+                "building": "b_box",
+                "arrive": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -4.5
+                },
+                "yaw": 3.141592654
+              },
+              "inside": null
+            },
+            "inside": null
+          }
+        ]
+      }
+    }
+  ]
+}

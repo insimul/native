@@ -24,7 +24,7 @@
 import './host-text-codec.js';
 import { clearDiagnostics, diagnostics } from './host-console.js';
 
-import { applyOps, disposeSession, listSessions, openSession, session } from './host-sessions.js';
+import { applyOps, applySteps, disposeSession, listSessions, openSession, session } from './host-sessions.js';
 
 import { generateRadiantQuests } from '@insimul/core/radiant/radiant-engine';
 import { BASE_RADIANT_TEMPLATES, BASE_RADIANT_TEMPLATE_IDS } from '@insimul/core/radiant/base-templates';
@@ -109,6 +109,73 @@ import { MECHANIC_STEP_OPS, runMechanicRuntimeCase } from '@insimul/core/game-en
 // autosave is due, the indicator). It does no I/O; the host does the I/O each
 // step's `effect` names and answers with `finished`.
 import { SaveSlotsSession } from '@insimul/core/save-slots';
+
+// ── props, interiors and the inventory panel (P6.core; PL.native-props-rows, U89(2)) ──
+// Core's P6 logic (core 31764b1 onward): containers (access, unlock, the deposit
+// gate, location, respawn), documents (`documentOf`, `paginateText`, the reader
+// panel's `DocumentReader`), doors (the door, its prompt, the enter X / exit to Y
+// handoff), the notice board (`NoticeBoard`) and the notices a settlement posts
+// (`generateSettlementNotices`), and the inventory panel's `InventoryViewModel`.
+// The rows call these and decide nothing, so an engine drops its own copy
+// (Unreal's interim `Portable/InsimulProps`, U89(2)) for them. The constants are
+// imported for `props.contract`, which answers the tables core's P6 corpora state.
+import {
+	CONTAINER_ACCESS_STATES,
+	CONTAINER_REFUSALS,
+	CONTAINER_UNLOCK_RESULTS,
+	DEFAULT_CONTAINER_CAPACITY,
+	containerMoveRefusal,
+	containerRespawnDue,
+	containersAtLocation,
+	containerView,
+	unlockContainer,
+} from '@insimul/core/props/containers';
+import {
+	DEFAULT_CHARS_PER_PAGE,
+	DEFAULT_QUIZ_XP,
+	DOCUMENT_KINDS,
+	DOCUMENT_QUIZ_XP,
+	DOCUMENT_READER_ACTIONS,
+	DOCUMENT_READER_PHASES,
+	DOCUMENT_REFUSALS,
+	DocumentReader,
+	documentOf,
+	paginateText,
+} from '@insimul/core/props/documents';
+import {
+	DOOR_ACTIONS,
+	DOOR_PROMPT_RADIUS_M,
+	DOOR_REFUSALS,
+	DOOR_STANDOFF_M,
+	DOOR_STATES,
+	doorPrompt,
+	doorStep,
+	doorView,
+} from '@insimul/core/props/doors';
+import {
+	NOTICE_BOARD_ACTIONS,
+	NOTICE_BOARD_REFUSALS,
+	NOTICE_FLUENCY_THRESHOLDS,
+	NOTICE_HOOK_STATES,
+	NoticeBoard,
+} from '@insimul/core/props/notice-board';
+import { generateSettlementNotices } from '@insimul/core/game-engine/logic/NoticeGenerator';
+import {
+	INVENTORY_DEFAULT_TYPE_COLOR,
+	INVENTORY_EMPTY_MESSAGES,
+	INVENTORY_EQUIPPED_NAME_COLOR,
+	INVENTORY_FILTERS,
+	INVENTORY_PINNED_GROUP,
+	INVENTORY_PLAIN_BORDER,
+	INVENTORY_RARITY_COLORS,
+	INVENTORY_RARITY_ORDER,
+	INVENTORY_SLOT_LABELS,
+	INVENTORY_TYPE_COLORS,
+	INVENTORY_USABLE_TYPES,
+	InventoryViewModel,
+	inventoryEntryId,
+	inventoryItemName,
+} from '@insimul/core/ui/inventory-model';
 
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
@@ -278,9 +345,10 @@ function optStringField(method, op, name) {
 
 /**
  * One `saves.slots.apply` op as core's `SaveSlotsStepResult`, in JSON: `{ ok,
- * refusal?, outcome?, effect }` (`effect` null, or `{ write: { slot, kind,
- * autosave } }`, `{ read: { slot, kind } }` or `{ remove: { slot } }`) — the shape
- * core's corpus runner records (`saveSlotsResultJson`).
+ * refusal?, outcome?, effect, history? }` (`effect` null, or `{ write: { slot,
+ * kind, autosave } }`, `{ read: { slot, kind } }` or `{ remove: { slot } }`;
+ * `history` only on a finished delete) — the shape core's corpus runner records
+ * (`saveSlotsResultJson`).
  */
 function saveSlotsOps(m) {
 	const slot = (op) => needNumber(m, op.slot, 'slot');
@@ -289,6 +357,11 @@ function saveSlotsOps(m) {
 		load: ({ model }, op) => plain(model.load(slot(op))),
 		continue: ({ model }) => plain(model.continueGame()),
 		delete: ({ model }, op) => plain(model.delete(slot(op))),
+		// The slot list's Delete asks first (PL.slots-delete-states, core 2e1706a):
+		// `ask_delete` opens the view's `confirm` prompt, its two actions answer it.
+		ask_delete: ({ model }, op) => plain(model.askDelete(slot(op))),
+		confirm_delete: ({ model }) => plain(model.confirmDelete()),
+		cancel_delete: ({ model }) => plain(model.cancelDelete()),
 		key: ({ model }, op) => plain(model.key(needString(m, op.code, 'code'))),
 		// JSON has no NaN: a `delta` of null is a non-finite tick, which core
 		// answers as changing nothing (the corpus writes it the same way).
@@ -303,6 +376,228 @@ function saveSlotsOps(m) {
 			return plain(model.finished(result));
 		},
 	};
+}
+
+// ── props and the inventory panel (P6; PL.native-props-rows) ──────────────────
+
+/** `value` absent or null (undefined), else a JSON object. */
+function optObject(method, value, name) {
+	return value === undefined || value === null ? undefined : needObject(method, value, name);
+}
+
+/** `value` absent or null (undefined), else an array. */
+function optArrayValue(method, value, name) {
+	return value === undefined || value === null ? undefined : needArray(method, value, name);
+}
+
+/** `value` absent or null, else a boolean (core reads these flags by truthiness; its types say boolean). */
+function optBoolean(method, value, name) {
+	if (value !== undefined && value !== null && typeof value !== 'boolean') {
+		throw refuse(method, `\`${name}\` must be a boolean`);
+	}
+	return value;
+}
+
+/**
+ * The tables core's P6 corpora state as data in their `contract`, built from
+ * core's own exported constants exactly as core's emitter
+ * (`scripts/emit-props-corpora.ts`) builds them, keyed by each file's `area`. The
+ * prose keys of those contracts (orders, rules) are not data and are not here.
+ */
+function propsContract() {
+	return plain({
+		'props-containers': {
+			defaultCapacity: DEFAULT_CONTAINER_CAPACITY,
+			states: CONTAINER_ACCESS_STATES,
+			refusals: CONTAINER_REFUSALS,
+			unlockResults: CONTAINER_UNLOCK_RESULTS,
+		},
+		'props-documents': {
+			kinds: DOCUMENT_KINDS,
+			refusals: DOCUMENT_REFUSALS,
+			defaultCharsPerPage: DEFAULT_CHARS_PER_PAGE,
+			quizXp: DOCUMENT_QUIZ_XP,
+			defaultQuizXp: DEFAULT_QUIZ_XP,
+			phases: DOCUMENT_READER_PHASES,
+			actions: DOCUMENT_READER_ACTIONS,
+		},
+		'props-notice-board': {
+			fluencyThresholds: NOTICE_FLUENCY_THRESHOLDS,
+			hookStates: NOTICE_HOOK_STATES,
+			actions: NOTICE_BOARD_ACTIONS,
+			refusals: NOTICE_BOARD_REFUSALS,
+		},
+		'props-doors': {
+			states: DOOR_STATES,
+			actions: DOOR_ACTIONS,
+			refusals: DOOR_REFUSALS,
+			promptRadiusM: DOOR_PROMPT_RADIUS_M,
+			standoffM: DOOR_STANDOFF_M,
+		},
+		'ui-inventory': {
+			filters: INVENTORY_FILTERS,
+			usableTypes: INVENTORY_USABLE_TYPES,
+			slotLabels: INVENTORY_SLOT_LABELS,
+			rarityColors: INVENTORY_RARITY_COLORS,
+			rarityOrder: INVENTORY_RARITY_ORDER,
+			typeColors: INVENTORY_TYPE_COLORS,
+			defaultTypeColor: INVENTORY_DEFAULT_TYPE_COLOR,
+			equippedNameColor: INVENTORY_EQUIPPED_NAME_COLOR,
+			plainBorder: INVENTORY_PLAIN_BORDER,
+			pinnedGroup: INVENTORY_PINNED_GROUP,
+			emptyMessages: INVENTORY_EMPTY_MESSAGES,
+		},
+	});
+}
+
+/** A `ContainerRecord`: a JSON object (core reads every field of it itself). */
+function containerOf(method, value, name = 'container') {
+	return needObject(method, value, name);
+}
+
+/**
+ * A `ContainerContext` (absent or null is `{}`, as core defaults it): the held
+ * item ids and the buildings are arrays when present (a string's `includes`
+ * would answer for its characters), `now` an ISO string or epoch ms.
+ */
+function containerContextOf(method, value) {
+	const ctx = optObject(method, value, 'context') ?? {};
+	optArrayValue(method, ctx.playerItemIds, 'context.playerItemIds');
+	(optArrayValue(method, ctx.buildings, 'context.buildings') ?? []).forEach((b, i) =>
+		needObject(method, b, `context.buildings[${i}]`),
+	);
+	nowOf(method, ctx.now, 'context.now');
+	return ctx;
+}
+
+/** `now`: absent, null, an ISO date-time string or epoch milliseconds. */
+function nowOf(method, value, name) {
+	if (value !== undefined && value !== null && typeof value !== 'string' && typeof value !== 'number') {
+		throw refuse(method, `\`${name}\` must be an ISO date-time string or epoch milliseconds`);
+	}
+	return value;
+}
+
+/** `DoorBuildingInput[]`: an array of JSON objects. */
+function doorBuildingsOf(method, value) {
+	return needArray(method, value, 'buildings').map((b, i) => needObject(method, b, `buildings[${i}]`));
+}
+
+/** `inside`: the building the player is in, or null (absent is null). */
+function insideOf(method, value) {
+	return value === undefined || value === null ? null : needString(method, value, 'inside');
+}
+
+/**
+ * The `currentState.player` slice the inventory loads ({ gold, inventory }):
+ * absent or null is an empty pack, as core's corpus runner opens one. `gold` goes
+ * to core unchecked (core loads anything not finite as 0, and its corpus pins
+ * `gold: null`); `inventory` is an array when present; its entries go to core,
+ * which skips one with no id.
+ */
+function inventorySliceOf(method, value, name) {
+	const player = optObject(method, value, name);
+	if (player === undefined) return { gold: 0, inventory: [] };
+	optArrayValue(method, player.inventory, `${name}.inventory`);
+	return player;
+}
+
+/**
+ * The inventory panel's view after a call: exactly the state core's P6 corpus
+ * records after every step (`props-corpus.ts`, `inventorySnapshot`): the filter,
+ * `{ total, shown }`, the gold, `rows()` with each item row's live `item` left
+ * out (`inventory.apply`'s `get` returns the stored item), the equipped item's id
+ * in each slot (or null), and `toSaveState()` — what a save writes.
+ */
+function inventoryView(model) {
+	const equipment = model.equipment();
+	return plain({
+		filter: model.currentFilter(),
+		counts: model.counts(),
+		gold: model.getGold(),
+		rows: model.rows().map((row) => {
+			if (row.kind !== 'item') return row;
+			const { item: _item, ...rest } = row;
+			return rest;
+		}),
+		equipment: Object.fromEntries(
+			Object.entries(equipment).map(([slot, item]) => [slot, item ? (item.id ?? item.itemId) : null]),
+		),
+		save: model.toSaveState(),
+	});
+}
+
+/**
+ * The `inventory.apply` ops: core's corpus steps (`conformance/ui/inventory-cases.json`)
+ * by their names, plus what a game needs beside them (`get`, `items`, `load`,
+ * `clear`). Each result is core's: a boolean for `add`, `remove`, `remove_gold`
+ * and `equip_flag`, null for the others; `get` answers the stored item or null,
+ * `items` every stored item as `{ id, name, item }`.
+ */
+function inventoryOps(m) {
+	// JSON has no NaN: an `amount` of null is a non-finite amount, which core
+	// ignores (set/add) or refuses (remove), as the corpus writes it.
+	const amount = (op) => (op.amount === null ? Number.NaN : needNumber(m, op.amount, 'amount'));
+	return {
+		add: ({ model }, op) => model.addItem(needObject(m, op.item, 'item')),
+		remove: ({ model }, op) => {
+			const id = needString(m, op.item, 'item');
+			return op.quantity === undefined || op.quantity === null
+				? model.removeItem(id)
+				: model.removeItem(id, needNumber(m, op.quantity, 'quantity'));
+		},
+		filter: ({ model }, op) => {
+			model.setFilter(needString(m, op.filter, 'filter'));
+		},
+		toggle: ({ model }, op) => {
+			model.toggleGroup(needString(m, op.group, 'group'));
+		},
+		set_gold: ({ model }, op) => {
+			model.setGold(amount(op));
+		},
+		add_gold: ({ model }, op) => {
+			model.addGold(amount(op));
+		},
+		remove_gold: ({ model }, op) => model.removeGold(amount(op)),
+		// What a host's equip handler does to the row's item (Babylon's
+		// handleEquipItem, core's corpus step `equip_flag`): writes `equipped` on the
+		// STORED object; false when nothing is held under that id.
+		equip_flag: ({ model }, op) => {
+			const id = needString(m, op.item, 'item');
+			if (typeof op.equipped !== 'boolean') throw refuse(m, '`equipped` must be a boolean');
+			const item = model.getItem(id);
+			if (item) item.equipped = op.equipped;
+			return !!item;
+		},
+		get: ({ model }, op) => plain(model.getItem(needString(m, op.item, 'item')) ?? null),
+		// Every stored item in insertion order, with core's id and display name for
+		// it (`inventoryEntryId`, `inventoryItemName`): what a host lists when it
+		// needs the whole pack, which `rows` (filtered, folded) is not.
+		items: ({ model }) =>
+			plain(model.allItems().map((item) => ({ id: inventoryEntryId(item), name: inventoryItemName(item), item }))),
+		load: ({ model }, op) => {
+			model.loadFromSaveState(inventorySliceOf(m, op.player, 'player'));
+		},
+		clear: ({ model }) => {
+			model.clearAll();
+		},
+	};
+}
+
+/** A `NoticeBoardInput`, its fields checked for the JSON types core declares. */
+function noticeBoardInputOf(method, args) {
+	const input = { notices: optArrayValue(method, args.notices, 'notices') ?? [] };
+	if (args.fluency !== undefined && args.fluency !== null) input.fluency = needNumber(method, args.fluency, 'fluency');
+	for (const key of ['read', 'answered']) {
+		const list = optArrayValue(method, args[key], key);
+		if (list !== undefined) input[key] = list.map((id, i) => needString(method, id, `${key}[${i}]`));
+	}
+	const status = optObject(method, args.questStatus, 'questStatus');
+	if (status !== undefined) {
+		for (const [quest, value] of Object.entries(status)) needString(method, value, `questStatus.${quest}`);
+		input.questStatus = status;
+	}
+	return input;
 }
 
 // ── system packs ──────────────────────────────────────────────────────────────
@@ -776,14 +1071,17 @@ const METHODS = {
 	 * `remove`), and the host answers it with `finished` (a finished write: raise
 	 * core's `game_saved`).
 	 * ops (core's steps, `conformance/saves/slots.json`'s `run` steps): `save { slot }`
-	 * · `load { slot }` · `continue` · `delete { slot }` · `key { code }` (a
-	 * KeyboardEvent.code; F5 quick-saves, F9 quick-loads) · `tick { delta }`
-	 * (seconds; null is a non-finite tick) · `finished { ok, savedAt?, summary?,
-	 * outcome? }`. Each result is `{ ok, refusal?, outcome?, effect }`; a refusal
-	 * (`busy`, `no_such_slot`, `slot_empty`, `slot_corrupted`, `no_quick_slot`,
-	 * `nothing_to_continue`, `nothing_pending`, `unbound_key`) is a VALUE.
+	 * · `load { slot }` · `continue` · `delete { slot }` · `ask_delete { slot }`
+	 * (the list's Delete: opens the prompt) · `confirm_delete` · `cancel_delete`
+	 * (the prompt's two actions) · `key { code }` (a KeyboardEvent.code; F5
+	 * quick-saves, F9 quick-loads) · `tick { delta }` (seconds; null is a
+	 * non-finite tick) · `finished { ok, savedAt?, summary?, outcome? }`. Each
+	 * result is `{ ok, refusal?, outcome?, effect, history? }`; a refusal (`busy`,
+	 * `no_such_slot`, `slot_empty`, `slot_corrupted`, `no_quick_slot`,
+	 * `nothing_to_continue`, `nothing_pending`, `unbound_key`, `confirm_open`,
+	 * `nothing_to_confirm`, `quick_slot_reserved`) is a VALUE.
 	 * view: core's `SaveSlotsView` — `{ rows, continueSlot, activeSlot, pending,
-	 * autosave: { on, target, inSec }, indicator }`.
+	 * confirm, autosave: { on, target, inSec }, indicator }`.
 	 */
 	'saves.slots.apply': async (args) => {
 		const m = 'saves.slots.apply';
@@ -848,6 +1146,293 @@ const METHODS = {
 				model.sell(needString(m, op.merchantId, 'merchantId'), needString(m, op.itemId, 'itemId'), needNumber(m, op.qty, 'qty')),
 		});
 		return { results, state };
+	},
+
+	// ── props, interiors and the inventory panel (P6; PL.native-props-rows, U89(2)) ──
+	//
+	// Core's P6 logic, row for row; each answers in the shape core's P6 corpora
+	// (`conformance/props/{containers,documents,doors,notice-board}.json`,
+	// `conformance/ui/inventory-cases.json`) pin, so `tests/props_corpus.cpp` holds
+	// every row to them. A domain refusal those corpora pin is a VALUE; what a row
+	// refuses itself (a field of the wrong JSON type, which core's types declare
+	// and JSON cannot hold) is an error `[invalid-input]`.
+
+	/**
+	 * `props.contract {}` → `{ <area>: { <table>: value } }` — the tables each P6
+	 * corpus file's `contract` states as data (states, refusals, actions, the
+	 * capacity, page size, quiz XP, the door's prompt radius and stand-off, the
+	 * inventory's filters, colours, slot labels and empty messages), from core's
+	 * exported constants, keyed by the file's `area`. A binding reads its words
+	 * and numbers here instead of restating them.
+	 */
+	'props.contract': () => propsContract(),
+
+	/**
+	 * `props.containers.view { container, context? }` → `{ view }` — core's
+	 * `containerView`: `{ id, state (open | locked | unreachable), refusal,
+	 * canUnlock, capacity, slotsUsed, slotsFree, full, respawnDue }`. `container` is
+	 * a `ContainerRecord` (a runtime container, plus `buildingId`/`location` from
+	 * the World IR); `context` is `{ playerItemIds?, buildings?: [{ id, interior }],
+	 * now? }`.
+	 */
+	'props.containers.view': (args) => {
+		const m = 'props.containers.view';
+		const [container, ctx] = coded('invalid-input', () => [containerOf(m, args.container), containerContextOf(m, args.context)]);
+		return { view: plain(containerView(container, ctx)) };
+	},
+
+	/**
+	 * `props.containers.unlock { container, context? }` → `{ result, container }` —
+	 * core's `unlockContainer`: `result` is `unlocked` (and `container` comes back
+	 * with `locked: false`), `not_locked`, `no_key_item`, `key_missing`, or an
+	 * unreachable container's refusal; the host stores the record it gets back.
+	 */
+	'props.containers.unlock': (args) => {
+		const m = 'props.containers.unlock';
+		const [container, ctx] = coded('invalid-input', () => [containerOf(m, args.container), containerContextOf(m, args.context)]);
+		return plain(unlockContainer(container, ctx));
+	},
+
+	/**
+	 * `props.containers.move { container, move: { kind: 'take' } | { kind: 'put',
+	 * itemId }, context? }` → `{ refusal }` — core's `containerMoveRefusal`: null when
+	 * `ui.trade` may run the move, else the first of `unknown_building`,
+	 * `no_interior`, `locked`, `full` (a put that stacks onto a held id is allowed
+	 * when full).
+	 */
+	'props.containers.move': (args) => {
+		const m = 'props.containers.move';
+		const [container, move, ctx] = coded('invalid-input', () => {
+			const mv = needObject(m, args.move, 'move');
+			oneOf(m, mv.kind, ['take', 'put'], 'move.kind');
+			if (mv.kind === 'put') needString(m, mv.itemId, 'move.itemId');
+			return [containerOf(m, args.container), mv, containerContextOf(m, args.context)];
+		});
+		return { refusal: containerMoveRefusal(container, move, ctx) };
+	},
+
+	/**
+	 * `props.containers.at { containers, location: { businessId?, residenceId?,
+	 * lotId? } }` → `{ ids }` — core's `containersAtLocation`, in input order.
+	 */
+	'props.containers.at': (args) => {
+		const m = 'props.containers.at';
+		const [containers, location] = coded('invalid-input', () => [
+			needArray(m, args.containers, 'containers').map((c, i) => containerOf(m, c, `containers[${i}]`)),
+			optObject(m, args.location, 'location') ?? {},
+		]);
+		return { ids: containersAtLocation(containers, location) };
+	},
+
+	/**
+	 * `props.containers.respawn { container, now }` → `{ due }` — core's
+	 * `containerRespawnDue` (`now` an ISO date-time or epoch milliseconds).
+	 */
+	'props.containers.respawn': (args) => {
+		const m = 'props.containers.respawn';
+		const [container, now] = coded('invalid-input', () => [containerOf(m, args.container), nowOf(m, args.now, 'now')]);
+		return { due: containerRespawnDue(container, now) };
+	},
+
+	/**
+	 * `props.documents.document { document, options?: { charsPerPage? } }` → core's
+	 * `documentOf`: `{ ok: true, document }` (one `ReadableDocument` from a TextIR,
+	 * a NoticeArticle, a book or a sign) or the refusal VALUE `{ ok: false, refusal:
+	 * { code, field } }` (`missing_field`, `unknown_kind`, `bad_pages`,
+	 * `bad_chars_per_page`). `document` goes to core unchecked: core types it
+	 * `unknown` and refuses what it cannot read.
+	 */
+	'props.documents.document': (args) => {
+		const m = 'props.documents.document';
+		const options = coded('invalid-input', () => optObject(m, args.options, 'options') ?? {});
+		return plain(documentOf(args.document, options));
+	},
+
+	/**
+	 * `props.documents.paginate { text, charsPerPage? }` → `{ pages }` — core's
+	 * `paginateText` (UTF-16 code units, word-boundary breaks, empty pages dropped;
+	 * an absent `charsPerPage` is core's 800).
+	 */
+	'props.documents.paginate': (args) => {
+		const m = 'props.documents.paginate';
+		const [text, per] = coded('invalid-input', () => [needString(m, args.text, 'text'), optNumber(m, args.charsPerPage, 'charsPerPage')]);
+		return { pages: per === undefined ? paginateText(text) : paginateText(text, per) };
+	},
+
+	/**
+	 * `props.reader.create { document, options?, open?: { alreadyRead?,
+	 * alreadyAnswered? } }` → `{ ok: true, session, document, view }` — the reader
+	 * panel's `DocumentReader` over `documentOf(document, options)` (`document` is
+	 * core's `ReadableDocument`, the pages a panel draws) — or, when `documentOf`
+	 * refuses, its refusal VALUE `{ ok: false, refusal }` and no session.
+	 * view: core's `DocumentReaderView` — `{ phase, page, pageCount, content,
+	 * contentTranslation, canPrev, canNext, nextLabel, question, answer }`.
+	 */
+	'props.reader.create': (args) => {
+		const m = 'props.reader.create';
+		const [options, open] = coded('invalid-input', () => {
+			const o = optObject(m, args.open, 'open') ?? {};
+			optBoolean(m, o.alreadyRead, 'open.alreadyRead');
+			optBoolean(m, o.alreadyAnswered, 'open.alreadyAnswered');
+			return [optObject(m, args.options, 'options') ?? {}, o];
+		});
+		const r = documentOf(args.document, options);
+		if (!r.ok) return plain(r);
+		const model = new DocumentReader(r.document, open);
+		return { ok: true, session: openSession('props.reader', { model }), document: plain(r.document), view: plain(model.view()) };
+	},
+
+	/**
+	 * `props.reader.apply { session, ops }` → `{ results, view }`. ops are core's
+	 * reader actions — `next` (Done on the last page), `prev`, `answer { index }`,
+	 * `close` — and EVERY op goes to core's `step`: an action core does not know is
+	 * its refusal VALUE `unknown_action`, never the row's error. Each result is
+	 * `{ ok: true, events }` (`document_read`, `document_collected`, `reading_xp`,
+	 * `vocabulary_added`, `clue_discovered`, `question_answered`, `document_closed`:
+	 * the host raises them) or `{ ok: false, refusal: { code, field } }`.
+	 */
+	'props.reader.apply': async (args) => {
+		const m = 'props.reader.apply';
+		const s = session(m, args, 'props.reader');
+		const results = await applySteps(m, s, args, ({ model }, op) => plain(model.step(op)));
+		return { results, view: plain(s.model.view()) };
+	},
+
+	/**
+	 * `props.doors.door { building }` → `{ door }` — core's `doorView`: `{ id, state
+	 * (closed | locked | no_interior), doorAt, outside: { position, yaw }, label,
+	 * interiorFunction }`. `building` is core's `DoorBuildingInput` (a BuildingIR's
+	 * fields plus the host's name, lock, the layout's measured `door` and `doorYaw`).
+	 */
+	'props.doors.door': (args) => {
+		const m = 'props.doors.door';
+		const building = coded('invalid-input', () => needObject(m, args.building, 'building'));
+		return { door: plain(doorView(building)) };
+	},
+
+	/**
+	 * `props.doors.prompt { buildings, player: { position, inside? } }` → `{ prompt }`
+	 * — core's `doorPrompt`: `{ building, action (enter | exit), label, state,
+	 * distance }`, or null when nothing prompts.
+	 */
+	'props.doors.prompt': (args) => {
+		const m = 'props.doors.prompt';
+		const [buildings, player] = coded('invalid-input', () => {
+			const p = needObject(m, args.player, 'player');
+			const inside = insideOf(m, p.inside);
+			if (!inside) needObject(m, p.position, 'player.position');
+			return [doorBuildingsOf(m, args.buildings), p];
+		});
+		return { prompt: plain(doorPrompt(buildings, player)) };
+	},
+
+	/**
+	 * `props.doors.step { buildings, inside?, playerItemIds?, action: { op: 'enter',
+	 * building } | { op: 'exit' } }` → core's `doorStep`: `{ ok: true, handoff,
+	 * inside }` (`enter_interior { building, interior, interiorFunction, arrive,
+	 * entrance, unlocked }` or `exit_to_exterior { building, arrive, yaw }`; `inside`
+	 * is where the player is after — the host keeps it) or the refusal VALUE `{ ok:
+	 * false, refusal: { code, field } }`. `action` goes to core as it is, so an
+	 * action core does not know is its `unknown_action`.
+	 */
+	'props.doors.step': (args) => {
+		const m = 'props.doors.step';
+		const [buildings, state, action] = coded('invalid-input', () => [
+			doorBuildingsOf(m, args.buildings),
+			{
+				inside: insideOf(m, args.inside),
+				playerItemIds: (optArrayValue(m, args.playerItemIds, 'playerItemIds') ?? []).map((id, i) =>
+					needString(m, id, `playerItemIds[${i}]`),
+				),
+			},
+			needObject(m, args.action, 'action'),
+		]);
+		return plain(doorStep(buildings, state, action));
+	},
+
+	/**
+	 * `props.board.create { notices, fluency?, read?, answered?, questStatus? }` →
+	 * `{ session, view }` — core's `NoticeBoard` for one settlement's board:
+	 * `notices` are NoticeArticles (`props.notices.generate`'s, or the world's),
+	 * `fluency` 0–100, `read`/`answered` the notice ids done before, `questStatus`
+	 * quest id → its lifecycle status. view: core's `NoticeBoardView` — `{ rows,
+	 * shown, hidden, unread, selected }`.
+	 */
+	'props.board.create': (args) => {
+		const m = 'props.board.create';
+		const input = coded('invalid-input', () => noticeBoardInputOf(m, args));
+		const model = new NoticeBoard(input);
+		return { session: openSession('props.board', { model }), view: plain(model.view()) };
+	},
+
+	/**
+	 * `props.board.apply { session, ops }` → `{ results, view }`. ops are core's
+	 * board actions — `select { id }`, `answer { id, index }`, `take_quest { id }` —
+	 * and EVERY op goes to core's `step`: an action core does not know is its
+	 * refusal VALUE `unknown_action`. Each result is `{ ok: true, events }`
+	 * (`notice_read`, `reading_xp`, `question_answered`, `quest_requested`) or `{ ok:
+	 * false, refusal: { code, field } }`.
+	 */
+	'props.board.apply': async (args) => {
+		const m = 'props.board.apply';
+		const s = session(m, args, 'props.board');
+		const results = await applySteps(m, s, args, ({ model }, op) => plain(model.step(op)));
+		return { results, view: plain(s.model.view()) };
+	},
+
+	/**
+	 * `props.notices.generate { settlementId, settlementName, npcs: [{ characterId,
+	 * name, occupation? }] }` → `{ articles }` — core's `generateSettlementNotices`:
+	 * one NoticeArticle per NPC, chosen by occupation, deterministic.
+	 */
+	'props.notices.generate': (args) => {
+		const m = 'props.notices.generate';
+		const [id, name, npcs] = coded('invalid-input', () => [
+			needString(m, args.settlementId, 'settlementId'),
+			needString(m, args.settlementName, 'settlementName'),
+			needArray(m, args.npcs, 'npcs').map((npc, i) => {
+				needObject(m, npc, `npcs[${i}]`);
+				needString(m, npc.characterId, `npcs[${i}].characterId`);
+				needString(m, npc.name, `npcs[${i}].name`);
+				if (npc.occupation !== undefined && npc.occupation !== null) needString(m, npc.occupation, `npcs[${i}].occupation`);
+				return npc;
+			}),
+		]);
+		return { articles: plain(generateSettlementNotices(id, name, npcs)) };
+	},
+
+	/**
+	 * `inventory.create { player? }` → `{ session, view }` — the inventory panel's
+	 * `InventoryViewModel` (`ui/inventory-model`, moved into core from Babylon by
+	 * P6.core) over a `currentState.player` slice `{ gold, inventory }` (absent:
+	 * an empty pack). view: `{ filter, counts: { total, shown }, gold, rows,
+	 * equipment: { weapon, armor, accessory } (the equipped item's id or null),
+	 * save: { gold, inventory } }` — the state core's inventory corpus records.
+	 * Not `ui.trade`: that row is core's `TradeModel` (moving stock between the
+	 * pack, a container and a merchant over the same slice); this is the panel.
+	 */
+	'inventory.create': (args) => {
+		const m = 'inventory.create';
+		const player = coded('invalid-input', () => inventorySliceOf(m, args.player, 'player'));
+		const model = InventoryViewModel.fromSaveState(player);
+		return { session: openSession('inventory', { model }), view: inventoryView(model) };
+	},
+
+	/**
+	 * `inventory.apply { session, ops }` → `{ results, view }`. ops (core's corpus
+	 * steps, then three a game needs): `add { item }` · `remove { item, quantity? }`
+	 * · `filter { filter }` (an unknown key is ignored) · `toggle { group }` ·
+	 * `set_gold`/`add_gold`/`remove_gold { amount }` (null is a non-finite amount) ·
+	 * `equip_flag { item, equipped }` (writes `equipped` on the stored item, as a
+	 * host's equip handler does) · `get { item }` → the stored item or null ·
+	 * `items` → every stored item, insertion order, as `{ id, name, item }` ·
+	 * `load { player }` (replace the store from a save slice) · `clear`.
+	 */
+	'inventory.apply': async (args) => {
+		const m = 'inventory.apply';
+		const s = session(m, args, 'inventory');
+		const results = await applyOps(m, s, args, inventoryOps(m));
+		return { results, view: inventoryView(s.model) };
 	},
 
 	// ── quests (P3) ─────────────────────────────────────────────────────────────

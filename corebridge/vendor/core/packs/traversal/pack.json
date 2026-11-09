@@ -1,0 +1,71 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "traversal",
+  "version": "0.1.0",
+  "name": "Traversal",
+  "summary": "Where an actor may go and what it costs over the world's authored link graph (walk, climb, swim, jump, ride, boat), fast travel that lives through the journey's world time, and bodies seated on the paving rather than the navmesh.",
+  "kind": "optional",
+  "phase": "P9e",
+  "catalog": ["traversal-planner", "traversal-ground-seating", "traversal-fast-travel"],
+  "core": {
+    "modules": ["traversal"],
+    "predicatePacks": ["traversal"],
+    "hostInterfaces": ["ITraversalProbe", "ILocomotionHost"],
+    "corpus": [
+      "conformance/traversal/affordances.json",
+      "conformance/traversal/fast-travel.json",
+      "conformance/traversal/session.json",
+      "conformance/traversal/save.json",
+      "conformance/traversal/ground-seating.json",
+      "conformance/prolog/mechanic-traversal.json"
+    ],
+    "saveExtensions": ["traversal"]
+  },
+  "requires": [{ "id": "controls" }],
+  "enhances": [{ "id": "stamina" }],
+  "parameters": [
+    { "id": "defaultCost", "type": "number", "min": 0, "maps": "TraversalTuning.defaultCost", "source": "world", "doc": "what a link with no traversal_cost/3 costs" },
+    { "id": "hoursPerCost", "type": "number", "min": 0, "maps": "FastTravelTuning.hoursPerCost", "source": "world", "doc": "world hours a fast travel passes per unit of route cost" },
+    { "id": "minimumHours", "type": "integer", "min": 0, "maps": "FastTravelTuning.minimumHours", "source": "world" },
+    { "id": "maxHours", "type": "integer", "min": 0, "maps": "FastTravelTuning.maxHours", "source": "world", "doc": "a longer journey is truncated to it and says so" },
+    { "id": "stepHours", "type": "integer", "min": 1, "maps": "FastTravelTuning.stepHours", "source": "world", "doc": "the bounded advance the clock is given at a time" },
+    { "id": "maxSteps", "type": "integer", "min": 1, "maps": "FastTravelTuning.maxSteps", "source": "world" },
+    { "id": "lookFromMm", "type": "integer", "min": 0, "maps": "GroundSeatTuning.lookFromMm", "source": "core-default" },
+    { "id": "footprintMm", "type": "integer", "min": 0, "maps": "GroundSeatTuning.footprintMm", "source": "core-default", "doc": "half the width a body stands on; 0 probes the centre alone" },
+    { "id": "settleMmPerS", "type": "integer", "min": 0, "maps": "GroundSeatTuning.settleMmPerS", "source": "core-default" },
+    { "id": "upFactor", "type": "integer", "min": 1, "maps": "GroundSeatTuning.upFactor", "source": "core-default", "doc": "upward settling is this many times faster than downward" },
+    { "id": "maxOffsetMm", "type": "integer", "min": 0, "maps": "GroundSeatTuning.maxOffsetMm", "source": "core-default", "doc": "how far from the navmesh a reading is still believed; not a step-up height" }
+  ],
+  "extensionPoints": [
+    { "id": "link-graph", "kind": "prolog-facts", "signature": "traversal_link/3, traversal_cost/3, traversal_requires/3, movement_mode/2 (WorldIR.traversal)", "doc": "the ways out of each place, what each costs and what it asks; never engine code" },
+    { "id": "closures", "kind": "prolog-facts", "signature": "traversal_blocked/2", "doc": "a landslide or a locked gate this playthrough; saved in extensions.traversal" },
+    { "id": "movement-norms", "kind": "prolog-forbid", "signature": "forbids/4 over the link's action atom or fast_travel", "doc": "a law, a closed border or a skill gate that refuses a way without traversal knowing it exists" },
+    { "id": "geometry-probe", "kind": "host-slot", "signature": "ITraversalProbe.query({actor, from, to, mode, link})", "doc": "asked once per attempt, only for links the world marked geometric" },
+    { "id": "locomotion", "kind": "host-slot", "signature": "ILocomotionHost.travel(order)", "doc": "carries a decided move out and reports the arrival; also puts a fast traveller down" },
+    { "id": "ground-probe", "kind": "binding-hook", "signature": "drawnGround(probes, fromMm, tuning) / seatTarget / standSeat (src/ground-seating/ground-seat.ts)", "doc": "the engine casts the rays at footprintPoints() and hands core every drawn surface each met; a parameter-level hook, not Prolog facts" }
+  ],
+  "events": { "emits": ["traversal_completed", "fast_travel_completed"] },
+  "styles": {
+    "tokens": ["accent", "warning"],
+    "layouts": ["travel-prompt", "fast-travel-list"],
+    "art": ["prop.signpost.*"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "TraversalPlanner and FastTravelDirector (src/game-engine/logic/) decide over location atoms and the authored link graph; the engine answers the one geometric question, carries each move out, advances its clock through a journey's steps, and seats bodies on the drawn ground with src/ground-seating/.",
+    "notes": [
+      "Author new ways across in WorldIR.traversal (links, costs, requirements); a new mode needs no code.",
+      "A climb or a swim is charged to the shared stamina meter; never keep a second traversal meter.",
+      "Fast travel advances the world clock in the plan's steps, in order, before the arrival: a schedule inside the journey runs.",
+      "Ground seating keeps no state in a save: a load seats every body at once.",
+      "Slope limit and step-up are the character controller's (U87(8)); they are not core parameters."
+    ],
+    "doNot": [
+      "Stream positions or per-frame movement into core: report the arrival only.",
+      "Offer a fast-travel destination the actor could not walk to, or jump the clock in one advance."
+    ]
+  }
+}

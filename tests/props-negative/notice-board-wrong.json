@@ -1,0 +1,106 @@
+{
+  "area": "props-notice-board",
+  "description": "The negative control for props_corpus (tests/props_corpus.cpp): cases in props/notice-board.json's shape whose expectations are DELIBERATELY WRONG. props_corpus_negative passes only when the runner reports every one as differing and the run as failed. One case, through props.notices.generate.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "hand-written; each case is core's (conformance/props/notice-board.json) with one expected value changed, named by its new name"
+  ],
+  "contract": {
+    "fluencyThresholds": {
+      "beginner": 0,
+      "intermediate": 25,
+      "advanced": 55
+    },
+    "order": "assessment notices (assessmentHook) in posted order, then every other shown notice in posted order reversed (newest first)",
+    "shown": "an assessment notice always; otherwise fluency (absent or non-finite is 0) >= the difficulty's threshold; a difficulty outside the table always",
+    "posting": "a notice with no id is not posted; a second with a posted id is ignored",
+    "hookStates": [
+      "offer",
+      "requested",
+      "taken",
+      "done",
+      "locked"
+    ],
+    "hookState": "from questStatus[questId]: active taken, completed done, unavailable locked, anything else or none offer; an offer this board has already raised quest_requested for reads requested (once per quest per board, every notice hooking that quest), until the host builds the board again with the new status",
+    "actions": [
+      "select",
+      "answer",
+      "take_quest"
+    ],
+    "refusals": [
+      "unknown_action",
+      "unknown_notice",
+      "not_shown",
+      "no_question",
+      "answered",
+      "bad_index",
+      "no_quest",
+      "quest_not_offered"
+    ],
+    "refusalOrder": [
+      "unknown_action",
+      "unknown_notice",
+      "not_shown",
+      "then the action's own: answer no_question, answered, bad_index; take_quest no_quest, quest_not_offered"
+    ],
+    "select": "selects it; the first read raises notice_read then reading_xp when readingXp > 0; a notice read before raises nothing",
+    "answer": "once per notice: question_answered {index, correct}",
+    "takeQuest": "while offer: quest_requested {quest, npc: the author's characterId or null}; the host then sends the quest lifecycle's offer {quest, npc} and accept {quest}"
+  },
+  "cases": [
+    {
+      "name": "generate: expected WRONGLY two notices for one NPC",
+      "op": "generate",
+      "input": {
+        "settlementId": "s1",
+        "settlementName": "Aldermoor",
+        "npcs": [
+          {
+            "characterId": "c1",
+            "name": "Paul",
+            "occupation": "baker"
+          }
+        ]
+      },
+      "expected": {
+        "articles": [
+          {
+            "id": "notice_s1_0",
+            "title": "Pain frais chez Paul",
+            "titleTranslation": "Fresh Bread at Paul's",
+            "noticeType": "advertisement",
+            "difficulty": "beginner",
+            "readingXp": 10,
+            "documentType": "notice",
+            "author": {
+              "characterId": "c1",
+              "name": "Paul",
+              "occupation": "baker"
+            },
+            "settlementId": "s1",
+            "vocabularyWords": 4,
+            "question": true
+          },
+          {
+            "id": "notice_s1_1",
+            "title": "Sécurité de Aldermoor",
+            "titleTranslation": "Aldermoor Security",
+            "noticeType": "official",
+            "difficulty": "intermediate",
+            "readingXp": 15,
+            "documentType": "notice",
+            "author": {
+              "characterId": "c2",
+              "name": "Anne",
+              "occupation": "guard"
+            },
+            "settlementId": "s1",
+            "vocabularyWords": 5,
+            "question": true
+          }
+        ]
+      }
+    }
+  ]
+}

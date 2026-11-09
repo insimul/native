@@ -1,0 +1,36 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "business-sim",
+  "version": "0.1.0",
+  "name": "Business lifecycle",
+  "summary": "Founding a business from a trade's capital, hiring into its posts, a day's wages, yield and upkeep through the till, arrears, and ruin past the world's grace.",
+  "kind": "optional",
+  "phase": "P9d",
+  "catalog": ["economy-business-lifecycle"],
+  "core": {
+    "modules": ["business"],
+    "predicatePacks": ["business"],
+    "corpus": [
+      "conformance/business/lifecycle.json",
+      "conformance/prolog/mechanic-business.json"
+    ]
+  },
+  "requires": [{ "id": "shops" }],
+  "parameters": [
+    { "id": "ruinGrace", "type": "integer", "min": 0, "maps": "BusinessTuning.ruinGrace", "source": "world", "doc": "days in arrears before the doors close" },
+    { "id": "defaultCapital", "type": "integer", "min": 0, "maps": "BusinessTuning.defaultCapital", "source": "world" },
+    { "id": "defaultUpkeep", "type": "integer", "min": 0, "maps": "BusinessTuning.defaultUpkeep", "source": "world" },
+    { "id": "defaultWage", "type": "integer", "min": 0, "maps": "BusinessTuning.defaultWage", "source": "world" },
+    { "id": "defaultYield", "type": "integer", "min": 0, "maps": "BusinessTuning.defaultYield", "source": "world" }
+  ],
+  "extensionPoints": [
+    { "id": "trades", "kind": "prolog-facts", "signature": "WorldIR.business {trades, posts} (trade_capital/2, trade_upkeep/2, post_wage/2)", "doc": "what a trade costs and pays" },
+    { "id": "refuse-founding", "kind": "prolog-forbid", "signature": "forbids/4 on BusinessTuning.foundAction / hireAction" }
+  ],
+  "events": { "emits": ["business_founded", "business_ruined"] },
+  "checks": [{ "id": "corpus", "kind": "corpus" }],
+  "assistant": {
+    "summary": "The lifecycle is core's BusinessDirector over src/business/business.ts. The player's own spending sinks (economy-spending-sinks) are port-later and not in this pack's logic.",
+    "notes": ["BusinessDirector.serialize() does not ride the village save yet; a game that needs it across a load keeps it itself."]
+  }
+}

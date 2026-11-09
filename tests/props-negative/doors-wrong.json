@@ -1,0 +1,112 @@
+{
+  "area": "props-doors",
+  "description": "The negative control for props_corpus (tests/props_corpus.cpp): cases in props/doors.json's shape whose expectations are DELIBERATELY WRONG. props_corpus_negative passes only when the runner reports every one as differing and the run as failed. One case, through props.doors.step as a door session.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "hand-written; each case is core's (conformance/props/doors.json) with one expected value changed, named by its new name"
+  ],
+  "contract": {
+    "states": [
+      "closed",
+      "locked",
+      "no_interior"
+    ],
+    "actions": [
+      "enter",
+      "exit"
+    ],
+    "refusals": [
+      "unknown_action",
+      "missing_field",
+      "unknown_building",
+      "already_inside",
+      "not_inside",
+      "no_interior",
+      "locked"
+    ],
+    "promptRadiusM": 2,
+    "standoffM": 0.5,
+    "doorPoint": "door (the layout's measured point) when given, else position + (sin r, cos r) * depth / 2; numbers rounded to 1e-9",
+    "facing": "the door's outward yaw f (it faces world (sin f, cos f), like rotation): doorYaw when a finite number (from building-fit: pi/2 - doorHeading, whose heading points along (cos h, sin h)); else, when door is given, the footprint face nearest it; else r. Nearest face: along = dx sin r + dz cos r, across = dx cos r - dz sin r (d = door - position); halfAlong = depth / 2, halfAcross = width / 2 (a missing or non-positive one takes the other, both missing 1); |across| / halfAcross > |along| / halfAlong picks right (across > 0, r + pi/2) or left (r - pi/2), else back (along < 0, r + pi) or front (r)",
+    "outside": "doorPoint + (sin f, cos f) * standoffM, yaw f (rounded to 1e-9): the player stands outside the door's own face, facing out through it",
+    "state": "no interior stated (null or absent) -> no_interior; else locked when the host says so; else closed",
+    "label": "name, else businessType, else spec.buildingRole, else Building (first non-empty)",
+    "prompt": "inside: exit for the building the player is in (null if unlisted); outside: the nearest door not no_interior with ground-plane distance strictly < promptRadiusM, the first listed on a tie",
+    "enter": "refusals in order: missing_field building, already_inside, unknown_building, no_interior, locked (without keyItemId held); else enter_interior {building, interior: interior:<id>, interiorFunction, arrive: the first entrance door's position (interior frame) or null when none is listed, entrance, unlocked}",
+    "exit": "not_inside, unknown_building; else exit_to_exterior {building, arrive: outside, yaw}"
+  },
+  "cases": [
+    {
+      "name": "session: expected WRONGLY to enter a locked door without its key",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "b_inn",
+            "position": {
+              "x": 10,
+              "y": 0,
+              "z": 20
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 8
+            },
+            "interior": {
+              "function": "business.tavern",
+              "doors": [
+                {
+                  "id": "d_stair",
+                  "kind": "stair",
+                  "fromRoomId": "r1",
+                  "toRoomId": "r2",
+                  "position": {
+                    "x": 4,
+                    "y": 0,
+                    "z": 5
+                  }
+                },
+                {
+                  "id": "d_front",
+                  "kind": "entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "r1",
+                  "position": {
+                    "x": 3,
+                    "y": 0,
+                    "z": 0.2
+                  }
+                }
+              ]
+            },
+            "name": "The Gilded Goose",
+            "locked": true,
+            "keyItemId": "key_inn"
+          }
+        ],
+        "steps": [
+          {
+            "op": "enter",
+            "building": "b_inn"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "refusal": {
+                "code": "locked",
+                "field": "building"
+              }
+            },
+            "inside": null
+          }
+        ]
+      }
+    }
+  ]
+}

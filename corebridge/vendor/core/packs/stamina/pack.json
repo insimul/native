@@ -1,0 +1,49 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "stamina",
+  "version": "0.1.0",
+  "name": "Stamina",
+  "summary": "One stamina meter per actor, shared by combat and traversal: actions are priced by the action table, the meter is winded or exhausted below the world's thresholds, and rest recovers it.",
+  "kind": "optional",
+  "phase": "P9c",
+  "catalog": ["survival-stamina"],
+  "core": {
+    "modules": ["stamina"],
+    "predicatePacks": ["stamina"],
+    "hostInterfaces": ["ISurvivalSystem"],
+    "corpus": [
+      "conformance/survival/stamina.json",
+      "conformance/prolog/mechanic-stamina.json"
+    ]
+  },
+  "requires": [{ "id": "vitals" }],
+  "parameters": [
+    { "id": "maxStamina", "type": "integer", "min": 1, "maps": "StaminaTuning.maxStamina", "source": "world" },
+    { "id": "recoveryRate", "type": "integer", "min": 0, "maps": "StaminaTuning.recoveryRate", "source": "world" },
+    { "id": "combatRecoveryRate", "type": "integer", "min": 0, "maps": "StaminaTuning.combatRecoveryRate", "source": "world" },
+    { "id": "encumberedRecoveryMultiplier", "type": "number", "min": 0, "max": 1, "maps": "StaminaTuning.encumberedRecoveryMultiplier", "source": "world" },
+    { "id": "windedPercent", "type": "integer", "min": 0, "max": 100, "maps": "StaminaTuning.windedPercent", "source": "world" },
+    { "id": "exhaustedPercent", "type": "integer", "min": 0, "max": 100, "maps": "StaminaTuning.exhaustedPercent", "source": "world" }
+  ],
+  "extensionPoints": [
+    { "id": "action-costs", "kind": "prolog-facts", "signature": "action/4 (EnergyCost)", "doc": "what an attack, a dodge, a sprint or a climb costs; one table for every mechanic" },
+    { "id": "regen-base", "kind": "prolog-facts", "signature": "stamina_regen_base/2", "doc": "an actor who recovers at their own rate" },
+    { "id": "survival-host", "kind": "host-slot", "signature": "ISurvivalSystem.consumeStamina / recoverStamina", "doc": "the amount core decided, for the survival actor only" }
+  ],
+  "styles": {
+    "tokens": ["success", "warning", "danger"],
+    "layouts": ["stamina-bar"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "The meter is core's StaminaPool (src/game-engine/logic/StaminaPool.ts over src/stamina/stamina.ts); combat and traversal spend it, and the host's ISurvivalSystem only carries out the amount.",
+    "notes": [
+      "Price an action in the action table (action/4's EnergyCost), not in engine code.",
+      "Thresholds and rates are parameters; the stamina bar's band comes from survivalHudView."
+    ],
+    "doNot": ["Keep a second stamina number in engine code: energy/3 and StaminaPool carry it.", "Charge consumeStamina an amount core did not decide."]
+  }
+}

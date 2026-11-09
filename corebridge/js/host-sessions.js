@@ -95,3 +95,30 @@ export async function applyOps(method, s, args, table) {
 	}
 	return results;
 }
+
+/**
+ * Run `args.ops` against session `s` through ONE function, `step(s, op)`: the
+ * rows over a core model whose own `step(action)` already answers an action it
+ * does not know as a refusal VALUE (`DocumentReader`, `NoticeBoard`: code
+ * `unknown_action`). There the row must not refuse a name core answers, so
+ * every op goes to core as it is; only `ops` not being an array is the row's
+ * error. A throwing op stops the batch as in `applyOps`.
+ */
+export async function applySteps(method, s, args, step) {
+	const ops = args.ops;
+	if (!Array.isArray(ops)) throw new Error(`insimulcore: ${method}: \`ops\` must be an array of { op, … }`);
+	const results = [];
+	for (let i = 0; i < ops.length; i++) {
+		try {
+			const result = await step(s, ops[i]);
+			results.push(result === undefined ? null : result);
+		} catch (err) {
+			const name = ops[i] && typeof ops[i] === 'object' ? ops[i].op : undefined;
+			const msg = err && err.message ? err.message : String(err);
+			const wrapped = new Error(`insimulcore: ${method}: ops[${i}] (${String(name)}) failed: ${msg}`);
+			if (err && typeof err.code === 'string') wrapped.code = err.code;
+			throw wrapped;
+		}
+	}
+	return results;
+}

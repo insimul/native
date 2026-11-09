@@ -15,12 +15,12 @@
     }
     /** @param {string} input @returns {Uint8Array} */
     encode(input = "") {
-      const str3 = String(input);
+      const str4 = String(input);
       const bytes = [];
-      for (let i = 0; i < str3.length; i++) {
-        let code = str3.charCodeAt(i);
+      for (let i = 0; i < str4.length; i++) {
+        let code = str4.charCodeAt(i);
         if (code >= 55296 && code <= 56319) {
-          const next = i + 1 < str3.length ? str3.charCodeAt(i + 1) : 0;
+          const next = i + 1 < str4.length ? str4.charCodeAt(i + 1) : 0;
           if (next >= 56320 && next <= 57343) {
             code = 65536 + (code - 55296 << 10) + (next - 56320);
             i++;
@@ -199,6 +199,24 @@
       } catch (err) {
         const msg = err && err.message ? err.message : String(err);
         const wrapped = new Error(`insimulcore: ${method}: ops[${i}] (${name}) failed: ${msg}`);
+        if (err && typeof err.code === "string") wrapped.code = err.code;
+        throw wrapped;
+      }
+    }
+    return results;
+  }
+  async function applySteps(method, s, args, step) {
+    const ops = args.ops;
+    if (!Array.isArray(ops)) throw new Error(`insimulcore: ${method}: \`ops\` must be an array of { op, \u2026 }`);
+    const results = [];
+    for (let i = 0; i < ops.length; i++) {
+      try {
+        const result = await step(s, ops[i]);
+        results.push(result === void 0 ? null : result);
+      } catch (err) {
+        const name = ops[i] && typeof ops[i] === "object" ? ops[i].op : void 0;
+        const msg = err && err.message ? err.message : String(err);
+        const wrapped = new Error(`insimulcore: ${method}: ops[${i}] (${String(name)}) failed: ${msg}`);
         if (err && typeof err.code === "string") wrapped.code = err.code;
         throw wrapped;
       }
@@ -1817,6 +1835,21 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       owner: "weather",
       describe: "The sky a playthrough reached (PL.save-weather). Shape: {director: {day, season, condition} | null, surfaceWetness: number (0..1) | null}. director is WeatherDirector.serialize() and is read back through WeatherDirector.restore(); surfaceWetness is the level a host carries through surfaceWetness() (src/atmosphere/weather-look.ts). Written by src/save-file-game-state.ts. Per-playthrough: the climate, weights and severities are authored (WorldIR.weather) and never ride here. null (the default) is a save with no weather: the director keeps its default.",
       defaultValue: null
+    },
+    survivalNeeds: {
+      owner: "survival-needs",
+      describe: "The survival needs a playthrough reached (P9c.core; catalog survival-needs). Shape: {readings: {<need id>: number}, modifiers: [{id, needType, rateMultiplier, remainingMs: number | null, source}]}, survivalSaveBlock() in src/survival/needs.ts, read back through readSurvivalBlock() and survivalFromSave(). Written by src/save-file-game-state.ts from GameSaveState.survival. Per-playthrough: decay rates, thresholds and presets are authored (WorldIR.survival) and never ride here; stamina rides in PlayerState.energy. Nor do the environment temperature (the weather sets it again; a load starts at 50), the enabled flag (a load starts enabled) or the owed fraction of a damage point (a load forgives it). null (the default) is a save with no needs: a load starts each need at its start value.",
+      defaultValue: null
+    },
+    gathering: {
+      owner: "gathering",
+      describe: "What a playthrough gathered and produced (P9d.core; catalog gathering-resource-nodes, gathering-physical-actions, gathering-farming, gathering-fishing, gathering-mining, crafting-recipes). Shape: {nodes: [{id, remaining, respawnInMs: number | null}], actions: {<actor>: {<action>: completed count}}, production: ProductionDirector.serialize() | null}, gatheringSaveBlock() in src/gathering/gathering-save.ts, read back through readGatheringBlock(), resourcesFromSave(), physicalActionsFromSave() and ProductionDirector.restore(). Written by src/save-file-game-state.ts from GameSaveState.gathering. Only a node that is not full is kept. Not kept: a gather or action under way (a load starts idle, nothing taken or charged), and anything authored (node sizes and times, the action table, recipes, crops, waters, seams; WorldIR.resources and WorldIR.production). null (the default) is a save with no gathering: every node starts full and every plot empty.",
+      defaultValue: null
+    },
+    traversal: {
+      owner: "traversal",
+      describe: "Where a playthrough has been and how it travels (P9e.core; catalog traversal-planner, traversal-vehicles, traversal-fast-travel). Shape: {planner: TraversalPlanner.serialize() | null ({actors: [{id, location, modes}], blocked: [{from, to}]}), vehicles: VehicleRegistry.serialize() | null ({vehicles: [{id, location, occupants, owner?, driver?}]}), fastTravel: FastTravelDirector.serialize() | null ({discovered, journeys}), riding: {<actor>: <personal vehicle kind>}}, traversalSaveBlock() in src/traversal/traversal-save.ts, read back through readTraversalBlock(), TraversalPlanner.restore(), VehicleRegistry.restore(), FastTravelDirector.restore() and personalVehiclesFromSave(). Written by src/save-file-game-state.ts from GameSaveState.traversal. Not kept: anything authored (the link graph, costs, requirements, the vehicles' modes and seats, fast travel's hours, the personal vehicle kinds; WorldIR.traversal and the pack parameters) and ground seating (a load re-seats every body at once). null (the default) is a save with no traversal: everyone where the world places them, nothing found, everyone on foot.",
+      defaultValue: null
     }
   };
   function defaultOrphanLogger(key, _value) {
@@ -2170,13 +2203,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     missing_save_file: "Save data is missing or unreadable.",
     integrity_mismatch: "Save file integrity check failed \u2014 file may be corrupted or tampered."
   };
-  function summaryTitle(index, s) {
-    if (!s) return `Slot ${index + 1}`;
+  function slotSummaryLine(s) {
+    if (!s) return "";
     const bits = [];
     if (s.playerName) bits.push(s.playerName);
     if (s.level !== void 0) bits.push(`Lv ${s.level}`);
     if (s.locationName) bits.push(s.locationName);
-    return bits.length ? bits.join(" \xB7 ") : `Slot ${index + 1}`;
+    return bits.join(" \xB7 ");
+  }
+  function summaryTitle(index, s) {
+    return slotSummaryLine(s) || `Slot ${index + 1}`;
   }
   function view(result) {
     const { index, outcome, summary } = result;
@@ -2574,18 +2610,26 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       objectiveType: "read_document",
       eventType: "text_read",
       matchFields: [
-        { eventField: "textId", objectiveField: "textId", comparison: "exact", optional: true },
+        // PL.read-clue-events: the text is the objective's textId, else its target (the hydrator
+        // writes read_text(X) as target X); `any` (the converter's read_text(any)) takes every text.
+        { eventField: "textId", objectiveField: "textId", fallbackObjectiveField: "target", anyValue: "any", comparison: "exact", optional: true },
         { eventField: "textTitle", objectiveField: "textTitle", comparison: "contains_lower", optional: true }
       ],
+      // Distinct texts toward requiredCount (default 1); QuestCompletionEngine.trackTextRead counts them.
+      quantity: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: 1 },
       description: "Player reads a document/text in the world"
     },
     {
       objectiveType: "read_text",
       eventType: "text_read",
       matchFields: [
-        { eventField: "textId", objectiveField: "textId", comparison: "exact", optional: true },
+        // PL.read-clue-events: the text is the objective's textId, else its target (the hydrator
+        // writes read_text(X) as target X); `any` (the converter's read_text(any)) takes every text.
+        { eventField: "textId", objectiveField: "textId", fallbackObjectiveField: "target", anyValue: "any", comparison: "exact", optional: true },
         { eventField: "textTitle", objectiveField: "textTitle", comparison: "contains_lower", optional: true }
       ],
+      // Distinct texts toward requiredCount (default 1); QuestCompletionEngine.trackTextRead counts them.
+      quantity: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: 1 },
       description: "Player reads a text (alias for read_document)"
     },
     {
@@ -2706,10 +2750,14 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function getMappingsForEvent(eventType) {
     return eventTypeIndex.get(eventType) || [];
   }
+  function getMappingForObjective(objectiveType) {
+    return objectiveTypeIndex.get(objectiveType);
+  }
   function matchesField(rule2, eventValue, objectiveValue) {
     if ((objectiveValue === void 0 || objectiveValue === null || objectiveValue === "") && rule2.optional) {
       return true;
     }
+    if (rule2.anyValue !== void 0 && objectiveValue === rule2.anyValue) return true;
     if (eventValue === void 0 || eventValue === null) return false;
     if (objectiveValue === void 0 || objectiveValue === null) return false;
     const comparison = rule2.comparison || "exact";
@@ -3560,6 +3608,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
 
   // @insimul/core/src/game-engine/logic/QuestCompletionEngine.ts
+  var QUEST_EVENT_TYPE_HANDLED = {
+    text_read: ["read_text", "read_document"],
+    clue_discovered: ["collect_clue"]
+  };
   var _QuestCompletionEngine = class _QuestCompletionEngine {
     constructor() {
       __publicField(this, "quests", []);
@@ -3734,21 +3786,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           this.trackTextFound(event.textId, event.textName, event.questId);
           break;
         case "text_read":
-          this.trackTextRead(event.textId, event.questId);
+          this.trackTextRead(event.textId, event.questId, event.textTitle);
           break;
         case "comprehension_answer":
           this.trackComprehensionAnswer(event.isCorrect, event.questId);
           break;
         case "clue_discovered":
-          this.trackByTrigger("clue_discovered", event.questId);
-          this.forEachObjective(event.questId, "collect_clue", (quest, obj3) => {
-            obj3.currentCount = (obj3.currentCount || 0) + 1;
-            if (obj3.currentCount >= (obj3.requiredCount || 1)) {
-              this.completeObjective(quest.id, obj3.id);
-            } else {
-              this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, obj3.requiredCount || 1, obj3.type);
-            }
-          });
+          this.trackClueFound(event.clueId, event.clueCategory, event.clueSource, event.questId);
           break;
         case "photo_taken":
           this.trackPhotoTaken(event.subjectName, event.subjectCategory, event.subjectActivity, event.questId);
@@ -3827,7 +3871,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           this.trackFriendshipBuilt(event.npcId, event.relationshipStrength, event.questId);
           break;
       }
-      this.handleGameEvent(event);
+      this.handleGameEvent(event, QUEST_EVENT_TYPE_HANDLED[event.type]);
     }
     /**
      * Evaluate several dispatched events as ONE host event (P3.core). Every objective that is locked
@@ -4511,15 +4555,51 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         }
       });
     }
-    trackTextRead(textId, questId) {
+    /**
+     * A text was read (PL.read-clue-events). It matches a `read_text`/`read_document` objective by the
+     * quest-action mapping's rules: the objective's `textId`, else its `target`, equal to the text id,
+     * where `any` (the converter's `read_text(any)`) or no text at all takes every text; and its
+     * `textTitle`, when it names one, against the title. Each objective counts a text once
+     * (`textsRead`), toward `requiredCount` (default 1).
+     */
+    trackTextRead(textId, questId, textTitle) {
+      const event = { textId, textTitle };
       this.forEachObjective(questId, ["read_text", "read_document"], (quest, obj3) => {
-        if (obj3.textId && obj3.textId !== textId) return;
+        const mapping = getMappingForObjective(obj3.type);
+        if (mapping && !matchesAllFields(mapping, event, obj3)) return;
         obj3.textsRead = obj3.textsRead || [];
         if (obj3.textsRead.includes(textId)) return;
         obj3.textsRead.push(textId);
         obj3.currentCount = (obj3.currentCount || 0) + 1;
         if (obj3.currentCount >= (obj3.requiredCount || 1)) {
           this.completeObjective(quest.id, obj3.id);
+        } else {
+          this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, obj3.requiredCount || 1, obj3.type);
+        }
+      });
+    }
+    /**
+     * A clue was found (PL.read-clue-events). A `completionTrigger: clue_discovered` objective
+     * completes; a `collect_clue` objective matching the mapping's `clueCategory`/`clueSource` rules
+     * counts one toward `requiredCount` (default 1). With a `clueId`, each objective counts a clue
+     * once (`cluesFound`); without one (an older host), every report counts.
+     */
+    trackClueFound(clueId, clueCategory, clueSource, questId) {
+      this.trackByTrigger("clue_discovered", questId);
+      const event = { clueCategory, clueSource };
+      this.forEachObjective(questId, "collect_clue", (quest, obj3) => {
+        const mapping = getMappingForObjective(obj3.type);
+        if (mapping && !matchesAllFields(mapping, event, obj3)) return;
+        if (clueId !== void 0) {
+          obj3.cluesFound = obj3.cluesFound || [];
+          if (obj3.cluesFound.includes(clueId)) return;
+          obj3.cluesFound.push(clueId);
+        }
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
+          this.completeObjective(quest.id, obj3.id);
+        } else {
+          this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, obj3.requiredCount || 1, obj3.type);
         }
       });
     }
@@ -4778,14 +4858,18 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * - Compound objectives (all match fields must pass simultaneously)
      *
      * Returns the number of objectives that were completed or progressed.
+     *
+     * `skipObjectiveTypes`: objective types a type handler already decided for this event
+     * (`trackEvent` passes `QUEST_EVENT_TYPE_HANDLED[event.type]`); they are not matched again.
      */
-    handleGameEvent(event) {
+    handleGameEvent(event, skipObjectiveTypes) {
       const eventType = event.type;
       if (!eventType) return 0;
       const mappings = getMappingsForEvent(eventType);
       if (mappings.length === 0) return 0;
       let affected = 0;
       for (const mapping of mappings) {
+        if (skipObjectiveTypes?.includes(mapping.objectiveType)) continue;
         this.forEachObjective(void 0, mapping.objectiveType, (quest, obj3) => {
           if (!matchesAllFields(mapping, event, obj3)) {
             return;
@@ -6749,8 +6833,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       cameraMode: "third_person",
       movementPlane: "free",
       controlScheme: "wasd_mouse",
-      combatStyle: "none",
-      // U87(6): adventure activates no combat module (its bundle never had one)
+      combatStyle: "melee",
+      // U88(9) reversed U87(6)'s 'none': the shipped Living world recipe says melee ("Close combat")
       movementStyle: "free",
       uiLayout: "action_rpg",
       defaultWorldType: "tropical-pirate",
@@ -22348,6 +22432,28 @@ player_meets_cefr(Player, RequiredLevel) :-
 
   // @insimul/core/src/ui/save-indicator-model.ts
   var SAVE_INDICATOR_IN_PROGRESS = ["saving", "loading"];
+  var SLOT_NUMBER_PLACEHOLDER = "{n}";
+  var SAVE_SLOT_DELETE_WORDS = Object.freeze({
+    confirmPrompt: "Delete the save in Slot {n}? This cannot be undone.",
+    confirmAction: "Delete",
+    cancelAction: "Cancel",
+    deleted: "Slot {n} deleted.",
+    deletedAutosaveOff: "Slot {n} deleted. Autosave is off until you save or load again.",
+    cancelled: "Slot {n} was not deleted.",
+    failed: "Slot {n} could not be deleted. Nothing was changed.",
+    empty: "Slot {n} is empty: there is nothing to delete.",
+    history: "Deleted Slot {n}"
+  });
+  function slotWords(words, slot) {
+    return words.split(SLOT_NUMBER_PLACEHOLDER).join(String(slot + 1));
+  }
+  var SAVE_INDICATOR_SLOT_STATES = [
+    "deleted",
+    "deleted_autosave_off",
+    "delete_cancelled",
+    "delete_failed",
+    "nothing_to_delete"
+  ];
   var SAVE_INDICATOR_LABELS = {
     hidden: "",
     saving: "Saving\u2026",
@@ -22356,13 +22462,20 @@ player_meets_cefr(Player, RequiredLevel) :-
     loading: "Loading\u2026",
     loaded: "Loaded!",
     load_failed: "Load failed",
-    nothing_to_load: "No quick save"
+    nothing_to_load: "No quick save",
+    deleted: SAVE_SLOT_DELETE_WORDS.deleted,
+    deleted_autosave_off: SAVE_SLOT_DELETE_WORDS.deletedAutosaveOff,
+    delete_cancelled: SAVE_SLOT_DELETE_WORDS.cancelled,
+    delete_failed: SAVE_SLOT_DELETE_WORDS.failed,
+    nothing_to_delete: SAVE_SLOT_DELETE_WORDS.empty
   };
   var SAVE_INDICATOR_TIMING = { holdSec: 1, fadeSec: 2 };
-  var HIDDEN_SAVE_INDICATOR = { state: "hidden", kind: null, detail: "", ageSec: 0 };
-  function showSaveIndicator(state, kind, detail = "") {
+  var HIDDEN_SAVE_INDICATOR = { state: "hidden", kind: null, detail: "", slot: null, ageSec: 0 };
+  function showSaveIndicator(state, kind, detail = "", slot = null) {
     if (state === "hidden") return HIDDEN_SAVE_INDICATOR;
-    return { state, kind, detail, ageSec: 0 };
+    if (!SAVE_INDICATOR_SLOT_STATES.includes(state)) return { state, kind, detail, slot: null, ageSec: 0 };
+    if (!(typeof slot === "number" && Number.isInteger(slot) && slot >= 0)) return HIDDEN_SAVE_INDICATOR;
+    return { state, kind, detail, slot, ageSec: 0 };
   }
   var lifetime = () => SAVE_INDICATOR_TIMING.holdSec + SAVE_INDICATOR_TIMING.fadeSec;
   function advanceSaveIndicator(ind, dtSec) {
@@ -22383,7 +22496,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     return {
       visible: true,
       state: ind.state,
-      label: SAVE_INDICATOR_LABELS[ind.state],
+      label: ind.slot === null ? SAVE_INDICATOR_LABELS[ind.state] : slotWords(SAVE_INDICATOR_LABELS[ind.state], ind.slot),
       detail: ind.detail,
       kind: ind.kind,
       opacity
@@ -22391,24 +22504,43 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
 
   // @insimul/core/src/save-slots.ts
+  var QUICK_SLOT_DEDICATED = "dedicated";
   var SAVE_SLOTS_DEFAULTS = {
     slotCount: 3,
-    quickSlot: 0,
+    quickSlot: QUICK_SLOT_DEDICATED,
     autosaveIntervalSec: 300,
     autosaveIndicator: true
   };
+  var SAVES_PACK_PARAMETERS = Object.freeze({
+    maxSlots: "slotCount",
+    quickSlot: "quickSlot",
+    autosaveIntervalSec: "autosaveIntervalSec",
+    autosaveIndicator: "autosaveIndicator"
+  });
+  var QUICK_SLOT_WORDS = Object.freeze({ title: "Quick save", separator: " \xB7 " });
   var SAVE_SLOT_KEYS = { quickSave: KEY_QUICK_SAVE, quickLoad: KEY_QUICK_LOAD };
+  function hasDedicatedQuickSlot(config) {
+    return config.quickSlot !== null && config.quickSlot === config.slotCount;
+  }
+  function slotTableSize(config) {
+    return config.slotCount + (hasDedicatedQuickSlot(config) ? 1 : 0);
+  }
   var isIndex = (v, count) => typeof v === "number" && Number.isInteger(v) && v >= 0 && v < count;
   function resolveSaveSlotsConfig(config) {
     const c = config ?? {};
     const n = c.slotCount === void 0 ? c.maxSlots : c.slotCount;
     const slotCount = typeof n === "number" && Number.isFinite(n) && n >= 1 ? Math.floor(n) : SAVE_SLOTS_DEFAULTS.slotCount;
     const q = c.quickSlot;
-    const quickSlot = q === void 0 ? SAVE_SLOTS_DEFAULTS.quickSlot : isIndex(q, slotCount) ? q : null;
+    let quickSlot = null;
+    let refusal3;
+    if (q === void 0 || q === QUICK_SLOT_DEDICATED) quickSlot = slotCount;
+    else if (q === null) quickSlot = null;
+    else if (isIndex(q, slotCount)) quickSlot = q;
+    else refusal3 = typeof q === "number" && Number.isInteger(q) ? "quick_slot_out_of_range" : "quick_slot_not_an_index";
     const i = c.autosaveIntervalSec;
     const autosaveIntervalSec = typeof i === "number" && Number.isFinite(i) && i >= 0 ? i : SAVE_SLOTS_DEFAULTS.autosaveIntervalSec;
     const autosaveIndicator = typeof c.autosaveIndicator === "boolean" ? c.autosaveIndicator : SAVE_SLOTS_DEFAULTS.autosaveIndicator;
-    return { slotCount, quickSlot, autosaveIntervalSec, autosaveIndicator };
+    return { slotCount, quickSlot, autosaveIntervalSec, autosaveIndicator, ...refusal3 ? { refusal: refusal3 } : {} };
   }
   function slotTable(results, slotCount) {
     const out = [];
@@ -22430,45 +22562,73 @@ player_meets_cefr(Player, RequiredLevel) :-
     }
     return best ? best.index : null;
   }
+  function quickRowTitle(v) {
+    const preview = v.status === "ok" ? slotSummaryLine(v.summary) : v.status === "corrupted" ? v.title : "";
+    return preview ? `${QUICK_SLOT_WORDS.title}${QUICK_SLOT_WORDS.separator}${preview}` : QUICK_SLOT_WORDS.title;
+  }
   function slotRows(results, config, activeSlot, busy = false) {
-    const table = slotTable(results, config.slotCount);
+    const size = slotTableSize(config);
+    const table = slotTable(results, size);
     const model = new SaveSlotModel(table);
-    const cont = continueSlot(table, config.slotCount);
-    return model.slots().map((v) => ({
-      ...v,
-      canLoad: v.canLoad && !busy,
-      canSave: v.canSave && !busy,
-      canDelete: v.status !== "empty" && !busy,
-      isContinue: v.index === cont,
-      isActive: v.index === activeSlot,
-      isQuick: v.index === config.quickSlot
-    }));
+    const cont = continueSlot(table, size);
+    return model.slots().map((v) => {
+      const isManual = v.index < config.slotCount;
+      return {
+        ...v,
+        ...isManual ? {} : { title: quickRowTitle(v) },
+        canLoad: v.canLoad && !busy,
+        canSave: v.canSave && isManual && !busy,
+        canDelete: v.status !== "empty" && isManual && !busy,
+        isContinue: v.index === cont,
+        isActive: v.index === activeSlot,
+        isQuick: v.index === config.quickSlot,
+        isManual
+      };
+    });
+  }
+  function deleteConfirmView(slot) {
+    return {
+      slot,
+      prompt: slotWords(SAVE_SLOT_DELETE_WORDS.confirmPrompt, slot),
+      actions: [
+        { step: "confirm_delete", label: SAVE_SLOT_DELETE_WORDS.confirmAction },
+        { step: "cancel_delete", label: SAVE_SLOT_DELETE_WORDS.cancelAction }
+      ]
+    };
   }
   var OK2 = (effect = null) => ({ ok: true, effect });
   var NO = (refusal3, outcome) => ({ ok: false, refusal: refusal3, ...outcome ? { outcome } : {}, effect: null });
   var SaveSlotsSession = class {
     constructor(init = {}) {
       __publicField(this, "config");
+      /** The slot table's size: the manual slots plus the dedicated quick slot, if any. */
+      __publicField(this, "size");
       __publicField(this, "slots");
       __publicField(this, "active");
       __publicField(this, "pending", null);
+      /** The slot the open delete prompt names, or null when none is open. */
+      __publicField(this, "confirming", null);
       __publicField(this, "sinceSaveSec", 0);
       __publicField(this, "ind", HIDDEN_SAVE_INDICATOR);
       this.config = resolveSaveSlotsConfig(init.config);
-      this.slots = slotTable(init.slots, this.config.slotCount);
-      this.active = isIndex(init.activeSlot, this.config.slotCount) ? init.activeSlot : null;
+      this.size = slotTableSize(this.config);
+      this.slots = slotTable(init.slots, this.size);
+      this.active = isIndex(init.activeSlot, this.size) ? init.activeSlot : null;
     }
     // ── requests ──
-    /** Save to `slot` from the slot list. */
+    /** Save to `slot` from the slot list. The dedicated quick slot is refused `quick_slot_reserved`: only F5 writes it. */
     save(slot) {
       if (this.pending) return NO("busy");
-      if (!isIndex(slot, this.config.slotCount)) return NO("no_such_slot");
+      if (this.confirming !== null) return NO("confirm_open");
+      if (!isIndex(slot, this.size)) return NO("no_such_slot");
+      if (slot >= this.config.slotCount) return NO("quick_slot_reserved");
       return this.startWrite(slot, "manual");
     }
     /** Load `slot` from the slot list. An empty or corrupted slot is refused and shows nothing. */
     load(slot) {
       if (this.pending) return NO("busy");
-      if (!isIndex(slot, this.config.slotCount)) return NO("no_such_slot");
+      if (this.confirming !== null) return NO("confirm_open");
+      if (!isIndex(slot, this.size)) return NO("no_such_slot");
       const s = this.slots[slot];
       if (s.outcome === "empty") return NO("slot_empty");
       if (s.outcome !== "ok") return NO("slot_corrupted", s.outcome);
@@ -22477,23 +22637,55 @@ player_meets_cefr(Player, RequiredLevel) :-
     /** The main menu's Continue: load {@link continueSlot}. */
     continueGame() {
       if (this.pending) return NO("busy");
-      const slot = continueSlot(this.slots, this.config.slotCount);
+      if (this.confirming !== null) return NO("confirm_open");
+      const slot = continueSlot(this.slots, this.size);
       if (slot === null) return NO("nothing_to_continue");
       return this.startRead(slot, "manual");
     }
-    /** Delete `slot`. An empty slot is refused. */
+    /**
+     * Delete `slot` now, with no prompt (a host that asked the player itself). An empty slot is
+     * refused and shows "Slot N is empty: there is nothing to delete.".
+     */
     delete(slot) {
       if (this.pending) return NO("busy");
-      if (!isIndex(slot, this.config.slotCount)) return NO("no_such_slot");
-      if (this.slots[slot].outcome === "empty") return NO("slot_empty");
-      this.pending = { op: "delete", slot, kind: "manual" };
-      return OK2({ remove: { slot } });
+      if (this.confirming !== null) return NO("confirm_open");
+      const refused = this.refuseDelete(slot);
+      return refused ?? this.startDelete(slot);
+    }
+    /**
+     * The slot list's Delete: open the prompt for `slot` ({@link SaveSlotsView.confirm}). Refused as
+     * {@link delete} refuses, with the same words for an empty slot.
+     */
+    askDelete(slot) {
+      if (this.pending) return NO("busy");
+      if (this.confirming !== null) return NO("confirm_open");
+      const refused = this.refuseDelete(slot);
+      if (refused) return refused;
+      this.confirming = slot;
+      return OK2();
+    }
+    /** The prompt's Delete: close it and start the remove. */
+    confirmDelete() {
+      const slot = this.confirming;
+      if (slot === null) return NO("nothing_to_confirm");
+      this.confirming = null;
+      return this.startDelete(slot);
+    }
+    /** The prompt's Cancel: close it; the slot keeps its save and the indicator says so. */
+    cancelDelete() {
+      const slot = this.confirming;
+      if (slot === null) return NO("nothing_to_confirm");
+      this.confirming = null;
+      this.ind = showSaveIndicator("delete_cancelled", "manual", "", slot);
+      return OK2();
     }
     /** A key press (KeyboardEvent.code). F5 quick-saves, F9 quick-loads; any other key is `unbound_key`. */
     key(code) {
       if (code !== SAVE_SLOT_KEYS.quickSave && code !== SAVE_SLOT_KEYS.quickLoad) return NO("unbound_key");
       if (this.pending) return NO("busy");
+      if (this.confirming !== null) return NO("confirm_open");
       const q = this.config.quickSlot;
+      if (this.config.refusal) return NO(this.config.refusal);
       if (q === null) return NO("no_quick_slot");
       if (code === SAVE_SLOT_KEYS.quickSave) return this.startWrite(q, "quick");
       const s = this.slots[q];
@@ -22508,11 +22700,14 @@ player_meets_cefr(Player, RequiredLevel) :-
       return this.startRead(q, "quick");
     }
     // ── time ──
-    /** `dtSec` seconds passed. Ages the indicator, then starts an autosave if one is due. */
+    /**
+     * `dtSec` seconds passed. Ages the indicator, then starts an autosave if one is due. The count
+     * holds while an operation runs or the delete prompt is open.
+     */
     tick(dtSec) {
       if (!(Number.isFinite(dtSec) && dtSec > 0)) return OK2();
       this.ind = advanceSaveIndicator(this.ind, dtSec);
-      if (this.pending) return OK2();
+      if (this.pending || this.confirming !== null) return OK2();
       if (!this.autosaveOn()) return OK2();
       this.sinceSaveSec += dtSec;
       if (this.sinceSaveSec < this.config.autosaveIntervalSec) return OK2();
@@ -22557,20 +22752,25 @@ player_meets_cefr(Player, RequiredLevel) :-
         }
         return { ok, effect: null };
       }
-      if (ok) {
-        this.slots[p.slot] = { index: p.slot, outcome: "empty" };
-        if (this.active === p.slot) this.active = null;
+      if (!ok) {
+        this.ind = showSaveIndicator("delete_failed", p.kind, "", p.slot);
+        return { ok, effect: null };
       }
-      return { ok, effect: null };
+      const wasAutosaving = this.autosaveOn() && this.active === p.slot;
+      this.slots[p.slot] = { index: p.slot, outcome: "empty" };
+      if (this.active === p.slot) this.active = null;
+      this.ind = showSaveIndicator(wasAutosaving ? "deleted_autosave_off" : "deleted", p.kind, "", p.slot);
+      return { ok, effect: null, history: slotWords(SAVE_SLOT_DELETE_WORDS.history, p.slot) };
     }
     // ── the view ──
     view() {
       const on = this.autosaveOn();
       return {
-        rows: slotRows(this.slots, this.config, this.active, this.pending !== null),
-        continueSlot: continueSlot(this.slots, this.config.slotCount),
+        rows: slotRows(this.slots, this.config, this.active, this.pending !== null || this.confirming !== null),
+        continueSlot: continueSlot(this.slots, this.size),
         activeSlot: this.active,
         pending: this.pending ? { ...this.pending } : null,
+        confirm: this.confirming === null ? null : deleteConfirmView(this.confirming),
         autosave: {
           on,
           target: on ? this.active : null,
@@ -22583,6 +22783,22 @@ player_meets_cefr(Player, RequiredLevel) :-
     autosaveOn() {
       return this.config.autosaveIntervalSec > 0 && this.active !== null;
     }
+    /**
+     * Why `slot` cannot be deleted, or null. An empty slot also shows "Slot N is empty: …". The
+     * dedicated quick slot is refused `quick_slot_reserved` and shows nothing (the delete words name
+     * a "Slot N", and it has no number).
+     */
+    refuseDelete(slot) {
+      if (!isIndex(slot, this.size)) return NO("no_such_slot");
+      if (slot >= this.config.slotCount) return NO("quick_slot_reserved");
+      if (this.slots[slot].outcome !== "empty") return null;
+      this.ind = showSaveIndicator("nothing_to_delete", "manual", "", slot);
+      return NO("slot_empty");
+    }
+    startDelete(slot) {
+      this.pending = { op: "delete", slot, kind: "manual" };
+      return OK2({ remove: { slot } });
+    }
     startWrite(slot, kind) {
       this.pending = { op: "save", slot, kind };
       if (kind !== "auto" || this.config.autosaveIndicator) this.ind = showSaveIndicator("saving", kind);
@@ -22592,6 +22808,1161 @@ player_meets_cefr(Player, RequiredLevel) :-
       this.pending = { op: "load", slot, kind };
       this.ind = showSaveIndicator("loading", kind);
       return OK2({ read: { slot, kind } });
+    }
+  };
+
+  // @insimul/core/src/props/containers.ts
+  var DEFAULT_CONTAINER_CAPACITY = 10;
+  var CONTAINER_ACCESS_STATES = ["open", "locked", "unreachable"];
+  var CONTAINER_REFUSALS = ["unknown_building", "no_interior", "locked", "full"];
+  var CONTAINER_UNLOCK_RESULTS = ["unlocked", "not_locked", "no_key_item", "key_missing"];
+  function normaliseContainer(raw) {
+    const r = raw;
+    return {
+      ...r,
+      capacity: typeof r.capacity === "number" && Number.isFinite(r.capacity) ? r.capacity : DEFAULT_CONTAINER_CAPACITY,
+      items: Array.isArray(r.items) ? r.items : [],
+      locked: r.locked ?? false,
+      respawns: r.respawns ?? false
+    };
+  }
+  function timeOf(v) {
+    if (typeof v === "number") return Number.isFinite(v) ? v : null;
+    if (typeof v === "string" && v !== "") {
+      const t = new Date(v).getTime();
+      return Number.isFinite(t) ? t : null;
+    }
+    return null;
+  }
+  function containerRespawnDue(raw, now) {
+    const c = normaliseContainer(raw);
+    const minutes = c.respawnTimeMinutes;
+    if (!c.respawns || !c.lastOpenedAt || typeof minutes !== "number" || !(minutes > 0)) return false;
+    const opened = timeOf(c.lastOpenedAt);
+    const at = timeOf(now);
+    if (opened === null || at === null) return false;
+    return (at - opened) / 6e4 >= minutes;
+  }
+  function containerView(raw, ctx = {}) {
+    const c = normaliseContainer(raw);
+    const held = ctx.playerItemIds ?? [];
+    let refusal3 = null;
+    if (c.location === "interior") {
+      const building = (ctx.buildings ?? []).find((b) => b.id === c.buildingId);
+      if (!building) refusal3 = "unknown_building";
+      else if (!building.interior) refusal3 = "no_interior";
+    }
+    if (refusal3 === null && c.locked) refusal3 = "locked";
+    const state = refusal3 === null ? "open" : refusal3 === "locked" ? "locked" : "unreachable";
+    const slotsUsed = c.items.length;
+    return {
+      id: c.id,
+      state,
+      refusal: refusal3,
+      canUnlock: state === "locked" && typeof c.keyItemId === "string" && c.keyItemId !== "" && held.includes(c.keyItemId),
+      capacity: c.capacity,
+      slotsUsed,
+      slotsFree: Math.max(0, c.capacity - slotsUsed),
+      full: slotsUsed >= c.capacity,
+      respawnDue: containerRespawnDue(c, ctx.now)
+    };
+  }
+  function unlockContainer(raw, ctx = {}) {
+    const view2 = containerView(raw, ctx);
+    if (view2.state === "unreachable") return { result: view2.refusal, container: raw };
+    const c = normaliseContainer(raw);
+    if (!c.locked) return { result: "not_locked", container: raw };
+    if (typeof c.keyItemId !== "string" || c.keyItemId === "") return { result: "no_key_item", container: raw };
+    if (!view2.canUnlock) return { result: "key_missing", container: raw };
+    return { result: "unlocked", container: { ...raw, locked: false } };
+  }
+  function containerMoveRefusal(raw, move, ctx = {}) {
+    const view2 = containerView(raw, ctx);
+    if (view2.refusal !== null) return view2.refusal;
+    if (move.kind === "put" && view2.full) {
+      const stacks = normaliseContainer(raw).items.some((i) => i.itemId === move.itemId);
+      if (!stacks) return "full";
+    }
+    return null;
+  }
+  function containersAtLocation(containers, location) {
+    return containers.filter((c) => {
+      if (location.businessId && c.businessId === location.businessId) return true;
+      if (location.residenceId && c.residenceId === location.residenceId) return true;
+      if (location.lotId && c.lotId === location.lotId) return true;
+      return false;
+    }).map((c) => c.id);
+  }
+
+  // @insimul/core/src/game-engine/logic/GameTextTypes.ts
+  function difficultyToCefr(difficulty) {
+    switch (difficulty) {
+      case "beginner":
+        return "A1";
+      case "intermediate":
+        return "A2";
+      case "advanced":
+        return "B1";
+    }
+  }
+
+  // @insimul/core/src/props/documents.ts
+  var DOCUMENT_KINDS = ["book", "journal", "letter", "flyer", "recipe", "notice", "sign"];
+  var DOCUMENT_QUIZ_XP = { A1: 10, A2: 15, B1: 25, B2: 40 };
+  var DEFAULT_QUIZ_XP = 10;
+  var DEFAULT_CHARS_PER_PAGE = 800;
+  var DOCUMENT_REFUSALS = ["missing_field", "unknown_kind", "bad_pages", "bad_chars_per_page"];
+  var isText = (v) => typeof v === "string";
+  var str = (v) => isText(v) ? v : "";
+  function paginateText(text3, charsPerPage = DEFAULT_CHARS_PER_PAGE) {
+    if (!Number.isInteger(charsPerPage) || charsPerPage < 1) charsPerPage = DEFAULT_CHARS_PER_PAGE;
+    const pages = [];
+    const len = text3.length;
+    let start = 0;
+    while (start < len) {
+      let end = Math.min(start + charsPerPage, len);
+      if (end < len) {
+        const searchEnd = Math.max(start + Math.floor(charsPerPage / 2), start);
+        for (let j = end; j >= searchEnd; j--) {
+          const ch = text3[j];
+          if (ch === " " || ch === "\n") {
+            end = j + 1;
+            break;
+          }
+        }
+      }
+      const page = text3.slice(start, end).trim();
+      if (page !== "") pages.push(page);
+      start = end;
+    }
+    return pages.length > 0 ? pages : [""];
+  }
+  function kindOf(input) {
+    const stated = isText(input.kind) ? input.kind : isText(input.textCategory) ? input.textCategory : null;
+    if (stated !== null) return DOCUMENT_KINDS.includes(stated) ? stated : null;
+    return input.documentType === "story" || input.documentType === "poem" ? "book" : "notice";
+  }
+  function questionsOf(input) {
+    const raw = Array.isArray(input.comprehensionQuestions) ? input.comprehensionQuestions : input.comprehensionQuestion && typeof input.comprehensionQuestion === "object" ? [input.comprehensionQuestion] : [];
+    const out = [];
+    for (const q of raw) {
+      if (!q || typeof q !== "object") continue;
+      const r = q;
+      const options = Array.isArray(r.options) ? r.options.filter(isText) : [];
+      const correctIndex = typeof r.correctIndex === "number" ? r.correctIndex : -1;
+      if (!isText(r.question) || !Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= options.length) continue;
+      out.push({ question: r.question, questionTranslation: str(r.questionTranslation), options, correctIndex });
+    }
+    return out;
+  }
+  function vocabularyOf(input) {
+    const raw = Array.isArray(input.vocabularyHighlights) ? input.vocabularyHighlights : Array.isArray(input.vocabularyWords) ? input.vocabularyWords : [];
+    const out = [];
+    for (const v of raw) {
+      if (!v || typeof v !== "object") continue;
+      const r = v;
+      if (!isText(r.word) || r.word === "") continue;
+      out.push({ word: r.word, translation: isText(r.translation) ? r.translation : str(r.meaning) });
+    }
+    return out;
+  }
+  function cefrOf(input) {
+    if (isText(input.cefrLevel) && input.cefrLevel !== "") return input.cefrLevel;
+    if (input.difficulty === "beginner" || input.difficulty === "intermediate" || input.difficulty === "advanced") {
+      return difficultyToCefr(input.difficulty);
+    }
+    return null;
+  }
+  function documentOf(raw, options = {}) {
+    const input = raw && typeof raw === "object" ? raw : {};
+    if (!isText(input.id) || input.id === "") return { ok: false, refusal: { code: "missing_field", field: "id" } };
+    if (!isText(input.title)) return { ok: false, refusal: { code: "missing_field", field: "title" } };
+    const kind = kindOf(input);
+    if (kind === null) return { ok: false, refusal: { code: "unknown_kind", field: isText(input.kind) ? "kind" : "textCategory" } };
+    if (input.pages !== void 0 && input.pages !== null) {
+      const ok = Array.isArray(input.pages) && input.pages.every((p) => p && typeof p === "object" && isText(p.content));
+      if (!ok) return { ok: false, refusal: { code: "bad_pages", field: "pages" } };
+    }
+    const chars = options.charsPerPage ?? DEFAULT_CHARS_PER_PAGE;
+    if (!Number.isInteger(chars) || chars < 1) return { ok: false, refusal: { code: "bad_chars_per_page", field: "charsPerPage" } };
+    const authored = Array.isArray(input.pages) ? input.pages : [];
+    const sign = kind === "sign";
+    const body2 = isText(input.body) ? input.body : isText(input.text) ? input.text : "";
+    const pages = authored.length > 0 ? authored.map((p) => ({ content: p.content, contentTranslation: str(p.contentTranslation) })) : paginateText(body2, chars).map((content) => ({ content, contentTranslation: "" }));
+    const translation = authored.length > 0 ? "" : isText(input.bodyTranslation) ? input.bodyTranslation : "";
+    if (authored.length === 0 && pages.length === 1) pages[0] = { content: pages[0].content, contentTranslation: translation };
+    const cefr = cefrOf(input);
+    const author = isText(input.authorName) && input.authorName !== "" ? input.authorName : input.author && typeof input.author === "object" && isText(input.author.name) ? input.author.name : null;
+    const readingXp = typeof input.readingXp === "number" && Number.isFinite(input.readingXp) && input.readingXp > 0 ? input.readingXp : 0;
+    return {
+      ok: true,
+      document: {
+        id: input.id,
+        kind,
+        title: input.title,
+        titleTranslation: str(input.titleTranslation),
+        pages,
+        pagesFrom: authored.length > 0 ? "authored" : "paginated",
+        translation: authored.length === 0 && pages.length > 1 ? translation : "",
+        vocabulary: vocabularyOf(input),
+        questions: sign ? [] : questionsOf(input),
+        clue: isText(input.clueText) && input.clueText !== "" ? input.clueText : null,
+        cefr,
+        author,
+        readingXp: sign ? 0 : readingXp,
+        quizXp: cefr !== null && DOCUMENT_QUIZ_XP[cefr] !== void 0 ? DOCUMENT_QUIZ_XP[cefr] : DEFAULT_QUIZ_XP,
+        collectible: !sign
+      }
+    };
+  }
+  var DOCUMENT_READER_PHASES = ["reading", "quiz", "answered", "closed"];
+  var DOCUMENT_READER_ACTIONS = ["next", "prev", "answer", "close"];
+  var DocumentReader = class {
+    constructor(doc, opts = {}) {
+      __publicField(this, "doc", doc);
+      __publicField(this, "opts", opts);
+      __publicField(this, "page", 0);
+      __publicField(this, "phase", "reading");
+      __publicField(this, "answered", null);
+    }
+    quizQuestion() {
+      return this.opts.alreadyAnswered ? null : this.doc.questions[0] ?? null;
+    }
+    view() {
+      const reading = this.phase === "reading";
+      const p = this.doc.pages[this.page] ?? { content: "", contentTranslation: "" };
+      const last = this.page >= this.doc.pages.length - 1;
+      return {
+        phase: this.phase,
+        page: this.page,
+        pageCount: this.doc.pages.length,
+        content: p.content,
+        contentTranslation: p.contentTranslation,
+        canPrev: reading && this.page > 0,
+        canNext: reading,
+        nextLabel: reading ? last ? "done" : "next" : null,
+        question: this.phase === "quiz" || this.phase === "answered" ? this.quizQuestion() : null,
+        answer: this.answered
+      };
+    }
+    step(action) {
+      const op = action?.op;
+      if (!DOCUMENT_READER_ACTIONS.includes(op)) return { ok: false, refusal: { code: "unknown_action", field: "op" } };
+      if (this.phase === "closed") return { ok: false, refusal: { code: "closed", field: "op" } };
+      const id = this.doc.id;
+      switch (action.op) {
+        case "prev":
+          if (this.phase !== "reading") return { ok: false, refusal: { code: "not_reading", field: "op" } };
+          if (this.page > 0) this.page -= 1;
+          return { ok: true, events: [] };
+        case "next": {
+          if (this.phase !== "reading") return { ok: false, refusal: { code: "not_reading", field: "op" } };
+          if (this.page < this.doc.pages.length - 1) {
+            this.page += 1;
+            return { ok: true, events: [] };
+          }
+          const events = [{ type: "document_read", id }];
+          if (!this.opts.alreadyRead) {
+            if (this.doc.collectible) events.push({ type: "document_collected", id, kind: this.doc.kind });
+            if (this.doc.readingXp > 0) events.push({ type: "reading_xp", id, amount: this.doc.readingXp });
+          }
+          if (this.doc.vocabulary.length > 0) events.push({ type: "vocabulary_added", id, words: this.doc.vocabulary.map((v) => ({ ...v })) });
+          if (this.doc.clue !== null) events.push({ type: "clue_discovered", id, clue: this.doc.clue });
+          if (this.quizQuestion() !== null) {
+            this.phase = "quiz";
+          } else {
+            this.phase = "closed";
+            events.push({ type: "document_closed", id });
+          }
+          return { ok: true, events };
+        }
+        case "answer": {
+          if (this.phase !== "quiz") return { ok: false, refusal: { code: "not_quiz", field: "op" } };
+          const q = this.quizQuestion();
+          const index = action.index;
+          if (typeof index !== "number" || !Number.isInteger(index) || index < 0 || index >= q.options.length) {
+            return { ok: false, refusal: { code: "bad_index", field: "index" } };
+          }
+          const correct = index === q.correctIndex;
+          this.answered = { index, correct };
+          this.phase = "answered";
+          return { ok: true, events: [{ type: "question_answered", id, index, correct, xp: correct ? this.doc.quizXp : 0 }] };
+        }
+        case "close":
+          this.phase = "closed";
+          return { ok: true, events: [{ type: "document_closed", id }] };
+      }
+    }
+  };
+
+  // @insimul/core/src/props/doors.ts
+  var DOOR_PROMPT_RADIUS_M = 2;
+  var DOOR_STANDOFF_M = 0.5;
+  var DOOR_STATES = ["closed", "locked", "no_interior"];
+  var DOOR_ACTIONS = ["enter", "exit"];
+  var DOOR_REFUSALS = ["unknown_action", "missing_field", "unknown_building", "already_inside", "not_inside", "no_interior", "locked"];
+  var round = (n) => Math.round(n * 1e9) / 1e9;
+  var vec = (x, y, z) => ({ x: round(x), y: round(y), z: round(z) });
+  function frontDoorPoint(b) {
+    const r = Number(b.rotation) || 0;
+    const half = (Number(b.spec?.depth) || 0) / 2;
+    return vec(b.position.x + Math.sin(r) * half, b.position.y, b.position.z + Math.cos(r) * half);
+  }
+  function doorFaceYaw(b, door2) {
+    const r = Number(b.rotation) || 0;
+    const dx = door2.x - b.position.x;
+    const dz = door2.z - b.position.z;
+    const along = dx * Math.sin(r) + dz * Math.cos(r);
+    const across = dx * Math.cos(r) - dz * Math.sin(r);
+    const w = Number(b.spec?.width) > 0 ? Number(b.spec.width) / 2 : 0;
+    const d = Number(b.spec?.depth) > 0 ? Number(b.spec.depth) / 2 : 0;
+    const halfAcross = w || d || 1;
+    const halfAlong = d || w || 1;
+    const sa = Math.abs(along) / halfAlong;
+    const sx = Math.abs(across) / halfAcross;
+    if (sx > sa) return across > 0 ? r + Math.PI / 2 : r - Math.PI / 2;
+    return along < 0 ? r + Math.PI : r;
+  }
+  function doorFacing(b) {
+    if (typeof b.doorYaw === "number" && Number.isFinite(b.doorYaw)) return b.doorYaw;
+    if (b.door) return doorFaceYaw(b, b.door);
+    return Number(b.rotation) || 0;
+  }
+  function doorView(b) {
+    const doorAt = b.door ? vec(b.door.x, b.door.y, b.door.z) : frontDoorPoint(b);
+    const r = doorFacing(b);
+    const state = !b.interior ? "no_interior" : b.locked ? "locked" : "closed";
+    const label = [b.name, b.businessType, b.spec?.buildingRole].find((s) => typeof s === "string" && s !== "") ?? "Building";
+    return {
+      id: b.id,
+      state,
+      doorAt,
+      outside: { position: vec(doorAt.x + Math.sin(r) * DOOR_STANDOFF_M, doorAt.y, doorAt.z + Math.cos(r) * DOOR_STANDOFF_M), yaw: round(r) },
+      label,
+      interiorFunction: b.interior && typeof b.interior.function === "string" ? b.interior.function : null
+    };
+  }
+  function doorPrompt(buildings, player) {
+    if (player.inside) {
+      const b = buildings.find((x) => x.id === player.inside);
+      if (!b) return null;
+      const v = doorView(b);
+      return { building: b.id, action: "exit", label: v.label, state: v.state, distance: null };
+    }
+    let best = null;
+    for (const b of buildings) {
+      const v = doorView(b);
+      if (v.state === "no_interior") continue;
+      const d = Math.hypot(player.position.x - v.doorAt.x, player.position.z - v.doorAt.z);
+      if (d < DOOR_PROMPT_RADIUS_M && (best === null || d < best.d)) best = { b, v, d };
+    }
+    return best ? { building: best.b.id, action: "enter", label: best.v.label, state: best.v.state, distance: round(best.d) } : null;
+  }
+  function doorStep(buildings, state, action) {
+    const op = action?.op;
+    if (op !== "enter" && op !== "exit") return { ok: false, refusal: { code: "unknown_action", field: "op" } };
+    if (op === "exit") {
+      if (!state.inside) return { ok: false, refusal: { code: "not_inside", field: "op" } };
+      const b2 = buildings.find((x) => x.id === state.inside);
+      if (!b2) return { ok: false, refusal: { code: "unknown_building", field: "inside" } };
+      const v2 = doorView(b2);
+      return { ok: true, handoff: { op: "exit_to_exterior", building: b2.id, arrive: v2.outside.position, yaw: v2.outside.yaw }, inside: null };
+    }
+    if (typeof action.building !== "string" || action.building === "") return { ok: false, refusal: { code: "missing_field", field: "building" } };
+    if (state.inside) return { ok: false, refusal: { code: "already_inside", field: "op" } };
+    const b = buildings.find((x) => x.id === action.building);
+    if (!b) return { ok: false, refusal: { code: "unknown_building", field: "building" } };
+    const v = doorView(b);
+    if (v.state === "no_interior") return { ok: false, refusal: { code: "no_interior", field: "building" } };
+    let unlocked = false;
+    if (v.state === "locked") {
+      const key = b.keyItemId;
+      if (typeof key !== "string" || key === "" || !(state.playerItemIds ?? []).includes(key)) {
+        return { ok: false, refusal: { code: "locked", field: "building" } };
+      }
+      unlocked = true;
+    }
+    const entrance = (b.interior.doors ?? []).find((d) => d.kind === "entrance") ?? null;
+    return {
+      ok: true,
+      handoff: {
+        op: "enter_interior",
+        building: b.id,
+        interior: `interior:${b.id}`,
+        interiorFunction: v.interiorFunction,
+        arrive: entrance ? vec(entrance.position.x, entrance.position.y, entrance.position.z) : null,
+        entrance: entrance ? entrance.id : null,
+        unlocked
+      },
+      inside: b.id
+    };
+  }
+
+  // @insimul/core/src/props/notice-board.ts
+  var NOTICE_FLUENCY_THRESHOLDS = { beginner: 0, intermediate: 25, advanced: 55 };
+  var NOTICE_HOOK_STATES = ["offer", "requested", "taken", "done", "locked"];
+  var NOTICE_BOARD_ACTIONS = ["select", "answer", "take_quest"];
+  var NOTICE_BOARD_REFUSALS = ["unknown_action", "unknown_notice", "not_shown", "no_question", "answered", "bad_index", "no_quest", "quest_not_offered"];
+  var fluencyOf = (v) => typeof v === "number" && Number.isFinite(v) ? v : 0;
+  function noticeShown(article, fluency) {
+    if (article.assessmentHook) return true;
+    const need = NOTICE_FLUENCY_THRESHOLDS[article.difficulty];
+    return need === void 0 || fluencyOf(fluency) >= need;
+  }
+  function noticeHookState(status) {
+    if (status === "active") return "taken";
+    if (status === "completed") return "done";
+    if (status === "unavailable") return "locked";
+    return "offer";
+  }
+  var NoticeBoard = class {
+    constructor(input) {
+      __publicField(this, "input", input);
+      __publicField(this, "posted", []);
+      __publicField(this, "read");
+      __publicField(this, "answeredIds");
+      __publicField(this, "selected", null);
+      /** Quests this board has raised `quest_requested` for (once per quest). */
+      __publicField(this, "requested", /* @__PURE__ */ new Set());
+      const seen = /* @__PURE__ */ new Set();
+      for (const n of input.notices ?? []) {
+        if (!n || typeof n.id !== "string" || n.id === "" || seen.has(n.id)) continue;
+        seen.add(n.id);
+        this.posted.push(n);
+      }
+      this.read = new Set(input.read ?? []);
+      this.answeredIds = new Set(input.answered ?? []);
+    }
+    /** Shown notices: assessment first (posted order), then the rest newest first. */
+    shownNotices() {
+      const assessment = this.posted.filter((a) => a.assessmentHook);
+      const regular = this.posted.filter((a) => !a.assessmentHook && noticeShown(a, this.input.fluency));
+      return [...assessment, ...regular.reverse()];
+    }
+    row(a) {
+      const hook = a.questHook && typeof a.questHook.questId === "string" && a.questHook.questId !== "" ? a.questHook : null;
+      return {
+        id: a.id,
+        title: a.title,
+        titleTranslation: a.titleTranslation ?? "",
+        noticeType: a.noticeType ?? null,
+        difficulty: a.difficulty,
+        assessment: !!a.assessmentHook,
+        read: this.read.has(a.id),
+        question: !!a.comprehensionQuestion && !this.answeredIds.has(a.id),
+        author: a.author ? { characterId: a.author.characterId, name: a.author.name } : null,
+        quest: hook ? { questId: hook.questId, title: hook.questTitle, state: this.hookState(hook.questId) } : null,
+        readingXp: typeof a.readingXp === "number" && Number.isFinite(a.readingXp) && a.readingXp > 0 ? a.readingXp : 0
+      };
+    }
+    hookState(questId) {
+      const state = noticeHookState(this.input.questStatus?.[questId]);
+      return state === "offer" && this.requested.has(questId) ? "requested" : state;
+    }
+    view() {
+      const shown = this.shownNotices();
+      const rows = shown.map((a) => this.row(a));
+      return {
+        rows,
+        shown: rows.length,
+        hidden: this.posted.length - rows.length,
+        unread: rows.filter((r) => !r.read).length,
+        selected: this.selected
+      };
+    }
+    step(action) {
+      const op = action?.op;
+      if (!NOTICE_BOARD_ACTIONS.includes(op)) return { ok: false, refusal: { code: "unknown_action", field: "op" } };
+      const id = action.id;
+      const article = this.posted.find((a) => a.id === id);
+      if (!article) return { ok: false, refusal: { code: "unknown_notice", field: "id" } };
+      if (!this.shownNotices().includes(article)) return { ok: false, refusal: { code: "not_shown", field: "id" } };
+      const row = this.row(article);
+      switch (action.op) {
+        case "select": {
+          this.selected = article.id;
+          if (this.read.has(article.id)) return { ok: true, events: [] };
+          this.read.add(article.id);
+          const events = [{ type: "notice_read", id: article.id }];
+          if (row.readingXp > 0) events.push({ type: "reading_xp", id: article.id, amount: row.readingXp });
+          return { ok: true, events };
+        }
+        case "answer": {
+          const q = article.comprehensionQuestion;
+          if (!q) return { ok: false, refusal: { code: "no_question", field: "id" } };
+          if (this.answeredIds.has(article.id)) return { ok: false, refusal: { code: "answered", field: "id" } };
+          const index = action.index;
+          if (typeof index !== "number" || !Number.isInteger(index) || index < 0 || index >= (q.options ?? []).length) {
+            return { ok: false, refusal: { code: "bad_index", field: "index" } };
+          }
+          this.answeredIds.add(article.id);
+          return { ok: true, events: [{ type: "question_answered", id: article.id, index, correct: index === q.correctIndex }] };
+        }
+        case "take_quest": {
+          if (!row.quest) return { ok: false, refusal: { code: "no_quest", field: "id" } };
+          if (row.quest.state !== "offer") return { ok: false, refusal: { code: "quest_not_offered", field: "id" } };
+          this.requested.add(row.quest.questId);
+          return { ok: true, events: [{ type: "quest_requested", id: article.id, quest: row.quest.questId, npc: row.author?.characterId ?? null }] };
+        }
+      }
+    }
+  };
+
+  // @insimul/core/src/game-engine/logic/NoticeGenerator.ts
+  function normalizeOccupation(occ) {
+    return occ.toLowerCase().trim();
+  }
+  var OCCUPATION_TEMPLATES = [
+    // ── Merchant / Shopkeeper (beginner) ──
+    {
+      occupations: ["merchant", "shopkeeper", "vendor", "trader"],
+      titleFn: (npc) => `Boutique de ${npc.name}`,
+      titleTransFn: (npc) => `${npc.name}'s Shop`,
+      bodyFn: (npc, s) => `${npc.name} vend des marchandises \xE0 ${s}. Nous avons des v\xEAtements, des outils, et des provisions. Venez voir!`,
+      bodyTransFn: (npc, s) => `${npc.name} sells goods in ${s}. We have clothing, tools, and provisions. Come see!`,
+      difficulty: "beginner",
+      noticeType: "advertisement",
+      vocabularyWords: [
+        { word: "marchandises", meaning: "goods" },
+        { word: "v\xEAtements", meaning: "clothing" },
+        { word: "outils", meaning: "tools" },
+        { word: "provisions", meaning: "provisions" }
+      ],
+      comprehensionQuestion: {
+        question: "Que vend cette boutique?",
+        questionTranslation: "What does this shop sell?",
+        options: ["Des animaux", "Des v\xEAtements et des outils", "Des livres"],
+        correctIndex: 1
+      }
+    },
+    // ── Baker (beginner) ──
+    {
+      occupations: ["baker", "boulanger"],
+      titleFn: (npc) => `Pain frais chez ${npc.name}`,
+      titleTransFn: (npc) => `Fresh Bread at ${npc.name}'s`,
+      bodyFn: (npc) => `${npc.name} pr\xE9pare du pain chaque matin. Du pain blanc, du pain complet, et des croissants. Ouvert de six heures \xE0 midi.`,
+      bodyTransFn: (npc) => `${npc.name} bakes bread every morning. White bread, whole wheat bread, and croissants. Open from six o'clock to noon.`,
+      difficulty: "beginner",
+      noticeType: "advertisement",
+      vocabularyWords: [
+        { word: "pain", meaning: "bread" },
+        { word: "matin", meaning: "morning" },
+        { word: "blanc", meaning: "white" },
+        { word: "midi", meaning: "noon" }
+      ],
+      comprehensionQuestion: {
+        question: "\xC0 quelle heure ouvre la boulangerie?",
+        questionTranslation: "What time does the bakery open?",
+        options: ["\xC0 huit heures", "\xC0 six heures", "\xC0 dix heures"],
+        correctIndex: 1
+      }
+    },
+    // ── Farmer (beginner) ──
+    {
+      occupations: ["farmer", "fermier", "agricultor"],
+      titleFn: () => "Fruits et L\xE9gumes Frais",
+      titleTransFn: () => "Fresh Fruits and Vegetables",
+      bodyFn: (npc) => `${npc.name} vend des fruits et des l\xE9gumes de sa ferme. Tout est frais et naturel. Venez au march\xE9 le matin!`,
+      bodyTransFn: (npc) => `${npc.name} sells fruits and vegetables from the farm. Everything is fresh and natural. Come to the market in the morning!`,
+      difficulty: "beginner",
+      noticeType: "flyer",
+      vocabularyWords: [
+        { word: "l\xE9gumes", meaning: "vegetables" },
+        { word: "ferme", meaning: "farm" },
+        { word: "frais", meaning: "fresh" },
+        { word: "naturel", meaning: "natural" }
+      ],
+      comprehensionQuestion: {
+        question: "D'o\xF9 viennent les l\xE9gumes?",
+        questionTranslation: "Where do the vegetables come from?",
+        options: ["Du magasin", "De la ferme", "D'un autre pays"],
+        correctIndex: 1
+      }
+    },
+    // ── Guard / Soldier (intermediate) ──
+    {
+      occupations: ["guard", "soldier", "sheriff", "constable", "watchman"],
+      titleFn: (_npc, s) => `S\xE9curit\xE9 de ${s}`,
+      titleTransFn: (_npc, s) => `${s} Security`,
+      bodyFn: (npc, s) => `${npc.name}, garde de ${s}, rappelle aux habitants de verrouiller leurs portes la nuit. Des voyageurs inconnus ont \xE9t\xE9 aper\xE7us dans la r\xE9gion. Signalez toute activit\xE9 suspecte.`,
+      bodyTransFn: (npc, s) => `${npc.name}, guard of ${s}, reminds inhabitants to lock their doors at night. Unknown travelers have been seen in the area. Report any suspicious activity.`,
+      difficulty: "intermediate",
+      noticeType: "official",
+      vocabularyWords: [
+        { word: "s\xE9curit\xE9", meaning: "security" },
+        { word: "verrouiller", meaning: "to lock" },
+        { word: "portes", meaning: "doors" },
+        { word: "voyageurs", meaning: "travelers" },
+        { word: "suspecte", meaning: "suspicious" }
+      ],
+      comprehensionQuestion: {
+        question: "Que doivent faire les habitants?",
+        questionTranslation: "What should inhabitants do?",
+        options: ["Partir du village", "Verrouiller leurs portes", "Acheter des armes"],
+        correctIndex: 1
+      }
+    },
+    // ── Mayor / Official (intermediate) ──
+    {
+      occupations: ["mayor", "official", "magistrate", "councillor", "administrator"],
+      titleFn: (_npc, s) => `Annonce du Conseil de ${s}`,
+      titleTransFn: (_npc, s) => `${s} Council Announcement`,
+      bodyFn: (_npc, s) => `Le conseil de ${s} organise une assembl\xE9e publique pour discuter des projets du village. Tous les habitants sont invit\xE9s \xE0 donner leur avis. La r\xE9union aura lieu \xE0 la mairie.`,
+      bodyTransFn: (_npc, s) => `The ${s} council is organizing a public assembly to discuss village projects. All inhabitants are invited to give their opinion. The meeting will be held at the town hall.`,
+      difficulty: "intermediate",
+      noticeType: "official",
+      vocabularyWords: [
+        { word: "assembl\xE9e", meaning: "assembly" },
+        { word: "projets", meaning: "projects" },
+        { word: "habitants", meaning: "inhabitants" },
+        { word: "avis", meaning: "opinion" },
+        { word: "mairie", meaning: "town hall" }
+      ],
+      comprehensionQuestion: {
+        question: "O\xF9 aura lieu la r\xE9union?",
+        questionTranslation: "Where will the meeting be held?",
+        options: ["Au march\xE9", "\xC0 la mairie", "\xC0 l'\xE9glise"],
+        correctIndex: 1
+      },
+      questHook: {
+        questId: "quest_town_assembly",
+        questTitle: "Assister \xE0 l'assembl\xE9e",
+        questTitleTranslation: "Attend the assembly"
+      }
+    },
+    // ── Blacksmith (intermediate) ──
+    {
+      occupations: ["blacksmith", "forgeron", "smith", "metalworker"],
+      titleFn: (npc) => `La Forge de ${npc.name}`,
+      titleTransFn: (npc) => `${npc.name}'s Forge`,
+      bodyFn: (npc) => `${npc.name} r\xE9pare les outils et fabrique des objets en m\xE9tal. Apportez vos outils cass\xE9s. Les r\xE9parations prennent un \xE0 trois jours selon le travail n\xE9cessaire.`,
+      bodyTransFn: (npc) => `${npc.name} repairs tools and crafts metal objects. Bring your broken tools. Repairs take one to three days depending on the work needed.`,
+      difficulty: "intermediate",
+      noticeType: "advertisement",
+      vocabularyWords: [
+        { word: "r\xE9pare", meaning: "repairs" },
+        { word: "outils", meaning: "tools" },
+        { word: "m\xE9tal", meaning: "metal" },
+        { word: "cass\xE9s", meaning: "broken" },
+        { word: "travail", meaning: "work" }
+      ],
+      comprehensionQuestion: {
+        question: "Combien de temps prennent les r\xE9parations?",
+        questionTranslation: "How long do repairs take?",
+        options: ["Une heure", "Un \xE0 trois jours", "Une semaine"],
+        correctIndex: 1
+      }
+    },
+    // ── Doctor / Healer (intermediate) ──
+    {
+      occupations: ["doctor", "healer", "physician", "apothecary", "herbalist", "m\xE9decin"],
+      titleFn: (npc) => `Cabinet de ${npc.name}`,
+      titleTransFn: (npc) => `${npc.name}'s Practice`,
+      bodyFn: (npc, s) => `${npc.name} soigne les malades de ${s}. Consultations tous les jours sauf le dimanche. En cas d'urgence, venez directement. Apportez vos rem\xE8des si vous en avez.`,
+      bodyTransFn: (npc, s) => `${npc.name} treats the sick of ${s}. Consultations every day except Sunday. In case of emergency, come directly. Bring your remedies if you have any.`,
+      difficulty: "intermediate",
+      noticeType: "flyer",
+      vocabularyWords: [
+        { word: "soigne", meaning: "treats/heals" },
+        { word: "malades", meaning: "sick people" },
+        { word: "urgence", meaning: "emergency" },
+        { word: "rem\xE8des", meaning: "remedies" }
+      ],
+      comprehensionQuestion: {
+        question: "Quel jour le cabinet est-il ferm\xE9?",
+        questionTranslation: "Which day is the practice closed?",
+        options: ["Le lundi", "Le samedi", "Le dimanche"],
+        correctIndex: 2
+      }
+    },
+    // ── Teacher / Scholar (advanced) ──
+    {
+      occupations: ["teacher", "scholar", "professor", "librarian", "tutor"],
+      titleFn: (npc) => `Cours dispens\xE9s par ${npc.name}`,
+      titleTransFn: (npc) => `Lessons by ${npc.name}`,
+      bodyFn: (npc, s) => `${npc.name} propose des cours de lecture et d'\xE9criture aux habitants de ${s}. Les le\xE7ons sont adapt\xE9es \xE0 tous les niveaux, des d\xE9butants aux plus avanc\xE9s. L'\xE9ducation est la cl\xE9 de notre prosp\xE9rit\xE9 commune.`,
+      bodyTransFn: (npc, s) => `${npc.name} offers reading and writing lessons to the inhabitants of ${s}. Lessons are adapted to all levels, from beginners to advanced. Education is the key to our shared prosperity.`,
+      difficulty: "advanced",
+      noticeType: "advertisement",
+      vocabularyWords: [
+        { word: "cours", meaning: "lessons/classes" },
+        { word: "\xE9criture", meaning: "writing" },
+        { word: "niveaux", meaning: "levels" },
+        { word: "\xE9ducation", meaning: "education" },
+        { word: "prosp\xE9rit\xE9", meaning: "prosperity" }
+      ],
+      comprehensionQuestion: {
+        question: "\xC0 qui sont destin\xE9s les cours?",
+        questionTranslation: "Who are the lessons for?",
+        options: ["Seulement les enfants", "Tous les niveaux", "Les experts uniquement"],
+        correctIndex: 1
+      }
+    },
+    // ── Priest / Religious (advanced) ──
+    {
+      occupations: ["priest", "cleric", "monk", "nun", "chaplain", "pr\xEAtre"],
+      titleFn: () => "Appel \xE0 la Communaut\xE9",
+      titleTransFn: () => "Call to the Community",
+      bodyFn: (npc, s) => `${npc.name} invite les habitants de ${s} \xE0 se rassembler pour une c\xE9r\xE9monie de b\xE9n\xE9diction des r\xE9coltes. Cette tradition ancienne renforce les liens de notre communaut\xE9 et honore le travail de nos agriculteurs. Chacun est le bienvenu.`,
+      bodyTransFn: (npc, s) => `${npc.name} invites the inhabitants of ${s} to gather for a harvest blessing ceremony. This ancient tradition strengthens the bonds of our community and honors the work of our farmers. Everyone is welcome.`,
+      difficulty: "advanced",
+      noticeType: "official",
+      vocabularyWords: [
+        { word: "c\xE9r\xE9monie", meaning: "ceremony" },
+        { word: "b\xE9n\xE9diction", meaning: "blessing" },
+        { word: "r\xE9coltes", meaning: "harvests" },
+        { word: "tradition", meaning: "tradition" },
+        { word: "communaut\xE9", meaning: "community" }
+      ],
+      comprehensionQuestion: {
+        question: "Quel est le but de la c\xE9r\xE9monie?",
+        questionTranslation: "What is the purpose of the ceremony?",
+        options: ["\xC9lire un nouveau maire", "B\xE9nir les r\xE9coltes", "C\xE9l\xE9brer un mariage"],
+        correctIndex: 1
+      }
+    },
+    // ── Innkeeper / Tavern (beginner) ──
+    {
+      occupations: ["innkeeper", "bartender", "tavern keeper", "aubergiste"],
+      titleFn: (npc) => `Auberge de ${npc.name}`,
+      titleTransFn: (npc) => `${npc.name}'s Inn`,
+      bodyFn: (npc) => `L'auberge de ${npc.name} a des chambres et des repas chauds. Le prix est de deux pi\xE8ces par nuit. Le d\xEEner est servi \xE0 sept heures.`,
+      bodyTransFn: (npc) => `${npc.name}'s inn has rooms and hot meals. The price is two coins per night. Dinner is served at seven o'clock.`,
+      difficulty: "beginner",
+      noticeType: "advertisement",
+      vocabularyWords: [
+        { word: "auberge", meaning: "inn" },
+        { word: "chambres", meaning: "rooms" },
+        { word: "repas", meaning: "meals" },
+        { word: "nuit", meaning: "night" }
+      ],
+      comprehensionQuestion: {
+        question: "Combien co\xFBte une nuit \xE0 l'auberge?",
+        questionTranslation: "How much is one night at the inn?",
+        options: ["Une pi\xE8ce", "Deux pi\xE8ces", "Cinq pi\xE8ces"],
+        correctIndex: 1
+      }
+    },
+    // ── Carpenter / Builder (advanced) ──
+    {
+      occupations: ["carpenter", "builder", "mason", "architect", "charpentier"],
+      titleFn: () => "Travaux de Construction",
+      titleTransFn: () => "Construction Work",
+      bodyFn: (npc, s) => `${npc.name} entreprend des travaux de construction dans le quartier est de ${s}. Les r\xE9sidents concern\xE9s sont pri\xE9s de d\xE9placer temporairement leurs affaires. Les travaux devraient durer environ trois semaines. Nous remercions chacun pour sa compr\xE9hension.`,
+      bodyTransFn: (npc, s) => `${npc.name} is undertaking construction work in the eastern quarter of ${s}. Affected residents are asked to temporarily move their belongings. The work should last approximately three weeks. We thank everyone for their understanding.`,
+      difficulty: "advanced",
+      noticeType: "official",
+      vocabularyWords: [
+        { word: "construction", meaning: "construction" },
+        { word: "r\xE9sidents", meaning: "residents" },
+        { word: "temporairement", meaning: "temporarily" },
+        { word: "affaires", meaning: "belongings" },
+        { word: "compr\xE9hension", meaning: "understanding" }
+      ],
+      comprehensionQuestion: {
+        question: "Combien de temps dureront les travaux?",
+        questionTranslation: "How long will the work last?",
+        options: ["Une semaine", "Environ trois semaines", "Deux mois"],
+        correctIndex: 1
+      }
+    }
+  ];
+  var FALLBACK_TEMPLATES = [
+    {
+      occupations: [],
+      titleFn: (npc) => `Message de ${npc.name}`,
+      titleTransFn: (npc) => `Message from ${npc.name}`,
+      bodyFn: (npc, s) => `${npc.name} cherche de l'aide \xE0 ${s}. Si vous \xEAtes disponible, venez parler \xE0 ${npc.name} en personne.`,
+      bodyTransFn: (npc, s) => `${npc.name} is looking for help in ${s}. If you are available, come speak with ${npc.name} in person.`,
+      difficulty: "beginner",
+      noticeType: "flyer",
+      vocabularyWords: [
+        { word: "aide", meaning: "help" },
+        { word: "disponible", meaning: "available" },
+        { word: "parler", meaning: "to speak" },
+        { word: "personne", meaning: "person/in person" }
+      ],
+      comprehensionQuestion: {
+        question: "Que cherche cette personne?",
+        questionTranslation: "What is this person looking for?",
+        options: ["Un animal", "De l'aide", "Un livre"],
+        correctIndex: 1
+      }
+    },
+    {
+      occupations: [],
+      titleFn: (_npc, s) => `Nouvelles de ${s}`,
+      titleTransFn: (_npc, s) => `News from ${s}`,
+      bodyFn: (_npc, s) => `Le temps est beau \xE0 ${s} cette semaine. Les r\xE9coltes se portent bien. Les habitants profitent du soleil pour travailler dans les champs et les jardins.`,
+      bodyTransFn: (_npc, s) => `The weather is nice in ${s} this week. The crops are doing well. The inhabitants are taking advantage of the sun to work in the fields and gardens.`,
+      difficulty: "intermediate",
+      noticeType: "flyer",
+      vocabularyWords: [
+        { word: "temps", meaning: "weather" },
+        { word: "r\xE9coltes", meaning: "crops/harvests" },
+        { word: "soleil", meaning: "sun" },
+        { word: "champs", meaning: "fields" },
+        { word: "jardins", meaning: "gardens" }
+      ],
+      comprehensionQuestion: {
+        question: "Comment est le temps?",
+        questionTranslation: "How is the weather?",
+        options: ["Il pleut", "Il fait beau", "Il neige"],
+        correctIndex: 1
+      }
+    }
+  ];
+  function findTemplatesForNPC(npc) {
+    if (!npc.occupation) return FALLBACK_TEMPLATES;
+    const norm = normalizeOccupation(npc.occupation);
+    const matches = OCCUPATION_TEMPLATES.filter(
+      (t) => t.occupations.some((o) => norm.includes(o) || o.includes(norm))
+    );
+    return matches.length > 0 ? matches : FALLBACK_TEMPLATES;
+  }
+  function generateSettlementNotices(settlementId, settlementName, npcs) {
+    if (npcs.length === 0) return [];
+    const articles = [];
+    const xpByDifficulty = { beginner: 10, intermediate: 15, advanced: 25 };
+    for (let i = 0; i < npcs.length; i++) {
+      const npc = npcs[i];
+      const templates = findTemplatesForNPC(npc);
+      const template = templates[i % templates.length];
+      const article = {
+        id: `notice_${settlementId}_${i}`,
+        title: template.titleFn(npc, settlementName),
+        titleTranslation: template.titleTransFn(npc, settlementName),
+        body: template.bodyFn(npc, settlementName),
+        bodyTranslation: template.bodyTransFn(npc, settlementName),
+        difficulty: template.difficulty,
+        vocabularyWords: template.vocabularyWords,
+        comprehensionQuestion: template.comprehensionQuestion,
+        author: {
+          characterId: npc.characterId,
+          name: npc.name,
+          occupation: npc.occupation
+        },
+        settlementId,
+        noticeType: template.noticeType,
+        readingXp: xpByDifficulty[template.difficulty],
+        documentType: "notice"
+      };
+      if (template.questHook) {
+        article.questHook = {
+          ...template.questHook,
+          questId: `${template.questHook.questId}_${settlementId}`
+        };
+      }
+      articles.push(article);
+    }
+    return articles;
+  }
+
+  // @insimul/core/src/game-engine/logic/EquipmentManager.ts
+  var EQUIPMENT_SLOTS = ["weapon", "armor", "accessory"];
+
+  // @insimul/core/src/ui/inventory-model.ts
+  var INVENTORY_FILTERS = [
+    { key: "all", label: "All" },
+    { key: "weapons_armor", label: "Gear" },
+    { key: "consumables", label: "Consumables" },
+    { key: "materials", label: "Materials" },
+    { key: "quest", label: "Quest" },
+    { key: "other", label: "Other" }
+  ];
+  var INVENTORY_FILTER_KEYS = INVENTORY_FILTERS.map((f) => f.key);
+  var INVENTORY_USABLE_TYPES = ["collectible", "consumable", "document", "drink", "food", "key", "quest"];
+  var INVENTORY_SLOT_LABELS = {
+    weapon: "Weapon",
+    armor: "Armor",
+    accessory: "Accessory"
+  };
+  var INVENTORY_RARITY_COLORS = {
+    common: "#CCCCCC",
+    uncommon: "#1EFF00",
+    rare: "#0070DD",
+    epic: "#A335EE",
+    legendary: "#FF8000"
+  };
+  var INVENTORY_RARITY_ORDER = {
+    legendary: 0,
+    epic: 1,
+    rare: 2,
+    uncommon: 3,
+    common: 4
+  };
+  var INVENTORY_TYPE_COLORS = {
+    quest: "#FFD700",
+    collectible: "#87CEEB",
+    key: "#FF6347",
+    consumable: "#90EE90",
+    weapon: "#FF8C00",
+    armor: "#B0C4DE",
+    food: "#DEB887",
+    drink: "#DEB887",
+    material: "#D2B48C",
+    tool: "#C0C0C0"
+  };
+  var INVENTORY_DEFAULT_TYPE_COLOR = "white";
+  var INVENTORY_EQUIPPED_NAME_COLOR = "#90EE90";
+  var INVENTORY_PLAIN_BORDER = "rgba(150, 150, 150, 0.5)";
+  var INVENTORY_PINNED_GROUP = "Quest";
+  var INVENTORY_EMPTY_MESSAGES = {
+    all: "Your inventory is empty",
+    filtered: "No items in this category"
+  };
+  function foldInventoryName(s) {
+    return s.replace(/[A-Z]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 32));
+  }
+  function compareInventoryNames(a, b) {
+    const fa = foldInventoryName(a);
+    const fb = foldInventoryName(b);
+    if (fa !== fb) return fa < fb ? -1 : 1;
+    if (a === b) return 0;
+    return a < b ? -1 : 1;
+  }
+  var titleWords = (s) => s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  function inventoryEntryId(raw) {
+    if (!raw || typeof raw !== "object") return null;
+    const r = raw;
+    if (typeof r.id === "string" && r.id !== "") return r.id;
+    if (typeof r.itemId === "string" && r.itemId !== "") return r.itemId;
+    return null;
+  }
+  function inventoryItemName(item) {
+    const r = item;
+    if (typeof r.name === "string" && r.name !== "") return r.name;
+    if (typeof r.itemName === "string" && r.itemName !== "") return r.itemName;
+    return inventoryEntryId(item) ?? "";
+  }
+  function rarityRank(item) {
+    return INVENTORY_RARITY_ORDER[item.rarity || "common"] ?? INVENTORY_RARITY_ORDER.common;
+  }
+  function itemTypeColor(type) {
+    return INVENTORY_TYPE_COLORS[type] ?? INVENTORY_DEFAULT_TYPE_COLOR;
+  }
+  function itemNameColor(item) {
+    if (item.rarity && INVENTORY_RARITY_COLORS[item.rarity]) return INVENTORY_RARITY_COLORS[item.rarity];
+    return itemTypeColor(item.type);
+  }
+  function rarityBorderColor(rarity) {
+    if (rarity && rarity !== "common" && INVENTORY_RARITY_COLORS[rarity]) return `${INVENTORY_RARITY_COLORS[rarity]}88`;
+    return INVENTORY_PLAIN_BORDER;
+  }
+  function itemTagLine(item) {
+    const parts = [];
+    if (item.rarity && item.rarity !== "common") parts.push(item.rarity.charAt(0).toUpperCase() + item.rarity.slice(1));
+    if (item.baseType) parts.push(titleWords(item.baseType));
+    else if (item.type) parts.push(item.type.charAt(0).toUpperCase() + item.type.slice(1));
+    if (item.material) parts.push(titleWords(item.material));
+    return parts.join(" \xB7 ");
+  }
+  function itemFilterCategory(item) {
+    const cat = typeof item.category === "string" ? foldInventoryName(item.category) : void 0;
+    const type = item.type;
+    if (type === "quest" || type === "key") return "quest";
+    if (type === "weapon" || type === "armor" || type === "tool" || cat === "weapons" || cat === "armor" || cat === "tools") return "weapons_armor";
+    if (type === "consumable" || type === "food" || type === "drink" || cat === "consumables" || cat === "food_drink" || cat === "alchemy") return "consumables";
+    if (type === "material" || cat === "materials" || cat === "crafting") return "materials";
+    return "other";
+  }
+  function itemGroupLabel(item) {
+    if (item.category) return titleWords(item.category);
+    return (item.type || "Other").replace(/\b\w/g, (c) => c.toUpperCase());
+  }
+  function itemEquipmentSlot(item) {
+    if (item.equipSlot) return item.equipSlot;
+    if (item.type === "weapon") return "weapon";
+    if (item.type === "armor") return "armor";
+    if (item.type === "tool" && item.effects) return "accessory";
+    return null;
+  }
+  var InventoryViewModel = class _InventoryViewModel {
+    constructor() {
+      /** Insertion-ordered store: the `currentState.player.inventory` slice. */
+      __publicField(this, "byId", /* @__PURE__ */ new Map());
+      __publicField(this, "gold", 0);
+      __publicField(this, "filter", "all");
+      __publicField(this, "collapsed", /* @__PURE__ */ new Set());
+    }
+    static fromSaveState(player) {
+      const model = new _InventoryViewModel();
+      model.loadFromSaveState(player);
+      return model;
+    }
+    /** Replace the store from a `currentState.player` slice. A second entry with the same id replaces the first. */
+    loadFromSaveState(player) {
+      this.byId.clear();
+      for (const raw of player?.inventory ?? []) {
+        const id = inventoryEntryId(raw);
+        if (id !== null) this.byId.set(id, { ...raw });
+      }
+      this.gold = Number.isFinite(player?.gold) ? player.gold : 0;
+    }
+    writeToSaveState(player) {
+      player.inventory = this.allItems();
+      player.gold = this.gold;
+    }
+    toSaveState() {
+      return { gold: this.gold, inventory: this.allItems() };
+    }
+    /** Add an item, stacking its quantity (default 1) onto a held entry with the same id. */
+    addItem(item) {
+      const id = inventoryEntryId(item);
+      if (id === null) return false;
+      const qty = Number.isFinite(item.quantity) ? item.quantity : 1;
+      const existing = this.byId.get(id);
+      if (existing) {
+        existing.quantity = (Number.isFinite(existing.quantity) ? existing.quantity : 1) + qty;
+        return true;
+      }
+      this.byId.set(id, { ...item, quantity: qty });
+      return true;
+    }
+    /** Remove `quantity` (default 1) of an item; the entry goes at zero or below. */
+    removeItem(itemId, quantity = 1) {
+      if (!Number.isFinite(quantity) || quantity < 1) return false;
+      const existing = this.byId.get(itemId);
+      if (!existing) return false;
+      existing.quantity = (Number.isFinite(existing.quantity) ? existing.quantity : 1) - quantity;
+      if (existing.quantity <= 0) this.byId.delete(itemId);
+      return true;
+    }
+    getItem(itemId) {
+      return this.byId.get(itemId);
+    }
+    hasItem(itemId) {
+      return this.byId.has(itemId);
+    }
+    /** Every item, in insertion order, as detached copies (the save path, the trade screens). */
+    allItems() {
+      return this.liveItems().map((i) => ({ ...i }));
+    }
+    /**
+     * The stored objects themselves. `rows()` and `equipment()` project these, not copies, because
+     * a panel hands `row.item` to a handler that records an equip by writing `item.equipped` on the
+     * object it was given (Babylon's `handleEquipItem`); against a copy that write lands nowhere.
+     */
+    liveItems() {
+      return Array.from(this.byId.values());
+    }
+    itemCount() {
+      return this.byId.size;
+    }
+    clearAll() {
+      this.byId.clear();
+      this.collapsed.clear();
+    }
+    getGold() {
+      return this.gold;
+    }
+    /** Gold never goes below 0; a non-finite amount is ignored. */
+    setGold(amount) {
+      if (!Number.isFinite(amount)) return;
+      this.gold = Math.max(0, amount);
+    }
+    addGold(amount) {
+      this.setGold(this.gold + amount);
+    }
+    /** Spend gold: false, and nothing spent, when the purse is short or the amount is not a non-negative number. */
+    removeGold(amount) {
+      if (!Number.isFinite(amount) || amount < 0 || this.gold < amount) return false;
+      this.gold -= amount;
+      return true;
+    }
+    /** The equipped item in each slot (the first equipped in insertion order), or null. */
+    equipment() {
+      const out = Object.fromEntries(EQUIPMENT_SLOTS.map((s) => [s, null]));
+      for (const item of this.liveItems()) {
+        if (!item.equipped) continue;
+        const slot = itemEquipmentSlot(item);
+        if (slot && !out[slot]) out[slot] = item;
+      }
+      return out;
+    }
+    /** An unknown key is ignored. */
+    setFilter(filter) {
+      if (INVENTORY_FILTER_KEYS.includes(filter)) this.filter = filter;
+    }
+    currentFilter() {
+      return this.filter;
+    }
+    toggleGroup(label) {
+      if (this.collapsed.has(label)) this.collapsed.delete(label);
+      else this.collapsed.add(label);
+    }
+    isCollapsed(label) {
+      return this.collapsed.has(label);
+    }
+    filteredItems() {
+      const all = this.liveItems();
+      return this.filter === "all" ? all : all.filter((item) => itemFilterCategory(item) === this.filter);
+    }
+    counts() {
+      return { total: this.byId.size, shown: this.filteredItems().length };
+    }
+    /**
+     * Group headers (Quest pinned first, then by {@link compareInventoryNames}), each followed by its
+     * items (equipped first, then rarity, then name, then id); a folded group gives its header only.
+     * A filter with no hits gives one `empty` row.
+     */
+    rows() {
+      const filtered = this.filteredItems();
+      if (filtered.length === 0) {
+        return [{ kind: "empty", message: this.filter === "all" ? INVENTORY_EMPTY_MESSAGES.all : INVENTORY_EMPTY_MESSAGES.filtered }];
+      }
+      const groups = /* @__PURE__ */ new Map();
+      for (const item of filtered) {
+        const label = itemGroupLabel(item);
+        if (!groups.has(label)) groups.set(label, []);
+        groups.get(label).push(item);
+      }
+      const sorted = Array.from(groups.entries()).sort(([a], [b]) => {
+        if (a === b) return 0;
+        if (a === INVENTORY_PINNED_GROUP) return -1;
+        if (b === INVENTORY_PINNED_GROUP) return 1;
+        return compareInventoryNames(a, b);
+      });
+      const rows = [];
+      for (const [label, items] of sorted) {
+        const collapsed = this.collapsed.has(label);
+        rows.push({ kind: "group", label, count: items.length, collapsed });
+        if (collapsed) continue;
+        const ordered = [...items].sort((a, b) => {
+          if (!!a.equipped !== !!b.equipped) return a.equipped ? -1 : 1;
+          const ra = rarityRank(a);
+          const rb = rarityRank(b);
+          if (ra !== rb) return ra - rb;
+          const byName = compareInventoryNames(inventoryItemName(a), inventoryItemName(b));
+          if (byName !== 0) return byName;
+          return compareInventoryNames(inventoryEntryId(a) ?? "", inventoryEntryId(b) ?? "");
+        });
+        for (const item of ordered) rows.push(this.itemRow(item, label));
+      }
+      return rows;
+    }
+    itemRow(item, group) {
+      const slot = itemEquipmentSlot(item);
+      const equipped = !!item.equipped;
+      const isDocument = item.type === "document" || item.category === "document";
+      return {
+        kind: "item",
+        item,
+        id: inventoryEntryId(item) ?? "",
+        name: inventoryItemName(item),
+        quantity: Number.isFinite(item.quantity) ? item.quantity : 1,
+        group,
+        nameColor: equipped ? INVENTORY_EQUIPPED_NAME_COLOR : itemNameColor(item),
+        equipped,
+        slot,
+        canEquip: !!slot && !equipped,
+        canUnequip: !!slot && equipped,
+        canUse: INVENTORY_USABLE_TYPES.includes(item.type),
+        useLabel: isDocument ? "Read" : "Use",
+        canDrop: item.type !== "quest" && !equipped,
+        borderColor: rarityBorderColor(item.rarity),
+        tagLine: itemTagLine(item)
+      };
     }
   };
 
@@ -29550,7 +30921,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     const v = o[k];
     return typeof v === "number" ? v : d;
   }
-  function str(o, k, d = "") {
+  function str2(o, k, d = "") {
     const v = o[k];
     return typeof v === "string" ? v : d;
   }
@@ -29568,7 +30939,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function points(v) {
     return arr(v, "points").map(point);
   }
-  function vec(v) {
+  function vec2(v) {
     const o = obj(v, "a vector");
     return { x: numOr(o, "x", 0), y: numOr(o, "y", 0), z: numOr(o, "z", 0) };
   }
@@ -29584,13 +30955,13 @@ player_meets_cefr(Player, RequiredLevel) :-
   var DOOR_SOURCES = ["none", "binding_socket", "mesh_socket", "component", "binding_yaw"];
   function door(v) {
     const o = obj(v, "a door");
-    const source = str(o, "source", "none");
+    const source = str2(o, "source", "none");
     if (!DOOR_SOURCES.includes(source)) bad(`unknown door source '${source}'`);
     return {
       source,
-      name: str(o, "name"),
+      name: str2(o, "name"),
       hasPosition: bool(o, "hasPosition"),
-      position: present(o, "position") ? vec(o.position) : { x: 0, y: 0, z: 0 },
+      position: present(o, "position") ? vec2(o.position) : { x: 0, y: 0, z: 0 },
       yaw: numOr(o, "yaw", 0),
       candidates: numOr(o, "candidates", 0),
       height: numOr(o, "height", 0)
@@ -29598,13 +30969,13 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function candidate(v) {
     const o = obj(v, "a door candidate");
-    return { component: str(o, "component"), mesh: str(o, "mesh"), owner: str(o, "owner"), min: vec(o.min), max: vec(o.max) };
+    return { component: str2(o, "component"), mesh: str2(o, "mesh"), owner: str2(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
   }
   function policy(v) {
     const o = obj(v, "a fit policy");
     const d = defaultFitPolicy();
     const p = {
-      mode: str(o, "mode", "lot") === "none" ? "none" : "lot",
+      mode: str2(o, "mode", "lot") === "none" ? "none" : "lot",
       scaleMin: numOr(o, "scaleMin", d.scaleMin),
       scaleMax: numOr(o, "scaleMax", d.scaleMax),
       doorClearance: numOr(o, "doorClearance", d.doorClearance),
@@ -29619,16 +30990,16 @@ player_meets_cefr(Player, RequiredLevel) :-
     const g = obj(o.geometry, "geometry");
     const b = present(o, "bounds") ? obj(o.bounds, "bounds") : null;
     return {
-      entityId: str(o, "entityId"),
-      lotId: str(o, "lotId"),
+      entityId: str2(o, "entityId"),
+      lotId: str2(o, "lotId"),
       lot: present(o, "lot") ? readFitLot(o.lot) : null,
       lotCentre: present(o, "lotCentre") ? point(o.lotCentre) : null,
-      node: vec(o.node),
+      node: vec2(o.node),
       nodeHeading: num3(o, "nodeHeading"),
-      nodeScale: vec(o.nodeScale),
-      geometry: { scale: vec(g.scale), yaw: num3(g, "yaw"), offset: vec(g.offset) },
+      nodeScale: vec2(o.nodeScale),
+      geometry: { scale: vec2(g.scale), yaw: num3(g, "yaw"), offset: vec2(g.offset) },
       policy: policy(o.policy),
-      bounds: b === null ? null : { min: vec(b.min), max: vec(b.max) },
+      bounds: b === null ? null : { min: vec2(b.min), max: vec2(b.max) },
       door: door(o.door),
       ground: present(o, "ground") ? grid(o.ground) : null,
       castHeight: numOr(o, "castHeight", 0),
@@ -29638,9 +31009,9 @@ player_meets_cefr(Player, RequiredLevel) :-
   function obstacle(v) {
     const o = obj(v, "an obstacle");
     return {
-      entityId: str(o, "entityId"),
-      kind: str(o, "kind"),
-      lotId: str(o, "lotId"),
+      entityId: str2(o, "entityId"),
+      kind: str2(o, "kind"),
+      lotId: str2(o, "lotId"),
       points: points(o.points),
       halfWidth: numOr(o, "halfWidth", 0),
       closed: bool(o, "closed")
@@ -29652,8 +31023,8 @@ player_meets_cefr(Player, RequiredLevel) :-
   function body(v) {
     const o = obj(v, "a body");
     return {
-      entityId: str(o, "entityId"),
-      lotId: str(o, "lotId"),
+      entityId: str2(o, "entityId"),
+      lotId: str2(o, "lotId"),
       outline: points(o.outline),
       mass: num3(o, "mass"),
       maxShift: num3(o, "maxShift"),
@@ -29673,10 +31044,10 @@ player_meets_cefr(Player, RequiredLevel) :-
       y = p[1];
     }
     return {
-      kind: str(o, "kind"),
-      entityId: str(o, "entityId"),
-      archetype: str(o, "archetype"),
-      lotId: str(o, "lotId"),
+      kind: str2(o, "kind"),
+      entityId: str2(o, "entityId"),
+      archetype: str2(o, "archetype"),
+      lotId: str2(o, "lotId"),
       path: present(o, "path") ? points(o.path) : [],
       width: numOr(o, "width", 0),
       closed: bool(o, "closed"),
@@ -29690,12 +31061,12 @@ player_meets_cefr(Player, RequiredLevel) :-
     const o = obj(v, "a plan");
     const strips = present(o, "strips") ? arr(o.strips, "strips").map((x) => {
       const s = obj(x, "a strip");
-      const surface = str(s, "surface");
+      const surface = str2(s, "surface");
       if (surface !== "road" && surface !== "plaza" && surface !== "path") bad("a strip's surface is road, plaza or path");
       return {
-        entityId: str(s, "entityId"),
+        entityId: str2(s, "entityId"),
         surface,
-        lotId: str(s, "lotId"),
+        lotId: str2(s, "lotId"),
         points: points(s.points),
         halfWidth: numOr(s, "halfWidth", 0),
         closed: bool(s, "closed")
@@ -29704,8 +31075,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     const lots = present(o, "lots") ? arr(o.lots, "lots").map((x) => {
       const l = obj(x, "a lot");
       return {
-        entityId: str(l, "entityId"),
-        lotId: str(l, "lotId"),
+        entityId: str2(l, "entityId"),
+        lotId: str2(l, "lotId"),
         cx: num3(l, "cx"),
         cz: num3(l, "cz"),
         halfAcross: num3(l, "halfAcross"),
@@ -29720,7 +31091,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     return arr(v, "obstacles").map((x) => {
       const o = obj(x, "a ground obstacle");
       return {
-        entityId: str(o, "entityId"),
+        entityId: str2(o, "entityId"),
         building: bool(o, "building"),
         cx: num3(o, "cx"),
         cz: num3(o, "cz"),
@@ -29734,7 +31105,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function choices(v) {
     return arr(v, "authored").map((x) => {
       const o = obj(x, "a layer choice");
-      return { surface: str(o, "surface"), layer: str(o, "layer"), strength: numOr(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
+      return { surface: str2(o, "surface"), layer: str2(o, "layer"), strength: numOr(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
     });
   }
   var v3 = (v) => ({ x: v.x, y: v.y, z: v.z });
@@ -29835,11 +31206,11 @@ player_meets_cefr(Player, RequiredLevel) :-
     switch (op) {
       // ── building-fit ──
       case "isDoorPartName":
-        return isDoorPartName({ component: str(i, "component"), mesh: str(i, "mesh"), owner: str(i, "owner") });
+        return isDoorPartName({ component: str2(i, "component"), mesh: str2(i, "mesh"), owner: str2(i, "owner") });
       case "faceYawOf":
-        return faceYawOf(vec(i.point), vec(i.min), vec(i.max));
+        return faceYawOf(vec2(i.point), vec2(i.min), vec2(i.max));
       case "chooseDoorPart":
-        return doorJson(chooseDoorPart(arr(i.parts, "parts").map(candidate), vec(i.boundsMin), vec(i.boundsMax)));
+        return doorJson(chooseDoorPart(arr(i.parts, "parts").map(candidate), vec2(i.boundsMin), vec2(i.boundsMax)));
       case "bodyStature":
         return bodyStature(num3(i, "boundsHeight"), numOr(i, "headBoneHeight", 0), numOr(i, "crownTop", 0));
       case "fitBuildingToLot":
@@ -29849,7 +31220,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj(x, "a footprint");
           const corners = points(o.corners);
           if (corners.length !== 4) bad("a footprint has four corners");
-          return { entityId: str(o, "entityId"), lotId: str(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
+          return { entityId: str2(o, "entityId"), lotId: str2(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
         });
         return findFitOverlaps(buildings, obstacles(i.obstacles)).map((o) => ({ entityId: o.entityId, with: o.with, withKind: o.withKind, depth: o.depth }));
       }
@@ -29859,7 +31230,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return { gap: s.gap, axis: [s.axis[0], s.axis[1]] };
       }
       case "settleBodies": {
-        const rule2 = str(i, "rule");
+        const rule2 = str2(i, "rule");
         if (rule2 !== "neighbour" && rule2 !== "clearance") bad(`unknown settle rule '${rule2}'`);
         return movesJson(settleBodies(
           arr(i.bodies, "bodies").map(body),
@@ -29871,25 +31242,25 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "settleFittedBuildings":
         return movesJson(settleFittedBuildings(arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a fitted footprint");
-          return { entityId: str(o, "entityId"), lotId: str(o, "lotId"), corners: points(o.corners), neighbourGap: num3(o, "neighbourGap") };
+          return { entityId: str2(o, "entityId"), lotId: str2(o, "lotId"), corners: points(o.corners), neighbourGap: num3(o, "neighbourGap") };
         }), obstacles(i.obstacles)));
       case "settleClearance": {
         const items = arr(i.items, "items").map((x) => {
           const o = obj(x, "a clearance item");
-          const kind = str(o, "kind");
+          const kind = str2(o, "kind");
           const item = {
-            entityId: str(o, "entityId"),
+            entityId: str2(o, "entityId"),
             kind: kind === "building" ? "building" : kind === "plant" ? "plant" : "prop",
             outline: points(o.outline)
           };
           item.area = numOr(o, "area", 0);
-          item.archetype = str(o, "archetype");
+          item.archetype = str2(o, "archetype");
           item.height = numOr(o, "height", 0);
           item.longestPlan = numOr(o, "longestPlan", 0);
           item.crownRadius = numOr(o, "crownRadius", 1);
           return item;
         });
-        const start = present(i, "playerStart") ? vec(i.playerStart) : null;
+        const start = present(i, "playerStart") ? vec2(i.playerStart) : null;
         const r = settleClearance(items, obstacles(i.obstacles), SETTLE_DEFAULT_ITERATIONS, start);
         const out = {
           moves: movesJson(r.moves),
@@ -29902,7 +31273,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return out;
       }
       case "startClearOutline": {
-        const s = vec(i.playerStart);
+        const s = vec2(i.playerStart);
         return { startClearRadiusM: START_CLEAR_RADIUS_M, outline: startClearOutline(s.x, s.z).map(pt) };
       }
       case "clearancePairGap":
@@ -29912,7 +31283,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "layoutConstants":
         return { pairingNeighbourGap: PAIRING_NEIGHBOUR_GAP_M, crownRadius: CROWN_RADIUS_M };
       case "markerClearance":
-        return markerClearanceM(str(i, "archetype"), num3(i, "height"), num3(i, "longestPlan"));
+        return markerClearanceM(str2(i, "archetype"), num3(i, "height"), num3(i, "longestPlan"));
       case "plantWallClearance":
         return plantWallClearanceM(num3(i, "crownRadius"));
       case "settleBuildingMaxShift":
@@ -29948,8 +31319,8 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj(x, "a settled building");
           const d = present(o, "door") ? obj(o.door, "a door") : null;
           return {
-            entityId: str(o, "entityId"),
-            lotId: str(o, "lotId"),
+            entityId: str2(o, "entityId"),
+            lotId: str2(o, "lotId"),
             shiftX: numOr(o, "shiftX", 0),
             shiftZ: numOr(o, "shiftZ", 0),
             door: d === null ? null : { x: num3(d, "x"), z: num3(d, "z"), faceX: num3(d, "faceX"), faceZ: num3(d, "faceZ") }
@@ -29969,7 +31340,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "lanternsAtPathMouths": {
         const mouths = arr(i.mouths, "mouths").map((x) => {
           const o = obj(x, "a mouth");
-          return { pathId: str(o, "pathId"), x: num3(o, "x"), z: num3(o, "z"), dirX: num3(o, "dirX"), dirZ: num3(o, "dirZ"), halfWidth: num3(o, "halfWidth") };
+          return { pathId: str2(o, "pathId"), x: num3(o, "x"), z: num3(o, "z"), dirX: num3(o, "dirX"), dirZ: num3(o, "dirZ"), halfWidth: num3(o, "halfWidth") };
         });
         return lanternsAtPathMouths(mouths, points(i.lanterns)).map((l) => ({ ...l }));
       }
@@ -30015,7 +31386,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return arr(i.rows, "rows").map((x) => {
           const q = arr(x, "a row");
           const r = lookNeighbours(
-            str(i, "layerId"),
+            str2(i, "layerId"),
             { x: q[0], z: q[1], yaw: q[2] },
             { density: num3(look, "density"), clumping: num3(look, "clumping"), clumpCell: num3(look, "clumpCell"), jitter: num3(look, "jitter") },
             t === null ? null : { sizeX: num3(t, "sizeX"), sizeZ: num3(t, "sizeZ") },
@@ -30087,7 +31458,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         const f = backdropFrame(
           { minX: num3(box, "minX"), minZ: num3(box, "minZ"), maxX: num3(box, "maxX"), maxZ: num3(box, "maxZ"), minY: num3(box, "minY") },
           { minX: num3(m, "minX"), minZ: num3(m, "minZ"), maxX: num3(m, "maxX"), maxZ: num3(m, "maxZ") },
-          vec(i.pieceScale),
+          vec2(i.pieceScale),
           num3(i, "offsetY"),
           present(i, "edgeMinY") ? num3(i, "edgeMinY") : null
         );
@@ -31497,13 +32868,13 @@ player_meets_cefr(Player, RequiredLevel) :-
       const lot = lots[k];
       const hull = houses.get(d.entityId) ?? null;
       const ring = hull === null ? null : offsetHull(hull, off);
-      const round = (a, t) => hull === null ? [] : roundHouse(a, t, hull, ring, pathHalf);
-      let mid = round(out, gates[k]);
+      const round2 = (a, t) => hull === null ? [] : roundHouse(a, t, hull, ring, pathHalf);
+      let mid = round2(out, gates[k]);
       const last = mid.length > 0 ? mid[mid.length - 1] : out;
       if (missesGap(lot, last, gates[k])) {
         const depth = Math.max(edgeAway(lot) - off, frame(lot, last)[0]);
         const approach = [lot.cx + lot.awayX * depth, lot.cz + lot.awayZ * depth];
-        if (hull === null || segmentOutlineDistance(approach, approach, hull) >= pathHalf - COMPOSITION_SLACK) mid = [...round(out, approach), approach];
+        if (hull === null || segmentOutlineDistance(approach, approach, hull) >= pathHalf - COMPOSITION_SLACK) mid = [...round2(out, approach), approach];
       }
       polyline.push(...mid);
       const tail = polyline[polyline.length - 1];
@@ -31860,7 +33231,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     if (typeof v !== "number") bad2(`'${k}' is not a number`);
     return v;
   }
-  function str2(o, k) {
+  function str3(o, k) {
     const v = o[k];
     if (typeof v !== "string") bad2(`'${k}' is not a string`);
     return v;
@@ -31885,10 +33256,10 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function stripOf(v) {
     const s = obj2(v, "a strip");
-    const surface = str2(s, "surface");
+    const surface = str3(s, "surface");
     if (surface !== "road" && surface !== "plaza" && surface !== "path") bad2(`unknown strip surface '${surface}'`);
     return {
-      entityId: str2(s, "entityId"),
+      entityId: str3(s, "entityId"),
       surface,
       lotId: typeof s.lotId === "string" ? s.lotId : "",
       points: points2(s.points, "a strip's points"),
@@ -31899,7 +33270,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function lotOf(v) {
     const l = obj2(v, "a lot");
     return {
-      entityId: str2(l, "entityId"),
+      entityId: str3(l, "entityId"),
       lotId: typeof l.lotId === "string" ? l.lotId : "",
       cx: num4(l, "cx"),
       cz: num4(l, "cz"),
@@ -31937,7 +33308,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function doorsOf(v) {
     return arr2(v ?? [], "doors").map((d) => {
       const o = obj2(d, "a door");
-      return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
+      return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
     });
   }
   function groupingInput(i) {
@@ -31950,7 +33321,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function propsOf(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
+      return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
     });
   }
   function plannedOn(i) {
@@ -31964,7 +33335,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function spotsOf(v, what) {
     return arr2(v ?? [], what).map((p) => {
       const o = obj2(p, what);
-      return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z") };
+      return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z") };
     });
   }
   var postsOf = (v) => spotsOf(v, "posts");
@@ -31973,38 +33344,38 @@ player_meets_cefr(Player, RequiredLevel) :-
   function foliageOf(v) {
     return arr2(v ?? [], "foliage").map((p) => {
       const o = obj2(p, "a foliage prop");
-      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num4(o, "x"), z: num4(o, "z") };
+      return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), x: num4(o, "x"), z: num4(o, "z") };
     });
   }
   function villagersOf(v) {
     return arr2(v ?? [], "villagers").map((p) => {
       const o = obj2(p, "a villager");
-      return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), target: typeof o.target === "string" ? o.target : null };
+      return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), target: typeof o.target === "string" ? o.target : null };
     });
   }
   function outlinedBuildings(v) {
     return arr2(v ?? [], "buildings").map((b) => {
       const o = obj2(b, "a building");
-      return { entityId: str2(o, "entityId"), outline: points2(o.outline, "a building's outline") };
+      return { entityId: str3(o, "entityId"), outline: points2(o.outline, "a building's outline") };
     });
   }
   function reachProps(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
+      return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
     });
   }
   function seatsOf(v) {
     return arr2(v ?? [], "seats").map((s) => {
       const o = obj2(s, "a seat");
-      return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading"), length: num4(o, "length") };
+      return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading"), length: num4(o, "length") };
     });
   }
   function compositionHouseModels(v) {
     return arr2(v ?? [], "models").map((m) => {
       const o = obj2(m, "a model");
       if (o.entry !== void 0) {
-        const model = houseModelOf(str2(o, "id"), obj2(o.entry, "a model's entry"));
+        const model = houseModelOf(str3(o, "id"), obj2(o.entry, "a model's entry"));
         if (model === null) bad2(`model ${JSON.stringify(o.id)}: its entry states no measured footprint`);
         return model;
       }
@@ -32012,7 +33383,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         if (typeof s !== "string" || !HOUSE_SIDES.includes(s)) bad2(`unknown house side ${JSON.stringify(s)}`);
         return s;
       });
-      return { id: str2(o, "id"), width: num4(o, "width"), depth: num4(o, "depth"), blank };
+      return { id: str3(o, "id"), width: num4(o, "width"), depth: num4(o, "depth"), blank };
     });
   }
   function runCompositionOp(op, input, rules = DEFAULT_COMPOSITION_RULES) {
@@ -32052,7 +33423,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "auditGroundEdges":
         return json3(auditGroundEdges(arr2(i.samples, "samples").map((s) => point2(s, "an [s, w] sample")), r));
       case "coverageAudit": {
-        const source = str2(i, "source");
+        const source = str3(i, "source");
         if (source !== "transition" && source !== "paint") bad2(`unknown coverage source '${source}'`);
         const profile = coverageProfile(
           compositionPlan(i.plan),
@@ -32084,7 +33455,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "composeYards": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
+          return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
         });
         return json3(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
       }
@@ -32093,7 +33464,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         if (i.buildings === void 0 || i.props === void 0) bad2("a lanternsOnRoutes input states its 'buildings' and 'props' (empty means none)");
         const lines2 = arr2(i.lines ?? [], "lines").map((q) => {
           const o = obj2(q, "a line");
-          return { entityId: str2(o, "entityId"), points: points2(o.points, "a line's points") };
+          return { entityId: str3(o, "entityId"), points: points2(o.points, "a line's points") };
         });
         return json3(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
       }
@@ -32109,7 +33480,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "assignHouseModels": {
         const houses = arr2(i.houses ?? [], "houses").map((h) => {
           const o = obj2(h, "a house");
-          return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
+          return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
         });
         return json3(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: compositionHouseModels(i.models) }, r));
       }
@@ -32122,7 +33493,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "composeVillage": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), outline: points2(o.outline, "an outline") };
+          return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), outline: points2(o.outline, "an outline") };
         });
         return json3(
           composeVillage(
@@ -32281,6 +33652,11 @@ player_meets_cefr(Player, RequiredLevel) :-
       load: ({ model }, op) => plain(model.load(slot(op))),
       continue: ({ model }) => plain(model.continueGame()),
       delete: ({ model }, op) => plain(model.delete(slot(op))),
+      // The slot list's Delete asks first (PL.slots-delete-states, core 2e1706a):
+      // `ask_delete` opens the view's `confirm` prompt, its two actions answer it.
+      ask_delete: ({ model }, op) => plain(model.askDelete(slot(op))),
+      confirm_delete: ({ model }) => plain(model.confirmDelete()),
+      cancel_delete: ({ model }) => plain(model.cancelDelete()),
       key: ({ model }, op) => plain(model.key(needString(m, op.code, "code"))),
       // JSON has no NaN: a `delta` of null is a non-finite tick, which core
       // answers as changing nothing (the corpus writes it the same way).
@@ -32294,6 +33670,168 @@ player_meets_cefr(Player, RequiredLevel) :-
         return plain(model.finished(result));
       }
     };
+  }
+  function optObject(method, value, name) {
+    return value === void 0 || value === null ? void 0 : needObject(method, value, name);
+  }
+  function optArrayValue(method, value, name) {
+    return value === void 0 || value === null ? void 0 : needArray(method, value, name);
+  }
+  function optBoolean(method, value, name) {
+    if (value !== void 0 && value !== null && typeof value !== "boolean") {
+      throw refuse2(method, `\`${name}\` must be a boolean`);
+    }
+    return value;
+  }
+  function propsContract() {
+    return plain({
+      "props-containers": {
+        defaultCapacity: DEFAULT_CONTAINER_CAPACITY,
+        states: CONTAINER_ACCESS_STATES,
+        refusals: CONTAINER_REFUSALS,
+        unlockResults: CONTAINER_UNLOCK_RESULTS
+      },
+      "props-documents": {
+        kinds: DOCUMENT_KINDS,
+        refusals: DOCUMENT_REFUSALS,
+        defaultCharsPerPage: DEFAULT_CHARS_PER_PAGE,
+        quizXp: DOCUMENT_QUIZ_XP,
+        defaultQuizXp: DEFAULT_QUIZ_XP,
+        phases: DOCUMENT_READER_PHASES,
+        actions: DOCUMENT_READER_ACTIONS
+      },
+      "props-notice-board": {
+        fluencyThresholds: NOTICE_FLUENCY_THRESHOLDS,
+        hookStates: NOTICE_HOOK_STATES,
+        actions: NOTICE_BOARD_ACTIONS,
+        refusals: NOTICE_BOARD_REFUSALS
+      },
+      "props-doors": {
+        states: DOOR_STATES,
+        actions: DOOR_ACTIONS,
+        refusals: DOOR_REFUSALS,
+        promptRadiusM: DOOR_PROMPT_RADIUS_M,
+        standoffM: DOOR_STANDOFF_M
+      },
+      "ui-inventory": {
+        filters: INVENTORY_FILTERS,
+        usableTypes: INVENTORY_USABLE_TYPES,
+        slotLabels: INVENTORY_SLOT_LABELS,
+        rarityColors: INVENTORY_RARITY_COLORS,
+        rarityOrder: INVENTORY_RARITY_ORDER,
+        typeColors: INVENTORY_TYPE_COLORS,
+        defaultTypeColor: INVENTORY_DEFAULT_TYPE_COLOR,
+        equippedNameColor: INVENTORY_EQUIPPED_NAME_COLOR,
+        plainBorder: INVENTORY_PLAIN_BORDER,
+        pinnedGroup: INVENTORY_PINNED_GROUP,
+        emptyMessages: INVENTORY_EMPTY_MESSAGES
+      }
+    });
+  }
+  function containerOf(method, value, name = "container") {
+    return needObject(method, value, name);
+  }
+  function containerContextOf(method, value) {
+    const ctx = optObject(method, value, "context") ?? {};
+    optArrayValue(method, ctx.playerItemIds, "context.playerItemIds");
+    (optArrayValue(method, ctx.buildings, "context.buildings") ?? []).forEach(
+      (b, i) => needObject(method, b, `context.buildings[${i}]`)
+    );
+    nowOf(method, ctx.now, "context.now");
+    return ctx;
+  }
+  function nowOf(method, value, name) {
+    if (value !== void 0 && value !== null && typeof value !== "string" && typeof value !== "number") {
+      throw refuse2(method, `\`${name}\` must be an ISO date-time string or epoch milliseconds`);
+    }
+    return value;
+  }
+  function doorBuildingsOf(method, value) {
+    return needArray(method, value, "buildings").map((b, i) => needObject(method, b, `buildings[${i}]`));
+  }
+  function insideOf(method, value) {
+    return value === void 0 || value === null ? null : needString(method, value, "inside");
+  }
+  function inventorySliceOf(method, value, name) {
+    const player = optObject(method, value, name);
+    if (player === void 0) return { gold: 0, inventory: [] };
+    optArrayValue(method, player.inventory, `${name}.inventory`);
+    return player;
+  }
+  function inventoryView(model) {
+    const equipment = model.equipment();
+    return plain({
+      filter: model.currentFilter(),
+      counts: model.counts(),
+      gold: model.getGold(),
+      rows: model.rows().map((row) => {
+        if (row.kind !== "item") return row;
+        const { item: _item, ...rest } = row;
+        return rest;
+      }),
+      equipment: Object.fromEntries(
+        Object.entries(equipment).map(([slot, item]) => [slot, item ? item.id ?? item.itemId : null])
+      ),
+      save: model.toSaveState()
+    });
+  }
+  function inventoryOps(m) {
+    const amount = (op) => op.amount === null ? Number.NaN : needNumber(m, op.amount, "amount");
+    return {
+      add: ({ model }, op) => model.addItem(needObject(m, op.item, "item")),
+      remove: ({ model }, op) => {
+        const id = needString(m, op.item, "item");
+        return op.quantity === void 0 || op.quantity === null ? model.removeItem(id) : model.removeItem(id, needNumber(m, op.quantity, "quantity"));
+      },
+      filter: ({ model }, op) => {
+        model.setFilter(needString(m, op.filter, "filter"));
+      },
+      toggle: ({ model }, op) => {
+        model.toggleGroup(needString(m, op.group, "group"));
+      },
+      set_gold: ({ model }, op) => {
+        model.setGold(amount(op));
+      },
+      add_gold: ({ model }, op) => {
+        model.addGold(amount(op));
+      },
+      remove_gold: ({ model }, op) => model.removeGold(amount(op)),
+      // What a host's equip handler does to the row's item (Babylon's
+      // handleEquipItem, core's corpus step `equip_flag`): writes `equipped` on the
+      // STORED object; false when nothing is held under that id.
+      equip_flag: ({ model }, op) => {
+        const id = needString(m, op.item, "item");
+        if (typeof op.equipped !== "boolean") throw refuse2(m, "`equipped` must be a boolean");
+        const item = model.getItem(id);
+        if (item) item.equipped = op.equipped;
+        return !!item;
+      },
+      get: ({ model }, op) => plain(model.getItem(needString(m, op.item, "item")) ?? null),
+      // Every stored item in insertion order, with core's id and display name for
+      // it (`inventoryEntryId`, `inventoryItemName`): what a host lists when it
+      // needs the whole pack, which `rows` (filtered, folded) is not.
+      items: ({ model }) => plain(model.allItems().map((item) => ({ id: inventoryEntryId(item), name: inventoryItemName(item), item }))),
+      load: ({ model }, op) => {
+        model.loadFromSaveState(inventorySliceOf(m, op.player, "player"));
+      },
+      clear: ({ model }) => {
+        model.clearAll();
+      }
+    };
+  }
+  function noticeBoardInputOf(method, args) {
+    const input = { notices: optArrayValue(method, args.notices, "notices") ?? [] };
+    if (args.fluency !== void 0 && args.fluency !== null) input.fluency = needNumber(method, args.fluency, "fluency");
+    for (const key of ["read", "answered"]) {
+      const list = optArrayValue(method, args[key], key);
+      if (list !== void 0) input[key] = list.map((id, i) => needString(method, id, `${key}[${i}]`));
+    }
+    const status = optObject(method, args.questStatus, "questStatus");
+    if (status !== void 0) {
+      for (const [quest, value] of Object.entries(status)) needString(method, value, `questStatus.${quest}`);
+      input.questStatus = status;
+    }
+    return input;
   }
   function catalogOf(method, value) {
     const catalog = needObject(method, value, "catalog");
@@ -32671,14 +34209,17 @@ player_meets_cefr(Player, RequiredLevel) :-
      * `remove`), and the host answers it with `finished` (a finished write: raise
      * core's `game_saved`).
      * ops (core's steps, `conformance/saves/slots.json`'s `run` steps): `save { slot }`
-     * · `load { slot }` · `continue` · `delete { slot }` · `key { code }` (a
-     * KeyboardEvent.code; F5 quick-saves, F9 quick-loads) · `tick { delta }`
-     * (seconds; null is a non-finite tick) · `finished { ok, savedAt?, summary?,
-     * outcome? }`. Each result is `{ ok, refusal?, outcome?, effect }`; a refusal
-     * (`busy`, `no_such_slot`, `slot_empty`, `slot_corrupted`, `no_quick_slot`,
-     * `nothing_to_continue`, `nothing_pending`, `unbound_key`) is a VALUE.
+     * · `load { slot }` · `continue` · `delete { slot }` · `ask_delete { slot }`
+     * (the list's Delete: opens the prompt) · `confirm_delete` · `cancel_delete`
+     * (the prompt's two actions) · `key { code }` (a KeyboardEvent.code; F5
+     * quick-saves, F9 quick-loads) · `tick { delta }` (seconds; null is a
+     * non-finite tick) · `finished { ok, savedAt?, summary?, outcome? }`. Each
+     * result is `{ ok, refusal?, outcome?, effect, history? }`; a refusal (`busy`,
+     * `no_such_slot`, `slot_empty`, `slot_corrupted`, `no_quick_slot`,
+     * `nothing_to_continue`, `nothing_pending`, `unbound_key`, `confirm_open`,
+     * `nothing_to_confirm`, `quick_slot_reserved`) is a VALUE.
      * view: core's `SaveSlotsView` — `{ rows, continueSlot, activeSlot, pending,
-     * autosave: { on, target, inSec }, indicator }`.
+     * confirm, autosave: { on, target, inSec }, indicator }`.
      */
     "saves.slots.apply": async (args) => {
       const m = "saves.slots.apply";
@@ -32734,6 +34275,274 @@ player_meets_cefr(Player, RequiredLevel) :-
         sell: (s, op) => model.sell(needString(m, op.merchantId, "merchantId"), needString(m, op.itemId, "itemId"), needNumber(m, op.qty, "qty"))
       });
       return { results, state };
+    },
+    // ── props, interiors and the inventory panel (P6; PL.native-props-rows, U89(2)) ──
+    //
+    // Core's P6 logic, row for row; each answers in the shape core's P6 corpora
+    // (`conformance/props/{containers,documents,doors,notice-board}.json`,
+    // `conformance/ui/inventory-cases.json`) pin, so `tests/props_corpus.cpp` holds
+    // every row to them. A domain refusal those corpora pin is a VALUE; what a row
+    // refuses itself (a field of the wrong JSON type, which core's types declare
+    // and JSON cannot hold) is an error `[invalid-input]`.
+    /**
+     * `props.contract {}` → `{ <area>: { <table>: value } }` — the tables each P6
+     * corpus file's `contract` states as data (states, refusals, actions, the
+     * capacity, page size, quiz XP, the door's prompt radius and stand-off, the
+     * inventory's filters, colours, slot labels and empty messages), from core's
+     * exported constants, keyed by the file's `area`. A binding reads its words
+     * and numbers here instead of restating them.
+     */
+    "props.contract": () => propsContract(),
+    /**
+     * `props.containers.view { container, context? }` → `{ view }` — core's
+     * `containerView`: `{ id, state (open | locked | unreachable), refusal,
+     * canUnlock, capacity, slotsUsed, slotsFree, full, respawnDue }`. `container` is
+     * a `ContainerRecord` (a runtime container, plus `buildingId`/`location` from
+     * the World IR); `context` is `{ playerItemIds?, buildings?: [{ id, interior }],
+     * now? }`.
+     */
+    "props.containers.view": (args) => {
+      const m = "props.containers.view";
+      const [container, ctx] = coded("invalid-input", () => [containerOf(m, args.container), containerContextOf(m, args.context)]);
+      return { view: plain(containerView(container, ctx)) };
+    },
+    /**
+     * `props.containers.unlock { container, context? }` → `{ result, container }` —
+     * core's `unlockContainer`: `result` is `unlocked` (and `container` comes back
+     * with `locked: false`), `not_locked`, `no_key_item`, `key_missing`, or an
+     * unreachable container's refusal; the host stores the record it gets back.
+     */
+    "props.containers.unlock": (args) => {
+      const m = "props.containers.unlock";
+      const [container, ctx] = coded("invalid-input", () => [containerOf(m, args.container), containerContextOf(m, args.context)]);
+      return plain(unlockContainer(container, ctx));
+    },
+    /**
+     * `props.containers.move { container, move: { kind: 'take' } | { kind: 'put',
+     * itemId }, context? }` → `{ refusal }` — core's `containerMoveRefusal`: null when
+     * `ui.trade` may run the move, else the first of `unknown_building`,
+     * `no_interior`, `locked`, `full` (a put that stacks onto a held id is allowed
+     * when full).
+     */
+    "props.containers.move": (args) => {
+      const m = "props.containers.move";
+      const [container, move, ctx] = coded("invalid-input", () => {
+        const mv = needObject(m, args.move, "move");
+        oneOf(m, mv.kind, ["take", "put"], "move.kind");
+        if (mv.kind === "put") needString(m, mv.itemId, "move.itemId");
+        return [containerOf(m, args.container), mv, containerContextOf(m, args.context)];
+      });
+      return { refusal: containerMoveRefusal(container, move, ctx) };
+    },
+    /**
+     * `props.containers.at { containers, location: { businessId?, residenceId?,
+     * lotId? } }` → `{ ids }` — core's `containersAtLocation`, in input order.
+     */
+    "props.containers.at": (args) => {
+      const m = "props.containers.at";
+      const [containers, location] = coded("invalid-input", () => [
+        needArray(m, args.containers, "containers").map((c, i) => containerOf(m, c, `containers[${i}]`)),
+        optObject(m, args.location, "location") ?? {}
+      ]);
+      return { ids: containersAtLocation(containers, location) };
+    },
+    /**
+     * `props.containers.respawn { container, now }` → `{ due }` — core's
+     * `containerRespawnDue` (`now` an ISO date-time or epoch milliseconds).
+     */
+    "props.containers.respawn": (args) => {
+      const m = "props.containers.respawn";
+      const [container, now] = coded("invalid-input", () => [containerOf(m, args.container), nowOf(m, args.now, "now")]);
+      return { due: containerRespawnDue(container, now) };
+    },
+    /**
+     * `props.documents.document { document, options?: { charsPerPage? } }` → core's
+     * `documentOf`: `{ ok: true, document }` (one `ReadableDocument` from a TextIR,
+     * a NoticeArticle, a book or a sign) or the refusal VALUE `{ ok: false, refusal:
+     * { code, field } }` (`missing_field`, `unknown_kind`, `bad_pages`,
+     * `bad_chars_per_page`). `document` goes to core unchecked: core types it
+     * `unknown` and refuses what it cannot read.
+     */
+    "props.documents.document": (args) => {
+      const m = "props.documents.document";
+      const options = coded("invalid-input", () => optObject(m, args.options, "options") ?? {});
+      return plain(documentOf(args.document, options));
+    },
+    /**
+     * `props.documents.paginate { text, charsPerPage? }` → `{ pages }` — core's
+     * `paginateText` (UTF-16 code units, word-boundary breaks, empty pages dropped;
+     * an absent `charsPerPage` is core's 800).
+     */
+    "props.documents.paginate": (args) => {
+      const m = "props.documents.paginate";
+      const [text3, per] = coded("invalid-input", () => [needString(m, args.text, "text"), optNumber(m, args.charsPerPage, "charsPerPage")]);
+      return { pages: per === void 0 ? paginateText(text3) : paginateText(text3, per) };
+    },
+    /**
+     * `props.reader.create { document, options?, open?: { alreadyRead?,
+     * alreadyAnswered? } }` → `{ ok: true, session, document, view }` — the reader
+     * panel's `DocumentReader` over `documentOf(document, options)` (`document` is
+     * core's `ReadableDocument`, the pages a panel draws) — or, when `documentOf`
+     * refuses, its refusal VALUE `{ ok: false, refusal }` and no session.
+     * view: core's `DocumentReaderView` — `{ phase, page, pageCount, content,
+     * contentTranslation, canPrev, canNext, nextLabel, question, answer }`.
+     */
+    "props.reader.create": (args) => {
+      const m = "props.reader.create";
+      const [options, open] = coded("invalid-input", () => {
+        const o = optObject(m, args.open, "open") ?? {};
+        optBoolean(m, o.alreadyRead, "open.alreadyRead");
+        optBoolean(m, o.alreadyAnswered, "open.alreadyAnswered");
+        return [optObject(m, args.options, "options") ?? {}, o];
+      });
+      const r = documentOf(args.document, options);
+      if (!r.ok) return plain(r);
+      const model = new DocumentReader(r.document, open);
+      return { ok: true, session: openSession("props.reader", { model }), document: plain(r.document), view: plain(model.view()) };
+    },
+    /**
+     * `props.reader.apply { session, ops }` → `{ results, view }`. ops are core's
+     * reader actions — `next` (Done on the last page), `prev`, `answer { index }`,
+     * `close` — and EVERY op goes to core's `step`: an action core does not know is
+     * its refusal VALUE `unknown_action`, never the row's error. Each result is
+     * `{ ok: true, events }` (`document_read`, `document_collected`, `reading_xp`,
+     * `vocabulary_added`, `clue_discovered`, `question_answered`, `document_closed`:
+     * the host raises them) or `{ ok: false, refusal: { code, field } }`.
+     */
+    "props.reader.apply": async (args) => {
+      const m = "props.reader.apply";
+      const s = session(m, args, "props.reader");
+      const results = await applySteps(m, s, args, ({ model }, op) => plain(model.step(op)));
+      return { results, view: plain(s.model.view()) };
+    },
+    /**
+     * `props.doors.door { building }` → `{ door }` — core's `doorView`: `{ id, state
+     * (closed | locked | no_interior), doorAt, outside: { position, yaw }, label,
+     * interiorFunction }`. `building` is core's `DoorBuildingInput` (a BuildingIR's
+     * fields plus the host's name, lock, the layout's measured `door` and `doorYaw`).
+     */
+    "props.doors.door": (args) => {
+      const m = "props.doors.door";
+      const building = coded("invalid-input", () => needObject(m, args.building, "building"));
+      return { door: plain(doorView(building)) };
+    },
+    /**
+     * `props.doors.prompt { buildings, player: { position, inside? } }` → `{ prompt }`
+     * — core's `doorPrompt`: `{ building, action (enter | exit), label, state,
+     * distance }`, or null when nothing prompts.
+     */
+    "props.doors.prompt": (args) => {
+      const m = "props.doors.prompt";
+      const [buildings, player] = coded("invalid-input", () => {
+        const p = needObject(m, args.player, "player");
+        const inside = insideOf(m, p.inside);
+        if (!inside) needObject(m, p.position, "player.position");
+        return [doorBuildingsOf(m, args.buildings), p];
+      });
+      return { prompt: plain(doorPrompt(buildings, player)) };
+    },
+    /**
+     * `props.doors.step { buildings, inside?, playerItemIds?, action: { op: 'enter',
+     * building } | { op: 'exit' } }` → core's `doorStep`: `{ ok: true, handoff,
+     * inside }` (`enter_interior { building, interior, interiorFunction, arrive,
+     * entrance, unlocked }` or `exit_to_exterior { building, arrive, yaw }`; `inside`
+     * is where the player is after — the host keeps it) or the refusal VALUE `{ ok:
+     * false, refusal: { code, field } }`. `action` goes to core as it is, so an
+     * action core does not know is its `unknown_action`.
+     */
+    "props.doors.step": (args) => {
+      const m = "props.doors.step";
+      const [buildings, state, action] = coded("invalid-input", () => [
+        doorBuildingsOf(m, args.buildings),
+        {
+          inside: insideOf(m, args.inside),
+          playerItemIds: (optArrayValue(m, args.playerItemIds, "playerItemIds") ?? []).map(
+            (id, i) => needString(m, id, `playerItemIds[${i}]`)
+          )
+        },
+        needObject(m, args.action, "action")
+      ]);
+      return plain(doorStep(buildings, state, action));
+    },
+    /**
+     * `props.board.create { notices, fluency?, read?, answered?, questStatus? }` →
+     * `{ session, view }` — core's `NoticeBoard` for one settlement's board:
+     * `notices` are NoticeArticles (`props.notices.generate`'s, or the world's),
+     * `fluency` 0–100, `read`/`answered` the notice ids done before, `questStatus`
+     * quest id → its lifecycle status. view: core's `NoticeBoardView` — `{ rows,
+     * shown, hidden, unread, selected }`.
+     */
+    "props.board.create": (args) => {
+      const m = "props.board.create";
+      const input = coded("invalid-input", () => noticeBoardInputOf(m, args));
+      const model = new NoticeBoard(input);
+      return { session: openSession("props.board", { model }), view: plain(model.view()) };
+    },
+    /**
+     * `props.board.apply { session, ops }` → `{ results, view }`. ops are core's
+     * board actions — `select { id }`, `answer { id, index }`, `take_quest { id }` —
+     * and EVERY op goes to core's `step`: an action core does not know is its
+     * refusal VALUE `unknown_action`. Each result is `{ ok: true, events }`
+     * (`notice_read`, `reading_xp`, `question_answered`, `quest_requested`) or `{ ok:
+     * false, refusal: { code, field } }`.
+     */
+    "props.board.apply": async (args) => {
+      const m = "props.board.apply";
+      const s = session(m, args, "props.board");
+      const results = await applySteps(m, s, args, ({ model }, op) => plain(model.step(op)));
+      return { results, view: plain(s.model.view()) };
+    },
+    /**
+     * `props.notices.generate { settlementId, settlementName, npcs: [{ characterId,
+     * name, occupation? }] }` → `{ articles }` — core's `generateSettlementNotices`:
+     * one NoticeArticle per NPC, chosen by occupation, deterministic.
+     */
+    "props.notices.generate": (args) => {
+      const m = "props.notices.generate";
+      const [id, name, npcs] = coded("invalid-input", () => [
+        needString(m, args.settlementId, "settlementId"),
+        needString(m, args.settlementName, "settlementName"),
+        needArray(m, args.npcs, "npcs").map((npc, i) => {
+          needObject(m, npc, `npcs[${i}]`);
+          needString(m, npc.characterId, `npcs[${i}].characterId`);
+          needString(m, npc.name, `npcs[${i}].name`);
+          if (npc.occupation !== void 0 && npc.occupation !== null) needString(m, npc.occupation, `npcs[${i}].occupation`);
+          return npc;
+        })
+      ]);
+      return { articles: plain(generateSettlementNotices(id, name, npcs)) };
+    },
+    /**
+     * `inventory.create { player? }` → `{ session, view }` — the inventory panel's
+     * `InventoryViewModel` (`ui/inventory-model`, moved into core from Babylon by
+     * P6.core) over a `currentState.player` slice `{ gold, inventory }` (absent:
+     * an empty pack). view: `{ filter, counts: { total, shown }, gold, rows,
+     * equipment: { weapon, armor, accessory } (the equipped item's id or null),
+     * save: { gold, inventory } }` — the state core's inventory corpus records.
+     * Not `ui.trade`: that row is core's `TradeModel` (moving stock between the
+     * pack, a container and a merchant over the same slice); this is the panel.
+     */
+    "inventory.create": (args) => {
+      const m = "inventory.create";
+      const player = coded("invalid-input", () => inventorySliceOf(m, args.player, "player"));
+      const model = InventoryViewModel.fromSaveState(player);
+      return { session: openSession("inventory", { model }), view: inventoryView(model) };
+    },
+    /**
+     * `inventory.apply { session, ops }` → `{ results, view }`. ops (core's corpus
+     * steps, then three a game needs): `add { item }` · `remove { item, quantity? }`
+     * · `filter { filter }` (an unknown key is ignored) · `toggle { group }` ·
+     * `set_gold`/`add_gold`/`remove_gold { amount }` (null is a non-finite amount) ·
+     * `equip_flag { item, equipped }` (writes `equipped` on the stored item, as a
+     * host's equip handler does) · `get { item }` → the stored item or null ·
+     * `items` → every stored item, insertion order, as `{ id, name, item }` ·
+     * `load { player }` (replace the store from a save slice) · `clear`.
+     */
+    "inventory.apply": async (args) => {
+      const m = "inventory.apply";
+      const s = session(m, args, "inventory");
+      const results = await applyOps(m, s, args, inventoryOps(m));
+      return { results, view: inventoryView(s.model) };
     },
     // ── quests (P3) ─────────────────────────────────────────────────────────────
     /**

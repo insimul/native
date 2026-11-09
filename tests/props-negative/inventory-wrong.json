@@ -1,0 +1,393 @@
+{
+  "area": "ui-inventory",
+  "description": "The negative control for props_corpus (tests/props_corpus.cpp): cases in ui/inventory-cases.json's shape whose expectations are DELIBERATELY WRONG. props_corpus_negative passes only when the runner reports every one as differing and the run as failed. One case, through the inventory session.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "hand-written; each case is core's (conformance/ui/inventory-cases.json) with one expected value changed, named by its new name"
+  ],
+  "contract": {
+    "filters": [
+      {
+        "key": "all",
+        "label": "All"
+      },
+      {
+        "key": "weapons_armor",
+        "label": "Gear"
+      },
+      {
+        "key": "consumables",
+        "label": "Consumables"
+      },
+      {
+        "key": "materials",
+        "label": "Materials"
+      },
+      {
+        "key": "quest",
+        "label": "Quest"
+      },
+      {
+        "key": "other",
+        "label": "Other"
+      }
+    ],
+    "usableTypes": [
+      "collectible",
+      "consumable",
+      "document",
+      "drink",
+      "food",
+      "key",
+      "quest"
+    ],
+    "slotLabels": {
+      "weapon": "Weapon",
+      "armor": "Armor",
+      "accessory": "Accessory"
+    },
+    "rarityColors": {
+      "common": "#CCCCCC",
+      "uncommon": "#1EFF00",
+      "rare": "#0070DD",
+      "epic": "#A335EE",
+      "legendary": "#FF8000"
+    },
+    "rarityOrder": {
+      "legendary": 0,
+      "epic": 1,
+      "rare": 2,
+      "uncommon": 3,
+      "common": 4
+    },
+    "typeColors": {
+      "quest": "#FFD700",
+      "collectible": "#87CEEB",
+      "key": "#FF6347",
+      "consumable": "#90EE90",
+      "weapon": "#FF8C00",
+      "armor": "#B0C4DE",
+      "food": "#DEB887",
+      "drink": "#DEB887",
+      "material": "#D2B48C",
+      "tool": "#C0C0C0"
+    },
+    "defaultTypeColor": "white",
+    "equippedNameColor": "#90EE90",
+    "plainBorder": "rgba(150, 150, 150, 0.5)",
+    "pinnedGroup": "Quest",
+    "emptyMessages": {
+      "all": "Your inventory is empty",
+      "filtered": "No items in this category"
+    },
+    "id": "id, else itemId; an entry with neither is skipped; a later entry with a loaded id replaces the earlier; name is name, else itemName, else the id",
+    "order": "groups: pinnedGroup first, then by name order; items: equipped first, then rarityOrder (none or unknown is common), then name order, then id order. name order: fold ASCII A-Z to a-z only (no Unicode case mapping: É stays U+00C9, İ stays U+0130), compare the folded strings by UTF-16 code unit, then the raw strings by code unit (Babylon used localeCompare, which is locale-dependent)",
+    "filter": "quest: type quest or key; weapons_armor: type weapon, armor or tool, or category weapons, armor or tools; consumables: type consumable, food or drink, or category consumables, food_drink or alchemy; materials: type material, or category materials or crafting; else other. The category compares ASCII-folded (as in name order). An unknown filter key is ignored",
+    "group": "category with underscores as spaces and each word capitalised, else the type capitalised, else Other",
+    "slot": "equipSlot, else weapon -> weapon, armor -> armor, tool with effects -> accessory, else none; a binding equips through EquipmentManager.equip({...item, equipSlot: slot})",
+    "row": "nameColor: equippedNameColor when equipped, else the rarity colour, else the type colour; canEquip slot and not equipped; canUnequip slot and equipped; canUse type in usableTypes; useLabel Read for type or category document; canDrop not quest and not equipped; borderColor rarity colour + 88 above common, else plainBorder; tagLine rarity above common capitalised, baseType title-cased else type capitalised, material title-cased, joined with ' · '; quantity a finite quantity, else 1",
+    "store": "add stacks onto a held id (quantity default 1); remove of a quantity not finite or < 1 is refused; otherwise subtracts and drops the entry at <= 0 (removing more than is held returns true); equipment is the first equipped item per slot in insertion order",
+    "gold": "loads a finite gold, else 0; set clamps at 0; a non-finite amount changes nothing; remove refuses a non-finite, negative or larger amount"
+  },
+  "cases": [
+    {
+      "name": "inventory: expected WRONGLY four loaves after 2 + 3",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 2
+            }
+          ]
+        },
+        "steps": [
+          {
+            "op": "add",
+            "item": {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 3
+            }
+          },
+          {
+            "op": "add",
+            "item": {
+              "id": "apple",
+              "name": "apple",
+              "type": "food"
+            }
+          },
+          {
+            "op": "add",
+            "item": {
+              "name": "no id",
+              "type": "food"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 1,
+            "shown": 1
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Food",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "bread",
+              "name": "bread",
+              "quantity": 2,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "bread",
+                "name": "bread",
+                "type": "food",
+                "quantity": 2
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "result": true,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 1,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 5,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 4
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": true,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 2,
+                "shown": 2
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 2,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "apple",
+                  "name": "apple",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 5,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 5
+                  },
+                  {
+                    "id": "apple",
+                    "name": "apple",
+                    "type": "food",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 2,
+                "shown": 2
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 2,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "apple",
+                  "name": "apple",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 5,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 5
+                  },
+                  {
+                    "id": "apple",
+                    "name": "apple",
+                    "type": "food",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

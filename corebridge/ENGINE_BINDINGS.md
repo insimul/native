@@ -146,8 +146,12 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `SaveSlotsSession`: `saves.slots.create { config?, slots?, activeSlot? }` →
   `{ session, config, view }` and `saves.slots.apply { session, ops }` →
   `{ results, view }`, the ops being core's steps (`save { slot }`, `load { slot }`,
-  `continue`, `delete { slot }`, `key { code }`, `tick { delta }`, `finished { ok,
-  savedAt?, summary?, outcome? }`). The session does no I/O: each result's
+  `continue`, `delete { slot }`, `ask_delete { slot }`, `confirm_delete`,
+  `cancel_delete`, `key { code }`, `tick { delta }`, `finished { ok, savedAt?,
+  summary?, outcome? }`; the three delete-prompt steps and a result's `history`
+  arrived with the ac229a7 pin, core's PL.slots-delete-states, as did core's
+  PL.quick-slot: an unset `quickSlot` is now a dedicated quick slot at index
+  `slotCount`). The session does no I/O: each result's
   `effect` (`write`, `read`, `remove`) is the I/O the binding does with its own
   save codec (`save.encode`/`save.decode`), answered with `finished`. With them
   `Portable/InsimulSaveSlots` (the session, the indicator, the config resolution,
@@ -155,12 +159,61 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   of `view`. Re-vendor `conformance/saves/slots.json` from core at this library's
   pin and have `test_save_slots` drive it the way `tests/saves_slots_corpus.cpp`
   does: a `run` case as one create and one apply per step (`{ save: i }` → `{ op:
-  "save", slot: i }`; `key` → `code`, `tick` → `delta`, `finished`'s fields
-  spread), `config` through create's `config`, `continue` and `rows` through
-  create's `view` (a `busy` rows case: one pending `save` of slot 0 first). The
-  11 `indicator` cases are not a session's (they show a bare indicator); the
+  "save", slot: i }`, likewise `load`/`delete`/`ask_delete`; `key` → `code`, `tick`
+  → `delta`, `confirm_delete`/`cancel_delete` with no field, `finished`'s fields
+  spread), `config` through create's `config`, `continue` through the view of a
+  session created with `config: { slotCount, quickSlot: null }` (core's
+  `continueSlot` reads exactly `slotCount` slots), `rows` through create's `view`
+  (a `busy` rows case: one pending `save` of slot 0 first). The
+  15 `indicator` cases (11 at fc88be9) are not a session's (they show a bare indicator); the
   view's `indicator` is the binding's whole indicator. Numbers compare within the
   file's `tolerance`.
+- **Props and inventory (Unreal's `P6.unreal.retire-props-copy`, after
+  PL.native-props-rows; U89(2)).** `Portable/InsimulProps.{h,cpp}` is an interim
+  port of core's P6 logic; every entry point of it has a row (`README.md`, "The
+  props and inventory rows"), so the retirement is a substitution, entry point by
+  entry point:
+
+  | `InsimulProps.h` entry point | Row (and what of its answer) |
+  |---|---|
+  | `kDefaultContainerCapacity`, `kDefaultCharsPerPage`, `kDefaultQuizXp`, `kDoorPromptRadiusM`, `kDoorStandoffM` | `props.contract` → `props-containers.defaultCapacity`, `props-documents.defaultCharsPerPage`, `props-documents.defaultQuizXp`, `props-doors.promptRadiusM`, `props-doors.standoffM` |
+  | `ContractTables(Area)` | `props.contract` → `[Area]` (the same keys; `test_props_corpus`'s contract check holds the file's tables to it) |
+  | `FInventoryModel::FromSaveState(Player)` | `inventory.create { player }` → `{ session, view }` |
+  | `LoadFromSaveState(Player)` | `inventory.apply` op `load { player }` |
+  | `ToSaveState()` | `view.save` |
+  | `AddItem(Item)` | op `add { item }` → bool |
+  | `RemoveItem(Id)`, `RemoveItem(Id, Quantity)` | op `remove { item, quantity? }` → bool |
+  | `GetItem(Id)`, `HasItem(Id)` | op `get { item }` → the stored item, or null (has = non-null). A write through the pointer (the equip handler) is op `equip_flag { item, equipped }` |
+  | `ItemCount()`, `Counts()` | `view.counts` (`total`, `shown`) |
+  | `LiveItems()` | op `items` → `[{ id, name, item }]`, every stored item in insertion order |
+  | `InventoryEntryId`, `InventoryItemName` (a held item's id and display name) | op `items`' `id` and `name`, or an item row's `id` and `name` |
+  | `GetGold()`, `SetGold`, `AddGold`, `RemoveGold` | `view.gold`; ops `set_gold`, `add_gold`, `remove_gold { amount }` (→ bool) |
+  | `Equipment()` | `view.equipment` (the equipped item's id per slot; `get` for the item) |
+  | `SetFilter`, `CurrentFilter()` | op `filter { filter }`; `view.filter` |
+  | `ToggleGroup`, `IsCollapsed` | op `toggle { group }`; a group row's `collapsed` |
+  | `Rows()`, `RowItemIds()` | `view.rows` (an item row without its live `item`); the item rows' `id`s |
+  | `FoldInventoryName`, `CompareInventoryNames`, `ItemFilterCategory`, `ItemGroupLabel` | no row of their own: they order, file and label `view.rows`, which the rows already answer (the game calls none of them directly at 29c37ab) |
+  | `ContainerView(Container, Context)` | `props.containers.view { container, context }` → `view` |
+  | `UnlockContainer` | `props.containers.unlock` → `{ result, container }` |
+  | `ContainerMoveRefusal` (`""` = allowed) | `props.containers.move { container, move, context }` → `refusal` (null = allowed) |
+  | `ContainersAtLocation` | `props.containers.at` → `ids` |
+  | `ContainerRespawnDue` | `props.containers.respawn { container, now }` → `due` |
+  | `PaginateText` | `props.documents.paginate { text, charsPerPage? }` → `pages` |
+  | `DocumentOf` | `props.documents.document { document, options? }` |
+  | `FDocumentReader(Doc, Open)`; `Document()` | `props.reader.create { document, options?, open? }` (it runs `documentOf` itself; a refusal opens no session) → `{ session, document, view }` |
+  | `FDocumentReader::View()`, `Phase()` | `view`; `view.phase` |
+  | `FDocumentReader::Step(Action)` | `props.reader.apply { session, ops: [action] }` → `results[0]` |
+  | `DoorView` | `props.doors.door { building }` → `door` |
+  | `DoorPrompt` | `props.doors.prompt { buildings, player }` → `prompt` |
+  | `DoorStep(Buildings, Inside, PlayerItemIds, Action)` | `props.doors.step { buildings, inside?, playerItemIds?, action }` |
+  | `FNoticeBoard(Input)`, `View()`, `Step(Action)` | `props.board.create { notices, fluency?, read?, answered?, questStatus? }`; `view`; `props.board.apply` |
+  | `GenerateSettlementNotices(Id, Name, Npcs)` | `props.notices.generate { settlementId, settlementName, npcs }` → `articles` (full NoticeArticles) |
+  | `PropsCorpusOps()`, `RunPropsOp(...)` | no row: the replay is the runner's. Re-vendor `conformance/props/{containers,documents,doors,notice-board}.json` and `conformance/ui/inventory-cases.json` from core at this library's pin and drive each case as `tests/props_corpus.cpp` does (its header lists the mapping per op: the stateless ops send `input` as the args; `read`, `board`, `inventory` are one create and one apply per step; a door `session` keeps `inside` host-side; `generate` projects the articles) |
+
+  The sessions are `props.reader`, `props.board` and `inventory` (dispose each
+  with `session.dispose`). Every row answers in exactly the JSON the corpora pin,
+  so the `FJsonValue` code around the calls stays; what goes is the port's own
+  rules.
 - **Layout: one more op.** Core f9aef13 added `startClearOutline` to `LAYOUT_OPS`
   (PL.start-clearance, U78): the `layout.startClearOutline` row answers it, and
   `Tests/layout_corpus_ops.h` needs the matching entry when Unreal re-vendors

@@ -1,0 +1,67 @@
+{
+  "area": "props-containers",
+  "description": "The negative control for props_corpus (tests/props_corpus.cpp): cases in props/containers.json's shape whose expectations are DELIBERATELY WRONG. props_corpus_negative passes only when the runner reports every one as differing and the run as failed. One case, through props.containers.view, and the contract table defaultCapacity DELIBERATELY WRONG (12), which the runner must hold to props.contract. The other four container ops have no case here, which the runner must report as undriven.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "hand-written; each case is core's (conformance/props/containers.json) with one expected value changed, named by its new name"
+  ],
+  "contract": {
+    "defaultCapacity": 12,
+    "states": [
+      "open",
+      "locked",
+      "unreachable"
+    ],
+    "refusals": [
+      "unknown_building",
+      "no_interior",
+      "locked",
+      "full"
+    ],
+    "unlockResults": [
+      "unlocked",
+      "not_locked",
+      "no_key_item",
+      "key_missing"
+    ],
+    "normalise": "capacity 10 unless a finite number is stated; items [] unless an array; locked and respawns false unless stated (ContainerManager.toState)",
+    "reach": "a container at location interior is reachable only when its buildingId names a listed building that states an interior; unlisted -> unknown_building, no interior -> no_interior; outdoor or no location is always reachable. Interiors are stated by pipelines/atelier, never invented",
+    "order": "unknown_building / no_interior, then locked, then (a put) full",
+    "capacity": "slots, not quantities: full when items.length >= capacity; slotsFree = max(0, capacity - items.length); a put that stacks onto an entry with the same itemId is allowed when full",
+    "unlock": "unreachable -> its refusal; not locked -> not_locked; no keyItemId -> no_key_item; key not held -> key_missing; else unlocked and the record comes back with locked false. Lock picking is P9b",
+    "respawn": "due when respawns, lastOpenedAt and now are valid times, respawnTimeMinutes > 0 and (now - lastOpenedAt) / 60000 >= respawnTimeMinutes; now is an ISO date-time or epoch milliseconds the host passes",
+    "at": "ids in input order of containers whose businessId, residenceId or lotId equals a non-empty one of the location"
+  },
+  "cases": [
+    {
+      "name": "view: expected WRONGLY a capacity of 12 for an unlocked outdoor chest",
+      "op": "view",
+      "input": {
+        "container": {
+          "id": "chest_1",
+          "items": [
+            {
+              "itemId": "bread",
+              "itemName": "Bread",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "id": "chest_1",
+          "state": "open",
+          "refusal": null,
+          "canUnlock": false,
+          "capacity": 12,
+          "slotsUsed": 1,
+          "slotsFree": 9,
+          "full": false,
+          "respawnDue": false
+        }
+      }
+    }
+  ]
+}

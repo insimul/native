@@ -1,0 +1,35 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "farming",
+  "version": "0.1.0",
+  "name": "Farming",
+  "summary": "Plots that take a seed, grow over game days, ripen sooner for each watering, and yield the crop's authored harvest.",
+  "kind": "optional",
+  "phase": "P9d",
+  "catalog": ["gathering-farming"],
+  "core": {
+    "modules": ["farming"],
+    "predicatePacks": ["farming"],
+    "hostInterfaces": ["IAgentActionHost"],
+    "corpus": [
+      "conformance/production/work.json",
+      "conformance/prolog/mechanic-farming.json"
+    ]
+  },
+  "requires": [{ "id": "gathering" }, { "id": "time-weather" }],
+  "parameters": [
+    { "id": "defaultGrowth", "type": "integer", "min": 1, "maps": "ProductionTuning.defaultGrowth", "source": "world", "doc": "days a crop with no growth row takes" },
+    { "id": "defaultWaterBonus", "type": "integer", "min": 0, "maps": "ProductionTuning.defaultWaterBonus", "source": "world", "doc": "days each watering takes off" }
+  ],
+  "extensionPoints": [
+    { "id": "crops", "kind": "prolog-facts", "signature": "WorldIR.production.farming {crops, plots} (crop_yield/3, crop_growth/2)", "doc": "what a world grows" },
+    { "id": "refuse-farming", "kind": "prolog-forbid", "signature": "forbids/4 on ProductionTuning.plantAction / waterAction / harvestAction" }
+  ],
+  "events": { "emits": ["production_yielded"] },
+  "styles": { "art": ["prop.farm.*"] },
+  "checks": [{ "id": "corpus", "kind": "corpus" }],
+  "assistant": {
+    "summary": "Farming is core's farming module (src/production/farming.ts) remembered by ProductionDirector; the day comes from the time pack (ProductionDirector.setDay).",
+    "doNot": ["Pick the crop at harvest: a plot yields what was planted."]
+  }
+}

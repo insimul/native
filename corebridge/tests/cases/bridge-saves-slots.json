@@ -9,10 +9,10 @@
           "call": "saves.slots.create",
           "expect": {
             "session": 1,
-            "config": { "slotCount": 3, "quickSlot": 0, "autosaveIntervalSec": 300, "autosaveIndicator": true },
+            "config": { "slotCount": 3, "quickSlot": 3, "autosaveIntervalSec": 300, "autosaveIndicator": true },
             "view": {
               "$subset": {
-                "rows": { "$len": 3 },
+                "rows": { "$len": 4 },
                 "continueSlot": null,
                 "activeSlot": null,
                 "pending": null,
@@ -27,7 +27,7 @@
     {
       "name": "saves.slots.apply: a save asks the host to write, a second request is busy, finished makes the slot active and Continue",
       "steps": [
-        { "call": "saves.slots.create", "args": { "config": { "maxSlots": 4 } }, "expect": { "$subset": { "config": { "slotCount": 4, "quickSlot": 0, "autosaveIntervalSec": 300, "autosaveIndicator": true } } } },
+        { "call": "saves.slots.create", "args": { "config": { "maxSlots": 4 } }, "expect": { "$subset": { "config": { "slotCount": 4, "quickSlot": 4, "autosaveIntervalSec": 300, "autosaveIndicator": true } } } },
         {
           "call": "saves.slots.apply",
           "args": { "session": 1, "ops": [{ "op": "save", "slot": 2 }, { "op": "load", "slot": 1 }] },
@@ -75,6 +75,7 @@
         {
           "call": "saves.slots.create",
           "args": {
+            "config": { "quickSlot": 0 },
             "slots": [
               { "index": 0, "outcome": "integrity_mismatch" },
               { "index": 1, "outcome": "ok", "summary": { "savedAt": "2026-11-01T10:00:00Z" } }
@@ -104,12 +105,57 @@
             "results": [
               { "ok": true, "effect": null },
               { "ok": true, "effect": { "remove": { "slot": 1 } } },
-              { "ok": true, "effect": null },
+              { "ok": true, "effect": null, "history": "Deleted Slot 2" },
               { "ok": false, "refusal": "no_such_slot", "effect": null }
             ],
             "view": { "$subset": { "continueSlot": null, "activeSlot": null, "autosave": { "on": false, "target": null, "inSec": null } } }
           }
         }
+      ]
+    },
+    {
+      "name": "saves.slots.apply: Delete asks first; the prompt's Cancel keeps the save, its Delete removes it; with no prompt both are refused",
+      "steps": [
+        {
+          "call": "saves.slots.create",
+          "args": { "slots": [{ "index": 1, "outcome": "ok", "summary": { "savedAt": "2026-11-01T10:00:00Z" } }] },
+          "expect": { "$subset": { "view": { "$subset": { "confirm": null } } } }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": { "session": 1, "ops": [{ "op": "confirm_delete" }, { "op": "ask_delete", "slot": 1 }, { "op": "ask_delete", "slot": 1 }] },
+          "expect": {
+            "results": [
+              { "ok": false, "refusal": "nothing_to_confirm", "effect": null },
+              { "ok": true, "effect": null },
+              { "ok": false, "refusal": "confirm_open", "effect": null }
+            ],
+            "view": {
+              "$subset": {
+                "confirm": {
+                  "slot": 1,
+                  "prompt": "Delete the save in Slot 2? This cannot be undone.",
+                  "actions": [{ "step": "confirm_delete", "label": "Delete" }, { "step": "cancel_delete", "label": "Cancel" }]
+                }
+              }
+            }
+          }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": { "session": 1, "ops": [{ "op": "cancel_delete" }, { "op": "cancel_delete" }, { "op": "ask_delete", "slot": 1 }, { "op": "confirm_delete" }, { "op": "finished", "ok": true }] },
+          "expect": {
+            "results": [
+              { "ok": true, "effect": null },
+              { "ok": false, "refusal": "nothing_to_confirm", "effect": null },
+              { "ok": true, "effect": null },
+              { "ok": true, "effect": { "remove": { "slot": 1 } } },
+              { "ok": true, "effect": null, "history": "Deleted Slot 2" }
+            ],
+            "view": { "$subset": { "confirm": null, "continueSlot": null, "pending": null } }
+          }
+        },
+        { "call": "saves.slots.apply", "args": { "session": 1, "ops": [{ "op": "ask_delete", "slot": "1" }] }, "expectError": "ops[0] (ask_delete) failed: insimulcore: saves.slots.apply: `slot` must be a finite number" }
       ]
     },
     {

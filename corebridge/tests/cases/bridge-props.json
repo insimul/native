@@ -1,0 +1,271 @@
+{
+  "area": "props",
+  "description": "Hand-written: the props.* and inventory.* rows' own contract (PL.native-props-rows, U89(2); core's P6 logic, P6.core) — each row's answer shape, a domain refusal as a VALUE (core's), an action core does not know going to core and coming back as its unknown_action, a refused document opening no session, the session kinds, and the rows' own refusals as errors coded [invalid-input]. Core's own corpora (conformance/props/*.json, conformance/ui/inventory-cases.json) are driven whole through these rows by the props_*_corpus and inventory_corpus ctests (tests/props_corpus.cpp), not transcribed here.",
+  "cases": [
+    {
+      "name": "props.contract: the tables of the five P6 corpora, from core's constants",
+      "steps": [
+        {
+          "call": "props.contract",
+          "expect": {
+            "props-containers": { "defaultCapacity": 10, "states": ["open", "locked", "unreachable"], "refusals": ["unknown_building", "no_interior", "locked", "full"], "unlockResults": ["unlocked", "not_locked", "no_key_item", "key_missing"] },
+            "props-documents": { "$subset": { "defaultCharsPerPage": 800, "defaultQuizXp": 10, "phases": ["reading", "quiz", "answered", "closed"], "actions": ["next", "prev", "answer", "close"] } },
+            "props-notice-board": { "$subset": { "fluencyThresholds": { "beginner": 0, "intermediate": 25, "advanced": 55 }, "actions": ["select", "answer", "take_quest"] } },
+            "props-doors": { "$subset": { "promptRadiusM": 2, "standoffM": 0.5, "actions": ["enter", "exit"] } },
+            "ui-inventory": { "$subset": { "pinnedGroup": "Quest", "emptyMessages": { "$type": "object" }, "filters": { "$len": 6 } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "props.containers: view, unlock, a full put, location and respawn; the record comes back unlocked",
+      "steps": [
+        {
+          "call": "props.containers.view",
+          "args": { "container": { "id": "chest_1", "capacity": 1, "items": [{ "itemId": "gold", "quantity": 3 }], "locked": true, "keyItemId": "key_1" }, "context": { "playerItemIds": ["key_1"] } },
+          "expect": { "view": { "id": "chest_1", "state": "locked", "refusal": "locked", "canUnlock": true, "capacity": 1, "slotsUsed": 1, "slotsFree": 0, "full": true, "respawnDue": false } }
+        },
+        {
+          "call": "props.containers.unlock",
+          "args": { "container": { "id": "chest_1", "locked": true, "keyItemId": "key_1" }, "context": { "playerItemIds": ["key_1"] } },
+          "expect": { "result": "unlocked", "container": { "id": "chest_1", "locked": false, "keyItemId": "key_1" } }
+        },
+        {
+          "call": "props.containers.unlock",
+          "args": { "container": { "id": "chest_1", "locked": true, "keyItemId": "key_1" } },
+          "expect": { "result": "key_missing", "container": { "id": "chest_1", "locked": true, "keyItemId": "key_1" } }
+        },
+        {
+          "call": "props.containers.move",
+          "args": { "container": { "id": "c", "capacity": 1, "items": [{ "itemId": "gold" }] }, "move": { "kind": "put", "itemId": "apple" } },
+          "expect": { "refusal": "full" }
+        },
+        {
+          "call": "props.containers.move",
+          "args": { "container": { "id": "c", "capacity": 1, "items": [{ "itemId": "gold" }] }, "move": { "kind": "put", "itemId": "gold" } },
+          "expect": { "refusal": null }
+        },
+        {
+          "call": "props.containers.at",
+          "args": { "containers": [{ "id": "a", "lotId": "l1" }, { "id": "b", "businessId": "biz" }, { "id": "c", "lotId": "l2" }], "location": { "lotId": "l1", "businessId": "biz" } },
+          "expect": { "ids": ["a", "b"] }
+        },
+        {
+          "call": "props.containers.respawn",
+          "args": { "container": { "id": "c", "respawns": true, "respawnTimeMinutes": 60, "lastOpenedAt": "2026-11-09T10:00:00Z" }, "now": "2026-11-09T11:00:00Z" },
+          "expect": { "due": true }
+        }
+      ]
+    },
+    {
+      "name": "props.containers: the rows refuse a field of the wrong JSON type as [invalid-input]",
+      "steps": [
+        { "call": "props.containers.view", "args": { "container": "chest_1" }, "expectError": "[invalid-input] insimulcore: props.containers.view: `container` must be a JSON object" },
+        { "call": "props.containers.view", "args": { "container": { "id": "c" }, "context": { "playerItemIds": "key_1" } }, "expectError": "[invalid-input] insimulcore: props.containers.view: `context.playerItemIds` must be an array" },
+        { "call": "props.containers.unlock", "args": { "container": { "id": "c" }, "context": { "buildings": [7] } }, "expectError": "[invalid-input] insimulcore: props.containers.unlock: `context.buildings[0]` must be a JSON object" },
+        { "call": "props.containers.move", "args": { "container": { "id": "c" }, "move": { "kind": "steal" } }, "expectError": "[invalid-input] insimulcore: props.containers.move: `move.kind` must be one of take, put" },
+        { "call": "props.containers.move", "args": { "container": { "id": "c" }, "move": { "kind": "put" } }, "expectError": "`move.itemId` must be a string" },
+        { "call": "props.containers.at", "args": { "containers": {} }, "expectError": "[invalid-input] insimulcore: props.containers.at: `containers` must be an array" },
+        { "call": "props.containers.respawn", "args": { "container": { "id": "c" }, "now": true }, "expectError": "`now` must be an ISO date-time string or epoch milliseconds" }
+      ]
+    },
+    {
+      "name": "props.documents and props.reader: a refusal is a value, a refused document opens no session, an unknown action is core's",
+      "steps": [
+        { "call": "props.documents.document", "args": { "document": { "id": "x" } }, "expect": { "ok": false, "refusal": { "code": "missing_field", "field": "title" } } },
+        { "call": "props.documents.document", "args": { "document": { "id": "s", "kind": "sign", "title": "Inn", "body": "Open late." } }, "expect": { "ok": true, "document": { "$subset": { "id": "s", "kind": "sign", "pages": [{ "content": "Open late.", "contentTranslation": "" }] } } } },
+        { "call": "props.documents.paginate", "args": { "text": "one two three", "charsPerPage": 8 }, "expect": { "pages": { "$len": 2 } } },
+        { "call": "props.documents.paginate", "args": { "text": "short" }, "expect": { "pages": ["short"] } },
+        { "call": "props.reader.create", "args": { "document": { "id": "x" } }, "expect": { "ok": false, "refusal": { "code": "missing_field", "field": "title" } } },
+        { "call": "session.list", "expect": { "sessions": [] } },
+        {
+          "call": "props.reader.create",
+          "args": { "document": { "id": "sign_inn", "kind": "sign", "title": "The Gilded Goose", "body": "Rooms and meals. Open late." } },
+          "expect": {
+            "ok": true,
+            "session": 1,
+            "document": { "$subset": { "id": "sign_inn", "kind": "sign" } },
+            "view": { "phase": "reading", "page": 0, "pageCount": 1, "content": "Rooms and meals. Open late.", "contentTranslation": "", "canPrev": false, "canNext": true, "nextLabel": "done", "question": null, "answer": null }
+          }
+        },
+        { "call": "session.list", "expect": { "sessions": [{ "session": 1, "kind": "props.reader" }] } },
+        {
+          "call": "props.reader.apply",
+          "args": { "session": 1, "ops": [{ "op": "turn" }, { "op": "next" }, { "op": "next" }] },
+          "expect": {
+            "results": [
+              { "ok": false, "refusal": { "code": "unknown_action", "field": "op" } },
+              { "ok": true, "events": [{ "type": "document_read", "id": "sign_inn" }, { "type": "document_closed", "id": "sign_inn" }] },
+              { "ok": false, "refusal": { "code": "closed", "field": "op" } }
+            ],
+            "view": { "$subset": { "phase": "closed", "canNext": false, "nextLabel": null } }
+          }
+        },
+        { "call": "props.reader.apply", "args": { "session": 1, "ops": {} }, "expectError": "props.reader.apply: `ops` must be an array" },
+        { "call": "props.reader.create", "args": { "document": { "id": "s", "kind": "sign", "title": "Inn", "body": "x" }, "open": { "alreadyRead": "yes" } }, "expectError": "[invalid-input] insimulcore: props.reader.create: `open.alreadyRead` must be a boolean" },
+        { "call": "props.documents.paginate", "args": { "text": 7 }, "expectError": "[invalid-input] insimulcore: props.documents.paginate: `text` must be a string" },
+        { "call": "props.board.apply", "args": { "session": 1, "ops": [] }, "expectError": "session 1 is a props.reader session, not props.board" }
+      ]
+    },
+    {
+      "name": "props.doors: the door, its prompt, enter with the key and exit; an unknown action is core's",
+      "steps": [
+        {
+          "call": "props.doors.door",
+          "args": { "building": { "id": "b", "position": { "x": 0, "y": 0, "z": 0 }, "rotation": 0, "spec": { "depth": 8 }, "interior": { "function": "business.tavern" }, "name": "The Goose" } },
+          "expect": { "door": { "id": "b", "state": "closed", "doorAt": { "x": 0, "y": 0, "z": 4 }, "outside": { "position": { "x": 0, "y": 0, "z": 4.5 }, "yaw": 0 }, "label": "The Goose", "interiorFunction": "business.tavern" } }
+        },
+        {
+          "call": "props.doors.prompt",
+          "args": { "buildings": [{ "id": "b", "position": { "x": 0, "y": 0, "z": 0 }, "rotation": 0, "spec": { "depth": 8 }, "interior": {} }], "player": { "position": { "x": 0, "y": 0, "z": 5 } } },
+          "expect": { "prompt": { "building": "b", "action": "enter", "label": "Building", "state": "closed", "distance": 1 } }
+        },
+        {
+          "call": "props.doors.prompt",
+          "args": { "buildings": [{ "id": "b", "position": { "x": 0, "y": 0, "z": 0 }, "rotation": 0, "spec": { "depth": 8 }, "interior": {} }], "player": { "position": { "x": 0, "y": 0, "z": 50 } } },
+          "expect": { "prompt": null }
+        },
+        {
+          "call": "props.doors.step",
+          "args": { "buildings": [{ "id": "b", "position": { "x": 0, "y": 0, "z": 0 }, "rotation": 0, "interior": {}, "locked": true, "keyItemId": "k" }], "playerItemIds": ["k"], "action": { "op": "enter", "building": "b" } },
+          "expect": { "ok": true, "handoff": { "op": "enter_interior", "building": "b", "interior": "interior:b", "interiorFunction": null, "arrive": null, "entrance": null, "unlocked": true }, "inside": "b" }
+        },
+        {
+          "call": "props.doors.step",
+          "args": { "buildings": [{ "id": "b", "position": { "x": 0, "y": 0, "z": 0 }, "rotation": 0, "spec": { "depth": 8 }, "interior": {} }], "inside": "b", "action": { "op": "exit" } },
+          "expect": { "ok": true, "handoff": { "op": "exit_to_exterior", "building": "b", "arrive": { "x": 0, "y": 0, "z": 4.5 }, "yaw": 0 }, "inside": null }
+        },
+        {
+          "call": "props.doors.step",
+          "args": { "buildings": [], "action": { "op": "knock" } },
+          "expect": { "ok": false, "refusal": { "code": "unknown_action", "field": "op" } }
+        },
+        { "call": "props.doors.step", "args": { "buildings": {}, "action": { "op": "exit" } }, "expectError": "[invalid-input] insimulcore: props.doors.step: `buildings` must be an array" },
+        { "call": "props.doors.step", "args": { "buildings": [], "inside": 3, "action": { "op": "exit" } }, "expectError": "`inside` must be a string" },
+        { "call": "props.doors.step", "args": { "buildings": [], "action": "enter" }, "expectError": "`action` must be a JSON object" },
+        { "call": "props.doors.prompt", "args": { "buildings": [], "player": {} }, "expectError": "[invalid-input] insimulcore: props.doors.prompt: `player.position` must be a JSON object" },
+        { "call": "props.doors.door", "args": { "building": null }, "expectError": "`building` must be a JSON object" }
+      ]
+    },
+    {
+      "name": "props.notices.generate and props.board: a settlement's notices posted, read, and an unknown action is core's",
+      "steps": [
+        {
+          "call": "props.notices.generate",
+          "args": { "settlementId": "s1", "settlementName": "Aldermoor", "npcs": [{ "characterId": "c1", "name": "Paul", "occupation": "baker" }] },
+          "expect": { "articles": [{ "$subset": { "id": "notice_s1_0", "difficulty": "beginner", "readingXp": 10, "documentType": "notice", "settlementId": "s1", "author": { "characterId": "c1", "name": "Paul", "occupation": "baker" } } }] },
+          "bind": "gen"
+        },
+        {
+          "call": "props.board.create",
+          "args": { "notices": { "$ref": "gen.articles" } },
+          "expect": { "session": 1, "view": { "rows": { "$len": 1 }, "shown": 1, "hidden": 0, "unread": 1, "selected": null } }
+        },
+        {
+          "call": "props.board.apply",
+          "args": { "session": 1, "ops": [{ "op": "pin", "id": "notice_s1_0" }, { "op": "select", "id": "notice_s1_0" }, { "op": "select", "id": "nope" }] },
+          "expect": {
+            "results": [
+              { "ok": false, "refusal": { "code": "unknown_action", "field": "op" } },
+              { "ok": true, "events": [{ "type": "notice_read", "id": "notice_s1_0" }, { "type": "reading_xp", "id": "notice_s1_0", "amount": 10 }] },
+              { "ok": false, "refusal": { "code": "unknown_notice", "field": "id" } }
+            ],
+            "view": { "$subset": { "unread": 0, "selected": "notice_s1_0" } }
+          }
+        },
+        { "call": "props.notices.generate", "args": { "settlementId": "s1", "settlementName": "Aldermoor", "npcs": [] }, "expect": { "articles": [] } },
+        { "call": "props.notices.generate", "args": { "settlementId": "s1", "settlementName": "Aldermoor", "npcs": [{ "name": "Paul" }] }, "expectError": "[invalid-input] insimulcore: props.notices.generate: `npcs[0].characterId` must be a string" },
+        { "call": "props.board.create", "args": { "notices": [], "read": "notice_s1_0" }, "expectError": "[invalid-input] insimulcore: props.board.create: `read` must be an array" },
+        { "call": "props.board.create", "args": { "notices": [], "fluency": "high" }, "expectError": "`fluency` must be a finite number" },
+        { "call": "props.board.create", "args": { "notices": [], "questStatus": { "q": 1 } }, "expectError": "`questStatus.q` must be a string" }
+      ]
+    },
+    {
+      "name": "inventory: the panel's session — add, stack, filter, equip, get, items, gold, load and clear",
+      "steps": [
+        {
+          "call": "inventory.create",
+          "args": { "player": { "gold": 5, "inventory": [{ "id": "bread", "name": "bread", "type": "food", "quantity": 2 }] } },
+          "expect": {
+            "session": 1,
+            "view": {
+              "filter": "all",
+              "counts": { "total": 1, "shown": 1 },
+              "gold": 5,
+              "rows": { "$len": 2 },
+              "equipment": { "weapon": null, "armor": null, "accessory": null },
+              "save": { "gold": 5, "inventory": [{ "id": "bread", "name": "bread", "type": "food", "quantity": 2 }] }
+            }
+          }
+        },
+        { "call": "session.list", "expect": { "sessions": [{ "session": 1, "kind": "inventory" }] } },
+        {
+          "call": "inventory.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              { "op": "add", "item": { "id": "bread", "name": "bread", "type": "food", "quantity": 3 } },
+              { "op": "add", "item": { "id": "sword", "name": "sword", "type": "weapon" } },
+              { "op": "equip_flag", "item": "sword", "equipped": true },
+              { "op": "equip_flag", "item": "nope", "equipped": true },
+              { "op": "remove", "item": "bread", "quantity": 0 },
+              { "op": "remove_gold", "amount": 9 },
+              { "op": "add_gold", "amount": null },
+              { "op": "filter", "filter": "weapons_armor" },
+              { "op": "get", "item": "sword" },
+              { "op": "get", "item": "nope" },
+              { "op": "items" }
+            ]
+          },
+          "expect": {
+            "results": [
+              true, true, true, false, false, false, null, null,
+              { "id": "sword", "name": "sword", "type": "weapon", "quantity": 1, "equipped": true },
+              null,
+              [
+                { "id": "bread", "name": "bread", "item": { "id": "bread", "name": "bread", "type": "food", "quantity": 5 } },
+                { "id": "sword", "name": "sword", "item": { "id": "sword", "name": "sword", "type": "weapon", "quantity": 1, "equipped": true } }
+              ]
+            ],
+            "view": {
+              "$subset": {
+                "filter": "weapons_armor",
+                "counts": { "total": 2, "shown": 1 },
+                "gold": 5,
+                "equipment": { "weapon": "sword", "armor": null, "accessory": null },
+                "save": { "gold": 5, "inventory": [{ "id": "bread", "name": "bread", "type": "food", "quantity": 5 }, { "id": "sword", "name": "sword", "type": "weapon", "quantity": 1, "equipped": true }] }
+              }
+            }
+          }
+        },
+        {
+          "call": "inventory.apply",
+          "args": { "session": 1, "ops": [{ "op": "load", "player": { "gold": 1, "inventory": [{ "itemId": "potion", "type": "consumable" }] } }, { "op": "items" }] },
+          "expect": { "results": [null, [{ "id": "potion", "name": "potion", "item": { "itemId": "potion", "type": "consumable" } }]], "view": { "$subset": { "filter": "weapons_armor", "counts": { "total": 1, "shown": 0 }, "gold": 1 } } }
+        },
+        {
+          "call": "inventory.apply",
+          "args": { "session": 1, "ops": [{ "op": "clear" }, { "op": "filter", "filter": "all" }] },
+          "expect": { "results": [null, null], "view": { "$subset": { "counts": { "total": 0, "shown": 0 }, "rows": [{ "kind": "empty", "message": { "$type": "string" } }], "gold": 1 } } }
+        }
+      ]
+    },
+    {
+      "name": "inventory: the rows refuse what core's types declare and JSON cannot hold",
+      "steps": [
+        { "call": "inventory.create", "args": { "player": [] }, "expectError": "[invalid-input] insimulcore: inventory.create: `player` must be a JSON object" },
+        { "call": "inventory.create", "args": { "player": { "gold": 1, "inventory": "bread" } }, "expectError": "`player.inventory` must be an array" },
+        { "call": "inventory.create", "expect": { "session": 1, "view": { "$subset": { "gold": 0, "counts": { "total": 0, "shown": 0 } } } } },
+        { "call": "inventory.apply", "args": { "session": 1, "ops": [{ "op": "add", "item": "bread" }] }, "expectError": "ops[0] (add) failed: insimulcore: inventory.apply: `item` must be a JSON object" },
+        { "call": "inventory.apply", "args": { "session": 1, "ops": [{ "op": "remove", "item": "bread", "quantity": "1" }] }, "expectError": "ops[0] (remove) failed: insimulcore: inventory.apply: `quantity` must be a finite number" },
+        { "call": "inventory.apply", "args": { "session": 1, "ops": [{ "op": "equip_flag", "item": "x", "equipped": 1 }] }, "expectError": "ops[0] (equip_flag) failed: insimulcore: inventory.apply: `equipped` must be a boolean" },
+        { "call": "inventory.apply", "args": { "session": 1, "ops": [{ "op": "set_gold", "amount": "5" }] }, "expectError": "ops[0] (set_gold) failed: insimulcore: inventory.apply: `amount` must be a finite number" },
+        { "call": "inventory.apply", "args": { "session": 1, "ops": [{ "op": "equip", "item": "x" }] }, "expectError": "ops[0] has no known op \"equip\"" },
+        { "call": "props.board.create", "expect": { "$subset": { "session": 2 } } },
+        { "call": "inventory.apply", "args": { "session": 2, "ops": [] }, "expectError": "session 2 is a props.board session, not inventory" },
+        { "call": "session.dispose", "args": { "session": 1 }, "expect": { "disposed": true } },
+        { "call": "inventory.apply", "args": { "session": 1, "ops": [] }, "expectError": "no open session 1" }
+      ]
+    }
+  ]
+}

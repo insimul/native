@@ -1,0 +1,2210 @@
+{
+  "area": "props-notice-board",
+  "description": "The notice board (Features WV2, P6.core; catalog world-notice-board): which notices a settlement's board shows and in what order, unread counts, and what reading, answering and taking a quest raise; plus NoticeGenerator's articles. Ops: board {notices, fluency?, read?, answered?, questStatus?, steps?: [{op: select | answer (index) | take_quest, id}]} -> {initial, steps: [{result, view}]}; generate {settlementId, settlementName, npcs} -> {articles} (each trimmed to its ids, titles, type, difficulty, XP, author, quest hook, vocabulary count and whether it asks a question). Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "babylon origin/main bfcdeb2: packages/babylon/src/engine/game-engine/rendering/BabylonNoticeBoardPanel.ts (562 lines): assessment first, fluency thresholds 25 and 55, newest first, read on first view, one answer per notice, the Accept Quest button.",
+    "godot origin/main 6599874: addons/insimul/ui/notice_board_panel.gd (135 lines): no id is not posted, the unread count, an unknown id is refused.",
+    "core game-engine/logic/NoticeGenerator.ts generateSettlementNotices (deterministic: one per NPC by occupation)."
+  ],
+  "contract": {
+    "fluencyThresholds": {
+      "beginner": 0,
+      "intermediate": 25,
+      "advanced": 55
+    },
+    "order": "assessment notices (assessmentHook) in posted order, then every other shown notice in posted order reversed (newest first)",
+    "shown": "an assessment notice always; otherwise fluency (absent or non-finite is 0) >= the difficulty's threshold; a difficulty outside the table always",
+    "posting": "a notice with no id is not posted; a second with a posted id is ignored",
+    "hookStates": [
+      "offer",
+      "requested",
+      "taken",
+      "done",
+      "locked"
+    ],
+    "hookState": "from questStatus[questId]: active taken, completed done, unavailable locked, anything else or none offer; an offer this board has already raised quest_requested for reads requested (once per quest per board, every notice hooking that quest), until the host builds the board again with the new status",
+    "actions": [
+      "select",
+      "answer",
+      "take_quest"
+    ],
+    "refusals": [
+      "unknown_action",
+      "unknown_notice",
+      "not_shown",
+      "no_question",
+      "answered",
+      "bad_index",
+      "no_quest",
+      "quest_not_offered"
+    ],
+    "refusalOrder": [
+      "unknown_action",
+      "unknown_notice",
+      "not_shown",
+      "then the action's own: answer no_question, answered, bad_index; take_quest no_quest, quest_not_offered"
+    ],
+    "select": "selects it; the first read raises notice_read then reading_xp when readingXp > 0; a notice read before raises nothing",
+    "answer": "once per notice: question_answered {index, correct}",
+    "takeQuest": "while offer: quest_requested {quest, npc: the author's characterId or null}; the host then sends the quest lifecycle's offer {quest, npc} and accept {quest}"
+  },
+  "cases": [
+    {
+      "name": "board: assessment notices first in posted order, then the rest newest first, filtered by fluency 0",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          },
+          {
+            "id": "n2",
+            "title": "Title n2",
+            "titleTranslation": "Translation n2",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "intermediate",
+            "vocabularyWords": [],
+            "readingXp": 15
+          },
+          {
+            "id": "a1",
+            "title": "Title a1",
+            "titleTranslation": "Translation a1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "advanced",
+            "vocabularyWords": [],
+            "readingXp": 25,
+            "assessmentHook": {
+              "assessmentType": "arrival",
+              "buttonLabel": "Begin",
+              "buttonLabelTranslation": "Begin"
+            }
+          },
+          {
+            "id": "n3",
+            "title": "Title n3",
+            "titleTranslation": "Translation n3",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          },
+          {
+            "id": "n4",
+            "title": "Title n4",
+            "titleTranslation": "Translation n4",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "advanced",
+            "vocabularyWords": [],
+            "readingXp": 25
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "a1",
+              "title": "Title a1",
+              "titleTranslation": "Translation a1",
+              "noticeType": null,
+              "difficulty": "advanced",
+              "assessment": true,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 25
+            },
+            {
+              "id": "n3",
+              "title": "Title n3",
+              "titleTranslation": "Translation n3",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            },
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            }
+          ],
+          "shown": 3,
+          "hidden": 2,
+          "unread": 3,
+          "selected": null
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "board: fluency 25 shows intermediate notices",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          },
+          {
+            "id": "n2",
+            "title": "Title n2",
+            "titleTranslation": "Translation n2",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "intermediate",
+            "vocabularyWords": [],
+            "readingXp": 15
+          },
+          {
+            "id": "n3",
+            "title": "Title n3",
+            "titleTranslation": "Translation n3",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "advanced",
+            "vocabularyWords": [],
+            "readingXp": 25
+          }
+        ],
+        "fluency": 25
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n2",
+              "title": "Title n2",
+              "titleTranslation": "Translation n2",
+              "noticeType": null,
+              "difficulty": "intermediate",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 15
+            },
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            }
+          ],
+          "shown": 2,
+          "hidden": 1,
+          "unread": 2,
+          "selected": null
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "board: fluency 24.9 does not",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          },
+          {
+            "id": "n2",
+            "title": "Title n2",
+            "titleTranslation": "Translation n2",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "intermediate",
+            "vocabularyWords": [],
+            "readingXp": 15
+          }
+        ],
+        "fluency": 24.9
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            }
+          ],
+          "shown": 1,
+          "hidden": 1,
+          "unread": 1,
+          "selected": null
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "board: fluency 55 shows advanced notices",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "advanced",
+            "vocabularyWords": [],
+            "readingXp": 25
+          }
+        ],
+        "fluency": 55
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "advanced",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 25
+            }
+          ],
+          "shown": 1,
+          "hidden": 0,
+          "unread": 1,
+          "selected": null
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "board: a difficulty outside the table is always shown",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "expert",
+            "vocabularyWords": [],
+            "readingXp": 25
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "expert",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 25
+            }
+          ],
+          "shown": 1,
+          "hidden": 0,
+          "unread": 1,
+          "selected": null
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "board: a notice with no id is not posted, a second with a posted id is ignored",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "",
+            "title": "Title ",
+            "titleTranslation": "Translation ",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          },
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          },
+          {
+            "id": "n1",
+            "title": "Second",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            }
+          ],
+          "shown": 1,
+          "hidden": 0,
+          "unread": 1,
+          "selected": null
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "board: reading marks read once, grants its reading XP once, and the unread count falls",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          },
+          {
+            "id": "n2",
+            "title": "Title n2",
+            "titleTranslation": "Translation n2",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 0
+          }
+        ],
+        "read": [],
+        "steps": [
+          {
+            "op": "select",
+            "id": "n1"
+          },
+          {
+            "op": "select",
+            "id": "n1"
+          },
+          {
+            "op": "select",
+            "id": "n2"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n2",
+              "title": "Title n2",
+              "titleTranslation": "Translation n2",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 0
+            },
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            }
+          ],
+          "shown": 2,
+          "hidden": 0,
+          "unread": 2,
+          "selected": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "notice_read",
+                  "id": "n1"
+                },
+                {
+                  "type": "reading_xp",
+                  "id": "n1",
+                  "amount": 10
+                }
+              ]
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 0
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": true,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 1,
+              "selected": "n1"
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": []
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 0
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": true,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 1,
+              "selected": "n1"
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "notice_read",
+                  "id": "n2"
+                }
+              ]
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": true,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 0
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": true,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 0,
+              "selected": "n2"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "board: a notice read before raises nothing",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          }
+        ],
+        "read": [
+          "n1"
+        ],
+        "steps": [
+          {
+            "op": "select",
+            "id": "n1"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": true,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            }
+          ],
+          "shown": 1,
+          "hidden": 0,
+          "unread": 0,
+          "selected": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": []
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": true,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 1,
+              "hidden": 0,
+              "unread": 0,
+              "selected": "n1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "board: a question is answered once; a bad index is refused",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10,
+            "comprehensionQuestion": {
+              "question": "Q?",
+              "questionTranslation": "Q?",
+              "options": [
+                "no",
+                "yes"
+              ],
+              "correctIndex": 1
+            }
+          },
+          {
+            "id": "n2",
+            "title": "Title n2",
+            "titleTranslation": "Translation n2",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          }
+        ],
+        "steps": [
+          {
+            "op": "answer",
+            "id": "n1",
+            "index": 2
+          },
+          {
+            "op": "answer",
+            "id": "n1",
+            "index": 1
+          },
+          {
+            "op": "answer",
+            "id": "n1",
+            "index": 0
+          },
+          {
+            "op": "answer",
+            "id": "n2",
+            "index": 0
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n2",
+              "title": "Title n2",
+              "titleTranslation": "Translation n2",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            },
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": true,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            }
+          ],
+          "shown": 2,
+          "hidden": 0,
+          "unread": 2,
+          "selected": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "bad_index",
+                "field": "index"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": true,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 2,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "question_answered",
+                  "id": "n1",
+                  "index": 1,
+                  "correct": true
+                }
+              ]
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 2,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "answered",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 2,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "no_question",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 2,
+              "selected": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "board: a question answered before is not asked",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10,
+            "comprehensionQuestion": {
+              "question": "Q?",
+              "questionTranslation": "Q?",
+              "options": [
+                "no",
+                "yes"
+              ],
+              "correctIndex": 1
+            }
+          }
+        ],
+        "answered": [
+          "n1"
+        ],
+        "steps": [
+          {
+            "op": "answer",
+            "id": "n1",
+            "index": 1
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            }
+          ],
+          "shown": 1,
+          "hidden": 0,
+          "unread": 1,
+          "selected": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "answered",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 1,
+              "hidden": 0,
+              "unread": 1,
+              "selected": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "board: a quest hook is offered while its quest is available, naming the author as giver",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10,
+            "questHook": {
+              "questId": "q_bread",
+              "questTitle": "Bread run",
+              "questTitleTranslation": "Bread run"
+            },
+            "author": {
+              "characterId": "npc_baker",
+              "name": "Paul",
+              "occupation": "baker"
+            }
+          }
+        ],
+        "questStatus": {
+          "q_bread": "available"
+        },
+        "steps": [
+          {
+            "op": "take_quest",
+            "id": "n1"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": {
+                "characterId": "npc_baker",
+                "name": "Paul"
+              },
+              "quest": {
+                "questId": "q_bread",
+                "title": "Bread run",
+                "state": "offer"
+              },
+              "readingXp": 10
+            }
+          ],
+          "shown": 1,
+          "hidden": 0,
+          "unread": 1,
+          "selected": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "quest_requested",
+                  "id": "n1",
+                  "quest": "q_bread",
+                  "npc": "npc_baker"
+                }
+              ]
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": {
+                    "characterId": "npc_baker",
+                    "name": "Paul"
+                  },
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "requested"
+                  },
+                  "readingXp": 10
+                }
+              ],
+              "shown": 1,
+              "hidden": 0,
+              "unread": 1,
+              "selected": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "board: a hook whose quest has no status is offered, with no giver when the notice has no author",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10,
+            "questHook": {
+              "questId": "q_bread",
+              "questTitle": "Bread run",
+              "questTitleTranslation": "Bread run"
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "take_quest",
+            "id": "n1"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": {
+                "questId": "q_bread",
+                "title": "Bread run",
+                "state": "offer"
+              },
+              "readingXp": 10
+            }
+          ],
+          "shown": 1,
+          "hidden": 0,
+          "unread": 1,
+          "selected": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "quest_requested",
+                  "id": "n1",
+                  "quest": "q_bread",
+                  "npc": null
+                }
+              ]
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "requested"
+                  },
+                  "readingXp": 10
+                }
+              ],
+              "shown": 1,
+              "hidden": 0,
+              "unread": 1,
+              "selected": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "board: a hook raises quest_requested once; then it reads requested and a second take is refused, on every notice hooking that quest",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10,
+            "questHook": {
+              "questId": "q_bread",
+              "questTitle": "Bread run",
+              "questTitleTranslation": "Bread run"
+            }
+          },
+          {
+            "id": "n2",
+            "title": "Title n2",
+            "titleTranslation": "Translation n2",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10,
+            "questHook": {
+              "questId": "q_bread",
+              "questTitle": "Bread run",
+              "questTitleTranslation": "Bread run"
+            }
+          }
+        ],
+        "questStatus": {
+          "q_bread": "available"
+        },
+        "steps": [
+          {
+            "op": "take_quest",
+            "id": "n1"
+          },
+          {
+            "op": "take_quest",
+            "id": "n1"
+          },
+          {
+            "op": "take_quest",
+            "id": "n2"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n2",
+              "title": "Title n2",
+              "titleTranslation": "Translation n2",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": {
+                "questId": "q_bread",
+                "title": "Bread run",
+                "state": "offer"
+              },
+              "readingXp": 10
+            },
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": {
+                "questId": "q_bread",
+                "title": "Bread run",
+                "state": "offer"
+              },
+              "readingXp": 10
+            }
+          ],
+          "shown": 2,
+          "hidden": 0,
+          "unread": 2,
+          "selected": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "events": [
+                {
+                  "type": "quest_requested",
+                  "id": "n1",
+                  "quest": "q_bread",
+                  "npc": null
+                }
+              ]
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "requested"
+                  },
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "requested"
+                  },
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 2,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "quest_not_offered",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "requested"
+                  },
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "requested"
+                  },
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 2,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "quest_not_offered",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "requested"
+                  },
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "requested"
+                  },
+                  "readingXp": 10
+                }
+              ],
+              "shown": 2,
+              "hidden": 0,
+              "unread": 2,
+              "selected": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "board: a hook is taken while active, done once completed, locked while unavailable",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10,
+            "questHook": {
+              "questId": "q_bread",
+              "questTitle": "Bread run",
+              "questTitleTranslation": "Bread run"
+            }
+          },
+          {
+            "id": "n2",
+            "title": "Title n2",
+            "titleTranslation": "Translation n2",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10,
+            "questHook": {
+              "questId": "q_done",
+              "questTitle": "Bread run",
+              "questTitleTranslation": "Bread run"
+            }
+          },
+          {
+            "id": "n3",
+            "title": "Title n3",
+            "titleTranslation": "Translation n3",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10,
+            "questHook": {
+              "questId": "q_locked",
+              "questTitle": "Bread run",
+              "questTitleTranslation": "Bread run"
+            }
+          }
+        ],
+        "questStatus": {
+          "q_bread": "active",
+          "q_done": "completed",
+          "q_locked": "unavailable"
+        },
+        "steps": [
+          {
+            "op": "take_quest",
+            "id": "n1"
+          },
+          {
+            "op": "take_quest",
+            "id": "n2"
+          },
+          {
+            "op": "take_quest",
+            "id": "n3"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n3",
+              "title": "Title n3",
+              "titleTranslation": "Translation n3",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": {
+                "questId": "q_locked",
+                "title": "Bread run",
+                "state": "locked"
+              },
+              "readingXp": 10
+            },
+            {
+              "id": "n2",
+              "title": "Title n2",
+              "titleTranslation": "Translation n2",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": {
+                "questId": "q_done",
+                "title": "Bread run",
+                "state": "done"
+              },
+              "readingXp": 10
+            },
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": {
+                "questId": "q_bread",
+                "title": "Bread run",
+                "state": "taken"
+              },
+              "readingXp": 10
+            }
+          ],
+          "shown": 3,
+          "hidden": 0,
+          "unread": 3,
+          "selected": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "quest_not_offered",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n3",
+                  "title": "Title n3",
+                  "titleTranslation": "Translation n3",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_locked",
+                    "title": "Bread run",
+                    "state": "locked"
+                  },
+                  "readingXp": 10
+                },
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_done",
+                    "title": "Bread run",
+                    "state": "done"
+                  },
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "taken"
+                  },
+                  "readingXp": 10
+                }
+              ],
+              "shown": 3,
+              "hidden": 0,
+              "unread": 3,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "quest_not_offered",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n3",
+                  "title": "Title n3",
+                  "titleTranslation": "Translation n3",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_locked",
+                    "title": "Bread run",
+                    "state": "locked"
+                  },
+                  "readingXp": 10
+                },
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_done",
+                    "title": "Bread run",
+                    "state": "done"
+                  },
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "taken"
+                  },
+                  "readingXp": 10
+                }
+              ],
+              "shown": 3,
+              "hidden": 0,
+              "unread": 3,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "quest_not_offered",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n3",
+                  "title": "Title n3",
+                  "titleTranslation": "Translation n3",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_locked",
+                    "title": "Bread run",
+                    "state": "locked"
+                  },
+                  "readingXp": 10
+                },
+                {
+                  "id": "n2",
+                  "title": "Title n2",
+                  "titleTranslation": "Translation n2",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_done",
+                    "title": "Bread run",
+                    "state": "done"
+                  },
+                  "readingXp": 10
+                },
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": {
+                    "questId": "q_bread",
+                    "title": "Bread run",
+                    "state": "taken"
+                  },
+                  "readingXp": 10
+                }
+              ],
+              "shown": 3,
+              "hidden": 0,
+              "unread": 3,
+              "selected": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "board: refusals: unknown action, unknown notice, a notice the fluency hides, no quest",
+      "op": "board",
+      "input": {
+        "notices": [
+          {
+            "id": "n1",
+            "title": "Title n1",
+            "titleTranslation": "Translation n1",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "beginner",
+            "vocabularyWords": [],
+            "readingXp": 10
+          },
+          {
+            "id": "n2",
+            "title": "Title n2",
+            "titleTranslation": "Translation n2",
+            "body": "Body",
+            "bodyTranslation": "Body",
+            "difficulty": "advanced",
+            "vocabularyWords": [],
+            "readingXp": 25
+          }
+        ],
+        "steps": [
+          {
+            "op": "pin",
+            "id": "n1"
+          },
+          {
+            "op": "select",
+            "id": "nx"
+          },
+          {
+            "op": "select",
+            "id": "n2"
+          },
+          {
+            "op": "take_quest",
+            "id": "n1"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "rows": [
+            {
+              "id": "n1",
+              "title": "Title n1",
+              "titleTranslation": "Translation n1",
+              "noticeType": null,
+              "difficulty": "beginner",
+              "assessment": false,
+              "read": false,
+              "question": false,
+              "author": null,
+              "quest": null,
+              "readingXp": 10
+            }
+          ],
+          "shown": 1,
+          "hidden": 1,
+          "unread": 1,
+          "selected": null
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "unknown_action",
+                "field": "op"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 1,
+              "hidden": 1,
+              "unread": 1,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "unknown_notice",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 1,
+              "hidden": 1,
+              "unread": 1,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "not_shown",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 1,
+              "hidden": 1,
+              "unread": 1,
+              "selected": null
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": {
+                "code": "no_quest",
+                "field": "id"
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "id": "n1",
+                  "title": "Title n1",
+                  "titleTranslation": "Translation n1",
+                  "noticeType": null,
+                  "difficulty": "beginner",
+                  "assessment": false,
+                  "read": false,
+                  "question": false,
+                  "author": null,
+                  "quest": null,
+                  "readingXp": 10
+                }
+              ],
+              "shown": 1,
+              "hidden": 1,
+              "unread": 1,
+              "selected": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "generate: one notice per NPC by occupation, ids by settlement and index, XP by difficulty",
+      "op": "generate",
+      "input": {
+        "settlementId": "s1",
+        "settlementName": "Aldermoor",
+        "npcs": [
+          {
+            "characterId": "c1",
+            "name": "Paul",
+            "occupation": "baker"
+          },
+          {
+            "characterId": "c2",
+            "name": "Anne",
+            "occupation": "guard"
+          },
+          {
+            "characterId": "c3",
+            "name": "Remy"
+          },
+          {
+            "characterId": "c4",
+            "name": "Lise",
+            "occupation": "shopkeeper"
+          }
+        ]
+      },
+      "expected": {
+        "articles": [
+          {
+            "id": "notice_s1_0",
+            "title": "Pain frais chez Paul",
+            "titleTranslation": "Fresh Bread at Paul's",
+            "noticeType": "advertisement",
+            "difficulty": "beginner",
+            "readingXp": 10,
+            "documentType": "notice",
+            "author": {
+              "characterId": "c1",
+              "name": "Paul",
+              "occupation": "baker"
+            },
+            "settlementId": "s1",
+            "vocabularyWords": 4,
+            "question": true
+          },
+          {
+            "id": "notice_s1_1",
+            "title": "Sécurité de Aldermoor",
+            "titleTranslation": "Aldermoor Security",
+            "noticeType": "official",
+            "difficulty": "intermediate",
+            "readingXp": 15,
+            "documentType": "notice",
+            "author": {
+              "characterId": "c2",
+              "name": "Anne",
+              "occupation": "guard"
+            },
+            "settlementId": "s1",
+            "vocabularyWords": 5,
+            "question": true
+          },
+          {
+            "id": "notice_s1_2",
+            "title": "Message de Remy",
+            "titleTranslation": "Message from Remy",
+            "noticeType": "flyer",
+            "difficulty": "beginner",
+            "readingXp": 10,
+            "documentType": "notice",
+            "author": {
+              "characterId": "c3",
+              "name": "Remy"
+            },
+            "settlementId": "s1",
+            "vocabularyWords": 4,
+            "question": true
+          },
+          {
+            "id": "notice_s1_3",
+            "title": "Boutique de Lise",
+            "titleTranslation": "Lise's Shop",
+            "noticeType": "advertisement",
+            "difficulty": "beginner",
+            "readingXp": 10,
+            "documentType": "notice",
+            "author": {
+              "characterId": "c4",
+              "name": "Lise",
+              "occupation": "shopkeeper"
+            },
+            "settlementId": "s1",
+            "vocabularyWords": 4,
+            "question": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "generate: no NPCs, no notices",
+      "op": "generate",
+      "input": {
+        "settlementId": "s1",
+        "settlementName": "Aldermoor",
+        "npcs": []
+      },
+      "expected": {
+        "articles": []
+      }
+    }
+  ]
+}

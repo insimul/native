@@ -1,0 +1,35 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "fishing",
+  "version": "0.1.0",
+  "name": "Fishing",
+  "summary": "Fishing spots on authored waters: a rod and a skill gate, a catch drawn by seed from the water's weight table, and a pool that is fished out.",
+  "kind": "optional",
+  "phase": "P9d",
+  "catalog": ["gathering-fishing"],
+  "core": {
+    "modules": ["fishing"],
+    "predicatePacks": ["fishing"],
+    "hostInterfaces": ["IAgentActionHost"],
+    "corpus": [
+      "conformance/production/work.json",
+      "conformance/production/draws.json",
+      "conformance/prolog/mechanic-fishing.json"
+    ]
+  },
+  "requires": [{ "id": "gathering" }],
+  "parameters": [
+    { "id": "defaultStock", "type": "integer", "min": 0, "maps": "ProductionTuning.defaultStock", "source": "world", "doc": "casts a water holds when its row names no stock" }
+  ],
+  "extensionPoints": [
+    { "id": "waters", "kind": "prolog-facts", "signature": "WorldIR.production.fishing {waters, spots} (fishery_catch/3, fishery_stock/2)", "doc": "what a water holds and how much" },
+    { "id": "refuse-fishing", "kind": "prolog-forbid", "signature": "forbids/4 on ProductionTuning.fishAction ('fish')", "doc": "a river somebody else's family fishes" }
+  ],
+  "events": { "emits": ["production_yielded", "production_site_exhausted"] },
+  "styles": { "art": ["prop.fishing.*"] },
+  "checks": [{ "id": "corpus", "kind": "corpus" }],
+  "assistant": {
+    "summary": "Fishing is core's fishing module (src/production/fishing.ts) remembered by ProductionDirector; the gathering pack's fishing action calls ProductionDirector.fish on completion.",
+    "doNot": ["Draw a catch with an engine RNG: the draw is keyed on (seed, spot, casts left)."]
+  }
+}

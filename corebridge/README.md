@@ -127,7 +127,25 @@ game; **meta** = about the bridge itself.
 | `save.migrate` | `{ saveFile }` → `{ saveFile, outcome, significant }` | `save-file` `migrateSaveFileWithOutcome`, unchanged; `significant` = `isMigrationOutcomeSignificant` | P1 |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
-| `saves.slots.apply` | `{ session, ops: save, load, continue, delete, key, tick, finished }` → `{ results: [{ ok, refusal?, outcome?, effect }], view }` | same | P1 slots |
+| `saves.slots.apply` | `{ session, ops: save, load, continue, delete, ask_delete, confirm_delete, cancel_delete, key, tick, finished }` → `{ results: [{ ok, refusal?, outcome?, effect, history? }], view }` | same | P1 slots |
+| `props.contract` | `{}` → `{ <area>: { <table>: value } }` — the data tables each P6 corpus file's `contract` states (`props-containers`, `props-documents`, `props-notice-board`, `props-doors`, `ui-inventory`) | `props/containers`, `props/documents`, `props/doors`, `props/notice-board`, `ui/inventory-model` constants | P6 (PL.native-props-rows, U89(2)) |
+| `props.containers.view` | `{ container, context?: { playerItemIds?, buildings?, now? } }` → `{ view }` | `props/containers` `containerView` | P6 |
+| `props.containers.unlock` | `{ container, context? }` → `{ result, container }` | `props/containers` `unlockContainer` | P6 |
+| `props.containers.move` | `{ container, move: { kind: take } or { kind: put, itemId }, context? }` → `{ refusal }` (null: `ui.trade` may run it) | `props/containers` `containerMoveRefusal` | P6 |
+| `props.containers.at` | `{ containers, location: { businessId?, residenceId?, lotId? } }` → `{ ids }` | `props/containers` `containersAtLocation` | P6 |
+| `props.containers.respawn` | `{ container, now }` → `{ due }` | `props/containers` `containerRespawnDue` | P6 |
+| `props.documents.document` | `{ document, options?: { charsPerPage? } }` → `{ ok: true, document }` or the refusal value `{ ok: false, refusal: { code, field } }` | `props/documents` `documentOf` | P6 |
+| `props.documents.paginate` | `{ text, charsPerPage? }` → `{ pages }` | `props/documents` `paginateText` | P6 |
+| `props.reader.create` | `{ document, options?, open?: { alreadyRead?, alreadyAnswered? } }` → `{ ok: true, session, document, view }`, or `documentOf`'s refusal value and no session | `props/documents` `DocumentReader` | P6 |
+| `props.reader.apply` | `{ session, ops: next, prev, answer, close }` (every op goes to core; an unknown one is its `unknown_action`) → `{ results: [{ ok, events } or { ok: false, refusal }], view }` | same | P6 |
+| `props.doors.door` | `{ building }` → `{ door: { id, state, doorAt, outside, label, interiorFunction } }` | `props/doors` `doorView` | P6 |
+| `props.doors.prompt` | `{ buildings, player: { position, inside? } }` → `{ prompt }` (null when nothing prompts) | `props/doors` `doorPrompt` | P6 |
+| `props.doors.step` | `{ buildings, inside?, playerItemIds?, action: { op: enter, building } or { op: exit } }` → `{ ok: true, handoff, inside }` or the refusal value | `props/doors` `doorStep` | P6 |
+| `props.board.create` | `{ notices, fluency?, read?, answered?, questStatus? }` → `{ session, view }` | `props/notice-board` `NoticeBoard` | P6 |
+| `props.board.apply` | `{ session, ops: select, answer, take_quest }` (every op goes to core) → `{ results, view }` | same | P6 |
+| `props.notices.generate` | `{ settlementId, settlementName, npcs: [{ characterId, name, occupation? }] }` → `{ articles }` | `game-engine/logic/NoticeGenerator` `generateSettlementNotices` | P6 |
+| `inventory.create` | `{ player?: { gold, inventory } }` → `{ session, view: { filter, counts, gold, rows, equipment, save } }` | `ui/inventory-model` `InventoryViewModel` | P6 |
+| `inventory.apply` | `{ session, ops: add, remove, filter, toggle, set_gold, add_gold, remove_gold, equip_flag, get, items, load, clear }` → `{ results, view }` | same | P6 |
 | `ui.notifications.create` | `{}` → `{ session, view }` | `ui/notifications` `Notifications` | P2 |
 | `ui.notifications.apply` | `{ session, ops: push, tick, dismiss, clear }` → `{ results, view }` | same | P2 |
 | `ui.pause.create` | `{ enabledModules? or genre?, tabs? }` → `{ session, source, enabledModules, view }` | `ui/pause-menu-model` `PauseMenuModel`; `genre` via `resolveGenre` | P2 |
@@ -427,18 +445,26 @@ quick load on F5 / F9. It does no I/O, so it is a session pair like the clock:
   one). `activeSlot` is the autosave target at the start.
 - **`saves.slots.apply { session, ops }`** → `{ results, view }`. The ops are
   core's steps: `save { slot }`, `load { slot }`, `continue`, `delete { slot }`,
-  `key { code }` (a KeyboardEvent.code: `F5`, `F9`; any other is `unbound_key`),
-  `tick { delta }` (seconds; null is a non-finite tick, as the corpus writes it)
-  and `finished { ok, savedAt?, summary?, outcome? }`. Each result is core's
-  `{ ok, refusal?, outcome?, effect }`: a refusal (`busy`, `no_such_slot`,
-  `slot_empty`, `slot_corrupted`, `no_quick_slot`, `nothing_to_continue`,
-  `nothing_pending`, `unbound_key`) is a VALUE, and `effect` is the I/O the host
-  does now — `{ write: { slot, kind, autosave } }` (then raise core's
-  `game_saved`), `{ read: { slot, kind } }` or `{ remove: { slot } }` — answered
-  with `finished`. The view is core's `SaveSlotsView`: `rows` (core's `SlotView`
-  plus `canDelete`, `isContinue`, `isActive`, `isQuick`), `continueSlot`,
-  `activeSlot`, `pending`, `autosave { on, target, inSec }` and `indicator`
-  (state, label, detail, kind, opacity).
+  `ask_delete { slot }` (the slot list's Delete, which asks first: it opens the
+  view's `confirm` prompt), `confirm_delete` and `cancel_delete` (the prompt's
+  two actions; core's PL.slots-delete-states), `key { code }` (a
+  KeyboardEvent.code: `F5`, `F9`; any other is `unbound_key`), `tick { delta }`
+  (seconds; null is a non-finite tick, as the corpus writes it) and `finished {
+  ok, savedAt?, summary?, outcome? }`. Each result is core's `{ ok, refusal?,
+  outcome?, effect, history? }`: a refusal (`busy`, `no_such_slot`, `slot_empty`,
+  `slot_corrupted`, `no_quick_slot`, `nothing_to_continue`, `nothing_pending`,
+  `unbound_key`, `confirm_open`, `nothing_to_confirm`, `quick_slot_reserved`) is
+  a VALUE, `effect` is the I/O the host does now — `{ write: { slot, kind,
+  autosave } }` (then raise core's `game_saved`), `{ read: { slot, kind } }` or
+  `{ remove: { slot } }` — answered with `finished`, and `history` is the line a
+  finished delete leaves in the game's log ("Deleted Slot N"). The view is core's
+  `SaveSlotsView`: `rows` (core's `SlotView` plus `canDelete`, `isContinue`,
+  `isActive`, `isQuick`), `continueSlot`, `activeSlot`, `pending`, `confirm` (the
+  delete prompt, or null), `autosave { on, target, inSec }` and `indicator`
+  (state, label, detail, kind, opacity). Since core's PL.quick-slot (in from the
+  ac229a7 pin) an unset `quickSlot` is a DEDICATED quick slot after the manual
+  ones (index `slotCount`), so the table holds `slotCount + 1` rows; a manual
+  slot's index (0 was the old default) or null still names that slot or none.
 
 What the rows refuse as errors is only what core's types declare and JSON cannot
 hold: a `config` that is not an object, a slot that is not `{ index: number,
@@ -447,13 +473,16 @@ or `delta` that is not a number, a `code` that is not a string, and a `finished`
 without a boolean `ok`. A slot index that is not a slot (`1.5`, `7`) goes to core,
 which answers `no_such_slot` on purpose.
 
-The evidence is core's corpus `conformance/saves/slots.json` (94 cases at
-fc88be9), copied byte for byte by `tools/vendor-core-bundle.mjs` and hashed in
-`VENDORED.json`. `tests/saves_slots_corpus.cpp` (ctest `saves_slots_corpus`)
-drives it through the two rows from C: every `run` case as one create and one
-apply per step (so the view after every step is the session's own), every
-`config` case through create's `config`, every `continue` and `rows` case through
-create's view (a `busy` rows case with one pending save first) — 83 cases. The 11
+The evidence is core's corpus `conformance/saves/slots.json` (126 cases at
+ac229a7; 94 at fc88be9), copied byte for byte by `tools/vendor-core-bundle.mjs`
+and hashed in `VENDORED.json`. `tests/saves_slots_corpus.cpp` (ctest
+`saves_slots_corpus`) drives it through the two rows from C: every `run` case as
+one create and one apply per step (so the view after every step is the session's
+own), every `config` case through create's `config`, every `continue` case
+through the view of a session with no quick slot (core's `continueSlot(slots,
+slotCount)` reads exactly `slotCount` slots), every `rows` case through create's
+view (a `busy` rows case with one pending save first) — 111 cases at ac229a7
+(config 26, continue 13, rows 10, run 62). The 15
 `indicator` cases show any state, kind and detail on a bare indicator, which no
 session step does; the runner prints a measured reason for each (how many of its
 views the session itself showed in the run cases, and which it never reached).
@@ -466,17 +495,96 @@ and `game-engine/logic/KeyboardMap` (the slot model was already in; 138 → 141)
 bytes (the pin bump alone, from 1,392,156 at f9aef13) to 1,422,744. The 83 driven
 cases take about 20 ms under QuickJS.
 
+### The props and inventory rows: containers, documents, doors, the notice board, the inventory panel (PL.native-props-rows)
+
+Core's P6 logic (P6.core, 31764b1 onward; ruling U89(2)) is the engine-neutral
+half of the props a player uses: `src/props/containers.ts` (whether a chest can
+be opened, unlocked, put into, where it is, when it respawns),
+`src/props/documents.ts` (one readable document from a TextIR, a NoticeArticle, a
+book or a sign; its pages; the reader panel's `DocumentReader`),
+`src/props/doors.ts` (a building's door, its prompt, and the handoff "enter
+interior X" / "exit to Y"), `src/props/notice-board.ts` (`NoticeBoard`: which
+notices a board shows, unread, read / answer / take a quest),
+`game-engine/logic/NoticeGenerator.ts` (`generateSettlementNotices`, one notice
+per NPC) and `src/ui/inventory-model.ts` (`InventoryViewModel`, the inventory
+panel, moved into core from Babylon). The rows call those and decide nothing:
+
+- **Stateless:** `props.containers.{view, unlock, move, at, respawn}`,
+  `props.documents.{document, paginate}`, `props.doors.{door, prompt, step}` and
+  `props.notices.generate` — one core function each, answering in the shape the
+  corpus pins (the host keeps the state: a container record `unlock` returns, the
+  door's `inside`).
+- **Sessions** (`js/host-sessions.js`): `props.reader.create/apply` (a refused
+  document answers `documentOf`'s refusal value and opens no session),
+  `props.board.create/apply`, and `inventory.create/apply`. The reader's and the
+  board's `apply` send EVERY op to core's `step`, because core answers an action
+  it does not know as its refusal value `unknown_action` (`applySteps`); the
+  inventory's ops are core's corpus steps (`add`, `remove`, `filter`, `toggle`,
+  `set_gold`, `add_gold`, `remove_gold`, `equip_flag`) plus `get`, `items`,
+  `load` and `clear` a game needs, refused by name otherwise (`applyOps`).
+- **`props.contract`** answers the data tables of each P6 corpus file's
+  `contract` (the states, refusals and actions, the default capacity, page size
+  and quiz XP, the door's prompt radius and stand-off, the inventory's filters,
+  colours, slot labels and empty messages) from core's own constants, keyed by
+  area: a binding reads its words and numbers there, not from a copy.
+
+The inventory's `view` is `{ filter, counts: { total, shown }, gold, rows,
+equipment: { weapon, armor, accessory }, save: { gold, inventory } }` — exactly
+the state core's inventory corpus records after every step: `rows()` with each
+item row's live `item` left out (`get` returns the stored item), the equipped
+item's id per slot, and `toSaveState()`. **`ui.trade` is not this row and is
+unchanged**: C0's `ui.trade` is core's `TradeModel` (moving stock between the
+pack, a container and a merchant over the same `currentState` slice); there was
+no inventory-panel row to extend, so `inventory.*` is new beside it, and a host
+runs a trade through `ui.trade` and re-loads the panel (`inventory.apply` `load`)
+from the slice it returns.
+
+What the rows refuse as errors (`[invalid-input]`) is only a field of the wrong
+JSON type that core's types declare: a container, building, move, action,
+player or option that is not an object, a list (`containers`, `buildings`,
+`notices`, `npcs`, `read`, `answered`, the held item ids) that is not an array,
+a `text`, `inside`, id or settlement name that is not a string, a `charsPerPage`
+or `fluency` that is not a number, `now` that is neither a string nor a number,
+and a reader flag or `equipped` that is not a boolean. Every value core reads
+itself (a document of any shape, a stack's `quantity`, a `gold` of `null`) goes
+to core, which answers it as its corpus pins.
+
+The evidence is core's five P6 corpora, copied byte for byte by
+`tools/vendor-core-bundle.mjs` (`PROPS_CORPUS_FILES`) and hashed in
+`VENDORED.json`: `conformance/props/containers.json` (31 cases),
+`documents.json` (32), `doors.json` (29), `notice-board.json` (17) and
+`conformance/ui/inventory-cases.json` (19). `tests/props_corpus.cpp` drives
+EVERY case of every file through the rows from C, one ctest per file
+(`props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`,
+`props_notice_board_corpus`, `inventory_corpus`): the stateless ops send the
+case's `input` as the row's args; `read`, `board` and `inventory` open the
+session and apply ONE op per step; a door `session` is the host's side of a door
+as core's runner keeps it (`prompt` and `step` with the player's `inside`); and
+`generate` projects the row's full articles to the fields the corpus records.
+Each file's data tables are held to `props.contract`. 128 cases, none undriven.
+`props_corpus_negative` must see one wrong case per file reported
+(`tests/props-negative/`). The hand cases in `tests/cases/bridge-props.json` pin
+the rows' own contract (refusal values, an unknown action as core's, a refused
+document opening no session, the session kinds, the errors).
+
+**Cost.** The rows bring eight core modules (the four `props/` modules,
+`ui/inventory-model` and the `EquipmentManager` it reads its slots from, and
+`game-engine/logic/NoticeGenerator` with its `GameTextTypes`; 141 → 149): at the
+ac229a7 pin the bundle went from 1,435,892 bytes (the pin bump and the
+saves.slots catch-up alone, from 1,422,744 at fc88be9) to 1,511,366. The 128 cases take about 30 ms under
+QuickJS.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
 because there is nothing in core at the pinned commit to expose: **no HUD
 view-model** (the HUD shell composes `ui.notifications`, `ui.journal`'s tracker,
-`quest.waypoints`' compass and the clock), **no inventory panel view-model** (the
-inventory is `ItemLedger`, a Prolog-backed decision layer for P6, not a view;
-`ui.trade` is the container/merchant transfer model core has), and **no
+`quest.waypoints`' compass and the clock), and **no
 minimap view-model** beyond the two marker functions (`quest.minimapMarkers`,
-`quest.markers` with `surface: "minimap"`). The Features Round plan (§1) lists compass, minimap
-and inventory view-models as core work; when they land, they are rows here.
+`quest.markers` with `surface: "minimap"`). The Features Round plan (§1) lists compass and minimap
+view-models as core work; when they land, they are rows here. (The inventory
+panel's view-model landed in core with P6.core and is the `inventory.*` rows
+since PL.native-props-rows, above.)
 
 ## Sessions
 
@@ -551,7 +659,8 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `corebridge_sha256` | the C SHA-256 against the NIST vectors, at every split point |
 | `corebridge_radiant`, `corebridge_radiant_none` | the radiant corpus through core's real radiant engine on the native Prolog engine |
 | `core_vendor` | every vendored file matches its recorded sha256 and the pin |
-| `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (83 cases; the 11 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
+| `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (111 cases at ac229a7; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
+| `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (128 cases, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's
 OWN corpora (saves, the UI matrices, weather progression, genre resolution,

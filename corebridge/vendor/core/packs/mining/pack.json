@@ -1,0 +1,34 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "mining",
+  "version": "0.1.0",
+  "name": "Mining",
+  "summary": "Veins of authored seams: a pickaxe and a skill gate, ore drawn by seed from the seam's weight table, and a vein that is worked out.",
+  "kind": "optional",
+  "phase": "P9d",
+  "catalog": ["gathering-mining"],
+  "core": {
+    "modules": ["mining"],
+    "predicatePacks": ["mining"],
+    "hostInterfaces": ["IAgentActionHost"],
+    "corpus": [
+      "conformance/production/work.json",
+      "conformance/production/draws.json",
+      "conformance/prolog/mechanic-mining.json"
+    ]
+  },
+  "requires": [{ "id": "gathering" }],
+  "parameters": [
+    { "id": "defaultDeposit", "type": "integer", "min": 0, "maps": "ProductionTuning.defaultDeposit", "source": "world", "doc": "swings a vein holds when its seam names no deposit" }
+  ],
+  "extensionPoints": [
+    { "id": "seams", "kind": "prolog-facts", "signature": "WorldIR.production.mining {seams, veins} (seam_ore/3, seam_deposit/2)", "doc": "what a seam holds and how much" },
+    { "id": "refuse-mining", "kind": "prolog-forbid", "signature": "forbids/4 on ProductionTuning.mineAction ('mine_rock')", "doc": "a guild that owns the seam" }
+  ],
+  "events": { "emits": ["production_yielded", "production_site_exhausted"] },
+  "styles": { "art": ["prop.mining.*"] },
+  "checks": [{ "id": "corpus", "kind": "corpus" }],
+  "assistant": {
+    "summary": "Mining is core's mining module (src/production/mining.ts) remembered by ProductionDirector; the gathering pack's mining action calls ProductionDirector.mine on completion."
+  }
+}

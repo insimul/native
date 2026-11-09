@@ -1,0 +1,35 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "crafting",
+  "version": "0.1.0",
+  "name": "Crafting",
+  "summary": "Authored recipes for tools, weapons, armour, consumables and materials: a station, a tool and a skill gate, the inputs taken and the outputs given, exactly.",
+  "kind": "optional",
+  "phase": "P9d",
+  "catalog": ["crafting-recipes"],
+  "core": {
+    "modules": ["crafting"],
+    "predicatePacks": ["crafting"],
+    "hostInterfaces": ["IAgentActionHost"],
+    "corpus": [
+      "conformance/production/work.json",
+      "conformance/prolog/mechanic-crafting.json"
+    ]
+  },
+  "requires": [{ "id": "inventory" }],
+  "enhances": [{ "id": "gathering" }],
+  "parameters": [
+    { "id": "defaultTime", "type": "integer", "min": 0, "maps": "ProductionTuning.defaultTime", "source": "world", "doc": "the time a recipe with no time row takes" }
+  ],
+  "extensionPoints": [
+    { "id": "recipes", "kind": "prolog-facts", "signature": "WorldIR.production.crafting {recipes} (recipe_input/3, recipe_output/3, recipe_station/2)", "doc": "what a world can make" },
+    { "id": "refuse-crafting", "kind": "prolog-forbid", "signature": "forbids/4 on ProductionTuning.craftAction ('craft_item')" }
+  ],
+  "events": { "emits": ["production_yielded"] },
+  "styles": { "tokens": ["surface", "accent"], "art": ["prop.workbench.*"] },
+  "checks": [{ "id": "corpus", "kind": "corpus" }],
+  "assistant": {
+    "summary": "Crafting is core's crafting module (src/production/crafting.ts) remembered by ProductionDirector. The old station-recipe system (RecipeCraftingSystem) is retired by U50(1): kept in core, not ported.",
+    "doNot": ["Add a chance term to a recipe: a recipe yields what it says."]
+  }
+}

@@ -18,6 +18,8 @@
        "genre.registry",
        "genre.resolve",
        "genre.resolveGame",
+       "inventory.apply",
+       "inventory.create",
        "layout.assignHouseModels",
        "layout.auditFoliageSpacing",
        "layout.auditGroundEdges",
@@ -87,6 +89,22 @@
        "modules.table",
        "packs.compose",
        "prolog.packs",
+       "props.board.apply",
+       "props.board.create",
+       "props.containers.at",
+       "props.containers.move",
+       "props.containers.respawn",
+       "props.containers.unlock",
+       "props.containers.view",
+       "props.contract",
+       "props.documents.document",
+       "props.documents.paginate",
+       "props.doors.door",
+       "props.doors.prompt",
+       "props.doors.step",
+       "props.notices.generate",
+       "props.reader.apply",
+       "props.reader.create",
        "quest.completion.apply",
        "quest.completion.create",
        "quest.hydrate",
@@ -146,7 +164,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 112}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 130}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -192,7 +210,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 112}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 130}}}}
    ]
   },
   {

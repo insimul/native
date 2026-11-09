@@ -1,0 +1,5286 @@
+{
+  "area": "ui-inventory",
+  "description": "The inventory view-model (Features WV2, P6.core; catalog items-inventory), moved into core from Babylon: the rows a panel draws (groups, items, every affordance), the filter tabs, folded groups, the derived equipment and the gold, over the currentState.player save slice. Op inventory {player: {gold, inventory}, steps?: [{op: add (item) | remove (item, quantity?) | filter | toggle (group) | set_gold | add_gold | remove_gold (amount; null is NaN) | equip_flag (item, equipped)}]} -> {initial, steps: [{result, state}]}; state is {filter, counts, gold, rows (an item row without its item object), equipment (slot -> id), save}. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
+  "version": 1,
+  "tolerance": 1e-9,
+  "sources": [
+    "babylon origin/main bfcdeb2: packages/babylon/src/engine/game-engine/ui/inventory-model.ts (437 lines), moved with its rules except the four in src/ui/inventory-model.ts's header (pinned order, itemId read, remove below 1 refused, non-finite gold ignored).",
+    "godot origin/main 6599874: addons/insimul/ui/inventory_panel.gd reads itemId (the trade model's key)."
+  ],
+  "contract": {
+    "filters": [
+      {
+        "key": "all",
+        "label": "All"
+      },
+      {
+        "key": "weapons_armor",
+        "label": "Gear"
+      },
+      {
+        "key": "consumables",
+        "label": "Consumables"
+      },
+      {
+        "key": "materials",
+        "label": "Materials"
+      },
+      {
+        "key": "quest",
+        "label": "Quest"
+      },
+      {
+        "key": "other",
+        "label": "Other"
+      }
+    ],
+    "usableTypes": [
+      "collectible",
+      "consumable",
+      "document",
+      "drink",
+      "food",
+      "key",
+      "quest"
+    ],
+    "slotLabels": {
+      "weapon": "Weapon",
+      "armor": "Armor",
+      "accessory": "Accessory"
+    },
+    "rarityColors": {
+      "common": "#CCCCCC",
+      "uncommon": "#1EFF00",
+      "rare": "#0070DD",
+      "epic": "#A335EE",
+      "legendary": "#FF8000"
+    },
+    "rarityOrder": {
+      "legendary": 0,
+      "epic": 1,
+      "rare": 2,
+      "uncommon": 3,
+      "common": 4
+    },
+    "typeColors": {
+      "quest": "#FFD700",
+      "collectible": "#87CEEB",
+      "key": "#FF6347",
+      "consumable": "#90EE90",
+      "weapon": "#FF8C00",
+      "armor": "#B0C4DE",
+      "food": "#DEB887",
+      "drink": "#DEB887",
+      "material": "#D2B48C",
+      "tool": "#C0C0C0"
+    },
+    "defaultTypeColor": "white",
+    "equippedNameColor": "#90EE90",
+    "plainBorder": "rgba(150, 150, 150, 0.5)",
+    "pinnedGroup": "Quest",
+    "emptyMessages": {
+      "all": "Your inventory is empty",
+      "filtered": "No items in this category"
+    },
+    "id": "id, else itemId; an entry with neither is skipped; a later entry with a loaded id replaces the earlier; name is name, else itemName, else the id",
+    "order": "groups: pinnedGroup first, then by name order; items: equipped first, then rarityOrder (none or unknown is common), then name order, then id order. name order: fold ASCII A-Z to a-z only (no Unicode case mapping: É stays U+00C9, İ stays U+0130), compare the folded strings by UTF-16 code unit, then the raw strings by code unit (Babylon used localeCompare, which is locale-dependent)",
+    "filter": "quest: type quest or key; weapons_armor: type weapon, armor or tool, or category weapons, armor or tools; consumables: type consumable, food or drink, or category consumables, food_drink or alchemy; materials: type material, or category materials or crafting; else other. The category compares ASCII-folded (as in name order). An unknown filter key is ignored",
+    "group": "category with underscores as spaces and each word capitalised, else the type capitalised, else Other",
+    "slot": "equipSlot, else weapon -> weapon, armor -> armor, tool with effects -> accessory, else none; a binding equips through EquipmentManager.equip({...item, equipSlot: slot})",
+    "row": "nameColor: equippedNameColor when equipped, else the rarity colour, else the type colour; canEquip slot and not equipped; canUnequip slot and equipped; canUse type in usableTypes; useLabel Read for type or category document; canDrop not quest and not equipped; borderColor rarity colour + 88 above common, else plainBorder; tagLine rarity above common capitalised, baseType title-cased else type capitalised, material title-cased, joined with ' · '; quantity a finite quantity, else 1",
+    "store": "add stacks onto a held id (quantity default 1); remove of a quantity not finite or < 1 is refused; otherwise subtracts and drops the entry at <= 0 (removing more than is held returns true); equipment is the first equipped item per slot in insertion order",
+    "gold": "loads a finite gold, else 0; set clamps at 0; a non-finite amount changes nothing; remove refuses a non-finite, negative or larger amount"
+  },
+  "cases": [
+    {
+      "name": "inventory: an empty pack shows one empty row",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": []
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 0,
+            "shown": 0
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "empty",
+              "message": "Your inventory is empty"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": []
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: groups (Quest pinned first, then by name), items equipped first, then rarity, then name; every affordance",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 120,
+          "inventory": [
+            {
+              "id": "iron_sword",
+              "name": "iron sword",
+              "type": "weapon",
+              "quantity": 1,
+              "rarity": "rare",
+              "baseType": "long_sword",
+              "material": "iron",
+              "category": "weapons"
+            },
+            {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 3,
+              "category": "food_drink"
+            },
+            {
+              "id": "letter",
+              "name": "letter",
+              "type": "quest",
+              "quantity": 1,
+              "questId": "q1"
+            },
+            {
+              "id": "herbs",
+              "name": "herbs",
+              "type": "material",
+              "quantity": 5,
+              "category": "crafting"
+            },
+            {
+              "id": "leather_vest",
+              "name": "leather vest",
+              "type": "armor",
+              "quantity": 1,
+              "equipped": true,
+              "category": "armor"
+            },
+            {
+              "id": "old_book",
+              "name": "old book",
+              "type": "document",
+              "quantity": 1
+            },
+            {
+              "id": "cellar_key",
+              "name": "cellar key",
+              "type": "key",
+              "quantity": 1
+            },
+            {
+              "id": "lantern",
+              "name": "lantern",
+              "type": "tool",
+              "quantity": 1,
+              "effects": {
+                "light": 1
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 8,
+            "shown": 8
+          },
+          "gold": 120,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Quest",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "letter",
+              "name": "letter",
+              "quantity": 1,
+              "group": "Quest",
+              "nameColor": "#FFD700",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": false,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Quest"
+            },
+            {
+              "kind": "group",
+              "label": "Armor",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "leather_vest",
+              "name": "leather vest",
+              "quantity": 1,
+              "group": "Armor",
+              "nameColor": "#90EE90",
+              "equipped": true,
+              "slot": "armor",
+              "canEquip": false,
+              "canUnequip": true,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": false,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Armor"
+            },
+            {
+              "kind": "group",
+              "label": "Crafting",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "herbs",
+              "name": "herbs",
+              "quantity": 5,
+              "group": "Crafting",
+              "nameColor": "#D2B48C",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Material"
+            },
+            {
+              "kind": "group",
+              "label": "Document",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "old_book",
+              "name": "old book",
+              "quantity": 1,
+              "group": "Document",
+              "nameColor": "white",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Read",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Document"
+            },
+            {
+              "kind": "group",
+              "label": "Food Drink",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "bread",
+              "name": "bread",
+              "quantity": 3,
+              "group": "Food Drink",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "group",
+              "label": "Key",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "cellar_key",
+              "name": "cellar key",
+              "quantity": 1,
+              "group": "Key",
+              "nameColor": "#FF6347",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Key"
+            },
+            {
+              "kind": "group",
+              "label": "Tool",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "lantern",
+              "name": "lantern",
+              "quantity": 1,
+              "group": "Tool",
+              "nameColor": "#C0C0C0",
+              "equipped": false,
+              "slot": "accessory",
+              "canEquip": true,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Tool"
+            },
+            {
+              "kind": "group",
+              "label": "Weapons",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "iron_sword",
+              "name": "iron sword",
+              "quantity": 1,
+              "group": "Weapons",
+              "nameColor": "#0070DD",
+              "equipped": false,
+              "slot": "weapon",
+              "canEquip": true,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "#0070DD88",
+              "tagLine": "Rare · Long Sword · Iron"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": "leather_vest",
+            "accessory": null
+          },
+          "save": {
+            "gold": 120,
+            "inventory": [
+              {
+                "id": "iron_sword",
+                "name": "iron sword",
+                "type": "weapon",
+                "quantity": 1,
+                "rarity": "rare",
+                "baseType": "long_sword",
+                "material": "iron",
+                "category": "weapons"
+              },
+              {
+                "id": "bread",
+                "name": "bread",
+                "type": "food",
+                "quantity": 3,
+                "category": "food_drink"
+              },
+              {
+                "id": "letter",
+                "name": "letter",
+                "type": "quest",
+                "quantity": 1,
+                "questId": "q1"
+              },
+              {
+                "id": "herbs",
+                "name": "herbs",
+                "type": "material",
+                "quantity": 5,
+                "category": "crafting"
+              },
+              {
+                "id": "leather_vest",
+                "name": "leather vest",
+                "type": "armor",
+                "quantity": 1,
+                "equipped": true,
+                "category": "armor"
+              },
+              {
+                "id": "old_book",
+                "name": "old book",
+                "type": "document",
+                "quantity": 1
+              },
+              {
+                "id": "cellar_key",
+                "name": "cellar key",
+                "type": "key",
+                "quantity": 1
+              },
+              {
+                "id": "lantern",
+                "name": "lantern",
+                "type": "tool",
+                "quantity": 1,
+                "effects": {
+                  "light": 1
+                }
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: each filter tab, and a tab with nothing in it",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "iron_sword",
+              "name": "iron sword",
+              "type": "weapon",
+              "quantity": 1,
+              "rarity": "rare",
+              "baseType": "long_sword",
+              "material": "iron",
+              "category": "weapons"
+            },
+            {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 3,
+              "category": "food_drink"
+            },
+            {
+              "id": "letter",
+              "name": "letter",
+              "type": "quest",
+              "quantity": 1,
+              "questId": "q1"
+            },
+            {
+              "id": "herbs",
+              "name": "herbs",
+              "type": "material",
+              "quantity": 5,
+              "category": "crafting"
+            },
+            {
+              "id": "leather_vest",
+              "name": "leather vest",
+              "type": "armor",
+              "quantity": 1,
+              "equipped": true,
+              "category": "armor"
+            },
+            {
+              "id": "old_book",
+              "name": "old book",
+              "type": "document",
+              "quantity": 1
+            },
+            {
+              "id": "cellar_key",
+              "name": "cellar key",
+              "type": "key",
+              "quantity": 1
+            },
+            {
+              "id": "lantern",
+              "name": "lantern",
+              "type": "tool",
+              "quantity": 1,
+              "effects": {
+                "light": 1
+              }
+            }
+          ]
+        },
+        "steps": [
+          {
+            "op": "filter",
+            "filter": "weapons_armor"
+          },
+          {
+            "op": "filter",
+            "filter": "consumables"
+          },
+          {
+            "op": "filter",
+            "filter": "materials"
+          },
+          {
+            "op": "filter",
+            "filter": "quest"
+          },
+          {
+            "op": "filter",
+            "filter": "other"
+          },
+          {
+            "op": "filter",
+            "filter": "nope"
+          },
+          {
+            "op": "remove",
+            "item": "old_book"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 8,
+            "shown": 8
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Quest",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "letter",
+              "name": "letter",
+              "quantity": 1,
+              "group": "Quest",
+              "nameColor": "#FFD700",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": false,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Quest"
+            },
+            {
+              "kind": "group",
+              "label": "Armor",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "leather_vest",
+              "name": "leather vest",
+              "quantity": 1,
+              "group": "Armor",
+              "nameColor": "#90EE90",
+              "equipped": true,
+              "slot": "armor",
+              "canEquip": false,
+              "canUnequip": true,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": false,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Armor"
+            },
+            {
+              "kind": "group",
+              "label": "Crafting",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "herbs",
+              "name": "herbs",
+              "quantity": 5,
+              "group": "Crafting",
+              "nameColor": "#D2B48C",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Material"
+            },
+            {
+              "kind": "group",
+              "label": "Document",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "old_book",
+              "name": "old book",
+              "quantity": 1,
+              "group": "Document",
+              "nameColor": "white",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Read",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Document"
+            },
+            {
+              "kind": "group",
+              "label": "Food Drink",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "bread",
+              "name": "bread",
+              "quantity": 3,
+              "group": "Food Drink",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "group",
+              "label": "Key",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "cellar_key",
+              "name": "cellar key",
+              "quantity": 1,
+              "group": "Key",
+              "nameColor": "#FF6347",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Key"
+            },
+            {
+              "kind": "group",
+              "label": "Tool",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "lantern",
+              "name": "lantern",
+              "quantity": 1,
+              "group": "Tool",
+              "nameColor": "#C0C0C0",
+              "equipped": false,
+              "slot": "accessory",
+              "canEquip": true,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Tool"
+            },
+            {
+              "kind": "group",
+              "label": "Weapons",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "iron_sword",
+              "name": "iron sword",
+              "quantity": 1,
+              "group": "Weapons",
+              "nameColor": "#0070DD",
+              "equipped": false,
+              "slot": "weapon",
+              "canEquip": true,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "#0070DD88",
+              "tagLine": "Rare · Long Sword · Iron"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": "leather_vest",
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "iron_sword",
+                "name": "iron sword",
+                "type": "weapon",
+                "quantity": 1,
+                "rarity": "rare",
+                "baseType": "long_sword",
+                "material": "iron",
+                "category": "weapons"
+              },
+              {
+                "id": "bread",
+                "name": "bread",
+                "type": "food",
+                "quantity": 3,
+                "category": "food_drink"
+              },
+              {
+                "id": "letter",
+                "name": "letter",
+                "type": "quest",
+                "quantity": 1,
+                "questId": "q1"
+              },
+              {
+                "id": "herbs",
+                "name": "herbs",
+                "type": "material",
+                "quantity": 5,
+                "category": "crafting"
+              },
+              {
+                "id": "leather_vest",
+                "name": "leather vest",
+                "type": "armor",
+                "quantity": 1,
+                "equipped": true,
+                "category": "armor"
+              },
+              {
+                "id": "old_book",
+                "name": "old book",
+                "type": "document",
+                "quantity": 1
+              },
+              {
+                "id": "cellar_key",
+                "name": "cellar key",
+                "type": "key",
+                "quantity": 1
+              },
+              {
+                "id": "lantern",
+                "name": "lantern",
+                "type": "tool",
+                "quantity": 1,
+                "effects": {
+                  "light": 1
+                }
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "result": null,
+            "state": {
+              "filter": "weapons_armor",
+              "counts": {
+                "total": 8,
+                "shown": 3
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Armor",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "leather_vest",
+                  "name": "leather vest",
+                  "quantity": 1,
+                  "group": "Armor",
+                  "nameColor": "#90EE90",
+                  "equipped": true,
+                  "slot": "armor",
+                  "canEquip": false,
+                  "canUnequip": true,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": false,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Armor"
+                },
+                {
+                  "kind": "group",
+                  "label": "Tool",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "lantern",
+                  "name": "lantern",
+                  "quantity": 1,
+                  "group": "Tool",
+                  "nameColor": "#C0C0C0",
+                  "equipped": false,
+                  "slot": "accessory",
+                  "canEquip": true,
+                  "canUnequip": false,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Tool"
+                },
+                {
+                  "kind": "group",
+                  "label": "Weapons",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "iron_sword",
+                  "name": "iron sword",
+                  "quantity": 1,
+                  "group": "Weapons",
+                  "nameColor": "#0070DD",
+                  "equipped": false,
+                  "slot": "weapon",
+                  "canEquip": true,
+                  "canUnequip": false,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "#0070DD88",
+                  "tagLine": "Rare · Long Sword · Iron"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": "leather_vest",
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "iron_sword",
+                    "name": "iron sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "rarity": "rare",
+                    "baseType": "long_sword",
+                    "material": "iron",
+                    "category": "weapons"
+                  },
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 3,
+                    "category": "food_drink"
+                  },
+                  {
+                    "id": "letter",
+                    "name": "letter",
+                    "type": "quest",
+                    "quantity": 1,
+                    "questId": "q1"
+                  },
+                  {
+                    "id": "herbs",
+                    "name": "herbs",
+                    "type": "material",
+                    "quantity": 5,
+                    "category": "crafting"
+                  },
+                  {
+                    "id": "leather_vest",
+                    "name": "leather vest",
+                    "type": "armor",
+                    "quantity": 1,
+                    "equipped": true,
+                    "category": "armor"
+                  },
+                  {
+                    "id": "old_book",
+                    "name": "old book",
+                    "type": "document",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "cellar_key",
+                    "name": "cellar key",
+                    "type": "key",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "lantern",
+                    "name": "lantern",
+                    "type": "tool",
+                    "quantity": 1,
+                    "effects": {
+                      "light": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "consumables",
+              "counts": {
+                "total": 8,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food Drink",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 3,
+                  "group": "Food Drink",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": "leather_vest",
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "iron_sword",
+                    "name": "iron sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "rarity": "rare",
+                    "baseType": "long_sword",
+                    "material": "iron",
+                    "category": "weapons"
+                  },
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 3,
+                    "category": "food_drink"
+                  },
+                  {
+                    "id": "letter",
+                    "name": "letter",
+                    "type": "quest",
+                    "quantity": 1,
+                    "questId": "q1"
+                  },
+                  {
+                    "id": "herbs",
+                    "name": "herbs",
+                    "type": "material",
+                    "quantity": 5,
+                    "category": "crafting"
+                  },
+                  {
+                    "id": "leather_vest",
+                    "name": "leather vest",
+                    "type": "armor",
+                    "quantity": 1,
+                    "equipped": true,
+                    "category": "armor"
+                  },
+                  {
+                    "id": "old_book",
+                    "name": "old book",
+                    "type": "document",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "cellar_key",
+                    "name": "cellar key",
+                    "type": "key",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "lantern",
+                    "name": "lantern",
+                    "type": "tool",
+                    "quantity": 1,
+                    "effects": {
+                      "light": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "materials",
+              "counts": {
+                "total": 8,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Crafting",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "herbs",
+                  "name": "herbs",
+                  "quantity": 5,
+                  "group": "Crafting",
+                  "nameColor": "#D2B48C",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Material"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": "leather_vest",
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "iron_sword",
+                    "name": "iron sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "rarity": "rare",
+                    "baseType": "long_sword",
+                    "material": "iron",
+                    "category": "weapons"
+                  },
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 3,
+                    "category": "food_drink"
+                  },
+                  {
+                    "id": "letter",
+                    "name": "letter",
+                    "type": "quest",
+                    "quantity": 1,
+                    "questId": "q1"
+                  },
+                  {
+                    "id": "herbs",
+                    "name": "herbs",
+                    "type": "material",
+                    "quantity": 5,
+                    "category": "crafting"
+                  },
+                  {
+                    "id": "leather_vest",
+                    "name": "leather vest",
+                    "type": "armor",
+                    "quantity": 1,
+                    "equipped": true,
+                    "category": "armor"
+                  },
+                  {
+                    "id": "old_book",
+                    "name": "old book",
+                    "type": "document",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "cellar_key",
+                    "name": "cellar key",
+                    "type": "key",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "lantern",
+                    "name": "lantern",
+                    "type": "tool",
+                    "quantity": 1,
+                    "effects": {
+                      "light": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "quest",
+              "counts": {
+                "total": 8,
+                "shown": 2
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Quest",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "letter",
+                  "name": "letter",
+                  "quantity": 1,
+                  "group": "Quest",
+                  "nameColor": "#FFD700",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": false,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Quest"
+                },
+                {
+                  "kind": "group",
+                  "label": "Key",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "cellar_key",
+                  "name": "cellar key",
+                  "quantity": 1,
+                  "group": "Key",
+                  "nameColor": "#FF6347",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Key"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": "leather_vest",
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "iron_sword",
+                    "name": "iron sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "rarity": "rare",
+                    "baseType": "long_sword",
+                    "material": "iron",
+                    "category": "weapons"
+                  },
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 3,
+                    "category": "food_drink"
+                  },
+                  {
+                    "id": "letter",
+                    "name": "letter",
+                    "type": "quest",
+                    "quantity": 1,
+                    "questId": "q1"
+                  },
+                  {
+                    "id": "herbs",
+                    "name": "herbs",
+                    "type": "material",
+                    "quantity": 5,
+                    "category": "crafting"
+                  },
+                  {
+                    "id": "leather_vest",
+                    "name": "leather vest",
+                    "type": "armor",
+                    "quantity": 1,
+                    "equipped": true,
+                    "category": "armor"
+                  },
+                  {
+                    "id": "old_book",
+                    "name": "old book",
+                    "type": "document",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "cellar_key",
+                    "name": "cellar key",
+                    "type": "key",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "lantern",
+                    "name": "lantern",
+                    "type": "tool",
+                    "quantity": 1,
+                    "effects": {
+                      "light": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "other",
+              "counts": {
+                "total": 8,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Document",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "old_book",
+                  "name": "old book",
+                  "quantity": 1,
+                  "group": "Document",
+                  "nameColor": "white",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Read",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Document"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": "leather_vest",
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "iron_sword",
+                    "name": "iron sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "rarity": "rare",
+                    "baseType": "long_sword",
+                    "material": "iron",
+                    "category": "weapons"
+                  },
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 3,
+                    "category": "food_drink"
+                  },
+                  {
+                    "id": "letter",
+                    "name": "letter",
+                    "type": "quest",
+                    "quantity": 1,
+                    "questId": "q1"
+                  },
+                  {
+                    "id": "herbs",
+                    "name": "herbs",
+                    "type": "material",
+                    "quantity": 5,
+                    "category": "crafting"
+                  },
+                  {
+                    "id": "leather_vest",
+                    "name": "leather vest",
+                    "type": "armor",
+                    "quantity": 1,
+                    "equipped": true,
+                    "category": "armor"
+                  },
+                  {
+                    "id": "old_book",
+                    "name": "old book",
+                    "type": "document",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "cellar_key",
+                    "name": "cellar key",
+                    "type": "key",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "lantern",
+                    "name": "lantern",
+                    "type": "tool",
+                    "quantity": 1,
+                    "effects": {
+                      "light": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "other",
+              "counts": {
+                "total": 8,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Document",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "old_book",
+                  "name": "old book",
+                  "quantity": 1,
+                  "group": "Document",
+                  "nameColor": "white",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Read",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Document"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": "leather_vest",
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "iron_sword",
+                    "name": "iron sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "rarity": "rare",
+                    "baseType": "long_sword",
+                    "material": "iron",
+                    "category": "weapons"
+                  },
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 3,
+                    "category": "food_drink"
+                  },
+                  {
+                    "id": "letter",
+                    "name": "letter",
+                    "type": "quest",
+                    "quantity": 1,
+                    "questId": "q1"
+                  },
+                  {
+                    "id": "herbs",
+                    "name": "herbs",
+                    "type": "material",
+                    "quantity": 5,
+                    "category": "crafting"
+                  },
+                  {
+                    "id": "leather_vest",
+                    "name": "leather vest",
+                    "type": "armor",
+                    "quantity": 1,
+                    "equipped": true,
+                    "category": "armor"
+                  },
+                  {
+                    "id": "old_book",
+                    "name": "old book",
+                    "type": "document",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "cellar_key",
+                    "name": "cellar key",
+                    "type": "key",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "lantern",
+                    "name": "lantern",
+                    "type": "tool",
+                    "quantity": 1,
+                    "effects": {
+                      "light": 1
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": true,
+            "state": {
+              "filter": "other",
+              "counts": {
+                "total": 7,
+                "shown": 0
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "No items in this category"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": "leather_vest",
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "iron_sword",
+                    "name": "iron sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "rarity": "rare",
+                    "baseType": "long_sword",
+                    "material": "iron",
+                    "category": "weapons"
+                  },
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 3,
+                    "category": "food_drink"
+                  },
+                  {
+                    "id": "letter",
+                    "name": "letter",
+                    "type": "quest",
+                    "quantity": 1,
+                    "questId": "q1"
+                  },
+                  {
+                    "id": "herbs",
+                    "name": "herbs",
+                    "type": "material",
+                    "quantity": 5,
+                    "category": "crafting"
+                  },
+                  {
+                    "id": "leather_vest",
+                    "name": "leather vest",
+                    "type": "armor",
+                    "quantity": 1,
+                    "equipped": true,
+                    "category": "armor"
+                  },
+                  {
+                    "id": "cellar_key",
+                    "name": "cellar key",
+                    "type": "key",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "lantern",
+                    "name": "lantern",
+                    "type": "tool",
+                    "quantity": 1,
+                    "effects": {
+                      "light": 1
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inventory: a folded group shows its header only; folding again unfolds it",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "iron_sword",
+              "name": "iron sword",
+              "type": "weapon",
+              "quantity": 1,
+              "rarity": "rare",
+              "baseType": "long_sword",
+              "material": "iron",
+              "category": "weapons"
+            },
+            {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 3,
+              "category": "food_drink"
+            },
+            {
+              "id": "letter",
+              "name": "letter",
+              "type": "quest",
+              "quantity": 1,
+              "questId": "q1"
+            }
+          ]
+        },
+        "steps": [
+          {
+            "op": "toggle",
+            "group": "Weapons"
+          },
+          {
+            "op": "toggle",
+            "group": "Weapons"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 3,
+            "shown": 3
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Quest",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "letter",
+              "name": "letter",
+              "quantity": 1,
+              "group": "Quest",
+              "nameColor": "#FFD700",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": false,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Quest"
+            },
+            {
+              "kind": "group",
+              "label": "Food Drink",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "bread",
+              "name": "bread",
+              "quantity": 3,
+              "group": "Food Drink",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "group",
+              "label": "Weapons",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "iron_sword",
+              "name": "iron sword",
+              "quantity": 1,
+              "group": "Weapons",
+              "nameColor": "#0070DD",
+              "equipped": false,
+              "slot": "weapon",
+              "canEquip": true,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "#0070DD88",
+              "tagLine": "Rare · Long Sword · Iron"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "iron_sword",
+                "name": "iron sword",
+                "type": "weapon",
+                "quantity": 1,
+                "rarity": "rare",
+                "baseType": "long_sword",
+                "material": "iron",
+                "category": "weapons"
+              },
+              {
+                "id": "bread",
+                "name": "bread",
+                "type": "food",
+                "quantity": 3,
+                "category": "food_drink"
+              },
+              {
+                "id": "letter",
+                "name": "letter",
+                "type": "quest",
+                "quantity": 1,
+                "questId": "q1"
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "result": null,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 3,
+                "shown": 3
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Quest",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "letter",
+                  "name": "letter",
+                  "quantity": 1,
+                  "group": "Quest",
+                  "nameColor": "#FFD700",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": false,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Quest"
+                },
+                {
+                  "kind": "group",
+                  "label": "Food Drink",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 3,
+                  "group": "Food Drink",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "group",
+                  "label": "Weapons",
+                  "count": 1,
+                  "collapsed": true
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "iron_sword",
+                    "name": "iron sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "rarity": "rare",
+                    "baseType": "long_sword",
+                    "material": "iron",
+                    "category": "weapons"
+                  },
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 3,
+                    "category": "food_drink"
+                  },
+                  {
+                    "id": "letter",
+                    "name": "letter",
+                    "type": "quest",
+                    "quantity": 1,
+                    "questId": "q1"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 3,
+                "shown": 3
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Quest",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "letter",
+                  "name": "letter",
+                  "quantity": 1,
+                  "group": "Quest",
+                  "nameColor": "#FFD700",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": false,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Quest"
+                },
+                {
+                  "kind": "group",
+                  "label": "Food Drink",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 3,
+                  "group": "Food Drink",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "group",
+                  "label": "Weapons",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "iron_sword",
+                  "name": "iron sword",
+                  "quantity": 1,
+                  "group": "Weapons",
+                  "nameColor": "#0070DD",
+                  "equipped": false,
+                  "slot": "weapon",
+                  "canEquip": true,
+                  "canUnequip": false,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "#0070DD88",
+                  "tagLine": "Rare · Long Sword · Iron"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "iron_sword",
+                    "name": "iron sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "rarity": "rare",
+                    "baseType": "long_sword",
+                    "material": "iron",
+                    "category": "weapons"
+                  },
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 3,
+                    "category": "food_drink"
+                  },
+                  {
+                    "id": "letter",
+                    "name": "letter",
+                    "type": "quest",
+                    "quantity": 1,
+                    "questId": "q1"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inventory: add stacks onto a held id; a new id appends with quantity 1 by default",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 2
+            }
+          ]
+        },
+        "steps": [
+          {
+            "op": "add",
+            "item": {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 3
+            }
+          },
+          {
+            "op": "add",
+            "item": {
+              "id": "apple",
+              "name": "apple",
+              "type": "food"
+            }
+          },
+          {
+            "op": "add",
+            "item": {
+              "name": "no id",
+              "type": "food"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 1,
+            "shown": 1
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Food",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "bread",
+              "name": "bread",
+              "quantity": 2,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "bread",
+                "name": "bread",
+                "type": "food",
+                "quantity": 2
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "result": true,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 1,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 5,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 5
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": true,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 2,
+                "shown": 2
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 2,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "apple",
+                  "name": "apple",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 5,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 5
+                  },
+                  {
+                    "id": "apple",
+                    "name": "apple",
+                    "type": "food",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 2,
+                "shown": 2
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 2,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "apple",
+                  "name": "apple",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 5,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 5
+                  },
+                  {
+                    "id": "apple",
+                    "name": "apple",
+                    "type": "food",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inventory: remove takes some, drops the stack at zero or below, and refuses an unknown id or a quantity below 1",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 3
+            },
+            {
+              "id": "herbs",
+              "name": "herbs",
+              "type": "material",
+              "quantity": 2
+            }
+          ]
+        },
+        "steps": [
+          {
+            "op": "remove",
+            "item": "bread",
+            "quantity": 2
+          },
+          {
+            "op": "remove",
+            "item": "herbs",
+            "quantity": 5
+          },
+          {
+            "op": "remove",
+            "item": "nope"
+          },
+          {
+            "op": "remove",
+            "item": "bread",
+            "quantity": 0
+          },
+          {
+            "op": "remove",
+            "item": "bread",
+            "quantity": -1
+          },
+          {
+            "op": "remove",
+            "item": "bread",
+            "quantity": 0.5
+          },
+          {
+            "op": "remove",
+            "item": "bread"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 2,
+            "shown": 2
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Food",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "bread",
+              "name": "bread",
+              "quantity": 3,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "group",
+              "label": "Material",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "herbs",
+              "name": "herbs",
+              "quantity": 2,
+              "group": "Material",
+              "nameColor": "#D2B48C",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Material"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "bread",
+                "name": "bread",
+                "type": "food",
+                "quantity": 3
+              },
+              {
+                "id": "herbs",
+                "name": "herbs",
+                "type": "material",
+                "quantity": 2
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "result": true,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 2,
+                "shown": 2
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "group",
+                  "label": "Material",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "herbs",
+                  "name": "herbs",
+                  "quantity": 2,
+                  "group": "Material",
+                  "nameColor": "#D2B48C",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Material"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "herbs",
+                    "name": "herbs",
+                    "type": "material",
+                    "quantity": 2
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": true,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 1,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 1,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 1,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 1,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 1,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "bread",
+                  "name": "bread",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "bread",
+                    "name": "bread",
+                    "type": "food",
+                    "quantity": 1
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": true,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 0,
+                "shown": 0
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "Your inventory is empty"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inventory: entries keyed itemId (the trade model's key) are read too; one with neither key is skipped",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 5,
+          "inventory": [
+            {
+              "itemId": "potion",
+              "itemName": "Potion",
+              "type": "consumable",
+              "quantity": 2
+            },
+            {
+              "name": "ghost",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "apple",
+              "type": "food",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 2,
+            "shown": 2
+          },
+          "gold": 5,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Consumable",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "potion",
+              "name": "Potion",
+              "quantity": 2,
+              "group": "Consumable",
+              "nameColor": "#90EE90",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Consumable"
+            },
+            {
+              "kind": "group",
+              "label": "Food",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "apple",
+              "name": "apple",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 5,
+            "inventory": [
+              {
+                "itemId": "potion",
+                "itemName": "Potion",
+                "type": "consumable",
+                "quantity": 2
+              },
+              {
+                "id": "apple",
+                "type": "food",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: a second entry with the same id replaces the first on load",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 2
+            },
+            {
+              "id": "bread",
+              "name": "bread",
+              "type": "food",
+              "quantity": 7
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 1,
+            "shown": 1
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Food",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "bread",
+              "name": "bread",
+              "quantity": 7,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "bread",
+                "name": "bread",
+                "type": "food",
+                "quantity": 7
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: names sort case-folded by code unit, then raw; ties by id",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "b",
+              "name": "banana",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "a2",
+              "name": "Apple",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "a1",
+              "name": "apple",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "z",
+              "name": "Zucchini",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "c2",
+              "name": "cherry",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "c1",
+              "name": "cherry",
+              "type": "food",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 6,
+            "shown": 6
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Food",
+              "count": 6,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "a2",
+              "name": "Apple",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "a1",
+              "name": "apple",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "b",
+              "name": "banana",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "c1",
+              "name": "cherry",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "c2",
+              "name": "cherry",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "z",
+              "name": "Zucchini",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "b",
+                "name": "banana",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "a2",
+                "name": "Apple",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "a1",
+                "name": "apple",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "z",
+                "name": "Zucchini",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "c2",
+                "name": "cherry",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "c1",
+                "name": "cherry",
+                "type": "food",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: non-ASCII names fold only A-Z: É, é, İ and i sort by code unit; a category folds the same (WEAPONS is gear, Food_Drİnk is not food_drink)",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "n1",
+              "name": "éclair",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "n2",
+              "name": "Éclair",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "n3",
+              "name": "İnci",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "n4",
+              "name": "inci",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "n5",
+              "name": "Fig",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "n6",
+              "name": "zest",
+              "type": "food",
+              "quantity": 1
+            },
+            {
+              "id": "n7",
+              "name": "jar",
+              "type": "decoration",
+              "quantity": 1,
+              "category": "Food_Drİnk"
+            },
+            {
+              "id": "n8",
+              "name": "mace",
+              "type": "decoration",
+              "quantity": 1,
+              "category": "WEAPONS"
+            }
+          ]
+        },
+        "steps": [
+          {
+            "op": "filter",
+            "filter": "consumables"
+          },
+          {
+            "op": "filter",
+            "filter": "weapons_armor"
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 8,
+            "shown": 8
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Food",
+              "count": 6,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "n5",
+              "name": "Fig",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "n4",
+              "name": "inci",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "n6",
+              "name": "zest",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "n2",
+              "name": "Éclair",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "n1",
+              "name": "éclair",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "item",
+              "id": "n3",
+              "name": "İnci",
+              "quantity": 1,
+              "group": "Food",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "group",
+              "label": "Food DrİNk",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "n7",
+              "name": "jar",
+              "quantity": 1,
+              "group": "Food DrİNk",
+              "nameColor": "white",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Decoration"
+            },
+            {
+              "kind": "group",
+              "label": "WEAPONS",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "n8",
+              "name": "mace",
+              "quantity": 1,
+              "group": "WEAPONS",
+              "nameColor": "white",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Decoration"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "n1",
+                "name": "éclair",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "n2",
+                "name": "Éclair",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "n3",
+                "name": "İnci",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "n4",
+                "name": "inci",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "n5",
+                "name": "Fig",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "n6",
+                "name": "zest",
+                "type": "food",
+                "quantity": 1
+              },
+              {
+                "id": "n7",
+                "name": "jar",
+                "type": "decoration",
+                "quantity": 1,
+                "category": "Food_Drİnk"
+              },
+              {
+                "id": "n8",
+                "name": "mace",
+                "type": "decoration",
+                "quantity": 1,
+                "category": "WEAPONS"
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "result": null,
+            "state": {
+              "filter": "consumables",
+              "counts": {
+                "total": 8,
+                "shown": 6
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Food",
+                  "count": 6,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "n5",
+                  "name": "Fig",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "item",
+                  "id": "n4",
+                  "name": "inci",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "item",
+                  "id": "n6",
+                  "name": "zest",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "item",
+                  "id": "n2",
+                  "name": "Éclair",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "item",
+                  "id": "n1",
+                  "name": "éclair",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                },
+                {
+                  "kind": "item",
+                  "id": "n3",
+                  "name": "İnci",
+                  "quantity": 1,
+                  "group": "Food",
+                  "nameColor": "#DEB887",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": true,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Food"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "n1",
+                    "name": "éclair",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n2",
+                    "name": "Éclair",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n3",
+                    "name": "İnci",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n4",
+                    "name": "inci",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n5",
+                    "name": "Fig",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n6",
+                    "name": "zest",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n7",
+                    "name": "jar",
+                    "type": "decoration",
+                    "quantity": 1,
+                    "category": "Food_Drİnk"
+                  },
+                  {
+                    "id": "n8",
+                    "name": "mace",
+                    "type": "decoration",
+                    "quantity": 1,
+                    "category": "WEAPONS"
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "weapons_armor",
+              "counts": {
+                "total": 8,
+                "shown": 1
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "WEAPONS",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "n8",
+                  "name": "mace",
+                  "quantity": 1,
+                  "group": "WEAPONS",
+                  "nameColor": "white",
+                  "equipped": false,
+                  "slot": null,
+                  "canEquip": false,
+                  "canUnequip": false,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Decoration"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "n1",
+                    "name": "éclair",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n2",
+                    "name": "Éclair",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n3",
+                    "name": "İnci",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n4",
+                    "name": "inci",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n5",
+                    "name": "Fig",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n6",
+                    "name": "zest",
+                    "type": "food",
+                    "quantity": 1
+                  },
+                  {
+                    "id": "n7",
+                    "name": "jar",
+                    "type": "decoration",
+                    "quantity": 1,
+                    "category": "Food_Drİnk"
+                  },
+                  {
+                    "id": "n8",
+                    "name": "mace",
+                    "type": "decoration",
+                    "quantity": 1,
+                    "category": "WEAPONS"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inventory: rarity order legendary, epic, rare, uncommon, then common, none and unknown together",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "d",
+              "name": "d",
+              "type": "material",
+              "quantity": 1,
+              "rarity": "common"
+            },
+            {
+              "id": "a",
+              "name": "a",
+              "type": "material",
+              "quantity": 1,
+              "rarity": "mythic"
+            },
+            {
+              "id": "c",
+              "name": "c",
+              "type": "material",
+              "quantity": 1
+            },
+            {
+              "id": "b",
+              "name": "b",
+              "type": "material",
+              "quantity": 1,
+              "rarity": "legendary"
+            },
+            {
+              "id": "e",
+              "name": "e",
+              "type": "material",
+              "quantity": 1,
+              "rarity": "epic"
+            },
+            {
+              "id": "f",
+              "name": "f",
+              "type": "material",
+              "quantity": 1,
+              "rarity": "uncommon"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 6,
+            "shown": 6
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Material",
+              "count": 6,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "b",
+              "name": "b",
+              "quantity": 1,
+              "group": "Material",
+              "nameColor": "#FF8000",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "#FF800088",
+              "tagLine": "Legendary · Material"
+            },
+            {
+              "kind": "item",
+              "id": "e",
+              "name": "e",
+              "quantity": 1,
+              "group": "Material",
+              "nameColor": "#A335EE",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "#A335EE88",
+              "tagLine": "Epic · Material"
+            },
+            {
+              "kind": "item",
+              "id": "f",
+              "name": "f",
+              "quantity": 1,
+              "group": "Material",
+              "nameColor": "#1EFF00",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "#1EFF0088",
+              "tagLine": "Uncommon · Material"
+            },
+            {
+              "kind": "item",
+              "id": "a",
+              "name": "a",
+              "quantity": 1,
+              "group": "Material",
+              "nameColor": "#D2B48C",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Mythic · Material"
+            },
+            {
+              "kind": "item",
+              "id": "c",
+              "name": "c",
+              "quantity": 1,
+              "group": "Material",
+              "nameColor": "#D2B48C",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Material"
+            },
+            {
+              "kind": "item",
+              "id": "d",
+              "name": "d",
+              "quantity": 1,
+              "group": "Material",
+              "nameColor": "#CCCCCC",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Material"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "d",
+                "name": "d",
+                "type": "material",
+                "quantity": 1,
+                "rarity": "common"
+              },
+              {
+                "id": "a",
+                "name": "a",
+                "type": "material",
+                "quantity": 1,
+                "rarity": "mythic"
+              },
+              {
+                "id": "c",
+                "name": "c",
+                "type": "material",
+                "quantity": 1
+              },
+              {
+                "id": "b",
+                "name": "b",
+                "type": "material",
+                "quantity": 1,
+                "rarity": "legendary"
+              },
+              {
+                "id": "e",
+                "name": "e",
+                "type": "material",
+                "quantity": 1,
+                "rarity": "epic"
+              },
+              {
+                "id": "f",
+                "name": "f",
+                "type": "material",
+                "quantity": 1,
+                "rarity": "uncommon"
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: equipment derives from equipped items; the first equipped per slot wins",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "dagger",
+              "name": "dagger",
+              "type": "weapon",
+              "quantity": 1,
+              "equipped": true
+            },
+            {
+              "id": "sword",
+              "name": "sword",
+              "type": "weapon",
+              "quantity": 1,
+              "equipped": true
+            },
+            {
+              "id": "ring",
+              "name": "ring",
+              "type": "accessory",
+              "quantity": 1,
+              "equipSlot": "accessory",
+              "equipped": true
+            }
+          ]
+        },
+        "steps": [
+          {
+            "op": "equip_flag",
+            "item": "dagger",
+            "equipped": false
+          },
+          {
+            "op": "equip_flag",
+            "item": "nope",
+            "equipped": true
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 3,
+            "shown": 3
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Accessory",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "ring",
+              "name": "ring",
+              "quantity": 1,
+              "group": "Accessory",
+              "nameColor": "#90EE90",
+              "equipped": true,
+              "slot": "accessory",
+              "canEquip": false,
+              "canUnequip": true,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": false,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Accessory"
+            },
+            {
+              "kind": "group",
+              "label": "Weapon",
+              "count": 2,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "dagger",
+              "name": "dagger",
+              "quantity": 1,
+              "group": "Weapon",
+              "nameColor": "#90EE90",
+              "equipped": true,
+              "slot": "weapon",
+              "canEquip": false,
+              "canUnequip": true,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": false,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Weapon"
+            },
+            {
+              "kind": "item",
+              "id": "sword",
+              "name": "sword",
+              "quantity": 1,
+              "group": "Weapon",
+              "nameColor": "#90EE90",
+              "equipped": true,
+              "slot": "weapon",
+              "canEquip": false,
+              "canUnequip": true,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": false,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Weapon"
+            }
+          ],
+          "equipment": {
+            "weapon": "dagger",
+            "armor": null,
+            "accessory": "ring"
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "dagger",
+                "name": "dagger",
+                "type": "weapon",
+                "quantity": 1,
+                "equipped": true
+              },
+              {
+                "id": "sword",
+                "name": "sword",
+                "type": "weapon",
+                "quantity": 1,
+                "equipped": true
+              },
+              {
+                "id": "ring",
+                "name": "ring",
+                "type": "accessory",
+                "quantity": 1,
+                "equipSlot": "accessory",
+                "equipped": true
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "result": true,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 3,
+                "shown": 3
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Accessory",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "ring",
+                  "name": "ring",
+                  "quantity": 1,
+                  "group": "Accessory",
+                  "nameColor": "#90EE90",
+                  "equipped": true,
+                  "slot": "accessory",
+                  "canEquip": false,
+                  "canUnequip": true,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": false,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Accessory"
+                },
+                {
+                  "kind": "group",
+                  "label": "Weapon",
+                  "count": 2,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "sword",
+                  "name": "sword",
+                  "quantity": 1,
+                  "group": "Weapon",
+                  "nameColor": "#90EE90",
+                  "equipped": true,
+                  "slot": "weapon",
+                  "canEquip": false,
+                  "canUnequip": true,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": false,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Weapon"
+                },
+                {
+                  "kind": "item",
+                  "id": "dagger",
+                  "name": "dagger",
+                  "quantity": 1,
+                  "group": "Weapon",
+                  "nameColor": "#FF8C00",
+                  "equipped": false,
+                  "slot": "weapon",
+                  "canEquip": true,
+                  "canUnequip": false,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Weapon"
+                }
+              ],
+              "equipment": {
+                "weapon": "sword",
+                "armor": null,
+                "accessory": "ring"
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "dagger",
+                    "name": "dagger",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "equipped": false
+                  },
+                  {
+                    "id": "sword",
+                    "name": "sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "equipped": true
+                  },
+                  {
+                    "id": "ring",
+                    "name": "ring",
+                    "type": "accessory",
+                    "quantity": 1,
+                    "equipSlot": "accessory",
+                    "equipped": true
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 3,
+                "shown": 3
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "group",
+                  "label": "Accessory",
+                  "count": 1,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "ring",
+                  "name": "ring",
+                  "quantity": 1,
+                  "group": "Accessory",
+                  "nameColor": "#90EE90",
+                  "equipped": true,
+                  "slot": "accessory",
+                  "canEquip": false,
+                  "canUnequip": true,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": false,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Accessory"
+                },
+                {
+                  "kind": "group",
+                  "label": "Weapon",
+                  "count": 2,
+                  "collapsed": false
+                },
+                {
+                  "kind": "item",
+                  "id": "sword",
+                  "name": "sword",
+                  "quantity": 1,
+                  "group": "Weapon",
+                  "nameColor": "#90EE90",
+                  "equipped": true,
+                  "slot": "weapon",
+                  "canEquip": false,
+                  "canUnequip": true,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": false,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Weapon"
+                },
+                {
+                  "kind": "item",
+                  "id": "dagger",
+                  "name": "dagger",
+                  "quantity": 1,
+                  "group": "Weapon",
+                  "nameColor": "#FF8C00",
+                  "equipped": false,
+                  "slot": "weapon",
+                  "canEquip": true,
+                  "canUnequip": false,
+                  "canUse": false,
+                  "useLabel": "Use",
+                  "canDrop": true,
+                  "borderColor": "rgba(150, 150, 150, 0.5)",
+                  "tagLine": "Weapon"
+                }
+              ],
+              "equipment": {
+                "weapon": "sword",
+                "armor": null,
+                "accessory": "ring"
+              },
+              "save": {
+                "gold": 0,
+                "inventory": [
+                  {
+                    "id": "dagger",
+                    "name": "dagger",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "equipped": false
+                  },
+                  {
+                    "id": "sword",
+                    "name": "sword",
+                    "type": "weapon",
+                    "quantity": 1,
+                    "equipped": true
+                  },
+                  {
+                    "id": "ring",
+                    "name": "ring",
+                    "type": "accessory",
+                    "quantity": 1,
+                    "equipSlot": "accessory",
+                    "equipped": true
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inventory: a tool is equippable only with effects; equipSlot wins over the type",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "hammer",
+              "name": "hammer",
+              "type": "tool",
+              "quantity": 1
+            },
+            {
+              "id": "lantern",
+              "name": "lantern",
+              "type": "tool",
+              "quantity": 1,
+              "effects": {
+                "light": 1
+              }
+            },
+            {
+              "id": "amulet",
+              "name": "amulet",
+              "type": "collectible",
+              "quantity": 1,
+              "equipSlot": "accessory"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 3,
+            "shown": 3
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Collectible",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "amulet",
+              "name": "amulet",
+              "quantity": 1,
+              "group": "Collectible",
+              "nameColor": "#87CEEB",
+              "equipped": false,
+              "slot": "accessory",
+              "canEquip": true,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Collectible"
+            },
+            {
+              "kind": "group",
+              "label": "Tool",
+              "count": 2,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "hammer",
+              "name": "hammer",
+              "quantity": 1,
+              "group": "Tool",
+              "nameColor": "#C0C0C0",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Tool"
+            },
+            {
+              "kind": "item",
+              "id": "lantern",
+              "name": "lantern",
+              "quantity": 1,
+              "group": "Tool",
+              "nameColor": "#C0C0C0",
+              "equipped": false,
+              "slot": "accessory",
+              "canEquip": true,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Tool"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "hammer",
+                "name": "hammer",
+                "type": "tool",
+                "quantity": 1
+              },
+              {
+                "id": "lantern",
+                "name": "lantern",
+                "type": "tool",
+                "quantity": 1,
+                "effects": {
+                  "light": 1
+                }
+              },
+              {
+                "id": "amulet",
+                "name": "amulet",
+                "type": "collectible",
+                "quantity": 1,
+                "equipSlot": "accessory"
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: an equipped quest item cannot be dropped; a document reads Read",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "relic",
+              "name": "relic",
+              "type": "quest",
+              "quantity": 1,
+              "equipSlot": "accessory",
+              "equipped": true
+            },
+            {
+              "id": "map",
+              "name": "map",
+              "type": "collectible",
+              "quantity": 1,
+              "category": "document"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 2,
+            "shown": 2
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Quest",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "relic",
+              "name": "relic",
+              "quantity": 1,
+              "group": "Quest",
+              "nameColor": "#90EE90",
+              "equipped": true,
+              "slot": "accessory",
+              "canEquip": false,
+              "canUnequip": true,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": false,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Quest"
+            },
+            {
+              "kind": "group",
+              "label": "Document",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "map",
+              "name": "map",
+              "quantity": 1,
+              "group": "Document",
+              "nameColor": "#87CEEB",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Read",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Collectible"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": "relic"
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "relic",
+                "name": "relic",
+                "type": "quest",
+                "quantity": 1,
+                "equipSlot": "accessory",
+                "equipped": true
+              },
+              {
+                "id": "map",
+                "name": "map",
+                "type": "collectible",
+                "quantity": 1,
+                "category": "document"
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: gold: spend refuses short or negative, add and set clamp at 0, non-finite changes nothing",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 10,
+          "inventory": []
+        },
+        "steps": [
+          {
+            "op": "remove_gold",
+            "amount": 4
+          },
+          {
+            "op": "remove_gold",
+            "amount": 7
+          },
+          {
+            "op": "remove_gold",
+            "amount": -5
+          },
+          {
+            "op": "add_gold",
+            "amount": -100
+          },
+          {
+            "op": "set_gold",
+            "amount": 25
+          },
+          {
+            "op": "set_gold",
+            "amount": null
+          },
+          {
+            "op": "add_gold",
+            "amount": null
+          },
+          {
+            "op": "remove_gold",
+            "amount": null
+          }
+        ]
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 0,
+            "shown": 0
+          },
+          "gold": 10,
+          "rows": [
+            {
+              "kind": "empty",
+              "message": "Your inventory is empty"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 10,
+            "inventory": []
+          }
+        },
+        "steps": [
+          {
+            "result": true,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 0,
+                "shown": 0
+              },
+              "gold": 6,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "Your inventory is empty"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 6,
+                "inventory": []
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 0,
+                "shown": 0
+              },
+              "gold": 6,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "Your inventory is empty"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 6,
+                "inventory": []
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 0,
+                "shown": 0
+              },
+              "gold": 6,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "Your inventory is empty"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 6,
+                "inventory": []
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 0,
+                "shown": 0
+              },
+              "gold": 0,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "Your inventory is empty"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 0,
+                "inventory": []
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 0,
+                "shown": 0
+              },
+              "gold": 25,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "Your inventory is empty"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 25,
+                "inventory": []
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 0,
+                "shown": 0
+              },
+              "gold": 25,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "Your inventory is empty"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 25,
+                "inventory": []
+              }
+            }
+          },
+          {
+            "result": null,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 0,
+                "shown": 0
+              },
+              "gold": 25,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "Your inventory is empty"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 25,
+                "inventory": []
+              }
+            }
+          },
+          {
+            "result": false,
+            "state": {
+              "filter": "all",
+              "counts": {
+                "total": 0,
+                "shown": 0
+              },
+              "gold": 25,
+              "rows": [
+                {
+                  "kind": "empty",
+                  "message": "Your inventory is empty"
+                }
+              ],
+              "equipment": {
+                "weapon": null,
+                "armor": null,
+                "accessory": null
+              },
+              "save": {
+                "gold": 25,
+                "inventory": []
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "inventory: gold that is not a number loads as 0",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": null,
+          "inventory": []
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 0,
+            "shown": 0
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "empty",
+              "message": "Your inventory is empty"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": []
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: a row with no quantity shows 1; an unknown rarity sorts as common, by name",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "zeta",
+              "name": "zeta",
+              "type": "material",
+              "rarity": "mythic"
+            },
+            {
+              "id": "alpha",
+              "name": "alpha",
+              "type": "material",
+              "quantity": 2
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 2,
+            "shown": 2
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Material",
+              "count": 2,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "alpha",
+              "name": "alpha",
+              "quantity": 2,
+              "group": "Material",
+              "nameColor": "#D2B48C",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Material"
+            },
+            {
+              "kind": "item",
+              "id": "zeta",
+              "name": "zeta",
+              "quantity": 1,
+              "group": "Material",
+              "nameColor": "#D2B48C",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Mythic · Material"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "zeta",
+                "name": "zeta",
+                "type": "material",
+                "rarity": "mythic"
+              },
+              {
+                "id": "alpha",
+                "name": "alpha",
+                "type": "material",
+                "quantity": 2
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: the group label is the category title-cased, else the type",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "x",
+              "name": "x",
+              "type": "food",
+              "quantity": 1,
+              "category": "food_drink"
+            },
+            {
+              "id": "y",
+              "name": "y",
+              "type": "decoration",
+              "quantity": 1
+            },
+            {
+              "id": "z",
+              "name": "z",
+              "type": "",
+              "quantity": 1
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 3,
+            "shown": 3
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Decoration",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "y",
+              "name": "y",
+              "quantity": 1,
+              "group": "Decoration",
+              "nameColor": "white",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Decoration"
+            },
+            {
+              "kind": "group",
+              "label": "Food Drink",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "x",
+              "name": "x",
+              "quantity": 1,
+              "group": "Food Drink",
+              "nameColor": "#DEB887",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": true,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Food"
+            },
+            {
+              "kind": "group",
+              "label": "Other",
+              "count": 1,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "z",
+              "name": "z",
+              "quantity": 1,
+              "group": "Other",
+              "nameColor": "white",
+              "equipped": false,
+              "slot": null,
+              "canEquip": false,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": ""
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "x",
+                "name": "x",
+                "type": "food",
+                "quantity": 1,
+                "category": "food_drink"
+              },
+              {
+                "id": "y",
+                "name": "y",
+                "type": "decoration",
+                "quantity": 1
+              },
+              {
+                "id": "z",
+                "name": "z",
+                "type": "",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    },
+    {
+      "name": "inventory: the tag line is rarity above common, base type or type, then material",
+      "op": "inventory",
+      "input": {
+        "player": {
+          "gold": 0,
+          "inventory": [
+            {
+              "id": "s",
+              "name": "s",
+              "type": "weapon",
+              "quantity": 1,
+              "rarity": "legendary",
+              "baseType": "great_axe",
+              "material": "dark_steel"
+            },
+            {
+              "id": "t",
+              "name": "t",
+              "type": "weapon",
+              "quantity": 1,
+              "rarity": "common",
+              "material": "oak"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "initial": {
+          "filter": "all",
+          "counts": {
+            "total": 2,
+            "shown": 2
+          },
+          "gold": 0,
+          "rows": [
+            {
+              "kind": "group",
+              "label": "Weapon",
+              "count": 2,
+              "collapsed": false
+            },
+            {
+              "kind": "item",
+              "id": "s",
+              "name": "s",
+              "quantity": 1,
+              "group": "Weapon",
+              "nameColor": "#FF8000",
+              "equipped": false,
+              "slot": "weapon",
+              "canEquip": true,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "#FF800088",
+              "tagLine": "Legendary · Great Axe · Dark Steel"
+            },
+            {
+              "kind": "item",
+              "id": "t",
+              "name": "t",
+              "quantity": 1,
+              "group": "Weapon",
+              "nameColor": "#CCCCCC",
+              "equipped": false,
+              "slot": "weapon",
+              "canEquip": true,
+              "canUnequip": false,
+              "canUse": false,
+              "useLabel": "Use",
+              "canDrop": true,
+              "borderColor": "rgba(150, 150, 150, 0.5)",
+              "tagLine": "Weapon · Oak"
+            }
+          ],
+          "equipment": {
+            "weapon": null,
+            "armor": null,
+            "accessory": null
+          },
+          "save": {
+            "gold": 0,
+            "inventory": [
+              {
+                "id": "s",
+                "name": "s",
+                "type": "weapon",
+                "quantity": 1,
+                "rarity": "legendary",
+                "baseType": "great_axe",
+                "material": "dark_steel"
+              },
+              {
+                "id": "t",
+                "name": "t",
+                "type": "weapon",
+                "quantity": 1,
+                "rarity": "common",
+                "material": "oak"
+              }
+            ]
+          }
+        },
+        "steps": []
+      }
+    }
+  ]
+}
