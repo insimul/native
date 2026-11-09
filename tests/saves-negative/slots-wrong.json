@@ -1,0 +1,63 @@
+{
+  "area": "saves-slots",
+  "description": "The negative control for saves_slots_corpus (tests/saves_slots_corpus.cpp): two cases in conformance/saves/slots.json's shape whose expectations are DELIBERATELY WRONG — one driven through saves.slots.create's resolved config, one through a saves.slots.apply run. saves_slots_corpus_negative passes only when the runner reports both as differing and the run as failed.",
+  "version": 1,
+  "sources": [
+    "hand-written; the right answers are core's (conformance/saves/slots.json, 'config: none stated is the defaults' and 'run: deleting an empty slot or one that does not exist is refused')"
+  ],
+  "tolerance": 1e-09,
+  "contract": {
+    "ops": [
+      "config",
+      "run"
+    ]
+  },
+  "cases": [
+    {
+      "name": "config: expected WRONGLY to resolve no config to four slots",
+      "op": "config",
+      "input": {
+        "config": null
+      },
+      "expected": {
+        "config": {
+          "slotCount": 4,
+          "quickSlot": 0,
+          "autosaveIntervalSec": 300,
+          "autosaveIndicator": true
+        }
+      }
+    },
+    {
+      "name": "run: expected WRONGLY to delete an empty slot",
+      "op": "run",
+      "input": {
+        "init": {
+          "slots": []
+        },
+        "steps": [
+          {
+            "delete": 0
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "remove": {
+                  "slot": 0
+                }
+              }
+            },
+            "view": {}
+          }
+        ],
+        "start": {}
+      },
+      "note": "`steps` is written before `start` so the first difference the runner meets is the wrongly accepted delete (core refuses it: slot_empty)."
+    }
+  ]
+}

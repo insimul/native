@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-p9a-native",
-    "gitHead": "da22fb705d477780d2278ab822f2b88e5102445e"
+    "root": "native-pl-native-catchup",
+    "gitHead": "438127d2aa2a0e6c756dadfcd0a0d13a2c257381"
   },
   "coverage": {
-    "trackedFiles": 371,
+    "trackedFiles": 375,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
@@ -124,7 +124,7 @@
       "spdx": "Apache-2.0",
       "package": null,
       "pinnedVersion": null,
-      "pinnedCommit": "f9aef13ecea289696c44ab8a299786f253c42fea",
+      "pinnedCommit": "fc88be9070ec961208f10d7bf9f3856a6ce2f0b1",
       "pinSource": "corebridge/vendor/core/VENDORED.json#coreCommit",
       "vendoredPath": "corebridge/vendor/core",
       "derivedWork": []

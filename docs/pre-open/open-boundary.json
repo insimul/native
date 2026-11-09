@@ -3,19 +3,19 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-p9a-native",
-    "gitHead": "da22fb705d477780d2278ab822f2b88e5102445e"
+    "root": "native-pl-native-catchup",
+    "gitHead": "438127d2aa2a0e6c756dadfcd0a0d13a2c257381"
   },
   "coverage": {
-    "files": 371,
-    "packScanned": 131,
+    "files": 375,
+    "packScanned": 134,
     "packDocuments": [],
     "importFiles": 20,
-    "importSpecifiers": 119,
+    "importSpecifiers": 120,
     "cargoManifests": 3,
     "cargoDependencies": 3,
-    "cFiles": 140,
-    "cIncludes": 774,
+    "cFiles": 141,
+    "cIncludes": 785,
     "buildFiles": 21
   },
   "content": [
@@ -1057,7 +1057,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 100,
+      "line": 102,
       "specifier": "@insimul/core/ui/genre-hud-corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -1070,7 +1070,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 101,
+      "line": 103,
       "specifier": "@insimul/core/ui/rules-panel-corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -1083,7 +1083,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 102,
+      "line": 104,
       "specifier": "@insimul/core/game-engine/mechanic-runtime-corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -1096,7 +1096,20 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 107,
+      "line": 111,
+      "specifier": "@insimul/core/save-slots",
+      "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
+      "resolved": true,
+      "reason": "A BUNDLE INPUT of the saves.slots.create and saves.slots.apply rows (PL.native-catchup, rulings U83(1) and U84), exactly as the P9a rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-catchup (Features Gauntlet PL.native-catchup)",
+      "reviewedAt": "2026-11-09"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "kind": "import",
+      "classification": "keep",
+      "path": "corebridge/js/entry.js",
+      "line": 116,
       "specifier": "@insimul/core/system-packs/composer",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -1109,7 +1122,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 116,
+      "line": 125,
       "specifier": "@insimul/core/editor/layout/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -1122,7 +1135,7 @@
       "kind": "import",
       "classification": "keep",
       "path": "corebridge/js/entry.js",
-      "line": 117,
+      "line": 126,
       "specifier": "@insimul/core/editor/layout/composition/corpus",
       "detail": "\"@insimul/core\" is not a Node builtin, and this repository declares no npm dependencies at all (there is no package.json), so it is not on the path a standalone clone can resolve",
       "resolved": true,
@@ -1307,7 +1320,7 @@
       "unresolved": 0
     },
     "dependency": {
-      "findings": 45,
+      "findings": 46,
       "unresolved": 0
     },
     "unusedAllowances": 0

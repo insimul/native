@@ -703,6 +703,33 @@ add_test(NAME p9a_corpus_negative COMMAND insimulcore_p9a
 set_tests_properties(p9a_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "expected WRONGLY without a compass [^\n]*showCompass: boolean differs.*expected WRONGLY inactive [^\n]*\\$: boolean differs.*expected WRONGLY to deal 7 [^\n]*damage: 7 != 6.*p9a_corpus: FAIL")
 
+# saves_slots_corpus (PL.native-catchup, rulings U83(1), U84 and U87): core's
+# SaveSlotsSession (save slots, Continue, autosave, quick save / load) as
+# libinsimulcore's `saves.slots.create` / `saves.slots.apply` session rows, held
+# to core's own corpus — conformance/saves/slots.json, COPIED byte for byte into
+# corebridge/vendor/core/conformance/saves/ at the pin (sha256 in VENDORED.json,
+# checked by core_vendor; byte-compared with core by `--check --core`). The
+# runner drives every config, continue, rows and run case through a session
+# (one apply per run step) and compares by the corpus's rule; the indicator cases,
+# which show a bare indicator no session step can, are reported with a measured
+# reason each (tests/saves_slots_corpus.cpp). It fails when a row is missing,
+# when any other case cannot be driven, when a declared op goes undriven, when a
+# session is left open, and when its comparator cannot fail. A pure consumer of
+# insimulcore.h; the JSON reader is tests/radiant/json_value.cpp, used unchanged.
+# Never skips: the corpus is in-repo.
+add_executable(insimulcore_saves_slots tests/saves_slots_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_saves_slots PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_saves_slots PRIVATE insimulcore)
+add_test(NAME saves_slots_corpus COMMAND insimulcore_saves_slots
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance/saves/slots.json)
+# The negative control: the same runner over two deliberately wrong cases
+# (tests/saves-negative/), one config and one run. It passes only when the runner
+# reports BOTH as differing and the run as failed.
+add_test(NAME saves_slots_corpus_negative COMMAND insimulcore_saves_slots
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/saves-negative/slots-wrong.json)
+set_tests_properties(saves_slots_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "expected WRONGLY to resolve no config to four slots [^\n]*slotCount: 4 != 3.*expected WRONGLY to delete an empty slot [^\n]*unexpected key 'refusal'.*saves_slots_corpus: FAIL")
+
 # corebridge_sha256: the SHA-256 the C host gives core's save envelope
 # (corebridge/src/insimulcore_sha256.c), against the NIST vectors, at every
 # split point. Compiled straight from the source: the function is internal to

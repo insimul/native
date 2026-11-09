@@ -126,6 +126,8 @@ game; **meta** = about the bridge itself.
 | `save.decode` | `{ envelope }` or `{ text }` → `{ ok: false, error: { code, message } }` or `{ ok: true, envelope, saveFile, outcome, significant }` | `validateSaveFileEnvelope` then `migrateSaveFileWithOutcome` | P1 |
 | `save.migrate` | `{ saveFile }` → `{ saveFile, outcome, significant }` | `save-file` `migrateSaveFileWithOutcome`, unchanged; `significant` = `isMigrationOutcomeSignificant` | P1 |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
+| `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
+| `saves.slots.apply` | `{ session, ops: save, load, continue, delete, key, tick, finished }` → `{ results: [{ ok, refusal?, outcome?, effect }], view }` | same | P1 slots |
 | `ui.notifications.create` | `{}` → `{ session, view }` | `ui/notifications` `Notifications` | P2 |
 | `ui.notifications.apply` | `{ session, ops: push, tick, dismiss, clear }` → `{ results, view }` | same | P2 |
 | `ui.pause.create` | `{ enabledModules? or genre?, tabs? }` → `{ session, source, enabledModules, view }` | `ui/pause-menu-model` `PauseMenuModel`; `genre` via `resolveGenre` | P2 |
@@ -348,7 +350,8 @@ nothing else, as the layout rows are:
   `traversal.links`, `traversal.register`, `traversal.traverse`;
   `locomotion.pursue`; `detection.observer`, `detection.target`,
   `detection.observe`; `routine.assign`, `routine.tick`; `skills.load`,
-  `skills.register`, `skills.award`, `skills.advance`), and the answer is the
+  `skills.register`, `skills.award`, `skills.advance`: core's `MECHANIC_STEP_OPS`,
+  imported, so the list is core's and not a copy), and the answer is the
   plan, one result per step (`{ absent: true }` on a layer the world did not
   activate) and every event type the one bus carried.
 
@@ -357,7 +360,7 @@ is its `expected`**, key sets included. A domain refusal core's runner answers i
 a VALUE, as the corpus pins it (`{ ok: false, refusal: { code: "unknown_genre",
 field } }`); what the row itself refuses is an ERROR with a code (see "Errors"):
 `[unknown-op]` for an op core's runner does not declare (`GENRE_HUD_OPS`,
-`RULES_PANEL_OPS`, the 16 step ops of core's `MechanicStep`), `[invalid-input]`
+`RULES_PANEL_OPS`, `MECHANIC_STEP_OPS`), `[invalid-input]`
 for an input of the wrong JSON type (the rules-panel fields core's `PanelRule`
 types; the mechanic IR's `meta.genreConfig.id`, the seed and the steps). Core's
 runners would otherwise answer a misspelt rules field as an empty panel, and a
@@ -368,7 +371,11 @@ silently wrong, never one core types loosely and answers on purpose: the IR's
 core's `conformance/modules/world-activation.json` ("rpg with a string") pins
 that a list that is not an array selects nothing and the genre decides, so
 `mechanics.run` passes it to core unchecked and answers that IR exactly as
-`modules.activate { ir }` does.
+`modules.activate { ir }` does — including core's "no mechanic modules" form,
+`meta.enabledModules: ['none']` (`NO_MECHANIC_MODULES`, core 798d333), which
+assembles nothing whatever the genre (`mechanic-runtime.json`, "survival with
+'none': nothing assembled"; `world-activation.json`, "rpg with 'none'" and seven
+more), while an empty list still means the genre decides.
 
 **Why `mechanics.run` is stateless and not a `mechanics.create`/`.apply` session.**
 The session rows above hold a core model whose methods answer JSON-ready values.
@@ -384,8 +391,8 @@ it without restating anything.
 
 The evidence is core's corpora, not a transcription:
 `vendor/core/conformance/ui/genre-hud-cases.json` (63 cases),
-`ui/rules-panel-cases.json` (17) and `modules/mechanic-runtime.json` (6 cases,
-25 steps each), copied byte for byte by `tools/vendor-core-bundle.mjs` and hashed
+`ui/rules-panel-cases.json` (17) and `modules/mechanic-runtime.json` (8 cases at
+fc88be9, 25 steps each), copied byte for byte by `tools/vendor-core-bundle.mjs` and hashed
 in `VENDORED.json` (`core_vendor`; `--check --core` byte-compares them with core).
 `tests/p9a_corpus.cpp` sends every case through `insimulcore.h` and compares
 exactly; it is three ctests, `genre_hud_corpus`, `rules_panel_corpus` and
@@ -401,6 +408,63 @@ traversal, routines, skills, and the Prolog helper text those modules import):
 47 core modules. At the f9aef13 pin the bundle grew from 1,005,516 bytes (the pin
 bump alone, from 988,816 at b38e60d) to 1,392,156. The 86 cases take about 60 ms
 under QuickJS.
+
+### The saves.slots session: save slots, Continue, autosave, quick save (PL.native-catchup)
+
+Core's `SaveSlotsSession` (`src/save-slots.ts`, P1.core-slots, ruling U83(1)) is
+the engine-neutral logic around the one save format: which slot a request goes
+to and what is refused, the slot rows and the Continue target, deleting a slot,
+autosave at an interval with its "Saving…"/"Saved!" indicator, and quick save /
+quick load on F5 / F9. It does no I/O, so it is a session pair like the clock:
+
+- **`saves.slots.create { config?, slots?, activeSlot? }`** → `{ session, config,
+  view }`. `config` is the saves pack's parameters (`slotCount`, or the pack's
+  `maxSlots`; `quickSlot`, null for none; `autosaveIntervalSec`, 0 for off;
+  `autosaveIndicator`), passed to core UNCHECKED: core reads a field of the wrong
+  type as its default on purpose, and its corpus pins each reading. The answer's
+  `config` is how core resolved them. `slots` is what the host's save codec found
+  (`{ index, outcome, summary? }`; `ui.saveSlots` classifies an envelope into
+  one). `activeSlot` is the autosave target at the start.
+- **`saves.slots.apply { session, ops }`** → `{ results, view }`. The ops are
+  core's steps: `save { slot }`, `load { slot }`, `continue`, `delete { slot }`,
+  `key { code }` (a KeyboardEvent.code: `F5`, `F9`; any other is `unbound_key`),
+  `tick { delta }` (seconds; null is a non-finite tick, as the corpus writes it)
+  and `finished { ok, savedAt?, summary?, outcome? }`. Each result is core's
+  `{ ok, refusal?, outcome?, effect }`: a refusal (`busy`, `no_such_slot`,
+  `slot_empty`, `slot_corrupted`, `no_quick_slot`, `nothing_to_continue`,
+  `nothing_pending`, `unbound_key`) is a VALUE, and `effect` is the I/O the host
+  does now — `{ write: { slot, kind, autosave } }` (then raise core's
+  `game_saved`), `{ read: { slot, kind } }` or `{ remove: { slot } }` — answered
+  with `finished`. The view is core's `SaveSlotsView`: `rows` (core's `SlotView`
+  plus `canDelete`, `isContinue`, `isActive`, `isQuick`), `continueSlot`,
+  `activeSlot`, `pending`, `autosave { on, target, inSec }` and `indicator`
+  (state, label, detail, kind, opacity).
+
+What the rows refuse as errors is only what core's types declare and JSON cannot
+hold: a `config` that is not an object, a slot that is not `{ index: number,
+outcome }` with an outcome core's `SaveSlotModel` knows, an `activeSlot`, `slot`
+or `delta` that is not a number, a `code` that is not a string, and a `finished`
+without a boolean `ok`. A slot index that is not a slot (`1.5`, `7`) goes to core,
+which answers `no_such_slot` on purpose.
+
+The evidence is core's corpus `conformance/saves/slots.json` (94 cases at
+fc88be9), copied byte for byte by `tools/vendor-core-bundle.mjs` and hashed in
+`VENDORED.json`. `tests/saves_slots_corpus.cpp` (ctest `saves_slots_corpus`)
+drives it through the two rows from C: every `run` case as one create and one
+apply per step (so the view after every step is the session's own), every
+`config` case through create's `config`, every `continue` and `rows` case through
+create's view (a `busy` rows case with one pending save first) — 83 cases. The 11
+`indicator` cases show any state, kind and detail on a bare indicator, which no
+session step does; the runner prints a measured reason for each (how many of its
+views the session itself showed in the run cases, and which it never reached).
+`saves_slots_corpus_negative` must see it fail one wrong config and one wrong run
+(`tests/saves-negative/`). The hand cases in `tests/cases/bridge-saves-slots.json`
+pin the rows' own contract (results in a batch, the effects, the errors).
+
+**Cost.** The rows bring three core modules, `save-slots`, `ui/save-indicator-model`
+and `game-engine/logic/KeyboardMap` (the slot model was already in; 138 → 141): at the fc88be9 pin the bundle went from 1,402,117
+bytes (the pin bump alone, from 1,392,156 at f9aef13) to 1,422,744. The 83 driven
+cases take about 25 ms under QuickJS.
 
 ### What the feature phases asked for and core does not have yet
 
@@ -487,6 +551,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `corebridge_sha256` | the C SHA-256 against the NIST vectors, at every split point |
 | `corebridge_radiant`, `corebridge_radiant_none` | the radiant corpus through core's real radiant engine on the native Prolog engine |
 | `core_vendor` | every vendored file matches its recorded sha256 and the pin |
+| `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (83 cases; the 11 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's
 OWN corpora (saves, the UI matrices, weather progression, genre resolution,

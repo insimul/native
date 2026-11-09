@@ -1812,6 +1812,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       owner: "gamification",
       describe: "Per-playthrough achievement-earned records. Shape: {earned: Array<{id, earnedAt}>}. Registered for fixtures that persist achievement state outside the gamification bag; the canonical achievement list lives in `gamification.achievements`.",
       defaultValue: null
+    },
+    weather: {
+      owner: "weather",
+      describe: "The sky a playthrough reached (PL.save-weather). Shape: {director: {day, season, condition} | null, surfaceWetness: number (0..1) | null}. director is WeatherDirector.serialize() and is read back through WeatherDirector.restore(); surfaceWetness is the level a host carries through surfaceWetness() (src/atmosphere/weather-look.ts). Written by src/save-file-game-state.ts. Per-playthrough: the climate, weights and severities are authored (WorldIR.weather) and never ride here. null (the default) is a save with no weather: the director keeps its default.",
+      defaultValue: null
     }
   };
   function defaultOrphanLogger(key, _value) {
@@ -1942,9 +1947,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       __publicField(this, "nextId", 1);
     }
     /** Enqueue a notification. Returns its id (so a caller can `dismiss` it early). */
-    push(text3, kind = "info", lifetime = DEFAULT_NOTIFICATION_LIFETIME) {
+    push(text3, kind = "info", lifetime2 = DEFAULT_NOTIFICATION_LIFETIME) {
       const id = this.nextId++;
-      this.items.push({ id, text: text3, kind, remaining: lifetime, color: KIND_COLOR[kind] });
+      this.items.push({ id, text: text3, kind, remaining: lifetime2, color: KIND_COLOR[kind] });
       return id;
     }
     /**
@@ -2418,7 +2423,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       objectiveType: "collect_item",
       eventType: "item_collected",
       matchFields: [
-        { eventField: "itemName", objectiveField: "itemName", comparison: "contains_lower", optional: true }
+        { eventField: "itemName", objectiveField: "itemName", fallbackObjectiveField: "target", comparison: "contains_lower", optional: true }
       ],
       quantity: { currentField: "collectedCount", requiredField: "itemCount", defaultRequired: 1 },
       description: "Player collects an item into inventory"
@@ -2723,11 +2728,17 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   function matchesAllFields(mapping, event, objective) {
     for (const rule2 of mapping.matchFields) {
-      if (!matchesField(rule2, event[rule2.eventField], objective[rule2.objectiveField])) {
+      if (!matchesField(rule2, event[rule2.eventField], objectiveValueFor(rule2, objective))) {
         return false;
       }
     }
     return true;
+  }
+  var isAbsent = (v) => v === void 0 || v === null || v === "";
+  function objectiveValueFor(rule2, objective) {
+    const primary = objective[rule2.objectiveField];
+    if (!isAbsent(primary) || rule2.fallbackObjectiveField === void 0) return primary;
+    return objective[rule2.fallbackObjectiveField];
   }
 
   // @insimul/core/src/game-engine/logic/ConversationQuestBridge.ts
@@ -6277,6 +6288,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * are authored and are NOT here — a tuning number inside a save file is
      * world-template data leaking into a playthrough
      * (`docs/mechanic-predicates.md` §3).
+     *
+     * The village-state save carries it in `currentState.extensions.weather`
+     * (`PL.save-weather`: `weatherSaveState` / `restoreWeatherFromSave` in
+     * `src/save-file-game-state.ts`, `docs/village-state-save.md` §5).
      */
     serialize() {
       return this.started ? { ...this.current } : null;
@@ -6734,7 +6749,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       cameraMode: "third_person",
       movementPlane: "free",
       controlScheme: "wasd_mouse",
-      combatStyle: "melee",
+      combatStyle: "none",
+      // U87(6): adventure activates no combat module (its bundle never had one)
       movementStyle: "free",
       uiLayout: "action_rpg",
       defaultWorldType: "tropical-pirate",
@@ -11805,8 +11821,11 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         // `map` (whose jurisdiction clause needs `agentAi`'s `norm/2`). P9a.core:
         // action, shooter, sandbox and roguelike move a body through a world whose
         // regions it may or may not reach. Fighting is one arena with nothing to
-        // reach, and city-building moves no body at all.
-        genreBundles: ["rpg", "survival", "adventure", "platformer", "action", "shooter", "sandbox", "roguelike"]
+        // reach, and city-building moves no body at all. U87(6): `simulation`
+        // activates `routine`, whose LocomotionDirector walks an NPC to the
+        // destination its routine adopts over this module's planner; without it the
+        // director has no graph and nothing walks.
+        genreBundles: ["rpg", "survival", "adventure", "simulation", "platformer", "action", "shooter", "sandbox", "roguelike"]
       }
     },
     {
@@ -12560,14 +12579,17 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     return build(genreId, genreId in GENRE_BUNDLES, INSIMUL_MODULES.filter((m) => wanted.has(m.id)).map(describe));
   }
   var MECHANIC_IDS = new Set(INSIMUL_MODULES.map((m) => m.id));
+  var NO_MECHANIC_MODULES = "none";
   function isMechanicModuleId(id) {
     return typeof id === "string" && MECHANIC_IDS.has(id);
   }
   function resolveWorldActivation(genreId, enabledModules) {
     const list = Array.isArray(enabledModules) ? enabledModules : [];
-    const unknownModules = [...new Set(list.filter((id) => !isMechanicModuleId(id)).map((id) => String(id)))];
+    const unknownModules = [
+      ...new Set(list.filter((id) => !isMechanicModuleId(id) && id !== NO_MECHANIC_MODULES).map((id) => String(id)))
+    ];
     const selected = list.filter(isMechanicModuleId);
-    if (selected.length > 0) {
+    if (selected.length > 0 || list.includes(NO_MECHANIC_MODULES)) {
       return Object.freeze({ ...resolveModuleSet(genreId, selected), source: "enabledModules", unknownModules: Object.freeze(unknownModules) });
     }
     return Object.freeze({ ...resolveActiveModules(genreId), source: "genre", unknownModules: Object.freeze(unknownModules) });
@@ -12956,6 +12978,11 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         notes.push({
           code: "world-modules-selected",
           detail: `the world's enabledModules selects the modules (${activation.modules.join(", ")}) in place of its genre's bundle`
+        });
+      } else if (listed.includes(NO_MECHANIC_MODULES)) {
+        notes.push({
+          code: "world-modules-selected",
+          detail: `the world's enabledModules ('${NO_MECHANIC_MODULES}') selects no mechanic module in place of its genre's bundle`
         });
       } else {
         notes.push({
@@ -21874,6 +21901,24 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
 
   // @insimul/core/src/game-engine/mechanic-runtime-corpus.ts
+  var MECHANIC_STEP_OPS = Object.freeze([
+    "stamina.register",
+    "combat.register",
+    "combat.attack",
+    "traversal.links",
+    "traversal.register",
+    "traversal.traverse",
+    "locomotion.pursue",
+    "detection.observer",
+    "detection.target",
+    "detection.observe",
+    "routine.assign",
+    "routine.tick",
+    "skills.load",
+    "skills.register",
+    "skills.award",
+    "skills.advance"
+  ]);
   function actorOf(step) {
     switch (step.op) {
       case "stamina.register":
@@ -22010,6 +22055,10 @@ player_meets_cefr(Player, RequiredLevel) :-
           banked: runtime.skills.xpOf(step.actorId, step.skill)
         };
       }
+      default: {
+        const unhandled = step;
+        throw new Error(`[unknown-op] mechanic step op ${JSON.stringify(unhandled.op)} is not one of MECHANIC_STEP_OPS`);
+      }
     }
   }
   async function runMechanicRuntimeCase(input) {
@@ -22106,9 +22155,14 @@ player_meets_cefr(Player, RequiredLevel) :-
       input: { ir: world("fighting"), seed: 7, steps: SESSION }
     },
     {
-      name: "simulation: routines with no graph",
-      claim: "simulation activates routine without traversal: the locomotion director is built over no graph, so a pursuit is answered as unplaced and nothing moves, while the routine director still adopts the herding goal at the ford",
+      name: "simulation: routines walk the graph",
+      claim: "simulation activates routine and traversal (U87(6)): the locomotion director walks the traversal planner, so the NPC's pursuit arrives at the ford and then the ridge, unmetered (no stamina module), and the routine director adopts the herding goal at the ford; no combat, perception or skill, so those steps are absent",
       input: { ir: world("simulation"), seed: 7, steps: SESSION }
+    },
+    {
+      name: "routine alone: routines with no graph",
+      claim: "a world's selection of routine without traversal: the locomotion director is built over no graph, so a pursuit is answered as unplaced and nothing moves, while the routine director still adopts the herding goal at the ford (simulation's bundle answered this before U87(6) gave it traversal)",
+      input: { ir: world("simulation", ["routine"]), seed: 7, steps: SESSION }
     },
     {
       name: "a world's own selection drives the runtime",
@@ -22119,8 +22173,427 @@ player_meets_cefr(Player, RequiredLevel) :-
       name: "puzzle: nothing assembled",
       claim: "puzzle activates no layer this assembly owns: every step is absent, the bus is silent, puzzle is listed as not assembled",
       input: { ir: world("puzzle"), seed: 7, steps: SESSION }
+    },
+    {
+      name: "survival with 'none': nothing assembled",
+      claim: "meta.enabledModules ['none'] is the world's selection of no mechanic module (PL.core-mechanics-contract): survival's bundle would build every layer, but no layer is built, every step is absent and the bus is silent",
+      input: { ir: world("survival", ["none"]), seed: 7, steps: SESSION }
     }
   ];
+
+  // @insimul/core/src/game-engine/logic/KeyboardMap.ts
+  var KEY_QUICK_SAVE = "F5";
+  var KEY_QUICK_LOAD = "F9";
+  var GAMEPAD_CONTROLS = Object.freeze([
+    "south",
+    "east",
+    "west",
+    "north",
+    "leftShoulder",
+    "rightShoulder",
+    "leftTrigger",
+    "rightTrigger",
+    "select",
+    "start",
+    "leftStickPress",
+    "rightStickPress",
+    "dpadUp",
+    "dpadDown",
+    "dpadLeft",
+    "dpadRight",
+    "leftStick",
+    "rightStick"
+  ]);
+  var CONTROL_CONTEXTS = Object.freeze(["play", "photo"]);
+  var KEY_MODIFIERS = Object.freeze(["Control", "Alt", "Shift", "Meta"]);
+  var UNREAL_INPUT = "unreal d8b05f1 InsimulPlayerCharacter.cpp:150-171 (Enhanced Input)";
+  var GODOT_ACTIONS = "godot 6599874 insimul_first_person_player.gd ACTIONS";
+  function bind(b) {
+    return Object.freeze({
+      ...b,
+      contexts: Object.freeze([...b.contexts]),
+      keys: Object.freeze([...b.keys]),
+      pointer: Object.freeze([...b.pointer]),
+      gamepad: Object.freeze([...b.gamepad])
+    });
+  }
+  var CONTROL_BINDINGS = Object.freeze([
+    bind({
+      action: "move",
+      kind: "axis2d",
+      contexts: ["play", "photo"],
+      keys: ["KeyW", "KeyA", "KeyS", "KeyD", "ArrowUp", "ArrowLeft", "ArrowDown", "ArrowRight"],
+      pointer: [],
+      gamepad: ["leftStick"],
+      source: `${UNREAL_INPUT} (W/A/S/D, Gamepad_Left2D); arrows ${GODOT_ACTIONS}`
+    }),
+    bind({
+      action: "look",
+      kind: "axis2d",
+      contexts: ["play", "photo"],
+      keys: [],
+      pointer: ["move"],
+      gamepad: ["rightStick"],
+      source: `${UNREAL_INPUT} (Mouse2D, Gamepad_Right2D)`
+    }),
+    bind({
+      action: "run",
+      kind: "button",
+      contexts: ["play"],
+      keys: ["ShiftLeft", "ShiftRight"],
+      pointer: [],
+      gamepad: ["leftStickPress"],
+      source: `${GODOT_ACTIONS} insimul_run (Shift); gamepad core (Unreal runs by stick deflection and binds no run button)`
+    }),
+    bind({
+      action: "jump",
+      kind: "button",
+      contexts: ["play"],
+      keys: ["Space"],
+      pointer: [],
+      gamepad: ["south"],
+      source: `${UNREAL_INPUT} (SpaceBar, Gamepad_FaceButton_Bottom)`
+    }),
+    bind({
+      action: "interact",
+      kind: "button",
+      contexts: ["play"],
+      keys: ["KeyE"],
+      pointer: [],
+      gamepad: ["west"],
+      source: `${UNREAL_INPUT} (E, Gamepad_FaceButton_Left); ${GODOT_ACTIONS} insimul_interact (E)`
+    }),
+    bind({
+      action: "pause",
+      kind: "button",
+      contexts: ["play", "photo"],
+      keys: ["Escape", "KeyP", "Tab"],
+      pointer: [],
+      gamepad: ["start"],
+      source: `${UNREAL_INPUT} (P, Tab, Escape, Gamepad_Special_Right; Escape ends Play-In-Editor first, so P and Tab too)`
+    }),
+    bind({
+      action: "quest_log",
+      kind: "button",
+      contexts: ["play"],
+      keys: ["KeyJ"],
+      pointer: [],
+      gamepad: [],
+      source: `${UNREAL_INPUT} (J); KEY_QUEST_LOG`
+    }),
+    bind({
+      action: "camera_view",
+      kind: "button",
+      contexts: ["play"],
+      keys: ["KeyV"],
+      pointer: [],
+      gamepad: ["rightStickPress"],
+      source: `KEY_CAMERA_VIEW: ${GODOT_ACTIONS} insimul_camera_toggle (V), babylon CameraManager.handleKeyboardShortcut (v); gamepad core`
+    }),
+    bind({
+      action: "photo_mode",
+      kind: "button",
+      contexts: ["play", "photo"],
+      keys: ["KeyC"],
+      pointer: [],
+      gamepad: ["select"],
+      source: "KEY_CAMERA_MODE: babylon bfcdeb2 BabylonGame.ts handleKeyDown (C toggles the viewfinder); gamepad core"
+    }),
+    bind({
+      action: "take_photo",
+      kind: "button",
+      contexts: ["photo"],
+      keys: ["Space"],
+      pointer: [],
+      gamepad: ["south"],
+      source: "KEY_TAKE_PHOTO: babylon bfcdeb2 BabylonGame.ts handleKeyDown (Space in photo mode); gamepad core (the jump button, which photo mode suspends)"
+    }),
+    bind({
+      action: "quick_save",
+      kind: "button",
+      contexts: ["play"],
+      keys: ["F5"],
+      pointer: [],
+      gamepad: [],
+      source: "KEY_QUICK_SAVE (P1.core-slots, src/save-slots.ts)"
+    }),
+    bind({
+      action: "quick_load",
+      kind: "button",
+      contexts: ["play"],
+      keys: ["F9"],
+      pointer: [],
+      gamepad: [],
+      source: "KEY_QUICK_LOAD (P1.core-slots, src/save-slots.ts)"
+    })
+  ]);
+  var KEYBOARD_MAP_ACTIONS = Object.freeze({
+    KEY_QUEST_LOG: "quest_log",
+    KEY_CAMERA_VIEW: "camera_view",
+    KEY_CAMERA_MODE: "photo_mode",
+    KEY_TAKE_PHOTO: "take_photo",
+    KEY_QUICK_SAVE: "quick_save",
+    KEY_QUICK_LOAD: "quick_load"
+  });
+  var CONTROL_BINDING_DEPARTURES = Object.freeze([
+    { constant: "KEY_NPC_INTERACT", key: "KeyG", boundTo: "(nothing)", reason: "every new plugin talks on E (Unreal, Godot); G was the old Babylon game's, where E strafed right" },
+    { constant: "KEY_FULLSCREEN_MAP", key: "Tab", boundTo: "pause", reason: "Unreal pauses on Tab because Escape ends Play-In-Editor; the full map (P2) needs another key when it is bound" },
+    { constant: "KEY_PHOTO_BOOK", key: "KeyP", boundTo: "pause", reason: "Unreal pauses on P; the old game's P opened the game menu's Photos tab, which the menu still reaches" },
+    { constant: "KEY_VOCABULARY_PANEL", key: "KeyV", boundTo: "camera_view", reason: "the camera toggle is V in Godot and in Babylon's CameraManager; the vocabulary panel (P9h) needs another key when it is bound" },
+    { constant: "KEY_TOGGLE_VR", key: "Shift+KeyV", boundTo: "camera_view", reason: "the old game's chord Shift+V (KEYBOARD_MAP_CHORDS); VR is port-later and the table binds no chord, so Shift+V falls through to V. A game that binds VR puts it on 'Shift+KeyV', which then takes Shift+V from camera_view with no conflict" }
+  ].map((d) => Object.freeze(d)));
+  var KEYBOARD_MAP_CHORDS = Object.freeze({
+    KEY_TOGGLE_VR: "Shift+KeyV"
+  });
+
+  // @insimul/core/src/ui/save-indicator-model.ts
+  var SAVE_INDICATOR_IN_PROGRESS = ["saving", "loading"];
+  var SAVE_INDICATOR_LABELS = {
+    hidden: "",
+    saving: "Saving\u2026",
+    saved: "Saved!",
+    save_failed: "Save failed",
+    loading: "Loading\u2026",
+    loaded: "Loaded!",
+    load_failed: "Load failed",
+    nothing_to_load: "No quick save"
+  };
+  var SAVE_INDICATOR_TIMING = { holdSec: 1, fadeSec: 2 };
+  var HIDDEN_SAVE_INDICATOR = { state: "hidden", kind: null, detail: "", ageSec: 0 };
+  function showSaveIndicator(state, kind, detail = "") {
+    if (state === "hidden") return HIDDEN_SAVE_INDICATOR;
+    return { state, kind, detail, ageSec: 0 };
+  }
+  var lifetime = () => SAVE_INDICATOR_TIMING.holdSec + SAVE_INDICATOR_TIMING.fadeSec;
+  function advanceSaveIndicator(ind, dtSec) {
+    if (!(Number.isFinite(dtSec) && dtSec > 0)) return ind;
+    if (ind.state === "hidden" || SAVE_INDICATOR_IN_PROGRESS.includes(ind.state)) return ind;
+    const ageSec = ind.ageSec + dtSec;
+    if (ageSec >= lifetime()) return HIDDEN_SAVE_INDICATOR;
+    return { ...ind, ageSec };
+  }
+  function saveIndicatorView(ind) {
+    if (ind.state === "hidden") {
+      return { visible: false, state: "hidden", label: "", detail: "", kind: null, opacity: 0 };
+    }
+    let opacity = 1;
+    if (!SAVE_INDICATOR_IN_PROGRESS.includes(ind.state) && ind.ageSec > SAVE_INDICATOR_TIMING.holdSec) {
+      opacity = Math.max(0, 1 - (ind.ageSec - SAVE_INDICATOR_TIMING.holdSec) / SAVE_INDICATOR_TIMING.fadeSec);
+    }
+    return {
+      visible: true,
+      state: ind.state,
+      label: SAVE_INDICATOR_LABELS[ind.state],
+      detail: ind.detail,
+      kind: ind.kind,
+      opacity
+    };
+  }
+
+  // @insimul/core/src/save-slots.ts
+  var SAVE_SLOTS_DEFAULTS = {
+    slotCount: 3,
+    quickSlot: 0,
+    autosaveIntervalSec: 300,
+    autosaveIndicator: true
+  };
+  var SAVE_SLOT_KEYS = { quickSave: KEY_QUICK_SAVE, quickLoad: KEY_QUICK_LOAD };
+  var isIndex = (v, count) => typeof v === "number" && Number.isInteger(v) && v >= 0 && v < count;
+  function resolveSaveSlotsConfig(config) {
+    const c = config ?? {};
+    const n = c.slotCount === void 0 ? c.maxSlots : c.slotCount;
+    const slotCount = typeof n === "number" && Number.isFinite(n) && n >= 1 ? Math.floor(n) : SAVE_SLOTS_DEFAULTS.slotCount;
+    const q = c.quickSlot;
+    const quickSlot = q === void 0 ? SAVE_SLOTS_DEFAULTS.quickSlot : isIndex(q, slotCount) ? q : null;
+    const i = c.autosaveIntervalSec;
+    const autosaveIntervalSec = typeof i === "number" && Number.isFinite(i) && i >= 0 ? i : SAVE_SLOTS_DEFAULTS.autosaveIntervalSec;
+    const autosaveIndicator = typeof c.autosaveIndicator === "boolean" ? c.autosaveIndicator : SAVE_SLOTS_DEFAULTS.autosaveIndicator;
+    return { slotCount, quickSlot, autosaveIntervalSec, autosaveIndicator };
+  }
+  function slotTable(results, slotCount) {
+    const out = [];
+    for (let i = 0; i < slotCount; i++) {
+      const r = (results ?? []).find((x) => x?.index === i);
+      out.push(r ? { index: i, outcome: r.outcome, ...r.summary ? { summary: { ...r.summary } } : {} } : { index: i, outcome: "empty" });
+    }
+    return out;
+  }
+  var savedTime = (s) => {
+    const t = typeof s.summary?.savedAt === "string" ? Date.parse(s.summary.savedAt) : Number.NaN;
+    return Number.isFinite(t) ? t : Number.NEGATIVE_INFINITY;
+  };
+  function continueSlot(results, slotCount) {
+    let best = null;
+    for (const s of slotTable(results, slotCount)) {
+      if (s.outcome !== "ok") continue;
+      if (best === null || savedTime(s) > savedTime(best)) best = s;
+    }
+    return best ? best.index : null;
+  }
+  function slotRows(results, config, activeSlot, busy = false) {
+    const table = slotTable(results, config.slotCount);
+    const model = new SaveSlotModel(table);
+    const cont = continueSlot(table, config.slotCount);
+    return model.slots().map((v) => ({
+      ...v,
+      canLoad: v.canLoad && !busy,
+      canSave: v.canSave && !busy,
+      canDelete: v.status !== "empty" && !busy,
+      isContinue: v.index === cont,
+      isActive: v.index === activeSlot,
+      isQuick: v.index === config.quickSlot
+    }));
+  }
+  var OK2 = (effect = null) => ({ ok: true, effect });
+  var NO = (refusal3, outcome) => ({ ok: false, refusal: refusal3, ...outcome ? { outcome } : {}, effect: null });
+  var SaveSlotsSession = class {
+    constructor(init = {}) {
+      __publicField(this, "config");
+      __publicField(this, "slots");
+      __publicField(this, "active");
+      __publicField(this, "pending", null);
+      __publicField(this, "sinceSaveSec", 0);
+      __publicField(this, "ind", HIDDEN_SAVE_INDICATOR);
+      this.config = resolveSaveSlotsConfig(init.config);
+      this.slots = slotTable(init.slots, this.config.slotCount);
+      this.active = isIndex(init.activeSlot, this.config.slotCount) ? init.activeSlot : null;
+    }
+    // ── requests ──
+    /** Save to `slot` from the slot list. */
+    save(slot) {
+      if (this.pending) return NO("busy");
+      if (!isIndex(slot, this.config.slotCount)) return NO("no_such_slot");
+      return this.startWrite(slot, "manual");
+    }
+    /** Load `slot` from the slot list. An empty or corrupted slot is refused and shows nothing. */
+    load(slot) {
+      if (this.pending) return NO("busy");
+      if (!isIndex(slot, this.config.slotCount)) return NO("no_such_slot");
+      const s = this.slots[slot];
+      if (s.outcome === "empty") return NO("slot_empty");
+      if (s.outcome !== "ok") return NO("slot_corrupted", s.outcome);
+      return this.startRead(slot, "manual");
+    }
+    /** The main menu's Continue: load {@link continueSlot}. */
+    continueGame() {
+      if (this.pending) return NO("busy");
+      const slot = continueSlot(this.slots, this.config.slotCount);
+      if (slot === null) return NO("nothing_to_continue");
+      return this.startRead(slot, "manual");
+    }
+    /** Delete `slot`. An empty slot is refused. */
+    delete(slot) {
+      if (this.pending) return NO("busy");
+      if (!isIndex(slot, this.config.slotCount)) return NO("no_such_slot");
+      if (this.slots[slot].outcome === "empty") return NO("slot_empty");
+      this.pending = { op: "delete", slot, kind: "manual" };
+      return OK2({ remove: { slot } });
+    }
+    /** A key press (KeyboardEvent.code). F5 quick-saves, F9 quick-loads; any other key is `unbound_key`. */
+    key(code) {
+      if (code !== SAVE_SLOT_KEYS.quickSave && code !== SAVE_SLOT_KEYS.quickLoad) return NO("unbound_key");
+      if (this.pending) return NO("busy");
+      const q = this.config.quickSlot;
+      if (q === null) return NO("no_quick_slot");
+      if (code === SAVE_SLOT_KEYS.quickSave) return this.startWrite(q, "quick");
+      const s = this.slots[q];
+      if (s.outcome === "empty") {
+        this.ind = showSaveIndicator("nothing_to_load", "quick");
+        return NO("slot_empty");
+      }
+      if (s.outcome !== "ok") {
+        this.ind = showSaveIndicator("load_failed", "quick", SLOT_MESSAGES[s.outcome]);
+        return NO("slot_corrupted", s.outcome);
+      }
+      return this.startRead(q, "quick");
+    }
+    // ── time ──
+    /** `dtSec` seconds passed. Ages the indicator, then starts an autosave if one is due. */
+    tick(dtSec) {
+      if (!(Number.isFinite(dtSec) && dtSec > 0)) return OK2();
+      this.ind = advanceSaveIndicator(this.ind, dtSec);
+      if (this.pending) return OK2();
+      if (!this.autosaveOn()) return OK2();
+      this.sinceSaveSec += dtSec;
+      if (this.sinceSaveSec < this.config.autosaveIntervalSec) return OK2();
+      return this.startWrite(this.active, "auto");
+    }
+    // ── the host's answer ──
+    /** The I/O the last effect asked for has finished. */
+    finished(result) {
+      const p = this.pending;
+      if (!p) return NO("nothing_pending");
+      this.pending = null;
+      const ok = result?.ok === true;
+      const showFor = p.kind !== "auto" || this.config.autosaveIndicator;
+      if (p.op === "save") {
+        this.sinceSaveSec = 0;
+        if (ok) {
+          const prev = this.slots[p.slot];
+          const { savedAt: _oldTime, ...carried } = (prev.outcome === "ok" ? prev.summary : void 0) ?? {};
+          const summary = {
+            ...result.summary ?? carried,
+            ...typeof result.savedAt === "string" ? { savedAt: result.savedAt } : {}
+          };
+          this.slots[p.slot] = { index: p.slot, outcome: "ok", summary };
+          this.active = p.slot;
+        }
+        if (showFor) this.ind = showSaveIndicator(ok ? "saved" : "save_failed", p.kind);
+        return { ok, effect: null };
+      }
+      if (p.op === "load") {
+        if (ok) {
+          this.active = p.slot;
+          this.sinceSaveSec = 0;
+          this.ind = showSaveIndicator("loaded", p.kind);
+        } else {
+          const found = result?.outcome;
+          if (found && found !== "ok" && found !== "empty" && found in SLOT_MESSAGES) {
+            this.slots[p.slot] = { index: p.slot, outcome: found };
+            this.ind = showSaveIndicator("load_failed", p.kind, SLOT_MESSAGES[found]);
+          } else {
+            this.ind = showSaveIndicator("load_failed", p.kind);
+          }
+        }
+        return { ok, effect: null };
+      }
+      if (ok) {
+        this.slots[p.slot] = { index: p.slot, outcome: "empty" };
+        if (this.active === p.slot) this.active = null;
+      }
+      return { ok, effect: null };
+    }
+    // ── the view ──
+    view() {
+      const on = this.autosaveOn();
+      return {
+        rows: slotRows(this.slots, this.config, this.active, this.pending !== null),
+        continueSlot: continueSlot(this.slots, this.config.slotCount),
+        activeSlot: this.active,
+        pending: this.pending ? { ...this.pending } : null,
+        autosave: {
+          on,
+          target: on ? this.active : null,
+          inSec: on && !this.pending ? Math.max(0, this.config.autosaveIntervalSec - this.sinceSaveSec) : null
+        },
+        indicator: saveIndicatorView(this.ind)
+      };
+    }
+    // ── internals ──
+    autosaveOn() {
+      return this.config.autosaveIntervalSec > 0 && this.active !== null;
+    }
+    startWrite(slot, kind) {
+      this.pending = { op: "save", slot, kind };
+      if (kind !== "auto" || this.config.autosaveIndicator) this.ind = showSaveIndicator("saving", kind);
+      return OK2({ write: { slot, kind, autosave: kind === "auto" } });
+    }
+    startRead(slot, kind) {
+      this.pending = { op: "load", slot, kind };
+      this.ind = showSaveIndicator("loading", kind);
+      return OK2({ read: { slot, kind } });
+    }
+  };
 
   // npm:zod/v3/external.js
   var external_exports = {};
@@ -22130,7 +22603,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     EMPTY_PATH: () => EMPTY_PATH,
     INVALID: () => INVALID,
     NEVER: () => NEVER,
-    OK: () => OK2,
+    OK: () => OK3,
     ParseStatus: () => ParseStatus,
     Schema: () => ZodType,
     ZodAny: () => ZodAny,
@@ -22702,7 +23175,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     status: "aborted"
   });
   var DIRTY = (value) => ({ status: "dirty", value });
-  var OK2 = (value) => ({ status: "valid", value });
+  var OK3 = (value) => ({ status: "valid", value });
   var isAborted = (x) => x.status === "aborted";
   var isDirty = (x) => x.status === "dirty";
   var isValid = (x) => x.status === "valid";
@@ -24113,7 +24586,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      return OK2(input.data);
+      return OK3(input.data);
     }
   };
   ZodBoolean.create = (params) => {
@@ -24244,7 +24717,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      return OK2(input.data);
+      return OK3(input.data);
     }
   };
   ZodSymbol.create = (params) => {
@@ -24265,7 +24738,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      return OK2(input.data);
+      return OK3(input.data);
     }
   };
   ZodUndefined.create = (params) => {
@@ -24286,7 +24759,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      return OK2(input.data);
+      return OK3(input.data);
     }
   };
   ZodNull.create = (params) => {
@@ -24301,7 +24774,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       this._any = true;
     }
     _parse(input) {
-      return OK2(input.data);
+      return OK3(input.data);
     }
   };
   ZodAny.create = (params) => {
@@ -24316,7 +24789,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       this._unknown = true;
     }
     _parse(input) {
-      return OK2(input.data);
+      return OK3(input.data);
     }
   };
   ZodUnknown.create = (params) => {
@@ -24354,7 +24827,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      return OK2(input.data);
+      return OK3(input.data);
     }
   };
   ZodVoid.create = (params) => {
@@ -25429,7 +25902,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       const fn = ctx.data;
       if (this._def.returns instanceof ZodPromise) {
         const me = this;
-        return OK2(async function(...args) {
+        return OK3(async function(...args) {
           const error = new ZodError([]);
           const parsedArgs = await me._def.args.parseAsync(args, params).catch((e) => {
             error.addIssue(makeArgsIssue(args, e));
@@ -25444,7 +25917,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
       } else {
         const me = this;
-        return OK2(function(...args) {
+        return OK3(function(...args) {
           const parsedArgs = me._def.args.safeParse(args, params);
           if (!parsedArgs.success) {
             throw new ZodError([makeArgsIssue(args, parsedArgs.error)]);
@@ -25566,7 +26039,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      return OK2(input.data);
+      return OK3(input.data);
     }
     get options() {
       return this._def.values;
@@ -25631,7 +26104,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      return OK2(input.data);
+      return OK3(input.data);
     }
     get enum() {
       return this._def.values;
@@ -25659,7 +26132,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return INVALID;
       }
       const promisified = ctx.parsedType === ZodParsedType.promise ? ctx.data : Promise.resolve(ctx.data);
-      return OK2(promisified.then((data) => {
+      return OK3(promisified.then((data) => {
         return this._def.type.parseAsync(data, {
           path: ctx.path,
           errorMap: ctx.common.contextualErrorMap
@@ -25817,7 +26290,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     _parse(input) {
       const parsedType = this._getType(input);
       if (parsedType === ZodParsedType.undefined) {
-        return OK2(void 0);
+        return OK3(void 0);
       }
       return this._def.innerType._parse(input);
     }
@@ -25836,7 +26309,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     _parse(input) {
       const parsedType = this._getType(input);
       if (parsedType === ZodParsedType.null) {
-        return OK2(null);
+        return OK3(null);
       }
       return this._def.innerType._parse(input);
     }
@@ -26850,7 +27323,8 @@ player_meets_cefr(Player, RequiredLevel) :-
           const configOpt = typeof fromConfig === "string" && a.options.some((o) => o.id === fromConfig) ? fromConfig : void 0;
           const gamePick = c?.from.variant === "game" ? picked.get(a.axis) : void 0;
           const landed = gamePick !== void 0 && (variantLanded.has(id) || !pending.some((o) => o.pack === id && o.from === "variant"));
-          const resolved = (landed ? gamePick : void 0) ?? configOpt ?? picked.get(a.axis) ?? a.default;
+          const fallbackPick = gamePick !== void 0 && !landed ? void 0 : picked.get(a.axis);
+          const resolved = (landed ? gamePick : void 0) ?? configOpt ?? fallbackPick ?? a.default;
           variants[a.axis] = resolved;
           const stated = picked.get(a.axis);
           if (stated !== void 0 && stated !== resolved && c?.from.variant === "preset") {
@@ -27006,7 +27480,97 @@ player_meets_cefr(Player, RequiredLevel) :-
     godot: { up: "y", handedness: "right", unitsPerMetre: 1 },
     unreal: { up: "z", handedness: "left", unitsPerMetre: 100 }
   };
+  function sameConvention(a, b) {
+    return a.up === b.up && a.handedness === b.handedness && a.unitsPerMetre === b.unitsPerMetre;
+  }
+  var WALL_SIDES = ["front", "back", "left", "right"];
+  function readBlankWalls(raw) {
+    if (raw === void 0 || raw === null) return [];
+    if (!Array.isArray(raw)) return null;
+    if (!raw.every((s) => typeof s === "string" && WALL_SIDES.includes(s))) return null;
+    return WALL_SIDES.filter((s) => raw.includes(s));
+  }
   var ENTRANCE_SOCKET_KIND = "door";
+  function unmeasuredGeometry(convention = CORE_CONVENTION) {
+    return {
+      convention,
+      measured: false,
+      footprint: null,
+      offset: { x: 0, y: 0, z: 0 },
+      yaw: 0,
+      scale: { x: 1, y: 1, z: 1 },
+      sockets: []
+    };
+  }
+  function isRecord(v) {
+    return typeof v === "object" && v !== null && !Array.isArray(v);
+  }
+  function finite(v, fallback) {
+    return typeof v === "number" && Number.isFinite(v) ? v : fallback;
+  }
+  function vec3(v, fallback) {
+    if (!isRecord(v)) return { ...fallback };
+    return {
+      x: finite(v.x, fallback.x),
+      y: finite(v.y, fallback.y),
+      z: finite(v.z, fallback.z)
+    };
+  }
+  function readConvention(raw) {
+    if (!isRecord(raw)) return { ...CORE_CONVENTION };
+    const up = raw.up === "z" || raw.up === "y" ? raw.up : CORE_CONVENTION.up;
+    const handedness = raw.handedness === "left" || raw.handedness === "right" ? raw.handedness : CORE_CONVENTION.handedness;
+    const units = finite(raw.unitsPerMetre, CORE_CONVENTION.unitsPerMetre);
+    return {
+      up,
+      handedness,
+      unitsPerMetre: units > 0 ? units : CORE_CONVENTION.unitsPerMetre
+    };
+  }
+  function defaultPivot(size, up = CORE_CONVENTION.up) {
+    return up === "z" ? { x: 0, y: 0, z: -size.z / 2 } : { x: 0, y: -size.y / 2, z: 0 };
+  }
+  function readFootprint(raw, up = CORE_CONVENTION.up) {
+    if (!isRecord(raw)) return null;
+    const size = vec3(raw.size, { x: 0, y: 0, z: 0 });
+    if (!(size.x > 0) || !(size.y > 0) || !(size.z > 0)) return null;
+    return { size, pivot: vec3(raw.pivot, defaultPivot(size, up)) };
+  }
+  function readScale(raw) {
+    if (typeof raw === "number" && Number.isFinite(raw)) return { x: raw, y: raw, z: raw };
+    return vec3(raw, { x: 1, y: 1, z: 1 });
+  }
+  function readSocket(name, raw) {
+    if (typeof raw === "string") {
+      return { name, kind: "", position: { x: 0, y: 0, z: 0 }, yaw: 0, node: raw };
+    }
+    const rec = isRecord(raw) ? raw : {};
+    return {
+      name,
+      kind: typeof rec.kind === "string" ? rec.kind : "",
+      position: vec3(rec.position, { x: 0, y: 0, z: 0 }),
+      yaw: finite(rec.yaw, 0),
+      node: typeof rec.node === "string" ? rec.node : ""
+    };
+  }
+  function readAssetGeometry(transform, sockets) {
+    const declared = readConvention(transform?.convention);
+    const hasTransform = isRecord(transform);
+    const hasSockets = isRecord(sockets);
+    if (!hasTransform && !hasSockets) return unmeasuredGeometry(CORE_CONVENTION);
+    const raw = {
+      convention: declared,
+      // An asset with anchors but no extents IS measured — its anchors are real
+      // measurements. `footprint === null` is the separate, narrower fact.
+      measured: true,
+      footprint: readFootprint(transform?.footprint, declared.up),
+      offset: vec3(transform?.offset, { x: 0, y: 0, z: 0 }),
+      yaw: finite(transform?.yaw, 0),
+      scale: readScale(transform?.scale),
+      sockets: Object.keys(hasSockets ? sockets : {}).sort().map((name) => readSocket(name, sockets[name]))
+    };
+    return convertGeometry(raw, CORE_CONVENTION);
+  }
   function socketByName(geometry, name) {
     if (!name) return null;
     return geometry.sockets.find((socket) => socket.name === name) ?? null;
@@ -27020,6 +27584,56 @@ player_meets_cefr(Player, RequiredLevel) :-
     if (byKind.length > 0) return byKind[0];
     return socketByName(geometry, ENTRANCE_SOCKET_KIND);
   }
+  function toCoreVec3(v, from) {
+    const permuted = from.up === "z" ? { x: v.y, y: v.z, z: v.x } : { x: v.x, y: v.y, z: v.z };
+    const forward = from.handedness === CORE_CONVENTION.handedness ? permuted.z : -permuted.z;
+    const s = 1 / from.unitsPerMetre;
+    return { x: permuted.x * s, y: permuted.y * s, z: forward * s };
+  }
+  function fromCoreVec3(v, to) {
+    const s = to.unitsPerMetre;
+    const forward = to.handedness === CORE_CONVENTION.handedness ? v.z : -v.z;
+    const scaled2 = { x: v.x * s, y: v.y * s, z: forward * s };
+    return to.up === "z" ? { x: scaled2.z, y: scaled2.x, z: scaled2.y } : scaled2;
+  }
+  function convertVec3(v, from, to) {
+    if (sameConvention(from, to)) return { ...v };
+    return fromCoreVec3(toCoreVec3(v, from), to);
+  }
+  function convertExtent(size, from, to) {
+    const v = convertVec3(size, from, to);
+    return { x: Math.abs(v.x), y: Math.abs(v.y), z: Math.abs(v.z) };
+  }
+  function convertYaw(yaw, from, to) {
+    const sign = from.handedness === to.handedness ? 1 : -1;
+    const out = yaw * sign;
+    return out === 0 ? 0 : out;
+  }
+  function convertScale(scale, from, to) {
+    if (from.up === to.up) return { ...scale };
+    const permuted = from.up === "z" ? { x: scale.y, y: scale.z, z: scale.x } : { x: scale.z, y: scale.x, z: scale.y };
+    return { x: Math.abs(permuted.x), y: Math.abs(permuted.y), z: Math.abs(permuted.z) };
+  }
+  function convertGeometry(geometry, to) {
+    const from = geometry.convention;
+    if (sameConvention(from, to)) return { ...geometry, convention: { ...to } };
+    return {
+      convention: { ...to },
+      measured: geometry.measured,
+      footprint: geometry.footprint ? {
+        size: convertExtent(geometry.footprint.size, from, to),
+        pivot: convertVec3(geometry.footprint.pivot, from, to)
+      } : null,
+      offset: convertVec3(geometry.offset, from, to),
+      yaw: convertYaw(geometry.yaw, from, to),
+      scale: convertScale(geometry.scale, from, to),
+      sockets: geometry.sockets.map((socket) => ({
+        ...socket,
+        position: convertVec3(socket.position, from, to),
+        yaw: convertYaw(socket.yaw, from, to)
+      }))
+    };
+  }
 
   // @insimul/core/src/editor/scene/fit.ts
   var FIT_QUANTUM = 1e-3;
@@ -27031,14 +27645,14 @@ player_meets_cefr(Player, RequiredLevel) :-
     frontageYaw: 0,
     hasFrontage: false
   };
-  function isRecord(v) {
+  function isRecord2(v) {
     return typeof v === "object" && v !== null && !Array.isArray(v);
   }
   function positive3(v) {
     return typeof v === "number" && Number.isFinite(v) && v > 0 ? v : 0;
   }
   function readFitLot(raw) {
-    if (!isRecord(raw)) return { ...UNBOUNDED_LOT };
+    if (!isRecord2(raw)) return { ...UNBOUNDED_LOT };
     const frontage = raw.frontageYaw;
     const hasFrontage = typeof frontage === "number" && Number.isFinite(frontage);
     return {
@@ -30580,7 +31194,15 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
 
   // @insimul/core/src/editor/layout/composition/variety.ts
-  var HOUSE_SIDES = ["front", "back", "left", "right"];
+  var HOUSE_SIDES = WALL_SIDES;
+  function houseModelOf(id, entry) {
+    const g = readAssetGeometry(entry.transform, entry.sockets);
+    if (g.footprint === null) return null;
+    const doorYaw = entranceSocket(g)?.yaw ?? 0;
+    const side = Math.abs(Math.sin(doorYaw)) > Math.abs(Math.cos(doorYaw));
+    const { x, z } = g.footprint.size;
+    return { id, width: side ? z : x, depth: side ? x : z, blank: readBlankWalls(entry.transform?.blankWalls) ?? [] };
+  }
   function axes(h) {
     const f = [Math.cos(h.heading), Math.sin(h.heading)];
     return { f, l: [-f[1], f[0]] };
@@ -31378,9 +32000,14 @@ player_meets_cefr(Player, RequiredLevel) :-
       return { entityId: str2(o, "entityId"), archetype: str2(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading"), length: num4(o, "length") };
     });
   }
-  function modelsOf(v) {
+  function compositionHouseModels(v) {
     return arr2(v ?? [], "models").map((m) => {
       const o = obj2(m, "a model");
+      if (o.entry !== void 0) {
+        const model = houseModelOf(str2(o, "id"), obj2(o.entry, "a model's entry"));
+        if (model === null) bad2(`model ${JSON.stringify(o.id)}: its entry states no measured footprint`);
+        return model;
+      }
       const blank = arr2(o.blank ?? [], "a model's blank walls").map((s) => {
         if (typeof s !== "string" || !HOUSE_SIDES.includes(s)) bad2(`unknown house side ${JSON.stringify(s)}`);
         return s;
@@ -31484,7 +32111,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj2(h, "a house");
           return { entityId: str2(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
         });
-        return json3(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: modelsOf(i.models) }, r));
+        return json3(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: compositionHouseModels(i.models) }, r));
       }
       case "seatCapacity":
         return seatsOf(i.seats).map((s) => seatCapacity(s, r));
@@ -31625,24 +32252,49 @@ player_meets_cefr(Player, RequiredLevel) :-
     needArray(method, input.rules, "rules");
     optArray(method, input, "rules", true);
   }
-  var MECHANIC_STEP_OPS = [
-    "stamina.register",
-    "combat.register",
-    "combat.attack",
-    "traversal.links",
-    "traversal.register",
-    "traversal.traverse",
-    "locomotion.pursue",
-    "detection.observer",
-    "detection.target",
-    "detection.observe",
-    "routine.assign",
-    "routine.tick",
-    "skills.load",
-    "skills.register",
-    "skills.award",
-    "skills.advance"
-  ];
+  function saveSlotsInit(method, args) {
+    const init = {};
+    if (args.config !== void 0) {
+      init.config = args.config === null ? null : needObject(method, args.config, "config");
+    }
+    if (args.slots !== void 0 && args.slots !== null) {
+      init.slots = needArray(method, args.slots, "slots").map((slot, i) => {
+        needObject(method, slot, `slots[${i}]`);
+        needNumber(method, slot.index, `slots[${i}].index`);
+        oneOf(method, slot.outcome, Object.keys(SLOT_MESSAGES), `slots[${i}].outcome`);
+        if (slot.summary !== void 0 && slot.summary !== null) needObject(method, slot.summary, `slots[${i}].summary`);
+        return slot;
+      });
+    }
+    if (args.activeSlot !== void 0 && args.activeSlot !== null) {
+      init.activeSlot = needNumber(method, args.activeSlot, "activeSlot");
+    }
+    return init;
+  }
+  function optStringField(method, op, name) {
+    if (op[name] !== void 0 && op[name] !== null) needString(method, op[name], name);
+  }
+  function saveSlotsOps(m) {
+    const slot = (op) => needNumber(m, op.slot, "slot");
+    return {
+      save: ({ model }, op) => plain(model.save(slot(op))),
+      load: ({ model }, op) => plain(model.load(slot(op))),
+      continue: ({ model }) => plain(model.continueGame()),
+      delete: ({ model }, op) => plain(model.delete(slot(op))),
+      key: ({ model }, op) => plain(model.key(needString(m, op.code, "code"))),
+      // JSON has no NaN: a `delta` of null is a non-finite tick, which core
+      // answers as changing nothing (the corpus writes it the same way).
+      tick: ({ model }, op) => plain(model.tick(op.delta === null ? Number.NaN : needNumber(m, op.delta, "delta"))),
+      finished: ({ model }, op) => {
+        const { op: _name, ...result } = op;
+        if (typeof result.ok !== "boolean") throw refuse2(m, "`ok` must be a boolean");
+        optStringField(m, result, "savedAt");
+        optStringField(m, result, "outcome");
+        if (result.summary !== void 0 && result.summary !== null) needObject(m, result.summary, "summary");
+        return plain(model.finished(result));
+      }
+    };
+  }
   function catalogOf(method, value) {
     const catalog = needObject(method, value, "catalog");
     const index = needObject(method, catalog.index, "catalog.index");
@@ -31892,8 +32544,8 @@ player_meets_cefr(Player, RequiredLevel) :-
       const results = await applyOps(m, s, args, {
         push: ({ model }, op) => {
           const kind = op.kind === void 0 ? "info" : oneOf(m, op.kind, Object.keys(KIND_COLOR), "kind");
-          const lifetime = optNumber(m, op.lifetime, "lifetime");
-          return lifetime === void 0 ? model.push(needString(m, op.text, "text"), kind) : model.push(needString(m, op.text, "text"), kind, lifetime);
+          const lifetime2 = optNumber(m, op.lifetime, "lifetime");
+          return lifetime2 === void 0 ? model.push(needString(m, op.text, "text"), kind) : model.push(needString(m, op.text, "text"), kind, lifetime2);
         },
         tick: ({ model }, op) => model.tick(needNumber(m, op.delta, "delta")),
         dismiss: ({ model }, op) => model.dismiss(needNumber(m, op.id, "id")),
@@ -31996,6 +32648,43 @@ player_meets_cefr(Player, RequiredLevel) :-
       });
       const model = new SaveSlotModel(results);
       return { slots: plain(model.slots()), hasAnyLoadable: model.hasAnyLoadable() };
+    },
+    /**
+     * `saves.slots.create { config?, slots?, activeSlot? }` → `{ session, config,
+     * view }` — core's `SaveSlotsSession` (`save-slots`, P1.core-slots): deleting a
+     * slot, the Continue target, autosave at an interval with its indicator, and
+     * quick save / quick load on F5 / F9, for one play session. `config` is the
+     * saves pack's parameters (`slotCount` or `maxSlots`, `quickSlot`,
+     * `autosaveIntervalSec`, `autosaveIndicator`) and the answer's `config` is how
+     * core resolved them (`resolveSaveSlotsConfig`); `slots` is what the host's save
+     * codec found in each slot (`{ index, outcome, summary? }`, `SlotLoadResult`);
+     * `activeSlot` the autosave target at the start (default none).
+     */
+    "saves.slots.create": (args) => {
+      const m = "saves.slots.create";
+      const model = new SaveSlotsSession(saveSlotsInit(m, args));
+      return { session: openSession("saves.slots", { model }), config: plain(model.config), view: plain(model.view()) };
+    },
+    /**
+     * `saves.slots.apply { session, ops }` → `{ results, view }`. The session does
+     * no I/O: a result's `effect` names the I/O the host does now (`write`, `read`,
+     * `remove`), and the host answers it with `finished` (a finished write: raise
+     * core's `game_saved`).
+     * ops (core's steps, `conformance/saves/slots.json`'s `run` steps): `save { slot }`
+     * · `load { slot }` · `continue` · `delete { slot }` · `key { code }` (a
+     * KeyboardEvent.code; F5 quick-saves, F9 quick-loads) · `tick { delta }`
+     * (seconds; null is a non-finite tick) · `finished { ok, savedAt?, summary?,
+     * outcome? }`. Each result is `{ ok, refusal?, outcome?, effect }`; a refusal
+     * (`busy`, `no_such_slot`, `slot_empty`, `slot_corrupted`, `no_quick_slot`,
+     * `nothing_to_continue`, `nothing_pending`, `unbound_key`) is a VALUE.
+     * view: core's `SaveSlotsView` — `{ rows, continueSlot, activeSlot, pending,
+     * autosave: { on, target, inSec }, indicator }`.
+     */
+    "saves.slots.apply": async (args) => {
+      const m = "saves.slots.apply";
+      const s = session(m, args, "saves.slots");
+      const results = await applyOps(m, s, args, saveSlotsOps(m));
+      return { results, view: plain(s.model.view()) };
     },
     /** `ui.loading.create { phases?, tips? }` → `{ session, view }` — core's `LoadingScreenModel`. */
     "ui.loading.create": (args) => {
@@ -32387,13 +33076,16 @@ player_meets_cefr(Player, RequiredLevel) :-
      * `expected`: the plan, one result per step (`{ absent: true }` on a layer the
      * world did not activate, else `{ absent: false, outcome, stamina }`) and the
      * type of every event the one bus carried. Pure and seeded, like `weather.run`.
-     * Step ops: every op of core's `MechanicStep` (MECHANIC_STEP_OPS above). The row
-     * checks the IR's shape, the seed and each step's `op` (`[invalid-input]`,
-     * `[unknown-op]`); a step's own fields go to core unchanged. `meta.enabledModules`
-     * goes to core unchecked, as core types it (`unknown`): a list that is not an
-     * array selects nothing and the genre decides, exactly as `modules.activate { ir }`
-     * answers the same IR (core's `conformance/modules/world-activation.json`, "rpg
-     * with a string").
+     * Step ops: core's `MECHANIC_STEP_OPS` (imported, the `MechanicStep` union as
+     * data). The row checks the IR's shape, the seed and each step's `op`
+     * (`[invalid-input]`, `[unknown-op]`); a step's own fields go to core unchanged.
+     * `meta.enabledModules` goes to core unchecked, as core types it (`unknown`): a
+     * list that is not an array selects nothing and the genre decides, and a list
+     * holding the token `'none'` (core's `NO_MECHANIC_MODULES`) selects exactly its
+     * mechanic ids, so `['none']` assembles nothing whatever the genre, exactly as
+     * `modules.activate { ir }` answers the same IR (core's
+     * `conformance/modules/world-activation.json`, "rpg with a string", "rpg with
+     * 'none'"; `mechanic-runtime.json`, "survival with 'none': nothing assembled").
      *
      * Why a stateless `.run` and not a `mechanics.create`/`.apply` session pair:
      * core defines the one operation as `{ ir, seed, steps }` → `{ plan, steps,

@@ -1227,6 +1227,329 @@
         ],
         "unplaced": []
       }
+    },
+    {
+      "name": "pack: a model whose entry states a blank back wall gets its stair there",
+      "note": "PL.house-blank-sides: the model as the pack states it (its binding entry's transform and sockets). Its footprint, 6 m across the door and 7 m along it, and transform.blankWalls [\"back\"] read into the house model; the back faces the open (the next lot 8.4 m out), so the stair stands 0.6 m out of its middle, as the stated-model case beside it.",
+      "op": "assignHouseModels",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "house-a",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            },
+            {
+              "entityId": "lot-behind",
+              "cx": -16.9,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "entry": {
+              "transform": {
+                "footprint": {
+                  "size": {
+                    "x": 6,
+                    "y": 5,
+                    "z": 7
+                  }
+                },
+                "blankWalls": ["back"]
+              },
+              "sockets": {
+                "door": {
+                  "kind": "door",
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3.5
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3.5, -3], [3.5, 3], [-3.5, 3], [-3.5, -3]],
+            "openBlank": ["back"],
+            "wayUps": [
+              {
+                "side": "back",
+                "archetype": "prop.structural.stair",
+                "x": -4.1,
+                "z": 0,
+                "heading": -3.141592653589793
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "pack: the same model whose entry states no blank walls gets no stair",
+      "note": "PL.house-blank-sides: the control. The same entry with no transform.blankWalls: no blank walls, so the back facing the open needs no way up.",
+      "op": "assignHouseModels",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "house-a",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            },
+            {
+              "entityId": "lot-behind",
+              "cx": -16.9,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "entry": {
+              "transform": {
+                "footprint": {
+                  "size": {
+                    "x": 6,
+                    "y": 5,
+                    "z": 7
+                  }
+                }
+              },
+              "sockets": {
+                "door": {
+                  "kind": "door",
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3.5
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3.5, -3], [3.5, 3], [-3.5, 3], [-3.5, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "pack: blank walls are named from the door, not the mesh's axes",
+      "note": "PL.house-blank-sides: a model built with its door in the +X face (the door anchor's yaw a quarter turn): its 7 m X extent is its depth along the door and its 6 m Z extent its width across, and its stated blank \"right\" is the wall on the right as you step out of the door. Standing alone, that wall faces the open and gets the stair.",
+      "op": "assignHouseModels",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "house-a",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "entry": {
+              "transform": {
+                "footprint": {
+                  "size": {
+                    "x": 7,
+                    "y": 5,
+                    "z": 6
+                  }
+                },
+                "blankWalls": ["right"]
+              },
+              "sockets": {
+                "door": {
+                  "kind": "door",
+                  "position": {
+                    "x": 3.5,
+                    "y": 0,
+                    "z": 0
+                  },
+                  "yaw": 1.5707963267948966
+                }
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3.5, -3], [3.5, 3], [-3.5, 3], [-3.5, -3]],
+            "openBlank": ["right"],
+            "wayUps": [
+              {
+                "side": "right",
+                "archetype": "prop.structural.stair",
+                "x": 0,
+                "z": -3.6,
+                "heading": -1.5707963267948966
+              }
+            ],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
+    },
+    {
+      "name": "pack: a blankWalls that is not a list of wall names reads as none",
+      "note": "PL.house-blank-sides: transform.blankWalls \"back\" (a string, not a list) does not read, so the model has no blank walls and gets no stair (the pack's validator reports it as unreadable-blank-walls).",
+      "op": "assignHouseModels",
+      "input": {
+        "plan": {
+          "lots": [
+            {
+              "entityId": "house-a",
+              "cx": 0,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            },
+            {
+              "entityId": "lot-behind",
+              "cx": -16.9,
+              "cz": 0,
+              "halfAcross": 5,
+              "halfAway": 5,
+              "awayX": 1,
+              "awayZ": 0
+            }
+          ]
+        },
+        "houses": [
+          {
+            "entityId": "house-a",
+            "x": 0,
+            "z": 0,
+            "heading": 0
+          }
+        ],
+        "models": [
+          {
+            "id": "cottage",
+            "entry": {
+              "transform": {
+                "footprint": {
+                  "size": {
+                    "x": 6,
+                    "y": 5,
+                    "z": 7
+                  }
+                },
+                "blankWalls": "back"
+              },
+              "sockets": {
+                "door": {
+                  "kind": "door",
+                  "position": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 3.5
+                  }
+                }
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "houses": [
+          {
+            "entityId": "house-a",
+            "model": "cottage",
+            "mirrored": false,
+            "footprint": [[3.5, -3], [3.5, 3], [-3.5, 3], [-3.5, -3]],
+            "openBlank": [],
+            "wayUps": [],
+            "repeats": [],
+            "crowdedWith": []
+          }
+        ],
+        "unplaced": []
+      }
     }
   ]
 }

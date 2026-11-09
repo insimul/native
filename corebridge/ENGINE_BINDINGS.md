@@ -122,21 +122,45 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   "op": <case op>, ...<case input> }` to the two UI rows, the case's `input` to
   `mechanics.run`, each answer compared exactly with `expected` (key sets
   included; a domain refusal is the VALUE `{ ok: false, refusal }`, never an
-  error). The rows are stricter than core's runners in one place a binding
-  must know: `ui.rulesPanel` refuses a `worldRules`, `baseRules` or `rules` that
+  error). Two rows are stricter than core's runners, and a binding must know
+  where: `ui.rulesPanel` refuses a `worldRules`, `baseRules` or `rules` that
   is not an array of objects (`rules` is required by `byCategory`, `byType` and
   `isActive`), a `card` `rule` that is not an object, and a `category`,
   `ruleType` or `ruleId` that is not a string, as an ERROR `[invalid-input]`, where core's `runRulesPanelOp` would read a
   non-array as no rules and `String()` a key. Send the JSON types core's
   `PanelRule` declares. `mechanics.run` passes `meta.enabledModules` to core
-  unchecked (a non-array list: the genre decides, as `modules.activate` answers),
-  and refuses only a missing `meta.genreConfig.id`, a seed or a step of the wrong
-  JSON type, and a step op outside core's `MechanicStep` union (`[unknown-op]`;
-  that list is a hand copy in `js/entry.js`, guarded by `mechanic_runtime_corpus`).
+  unchecked, as `modules.activate` answers it (a non-array list or an empty one:
+  the genre decides; `['none']`, core's `NO_MECHANIC_MODULES` from fc88be9: no
+  mechanic module whatever the genre), and it refuses only an `ir`, `ir.meta` or `ir.routines` that is not an object, a
+  missing `meta.genreConfig.id`, a seed or a step of the wrong JSON type
+  (`[invalid-input]`), and a step op outside core's `MECHANIC_STEP_OPS`
+  (`[unknown-op]`; imported from core's `game-engine/mechanic-runtime-corpus`
+  since PL.native-catchup, no longer a hand copy). Core's corpus now carries the
+  same list as its top-level `ops` key; a replay target reads or ignores it.
   `mechanics.run` is a replay, not a live runtime: the decision layers
   `InsimulMechanicSurface.h` marks `BridgeHasNoRow` still need per-system rows
   (P9b–P9j). The existing `genre.*`, `modules.*` and `packs.compose` rows answer
   the six genres P9a.core added and `meta.enabledModules` with no row change.
+- **Save slots (Unreal's `P1.unreal.slots` interim port, after PL.native-catchup).**
+  Two session rows (`README.md`, "The saves.slots session") wrap core's
+  `SaveSlotsSession`: `saves.slots.create { config?, slots?, activeSlot? }` →
+  `{ session, config, view }` and `saves.slots.apply { session, ops }` →
+  `{ results, view }`, the ops being core's steps (`save { slot }`, `load { slot }`,
+  `continue`, `delete { slot }`, `key { code }`, `tick { delta }`, `finished { ok,
+  savedAt?, summary?, outcome? }`). The session does no I/O: each result's
+  `effect` (`write`, `read`, `remove`) is the I/O the binding does with its own
+  save codec (`save.encode`/`save.decode`), answered with `finished`. With them
+  `Portable/InsimulSaveSlots` (the session, the indicator, the config resolution,
+  Continue and the rows) can go: the binding keeps only the I/O and the drawing
+  of `view`. Re-vendor `conformance/saves/slots.json` from core at this library's
+  pin and have `test_save_slots` drive it the way `tests/saves_slots_corpus.cpp`
+  does: a `run` case as one create and one apply per step (`{ save: i }` → `{ op:
+  "save", slot: i }`; `key` → `code`, `tick` → `delta`, `finished`'s fields
+  spread), `config` through create's `config`, `continue` and `rows` through
+  create's `view` (a `busy` rows case: one pending `save` of slot 0 first). The
+  11 `indicator` cases are not a session's (they show a bare indicator); the
+  view's `indicator` is the binding's whole indicator. Numbers compare within the
+  file's `tolerance`.
 - **Layout: one more op.** Core f9aef13 added `startClearOutline` to `LAYOUT_OPS`
   (PL.start-clearance, U78): the `layout.startClearOutline` row answers it, and
   `Tests/layout_corpus_ops.h` needs the matching entry when Unreal re-vendors

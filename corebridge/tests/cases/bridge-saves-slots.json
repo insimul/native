@@ -1,0 +1,135 @@
+{
+  "area": "saves-slots",
+  "description": "Hand-written: the saves.slots session rows' own contract (PL.native-catchup; core's SaveSlotsSession, P1.core-slots, U83(1)) — create's resolved config and view, one result per op with a refusal as a VALUE, the effect the host must carry out, a null tick, and the row's own refusals as errors. Core's own corpus (conformance/saves/slots.json) is driven whole through these rows by the saves_slots_corpus ctest (tests/saves_slots_corpus.cpp), not transcribed here.",
+  "cases": [
+    {
+      "name": "saves.slots.create: no args is core's defaults, nothing active, autosave off",
+      "steps": [
+        {
+          "call": "saves.slots.create",
+          "expect": {
+            "session": 1,
+            "config": { "slotCount": 3, "quickSlot": 0, "autosaveIntervalSec": 300, "autosaveIndicator": true },
+            "view": {
+              "$subset": {
+                "rows": { "$len": 3 },
+                "continueSlot": null,
+                "activeSlot": null,
+                "pending": null,
+                "autosave": { "on": false, "target": null, "inSec": null }
+              }
+            }
+          }
+        },
+        { "call": "session.list", "expect": { "sessions": [{ "session": 1, "kind": "saves.slots" }] } }
+      ]
+    },
+    {
+      "name": "saves.slots.apply: a save asks the host to write, a second request is busy, finished makes the slot active and Continue",
+      "steps": [
+        { "call": "saves.slots.create", "args": { "config": { "maxSlots": 4 } }, "expect": { "$subset": { "config": { "slotCount": 4, "quickSlot": 0, "autosaveIntervalSec": 300, "autosaveIndicator": true } } } },
+        {
+          "call": "saves.slots.apply",
+          "args": { "session": 1, "ops": [{ "op": "save", "slot": 2 }, { "op": "load", "slot": 1 }] },
+          "expect": {
+            "results": [
+              { "ok": true, "effect": { "write": { "slot": 2, "kind": "manual", "autosave": false } } },
+              { "ok": false, "refusal": "busy", "effect": null }
+            ],
+            "view": { "$subset": { "pending": { "op": "save", "slot": 2, "kind": "manual" }, "autosave": { "on": false, "target": null, "inSec": null } } }
+          }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": { "session": 1, "ops": [{ "op": "finished", "ok": true, "savedAt": "2026-11-09T10:00:00Z", "summary": { "playerName": "Ash", "level": 2 } }] },
+          "expect": {
+            "results": [{ "ok": true, "effect": null }],
+            "view": {
+              "$subset": {
+                "continueSlot": 2,
+                "activeSlot": 2,
+                "pending": null,
+                "autosave": { "on": true, "target": 2, "inSec": 300 },
+                "indicator": { "$subset": { "visible": true, "state": "saved", "label": "Saved!", "kind": "manual" } }
+              }
+            }
+          }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": { "session": 1, "ops": [{ "op": "tick", "delta": 300 }, { "op": "finished", "ok": false }, { "op": "finished", "ok": true }] },
+          "expect": {
+            "results": [
+              { "ok": true, "effect": { "write": { "slot": 2, "kind": "auto", "autosave": true } } },
+              { "ok": false, "effect": null },
+              { "ok": false, "refusal": "nothing_pending", "effect": null }
+            ],
+            "view": { "$subset": { "activeSlot": 2, "indicator": { "$subset": { "state": "save_failed", "kind": "auto" } } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "saves.slots.apply: the keys, a corrupted slot, Continue and delete; a null tick changes nothing",
+      "steps": [
+        {
+          "call": "saves.slots.create",
+          "args": {
+            "slots": [
+              { "index": 0, "outcome": "integrity_mismatch" },
+              { "index": 1, "outcome": "ok", "summary": { "savedAt": "2026-11-01T10:00:00Z" } }
+            ],
+            "activeSlot": null
+          },
+          "expect": { "$subset": { "view": { "$subset": { "continueSlot": 1, "activeSlot": null } } } }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": { "session": 1, "ops": [{ "op": "key", "code": "F9" }, { "op": "key", "code": "KeyX" }, { "op": "tick", "delta": null }, { "op": "load", "slot": 0 }, { "op": "continue" }] },
+          "expect": {
+            "results": [
+              { "ok": false, "refusal": "slot_corrupted", "outcome": "integrity_mismatch", "effect": null },
+              { "ok": false, "refusal": "unbound_key", "effect": null },
+              { "ok": true, "effect": null },
+              { "ok": false, "refusal": "slot_corrupted", "outcome": "integrity_mismatch", "effect": null },
+              { "ok": true, "effect": { "read": { "slot": 1, "kind": "manual" } } }
+            ],
+            "view": { "$subset": { "pending": { "op": "load", "slot": 1, "kind": "manual" } } }
+          }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": { "session": 1, "ops": [{ "op": "finished", "ok": true }, { "op": "delete", "slot": 1 }, { "op": "finished", "ok": true }, { "op": "delete", "slot": 7 }] },
+          "expect": {
+            "results": [
+              { "ok": true, "effect": null },
+              { "ok": true, "effect": { "remove": { "slot": 1 } } },
+              { "ok": true, "effect": null },
+              { "ok": false, "refusal": "no_such_slot", "effect": null }
+            ],
+            "view": { "$subset": { "continueSlot": null, "activeSlot": null, "autosave": { "on": false, "target": null, "inSec": null } } }
+          }
+        }
+      ]
+    },
+    {
+      "name": "saves.slots: the rows refuse what core's types declare and JSON cannot hold, as errors",
+      "steps": [
+        { "call": "saves.slots.create", "args": { "config": "five slots" }, "expectError": "saves.slots.create: `config` must be a JSON object" },
+        { "call": "saves.slots.create", "args": { "slots": [{ "index": 0, "outcome": "broken" }] }, "expectError": "`slots[0].outcome` must be one of" },
+        { "call": "saves.slots.create", "args": { "slots": [{ "index": "0", "outcome": "ok" }] }, "expectError": "`slots[0].index` must be a finite number" },
+        { "call": "saves.slots.create", "args": { "activeSlot": "1" }, "expectError": "`activeSlot` must be a finite number" },
+        { "call": "saves.slots.create", "expect": { "$subset": { "session": 1 } } },
+        { "call": "saves.slots.apply", "args": { "session": 1, "ops": [{ "op": "save", "slot": "1" }] }, "expectError": "ops[0] (save) failed: insimulcore: saves.slots.apply: `slot` must be a finite number" },
+        { "call": "saves.slots.apply", "args": { "session": 1, "ops": [{ "op": "key", "code": 116 }] }, "expectError": "ops[0] (key) failed: insimulcore: saves.slots.apply: `code` must be a string" },
+        { "call": "saves.slots.apply", "args": { "session": 1, "ops": [{ "op": "tick", "delta": "1" }] }, "expectError": "ops[0] (tick) failed: insimulcore: saves.slots.apply: `delta` must be a finite number" },
+        { "call": "saves.slots.apply", "args": { "session": 1, "ops": [{ "op": "finished" }] }, "expectError": "ops[0] (finished) failed: insimulcore: saves.slots.apply: `ok` must be a boolean" },
+        { "call": "saves.slots.apply", "args": { "session": 1, "ops": [{ "op": "quickSave" }] }, "expectError": "ops[0] has no known op \"quickSave\"" },
+        { "call": "ui.notifications.create", "expect": { "$subset": { "session": 2 } } },
+        { "call": "saves.slots.apply", "args": { "session": 2, "ops": [] }, "expectError": "session 2 is a ui.notifications session, not saves.slots" },
+        { "call": "session.dispose", "args": { "session": 1 }, "expect": { "disposed": true } },
+        { "call": "saves.slots.apply", "args": { "session": 1, "ops": [] }, "expectError": "no open session 1" }
+      ]
+    }
+  ]
+}

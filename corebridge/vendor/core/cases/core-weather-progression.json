@@ -3,7 +3,7 @@
  "description": "core's seeded weather progression through weather.climate and weather.run",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "f9aef13ecea289696c44ab8a299786f253c42fea",
+  "coreCommit": "fc88be9070ec961208f10d7bf9f3856a6ce2f0b1",
   "files": {
    "conformance/weather/progression.json": "201b9fec3d8e1dc0879744a970c5a167fc4df0a0a7588d31e217f2930e0947c6"
   }

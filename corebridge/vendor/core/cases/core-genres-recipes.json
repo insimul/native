@@ -3,9 +3,9 @@
  "description": "core's recipe → game resolution corpus through genre.resolveGame; a refusal is an error carrying core's code",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "f9aef13ecea289696c44ab8a299786f253c42fea",
+  "coreCommit": "fc88be9070ec961208f10d7bf9f3856a6ce2f0b1",
   "files": {
-   "conformance/genres/recipes.json": "ceaf4fae3d110389852fd37434999dadafe15ab5847b3b0b0d3e8ca589f065d3"
+   "conformance/genres/recipes.json": "016c0c136269de94cac117f7ac648bb28b01437da11a6e68068157ef895a8474"
   }
  },
  "cases": [
@@ -282,115 +282,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "adventure",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "world",
-      "config": {
-       "id": "adventure",
-       "name": "Adventure",
-       "description": "Exploration, narrative, and puzzle-solving",
-       "cameraMode": "third_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "none",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "tropical-pirate",
-       "features": {
-        "inventory": true,
-        "crafting": false,
-        "dialogue": true,
-        "combat": false,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": false,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "third_person",
-       "policy": "world-default",
-       "source": "genreConfig.cameraMode",
-       "worldPerspective": null
-      },
-      "bundle": {
-       "id": "adventure",
-       "featureModules": [
-        "knowledge-acquisition",
-        "gamification",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "adventure",
-       "known": true,
-       "modules": [
-        "perception",
-        "traversal",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "perception",
-        "traversal",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "IPerceptionProbe",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": [
-       {
-        "code": "world-config-kept",
-        "detail": "recipe 'rpg-adventure' keeps the settings of a 'adventure' world unchanged"
-       }
-      ]
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -689,135 +581,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "rpg",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "world",
-      "config": {
-       "id": "rpg",
-       "name": "RPG",
-       "description": "Role-playing game with character progression, quests, and story",
-       "cameraMode": "third_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "medieval-fantasy",
-       "features": {
-        "inventory": true,
-        "crafting": true,
-        "dialogue": true,
-        "combat": false,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard",
-        "legendary"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": false,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "third_person",
-       "policy": "world-default",
-       "source": "genreConfig.cameraMode",
-       "worldPerspective": null
-      },
-      "bundle": {
-       "id": "rpg",
-       "featureModules": [
-        "knowledge-acquisition",
-        "proficiency",
-        "gamification",
-        "skill-tree",
-        "adaptive-difficulty",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "rpg",
-       "known": true,
-       "modules": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "ICombatSystem",
-        "ITrajectoryProbe",
-        "IPerceptionProbe",
-        "ISkillModifierSink",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "ICombatStatSink",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": [
-       {
-        "code": "world-config-kept",
-        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
-       }
-      ]
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -1116,135 +880,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "rpg",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "world",
-      "config": {
-       "id": "rpg",
-       "name": "RPG",
-       "description": "Role-playing game with character progression, quests, and story",
-       "cameraMode": "first_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "medieval-fantasy",
-       "features": {
-        "inventory": true,
-        "crafting": true,
-        "dialogue": true,
-        "combat": false,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard",
-        "legendary"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": false,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "first_person",
-       "policy": "world-default",
-       "source": "meta.cameraPerspective",
-       "worldPerspective": "first_person"
-      },
-      "bundle": {
-       "id": "rpg",
-       "featureModules": [
-        "knowledge-acquisition",
-        "proficiency",
-        "gamification",
-        "skill-tree",
-        "adaptive-difficulty",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "rpg",
-       "known": true,
-       "modules": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "ICombatSystem",
-        "ITrajectoryProbe",
-        "IPerceptionProbe",
-        "ISkillModifierSink",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "ICombatStatSink",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": [
-       {
-        "code": "world-config-kept",
-        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
-       }
-      ]
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -1543,135 +1179,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "rpg",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "world",
-      "config": {
-       "id": "rpg",
-       "name": "RPG",
-       "description": "Role-playing game with character progression, quests, and story",
-       "cameraMode": "top_down",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "medieval-fantasy",
-       "features": {
-        "inventory": true,
-        "crafting": true,
-        "dialogue": true,
-        "combat": false,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard",
-        "legendary"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": false,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "top_down",
-       "policy": "world-default",
-       "source": "meta.cameraPerspective",
-       "worldPerspective": "Top-Down"
-      },
-      "bundle": {
-       "id": "rpg",
-       "featureModules": [
-        "knowledge-acquisition",
-        "proficiency",
-        "gamification",
-        "skill-tree",
-        "adaptive-difficulty",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "rpg",
-       "known": true,
-       "modules": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "ICombatSystem",
-        "ITrajectoryProbe",
-        "IPerceptionProbe",
-        "ISkillModifierSink",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "ICombatStatSink",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": [
-       {
-        "code": "world-config-kept",
-        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
-       }
-      ]
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -1974,139 +1482,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "rpg",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "world",
-      "config": {
-       "id": "rpg",
-       "name": "RPG",
-       "description": "Role-playing game with character progression, quests, and story",
-       "cameraMode": "third_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "medieval-fantasy",
-       "features": {
-        "inventory": true,
-        "crafting": true,
-        "dialogue": true,
-        "combat": false,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard",
-        "legendary"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": false,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "third_person",
-       "policy": "world-default",
-       "source": "genreConfig.cameraMode",
-       "worldPerspective": "auto"
-      },
-      "bundle": {
-       "id": "rpg",
-       "featureModules": [
-        "knowledge-acquisition",
-        "proficiency",
-        "gamification",
-        "skill-tree",
-        "adaptive-difficulty",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "rpg",
-       "known": true,
-       "modules": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "ICombatSystem",
-        "ITrajectoryProbe",
-        "IPerceptionProbe",
-        "ISkillModifierSink",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "ICombatStatSink",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": [
-       {
-        "code": "world-config-kept",
-        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
-       },
-       {
-        "code": "world-perspective-ignored",
-        "detail": "meta.cameraPerspective 'auto' names no camera mode; genreConfig.cameraMode 'third_person' stands"
-       }
-      ]
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -2182,7 +1558,7 @@
        "cameraMode": "first_person",
        "movementPlane": "free",
        "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
+       "combatStyle": "none",
        "movementStyle": "free",
        "uiLayout": "action_rpg",
        "defaultWorldType": "tropical-pirate",
@@ -2380,110 +1756,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "adventure",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "recipe",
-      "config": {
-       "id": "adventure",
-       "name": "Adventure",
-       "description": "Exploration, narrative, and puzzle-solving",
-       "cameraMode": "first_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "tropical-pirate",
-       "features": {
-        "inventory": true,
-        "crafting": false,
-        "dialogue": true,
-        "combat": true,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": true,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "first_person",
-       "policy": "world-default",
-       "source": "meta.cameraPerspective",
-       "worldPerspective": "first-person"
-      },
-      "bundle": {
-       "id": "adventure",
-       "featureModules": [
-        "knowledge-acquisition",
-        "gamification",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "adventure",
-       "known": true,
-       "modules": [
-        "perception",
-        "traversal",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "perception",
-        "traversal",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "IPerceptionProbe",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": []
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -2559,7 +1832,7 @@
        "cameraMode": "third_person",
        "movementPlane": "free",
        "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
+       "combatStyle": "none",
        "movementStyle": "free",
        "uiLayout": "action_rpg",
        "defaultWorldType": "tropical-pirate",
@@ -2757,110 +2030,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "adventure",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "recipe",
-      "config": {
-       "id": "adventure",
-       "name": "Adventure",
-       "description": "Exploration, narrative, and puzzle-solving",
-       "cameraMode": "third_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "tropical-pirate",
-       "features": {
-        "inventory": true,
-        "crafting": false,
-        "dialogue": true,
-        "combat": true,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": true,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "third_person",
-       "policy": "world-default",
-       "source": "genreConfig.cameraMode",
-       "worldPerspective": null
-      },
-      "bundle": {
-       "id": "adventure",
-       "featureModules": [
-        "knowledge-acquisition",
-        "gamification",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "adventure",
-       "known": true,
-       "modules": [
-        "perception",
-        "traversal",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "perception",
-        "traversal",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "IPerceptionProbe",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": []
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -2895,7 +2065,7 @@
        "cameraMode": "isometric",
        "movementPlane": "free",
        "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
+       "combatStyle": "none",
        "movementStyle": "free",
        "uiLayout": "action_rpg",
        "defaultWorldType": "tropical-pirate",
@@ -3052,110 +2222,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "adventure",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "recipe",
-      "config": {
-       "id": "adventure",
-       "name": "Adventure",
-       "description": "Exploration, narrative, and puzzle-solving",
-       "cameraMode": "isometric",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "tropical-pirate",
-       "features": {
-        "inventory": true,
-        "crafting": false,
-        "dialogue": true,
-        "combat": true,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": true,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "isometric",
-       "policy": "world-default",
-       "source": "meta.cameraPerspective",
-       "worldPerspective": "isometric"
-      },
-      "bundle": {
-       "id": "adventure",
-       "featureModules": [
-        "knowledge-acquisition",
-        "gamification",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "adventure",
-       "known": true,
-       "modules": [
-        "perception",
-        "traversal",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "perception",
-        "traversal",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "IPerceptionProbe",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": []
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -3439,110 +2506,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "rpg",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "world",
-      "config": {
-       "id": "rpg",
-       "name": "RPG",
-       "description": "Role-playing game with character progression, quests, and story",
-       "cameraMode": "third_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "medieval-fantasy",
-       "features": {
-        "inventory": true,
-        "crafting": true,
-        "dialogue": true,
-        "combat": false,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard",
-        "legendary"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": false,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "third_person",
-       "policy": "world-default",
-       "source": "genreConfig.cameraMode",
-       "worldPerspective": null
-      },
-      "bundle": {
-       "id": "rpg",
-       "featureModules": [
-        "knowledge-acquisition",
-        "proficiency",
-        "gamification",
-        "skill-tree",
-        "adaptive-difficulty",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "rpg",
-       "known": true,
-       "modules": [
-        "combat",
-        "traversal"
-       ],
-       "predicatePacks": [
-        "combat",
-        "traversal",
-        "gameplayState",
-        "script",
-        "placement",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "ICombatSystem",
-        "ITrajectoryProbe",
-        "ITraversalProbe",
-        "ILocomotionHost"
-       ]
-      },
-      "notes": [
-       {
-        "code": "world-config-kept",
-        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
-       },
-       {
-        "code": "world-modules-selected",
-        "detail": "the world's enabledModules selects the modules (combat, traversal) in place of its genre's bundle"
-       }
-      ]
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -3853,139 +2817,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "rpg",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "world",
-      "config": {
-       "id": "rpg",
-       "name": "RPG",
-       "description": "Role-playing game with character progression, quests, and story",
-       "cameraMode": "third_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "medieval-fantasy",
-       "features": {
-        "inventory": true,
-        "crafting": true,
-        "dialogue": true,
-        "combat": false,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard",
-        "legendary"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": false,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "third_person",
-       "policy": "world-default",
-       "source": "genreConfig.cameraMode",
-       "worldPerspective": null
-      },
-      "bundle": {
-       "id": "rpg",
-       "featureModules": [
-        "knowledge-acquisition",
-        "proficiency",
-        "gamification",
-        "skill-tree",
-        "adaptive-difficulty",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "rpg",
-       "known": true,
-       "modules": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "combat",
-        "perception",
-        "skill",
-        "traversal",
-        "equipment",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "business",
-        "crafting",
-        "mining",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "ICombatSystem",
-        "ITrajectoryProbe",
-        "IPerceptionProbe",
-        "ISkillModifierSink",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "ICombatStatSink",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": [
-       {
-        "code": "world-config-kept",
-        "detail": "recipe 'rpg-adventure' keeps the settings of a 'rpg' world unchanged"
-       },
-       {
-        "code": "world-modules-not-mechanic",
-        "detail": "the world's enabledModules (knowledge-acquisition, proficiency) names no mechanic module (feature-module ids select none), so its genre decides the modules"
-       }
-      ]
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -4023,7 +2855,7 @@
        "cameraMode": "third_person",
        "movementPlane": "free",
        "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
+       "combatStyle": "none",
        "movementStyle": "free",
        "uiLayout": "action_rpg",
        "defaultWorldType": "tropical-pirate",
@@ -4188,115 +3020,7 @@
        }
       }
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "adventure",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "recipe",
-      "config": {
-       "id": "adventure",
-       "name": "Adventure",
-       "description": "Exploration, narrative, and puzzle-solving",
-       "cameraMode": "third_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "tropical-pirate",
-       "features": {
-        "inventory": true,
-        "crafting": false,
-        "dialogue": true,
-        "combat": true,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": true,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "third_person",
-       "policy": "world-default",
-       "source": "genreConfig.cameraMode",
-       "worldPerspective": null
-      },
-      "bundle": {
-       "id": "adventure",
-       "featureModules": [
-        "knowledge-acquisition",
-        "gamification",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "adventure",
-       "known": true,
-       "modules": [
-        "perception",
-        "traversal",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "perception",
-        "traversal",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "IPerceptionProbe",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": [
-       {
-        "code": "world-modules-unused",
-        "detail": "recipe 'rpg-adventure' replaces the world's settings, so the world's enabledModules (dialogue) is not used: the recipe's genre decides the modules"
-       }
-      ]
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -4327,7 +3051,7 @@
        "cameraMode": "third_person",
        "movementPlane": "free",
        "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
+       "combatStyle": "none",
        "movementStyle": "free",
        "uiLayout": "action_rpg",
        "defaultWorldType": "tropical-pirate",
@@ -4480,110 +3204,7 @@
       },
       "world": null
      },
-     "expect": {
-      "recipe": {
-       "id": "rpg-adventure",
-       "bound": true
-      },
-      "genre": {
-       "id": "adventure",
-       "known": true,
-       "fallback": null
-      },
-      "configSource": "recipe",
-      "config": {
-       "id": "adventure",
-       "name": "Adventure",
-       "description": "Exploration, narrative, and puzzle-solving",
-       "cameraMode": "third_person",
-       "movementPlane": "free",
-       "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
-       "movementStyle": "free",
-       "uiLayout": "action_rpg",
-       "defaultWorldType": "tropical-pirate",
-       "features": {
-        "inventory": true,
-        "crafting": false,
-        "dialogue": true,
-        "combat": true,
-        "building": false,
-        "resources": false,
-        "permadeath": false,
-        "quests": true,
-        "experience": true,
-        "skills": true
-       },
-       "questTypes": [
-        "rpg"
-       ],
-       "difficultyLevels": [
-        "easy",
-        "normal",
-        "hard"
-       ],
-       "defaultPlayerSpeed": 1,
-       "defaultJumpHeight": 1,
-       "gravityMultiplier": 1,
-       "showMinimap": true,
-       "showHealthBar": true,
-       "showStaminaBar": false,
-       "showAmmoCounter": false,
-       "showCompass": true
-      },
-      "camera": {
-       "mode": "third_person",
-       "policy": "world-default",
-       "source": "genreConfig.cameraMode",
-       "worldPerspective": null
-      },
-      "bundle": {
-       "id": "adventure",
-       "featureModules": [
-        "knowledge-acquisition",
-        "gamification",
-        "world-lore",
-        "conversation-analytics",
-        "onboarding"
-       ]
-      },
-      "activation": {
-       "genre": "adventure",
-       "known": true,
-       "modules": [
-        "perception",
-        "traversal",
-        "agentAi",
-        "routine",
-        "map",
-        "volition",
-        "weather",
-        "dialogue"
-       ],
-       "predicatePacks": [
-        "perception",
-        "traversal",
-        "gameplayState",
-        "agentAi",
-        "routine",
-        "volition",
-        "weather",
-        "dialogue",
-        "script",
-        "placement",
-        "map",
-        "scaffold"
-       ],
-       "hostInterfaces": [
-        "IPerceptionProbe",
-        "ITraversalProbe",
-        "ILocomotionHost",
-        "IAgentActionHost",
-        "IWeatherSink"
-       ]
-      },
-      "notes": []
-     }
+     "expectError": "[recipe-config-drift]"
     }
    ]
   },
@@ -18442,6 +17063,7 @@
        "genre": "simulation",
        "known": true,
        "modules": [
+        "traversal",
         "agentAi",
         "routine",
         "map",
@@ -18454,6 +17076,7 @@
         "mining"
        ],
        "predicatePacks": [
+        "traversal",
         "gameplayState",
         "agentAi",
         "routine",
@@ -18470,8 +17093,9 @@
         "scaffold"
        ],
        "hostInterfaces": [
-        "IAgentActionHost",
+        "ITraversalProbe",
         "ILocomotionHost",
+        "IAgentActionHost",
         "IWeatherSink"
        ]
       },

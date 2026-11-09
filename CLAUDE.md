@@ -441,13 +441,17 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` f9aef13 (2026-11-07,
-  P9a.native: it holds P9a.core's genre HUD, rules panel and mechanic runtime and
-  their corpora). Before that, b38e60d (2026-11-05, SP.composer-native: it holds
+  and pin disagree. The pin today is core `main` fc88be9 (2026-11-09,
+  PL.native-catchup: every core item the Unreal-first queue landed through
+  PL.house-blank-sides, among them core's `MECHANIC_STEP_OPS` that `mechanics.run`
+  imports, the World IR's `['none']` modules form, and P1.core-slots'
+  `SaveSlotsSession` with its corpus that the `saves.slots.*` rows run). Before
+  that, f9aef13 (2026-11-07, P9a.native: it holds P9a.core's genre HUD, rules
+  panel and mechanic runtime and their corpora); before that, b38e60d (2026-11-05, SP.composer-native: it holds
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'`, then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (the saves-slots corpus ctests match `corpus`), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -479,7 +483,17 @@
   own refusals are errors with a code (`[unknown-op]`, `[invalid-input]`).
   `mechanics.run` is a stateless replay (core's `runMechanicRuntimeCase`), not a
   session: core keeps the per-step projection private, so a session would restate
-  it (corebridge/README.md, "The P9a rows").
+  it (corebridge/README.md, "The P9a rows"). Its step-op list is core's
+  `MECHANIC_STEP_OPS`, IMPORTED — never copy it back into `entry.js`.
+- **The saves.slots rows (PL.native-catchup) are a SESSION over core's
+  `SaveSlotsSession`**, held to core's `conformance/saves/slots.json`, copied the
+  same way (`SAVES_CORPUS_FILES`). `tests/saves_slots_corpus.cpp` drives every
+  `config`/`continue`/`rows`/`run` case through `saves.slots.create` and ONE
+  `saves.slots.apply` per run step (the view after each step is the session's);
+  only the `indicator` op (a bare indicator, no session step shows one) goes
+  undriven, with a measured reason printed per case. Any other undrivable case
+  fails the run — do not widen that exemption, add a way to drive the case.
+  `saves_slots_corpus_negative` must see it fail.
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

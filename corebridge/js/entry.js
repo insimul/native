@@ -97,9 +97,18 @@ import { PREDICATE_PACK_AREAS, PREDICATE_PACKS } from '@insimul/core/prolog/pred
 // `runRulesPanelOp` answer a `conformance/ui/{genre-hud,rules-panel}-cases.json`
 // case in exactly the shape the file pins, and `runMechanicRuntimeCase` replays a
 // `conformance/modules/mechanic-runtime.json` case over `createMechanicRuntime`.
+// `MECHANIC_STEP_OPS` is core's own list of the step ops that runner applies
+// (its `MechanicStep` union as data, held to the union by core's type check).
 import { GENRE_HUD_OPS, runGenreHudOp } from '@insimul/core/ui/genre-hud-corpus';
 import { RULES_PANEL_OPS, runRulesPanelOp } from '@insimul/core/ui/rules-panel-corpus';
-import { runMechanicRuntimeCase } from '@insimul/core/game-engine/mechanic-runtime-corpus';
+import { MECHANIC_STEP_OPS, runMechanicRuntimeCase } from '@insimul/core/game-engine/mechanic-runtime-corpus';
+
+// ── save slots, Continue, autosave and quick save (P1.core-slots, U83(1)) ─────
+// Core's `SaveSlotsSession`: the engine-neutral logic around one save format
+// (which slot a request goes to, what is refused, the rows and Continue, when an
+// autosave is due, the indicator). It does no I/O; the host does the I/O each
+// step's `effect` names and answers with `finished`.
+import { SaveSlotsSession } from '@insimul/core/save-slots';
 
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
@@ -230,32 +239,71 @@ function needRules(method, input) {
 	optArray(method, input, 'rules', true);
 }
 
+// ── save slots (P1.core-slots) ────────────────────────────────────────────────
+
 /**
- * Every step op core's mechanic-runtime corpus runner applies (its `MechanicStep`
- * union in `game-engine/mechanic-runtime-corpus.ts`, a TypeScript type JSON cannot
- * carry). Core's runner has no default case, so an op outside this list would be
- * answered `{ absent: false }` with no outcome instead of failing: the row refuses
- * it as `[unknown-op]`. `mechanic_runtime_corpus` goes red when core's corpus names
- * an op this list lacks.
+ * The init core's `SaveSlotsSession` takes (`SaveSlotsSessionInit`), checked for
+ * the JSON types core declares and nothing more. `config` is an object or null,
+ * and its fields go to core UNCHECKED: `resolveSaveSlotsConfig` reads a field of
+ * the wrong type as its default on purpose, and `conformance/saves/slots.json`
+ * pins each such reading. A slot is `{ index, outcome, summary? }` with an outcome
+ * core's `SaveSlotModel` knows (as `ui.saveSlots` checks it); an index that is not
+ * a slot is core's to ignore. `activeSlot` is a number or null; one that is not a
+ * slot is core's to read as none.
  */
-const MECHANIC_STEP_OPS = [
-	'stamina.register',
-	'combat.register',
-	'combat.attack',
-	'traversal.links',
-	'traversal.register',
-	'traversal.traverse',
-	'locomotion.pursue',
-	'detection.observer',
-	'detection.target',
-	'detection.observe',
-	'routine.assign',
-	'routine.tick',
-	'skills.load',
-	'skills.register',
-	'skills.award',
-	'skills.advance',
-];
+function saveSlotsInit(method, args) {
+	const init = {};
+	if (args.config !== undefined) {
+		init.config = args.config === null ? null : needObject(method, args.config, 'config');
+	}
+	if (args.slots !== undefined && args.slots !== null) {
+		init.slots = needArray(method, args.slots, 'slots').map((slot, i) => {
+			needObject(method, slot, `slots[${i}]`);
+			needNumber(method, slot.index, `slots[${i}].index`);
+			oneOf(method, slot.outcome, Object.keys(SLOT_MESSAGES), `slots[${i}].outcome`);
+			if (slot.summary !== undefined && slot.summary !== null) needObject(method, slot.summary, `slots[${i}].summary`);
+			return slot;
+		});
+	}
+	if (args.activeSlot !== undefined && args.activeSlot !== null) {
+		init.activeSlot = needNumber(method, args.activeSlot, 'activeSlot');
+	}
+	return init;
+}
+
+/** `op[name]`, a string when present and not null. */
+function optStringField(method, op, name) {
+	if (op[name] !== undefined && op[name] !== null) needString(method, op[name], name);
+}
+
+/**
+ * One `saves.slots.apply` op as core's `SaveSlotsStepResult`, in JSON: `{ ok,
+ * refusal?, outcome?, effect }` (`effect` null, or `{ write: { slot, kind,
+ * autosave } }`, `{ read: { slot, kind } }` or `{ remove: { slot } }`) — the shape
+ * core's corpus runner records (`saveSlotsResultJson`).
+ */
+function saveSlotsOps(m) {
+	const slot = (op) => needNumber(m, op.slot, 'slot');
+	return {
+		save: ({ model }, op) => plain(model.save(slot(op))),
+		load: ({ model }, op) => plain(model.load(slot(op))),
+		continue: ({ model }) => plain(model.continueGame()),
+		delete: ({ model }, op) => plain(model.delete(slot(op))),
+		key: ({ model }, op) => plain(model.key(needString(m, op.code, 'code'))),
+		// JSON has no NaN: a `delta` of null is a non-finite tick, which core
+		// answers as changing nothing (the corpus writes it the same way).
+		tick: ({ model }, op) =>
+			plain(model.tick(op.delta === null ? Number.NaN : needNumber(m, op.delta, 'delta'))),
+		finished: ({ model }, op) => {
+			const { op: _name, ...result } = op;
+			if (typeof result.ok !== 'boolean') throw refuse(m, '`ok` must be a boolean');
+			optStringField(m, result, 'savedAt');
+			optStringField(m, result, 'outcome');
+			if (result.summary !== undefined && result.summary !== null) needObject(m, result.summary, 'summary');
+			return plain(model.finished(result));
+		},
+	};
+}
 
 // ── system packs ──────────────────────────────────────────────────────────────
 
@@ -705,6 +753,45 @@ const METHODS = {
 		return { slots: plain(model.slots()), hasAnyLoadable: model.hasAnyLoadable() };
 	},
 
+	/**
+	 * `saves.slots.create { config?, slots?, activeSlot? }` → `{ session, config,
+	 * view }` — core's `SaveSlotsSession` (`save-slots`, P1.core-slots): deleting a
+	 * slot, the Continue target, autosave at an interval with its indicator, and
+	 * quick save / quick load on F5 / F9, for one play session. `config` is the
+	 * saves pack's parameters (`slotCount` or `maxSlots`, `quickSlot`,
+	 * `autosaveIntervalSec`, `autosaveIndicator`) and the answer's `config` is how
+	 * core resolved them (`resolveSaveSlotsConfig`); `slots` is what the host's save
+	 * codec found in each slot (`{ index, outcome, summary? }`, `SlotLoadResult`);
+	 * `activeSlot` the autosave target at the start (default none).
+	 */
+	'saves.slots.create': (args) => {
+		const m = 'saves.slots.create';
+		const model = new SaveSlotsSession(saveSlotsInit(m, args));
+		return { session: openSession('saves.slots', { model }), config: plain(model.config), view: plain(model.view()) };
+	},
+
+	/**
+	 * `saves.slots.apply { session, ops }` → `{ results, view }`. The session does
+	 * no I/O: a result's `effect` names the I/O the host does now (`write`, `read`,
+	 * `remove`), and the host answers it with `finished` (a finished write: raise
+	 * core's `game_saved`).
+	 * ops (core's steps, `conformance/saves/slots.json`'s `run` steps): `save { slot }`
+	 * · `load { slot }` · `continue` · `delete { slot }` · `key { code }` (a
+	 * KeyboardEvent.code; F5 quick-saves, F9 quick-loads) · `tick { delta }`
+	 * (seconds; null is a non-finite tick) · `finished { ok, savedAt?, summary?,
+	 * outcome? }`. Each result is `{ ok, refusal?, outcome?, effect }`; a refusal
+	 * (`busy`, `no_such_slot`, `slot_empty`, `slot_corrupted`, `no_quick_slot`,
+	 * `nothing_to_continue`, `nothing_pending`, `unbound_key`) is a VALUE.
+	 * view: core's `SaveSlotsView` — `{ rows, continueSlot, activeSlot, pending,
+	 * autosave: { on, target, inSec }, indicator }`.
+	 */
+	'saves.slots.apply': async (args) => {
+		const m = 'saves.slots.apply';
+		const s = session(m, args, 'saves.slots');
+		const results = await applyOps(m, s, args, saveSlotsOps(m));
+		return { results, view: plain(s.model.view()) };
+	},
+
 	/** `ui.loading.create { phases?, tips? }` → `{ session, view }` — core's `LoadingScreenModel`. */
 	'ui.loading.create': (args) => {
 		const m = 'ui.loading.create';
@@ -1132,13 +1219,16 @@ const METHODS = {
 	 * `expected`: the plan, one result per step (`{ absent: true }` on a layer the
 	 * world did not activate, else `{ absent: false, outcome, stamina }`) and the
 	 * type of every event the one bus carried. Pure and seeded, like `weather.run`.
-	 * Step ops: every op of core's `MechanicStep` (MECHANIC_STEP_OPS above). The row
-	 * checks the IR's shape, the seed and each step's `op` (`[invalid-input]`,
-	 * `[unknown-op]`); a step's own fields go to core unchanged. `meta.enabledModules`
-	 * goes to core unchecked, as core types it (`unknown`): a list that is not an
-	 * array selects nothing and the genre decides, exactly as `modules.activate { ir }`
-	 * answers the same IR (core's `conformance/modules/world-activation.json`, "rpg
-	 * with a string").
+	 * Step ops: core's `MECHANIC_STEP_OPS` (imported, the `MechanicStep` union as
+	 * data). The row checks the IR's shape, the seed and each step's `op`
+	 * (`[invalid-input]`, `[unknown-op]`); a step's own fields go to core unchanged.
+	 * `meta.enabledModules` goes to core unchecked, as core types it (`unknown`): a
+	 * list that is not an array selects nothing and the genre decides, and a list
+	 * holding the token `'none'` (core's `NO_MECHANIC_MODULES`) selects exactly its
+	 * mechanic ids, so `['none']` assembles nothing whatever the genre, exactly as
+	 * `modules.activate { ir }` answers the same IR (core's
+	 * `conformance/modules/world-activation.json`, "rpg with a string", "rpg with
+	 * 'none'"; `mechanic-runtime.json`, "survival with 'none': nothing assembled").
 	 *
 	 * Why a stateless `.run` and not a `mechanics.create`/`.apply` session pair:
 	 * core defines the one operation as `{ ir, seed, steps }` → `{ plan, steps,

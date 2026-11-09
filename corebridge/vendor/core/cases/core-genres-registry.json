@@ -3,10 +3,10 @@
  "description": "core's genre resolution corpus through genre.resolve (and the registry ids through genre.registry)",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "f9aef13ecea289696c44ab8a299786f253c42fea",
+  "coreCommit": "fc88be9070ec961208f10d7bf9f3856a6ce2f0b1",
   "files": {
    "conformance/genres/camera.json": "a2eca78d3c8b3271648aaa61d5a91fe4c5dc61b331a04444d4d6f3d99ca5ba61",
-   "conformance/genres/registry.json": "12c2e05293be78e0ba403d3367e43c0a668d8554f0c57dc933b20c7314cfc9dc"
+   "conformance/genres/registry.json": "c85caacb469a4475f4da8a28c62335a7f33c9066ce7ce3000da576b372bf0e5c"
   }
  },
  "cases": [
@@ -985,6 +985,7 @@
        "genre": "simulation",
        "known": true,
        "modules": [
+        "traversal",
         "agentAi",
         "routine",
         "map",
@@ -997,6 +998,7 @@
         "mining"
        ],
        "predicatePacks": [
+        "traversal",
         "gameplayState",
         "agentAi",
         "routine",
@@ -1013,8 +1015,9 @@
         "scaffold"
        ],
        "hostInterfaces": [
-        "IAgentActionHost",
+        "ITraversalProbe",
         "ILocomotionHost",
+        "IAgentActionHost",
         "IWeatherSink"
        ]
       }
@@ -1304,7 +1307,7 @@
        "cameraMode": "third_person",
        "movementPlane": "free",
        "controlScheme": "wasd_mouse",
-       "combatStyle": "melee",
+       "combatStyle": "none",
        "movementStyle": "free",
        "uiLayout": "action_rpg",
        "defaultWorldType": "tropical-pirate",
