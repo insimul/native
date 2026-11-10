@@ -7,7 +7,7 @@
  */
 #include "insimul_core_bundle.h"
 
-const char insimul_core_bundle_source_commit[] = "6c6d4a495136b302d019d351d6c68d980f7cca60";
+const char insimul_core_bundle_source_commit[] = "73768943d10173fc3924d813f7d3f004afcd366d";
 const char insimul_core_bundle_sha256[] = "2a86b04bff34ba05f0c25e6aa5cbe2f3ebcd2301cc9dbc1ec670f8f64bcbab50";
 const unsigned long insimul_core_bundle_js_len = 1563744UL;
 

@@ -441,9 +441,9 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core 6c6d4a4 (2026-11-10,
-  PL.native-genre-hud-config: core's PL.native-genre-hud-config commit, one
-  commit on core `main` eff846a that lands on core `main` by checked fast-forward
+  and pin disagree. The pin today is core 7376894 (2026-11-10,
+  PL.native-genre-hud-config: the head of core's PL.native-genre-hud-config
+  branch, two commits on core `main` eff846a that lands on core `main` by checked fast-forward
   before this pin does; it gives core's genre HUD runner the `config_of` /
   `view_of` ops that the `ui.genreHud` row passes through, and 43 corpus cases).
   Before that, core `main` eff846a (2026-11-10, PL.native-pickup-settle: every core item the Unreal-first queue landed after

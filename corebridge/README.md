@@ -424,7 +424,7 @@ rows of P9b–P9j. When core exports a per-step function, a session pair can wra
 it without restating anything.
 
 The evidence is core's corpora, not a transcription:
-`vendor/core/conformance/ui/genre-hud-cases.json` (106 cases at 6c6d4a4: config
+`vendor/core/conformance/ui/genre-hud-cases.json` (106 cases at 7376894: config
 16, view 31, genre_view 16, config_of 28, view_of 15),
 `ui/rules-panel-cases.json` (17) and `modules/mechanic-runtime.json` (8 cases at
 fc88be9, 25 steps each), copied byte for byte by `tools/vendor-core-bundle.mjs` and hashed
@@ -447,7 +447,7 @@ traversal, routines, skills, and the Prolog helper text those modules import):
 bump alone, from 988,816 at b38e60d) to 1,392,156. The 86 cases take about 60 ms
 under QuickJS. `config_of` / `view_of` (PL.native-genre-hud-config) add no core
 module (152 before and after; `game-genres/resolution` was already in): the bundle
-went from 1,553,471 bytes at eff846a to 1,563,073 with the 6c6d4a4 pin bump alone
+went from 1,553,471 bytes at eff846a to 1,563,073 with the 7376894 pin bump alone
 (+9,602, core's runner and its cases) and 1,563,744 with this row's comment
 (+10,273 in all, +0.66 %). The 106 genre HUD cases take about 3 ms.
 

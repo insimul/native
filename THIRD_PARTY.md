@@ -123,8 +123,8 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `6c6d4a4` (core's
-  PL.native-genre-hud-config commit on core `main` eff846a, landing on core `main`
+  what to quote in a bug report about core behaviour. Today: `7376894` (the head of core's
+  PL.native-genre-hud-config branch on core `main` eff846a, landing on core `main`
   by fast-forward before this pin; it adds the genre HUD runner's `config_of` /
   `view_of` ops; core `main` eff846a on 2026-11-10 holds the layout and
   composition rules the `layout.*` rows run, the composer the `packs.compose` row runs, P9a.core's genre HUD, rules
