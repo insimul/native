@@ -688,7 +688,7 @@ pin): the bundle went from 1,530,726 bytes (the eff846a pin bump alone, from
 
 ### The title, tutorial and onboarding rows (PL.native-title-rows)
 
-Core's P8 work (P8.core, ff599d7; in the pin since 7376894 and before) is the title
+Core's P8 work (P8.core, ff599d7; in every pin since f9aef13) is the title
 screen and the first minute of play: the title menu over the save slots
 (`src/ui/title-flow.ts`), the tutorial quest (`TutorialQuestSystem`) and the
 onboarding flow built on it (`OnboardingManager`). Unreal's P8 cell copied them as
@@ -766,9 +766,10 @@ pin the answer shapes, the live link, the clock, the events and the errors.
 `ui/title-flow-corpus`, `quests/tutorial-corpus`), and the modules the corpus
 modules pull in through core's corpus comparator (`save-file-game-state-corpus` and
 the save-file modules behind it): 152 → 183 at the 7376894 pin. The bundle went
-from 1,563,744 bytes to 1,627,255 (+63,511, +4.1 %); the three models alone would
-be about 1,603,200, and the rest is `tutorialStateJson` and `corpusBindings`
-living in core's corpus module. The 96 cases take about 30 ms under QuickJS.
+from 1,563,744 bytes to 1,628,012 (+64,268, +4.1 %); the three models account for
+about 39,400 of that, and about 23,500 is `tutorialStateJson` and `corpusBindings`
+living in core's corpus module, whose comparator import brings the save-file code
+with it. The 96 cases take about 30 ms under QuickJS.
 
 ### What the feature phases asked for and core does not have yet
 
