@@ -171,6 +171,21 @@ const PROPS_CORPUS_FILES = [
 // list there; `conformance/quests/` is this set's alone.
 const TITLE_CORPUS_FILES = ['conformance/quests/tutorial.json', 'conformance/ui/title-flow.json'];
 
+// Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
+// village-state comparator and the save-file game state behind it. No row needs them;
+// they came in only through a corpus RUNNER module's comparator import (the P8 rows
+// once imported `quests/tutorial-corpus` and `ui/title-flow-corpus`, ~29 KB of save
+// code), which is why the rows import core's `*-corpus-host` modules instead. A
+// write that would record one refuses, and `--check` (the core_vendor ctest) fails on
+// a VENDORED.json that records one, naming it: the import to repoint is the one that
+// reaches it.
+const UNBUNDLED_CORE_MODULES = ['src/save-file-game-state-corpus.ts', 'src/save-file-game-state.ts'];
+
+/** The recorded core modules that UNBUNDLED_CORE_MODULES forbids. */
+function unbundledIn(coreModules) {
+  return (coreModules ?? []).filter((m) => UNBUNDLED_CORE_MODULES.includes(m));
+}
+
 // The adapter JS that is BUNDLED IN — inputs, not outputs, and hashed for the
 // reason spelled out at the top of this file. Paths are relative to BRIDGE, so
 // the manifest reads the same wherever the bridge is checked out.
@@ -647,6 +662,9 @@ async function write(coreDir) {
   try {
     fs.mkdirSync(OUT_DIR, { recursive: true });
     const { coreModules, npmModules } = await bundle(src, BUNDLE_JS);
+    if (unbundledIn(coreModules).length) {
+      fail(`the bundle reaches ${unbundledIn(coreModules).join(', ')} — a row imports a core corpus runner (its comparator); import the *-corpus-host module instead`);
+    }
     const cases = await emitCases(src, pin);
     // vendor/core/cases/ is wholly generated: replace its *.json set exactly, so
     // a case file the emitter no longer writes cannot linger and keep passing.
@@ -774,6 +792,9 @@ async function check(coreDir) {
   }
   if (manifest.esbuild !== pin.esbuild) {
     fail(`VENDORED.json records esbuild ${manifest.esbuild} but core-pin.json pins ${pin.esbuild}`);
+  }
+  if (unbundledIn(manifest.coreModules).length) {
+    fail(`VENDORED.json records ${unbundledIn(manifest.coreModules).join(', ')} in the bundle — a row imports a core corpus runner (its comparator); import the *-corpus-host module instead`);
   }
   const actual = sha256(js);
   if (actual !== manifest.bundleSha256) {
