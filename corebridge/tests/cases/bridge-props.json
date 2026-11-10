@@ -1,9 +1,9 @@
 {
   "area": "props",
-  "description": "Hand-written: the props.* and inventory.* rows' own contract (PL.native-props-rows, U89(2); core's P6 logic, P6.core; and the props.pickups.* rows, PL.native-pickup-settle, U91(2), over core's PL.pickup-placement) — each row's answer shape, a domain refusal as a VALUE (core's), an action core does not know going to core and coming back as its unknown_action, a refused document opening no session, the session kinds, and the rows' own refusals as errors coded [invalid-input]. Core's own corpora (conformance/props/*.json, conformance/ui/inventory-cases.json) are driven whole through these rows by the props_*_corpus (props_pickup_placement_corpus among them) and inventory_corpus ctests (tests/props_corpus.cpp), not transcribed here.",
+  "description": "Hand-written: the props.* and inventory.* rows' own contract (PL.native-props-rows, U89(2); core's P6 logic, P6.core; the props.pickups.* rows, PL.native-pickup-settle, U91(2), over core's PL.pickup-placement; and the props.interactables.* rows, PL.native-interact-target, U94(3), over core's PL.examine-props) — each row's answer shape, a domain refusal as a VALUE (core's), an action core does not know going to core and coming back as its unknown_action, a refused document opening no session, the session kinds, and the rows' own refusals as errors coded [invalid-input]. Core's own corpora (conformance/props/*.json, conformance/ui/inventory-cases.json) are driven whole through these rows by the props_*_corpus (props_pickup_placement_corpus and props_interactables_corpus among them) and inventory_corpus ctests (tests/props_corpus.cpp), not transcribed here.",
   "cases": [
     {
-      "name": "props.contract: the tables of the six P6 corpora, from core's constants",
+      "name": "props.contract: the tables of the seven props corpora, from core's constants",
       "steps": [
         {
           "call": "props.contract",
@@ -21,6 +21,17 @@
               "frames": { "unreal": { "$type": "string" }, "godot": { "$type": "string" }, "unity": { "$type": "string" }, "babylon": { "$type": "string" } },
               "constants": { "$subset": { "spacingM": 3, "doorRadiusM": 0.6, "approachProbesM": [0.6, 1.5, 2.5, 3.5], "nothingNearM": 10000000 } },
               "deviations": { "$type": "array" }
+            } },
+            "props-interactables": { "$subset": {
+              "propActions": ["open_board", "read_sign", "examine"],
+              "actionTier": ["talk", "pick_up", "open_container", "open_board", "enter"],
+              "lookTier": ["read_sign", "examine"],
+              "notOffered": ["prop.structural.wall", "prop.structural.fence"],
+              "signArchetypes": ["prop.structural.sign"],
+              "rangesM": { "talk": 3.5, "pick_up": 2.2, "open_container": 2.2, "open_board": 3.2, "read_sign": 2.6, "examine": 2.6 },
+              "doorPromptRadiusM": 2,
+              "refusals": ["bad_position"],
+              "deviations": { "$len": 10 }
             } }
           }
         }
@@ -308,6 +319,52 @@
         { "call": "props.pickups.pattern", "args": { "search": "wide" }, "expectError": "[invalid-input] insimulcore: props.pickups.pattern: `search` must be a JSON object" },
         { "call": "props.pickups.ring", "expectError": "[invalid-input] insimulcore: props.pickups.ring: `ring` must be a finite number" },
         { "call": "props.pickups.ring", "args": { "ring": 1, "search": 7 }, "expectError": "`search` must be a JSON object" }
+      ]
+    },
+    {
+      "name": "props.interactables: target, interact, meaning, host and noun; a refusal is a value; what core reads itself goes to core",
+      "steps": [
+        {"call": "props.interactables.noun", "args": {"archetype": "prop.furniture.stall.produce"}, "expect": {"noun": "produce stall"}},
+        {"call": "props.interactables.noun", "args": {"archetype": "prop.structural.notice_board"}, "expect": {"noun": "notice board"}},
+        {"call": "props.interactables.noun", "args": {}, "expect": {"noun": "object"}},
+        {"call": "props.interactables.host", "args": {"props": [{"id": "sign_far", "archetype": "prop.structural.sign", "position": {"x": 3, "y": 0, "z": 0}, "text": "Bakery"}, {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}, {"id": "sign_other", "archetype": "prop.structural.sign", "position": {"x": 0.5, "y": 0, "z": 0}, "settlementId": "s2"}], "settlement": {"id": "s1", "name": "Elmford", "position": {"x": 0, "y": 0, "z": 0}}}, "expect": {"host": "sign_near"}},
+        {"call": "props.interactables.host", "args": {"props": [{"id": "sign_far", "archetype": "prop.structural.sign", "position": {"x": 3, "y": 0, "z": 0}, "text": "Bakery"}, {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}, {"id": "sign_other", "archetype": "prop.structural.sign", "position": {"x": 0.5, "y": 0, "z": 0}, "settlementId": "s2"}], "settlement": null}, "expect": {"host": null}},
+        {"call": "props.interactables.host", "args": {}, "expect": {"host": null}},
+        {"call": "props.interactables.meaning", "args": {"prop": {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}, "board": {"host": "sign_near", "name": "Elmford"}}, "expect": {"id": "sign_near", "action": "open_board", "noun": "notice board", "prompt": "Read the Elmford notice board", "text": "Smithy"}},
+        {"call": "props.interactables.meaning", "args": {"prop": {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}}, "expect": {"id": "sign_near", "action": "read_sign", "noun": "sign", "prompt": "Read the sign", "text": "Smithy"}},
+        {"call": "props.interactables.meaning", "args": {"prop": {"id": "fence_1", "archetype": "prop.structural.fence", "position": {"x": 0, "y": 0, "z": 2}}, "board": null}, "expect": {"id": "fence_1", "action": null, "reason": "built_fabric"}},
+        {"call": "props.interactables.interact", "args": {"prop": {"id": "sign_a", "archetype": "prop.structural.sign", "position": {"x": 0, "y": 0, "z": 1}, "text": "  Smithy  "}}, "expect": {"ok": true, "action": "read_sign", "line": "The sign reads: Smithy", "events": [{"type": "sign_read", "signId": "sign_a", "objectId": "sign_a", "targetText": "Smithy", "nativeText": "Smithy"}]}},
+        {"call": "props.interactables.interact", "args": {"prop": {"id": "stall_1", "archetype": "prop.furniture.stall.wares", "position": {"x": 0, "y": 0, "z": 1}, "text": "Fresh bread!"}}, "expect": {"ok": true, "action": "examine", "line": "You examine the wares stall: Fresh bread!", "events": [{"type": "object_examined", "objectId": "stall_1", "objectName": "wares stall", "targetWord": "", "targetLanguage": ""}]}},
+        {"call": "props.interactables.interact", "args": {"prop": {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}, "board": {"host": "sign_near", "name": "Elmford"}}, "expect": {"ok": true, "action": "open_board", "line": null, "events": []}},
+        {"call": "props.interactables.interact", "args": {"prop": {"id": "nameless", "position": {"x": 0, "z": 0}}}, "expect": {"ok": false, "refusal": {"code": "not_offered", "field": "archetype", "reason": "no_archetype"}}},
+        {"call": "props.interactables.target", "args": {"at": {"x": "here", "z": 0}, "props": [{"id": "sign_far", "archetype": "prop.structural.sign", "position": {"x": 3, "y": 0, "z": 0}, "text": "Bakery"}, {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}, {"id": "sign_other", "archetype": "prop.structural.sign", "position": {"x": 0.5, "y": 0, "z": 0}, "settlementId": "s2"}]}, "expect": {"ok": false, "refusal": {"code": "bad_position", "field": "at"}}},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "panel": "container", "props": [{"id": "sign_far", "archetype": "prop.structural.sign", "position": {"x": 3, "y": 0, "z": 0}, "text": "Bakery"}, {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}, {"id": "sign_other", "archetype": "prop.structural.sign", "position": {"x": 0.5, "y": 0, "z": 0}, "settlementId": "s2"}]}, "expect": {"ok": true, "target": {"action": "close_panel", "kind": "panel", "id": "container", "prompt": "", "distance": null}}},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "y": 0, "z": 0}, "villager": {"id": "v1", "name": "Ada", "position": {"x": 3, "y": 0, "z": 0}}, "props": [{"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}]}, "expect": {"ok": true, "target": {"action": "talk", "kind": "villager", "id": "v1", "prompt": "Talk to Ada", "distance": 3}}},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "y": 0, "z": 0}, "villager": {"id": "v1", "name": "Ada", "position": {"x": 3, "y": 0, "z": 0}}, "props": [{"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}], "ranges": {"talk": 2}}, "expect": {"ok": true, "target": {"action": "read_sign", "kind": "prop", "id": "sign_near", "prompt": "Read the sign", "distance": 1}}},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "y": 0, "z": 0}, "pickups": [null, {"id": "apple_0", "name": "Apple", "position": {"x": 0, "y": 0, "z": 1}, "taken": true}, {"id": "apple_1", "position": {"x": 2, "y": 0, "z": 0}}], "props": [{"id": "barrel_1", "archetype": "prop.container.barrel", "position": {"x": 0.5, "y": 0, "z": 0}}]}, "expect": {"ok": true, "target": {"action": "pick_up", "kind": "pickup", "id": "apple_1", "prompt": "Pick up apple_1", "distance": 2}}},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "y": 0, "z": 0}, "board": {"host": "sign_near", "name": "Elmford"}, "props": [{"id": "barrel_1", "archetype": "prop.container.barrel", "position": {"x": 0, "y": 0, "z": 1}}, {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 3, "y": 0, "z": 0}, "text": "Smithy"}]}, "expect": {"ok": true, "target": {"action": "open_board", "kind": "prop", "id": "sign_near", "prompt": "Read the Elmford notice board", "distance": 3}}},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "y": 0, "z": 0}, "containers": [{"id": "chest_1", "label": "Oak Chest", "position": {"x": 0, "y": 0, "z": 2}}], "buildings": [], "props": [{"id": "wall_1", "archetype": "prop.structural.wall", "position": {"x": 0.2, "y": 0, "z": 0}}]}, "expect": {"ok": true, "target": {"action": "open_container", "kind": "container", "id": "chest_1", "prompt": "Open the oak chest", "distance": 2}}},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "y": 0, "z": 0}, "props": [{"id": "wall_1", "archetype": "prop.structural.wall", "position": {"x": 0.2, "y": 0, "z": 0}}]}, "expect": {"ok": true, "target": null}}
+      ]
+    },
+    {
+      "name": "props.interactables: the rows refuse a field of the wrong JSON type as [invalid-input]",
+      "steps": [
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "props": {}}, "expectError": "[invalid-input] insimulcore: props.interactables.target: `props` must be an array"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "pickups": "apple"}, "expectError": "`pickups` must be an array"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "containers": 1}, "expectError": "`containers` must be an array"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "buildings": [null]}, "expectError": "[invalid-input] insimulcore: props.interactables.target: `buildings[0]` must be a JSON object"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "villager": "v1"}, "expectError": "`villager` must be a JSON object"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "board": ["sign_near"]}, "expectError": "`board` must be a JSON object"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "panel": 1}, "expectError": "`panel` must be a string"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "ranges": []}, "expectError": "`ranges` must be a JSON object"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "ranges": {"talk": "5"}}, "expectError": "[invalid-input] insimulcore: props.interactables.target: `ranges.talk` must be a finite number"},
+        {"call": "props.interactables.interact", "args": {}, "expectError": "[invalid-input] insimulcore: props.interactables.interact: `prop` must be a JSON object"},
+        {"call": "props.interactables.interact", "args": {"prop": {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}, "board": "sign_near"}, "expectError": "`board` must be a JSON object"},
+        {"call": "props.interactables.meaning", "args": {"prop": ["sign_near"]}, "expectError": "[invalid-input] insimulcore: props.interactables.meaning: `prop` must be a JSON object"},
+        {"call": "props.interactables.host", "args": {"props": {}, "settlement": null}, "expectError": "[invalid-input] insimulcore: props.interactables.host: `props` must be an array"},
+        {"call": "props.interactables.host", "args": {"props": [], "settlement": "s1"}, "expectError": "`settlement` must be a JSON object"},
+        {"call": "props.interactables.noun", "args": {"archetype": 3}, "expectError": "[invalid-input] insimulcore: props.interactables.noun: `archetype` must be a string"}
       ]
     }
   ]

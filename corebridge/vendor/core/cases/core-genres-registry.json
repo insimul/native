@@ -3,7 +3,7 @@
  "description": "core's genre resolution corpus through genre.resolve (and the registry ids through genre.registry)",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "73768943d10173fc3924d813f7d3f004afcd366d",
+  "coreCommit": "72c658c31469216c2e858014b03a7c293aa86def",
   "files": {
    "conformance/genres/camera.json": "a2eca78d3c8b3271648aaa61d5a91fe4c5dc61b331a04444d4d6f3d99ca5ba61",
    "conformance/genres/registry.json": "38ef2b82f3bad688726661c34abaa6d9b7252f13b00f8fe540ff75b1433c64ea"

@@ -17,6 +17,10 @@
 //                                pattern, ring, clearance, settle, sequence
 //                                (PL.native-pickup-settle, U91(2): core's
 //                                PL.pickup-placement, src/props/pickup-placement.ts)
+//   props/interactables.json     area props-interactables
+//                                noun, meanings, host, interact, target
+//                                (PL.native-interact-target, U94(3): core's
+//                                PL.examine-props, src/props/interactables.ts)
 //
 // Nothing here re-writes a case or computes an answer: every answer comes out of
 // a row. How each op is driven (core's runner, src/props/props-corpus.ts, is the
@@ -57,6 +61,27 @@
 //   `props.contract` on its values (a projection this runner self-tests), and
 //   `contract.frames` — how each engine maps its frame onto core's (x, z) — is
 //   held to it as core states it.
+//   props-interactables (the rows are one core function each, over ONE prop or
+//   one stand; core's runner, `runMeanings`/`runTarget`, walks the case's lists
+//   and composes the board, and so does this one, the same way):
+//     the board: the case's `board` when it states one (null included), else,
+//     given a `settlement`, `{host, name}` with `host` from
+//     `props.interactables.host {props, settlement}` and `name` the settlement's
+//     (null when it states none), else null.
+//     noun {archetypes}: `props.interactables.noun {archetype}` per entry →
+//     `{nouns}`.
+//     meanings {props, board? | settlement?}: `props.interactables.meaning {prop,
+//     board}` per prop → `{board, meanings, count}`, `count` being how many
+//     meanings have each action (`not_offered` for none) — the corpus's
+//     projection, made here from the rows' meanings and self-tested.
+//     host {props, settlement}: the input AS IS through `props.interactables.host`.
+//     interact {props | prop, board? | settlement?}: `props.interactables.interact
+//     {prop, board}` per prop → `{results: [{id, ...answer}]}`.
+//     target {at, …, board? | settlement?, ranges?, stands?}: the input less
+//     `settlement`, `ranges` and `stands`, with the board and `ranges`, through
+//     `props.interactables.target`; with `stands`, once per stand with the
+//     stand's fields over the input's and its `at` → `{board, stands: [{at,
+//     ...answer}]}`.
 //
 // Each file's `contract` tables (the data ones) are held to `props.contract`'s
 // answer for its area: every table the row states must equal the file's. The run
@@ -280,6 +305,8 @@ std::string compare(const JsonValue &expected, const JsonValue &actual, double t
 }
 
 JsonValuePtr projected_article(const JsonValue &a, std::string &why);
+JsonValuePtr meaning_counts(const std::vector<JsonValuePtr> &meanings, std::string &why);
+JsonValuePtr spread(const JsonValue &base, const JsonValue &over);
 
 // A `{ <key>: { value, source } }` table as `{ <key>: value }` (the `source` line is
 // prose); nullptr with `why` when it is not an object or an entry states no value.
@@ -372,6 +399,31 @@ bool self_test() {
 			ok = false;
 		}
 	}
+	// The interactables projections: `count` per action (null is not_offered), and `{...base, ...over}`.
+	{
+		std::string why;
+		std::vector<JsonValuePtr> ms = {parse("{\"action\":\"read_sign\"}"), parse("{\"action\":null}"),
+		                                parse("{\"action\":\"read_sign\"}"), parse("{\"action\":\"examine\"}")};
+		auto got = meaning_counts(ms, why);
+		auto want = parse("{\"read_sign\":2,\"not_offered\":1,\"examine\":1}");
+		if (!got || compare(*want, *got, 0.0, "$") != "") {
+			std::printf("  [FAIL] count self-test: read_sign, null, read_sign, examine should count {read_sign 2, not_offered 1, examine 1}\n");
+			ok = false;
+		}
+		std::vector<JsonValuePtr> bad = {parse("{\"id\":\"x\"}")};
+		if (meaning_counts(bad, why)) {
+			std::printf("  [FAIL] count self-test: a meaning with no action should be refused\n");
+			ok = false;
+		}
+		auto base = parse("{\"at\":{\"x\":0},\"board\":null,\"props\":[1]}");
+		auto over = parse("{\"at\":{\"x\":1},\"villager\":{\"id\":\"v\"}}");
+		auto merged = spread(*base, *over);
+		auto want2 = parse("{\"at\":{\"x\":1},\"board\":null,\"props\":[1],\"villager\":{\"id\":\"v\"}}");
+		if (!merged || compare(*want2, *merged, 0.0, "$") != "") {
+			std::printf("  [FAIL] spread self-test: a stand's fields should lie over the input's\n");
+			ok = false;
+		}
+	}
 	for (const Probe &p : probes) {
 		auto e = parse(p.expected);
 		auto a = parse(p.actual);
@@ -430,6 +482,12 @@ const std::vector<Area> &areas() {
 	      "groundKinds", "plantEntityKinds", "plantArchetypeMarks", "deviations"},
 	     {"constants"},
 	     true},
+	    {"props-interactables",
+	     {"noun", "meanings", "host", "interact", "target"},
+	     {"props.interactables.noun", "props.interactables.meaning", "props.interactables.host",
+	      "props.interactables.interact", "props.interactables.target", "props.contract"},
+	     {"propActions", "actions", "actionTier", "lookTier", "notOffered", "notOfferedReasons", "signArchetypes",
+	      "rangesM", "doorPromptRadiusM", "refusals", "deviations"}},
 	};
 	return all;
 }
@@ -546,6 +604,180 @@ JsonValuePtr projected_article(const JsonValue &a, std::string &why) {
 	return make_object(std::move(items));
 }
 
+// core's runner's `count` over the meanings (props-corpus.ts, runMeanings): how many
+// meanings have each action, `not_offered` for an action of null, in first-seen order.
+JsonValuePtr meaning_counts(const std::vector<JsonValuePtr> &meanings, std::string &why) {
+	std::vector<std::pair<std::string, std::size_t>> counts;
+	for (const auto &m : meanings) {
+		const JsonValue *a = m && m->is_object() ? m->find("action") : nullptr;
+		if (!a || (a->type != JsonType::String && a->type != JsonType::Null)) {
+			why = "a meaning states no action (a string or null): " + (m ? json_of(*m) : std::string("null"));
+			return nullptr;
+		}
+		const std::string key = a->type == JsonType::Null ? std::string("not_offered") : a->string_value;
+		bool seen = false;
+		for (auto &kv : counts) {
+			if (kv.first == key) {
+				kv.second++;
+				seen = true;
+			}
+		}
+		if (!seen) counts.emplace_back(key, 1);
+	}
+	std::vector<std::pair<std::string, JsonValuePtr>> items;
+	for (const auto &kv : counts) items.emplace_back(kv.first, make_count(kv.second));
+	return make_object(std::move(items));
+}
+
+// `base`'s members with `over`'s laid over them (JavaScript's `{...base, ...over}`):
+// a key of both keeps its place in `base` and takes `over`'s value.
+JsonValuePtr spread(const JsonValue &base, const JsonValue &over) {
+	std::vector<std::pair<std::string, JsonValuePtr>> items;
+	for (const auto &kv : base.object_items) items.emplace_back(kv.first, kv.second);
+	for (const auto &kv : over.object_items) {
+		bool replaced = false;
+		for (auto &it : items) {
+			if (it.first == kv.first) {
+				it.second = kv.second;
+				replaced = true;
+			}
+		}
+		if (!replaced) items.emplace_back(kv.first, kv.second);
+	}
+	return make_object(std::move(items));
+}
+
+// `input` less the keys in `drop` (as a value).
+JsonValuePtr without(const JsonValue &input, std::initializer_list<const char *> drop) {
+	std::vector<std::pair<std::string, JsonValuePtr>> items;
+	for (const auto &kv : input.object_items) {
+		bool skip = false;
+		for (const char *d : drop) skip = skip || kv.first == d;
+		if (!skip) items.emplace_back(kv.first, kv.second);
+	}
+	return make_object(std::move(items));
+}
+
+JsonValuePtr null_value() { return std::make_shared<JsonValue>(); }
+
+// The board a props-interactables case states (core's runner's `boardOf`): `board`
+// as given, else posted by `props.interactables.host` in `settlement`, else null.
+bool board_of(Caller &c, const JsonValue &input, const JsonValue &props, JsonValuePtr &board, std::string &why) {
+	if (const JsonValue *b = input.find("board")) {
+		board = copy_of(*b);
+		return true;
+	}
+	const JsonValue *s = input.find("settlement");
+	if (!truthy(s)) {
+		board = null_value();
+		return true;
+	}
+	ObjectText args;
+	args.add("props", props);
+	args.add("settlement", *s);
+	auto r = c.call("props.interactables.host", args.done());
+	if (!r) return why = c.error, false;
+	const JsonValue *host = r->find("host");
+	if (!host) return why = "props.interactables.host answered no host", false;
+	const JsonValue *name = s->is_object() ? s->find("name") : nullptr;
+	board = make_object({{"host", copy_of(*host)}, {"name", name && name->type != JsonType::Null ? copy_of(*name) : null_value()}});
+	return true;
+}
+
+// One props-interactables case through the rows.
+bool drive_interactables(Caller &c, const std::string &op, const JsonValue &input, JsonValuePtr &out, std::string &why) {
+	if (op == "host") {
+		auto r = c.call("props.interactables.host", json_of(input));
+		if (!r) return why = c.error, false;
+		out = r;
+		return true;
+	}
+	if (op == "noun") {
+		const JsonValue *list = input.find("archetypes");
+		if (list && list->type != JsonType::Null && !list->is_array()) return why = "archetypes is not an array", false;
+		std::vector<JsonValuePtr> nouns;
+		if (list && list->is_array()) {
+			for (const auto &a : list->array_items) {
+				ObjectText args;
+				args.add("archetype", *a);
+				auto r = c.call("props.interactables.noun", args.done());
+				if (!r) return why = c.error, false;
+				const JsonValue *n = r->find("noun");
+				if (!n) return why = "props.interactables.noun answered no noun", false;
+				nouns.push_back(copy_of(*n));
+			}
+		}
+		out = make_object({{"nouns", make_array(std::move(nouns))}});
+		return true;
+	}
+	// The props the case states: `props`, else (interact) `prop` alone, else none.
+	JsonValuePtr props = make_array({});
+	if (const JsonValue *p = input.find("props"); p && p->type != JsonType::Null) {
+		if (!p->is_array()) return why = "props is not an array", false;
+		props = copy_of(*p);
+	} else if (op == "interact" && truthy(input.find("prop"))) {
+		props = make_array({copy_of(*input.find("prop"))});
+	}
+	JsonValuePtr board;
+	if (!board_of(c, input, *props, board, why)) return false;
+	if (op == "meanings" || op == "interact") {
+		const char *row = op == "meanings" ? "props.interactables.meaning" : "props.interactables.interact";
+		std::vector<JsonValuePtr> answers;
+		for (const auto &p : props->array_items) {
+			ObjectText args;
+			args.add("prop", *p);
+			args.add("board", *board);
+			auto r = c.call(row, args.done());
+			if (!r) return why = c.error, false;
+			if (op == "meanings") {
+				answers.push_back(r);
+				continue;
+			}
+			// `{id: p.id, ...answer}`: an id the prop does not state stays absent.
+			const JsonValue *id = p->is_object() ? p->find("id") : nullptr;
+			answers.push_back(id ? spread(*make_object({{"id", copy_of(*id)}}), *r) : r);
+		}
+		if (op == "interact") {
+			out = make_object({{"results", make_array(std::move(answers))}});
+			return true;
+		}
+		JsonValuePtr count = meaning_counts(answers, why);
+		if (!count) return false;
+		out = make_object({{"board", board}, {"meanings", make_array(std::move(answers))}, {"count", count}});
+		return true;
+	}
+	if (op == "target") {
+		JsonValuePtr base = without(input, {"settlement", "ranges", "stands"});
+		base = spread(*base, *make_object({{"board", board}}));
+		const JsonValue *ranges = input.find("ranges");
+		auto target = [&](const JsonValue &args_v, JsonValuePtr &answer) {
+			JsonValuePtr args = ranges ? spread(args_v, *make_object({{"ranges", copy_of(*ranges)}})) : copy_of(args_v);
+			answer = c.call("props.interactables.target", json_of(*args));
+			if (!answer) why = c.error;
+			return answer != nullptr;
+		};
+		const JsonValue *stands = input.find("stands");
+		if (!stands || !stands->is_array()) {
+			return target(*base, out);
+		}
+		std::vector<JsonValuePtr> answers;
+		for (const auto &st : stands->array_items) {
+			if (!st->is_object()) return why = "a stand is not an object: " + json_of(*st), false;
+			const JsonValue *at = st->find("at");
+			// `{...input, ...stand, at: stand.at}`: a stand with no `at` has none.
+			JsonValuePtr args = without(*spread(*base, *st), {"at"});
+			if (at) args = spread(*args, *make_object({{"at", copy_of(*at)}}));
+			JsonValuePtr answer;
+			if (!target(*args, answer)) return false;
+			answers.push_back(at ? spread(*make_object({{"at", copy_of(*at)}}), *answer) : answer);
+		}
+		out = make_object({{"board", board}, {"stands", make_array(std::move(answers))}});
+		return true;
+	}
+	why = "op " + op + " is not one of props-interactables'";
+	return false;
+}
+
 // Drive one case. False with `why` when it cannot be driven or a call failed.
 bool drive(Caller &c, const std::string &area, const std::string &op, const JsonValue &input, JsonValuePtr &out,
            std::string &why) {
@@ -633,6 +865,7 @@ bool drive(Caller &c, const std::string &area, const std::string &op, const Json
 		out = r;
 		return true;
 	}
+	if (area == "props-interactables") return drive_interactables(c, op, input, out, why);
 	why = "area " + area + " is not one this runner drives";
 	return false;
 }
@@ -760,6 +993,7 @@ int main(int argc, char **argv) {
 		}
 
 		std::map<std::string, int> driven;
+		int file_undriven = 0;
 		for (const auto &cp : case_list->array_items) {
 			const JsonValue &cs = *cp;
 			const std::string name = cs.get_string("name");
@@ -769,6 +1003,7 @@ int main(int argc, char **argv) {
 			if (!input || !input->is_object() || !expected) {
 				std::printf("  [FAIL] %s — needs an input object and an expected answer\n", name.c_str());
 				failed++;
+				file_undriven++;
 				continue;
 			}
 			bool known = false;
@@ -776,6 +1011,7 @@ int main(int argc, char **argv) {
 			if (!known) {
 				std::printf("  [FAIL] %s — op '%s' is not one of area %s's\n", name.c_str(), op.c_str(), area_name.c_str());
 				failed++;
+				file_undriven++;
 				continue;
 			}
 			JsonValuePtr actual;
@@ -783,6 +1019,7 @@ int main(int argc, char **argv) {
 			if (!drive(c, area_name, op, *input, actual, why)) {
 				std::printf("  [FAIL] %s — not driven: %s\n", name.c_str(), why.c_str());
 				failed++;
+				file_undriven++;
 				continue;
 			}
 			const std::string diff = compare(*expected, *actual, tol, "$");
@@ -802,7 +1039,8 @@ int main(int argc, char **argv) {
 			}
 			by_op += (by_op.empty() ? "" : ", ") + o + " " + std::to_string(driven.count(o) ? driven[o] : 0);
 		}
-		std::printf("  %s: %zu case(s), driven %s\n", area_name.c_str(), case_list->size(), by_op.c_str());
+		std::printf("  %s: %zu case(s), driven %s; %d undriven\n", area_name.c_str(), case_list->size(), by_op.c_str(),
+		            file_undriven);
 	}
 
 	// No session left open.

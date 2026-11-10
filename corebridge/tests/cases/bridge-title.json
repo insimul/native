@@ -48,6 +48,7 @@
                 "key",
                 "tick",
                 "finished",
+                "disk_changed",
                 "choose"
               ]
             }

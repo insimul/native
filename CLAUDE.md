@@ -441,7 +441,14 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` 7376894 (2026-11-10,
+  and pin disagree. The pin today is core `main` 72c658c (2026-11-10,
+  PL.native-interact-target: every core item the Unreal-first queue landed after
+  7376894 — PL.examine-props' interact rule and its corpus, which the
+  `props.interactables.*` rows run; PL.disk-changed-step's `disk_changed` step,
+  which `saves.slots.apply` now takes; P9i.core's progression pack;
+  PL.pickup-ring-search-case's six ring cases; and PL.tutorial-corpus-bundle's
+  `*-corpus-host` modules, which the P8 rows import so the bundle reaches no save
+  module). Before that, 7376894 (2026-11-10,
   PL.native-genre-hud-config: its two commits on eff846a, landed on core `main` by
   checked fast-forward; it gives core's genre HUD runner the `config_of` /
   `view_of` ops that the `ui.genreHud` row passes through, and 43 corpus cases).
@@ -557,9 +564,26 @@
   menu's `menu` fields go to core UNCHECKED (core reads a wrong-typed flag as its
   default, and the corpus pins that). The tutorial's state is core's
   `tutorialStateJson` and the bindings' changes core's `corpusBindings`, both
-  IMPORTED from `quests/tutorial-corpus` — never restate them in `entry.js`. An
+  IMPORTED from `quests/tutorial-corpus-host` (and the title ops and steps from
+  `ui/title-flow-corpus-host`; core's PL.tutorial-corpus-bundle) — never from the
+  corpus modules themselves, whose comparator import drags the save-file code
+  into the bundle (−29,112 bytes at 72c658c), and never restated in `entry.js`. An
   op's `events` are what the quest raised on the session's bus, never the
   host's own event.
+- **The interact rows (PL.native-interact-target, U94(3)) run core's
+  `conformance/props/interactables.json` UNCHANGED**, copied with the props set
+  (`PROPS_CORPUS_FILES`) and driven by the same runner as
+  `props_interactables_corpus` (+ `props_interactables_corpus_negative`).
+  `props.interactables.{target, interact, meaning, host, noun}` are stateless,
+  one core function each (`interactTarget`, `interactWithProp`,
+  `propInteraction`, `noticeBoardHost`, `propNoun`), over ONE prop or one stand:
+  the runner walks a case's `props` and `stands` and composes its board (`board`
+  as stated, else `{ host, name }` from the `host` row and the settlement) the
+  way core's runner does, and makes a `meanings` case's `count` from the rows'
+  meanings — both projections self-tested. Do not widen a row to take the
+  corpus's lists: the rows are what a binding calls. Core's metres on `(x, z)`,
+  nothing converted. Refusals (`bad_position`, `not_offered`) are values; a
+  position that is not a finite point goes to core (the corpus pins `x: "here"`).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

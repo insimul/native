@@ -15,8 +15,9 @@
 //              after every step is the session's own. A step `{save: i}` is the op
 //              `{op: "save", slot: i}`; likewise `load`/`delete`/`ask_delete`
 //              (`slot`), `key` (`code`), `tick` (`delta`; null stays null, the
-//              non-finite tick), `continue`/`confirm_delete`/`cancel_delete` (no
-//              field) and `finished` (its object's fields, spread).
+//              non-finite tick), `disk_changed` (`slots`: the new listing, null
+//              stays null; PL.disk-changed-step), `continue`/`confirm_delete`/
+//              `cancel_delete` (no field) and `finished` (its object's fields, spread).
 //   config     {config}       `saves.slots.create { config }`: its answer's
 //              `config` is core's `resolveSaveSlotsConfig`, the session's own.
 //   continue   {slots, slotCount}  `saves.slots.create { config: { slotCount,
@@ -337,6 +338,9 @@ std::string op_of_step(const JsonValue &step, std::string &why) {
 		op.add("code", v);
 	} else if (k == "tick") {
 		op.add("delta", v);
+	} else if (k == "disk_changed") {
+		// The new listing (core's `diskChanged`; null lists none) as the op's `slots`.
+		op.add("slots", v);
 	} else if (k == "continue" || k == "confirm_delete" || k == "cancel_delete") {
 		// core's runner reads no value for these steps; the op has no field.
 	} else if (k == "finished") {

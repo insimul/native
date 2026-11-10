@@ -435,6 +435,15 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/props/interactables",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.interactables.* rows (PL.native-interact-target, rulings U94(3) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-interact-target (Features Gauntlet PL.native-interact-target)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/game-engine/logic/NoticeGenerator",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
@@ -606,9 +615,9 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
-      "specifier": "@insimul/core/ui/title-flow-corpus",
+      "specifier": "@insimul/core/ui/title-flow-corpus-host",
       "classification": "keep",
-      "reason": "A BUNDLE INPUT of ui.titleFlow.contract (the title corpus's ops and steps) (PL.native-title-rows, rulings U92(1) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reason": "A BUNDLE INPUT of ui.titleFlow.contract (the title corpus's ops and steps) (PL.native-title-rows, rulings U92(1) and U36; repointed from ui/title-flow-corpus to core's save-free host module by PL.native-interact-target, U94(2)/(3)), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
       "reviewedBy": "features-pl-native-title-rows (Features Gauntlet PL.native-title-rows)",
       "reviewedAt": "2026-11-10"
     },
@@ -642,9 +651,9 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
-      "specifier": "@insimul/core/quests/tutorial-corpus",
+      "specifier": "@insimul/core/quests/tutorial-corpus-host",
       "classification": "keep",
-      "reason": "A BUNDLE INPUT of the ui.tutorial.* and ui.onboarding.* rows (tutorialStateJson, corpusBindings) and ui.tutorial.contract (PL.native-title-rows, rulings U92(1) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reason": "A BUNDLE INPUT of the ui.tutorial.* and ui.onboarding.* rows (tutorialStateJson, corpusBindings) and ui.tutorial.contract (PL.native-title-rows, rulings U92(1) and U36; repointed from quests/tutorial-corpus to core's save-free host module by PL.native-interact-target, U94(2)/(3)), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
       "reviewedBy": "features-pl-native-title-rows (Features Gauntlet PL.native-title-rows)",
       "reviewedAt": "2026-11-10"
     },

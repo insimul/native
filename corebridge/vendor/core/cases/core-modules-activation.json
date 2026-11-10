@@ -3,7 +3,7 @@
  "description": "core's committed activation table through modules.table, each genre's row through modules.activate, and core's world-activation corpus (a World IR's meta.genreConfig and meta.enabledModules) through modules.activate { ir }",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "73768943d10173fc3924d813f7d3f004afcd366d",
+  "coreCommit": "72c658c31469216c2e858014b03a7c293aa86def",
   "files": {
    "conformance/modules/genre-activation.json": "548b31d3ef058e1512cab21bfa4502f9ca302fc92e5c50f05832c9bc12bdd964",
    "conformance/modules/world-activation.json": "56562930c9fc4cd7e211aec0b4fde6cd7456b0522833bce97a708656031b03c9"

@@ -760,6 +760,13 @@ add_test(NAME inventory_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_
 # contract's data tables (frames and the constants' values among them) held to
 # props.contract, the file's `numerics` required to name double precision.
 add_test(NAME props_pickup_placement_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/pickup-placement.json)
+# PL.native-interact-target (U94(3)): core's interact rule (PL.examine-props, core
+# 2158b08: each stated prop's one meaning, what reading and examining say, where
+# the notice board is posted, and the one thing a press of E acts on) through the
+# props.interactables.* rows, by the same runner: every case driven (the runner
+# walks a case's props and stands as core's does, one row call each), the
+# contract's data tables held to props.contract.
+add_test(NAME props_interactables_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/interactables.json)
 # The negative control: the same runner over five deliberately wrong files
 # (tests/props-negative/), one per corpus file, one wrong case each (two through
 # a stateless row, two through a session, one through the door session), plus a
@@ -787,6 +794,18 @@ add_test(NAME props_pickup_placement_corpus_negative COMMAND insimulcore_props_c
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/pickup-placement-wrong.json)
 set_tests_properties(props_pickup_placement_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "numerics: the file states \"[^\"]*float32[^\"]*\", not double precision.*contract.frames.unreal: .*contract.constants.spacingM: 2.5 != 3.*expected WRONGLY a clearance with ok false [^\n]*ok: boolean differs.*expected WRONGLY with the building's axis mirrored [^\n]*.*expected WRONGLY the second pick-up 0.01 m further out [^\n]*placements.*expected WRONGLY bad-spot for a settled spot [^\n]*.*op ring of area props-pickup-placement: no case of it was driven.*props_corpus: FAIL")
+
+# Its negative control (tests/props-negative/interactables-wrong.json): a wrong
+# range in the contract, a `noun` op with no case, and five wrong cases, each the
+# answer an engine keeping one of Unreal's interim rules would give (the
+# deviations core records): the board's host sign also read as a sign, a fence
+# offered, a pick-up passed over for a nearer barrel, a tie kept by the LAST prop,
+# and a text that ends in its own full stop given a second one. It passes only
+# when the runner reports each of them and the run as failed, in that order.
+add_test(NAME props_interactables_corpus_negative COMMAND insimulcore_props_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/interactables-wrong.json)
+set_tests_properties(props_interactables_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract.rangesM.talk: 3 != 3.5.*expected WRONGLY the board's host sign read as a sign [^\n]*.*expected WRONGLY a fence offered [^\n]*.*expected WRONGLY the nearer barrel examined before the pick-up [^\n]*.*expected WRONGLY the last listed prop on a tie [^\n]*.*expected WRONGLY a second full stop [^\n]*.*op noun of area props-interactables: no case of it was driven.*props_corpus: FAIL")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

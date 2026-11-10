@@ -285,6 +285,7 @@ bool self_test() {
 	    {"tick", "2.5", "{\"op\":\"tick\",\"delta\":2.5}"},
 	    {"continue", "true", "{\"op\":\"continue\"}"},
 	    {"finished", "{\"ok\":true}", "{\"op\":\"finished\",\"ok\":true}"},
+	    {"disk_changed", "null", "{\"op\":\"disk_changed\",\"slots\":null}"},
 	    {"rename", "1", ""},
 	};
 	for (const Step &s : steps) {
@@ -403,6 +404,9 @@ std::string op_of_saves_step(const std::string &k, const JsonValue &v, std::stri
 		op.add("code", v);
 	} else if (k == "tick") {
 		op.add("delta", v);
+	} else if (k == "disk_changed") {
+		// The new listing (core's `diskChanged`; null lists none) as the op's `slots`.
+		op.add("slots", v);
 	} else if (k == "continue" || k == "confirm_delete" || k == "cancel_delete") {
 		// core's runner reads no value for these steps; the op has no field.
 	} else if (k == "finished") {

@@ -2567,6 +2567,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       owner: "npc-life",
       describe: "The villagers' day a playthrough reached (P9f.core; catalog npc-schedules-routines, npc-agent-ai-planner, npc-navigation-movement, npc-follow-escort, npc-village-staging). Shape: {routines: RoutineDirector.serialize() | null ({agents: [{agent, routine, adopted, suspension, resuming?}]}), locomotion: LocomotionDirector.serialize() | null ({actors: [{actor, destination, failures}]}), planner: AgentPlanner.serialize() | null ({cursors: {<agent>: {plan, stepIndex, interrupted}}}), escorts: [{npcId, questId, objectiveId, destination, radiusMm}], posts: [{npcId, questId, hold}], movers: {<npc>: {current, queue, conversation, snags, draws}}}, npcLifeSaveBlock() in src/npc-life/npc-life-save.ts, read back through readNpcLifeBlock(), the three directors' restore(), escortsFromSave(), stagingFromSave() and moversFromSave(). Written by src/save-file-game-state.ts from GameSaveState.npcLife. Not kept: anything authored (routines, windows, priorities, thresholds, occupation profiles, the pack parameters), the stuck watchdog, LOD tiers, greeting and speech cooldowns, attention and fidgets, and holds that are not posts. null (the default) is a save with no NPC life: every villager starts its day afresh.",
       defaultValue: null
+    },
+    progression: {
+      owner: "progression",
+      describe: "The player's progression in a playthrough (P9i.core; catalog progression-xp-levels-achievements, progression-skill-trees). Shape: {gamification: {xp: whole, unlocked: {<achievement id>: at (integer ms)}, daily: {dateKey: YYYY-MM-DD, progress: whole, completed: boolean} | null, consecutiveDays, dailyStreak: whole, lastDailyDate: YYYY-MM-DD | null, counters: {<counter>: whole}} | null, skills: SkillProgression.serialize() ({actors: [{id, levels, xp, points, unlocked}]}) | null}, progressionSaveBlock() in src/progression/progression-save.ts, read back through readProgressionBlock() and SkillProgression.restore(). Written by src/save-file-game-state.ts from GameSaveState.progression. Not kept: anything authored (the level curve, tier labels, achievements, daily templates, skills, trees, costs, effects), anything derived (the level, the tier, the day's template) and today's date (per session). The legacy gamification, achievements and skillTree keys are carried untouched. null (the default) is a save with no progression block: no XP, nothing unlocked, nothing learned.",
+      defaultValue: null
     }
   };
   function defaultOrphanLogger(key, _value) {
@@ -16811,29 +16816,29 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
     for (const percept of input.percepts) perceptsById.set(percept.id, percept);
     const pairs = /* @__PURE__ */ new Map();
     for (const exposure of input.exposures) {
-      const agentCurie2 = formatCurie(exposure.agent);
-      if (!agentsByCurie.has(agentCurie2) || !perceptsById.has(exposure.percept)) continue;
-      const key = streamKey([agentCurie2, exposure.percept]);
+      const agentCurie = formatCurie(exposure.agent);
+      if (!agentsByCurie.has(agentCurie) || !perceptsById.has(exposure.percept)) continue;
+      const key = streamKey([agentCurie, exposure.percept]);
       const clarity = clamp01(exposure.clarity);
       const prev = pairs.get(key);
       if (prev === void 0 || clarity > prev.clarity) {
-        pairs.set(key, { agentCurie: agentCurie2, perceptId: exposure.percept, clarity });
+        pairs.set(key, { agentCurie, perceptId: exposure.percept, clarity });
       }
     }
     const perceptions = [];
-    for (const { agentCurie: agentCurie2, perceptId, clarity } of pairs.values()) {
-      const agent = agentsByCurie.get(agentCurie2);
+    for (const { agentCurie, perceptId, clarity } of pairs.values()) {
+      const agent = agentsByCurie.get(agentCurie);
       const percept = perceptsById.get(perceptId);
       const acuity = acuityFor(agent, percept.channel);
       if (acuity === null) continue;
       const base = clarity * clamp01(acuity) * clamp01(percept.strength / 100);
-      const noise = thresholds.jitter === 0 ? 0 : (derivedValue(input.seed, input.tick, agentCurie2, perceptId) * 2 - 1) * thresholds.jitter;
+      const noise = thresholds.jitter === 0 ? 0 : (derivedValue(input.seed, input.tick, agentCurie, perceptId) * 2 - 1) * thresholds.jitter;
       const confidence = roundDeterministic(clamp01(base + noise));
       const fidelity = fidelityOf(confidence, thresholds);
       if (fidelity === null) continue;
       const learned = learnedTriple(percept, fidelity);
       perceptions.push({
-        agent: agentCurie2,
+        agent: agentCurie,
         percept: perceptId,
         channel: percept.channel,
         fidelity,
@@ -22847,6 +22852,12 @@ player_meets_cefr(Player, RequiredLevel) :-
     empty: "Slot {n} is empty: there is nothing to delete.",
     history: "Deleted Slot {n}"
   });
+  var SAVE_SLOT_DISK_WORDS = Object.freeze({
+    changed: "Slot {n} was changed outside the game. Autosave is off until you save or load again.",
+    deleted: "Slot {n} was deleted outside the game. Autosave is off until you save or load again.",
+    quickChanged: "The quick save was changed outside the game. Autosave is off until you save or load again.",
+    quickDeleted: "The quick save was deleted outside the game. Autosave is off until you save or load again."
+  });
   function slotWords(words, slot) {
     return words.split(SLOT_NUMBER_PLACEHOLDER).join(String(slot + 1));
   }
@@ -22855,7 +22866,9 @@ player_meets_cefr(Player, RequiredLevel) :-
     "deleted_autosave_off",
     "delete_cancelled",
     "delete_failed",
-    "nothing_to_delete"
+    "nothing_to_delete",
+    "slot_changed_outside",
+    "slot_deleted_outside"
   ];
   var SAVE_INDICATOR_LABELS = {
     hidden: "",
@@ -22870,7 +22883,11 @@ player_meets_cefr(Player, RequiredLevel) :-
     deleted_autosave_off: SAVE_SLOT_DELETE_WORDS.deletedAutosaveOff,
     delete_cancelled: SAVE_SLOT_DELETE_WORDS.cancelled,
     delete_failed: SAVE_SLOT_DELETE_WORDS.failed,
-    nothing_to_delete: SAVE_SLOT_DELETE_WORDS.empty
+    nothing_to_delete: SAVE_SLOT_DELETE_WORDS.empty,
+    slot_changed_outside: SAVE_SLOT_DISK_WORDS.changed,
+    slot_deleted_outside: SAVE_SLOT_DISK_WORDS.deleted,
+    quick_changed_outside: SAVE_SLOT_DISK_WORDS.quickChanged,
+    quick_deleted_outside: SAVE_SLOT_DISK_WORDS.quickDeleted
   };
   var SAVE_INDICATOR_TIMING = { holdSec: 1, fadeSec: 2 };
   var HIDDEN_SAVE_INDICATOR = { state: "hidden", kind: null, detail: "", slot: null, ageSec: 0 };
@@ -22990,6 +23007,22 @@ player_meets_cefr(Player, RequiredLevel) :-
       };
     });
   }
+  var savedAtOf = (s) => typeof s.summary?.savedAt === "string" ? s.summary.savedAt : void 0;
+  function sameSlotOnDisk(held, listed) {
+    return held.outcome === listed.outcome && savedAtOf(held) === savedAtOf(listed);
+  }
+  function slotDiskChanges(held, listing, size) {
+    const was = slotTable(held, size);
+    const now = slotTable(listing, size);
+    const out = { changed: [], deleted: [], added: [] };
+    for (let i = 0; i < size; i++) {
+      if (sameSlotOnDisk(was[i], now[i])) continue;
+      if (was[i].outcome === "empty") out.added.push(i);
+      else if (now[i].outcome === "empty") out.deleted.push(i);
+      else out.changed.push(i);
+    }
+    return out;
+  }
   function deleteConfirmView(slot) {
     return {
       slot,
@@ -23102,6 +23135,39 @@ player_meets_cefr(Player, RequiredLevel) :-
         return NO("slot_corrupted", s.outcome);
       }
       return this.startRead(q, "quick");
+    }
+    // ── the disk ──
+    /**
+     * The save files changed outside the game; `listing` is what the host now finds on disk, as it
+     * listed them at the start (`SlotLoadResult`s; an unlisted slot is empty, null lists none). The
+     * slot list becomes the listing and the result's `disk` says what changed
+     * ({@link slotDiskChanges}). The active slot is kept when its slot is unchanged, and so is the
+     * autosave count. Otherwise the active slot is cleared (`disk.droppedActive`): autosave stops
+     * until the next save or load, so it never writes over the outside change. If autosave was
+     * writing that slot the indicator says so (`slot_changed_outside` / `slot_deleted_outside`, or
+     * the `quick_` ones for the dedicated quick slot). A slot that changed but was not the active
+     * one shows nothing: its row already shows it as it is now. Refused `busy` while an operation
+     * runs (the listing may be the game's own write half done) and `confirm_open` while the delete
+     * prompt is open; nothing changes then, and the host lists again once the session is free.
+     */
+    diskChanged(listing) {
+      if (this.pending) return NO("busy");
+      if (this.confirming !== null) return NO("confirm_open");
+      const changes = slotDiskChanges(this.slots, listing, this.size);
+      const a = this.active;
+      const wasAutosaving = this.autosaveOn();
+      const held = a === null ? null : this.slots[a];
+      this.slots = slotTable(listing, this.size);
+      if (a === null || held === null || sameSlotOnDisk(held, this.slots[a])) {
+        return { ok: true, effect: null, disk: { ...changes, droppedActive: null } };
+      }
+      this.active = null;
+      if (wasAutosaving) {
+        const gone = this.slots[a].outcome === "empty";
+        if (a < this.config.slotCount) this.ind = showSaveIndicator(gone ? "slot_deleted_outside" : "slot_changed_outside", null, "", a);
+        else this.ind = showSaveIndicator(gone ? "quick_deleted_outside" : "quick_changed_outside", null);
+      }
+      return { ok: true, effect: null, disk: { ...changes, droppedActive: a } };
     }
     // ── time ──
     /**
@@ -23286,501 +23352,10 @@ player_meets_cefr(Player, RequiredLevel) :-
     }
   }
 
-  // @insimul/core/src/survival/needs.ts
-  var SURVIVAL_NEED_IDS = Object.freeze(["hunger", "thirst", "temperature", "sleep"]);
-  var DEFAULT_SURVIVAL_NEEDS = Object.freeze([
-    { id: "hunger", name: "Hunger", maxValue: 100, startValue: 80, decayRate: 0.15, warningThreshold: 30, criticalThreshold: 15, damageRate: 2 },
-    { id: "thirst", name: "Thirst", maxValue: 100, startValue: 90, decayRate: 0.25, warningThreshold: 30, criticalThreshold: 15, damageRate: 3 },
-    { id: "temperature", name: "Temperature", maxValue: 100, startValue: 50, decayRate: 0, warningThreshold: 20, criticalThreshold: 10, damageRate: 1.5 },
-    { id: "sleep", name: "Rest", maxValue: 100, startValue: 100, decayRate: 0.08, warningThreshold: 25, criticalThreshold: 10, damageRate: 0.5 }
-  ]);
-  var DEFAULT_RESTORE_ACTIONS = Object.freeze({
-    eat: { need: "hunger", amount: 30 },
-    drink: { need: "thirst", amount: 25 },
-    sleep: { need: "sleep", amount: 50 }
-  });
-  var DEFAULT_SURVIVAL_TUNING = Object.freeze({
-    needs: DEFAULT_SURVIVAL_NEEDS.map((n) => ({ ...n })),
-    tickMs: 1e3,
-    maxTicksPerAdvance: 86400,
-    damageEnabled: true,
-    globalDamageMultiplier: 1,
-    temperatureEnvironmentDriven: false,
-    comfortMin: 20,
-    comfortMax: 80,
-    criticalAtBothExtremes: true,
-    temperatureDriftPerSecond: 10,
-    satisfiedFraction: 0.9,
-    hudFlashMs: 1500,
-    restoreActions: { ...DEFAULT_RESTORE_ACTIONS },
-    modifierPresets: []
-  });
-  var SURVIVAL_BLOCK_MEMBERS = Object.freeze(["readings", "modifiers"]);
-  var SURVIVAL_MODIFIER_KEYS = Object.freeze(["id", "needType", "rateMultiplier", "remainingMs", "source"]);
+  // @insimul/core/src/save-slots-corpus-host.ts
+  var SAVE_SLOTS_STEPS = ["save", "load", "continue", "delete", "ask_delete", "confirm_delete", "cancel_delete", "key", "tick", "finished", "disk_changed"];
 
-  // @insimul/core/src/gathering/physical-actions.ts
-  var PHYSICAL_ACTION_IDS = Object.freeze([
-    "chopping",
-    "cooking",
-    "crafting",
-    "farm_harvest",
-    "farm_plant",
-    "farm_water",
-    "fishing",
-    "harvesting",
-    "herbalism",
-    "mining",
-    "painting",
-    "praying",
-    "reading",
-    "sweeping"
-  ]);
-  var def = (id, displayName, promptVerb, clip, clipFallback, seconds, energyCost, xp, rewards, places, extra = {}) => ({
-    id,
-    displayName,
-    promptVerb,
-    clip,
-    clipFallback,
-    durationMs: seconds * 1e3,
-    energyCost,
-    xp,
-    rewards: extra.production ? [] : rewards.map(([item, chancePercent, min, max]) => ({ item, chancePercent, min, max })),
-    production: extra.production ?? null,
-    tool: extra.tool ?? null,
-    places
-  });
-  var FARM = ["farm", "field", "garden", "plantation", "greenhouse"];
-  var DEFAULT_PHYSICAL_ACTIONS = Object.freeze([
-    def("chopping", "Chop Wood", "Chop", "TreeChopping_Loop", "Interact", 6, 7, 12, [["firewood", 90, 1, 3], ["timber", 30, 1, 1]], ["wood_pile", "lumber_yard", "tree_stump", "forest"], { tool: "axe" }),
-    def("cooking", "Cook", "Cook", "Interact", "Idle_Talking_Loop", 6, 4, 12, [["prepared_food", 80, 1, 1], ["baked_goods", 30, 1, 2]], ["kitchen", "oven", "stove", "hearth", "campfire", "bakery", "restaurant"]),
-    def("crafting", "Craft", "Craft", "Fixing_Kneeling", "Interact", 8, 6, 18, [], ["workbench", "forge", "blacksmith", "workshop", "anvil"], { production: { craft: "crafting", verb: "craft" } }),
-    def("farm_harvest", "Harvest Crops", "Harvest", "Farm_Harvest", "Interact", 6, 10, 15, [], FARM, { production: { craft: "farming", verb: "harvest" } }),
-    def("farm_plant", "Plant Crops", "Plant", "Farm_Harvest", "Interact", 5, 8, 10, [], FARM, { production: { craft: "farming", verb: "plant" } }),
-    def("farm_water", "Water Crops", "Water", "Farm_Watering", "Interact", 4, 5, 8, [], FARM, { production: { craft: "farming", verb: "water" } }),
-    def("fishing", "Fish", "Fish", "Farm_Harvest", "Interact", 10, 15, 15, [], ["water", "river", "lake", "pond", "dock", "pier", "stream", "marsh", "canal"], { production: { craft: "fishing", verb: "fish" } }),
-    def("harvesting", "Harvest", "Harvest", "Farm_Harvest", "Interact", 5, 3, 10, [["herbs", 60, 1, 3], ["vegetables", 50, 1, 2], ["flowers", 30, 1, 2]], ["garden", "farm", "field", "greenhouse", "plantation"]),
-    def("herbalism", "Pick", "Pick", "Farm_Harvest", "Interact", 4, 5, 8, [["lavande", 20, 1, 1], ["romarin", 20, 1, 1], ["menthe", 15, 1, 1], ["rose", 10, 1, 1], ["thym", 10, 1, 1], ["sauge", 10, 1, 1], ["basilic", 5, 1, 1], ["fleur_sauvage", 5, 1, 1]], ["garden", "forest", "meadow", "farm", "herb_shop", "greenhouse", "grove"]),
-    def("mining", "Mine", "Mine", "TreeChopping_Loop", "Interact", 8, 20, 20, [], ["mine", "quarry", "rock", "cave", "mountain", "ore_deposit"], { production: { craft: "mining", verb: "mine" } }),
-    def("painting", "Paint", "Paint", "Interact", "Idle_Talking_Loop", 10, 4, 15, [["painting", 70, 1, 1]], ["easel", "studio", "art_room"]),
-    def("praying", "Pray", "Pray", "Fixing_Kneeling", "Idle", 5, 1, 5, [["blessing_token", 15, 1, 1]], ["altar", "church", "chapel", "shrine", "temple"]),
-    def("reading", "Read", "Study", "Sitting_Idle_Loop", "Idle", 5, 1, 8, [["knowledge_scroll", 20, 1, 1]], ["bookshelf", "library", "desk", "study"]),
-    def("sweeping", "Sweep", "Sweep", "Farm_Watering", "Interact", 4, 2, 5, [["dust_bundle", 30, 1, 1]], ["broom", "porch", "floor", "entrance"])
-  ]);
-  var DEFAULT_PHYSICAL_ACTION_TUNING = Object.freeze({
-    actions: DEFAULT_PHYSICAL_ACTIONS.map((a) => ({ ...a })),
-    seed: "insimul",
-    energyCostPercent: 100,
-    energyGate: true
-  });
-  var BUSINESS_ACTIONS = Object.freeze({
-    art_studio: [{ action: "painting", furniture: "workbench" }],
-    bakery: [{ action: "cooking", furniture: "counter" }],
-    blacksmith: [{ action: "crafting", furniture: "workbench" }],
-    blacksmith_yard: [{ action: "mining", furniture: "anvil" }],
-    bookstore: [{ action: "reading", furniture: "bookshelf" }],
-    carpentry: [{ action: "crafting", furniture: "workbench" }],
-    chapel: [{ action: "praying", furniture: "pew" }],
-    church: [{ action: "praying", furniture: "pew" }],
-    farm: ["farm_plant", "farm_water", "farm_harvest", "harvesting"].map((action) => ({ action, furniture: "counter" })),
-    garden: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
-    greenhouse: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
-    herb_shop: [{ action: "herbalism", furniture: "counter" }],
-    library: [{ action: "reading", furniture: "bookshelf" }],
-    mine: [{ action: "mining", furniture: "workbench" }],
-    pharmacy: [{ action: "herbalism", furniture: "counter" }],
-    restaurant: [{ action: "cooking", furniture: "counter" }],
-    school: [{ action: "reading", furniture: "bookshelf" }],
-    tavern: [{ action: "cooking", furniture: "counter" }],
-    temple: [{ action: "praying", furniture: "pew" }],
-    university: [{ action: "reading", furniture: "bookshelf" }],
-    workshop: [{ action: "crafting", furniture: "workbench" }]
-  });
-  var ACTION_REFUSALS = Object.freeze(["unknown_action", "busy", "wrong_place", "no_tool", "too_tired"]);
-
-  // @insimul/core/src/gathering/resource-nodes.ts
-  var DEFAULT_RESOURCE_KINDS = Object.freeze(
-    [
-      ["crystal", 5e3, 3e5, "pickaxe"],
-      ["fiber", 1200, 45e3, null],
-      ["food", 1e3, 3e4, null],
-      ["gold", 4e3, 18e4, "pickaxe"],
-      ["iron", 3e3, 12e4, "pickaxe"],
-      ["oil", 3e3, 15e4, null],
-      ["stone", 2e3, 9e4, "pickaxe"],
-      ["water", 800, 2e4, null],
-      ["wood", 1500, 6e4, "axe"]
-    ].map(([id, gatherMs, respawnMs, tool]) => Object.freeze({ id, item: id, gatherMs, respawnMs, tool }))
-  );
-  var DEFAULT_RESOURCE_TUNING = Object.freeze({
-    kinds: DEFAULT_RESOURCE_KINDS.map((k) => ({ ...k })),
-    nodes: [],
-    defaultMaxAmount: 3,
-    defaultRespawnMs: 6e4,
-    defaultGatherMs: 2e3,
-    toolsRequired: true
-  });
-  var GATHER_REFUSALS = Object.freeze(["unknown_node", "actor_busy", "no_tool", "depleted", "node_busy"]);
-  var SAVED_NODE_KEYS = Object.freeze(["id", "remaining", "respawnInMs"]);
-
-  // @insimul/core/src/gathering/gathering-save.ts
-  var GATHERING_BLOCK_MEMBERS = Object.freeze(["nodes", "actions", "production"]);
-  var GATHERING_PRODUCTION_KEYS = Object.freeze(["plots", "spots", "veins", "carried", "day"]);
-
-  // @insimul/core/src/traversal/personal-vehicles.ts
-  var DEFAULT_PERSONAL_VEHICLE_TUNING = Object.freeze({
-    kinds: Object.freeze({
-      bicycle: Object.freeze({ id: "bicycle", label: "Bicycle", walk: 2e3, run: 1800, turn: 1200, mode: null }),
-      horse: Object.freeze({ id: "horse", label: "Horse", walk: 3e3, run: 2500, turn: 800, mode: "ride" })
-    }),
-    cycle: Object.freeze(["bicycle", "horse"]),
-    onFoot: Object.freeze({ walk: 1e3, run: 1e3, turn: 1e3, strafe: 800, back: 600 }),
-    mountedStrafePermille: 800,
-    mountedBackPermille: 500
-  });
-  var PERSONAL_VEHICLE_REFUSALS = Object.freeze(["unknown_kind", "in_vehicle", "redundant", "not_riding"]);
-
-  // @insimul/core/src/traversal/traversal-save.ts
-  var TRAVERSAL_BLOCK_MEMBERS = Object.freeze(["planner", "vehicles", "fastTravel", "riding"]);
-  var TRAVERSAL_ACTOR_KEYS = Object.freeze(["id", "location", "modes", "lent"]);
-  var EDGE_KEYS = ["from", "to"];
-  var TRAVERSAL_EDGE_KEYS = Object.freeze(EDGE_KEYS);
-  var TRAVERSAL_VEHICLE_KEYS = Object.freeze(["id", "location", "occupants", "owner", "driver"]);
-  var TRAVERSAL_FAST_TRAVEL_KEYS = Object.freeze(["discovered", "journeys"]);
-
-  // @insimul/core/src/conversation/context-memory.ts
-  var ACCESSORY_PHRASES = Object.freeze({
-    chef_hat: "a tall white chef's hat",
-    guard_helmet: "a grey metallic helmet",
-    sword: "a sword on your hip",
-    merchant_satchel: "a leather satchel at your waist",
-    apron: "a cloth apron tied at the waist",
-    hammer: "a wooden-handled hammer in your hand",
-    hammer_head: "a hammer in your hand",
-    book: "a book in your hand",
-    backpack: "a leather backpack",
-    medical_bag: "a small white medical bag",
-    scroll: "a rolled parchment scroll",
-    pickaxe_handle: "a pickaxe slung across your back",
-    holy_symbol: "a gold holy symbol on your belt",
-    farming_hoe: "a farming hoe slung across your back"
-  });
-  var ROLE_CLOTHING = Object.freeze({
-    guard: "dark, reddish-brown clothing with a uniformed, rugged look",
-    soldier: "dark iron-brown clothing with a military cut",
-    merchant: "colorful, well-kept clothes with warm yellow-brown tones",
-    questgiver: "clothes that set you apart \u2014 slightly finer or more deliberate than the crowd",
-    civilian: "plain, muted everyday clothes",
-    farmer: "earthy green and brown workwear, weathered from outdoor labor",
-    blacksmith: "heavy, soot-stained clothes built for hot, physical work",
-    innkeeper: "homey, warm-toned clothes suited to a busy tavern",
-    priest: "modest robes in muted, ceremonial colors",
-    teacher: "neat, scholarly clothes in quiet blue and grey tones",
-    doctor: "clean, practical clothes with a reserved palette",
-    child: "simple, slightly oversized clothes",
-    elder: "modest, well-worn clothes in muted colors",
-    noble: "refined, stately clothes in rich, darker tones",
-    beggar: "ragged, patched clothes",
-    sailor: "sturdy, weather-beaten clothes in blue and grey tones"
-  });
-  var BODY = Object.freeze({
-    athletic: "an athletic, broad-shouldered build",
-    stocky: "a stocky, powerful build",
-    heavyset: "a heavyset build",
-    lean: "a lean, slim build"
-  });
-  var HAIR = Object.freeze({
-    bald: "a shaved head",
-    short: "short hair",
-    medium: "medium-length hair",
-    long: "long hair",
-    ponytail: "hair pulled back in a ponytail",
-    mohawk: "a mohawk"
-  });
-  var FACIAL = Object.freeze({
-    stubble: "stubble",
-    beard: "a full beard",
-    longBeard: "a long beard",
-    mustache: "a mustache",
-    goatee: "a goatee"
-  });
-  var QUEST_OUTCOMES = Object.freeze(["assigned", "completed", "failed", "abandoned"]);
-  var CHAT_PROVIDER_REFUSALS = Object.freeze(["unknown_variant", "no_on_device_model", "no_server"]);
-
-  // @insimul/core/src/social/reputation.ts
-  var STANDINGS = Object.freeze(["hostile", "unfriendly", "neutral", "friendly", "revered"]);
-  var THRESHOLDS = Object.freeze([
-    { min: 51, standing: "revered" },
-    { min: 1, standing: "friendly" },
-    { min: -49, standing: "neutral" },
-    { min: -99, standing: "unfriendly" }
-  ]);
-  var STANDING_PRICE_PERMILLE = Object.freeze({
-    hostile: 2e3,
-    unfriendly: 1300,
-    neutral: 1e3,
-    friendly: 900,
-    revered: 750
-  });
-  var REPUTATION_DELTAS = Object.freeze({
-    quest_completed: 10,
-    quest_failed: -5,
-    conversation: 2,
-    item_purchased: 2,
-    gift_given: 3,
-    theft: -15,
-    polite: 1,
-    rude: -3
-  });
-  var CONVERSATION_COOLDOWN_MS = 5 * 60 * 1e3;
-  var PAY_FINES_REFUSALS = Object.freeze(["no_record", "no_fines", "insufficient_gold"]);
-  var REPUTATION_ENTRY_KEYS = Object.freeze([
-    "entityType",
-    "entityId",
-    "entityName",
-    "score",
-    "isBanned",
-    "banExpiryMs",
-    "violationCount",
-    "outstandingFines"
-  ]);
-
-  // @insimul/core/src/social/romance.ts
-  var DEFAULT_ROMANCE_LADDER = Object.freeze([
-    { stage: "none", threshold: 0 },
-    { stage: "attracted", threshold: 100 },
-    { stage: "flirting", threshold: 250 },
-    { stage: "dating", threshold: 400 },
-    { stage: "committed", threshold: 600 },
-    { stage: "engaged", threshold: 750 },
-    { stage: "married", threshold: 900 }
-  ]);
-  var ROMANCE_ACTIONS = Object.freeze([
-    { id: "compliment", name: "Compliment", requiredStage: "none", gain: 50, loss: 20 },
-    { id: "flirt", name: "Flirt", requiredStage: "attracted", gain: 80, loss: 50 },
-    { id: "give_gift", name: "Give Gift", requiredStage: "none", gain: 100, loss: 10 },
-    { id: "ask_on_date", name: "Ask on Date", requiredStage: "flirting", gain: 150, loss: 100 },
-    { id: "confess_feelings", name: "Confess Feelings", requiredStage: "dating", gain: 200, loss: 150 },
-    { id: "propose", name: "Propose", requiredStage: "committed", gain: 250, loss: 200 }
-  ]);
-  var DEFAULT_ROMANCE_TUNING = Object.freeze({
-    ladder: DEFAULT_ROMANCE_LADDER,
-    decayPerStep: 5,
-    decayAfter: 3,
-    rejectionCooldown: 5,
-    demoteMargin: 100,
-    jealousyFloor: 300
-  });
-  var ROMANCE_REFUSALS = Object.freeze(["unknown_action", "locked", "cooldown"]);
-  var ROMANCE_TRACK_KEYS = Object.freeze([
-    "npcId",
-    "npcName",
-    "stage",
-    "spark",
-    "lastInteraction",
-    "totalInteractions",
-    "giftsGiven",
-    "datesCompleted",
-    "rejected",
-    "rejectionCooldown"
-  ]);
-
-  // @insimul/core/src/relationship-tiers.ts
-  var RELATIONSHIP_TIERS = [
-    {
-      id: "enemy",
-      label: "Enemy",
-      minStrength: -1,
-      maxStrength: -0.6,
-      priceMultiplier: 1.5,
-      canOfferQuests: false,
-      canShareSecrets: false,
-      greetingStyle: "hostile",
-      conversationContext: "You deeply dislike this person. Be curt, distrustful, and reluctant to help them."
-    },
-    {
-      id: "disliked",
-      label: "Disliked",
-      minStrength: -0.6,
-      maxStrength: -0.3,
-      priceMultiplier: 1.25,
-      canOfferQuests: false,
-      canShareSecrets: false,
-      greetingStyle: "cold",
-      conversationContext: "You do not like this person. Be distant and uncooperative."
-    },
-    {
-      id: "unfriendly",
-      label: "Unfriendly",
-      minStrength: -0.3,
-      maxStrength: -0.1,
-      priceMultiplier: 1.1,
-      canOfferQuests: false,
-      canShareSecrets: false,
-      greetingStyle: "cold",
-      conversationContext: "You are wary of this person. Be polite but guarded."
-    },
-    {
-      id: "stranger",
-      label: "Stranger",
-      minStrength: -0.1,
-      maxStrength: 0.1,
-      priceMultiplier: 1,
-      canOfferQuests: true,
-      canShareSecrets: false,
-      greetingStyle: "neutral",
-      conversationContext: "You barely know this person. Be polite and professional."
-    },
-    {
-      id: "acquaintance",
-      label: "Acquaintance",
-      minStrength: 0.1,
-      maxStrength: 0.35,
-      priceMultiplier: 1,
-      canOfferQuests: true,
-      canShareSecrets: false,
-      greetingStyle: "neutral",
-      conversationContext: "You recognize this person and have had a few interactions. Be friendly."
-    },
-    {
-      id: "friend",
-      label: "Friend",
-      minStrength: 0.35,
-      maxStrength: 0.65,
-      priceMultiplier: 0.9,
-      canOfferQuests: true,
-      canShareSecrets: true,
-      greetingStyle: "warm",
-      conversationContext: "This person is your friend. Be warm, helpful, and willing to share information."
-    },
-    {
-      id: "close_friend",
-      label: "Close Friend",
-      minStrength: 0.65,
-      maxStrength: 0.85,
-      priceMultiplier: 0.8,
-      canOfferQuests: true,
-      canShareSecrets: true,
-      greetingStyle: "enthusiastic",
-      conversationContext: "This person is a close friend. Be enthusiastic, offer help freely, and share personal stories."
-    },
-    {
-      id: "best_friend",
-      label: "Best Friend",
-      minStrength: 0.85,
-      maxStrength: 1,
-      priceMultiplier: 0.75,
-      canOfferQuests: true,
-      canShareSecrets: true,
-      greetingStyle: "enthusiastic",
-      conversationContext: "This person is your best friend. Treat them like family \u2014 be open, generous, and deeply loyal."
-    }
-  ];
-  var RELATIONSHIP_DELTAS = {
-    /** Completing a quest assigned by the NPC */
-    quest_completed: 0.1,
-    /** Failing a quest assigned by the NPC */
-    quest_failed: -0.05,
-    /** Having a normal conversation */
-    conversation: 0.02,
-    /** Giving a gift */
-    gift_given: 0.08,
-    /** Delivering an item to the NPC */
-    item_delivered: 0.06,
-    /** NPC-initiated conversation accepted */
-    npc_conversation_accepted: 0.03,
-    /** NPC-initiated conversation rejected */
-    npc_conversation_rejected: -0.01
-  };
-
-  // @insimul/core/src/social/relationships.ts
-  var permille = (v) => Math.round(v * 1e3);
-  var RELATIONSHIP_TIERS_PERMILLE = Object.freeze(
-    RELATIONSHIP_TIERS.map(
-      (t) => Object.freeze({
-        id: t.id,
-        label: t.label,
-        min: permille(t.minStrength),
-        max: permille(t.maxStrength),
-        pricePermille: permille(t.priceMultiplier),
-        canOfferQuests: t.canOfferQuests,
-        canShareSecrets: t.canShareSecrets,
-        greeting: t.greetingStyle,
-        context: t.conversationContext
-      })
-    )
-  );
-  var RELATIONSHIP_DELTAS_PERMILLE = Object.freeze(
-    Object.fromEntries(Object.entries(RELATIONSHIP_DELTAS).map(([k, v]) => [k, permille(v)]))
-  );
-
-  // @insimul/core/src/social/social-save.ts
-  var SOCIAL_BLOCK_MEMBERS = Object.freeze(["relationships", "romance", "reputation", "memory", "volition"]);
-  var SOCIAL_ROMANCE_KEYS = Object.freeze(["timestep", "tracks"]);
-  var SOCIAL_MEMORY_KEYS = Object.freeze(["quests", "conversations"]);
-  var SOCIAL_VOLITION_AGENT_KEYS = Object.freeze(["agent", "motives", "appeals", "spent"]);
-  var SOCIAL_VOLITION_PAIR_KEYS = Object.freeze(["agent", "other", "spark", "status"]);
-
-  // @insimul/core/src/language-learning/progress.ts
-  var CEFR_ORDER = Object.freeze(["A1", "A2", "B1", "B2", "C1", "C2"]);
-  var ENCOUNTER_TYPES = Object.freeze(["active_use", "passive_hover", "passive_read", "quiz_correct", "quiz_incorrect"]);
-  var ENCOUNTER_HALVES = Object.freeze({
-    active_use: 2,
-    passive_hover: 1,
-    passive_read: 1,
-    quiz_correct: 2,
-    quiz_incorrect: 0
-  });
-  var GRAMMAR_WEAKNESS_RATE = Object.freeze({ num: 2, den: 5 });
-  var BOOK_REFUSALS = Object.freeze(["empty_word", "unknown_encounter"]);
-
-  // @insimul/core/src/language-learning/language-save.ts
-  var LANGUAGE_BLOCK_MEMBERS = Object.freeze(["book", "collected", "naming", "identification"]);
-  var LANGUAGE_BOOK_KEYS = Object.freeze(["language", "clockMs", "fluency", "cefr", "conversations", "correctUsages", "words", "grammar"]);
-  var LANGUAGE_WORD_KEYS = Object.freeze(["word", "language", "meaning", "category", "context", "encountered", "correct", "incorrect", "halves", "last", "types"]);
-  var LANGUAGE_GRAMMAR_KEYS = Object.freeze(["pattern", "correct", "incorrect", "mastered", "examples", "explanations"]);
-  var LANGUAGE_NAMING_KEYS = Object.freeze(["attempts", "named"]);
-  var LANGUAGE_IDENTIFICATION_KEYS = Object.freeze(["attempts", "identified", "bestScore"]);
-
-  // @insimul/core/src/npc-life/escort.ts
-  var DEFAULT_ESCORT_TUNING = Object.freeze({
-    followDistanceMm: 4e3,
-    maxFollowRangeMm: 3e4,
-    arriveRadiusMm: 8e3
-  });
-  var NO_ESCORTS = Object.freeze({});
-
-  // @insimul/core/src/npc-life/navigation.ts
-  var MOVEMENT_SPEEDS = Object.freeze(["stroll", "walk", "hurry"]);
-  var DEFAULT_NAVIGATION_TUNING = Object.freeze({
-    speedMmPerS: Object.freeze({ stroll: 1500, walk: 3e3, hurry: 5e3 }),
-    arriveMm: 500,
-    stuckCheckMs: 4e3,
-    stuckProgressMm: 400,
-    stuckRetries: 2,
-    doorReachMm: 3e3,
-    patrolRadiusMm: 2e4,
-    patrolIntervalMs: 5e3
-  });
-  var IDLE_MOVER = Object.freeze({ current: null, queue: Object.freeze([]), conversation: null, anchor: null, anchorMs: 0, retries: 0, snags: 0, draws: 0 });
-
-  // @insimul/core/src/npc-life/staging.ts
-  var STATION_KINDS = Object.freeze(["anvil", "hearth", "stall", "shopper", "talker"]);
-  var STALL_TRADES = Object.freeze(["grocer", "merchant", "baker", "farmer", "shopkeeper", "fishmonger", "butcher", "cook", "cashier", "farmhand", "waiter"]);
-  var NO_POSTS = Object.freeze({});
-
-  // @insimul/core/src/npc-life/npc-life-save.ts
-  var NPC_LIFE_BLOCK_MEMBERS = Object.freeze(["routines", "locomotion", "planner", "escorts", "posts", "movers"]);
-  var NPC_LIFE_ROUTINE_KEYS = Object.freeze(["agent", "routine", "adopted", "suspension", "resuming"]);
-  var NPC_LIFE_LOCOMOTION_KEYS = Object.freeze(["actor", "destination", "failures"]);
-  var NPC_LIFE_CURSOR_KEYS = Object.freeze(["plan", "stepIndex", "interrupted"]);
-  var NPC_LIFE_ESCORT_KEYS = Object.freeze(["npcId", "questId", "objectiveId", "destination", "radiusMm"]);
-  var NPC_LIFE_POST_KEYS = Object.freeze(["npcId", "questId", "hold"]);
-  var NPC_LIFE_MOVER_KEYS = Object.freeze(["current", "queue", "conversation", "snags", "draws"]);
-
-  // @insimul/core/src/save-slots-corpus.ts
-  var SAVE_SLOTS_STEPS = ["save", "load", "continue", "delete", "ask_delete", "confirm_delete", "cancel_delete", "key", "tick", "finished"];
-
-  // @insimul/core/src/ui/title-flow-corpus.ts
+  // @insimul/core/src/ui/title-flow-corpus-host.ts
   var TITLE_FLOW_OPS = ["menu", "choose", "session"];
   var TITLE_FLOW_STEPS = [...SAVE_SLOTS_STEPS, "choose"];
 
@@ -24241,7 +23816,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     }
   };
 
-  // @insimul/core/src/quests/tutorial-corpus.ts
+  // @insimul/core/src/quests/tutorial-corpus-host.ts
   var TUTORIAL_CORPUS_T0 = Date.parse("2026-11-06T09:00:00.000Z");
   var TUTORIAL_OPS = ["objectives", "run", "onboarding"];
   var TUTORIAL_RUN_STEPS = ["start", "event", "complete", "completeById", "skip", "skipNonAssessment", "tick", "dispose"];
@@ -25799,6 +25374,187 @@ player_meets_cefr(Player, RequiredLevel) :-
     return { placements };
   }
 
+  // @insimul/core/src/props/interactables.ts
+  var PROP_ACTIONS = ["open_board", "read_sign", "examine"];
+  var INTERACT_ACTIONS = ["close_panel", "talk", "pick_up", "open_container", "open_board", "enter", "read_sign", "examine"];
+  var INTERACT_ACTION_TIER = Object.freeze(["talk", "pick_up", "open_container", "open_board", "enter"]);
+  var INTERACT_LOOK_TIER = Object.freeze(["read_sign", "examine"]);
+  var PROP_NOT_OFFERED_REASONS = ["built_fabric", "no_archetype"];
+  var INTERACT_REFUSALS = ["bad_position"];
+  var PROP_NOT_OFFERED_ARCHETYPES = Object.freeze(["prop.structural.wall", "prop.structural.fence"]);
+  var PROP_SIGN_ARCHETYPES = Object.freeze(["prop.structural.sign"]);
+  var INTERACT_RANGES_M = Object.freeze({
+    talk: 3.5,
+    pick_up: 2.2,
+    open_container: 2.2,
+    open_board: 3.2,
+    read_sign: 2.6,
+    examine: 2.6
+  });
+  var INTERACT_DEVIATIONS = Object.freeze([
+    {
+      id: "fence",
+      unreal: 'IsOfferedProp leaves out prop.structural.wall only, so a fence panel is "Examine the fence"',
+      core: "prop.structural.fence is not offered either",
+      why: "pipelines states a fence panel along every front yard with room for one (settlement-dressing.ts), the same built fabric as a wall"
+    },
+    {
+      id: "board-sign",
+      unreal: 'the board is posted on the sign nearest the settlement centre (P6) and the same sign is "Read the sign" (P8): one prop, two meanings',
+      core: "the board host prop means open_board only and raises no sign_read; every other sign is read",
+      why: "one key press has one meaning per prop; the board is what P6 already made E do there"
+    },
+    {
+      id: "tiers",
+      unreal: "P6: a pick-up, container, board or door strictly nearer than the talk villager wins, else talk; P8: talk when a villager is in range, else the nearest prop",
+      core: "one rule: the actions tier (talk, pick-up, container, board, door) by nearest, then the looking tier (sign, examine) only when no action is in range",
+      why: "the two interim rules disagree once both land; a pick-up settled 1 m from a barrel must be picked up"
+    },
+    {
+      id: "door-distance",
+      unreal: "PropsTargetNear considers a prompting door at the player's own location (distance 0), so it beats every other target in range",
+      core: "a door competes at doorPrompt's distance",
+      why: "the nearest rule; no Brightwater door prompts (all no_interior), so nothing live changes"
+    },
+    {
+      id: "prop-tie",
+      unreal: "PropToInteract keeps the LAST prop at an equal distance (D <= BestD)",
+      core: "the first listed, as doorPrompt and nearestObject do",
+      why: "one tie rule across core"
+    },
+    {
+      id: "segments",
+      unreal: "StartsWith on the archetype string (prop.structural.wallpaper would read as a wall; .sign anywhere hosts the board)",
+      core: "whole dotted segments: the archetype is the key or starts with the key and a dot",
+      why: "archetype keys are dotted (buildArchetypeKey); a substring is not a segment"
+    },
+    {
+      id: "noun",
+      unreal: 'PropNoun: the third segment, or "<fourth> <third>" when the fourth is longer than one letter; fewer than three segments is "object"',
+      core: "the same, with underscores read as spaces",
+      why: 'a key segment like notice_board reads "notice board" in a prompt'
+    },
+    {
+      id: "no-archetype",
+      unreal: 'a stated prop with no archetype is "Examine the object"',
+      core: "not offered (no_archetype)",
+      why: "there is nothing to call it; pipelines states an archetype on every prop"
+    },
+    {
+      id: "full-stop",
+      unreal: '"You examine the <noun>: <text>." always adds a full stop',
+      core: "no full stop is added after text that already ends in . ! or ?",
+      why: 'a stated text with its own punctuation would read "..": no Brightwater text ends in one'
+    },
+    {
+      id: "board-settlement",
+      unreal: "the board host is chosen from every stated sign, for the first settlement only",
+      core: "a sign that states another settlementId is not considered for this settlement's board",
+      why: "a world with two settlements posts each board in its own settlement; Brightwater has one"
+    }
+  ]);
+  var round2 = (n) => Math.round(n * 1e9) / 1e9;
+  var finitePoint2 = (p) => !!p && typeof p === "object" && Number.isFinite(p.x) && Number.isFinite(p.z);
+  var nonEmpty = (s) => typeof s === "string" && s !== "";
+  var asciiLower = (s) => s.replace(/[A-Z]/g, (ch) => String.fromCharCode(ch.charCodeAt(0) + 32));
+  function archetypeUnder(archetype, key) {
+    return archetype === key || archetype.startsWith(`${key}.`);
+  }
+  function propNoun(archetype) {
+    const parts = (archetype ?? "").split(".").filter((s) => s !== "");
+    if (parts.length < 3) return "object";
+    const name = parts.length >= 4 && parts[3].length > 1 ? `${parts[3]} ${parts[2]}` : parts[2];
+    return name.replace(/_/g, " ");
+  }
+  function propText(prop) {
+    const t = typeof prop.text === "string" ? prop.text.trim() : "";
+    return t === "" ? null : t;
+  }
+  var isSignProp = (archetype) => PROP_SIGN_ARCHETYPES.some((k) => archetypeUnder(archetype, k));
+  function noticeBoardHost(props, settlement) {
+    if (!finitePoint2(settlement?.position)) return null;
+    let best = null;
+    for (const p of props ?? []) {
+      if (!p || !nonEmpty(p.id) || !nonEmpty(p.archetype) || !finitePoint2(p.position)) continue;
+      if (!isSignProp(p.archetype) || PROP_NOT_OFFERED_ARCHETYPES.some((k) => archetypeUnder(p.archetype, k))) continue;
+      if (nonEmpty(p.settlementId) && nonEmpty(settlement.id) && p.settlementId !== settlement.id) continue;
+      const d = Math.hypot(p.position.x - settlement.position.x, p.position.z - settlement.position.z);
+      if (best === null || d < best.d) best = { id: p.id, d };
+    }
+    return best ? best.id : null;
+  }
+  function propInteraction(prop, board) {
+    const archetype = nonEmpty(prop.archetype) ? prop.archetype : null;
+    if (archetype === null) return { id: prop.id, action: null, reason: "no_archetype" };
+    if (PROP_NOT_OFFERED_ARCHETYPES.some((k) => archetypeUnder(archetype, k))) return { id: prop.id, action: null, reason: "built_fabric" };
+    const text4 = propText(prop);
+    if (board && nonEmpty(board.host) && board.host === prop.id) {
+      const name = nonEmpty(board.name) ? `the ${board.name} notice board` : "the notice board";
+      return { id: prop.id, action: "open_board", noun: "notice board", prompt: `Read ${name}`, text: text4 };
+    }
+    if (isSignProp(archetype)) return { id: prop.id, action: "read_sign", noun: "sign", prompt: "Read the sign", text: text4 };
+    const noun = propNoun(archetype);
+    return { id: prop.id, action: "examine", noun, prompt: `Examine the ${noun}`, text: text4 };
+  }
+  function interactWithProp(prop, board) {
+    const m = propInteraction(prop, board);
+    if (m.action === null) return { ok: false, refusal: { code: "not_offered", field: "archetype", reason: m.reason } };
+    if (m.action === "open_board") return { ok: true, action: "open_board", line: null, events: [] };
+    if (m.action === "read_sign") {
+      const words = m.text ?? "";
+      return {
+        ok: true,
+        action: "read_sign",
+        line: m.text === null ? "The sign is blank." : `The sign reads: ${m.text}`,
+        events: [{ type: "sign_read", signId: prop.id, objectId: prop.id, targetText: words, nativeText: words }]
+      };
+    }
+    const line = m.text === null ? `You examine the ${m.noun}.` : `You examine the ${m.noun}: ${m.text}${/[.!?]$/.test(m.text) ? "" : "."}`;
+    return { ok: true, action: "examine", line, events: [{ type: "object_examined", objectId: prop.id, objectName: m.noun, targetWord: "", targetLanguage: "" }] };
+  }
+  function interactTarget(input, ranges = {}) {
+    if (!finitePoint2(input?.at)) return { ok: false, refusal: { code: "bad_position", field: "at" } };
+    if (nonEmpty(input.panel)) return { ok: true, target: { action: "close_panel", kind: "panel", id: input.panel, prompt: "", distance: null } };
+    const reach = { ...INTERACT_RANGES_M, ...ranges };
+    const at = input.at;
+    const dist = (p) => Math.hypot(p.x - at.x, p.z - at.z);
+    const actions = [];
+    const looks = [];
+    const offer = (list, t, range) => {
+      if (t.distance !== null && t.distance <= range) list.push(t);
+    };
+    const v = input.villager;
+    if (v && nonEmpty(v.id) && finitePoint2(v.position)) {
+      offer(actions, { action: "talk", kind: "villager", id: v.id, prompt: `Talk to ${nonEmpty(v.name) ? v.name : v.id}`, distance: dist(v.position) }, reach.talk);
+    }
+    for (const p of input.pickups ?? []) {
+      if (!p || !nonEmpty(p.id) || p.taken === true || !finitePoint2(p.position)) continue;
+      offer(actions, { action: "pick_up", kind: "pickup", id: p.id, prompt: `Pick up ${nonEmpty(p.name) ? p.name : p.id}`, distance: dist(p.position) }, reach.pick_up);
+    }
+    for (const k of input.containers ?? []) {
+      if (!k || !nonEmpty(k.id) || !finitePoint2(k.position)) continue;
+      offer(actions, { action: "open_container", kind: "container", id: k.id, prompt: `Open the ${asciiLower(nonEmpty(k.label) ? k.label : "container")}`, distance: dist(k.position) }, reach.open_container);
+    }
+    for (const p of input.props ?? []) {
+      if (!p || !nonEmpty(p.id) || !finitePoint2(p.position)) continue;
+      const m = propInteraction(p, input.board);
+      if (m.action === null) continue;
+      const t = { action: m.action, kind: "prop", id: p.id, prompt: m.prompt, distance: dist(p.position) };
+      if (m.action === "open_board") offer(actions, t, reach.open_board);
+      else offer(looks, t, reach[m.action]);
+    }
+    if (input.buildings && input.buildings.length > 0) {
+      const d = doorPrompt(input.buildings, { position: { x: at.x, y: at.y ?? 0, z: at.z } });
+      if (d && d.action === "enter" && d.distance !== null) actions.push({ action: "enter", kind: "door", id: d.building, prompt: `Enter ${d.label}`, distance: d.distance });
+    }
+    const nearest = (list) => {
+      let best = null;
+      for (const c of list) if (best === null || c.distance < best.distance) best = c;
+      return best === null ? null : { ...best, distance: round2(best.distance) };
+    };
+    return { ok: true, target: nearest(actions) ?? nearest(looks) };
+  }
+
   // npm:zod/v3/external.js
   var external_exports = {};
   __export(external_exports, {
@@ -26630,9 +26386,9 @@ player_meets_cefr(Player, RequiredLevel) :-
     superRefine(refinement) {
       return this._refinement(refinement);
     }
-    constructor(def2) {
+    constructor(def) {
       this.spa = this.safeParseAsync;
-      this._def = def2;
+      this._def = def;
       this.parse = this.parse.bind(this);
       this.safeParse = this.safeParse.bind(this);
       this.parseAsync = this.parseAsync.bind(this);
@@ -26692,8 +26448,8 @@ player_meets_cefr(Player, RequiredLevel) :-
         effect: { type: "transform", transform }
       });
     }
-    default(def2) {
-      const defaultValueFunc = typeof def2 === "function" ? def2 : () => def2;
+    default(def) {
+      const defaultValueFunc = typeof def === "function" ? def : () => def;
       return new ZodDefault({
         ...processCreateParams(this._def),
         innerType: this,
@@ -26708,8 +26464,8 @@ player_meets_cefr(Player, RequiredLevel) :-
         ...processCreateParams(this._def)
       });
     }
-    catch(def2) {
-      const catchValueFunc = typeof def2 === "function" ? def2 : () => def2;
+    catch(def) {
+      const catchValueFunc = typeof def === "function" ? def : () => def;
       return new ZodCatch({
         ...processCreateParams(this._def),
         innerType: this,
@@ -28043,7 +27799,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   var ZodArray = class _ZodArray extends ZodType {
     _parse(input) {
       const { ctx, status } = this._processInputParams(input);
-      const def2 = this._def;
+      const def = this._def;
       if (ctx.parsedType !== ZodParsedType.array) {
         addIssueToContext(ctx, {
           code: ZodIssueCode.invalid_type,
@@ -28052,57 +27808,57 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      if (def2.exactLength !== null) {
-        const tooBig = ctx.data.length > def2.exactLength.value;
-        const tooSmall = ctx.data.length < def2.exactLength.value;
+      if (def.exactLength !== null) {
+        const tooBig = ctx.data.length > def.exactLength.value;
+        const tooSmall = ctx.data.length < def.exactLength.value;
         if (tooBig || tooSmall) {
           addIssueToContext(ctx, {
             code: tooBig ? ZodIssueCode.too_big : ZodIssueCode.too_small,
-            minimum: tooSmall ? def2.exactLength.value : void 0,
-            maximum: tooBig ? def2.exactLength.value : void 0,
+            minimum: tooSmall ? def.exactLength.value : void 0,
+            maximum: tooBig ? def.exactLength.value : void 0,
             type: "array",
             inclusive: true,
             exact: true,
-            message: def2.exactLength.message
+            message: def.exactLength.message
           });
           status.dirty();
         }
       }
-      if (def2.minLength !== null) {
-        if (ctx.data.length < def2.minLength.value) {
+      if (def.minLength !== null) {
+        if (ctx.data.length < def.minLength.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_small,
-            minimum: def2.minLength.value,
+            minimum: def.minLength.value,
             type: "array",
             inclusive: true,
             exact: false,
-            message: def2.minLength.message
+            message: def.minLength.message
           });
           status.dirty();
         }
       }
-      if (def2.maxLength !== null) {
-        if (ctx.data.length > def2.maxLength.value) {
+      if (def.maxLength !== null) {
+        if (ctx.data.length > def.maxLength.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_big,
-            maximum: def2.maxLength.value,
+            maximum: def.maxLength.value,
             type: "array",
             inclusive: true,
             exact: false,
-            message: def2.maxLength.message
+            message: def.maxLength.message
           });
           status.dirty();
         }
       }
       if (ctx.common.async) {
         return Promise.all([...ctx.data].map((item, i) => {
-          return def2.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+          return def.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
         })).then((result2) => {
           return ParseStatus.mergeArray(status, result2);
         });
       }
       const result = [...ctx.data].map((item, i) => {
-        return def2.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+        return def.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
       });
       return ParseStatus.mergeArray(status, result);
     }
@@ -28991,29 +28747,29 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      const def2 = this._def;
-      if (def2.minSize !== null) {
-        if (ctx.data.size < def2.minSize.value) {
+      const def = this._def;
+      if (def.minSize !== null) {
+        if (ctx.data.size < def.minSize.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_small,
-            minimum: def2.minSize.value,
+            minimum: def.minSize.value,
             type: "set",
             inclusive: true,
             exact: false,
-            message: def2.minSize.message
+            message: def.minSize.message
           });
           status.dirty();
         }
       }
-      if (def2.maxSize !== null) {
-        if (ctx.data.size > def2.maxSize.value) {
+      if (def.maxSize !== null) {
+        if (ctx.data.size > def.maxSize.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_big,
-            maximum: def2.maxSize.value,
+            maximum: def.maxSize.value,
             type: "set",
             inclusive: true,
             exact: false,
-            message: def2.maxSize.message
+            message: def.maxSize.message
           });
           status.dirty();
         }
@@ -29850,27 +29606,27 @@ player_meets_cefr(Player, RequiredLevel) :-
   var SHA256_HEX_RE = /^[0-9a-f]{64}$/;
   var packId = external_exports.string().regex(PACK_ID_RE, "a pack id is ^[a-z][a-z0-9-]*$");
   var semver = external_exports.string().regex(SEMVER_RE, "a semver version (1.0.0)");
-  var nonEmpty = external_exports.string().min(1);
+  var nonEmpty2 = external_exports.string().min(1);
   var packRefSchema = external_exports.object({
     id: packId,
     /** semver range (`^1`, `~1.2`, `1.0.0`, `>=1.1.0`, `*`). */
-    version: nonEmpty.optional(),
+    version: nonEmpty2.optional(),
     /** A variant of that pack this one needs. */
-    variant: nonEmpty.optional()
+    variant: nonEmpty2.optional()
   }).strict();
   var packParameterSchema = external_exports.object({
-    id: nonEmpty,
+    id: nonEmpty2,
     type: external_exports.enum(["number", "integer", "boolean", "enum", "string"]),
     default: external_exports.unknown().optional(),
     min: external_exports.number().optional(),
     max: external_exports.number().optional(),
-    values: external_exports.array(nonEmpty).optional(),
+    values: external_exports.array(nonEmpty2).optional(),
     /**
      * The core field it sets: `<Tuning>.<field>` (a core tuning struct, e.g.
      * `EconomyTuning.markupPercent`), `genre:<path>` (a `GenreOverride` path,
      * `field` or `features.field`), or `binding` (read by the binding layer only).
      */
-    maps: nonEmpty,
+    maps: nonEmpty2,
     source: external_exports.enum(["core-default", "world", "game"]).optional(),
     doc: external_exports.string().optional()
   }).strict();
@@ -29884,75 +29640,75 @@ player_meets_cefr(Player, RequiredLevel) :-
     "binding-hook"
   ];
   var packExtensionPointSchema = external_exports.object({
-    id: nonEmpty,
+    id: nonEmpty2,
     kind: external_exports.enum(EXTENSION_POINT_KINDS),
     signature: external_exports.string().optional(),
     doc: external_exports.string().optional()
   }).strict();
   var VARIANT_STATUSES = ["ready", "port-later", "blocked"];
   var packVariantOptionSchema = external_exports.object({
-    id: nonEmpty,
+    id: nonEmpty2,
     name: external_exports.string().optional(),
     status: external_exports.enum(VARIANT_STATUSES).optional(),
     doc: external_exports.string().optional(),
     genreOverrides: external_exports.array(external_exports.object({ path: external_exports.string(), value: external_exports.unknown() }).strict()).optional(),
-    modules: external_exports.array(nonEmpty).optional(),
-    corpus: external_exports.array(nonEmpty).optional(),
-    bindingSet: nonEmpty.optional(),
-    panels: external_exports.array(nonEmpty).optional(),
-    hideParameters: external_exports.array(nonEmpty).optional(),
+    modules: external_exports.array(nonEmpty2).optional(),
+    corpus: external_exports.array(nonEmpty2).optional(),
+    bindingSet: nonEmpty2.optional(),
+    panels: external_exports.array(nonEmpty2).optional(),
+    hideParameters: external_exports.array(nonEmpty2).optional(),
     /** `pack:variant` refs this variant needs (e.g. `camera:fighting`). */
-    requires: external_exports.array(nonEmpty).optional()
+    requires: external_exports.array(nonEmpty2).optional()
   }).passthrough();
   var packVariantSetSchema = external_exports.object({
-    axis: nonEmpty,
-    default: nonEmpty,
+    axis: nonEmpty2,
+    default: nonEmpty2,
     options: external_exports.array(packVariantOptionSchema).min(1)
   }).strict();
   var packStylePresetSchema = external_exports.object({
-    id: nonEmpty,
+    id: nonEmpty2,
     name: external_exports.string().optional(),
     tokens: external_exports.record(external_exports.union([external_exports.string(), external_exports.number()])).optional(),
     /** An atelier pack name (priority 50) or a BYOA pairing. */
     bindingPack: external_exports.string().optional(),
-    layouts: external_exports.array(nonEmpty).optional()
+    layouts: external_exports.array(nonEmpty2).optional()
   }).passthrough();
   var packStyleSlotsSchema = external_exports.object({
     /** theme-tokens.json keys this pack's UI reads (`surface`, or `group.key` when a bare key is ambiguous). */
-    tokens: external_exports.array(nonEmpty).optional(),
+    tokens: external_exports.array(nonEmpty2).optional(),
     /** Archetype key patterns the pack resolves art for (`item.*`, `prop.market.stall`). */
-    art: external_exports.array(nonEmpty).optional(),
+    art: external_exports.array(nonEmpty2).optional(),
     /** Named layout alternatives. */
-    layouts: external_exports.array(nonEmpty).optional(),
+    layouts: external_exports.array(nonEmpty2).optional(),
     presets: external_exports.array(packStylePresetSchema).optional()
   }).strict();
   var CHECK_KINDS = ["hash", "manifest", "contract", "corpus", "compile", "play"];
-  var packCheckSchema = external_exports.object({ id: nonEmpty, kind: external_exports.enum(CHECK_KINDS), args: external_exports.unknown().optional() }).strict();
+  var packCheckSchema = external_exports.object({ id: nonEmpty2, kind: external_exports.enum(CHECK_KINDS), args: external_exports.unknown().optional() }).strict();
   var packCoreSchema = external_exports.object({
     /** `InsimulModule` ids (`modules/module-contract.ts`). */
-    modules: external_exports.array(nonEmpty).optional(),
+    modules: external_exports.array(nonEmpty2).optional(),
     /** Feature-module `ModuleId`s (`feature-modules/types.ts`). */
-    featureModules: external_exports.array(nonEmpty).optional(),
+    featureModules: external_exports.array(nonEmpty2).optional(),
     /** `PREDICATE_PACK_AREAS` (`prolog/predicate-packs.ts`). */
-    predicatePacks: external_exports.array(nonEmpty).optional(),
+    predicatePacks: external_exports.array(nonEmpty2).optional(),
     /** Host interfaces a module of core names (`InsimulModule.parts.hostInterface`). */
-    hostInterfaces: external_exports.array(nonEmpty).optional(),
+    hostInterfaces: external_exports.array(nonEmpty2).optional(),
     /** The `GenreFeatures` flag that gates the pack. */
-    genreFeature: nonEmpty.optional(),
+    genreFeature: nonEmpty2.optional(),
     /** Conformance paths (`conformance/<area>/<file>.json`) the pack must keep green. */
-    corpus: external_exports.array(nonEmpty).optional(),
+    corpus: external_exports.array(nonEmpty2).optional(),
     /** `extensionRegistry` keys (`save-extensions.ts`) the pack owns. */
-    saveExtensions: external_exports.array(nonEmpty).optional()
+    saveExtensions: external_exports.array(nonEmpty2).optional()
   }).strict();
   var systemPackManifestSchema = external_exports.object({
     schema: external_exports.literal(SYSTEM_PACK_SCHEMA),
     id: packId,
     version: semver,
-    name: nonEmpty,
-    summary: nonEmpty,
+    name: nonEmpty2,
+    summary: nonEmpty2,
     kind: external_exports.enum(["always-on", "base", "optional"]),
     phase: external_exports.string().regex(/^P\d+[a-z]?$/, "a parity phase (P6, P9b)").optional(),
-    catalog: external_exports.array(nonEmpty),
+    catalog: external_exports.array(nonEmpty2),
     core: packCoreSchema,
     requires: external_exports.array(packRefSchema).optional(),
     enhances: external_exports.array(packRefSchema).optional(),
@@ -29962,19 +29718,19 @@ player_meets_cefr(Player, RequiredLevel) :-
     parameters: external_exports.array(packParameterSchema).optional(),
     extensionPoints: external_exports.array(packExtensionPointSchema).optional(),
     events: external_exports.object({
-      emits: external_exports.array(nonEmpty).optional(),
-      consumes: external_exports.array(nonEmpty).optional(),
+      emits: external_exports.array(nonEmpty2).optional(),
+      consumes: external_exports.array(nonEmpty2).optional(),
       /** The `hash` of `conformance/events/catalog.json` the names were checked against. */
       catalog: external_exports.string().regex(SHA256_TAGGED_RE, "sha256:<64 hex>").optional()
     }).strict().optional(),
     /** `UiRegistry` panel keys the binding registers. */
-    panels: external_exports.array(nonEmpty).optional(),
+    panels: external_exports.array(nonEmpty2).optional(),
     checks: external_exports.array(packCheckSchema).optional(),
     migrations: external_exports.array(
       external_exports.object({
         to: semver,
-        renameParameter: external_exports.object({ from: nonEmpty, to: nonEmpty }).strict().optional(),
-        moveFile: external_exports.object({ from: nonEmpty, to: nonEmpty }).strict().optional()
+        renameParameter: external_exports.object({ from: nonEmpty2, to: nonEmpty2 }).strict().optional(),
+        moveFile: external_exports.object({ from: nonEmpty2, to: nonEmpty2 }).strict().optional()
       }).strict()
     ).optional(),
     assistant: external_exports.object({
@@ -29987,9 +29743,9 @@ player_meets_cefr(Player, RequiredLevel) :-
   var BINDING_FILE_KINDS = ["code", "scene", "ui", "data", "asset"];
   var BINDING_MERGE_KINDS = ["text", "structured", "opaque", "params"];
   var bindingFileSchema = external_exports.object({
-    src: nonEmpty,
+    src: nonEmpty2,
     /** Project-relative; `{Game}`-style placeholders work like shadcn alias targets. */
-    target: nonEmpty,
+    target: nonEmpty2,
     kind: external_exports.enum(BINDING_FILE_KINDS),
     merge: external_exports.enum(BINDING_MERGE_KINDS)
   }).strict();
@@ -30002,11 +29758,11 @@ player_meets_cefr(Player, RequiredLevel) :-
     manifestSha256: external_exports.string().regex(SHA256_HEX_RE, "64 lowercase hex"),
     /** `common` is installed with every variant; any other set is named by a variant's `bindingSet`. */
     sets: external_exports.record(external_exports.array(bindingFileSchema)).refine((s) => "common" in s, "sets must include common"),
-    entry: external_exports.object({ class: nonEmpty, attach: nonEmpty }).strict().optional(),
-    registers: external_exports.object({ panels: external_exports.array(nonEmpty).optional(), hosts: external_exports.array(nonEmpty).optional() }).strict().optional()
+    entry: external_exports.object({ class: nonEmpty2, attach: nonEmpty2 }).strict().optional(),
+    registers: external_exports.object({ panels: external_exports.array(nonEmpty2).optional(), hosts: external_exports.array(nonEmpty2).optional() }).strict().optional()
   }).strict();
   var lockFileEntrySchema = external_exports.object({
-    target: nonEmpty,
+    target: nonEmpty2,
     merge: external_exports.enum(BINDING_MERGE_KINDS),
     /** The bytes the pack shipped for the installed version. */
     base: external_exports.string().regex(SHA256_TAGGED_RE, "sha256:<64 hex>"),
@@ -30029,20 +29785,20 @@ player_meets_cefr(Player, RequiredLevel) :-
       base: external_exports.string().regex(SHA256_TAGGED_RE, "sha256:<64 hex>"),
       /** The user's file the proposal was merged from; accepting refuses once it moves. */
       observed: external_exports.string().regex(SHA256_TAGGED_RE, "sha256:<64 hex>"),
-      proposal: nonEmpty,
+      proposal: nonEmpty2,
       conflicts: external_exports.number().int().min(0)
     }).strict().optional(),
     /** A touched opaque asset: where the newer pack version was placed beside it (§4.3). */
-    beside: nonEmpty.optional()
+    beside: nonEmpty2.optional()
   }).strict();
   var lockDivergenceSchema = external_exports.object({
-    check: nonEmpty,
+    check: nonEmpty2,
     detail: external_exports.string(),
     recordedAt: external_exports.string().optional()
   }).strict();
   var lockPackSchema = external_exports.object({
     version: semver,
-    variants: external_exports.array(nonEmpty).min(1),
+    variants: external_exports.array(nonEmpty2).min(1),
     parameters: external_exports.record(external_exports.union([external_exports.string(), external_exports.number(), external_exports.boolean()])).optional(),
     files: external_exports.array(lockFileEntrySchema),
     core: external_exports.object({
@@ -30052,7 +29808,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       /** For a fork: when it was recorded (ISO 8601), why, and the forked paths (`forks/<id>/…`). */
       at: external_exports.string().optional(),
       reason: external_exports.string().optional(),
-      paths: external_exports.array(nonEmpty).optional()
+      paths: external_exports.array(nonEmpty2).optional()
     }).strict(),
     divergence: external_exports.array(lockDivergenceSchema).optional()
   }).strict();
@@ -34701,13 +34457,13 @@ player_meets_cefr(Player, RequiredLevel) :-
       const lot = lots[k];
       const hull = houses.get(d.entityId) ?? null;
       const ring = hull === null ? null : offsetHull(hull, off);
-      const round2 = (a, t) => hull === null ? [] : roundHouse(a, t, hull, ring, pathHalf);
-      let mid = round2(out, gates[k]);
+      const round3 = (a, t) => hull === null ? [] : roundHouse(a, t, hull, ring, pathHalf);
+      let mid = round3(out, gates[k]);
       const last = mid.length > 0 ? mid[mid.length - 1] : out;
       if (missesGap(lot, last, gates[k])) {
         const depth = Math.max(edgeAway(lot) - off, frame(lot, last)[0]);
         const approach = [lot.cx + lot.awayX * depth, lot.cz + lot.awayZ * depth];
-        if (hull === null || segmentOutlineDistance(approach, approach, hull) >= pathHalf - COMPOSITION_SLACK) mid = [...round2(out, approach), approach];
+        if (hull === null || segmentOutlineDistance(approach, approach, hull) >= pathHalf - COMPOSITION_SLACK) mid = [...round3(out, approach), approach];
       }
       polyline.push(...mid);
       const tail = polyline[polyline.length - 1];
@@ -35461,19 +35217,20 @@ player_meets_cefr(Player, RequiredLevel) :-
     if (args.config !== void 0) {
       init.config = args.config === null ? null : needObject(method, args.config, "config");
     }
-    if (args.slots !== void 0 && args.slots !== null) {
-      init.slots = needArray(method, args.slots, "slots").map((slot, i) => {
-        needObject(method, slot, `slots[${i}]`);
-        needNumber(method, slot.index, `slots[${i}].index`);
-        oneOf(method, slot.outcome, Object.keys(SLOT_MESSAGES), `slots[${i}].outcome`);
-        if (slot.summary !== void 0 && slot.summary !== null) needObject(method, slot.summary, `slots[${i}].summary`);
-        return slot;
-      });
-    }
+    if (args.slots !== void 0 && args.slots !== null) init.slots = slotListOf(method, args.slots);
     if (args.activeSlot !== void 0 && args.activeSlot !== null) {
       init.activeSlot = needNumber(method, args.activeSlot, "activeSlot");
     }
     return init;
+  }
+  function slotListOf(method, value) {
+    return needArray(method, value, "slots").map((slot, i) => {
+      needObject(method, slot, `slots[${i}]`);
+      needNumber(method, slot.index, `slots[${i}].index`);
+      oneOf(method, slot.outcome, Object.keys(SLOT_MESSAGES), `slots[${i}].outcome`);
+      if (slot.summary !== void 0 && slot.summary !== null) needObject(method, slot.summary, `slots[${i}].summary`);
+      return slot;
+    });
   }
   function optStringField(method, op, name) {
     if (op[name] !== void 0 && op[name] !== null) needString(method, op[name], name);
@@ -35494,6 +35251,12 @@ player_meets_cefr(Player, RequiredLevel) :-
       // JSON has no NaN: a `delta` of null is a non-finite tick, which core
       // answers as changing nothing (the corpus writes it the same way).
       tick: ({ model }, op) => plain(model.tick(op.delta === null ? Number.NaN : needNumber(m, op.delta, "delta"))),
+      // The save files changed outside the game (PL.disk-changed-step, core
+      // 4099a14..1a0667b): `slots` is the host's new listing, as at create (absent
+      // or null lists none, every slot empty) — core's `diskChanged`. Its result
+      // carries `disk { changed, deleted, added, droppedActive }`; a refusal
+      // (`busy`, `confirm_open`) is a VALUE and changes nothing.
+      disk_changed: ({ model }, op) => plain(model.diskChanged(op.slots === void 0 || op.slots === null ? null : slotListOf(m, op.slots))),
       finished: ({ model }, op) => {
         const { op: _name, ...result } = op;
         if (typeof result.ok !== "boolean") throw refuse2(m, "`ok` must be a boolean");
@@ -35690,6 +35453,23 @@ player_meets_cefr(Player, RequiredLevel) :-
         plantEntityKinds: PICKUP_PLANT_ENTITY_KINDS,
         plantArchetypeMarks: PICKUP_PLANT_ARCHETYPE_MARKS,
         deviations: PICKUP_PLACEMENT_DEVIATIONS
+      },
+      // PL.native-interact-target: the data tables of conformance/props/interactables.json
+      // (core's scripts/emit-props-corpora.ts). Its prose keys (segments, meaning,
+      // noun, text, host, read, examine, board, notOfferedResult, target, ranges,
+      // notHere) are rules written out, not data, and are not here.
+      "props-interactables": {
+        propActions: PROP_ACTIONS,
+        actions: INTERACT_ACTIONS,
+        actionTier: INTERACT_ACTION_TIER,
+        lookTier: INTERACT_LOOK_TIER,
+        notOffered: PROP_NOT_OFFERED_ARCHETYPES,
+        notOfferedReasons: PROP_NOT_OFFERED_REASONS,
+        signArchetypes: PROP_SIGN_ARCHETYPES,
+        rangesM: INTERACT_RANGES_M,
+        doorPromptRadiusM: DOOR_PROMPT_RADIUS_M,
+        refusals: INTERACT_REFUSALS,
+        deviations: INTERACT_DEVIATIONS
       }
     });
   }
@@ -35703,6 +35483,19 @@ player_meets_cefr(Player, RequiredLevel) :-
     optObject(method, args.clearance, "clearance");
     optObject(method, args.search, "search");
     return args;
+  }
+  function interactInputOf(method, args) {
+    for (const key of ["props", "pickups", "containers"]) optArrayValue(method, args[key], key);
+    (optArrayValue(method, args.buildings, "buildings") ?? []).forEach((b, i) => needObject(method, b, `buildings[${i}]`));
+    optObject(method, args.villager, "villager");
+    optObject(method, args.board, "board");
+    if (args.panel !== void 0 && args.panel !== null) needString(method, args.panel, "panel");
+    const ranges = optObject(method, args.ranges, "ranges") ?? {};
+    for (const [k, v] of Object.entries(ranges)) needNumber(method, v, `ranges.${k}`);
+    return [args, ranges];
+  }
+  function statedPropOf(method, args) {
+    return [needObject(method, args.prop, "prop"), optObject(method, args.board, "board") ?? null];
   }
   function containerOf(method, value, name = "container") {
     return needObject(method, value, name);
@@ -36189,8 +35982,10 @@ player_meets_cefr(Player, RequiredLevel) :-
      * (the list's Delete: opens the prompt) · `confirm_delete` · `cancel_delete`
      * (the prompt's two actions) · `key { code }` (a KeyboardEvent.code; F5
      * quick-saves, F9 quick-loads) · `tick { delta }` (seconds; null is a
-     * non-finite tick) · `finished { ok, savedAt?, summary?, outcome? }`. Each
-     * result is `{ ok, refusal?, outcome?, effect, history? }`; a refusal (`busy`,
+     * non-finite tick) · `finished { ok, savedAt?, summary?, outcome? }` ·
+     * `disk_changed { slots }` (the save files changed outside the game: the new
+     * listing, as at create; null lists none). Each result is `{ ok, refusal?,
+     * outcome?, effect, history?, disk? }`; a refusal (`busy`,
      * `no_such_slot`, `slot_empty`, `slot_corrupted`, `no_quick_slot`,
      * `nothing_to_continue`, `nothing_pending`, `unbound_key`, `confirm_open`,
      * `nothing_to_confirm`, `quick_slot_reserved`) is a VALUE.
@@ -36813,6 +36608,87 @@ player_meets_cefr(Player, RequiredLevel) :-
       const m = "props.pickups.ring";
       const [ring, search] = coded("invalid-input", () => [needNumber(m, args.ring, "ring"), optObject(m, args.search, "search")]);
       return { points: plain(pickupSearchRing(ring, search)) };
+    },
+    // What the interact key does by a prop (PL.native-interact-target, U94(3);
+    // core's PL.examine-props, U49(3)). Stateless, one core function each,
+    // answering what core's function answers (the shape its corpus runner
+    // records). Metres on core's ground plane `(x, z)`; a binding maps its own
+    // frame in (Unreal: its (X, Y) ÷ 100 as (x, z), as for `props.pickups.*`). A
+    // refusal (`bad_position`, `not_offered`) is a VALUE `{ ok: false, refusal }`;
+    // the rows' own errors are `[invalid-input]` for a field of the wrong JSON type.
+    // The board is core's `InteractBoard` `{ host, name? }`: the host prop from
+    // `props.interactables.host` and the settlement's name, which a binding works
+    // out once per settlement and sends with each call.
+    /**
+     * `props.interactables.target { at, panel?, villager?, pickups?, containers?,
+     * buildings?, props?, board?, ranges? }` → core's `interactTarget`: `{ ok:
+     * true, target: { action, kind, id, prompt, distance } | null }` or `{ ok:
+     * false, refusal: { code: 'bad_position', field: 'at' } }`. The ONE thing a
+     * press of E acts on: an open props `panel` closes (`close_panel`); else the
+     * nearest ACTION in its range — `talk` the `villager` the host would talk to,
+     * `pick_up` a pick-up not `taken`, `open_container`, `open_board` (the board's
+     * host prop), `enter` a door that prompts (`doorPrompt` over `buildings`) —
+     * ties going talk, pick-up, container, board, door, then the first listed;
+     * only with no action in range the nearest `read_sign` or `examine` prop.
+     * `prompt` is the words after the key glyph ("Talk to Ada", "Read the sign").
+     * `ranges` overrides any of `props.contract`'s `rangesM` for this call.
+     */
+    "props.interactables.target": (args) => {
+      const [input, ranges] = coded("invalid-input", () => interactInputOf("props.interactables.target", args));
+      return plain(interactTarget(input, ranges));
+    },
+    /**
+     * `props.interactables.interact { prop, board? }` → core's `interactWithProp`:
+     * what pressing E on a stated prop says and raises — `{ ok: true, action,
+     * line, events }` (`read_sign`: "The sign reads: X" or "The sign is blank.",
+     * one `sign_read`; `examine`: "You examine the <noun>[: <text>].", one
+     * `object_examined`; `open_board`: line null, no event, the board's model
+     * takes over) or `{ ok: false, refusal: { code: 'not_offered', field:
+     * 'archetype', reason } }`. The host raises the events on its bus.
+     */
+    "props.interactables.interact": (args) => {
+      const [prop, board] = coded("invalid-input", () => statedPropOf("props.interactables.interact", args));
+      return plain(interactWithProp(prop, board));
+    },
+    /**
+     * `props.interactables.meaning { prop, board? }` → core's `propInteraction`:
+     * a stated prop's one meaning and its prompt, `{ id, action: open_board |
+     * read_sign | examine, noun, prompt, text }`, or `{ id, action: null, reason:
+     * built_fabric | no_archetype }` (not offered: walls, fences, a prop with no
+     * archetype).
+     */
+    "props.interactables.meaning": (args) => {
+      const [prop, board] = coded("invalid-input", () => statedPropOf("props.interactables.meaning", args));
+      return plain(propInteraction(prop, board));
+    },
+    /**
+     * `props.interactables.host { props, settlement }` → `{ host }` — core's
+     * `noticeBoardHost`: the prop the settlement's notice board is posted on (of
+     * the offered signs that state no other settlement, the nearest to the
+     * settlement's `position`, the first listed on a tie), or null (no board).
+     * The board a binding then sends is `{ host, name: <the settlement's name> }`.
+     */
+    "props.interactables.host": (args) => {
+      const m = "props.interactables.host";
+      const [props, settlement] = coded("invalid-input", () => [
+        optArrayValue(m, args.props, "props") ?? [],
+        optObject(m, args.settlement, "settlement") ?? null
+      ]);
+      return { host: plain(noticeBoardHost(props, settlement)) };
+    },
+    /**
+     * `props.interactables.noun { archetype }` → `{ noun }` — core's `propNoun`:
+     * what a prop is called from its archetype (`prop.container.barrel` "barrel",
+     * `prop.furniture.stall.produce` "produce stall"; fewer than three segments,
+     * null or absent: "object").
+     */
+    "props.interactables.noun": (args) => {
+      const m = "props.interactables.noun";
+      const archetype = coded(
+        "invalid-input",
+        () => args.archetype === void 0 || args.archetype === null ? null : needString(m, args.archetype, "archetype")
+      );
+      return { noun: propNoun(archetype) };
     },
     /**
      * `inventory.create { player? }` → `{ session, view }` — the inventory panel's

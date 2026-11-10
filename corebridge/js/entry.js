@@ -122,7 +122,7 @@ import { SAVE_SLOTS_DEFAULTS, SaveSlotsSession } from '@insimul/core/save-slots'
 // (`corpusBindings`) and the tutorial state the corpus records
 // (`tutorialStateJson`), so neither is restated here.
 import { DEFAULT_GAME_TITLE, TITLE_ENTRIES, TITLE_ENTRY_LABELS, TITLE_MESSAGES, chooseTitleEntry, titleMenu } from '@insimul/core/ui/title-flow';
-import { TITLE_FLOW_OPS, TITLE_FLOW_STEPS } from '@insimul/core/ui/title-flow-corpus';
+import { TITLE_FLOW_OPS, TITLE_FLOW_STEPS } from '@insimul/core/ui/title-flow-corpus-host';
 import { GameEventBus } from '@insimul/core/game-engine/logic/GameEventBus';
 import {
 	TUTORIAL_ASSESSMENT_OBJECTIVE,
@@ -138,7 +138,7 @@ import {
 	TUTORIAL_RUN_STEPS,
 	corpusBindings,
 	tutorialStateJson,
-} from '@insimul/core/quests/tutorial-corpus';
+} from '@insimul/core/quests/tutorial-corpus-host';
 
 // ── props, interiors and the inventory panel (P6.core; PL.native-props-rows, U89(2)) ──
 // Core's P6 logic (core 31764b1 onward): containers (access, unlock, the deposit
@@ -264,6 +264,37 @@ import {
 	settlePickup,
 	settlePickups,
 } from '@insimul/core/props/pickup-placement';
+
+// ── what the interact key does by a prop (PL.examine-props; PL.native-interact-target, U94(3)) ──
+// Core's interact rule (core 2158b08 onward, src/props/interactables.ts): each
+// stated prop's one meaning (open the notice board, read a sign, examine, or not
+// offered), what reading and examining say and raise, which sign the notice board
+// is posted on, and the ONE thing a press of E acts on where the player stands
+// (an open panel closes; else the nearest action — talk, pick-up, container,
+// board, door; only with none in range the nearest sign or examined prop). Data
+// in, decision out, in core's metres on its ground plane (x, z). The
+// `props.interactables.*` rows call these and decide nothing, so an engine drops
+// its own copy (Unreal's interim `IsSign`, `IsOfferedProp`, `PropNoun`,
+// `PropToInteract`, `PropPrompt`, `InteractWithProp` and the board-sign search)
+// for them. The constants are imported for `props.contract`, which answers the
+// tables core's interactables corpus states.
+import {
+	INTERACT_ACTIONS,
+	INTERACT_ACTION_TIER,
+	INTERACT_DEVIATIONS,
+	INTERACT_LOOK_TIER,
+	INTERACT_RANGES_M,
+	INTERACT_REFUSALS,
+	PROP_ACTIONS,
+	PROP_NOT_OFFERED_ARCHETYPES,
+	PROP_NOT_OFFERED_REASONS,
+	PROP_SIGN_ARCHETYPES,
+	interactTarget,
+	interactWithProp,
+	noticeBoardHost,
+	propInteraction,
+	propNoun,
+} from '@insimul/core/props/interactables';
 
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
@@ -411,19 +442,27 @@ function saveSlotsInit(method, args) {
 	if (args.config !== undefined) {
 		init.config = args.config === null ? null : needObject(method, args.config, 'config');
 	}
-	if (args.slots !== undefined && args.slots !== null) {
-		init.slots = needArray(method, args.slots, 'slots').map((slot, i) => {
-			needObject(method, slot, `slots[${i}]`);
-			needNumber(method, slot.index, `slots[${i}].index`);
-			oneOf(method, slot.outcome, Object.keys(SLOT_MESSAGES), `slots[${i}].outcome`);
-			if (slot.summary !== undefined && slot.summary !== null) needObject(method, slot.summary, `slots[${i}].summary`);
-			return slot;
-		});
-	}
+	if (args.slots !== undefined && args.slots !== null) init.slots = slotListOf(method, args.slots);
 	if (args.activeSlot !== undefined && args.activeSlot !== null) {
 		init.activeSlot = needNumber(method, args.activeSlot, 'activeSlot');
 	}
 	return init;
+}
+
+/**
+ * A save-file listing (`SlotLoadResult[]`, what the host's codec found in each
+ * slot): `{ index, outcome, summary? }` entries with an outcome core's
+ * `SaveSlotModel` knows. Used by `saves.slots.create`'s `slots` and the
+ * `disk_changed` op's.
+ */
+function slotListOf(method, value) {
+	return needArray(method, value, 'slots').map((slot, i) => {
+		needObject(method, slot, `slots[${i}]`);
+		needNumber(method, slot.index, `slots[${i}].index`);
+		oneOf(method, slot.outcome, Object.keys(SLOT_MESSAGES), `slots[${i}].outcome`);
+		if (slot.summary !== undefined && slot.summary !== null) needObject(method, slot.summary, `slots[${i}].summary`);
+		return slot;
+	});
 }
 
 /** `op[name]`, a string when present and not null. */
@@ -433,9 +472,10 @@ function optStringField(method, op, name) {
 
 /**
  * One `saves.slots.apply` op as core's `SaveSlotsStepResult`, in JSON: `{ ok,
- * refusal?, outcome?, effect, history? }` (`effect` null, or `{ write: { slot,
- * kind, autosave } }`, `{ read: { slot, kind } }` or `{ remove: { slot } }`;
- * `history` only on a finished delete) — the shape core's corpus runner records
+ * refusal?, outcome?, effect, history?, disk? }` (`effect` null, or `{ write: {
+ * slot, kind, autosave } }`, `{ read: { slot, kind } }` or `{ remove: { slot }
+ * }`; `history` only on a finished delete; `disk` only on a `disk_changed` op
+ * that was not refused) — the shape core's corpus runner records
  * (`saveSlotsResultJson`).
  */
 function saveSlotsOps(m) {
@@ -455,6 +495,13 @@ function saveSlotsOps(m) {
 		// answers as changing nothing (the corpus writes it the same way).
 		tick: ({ model }, op) =>
 			plain(model.tick(op.delta === null ? Number.NaN : needNumber(m, op.delta, 'delta'))),
+		// The save files changed outside the game (PL.disk-changed-step, core
+		// 4099a14..1a0667b): `slots` is the host's new listing, as at create (absent
+		// or null lists none, every slot empty) — core's `diskChanged`. Its result
+		// carries `disk { changed, deleted, added, droppedActive }`; a refusal
+		// (`busy`, `confirm_open`) is a VALUE and changes nothing.
+		disk_changed: ({ model }, op) =>
+			plain(model.diskChanged(op.slots === undefined || op.slots === null ? null : slotListOf(m, op.slots))),
 		finished: ({ model }, op) => {
 			const { op: _name, ...result } = op;
 			if (typeof result.ok !== 'boolean') throw refuse(m, '`ok` must be a boolean');
@@ -715,6 +762,23 @@ function propsContract() {
 			plantArchetypeMarks: PICKUP_PLANT_ARCHETYPE_MARKS,
 			deviations: PICKUP_PLACEMENT_DEVIATIONS,
 		},
+		// PL.native-interact-target: the data tables of conformance/props/interactables.json
+		// (core's scripts/emit-props-corpora.ts). Its prose keys (segments, meaning,
+		// noun, text, host, read, examine, board, notOfferedResult, target, ranges,
+		// notHere) are rules written out, not data, and are not here.
+		'props-interactables': {
+			propActions: PROP_ACTIONS,
+			actions: INTERACT_ACTIONS,
+			actionTier: INTERACT_ACTION_TIER,
+			lookTier: INTERACT_LOOK_TIER,
+			notOffered: PROP_NOT_OFFERED_ARCHETYPES,
+			notOfferedReasons: PROP_NOT_OFFERED_REASONS,
+			signArchetypes: PROP_SIGN_ARCHETYPES,
+			rangesM: INTERACT_RANGES_M,
+			doorPromptRadiusM: DOOR_PROMPT_RADIUS_M,
+			refusals: INTERACT_REFUSALS,
+			deviations: INTERACT_DEVIATIONS,
+		},
 	});
 }
 
@@ -741,6 +805,36 @@ function pickupWorldOf(method, args) {
 	optObject(method, args.clearance, 'clearance');
 	optObject(method, args.search, 'search');
 	return args;
+}
+
+/**
+ * The interact rows' inputs (core's `InteractInput`, `StatedProp`,
+ * `InteractBoard`), checked for the JSON types core declares and nothing more,
+ * and passed AS IS. The lists (`props`, `pickups`, `containers`, `buildings`) are
+ * arrays when present (core walks them; a string would be walked by character);
+ * a building is an object (core's `doorPrompt` reads its fields); `villager`,
+ * `board` and `settlement` are objects or null; `panel` a string or null;
+ * `ranges` an object of numbers (core compares each distance with `<=` against
+ * it). Everything else core reads itself goes to core unchanged, because core's
+ * corpus pins each reading: a position that is not a finite point (`at`:
+ * core's `bad_position` VALUE; a candidate's: skipped), a null or id-less list
+ * entry (skipped), a taken pick-up (skipped), an archetype or text that is not
+ * a non-empty string (no archetype: not offered; no text: blank).
+ */
+function interactInputOf(method, args) {
+	for (const key of ['props', 'pickups', 'containers']) optArrayValue(method, args[key], key);
+	(optArrayValue(method, args.buildings, 'buildings') ?? []).forEach((b, i) => needObject(method, b, `buildings[${i}]`));
+	optObject(method, args.villager, 'villager');
+	optObject(method, args.board, 'board');
+	if (args.panel !== undefined && args.panel !== null) needString(method, args.panel, 'panel');
+	const ranges = optObject(method, args.ranges, 'ranges') ?? {};
+	for (const [k, v] of Object.entries(ranges)) needNumber(method, v, `ranges.${k}`);
+	return [args, ranges];
+}
+
+/** A stated prop (`entities.props[]`) and the board it may host: `{ prop, board? }`. */
+function statedPropOf(method, args) {
+	return [needObject(method, args.prop, 'prop'), optObject(method, args.board, 'board') ?? null];
 }
 
 /** A `ContainerRecord`: a JSON object (core reads every field of it itself). */
@@ -1368,8 +1462,10 @@ const METHODS = {
 	 * (the list's Delete: opens the prompt) · `confirm_delete` · `cancel_delete`
 	 * (the prompt's two actions) · `key { code }` (a KeyboardEvent.code; F5
 	 * quick-saves, F9 quick-loads) · `tick { delta }` (seconds; null is a
-	 * non-finite tick) · `finished { ok, savedAt?, summary?, outcome? }`. Each
-	 * result is `{ ok, refusal?, outcome?, effect, history? }`; a refusal (`busy`,
+	 * non-finite tick) · `finished { ok, savedAt?, summary?, outcome? }` ·
+	 * `disk_changed { slots }` (the save files changed outside the game: the new
+	 * listing, as at create; null lists none). Each result is `{ ok, refusal?,
+	 * outcome?, effect, history?, disk? }`; a refusal (`busy`,
 	 * `no_such_slot`, `slot_empty`, `slot_corrupted`, `no_quick_slot`,
 	 * `nothing_to_continue`, `nothing_pending`, `unbound_key`, `confirm_open`,
 	 * `nothing_to_confirm`, `quick_slot_reserved`) is a VALUE.
@@ -2036,6 +2132,92 @@ const METHODS = {
 		const m = 'props.pickups.ring';
 		const [ring, search] = coded('invalid-input', () => [needNumber(m, args.ring, 'ring'), optObject(m, args.search, 'search')]);
 		return { points: plain(pickupSearchRing(ring, search)) };
+	},
+
+	// What the interact key does by a prop (PL.native-interact-target, U94(3);
+	// core's PL.examine-props, U49(3)). Stateless, one core function each,
+	// answering what core's function answers (the shape its corpus runner
+	// records). Metres on core's ground plane `(x, z)`; a binding maps its own
+	// frame in (Unreal: its (X, Y) ÷ 100 as (x, z), as for `props.pickups.*`). A
+	// refusal (`bad_position`, `not_offered`) is a VALUE `{ ok: false, refusal }`;
+	// the rows' own errors are `[invalid-input]` for a field of the wrong JSON type.
+	// The board is core's `InteractBoard` `{ host, name? }`: the host prop from
+	// `props.interactables.host` and the settlement's name, which a binding works
+	// out once per settlement and sends with each call.
+
+	/**
+	 * `props.interactables.target { at, panel?, villager?, pickups?, containers?,
+	 * buildings?, props?, board?, ranges? }` → core's `interactTarget`: `{ ok:
+	 * true, target: { action, kind, id, prompt, distance } | null }` or `{ ok:
+	 * false, refusal: { code: 'bad_position', field: 'at' } }`. The ONE thing a
+	 * press of E acts on: an open props `panel` closes (`close_panel`); else the
+	 * nearest ACTION in its range — `talk` the `villager` the host would talk to,
+	 * `pick_up` a pick-up not `taken`, `open_container`, `open_board` (the board's
+	 * host prop), `enter` a door that prompts (`doorPrompt` over `buildings`) —
+	 * ties going talk, pick-up, container, board, door, then the first listed;
+	 * only with no action in range the nearest `read_sign` or `examine` prop.
+	 * `prompt` is the words after the key glyph ("Talk to Ada", "Read the sign").
+	 * `ranges` overrides any of `props.contract`'s `rangesM` for this call.
+	 */
+	'props.interactables.target': (args) => {
+		const [input, ranges] = coded('invalid-input', () => interactInputOf('props.interactables.target', args));
+		return plain(interactTarget(input, ranges));
+	},
+
+	/**
+	 * `props.interactables.interact { prop, board? }` → core's `interactWithProp`:
+	 * what pressing E on a stated prop says and raises — `{ ok: true, action,
+	 * line, events }` (`read_sign`: "The sign reads: X" or "The sign is blank.",
+	 * one `sign_read`; `examine`: "You examine the <noun>[: <text>].", one
+	 * `object_examined`; `open_board`: line null, no event, the board's model
+	 * takes over) or `{ ok: false, refusal: { code: 'not_offered', field:
+	 * 'archetype', reason } }`. The host raises the events on its bus.
+	 */
+	'props.interactables.interact': (args) => {
+		const [prop, board] = coded('invalid-input', () => statedPropOf('props.interactables.interact', args));
+		return plain(interactWithProp(prop, board));
+	},
+
+	/**
+	 * `props.interactables.meaning { prop, board? }` → core's `propInteraction`:
+	 * a stated prop's one meaning and its prompt, `{ id, action: open_board |
+	 * read_sign | examine, noun, prompt, text }`, or `{ id, action: null, reason:
+	 * built_fabric | no_archetype }` (not offered: walls, fences, a prop with no
+	 * archetype).
+	 */
+	'props.interactables.meaning': (args) => {
+		const [prop, board] = coded('invalid-input', () => statedPropOf('props.interactables.meaning', args));
+		return plain(propInteraction(prop, board));
+	},
+
+	/**
+	 * `props.interactables.host { props, settlement }` → `{ host }` — core's
+	 * `noticeBoardHost`: the prop the settlement's notice board is posted on (of
+	 * the offered signs that state no other settlement, the nearest to the
+	 * settlement's `position`, the first listed on a tie), or null (no board).
+	 * The board a binding then sends is `{ host, name: <the settlement's name> }`.
+	 */
+	'props.interactables.host': (args) => {
+		const m = 'props.interactables.host';
+		const [props, settlement] = coded('invalid-input', () => [
+			optArrayValue(m, args.props, 'props') ?? [],
+			optObject(m, args.settlement, 'settlement') ?? null,
+		]);
+		return { host: plain(noticeBoardHost(props, settlement)) };
+	},
+
+	/**
+	 * `props.interactables.noun { archetype }` → `{ noun }` — core's `propNoun`:
+	 * what a prop is called from its archetype (`prop.container.barrel` "barrel",
+	 * `prop.furniture.stall.produce` "produce stall"; fewer than three segments,
+	 * null or absent: "object").
+	 */
+	'props.interactables.noun': (args) => {
+		const m = 'props.interactables.noun';
+		const archetype = coded('invalid-input', () =>
+			args.archetype === undefined || args.archetype === null ? null : needString(m, args.archetype, 'archetype'),
+		);
+		return { noun: propNoun(archetype) };
 	},
 
 	/**

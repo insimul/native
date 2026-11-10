@@ -123,7 +123,10 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `7376894`, core `main` (PL.native-genre-hud-config's
+  what to quote in a bug report about core behaviour. Today: `72c658c`, core `main` (2026-11-10,
+  PL.native-interact-target: PL.examine-props' interact rule that the `props.interactables.*` rows run,
+  PL.disk-changed-step's `disk_changed` step, P9i.core's progression pack, PL.pickup-ring-search-case and
+  PL.tutorial-corpus-bundle's `*-corpus-host` modules). Before that, `7376894`, core `main` (PL.native-genre-hud-config's
   two commits on eff846a, landed on core `main` by fast-forward on 2026-11-10; it adds
   the genre HUD runner's `config_of` / `view_of` ops, and PL.native-title-rows kept it
   as core `main`; core `main` eff846a on 2026-11-10 holds the layout and

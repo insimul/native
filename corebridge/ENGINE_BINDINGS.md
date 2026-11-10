@@ -322,6 +322,48 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   at this library's pin and drive each case as `tests/title_corpus.cpp` does (its
   header lists the mapping per op; the sessions open with `now` = the file's
   `contract.t0`).
+- **What E does by a prop (Unreal's P8 binding, after PL.native-interact-target;
+  U94(3)).** Unreal's interim interact rule — the P8 prop rule in
+  `Private/InsimulPlayerTitle.cpp` and the P6 target in
+  `Private/InsimulPlayerCharacter.cpp` / `Private/InsimulVillageProps.cpp`
+  (unreal `feat/p8-unreal-r4` 26080de and main 360c482, read only; core cites
+  `feat/p8-unreal` 981b59b, the same lines) — is core's
+  `src/props/interactables.ts` now (PL.examine-props, core 2158b08), through the
+  `props.interactables.*` rows (`README.md`, "The interact rows"). What stays the
+  engine's: finding the villager it would talk to (sight, facing), the reachable
+  containers, the props panel that is open, the E press inside an interior or in
+  a conversation, and raising the answered events on its bus. What goes is the
+  rule:
+
+  | Interim Unreal code | Row (and what the binding sends or reads) |
+  |---|---|
+  | `IsSign`, `IsOfferedProp` (`InsimulPlayerTitle.cpp` 88–89) | `props.interactables.meaning { prop, board }` → `action` (`read_sign`, `examine`, `open_board`, or null with `reason`): whole dotted segments (deviation `segments`), and a fence is not offered either (`fence`) |
+  | `PropNoun` (73–86) | `props.interactables.noun { archetype }` → `noun` (underscores read as spaces: `noun`); `meaning` answers it too |
+  | the board on the sign nearest the settlement centre (`InsimulVillageProps.cpp`, the P6 board) | `props.interactables.host { props, settlement }` → `host`, once per settlement; send `board: { host, name: <the settlement's name> }` with every other call. A sign that states another settlement is not this board's (`board-settlement`), and the host is never also read as a sign (`board-sign`) |
+  | `PropToInteract(kPropRange 260 cm)`, `PropPrompt` (572–609) and `InteractWithNearest`'s choice between the talk villager and `PropsTargetNear(…, 220 cm)` (`InsimulPlayerCharacter.cpp` 427–479 at 26080de; the board 100 cm more) | `props.interactables.target { at, panel?, villager?, pickups?, containers?, buildings?, props, board }` → `target { action, kind, id, prompt, distance }` or null: ONE rule for both cells (`tiers`) — the nearest action (talk, pick-up, container, board, door) within its reach, only then the nearest sign or examined prop; a tie to the first listed (`prop-tie`); a door at its own distance, not 0 (`door-distance`). Draw `"E   " + prompt`; act on `action` with `id` |
+  | `InteractWithProp` (611–641: the line, `sign_read` / `object_examined`) | `props.interactables.interact { prop, board }` → `{ ok, action, line, events }`: show `line`, raise each of `events`; `open_board` has no line (open `props.board.*`); a refusal is the value `not_offered`; no second full stop after a text that ends in one (`full-stop`) |
+  | `kPropRange`, the 220 / 320 cm targets, `InteractRange` 350 cm | `props.contract` → `props-interactables.rangesM` (metres); a call may pass its own `ranges` |
+
+  **Frames**: as for `props.pickups.*`, every point is Unreal's `(X, Y)` ÷ 100 as
+  core's `(x, z)` (`y` is not read); `distance` comes back in metres on that
+  plane. A stated prop is the World IR's `entities.props[]` entry as the world
+  states it (`id`, `archetype`, `position`, `text`, `settlementId`). Re-vendor
+  `conformance/props/interactables.json` from core at this library's pin and drive
+  each case as `tests/props_corpus.cpp` does: the rows take one prop or one stand,
+  so a `meanings` / `interact` case is one call per prop, a `target` case with
+  `stands` one call per stand with the stand's fields over the case's, and the
+  board is the case's `board`, else `{ host, name }` from `host` and its
+  `settlement`. The P8 play test's `PickProp` must skip the board's sign (it
+  opens the board).
+- **Save slots: the disk can change under the session since the 72c658c pin**
+  (core's PL.disk-changed-step). When the save files change outside the game,
+  send the new listing as `saves.slots.apply` op `disk_changed { slots }` (the
+  `SlotLoadResult[]` a create takes; null for none). Its result's `disk` says what
+  changed; when the active slot changed or went, core clears it so autosave never
+  writes over the outside change, and the indicator says so. Refused `busy` or
+  `confirm_open` as a value: list again once the session is free. Re-vendor
+  `conformance/saves/slots.json` (147 cases) and `conformance/ui/title-flow.json`
+  (57) to pick up the new cases.
 - **Save slots: `quickSlot` is 1-based since the eff846a pin** (core's
   PL.quick-slot-one-based). A character or pack config that states
   `quickSlot: 0` (the old "Slot 1") is now refused `quick_slot_out_of_range`, and

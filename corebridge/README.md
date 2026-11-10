@@ -127,8 +127,8 @@ game; **meta** = about the bridge itself.
 | `save.migrate` | `{ saveFile }` → `{ saveFile, outcome, significant }` | `save-file` `migrateSaveFileWithOutcome`, unchanged; `significant` = `isMigrationOutcomeSignificant` | P1 |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
-| `saves.slots.apply` | `{ session, ops: save, load, continue, delete, ask_delete, confirm_delete, cancel_delete, key, tick, finished }` → `{ results: [{ ok, refusal?, outcome?, effect, history? }], view }` | same | P1 slots |
-| `props.contract` | `{}` → `{ <area>: { <table>: value } }` — the data tables each P6 corpus file's `contract` states (`props-containers`, `props-documents`, `props-notice-board`, `props-doors`, `ui-inventory`, `props-pickup-placement`) | `props/containers`, `props/documents`, `props/doors`, `props/notice-board`, `ui/inventory-model`, `props/pickup-placement` constants | P6 (PL.native-props-rows, U89(2); `props-pickup-placement` PL.native-pickup-settle, U91(2)) |
+| `saves.slots.apply` | `{ session, ops: save, load, continue, delete, ask_delete, confirm_delete, cancel_delete, key, tick, finished, disk_changed }` → `{ results: [{ ok, refusal?, outcome?, effect, history?, disk? }], view }` | same | P1 slots |
+| `props.contract` | `{}` → `{ <area>: { <table>: value } }` — the data tables each P6 corpus file's `contract` states (`props-containers`, `props-documents`, `props-notice-board`, `props-doors`, `ui-inventory`, `props-pickup-placement`, `props-interactables`) | `props/containers`, `props/documents`, `props/doors`, `props/notice-board`, `ui/inventory-model`, `props/pickup-placement`, `props/interactables` constants | P6 (PL.native-props-rows, U89(2); `props-pickup-placement` PL.native-pickup-settle, U91(2); `props-interactables` PL.native-interact-target, U94(3)) |
 | `props.containers.view` | `{ container, context?: { playerItemIds?, buildings?, now? } }` → `{ view }` | `props/containers` `containerView` | P6 |
 | `props.containers.unlock` | `{ container, context? }` → `{ result, container }` | `props/containers` `unlockContainer` | P6 |
 | `props.containers.move` | `{ container, move: { kind: take } or { kind: put, itemId }, context? }` → `{ refusal }` (null: `ui.trade` may run it) | `props/containers` `containerMoveRefusal` | P6 |
@@ -149,6 +149,11 @@ game; **meta** = about the bridge itself.
 | `props.pickups.clearance` | `{ spot, groundY?, settled?, obstacles?, roads?, clearance? }` → `{ ok: true, clearanceM, nearest }` or `{ ok: false, code: bad-spot }` | `props/pickup-placement` `pickupClearance` | P6 pick-up settle |
 | `props.pickups.pattern` | `{ search? }` → `{ rings: [{ radiusM, points }] }` | `props/pickup-placement` `pickupSearchPattern` | P6 pick-up settle |
 | `props.pickups.ring` | `{ ring, search? }` → `{ points: [{ x, z }] }` | `props/pickup-placement` `pickupSearchRing` | P6 pick-up settle |
+| `props.interactables.target` | `{ at, panel?, villager?, pickups?, containers?, buildings?, props?, board?, ranges? }` → `{ ok: true, target: { action, kind, id, prompt, distance } or null }`, or the refusal value `{ ok: false, refusal: { code: bad_position, field: at } }` | `props/interactables` `interactTarget` | P8 interact (PL.native-interact-target, U94(3); core's PL.examine-props, U49(3)) |
+| `props.interactables.interact` | `{ prop, board? }` → `{ ok: true, action, line, events }`, or the refusal value `{ ok: false, refusal: { code: not_offered, field: archetype, reason } }` | `props/interactables` `interactWithProp` | P8 interact |
+| `props.interactables.meaning` | `{ prop, board? }` → `{ id, action, noun, prompt, text }` or `{ id, action: null, reason }` | `props/interactables` `propInteraction` | P8 interact |
+| `props.interactables.host` | `{ props, settlement }` → `{ host }` (null: no board) | `props/interactables` `noticeBoardHost` | P8 interact |
+| `props.interactables.noun` | `{ archetype }` → `{ noun }` | `props/interactables` `propNoun` | P8 interact |
 | `inventory.create` | `{ player?: { gold, inventory } }` → `{ session, view: { filter, counts, gold, rows, equipment, save } }` | `ui/inventory-model` `InventoryViewModel` | P6 |
 | `inventory.apply` | `{ session, ops: add, remove, filter, toggle, set_gold, add_gold, remove_gold, equip_flag, get, items, load, clear }` → `{ results, view }` | same | P6 |
 | `ui.notifications.create` | `{}` → `{ session, view }` | `ui/notifications` `Notifications` | P2 |
@@ -482,15 +487,23 @@ quick load on F5 / F9. It does no I/O, so it is a session pair like the clock:
   view's `confirm` prompt), `confirm_delete` and `cancel_delete` (the prompt's
   two actions; core's PL.slots-delete-states), `key { code }` (a
   KeyboardEvent.code: `F5`, `F9`; any other is `unbound_key`), `tick { delta }`
-  (seconds; null is a non-finite tick, as the corpus writes it) and `finished {
-  ok, savedAt?, summary?, outcome? }`. Each result is core's `{ ok, refusal?,
-  outcome?, effect, history? }`: a refusal (`busy`, `no_such_slot`, `slot_empty`,
+  (seconds; null is a non-finite tick, as the corpus writes it), `finished {
+  ok, savedAt?, summary?, outcome? }` and `disk_changed { slots }` (the save
+  files changed outside the game: `slots` is the host's new listing, as at
+  create, null for none; core's PL.disk-changed-step, in from the 72c658c pin).
+  Each result is core's `{ ok, refusal?, outcome?, effect, history?, disk? }`:
+  a refusal (`busy`, `no_such_slot`, `slot_empty`,
   `slot_corrupted`, `no_quick_slot`, `nothing_to_continue`, `nothing_pending`,
   `unbound_key`, `confirm_open`, `nothing_to_confirm`, `quick_slot_reserved`) is
   a VALUE, `effect` is the I/O the host does now — `{ write: { slot, kind,
   autosave } }` (then raise core's `game_saved`), `{ read: { slot, kind } }` or
   `{ remove: { slot } }` — answered with `finished`, and `history` is the line a
-  finished delete leaves in the game's log ("Deleted Slot N"). The view is core's
+  finished delete leaves in the game's log ("Deleted Slot N"), and `disk` (only
+  on a `disk_changed` that was not refused) is `{ changed, deleted, added,
+  droppedActive }`: when the active slot changed or went outside the game core
+  clears it, so autosave never writes over the outside change, and the indicator
+  says so (`slot_changed_outside`, `slot_deleted_outside`, or the `quick_` ones).
+  The view is core's
   `SaveSlotsView`: `rows` (core's `SlotView` plus `canDelete`, `isContinue`,
   `isActive`, `isQuick`), `continueSlot`, `activeSlot`, `pending`, `confirm` (the
   delete prompt, or null), `autosave { on, target, inSec }` and `indicator`
@@ -505,22 +518,23 @@ quick load on F5 / F9. It does no I/O, so it is a session pair like the clock:
   nothing). A binding that stated a 0-based index must add one.
 
 What the rows refuse as errors is only what core's types declare and JSON cannot
-hold: a `config` that is not an object, a slot that is not `{ index: number,
-outcome }` with an outcome core's `SaveSlotModel` knows, an `activeSlot`, `slot`
+hold: a `config` that is not an object, a slot (at create or in a `disk_changed`
+listing) that is not `{ index: number, outcome }` with an outcome core's
+`SaveSlotModel` knows, a listing that is not an array, an `activeSlot`, `slot`
 or `delta` that is not a number, a `code` that is not a string, and a `finished`
 without a boolean `ok`. A slot index that is not a slot (`1.5`, `7`) goes to core,
 which answers `no_such_slot` on purpose.
 
-The evidence is core's corpus `conformance/saves/slots.json` (126 cases at
-ac229a7; 94 at fc88be9), copied byte for byte by `tools/vendor-core-bundle.mjs`
+The evidence is core's corpus `conformance/saves/slots.json` (147 cases at
+72c658c; 130 at eff846a; 126 at ac229a7; 94 at fc88be9), copied byte for byte by `tools/vendor-core-bundle.mjs`
 and hashed in `VENDORED.json`. `tests/saves_slots_corpus.cpp` (ctest
 `saves_slots_corpus`) drives it through the two rows from C: every `run` case as
 one create and one apply per step (so the view after every step is the session's
 own), every `config` case through create's `config`, every `continue` case
 through the view of a session with no quick slot (core's `continueSlot(slots,
 slotCount)` reads exactly `slotCount` slots), every `rows` case through create's
-view (a `busy` rows case with one pending save first) — 111 cases at ac229a7
-(config 26, continue 13, rows 10, run 62). The 15
+view (a `busy` rows case with one pending save first) — 132 cases at 72c658c
+(config 28, continue 13, rows 10, run 81; 115 at eff846a). The 15
 `indicator` cases show any state, kind and detail on a bare indicator, which no
 session step does; the runner prints a measured reason for each (how many of its
 views the session itself showed in the run cases, and which it never reached).
@@ -665,7 +679,9 @@ list entry (skipped, keeping its index), an obstacle of a kind core does not kno
 (not kept off), a clearance or search field that is not a usable number (its
 default), a spot that is not a point (`bad-spot`).
 
-**The evidence** is core's `conformance/props/pickup-placement.json` (66 cases over
+**The evidence** is core's `conformance/props/pickup-placement.json` (72 cases at
+72c658c, the six added by core's PL.pickup-ring-search-case a `ring` that states a
+`search`; 66 at eff846a; over
 `pattern`, `ring`, `clearance`, `settle`, `sequence`), copied byte for byte with
 the other P6 corpora (`PROPS_CORPUS_FILES`) and driven by the same runner,
 `tests/props_corpus.cpp`, as the ctest `props_pickup_placement_corpus`: every
@@ -685,6 +701,98 @@ and the errors.
 **Cost.** One core module (`props/pickup-placement`; 151 → 152 at the eff846a
 pin): the bundle went from 1,530,726 bytes (the eff846a pin bump alone, from
 1,511,366 at ac229a7) to 1,553,471. The 66 cases take about 20 ms under QuickJS.
+
+### The interact rows: what E does by a prop (PL.native-interact-target)
+
+Core's interact rule (PL.examine-props, core 2158b08; ruling U49(3), on the
+Unreal P8 critic's m1 and its collision with P6's E actions) is the rule Unreal's
+P8 cell wrote as an interim copy (`IsSign`, `IsOfferedProp`, `PropNoun`,
+`PropToInteract`, `PropPrompt`, `InteractWithProp` and the board-sign search,
+`InsimulPlayerTitle.cpp` and `InsimulVillageProps.cpp`): which ONE thing a press
+of E acts on where the player stands, what each stated prop (`entities.props`,
+pipelines' settlement dressing) means, and what reading and examining say.
+`src/props/interactables.ts` states it as data in, decision out, in core's
+metres on its ground plane `(x, z)`; the rows (ruling U94(3)) call it and decide
+nothing:
+
+- **`props.interactables.target`** — the ONE thing E acts on (`interactTarget`):
+  an open props `panel` closes; else the nearest ACTION within its reach — `talk`
+  (the `villager` the host would talk to, 3.5 m), `pick_up` (a pick-up not
+  `taken`, 2.2 m), `open_container` (2.2 m), `open_board` (the board's host prop,
+  3.2 m), `enter` (a door that prompts by `doorPrompt` over `buildings`, at its
+  own distance) — ties going talk, pick-up, container, board, door, then the first
+  listed; only with no action in range, the nearest LOOK, `read_sign` or `examine`
+  (2.6 m, the first listed on a tie). It answers the target's `action`, `kind`,
+  `id`, `prompt` ("Talk to Ada", "Pick up Apple", "Read the Elmford notice
+  board", "Examine the barrel"; the key glyph is the host's) and `distance`, or
+  null with nothing in reach; `ranges` overrides any reach for the call. A
+  position that is not a finite point is the refusal VALUE `bad_position`.
+- **`props.interactables.interact`** — what pressing E on a stated prop says and
+  raises (`interactWithProp`): "The sign reads: X" or "The sign is blank." with
+  one `sign_read`; "You examine the <noun>." or "You examine the <noun>: <text>."
+  (no second full stop after a text that ends in one) with one `object_examined`;
+  `open_board` with no line and no event (the board's model, `props.board.*`,
+  takes over); a prop with no meaning is the refusal VALUE `not_offered`. The host
+  raises the events on its bus (the tutorial's lessons complete on them).
+- **`props.interactables.meaning`** — a prop's one meaning and prompt
+  (`propInteraction`): `open_board` for the board's host prop (never also read as
+  a sign), `read_sign` for `prop.structural.sign` by whole dotted segments,
+  `examine` for every other stated prop (a `prop.container.*` prop too: only a
+  `ContainerIR` opens), or none for the built fabric (`prop.structural.wall`,
+  `prop.structural.fence`) and a prop with no archetype.
+- **`props.interactables.host`** — the prop a settlement's notice board is posted
+  on (`noticeBoardHost`): of the offered signs that state no other settlement, the
+  nearest to the settlement's `position`, the first listed on a tie; null is no
+  board. The `board` the other rows take is `{ host, name }`, `name` the
+  settlement's: a binding works it out once per settlement.
+- **`props.interactables.noun`** — what a prop is called (`propNoun`:
+  `prop.furniture.stall.produce` is "produce stall"; fewer than three segments is
+  "object").
+- **`props.contract`'s `props-interactables`** — the corpus's data tables from
+  core's constants: `propActions`, `actions`, `actionTier`, `lookTier`,
+  `notOffered`, `notOfferedReasons`, `signArchetypes`, `rangesM`,
+  `doorPromptRadiusM`, `refusals` and the `deviations` from Unreal's interim
+  rules (ten, each with Unreal's reading, core's and why). The prose keys are
+  rules written out and stay in the corpus.
+
+What stays the host's: the villager it would talk to (sight and facing), which
+containers are reachable, the panel that is open, the E press inside an interior
+or during a conversation (core's `notHere`; PL.examine-props m3), and a language
+world's translated objects (`examineNearest`, m4).
+
+**Errors** (`[invalid-input]`) are only a field of the wrong JSON type core's types
+declare: `props`, `pickups`, `containers` or `buildings` that is not an array, a
+building that is not an object, `villager`, `board`, `settlement`, `prop` or
+`ranges` that is not an object, a range that is not a number, a `panel` or an
+`archetype` that is not a string. Every value core reads itself goes to core,
+which answers it as its corpus pins: a position that is not a finite point (`at`:
+`bad_position`; a candidate's: skipped), a null or id-less list entry, a taken
+pick-up (skipped), an archetype or text that is not a non-empty string (no
+archetype: not offered; no text: blank).
+
+**The evidence** is core's `conformance/props/interactables.json` (27 cases over
+`noun` 1, `meanings` 4, `host` 5, `interact` 2, `target` 15; Brightwater's 78
+stated props among them), copied byte for byte with the other props corpora
+(`PROPS_CORPUS_FILES`) and driven by the same runner, `tests/props_corpus.cpp`, as
+the ctest `props_interactables_corpus`, 0 undriven. The rows take ONE prop or one
+stand, as core's functions do; the runner walks a case's lists and composes its
+board exactly as core's corpus runner does (`runMeanings`, `runTarget`): the board
+as the case states it, else `{ host, name }` from `props.interactables.host` and
+the settlement; a `meanings` case's `count` per action made from the rows'
+meanings; a `target` case's `stands` one call each with the stand's fields over
+the case's. Both projections are self-tested on every start.
+`props_interactables_corpus_negative`
+(`tests/props-negative/interactables-wrong.json`) must see a wrong range, an op
+with no case, and five answers an engine keeping one of Unreal's interim rules
+would give — the board's host sign also read as a sign, a fence offered, a nearer
+barrel examined before a pick-up, a tie kept by the last prop, a second full stop
+— each reported. The hand cases in `tests/cases/bridge-props.json` pin the answer
+shapes, the refusal values and the errors.
+
+**Cost.** One core module (`props/interactables`; 158 → 159 at the 72c658c pin):
+the bundle went from 1,611,435 bytes (the pin, the repointed P8 imports and the
+`disk_changed` op) to 1,628,183 (+16,748). The 27 cases take about 12 ms under
+QuickJS.
 
 ### The title, tutorial and onboarding rows (PL.native-title-rows)
 
@@ -746,8 +854,9 @@ boolean; an id list not of strings; `bindings` beside its changes; an unreadable
 `now`; `tick` without a host clock; an event without a string `type`). A linked
 `savesSession` that is not an open `saves.slots` session is an error naming it.
 
-**The evidence** is core's `conformance/ui/title-flow.json` (56 cases at 7376894:
-menu 29, choose 18, session 9; it was 51 at ff599d7 and gained the quick-slot and
+**The evidence** is core's `conformance/ui/title-flow.json` (57 cases at 72c658c:
+menu 29, choose 18, session 10, the tenth a session whose saves change outside the
+game, through the `disk_changed` op; 56 at 7376894; it was 51 at ff599d7 and gained the quick-slot and
 delete-prompt cases since) and `conformance/quests/tutorial.json` (40 cases:
 objectives 8, run 18, onboarding 14; contract `totalStepsRule`, `bindingsRule`,
 `nothingLeftRule`), copied byte for byte (`TITLE_CORPUS_FILES`) and driven by
@@ -769,7 +878,12 @@ the save-file modules behind it): 152 → 183 at the 7376894 pin. The bundle wen
 from 1,563,744 bytes to 1,628,012 (+64,268, +4.1 %); the three models account for
 about 39,400 of that, and about 23,500 is `tutorialStateJson` and `corpusBindings`
 living in core's corpus module, whose comparator import brings the save-file code
-with it. The 96 cases take about 30 ms under QuickJS.
+with it. The 96 cases take about 30 ms under QuickJS. Since the 72c658c pin
+(PL.native-interact-target, U94(3)) the rows import those host names from core's
+`ui/title-flow-corpus-host` and `quests/tutorial-corpus-host` (core's
+PL.tutorial-corpus-bundle, U94(2)), which reach no save module: at 72c658c the
+repointed imports alone take the bundle from 1,639,824 bytes to 1,610,712
+(−29,112) and 188 core modules to 158.
 
 ### What the feature phases asked for and core does not have yet
 
@@ -856,10 +970,11 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `corebridge_sha256` | the C SHA-256 against the NIST vectors, at every split point |
 | `corebridge_radiant`, `corebridge_radiant_none` | the radiant corpus through core's real radiant engine on the native Prolog engine |
 | `core_vendor` | every vendored file matches its recorded sha256 and the pin |
-| `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (111 cases at ac229a7; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
+| `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (132 of 147 cases at 72c658c; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (128 cases, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
-| `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (66 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
-| `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (96 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
+| `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
+| `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (27 cases, 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op and five answers an engine keeping one of Unreal's interim rules would give seen as wrong |
+| `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's
 OWN corpora (saves, the UI matrices, weather progression, genre resolution,

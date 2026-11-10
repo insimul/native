@@ -50,7 +50,9 @@
 // through the `props.*` and `inventory.*` rows. Core's pick-up placement corpus
 // `conformance/props/pickup-placement.json` is copied with them
 // (PL.native-pickup-settle, U91(2)) and driven through the `props.pickups.*` rows
-// by the same runner. Core's P8 corpora are copied the same way
+// by the same runner, and so is its interact rule's corpus
+// `conformance/props/interactables.json` (PL.native-interact-target, U94(3)),
+// driven through the `props.interactables.*` rows. Core's P8 corpora are copied the same way
 // (PL.native-title-rows, U92(1)): `conformance/ui/title-flow.json` and
 // `conformance/quests/tutorial.json`; tests/title_corpus.cpp drives them through
 // the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows.
@@ -150,11 +152,14 @@ const SAVES_CORPUS_FILES = ['conformance/saves/slots.json'];
 // the set that LISTS it (p9aFilesOnDisk leaves these out); `conformance/props/`
 // is the props set's alone, so a file left there by an earlier pin is seen too.
 // pickup-placement.json (PL.pickup-placement) joined the set with its
-// `props.pickups.*` rows (PL.native-pickup-settle, U91(2)).
+// `props.pickups.*` rows (PL.native-pickup-settle, U91(2)), and interactables.json
+// (PL.examine-props) with its `props.interactables.*` rows
+// (PL.native-interact-target, U94(3)).
 const PROPS_CORPUS_FILES = [
   'conformance/props/containers.json',
   'conformance/props/documents.json',
   'conformance/props/doors.json',
+  'conformance/props/interactables.json',
   'conformance/props/notice-board.json',
   'conformance/props/pickup-placement.json',
   'conformance/ui/inventory-cases.json',

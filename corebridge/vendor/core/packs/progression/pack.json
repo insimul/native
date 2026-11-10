@@ -1,0 +1,81 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "progression",
+  "version": "0.1.0",
+  "name": "Progression",
+  "summary": "XP, levels and tiers, achievements, streaks and daily challenges; skill trees a panel draws and a save keeps; and the genre-agnostic feature modules (knowledge, proficiency, patterns, gamification, adaptive difficulty, conversation analytics), each enabled module doing something or refused with a reason.",
+  "kind": "optional",
+  "phase": "P9i",
+  "catalog": ["progression-skill-trees", "progression-xp-levels-achievements", "progression-feature-modules"],
+  "core": {
+    "modules": ["skill"],
+    "featureModules": ["knowledge-acquisition", "proficiency", "pattern-recognition", "gamification", "adaptive-difficulty", "conversation-analytics", "skill-tree"],
+    "genreFeature": "experience",
+    "corpus": [
+      "conformance/progression/gamification.json",
+      "conformance/progression/modules.json",
+      "conformance/progression/skills.json",
+      "conformance/progression/save.json",
+      "conformance/skills/trees.json",
+      "conformance/skills/advancement.json",
+      "conformance/skills/effects.json",
+      "conformance/skills/unlocks.json"
+    ],
+    "saveExtensions": ["progression"]
+  },
+  "requires": [{ "id": "hud" }, { "id": "saves" }],
+  "parameters": [
+    { "id": "conversationXp", "type": "integer", "min": 0, "maps": "GamificationTuning.conversationBase", "source": "core-default", "doc": "XP for a finished conversation (XP_REWARDS.conversationBase 10)" },
+    { "id": "longConversationXp", "type": "integer", "min": 0, "maps": "GamificationTuning.conversationLong", "source": "core-default", "doc": "XP per turn past the long-conversation mark (5)" },
+    { "id": "longConversationTurns", "type": "integer", "min": 0, "maps": "GamificationTuning.longConversationTurns", "source": "core-default", "doc": "turns before the long-conversation bonus starts (5)" },
+    { "id": "questXp", "type": "integer", "min": 0, "maps": "GamificationTuning.questComplete", "source": "core-default", "doc": "XP for a quest that names no reward of its own (25)" },
+    { "id": "newWordXp", "type": "integer", "min": 0, "maps": "GamificationTuning.vocabularyNewWord", "source": "core-default", "doc": "XP for a new word (3)" },
+    { "id": "masteredWordXp", "type": "integer", "min": 0, "maps": "GamificationTuning.vocabularyMastered", "source": "core-default", "doc": "XP for a mastered word (15)" },
+    { "id": "achievementXp", "type": "integer", "min": 0, "maps": "GamificationTuning.achievementUnlocked", "source": "core-default", "doc": "XP an unlocked achievement grants (50)" },
+    { "id": "puzzleXp", "type": "integer", "min": 0, "maps": "GamificationTuning.puzzleSolved", "source": "core-default", "doc": "XP for a solved puzzle (20)" },
+    { "id": "discoveryXp", "type": "integer", "min": 0, "maps": "GamificationTuning.locationDiscovered", "source": "core-default", "doc": "XP for a discovered location (5)" },
+    { "id": "skillRewardXpPerPoint", "type": "integer", "min": 0, "maps": "GamificationTuning.skillRewardXpPerPoint", "source": "core-default", "doc": "XP per skill point a quest's skill rewards grant (2)" },
+    { "id": "streakStepTenths", "type": "integer", "min": 0, "maps": "GamificationTuning.streakStepTenths", "source": "core-default", "doc": "how much a daily-challenge streak day adds to the multiplier, in tenths (1)" },
+    { "id": "streakCapTenths", "type": "integer", "min": 10, "maps": "GamificationTuning.streakCapTenths", "source": "core-default", "doc": "the streak multiplier's cap, in tenths (20 = 2.0x)" },
+    { "id": "adjustmentWindow", "type": "integer", "min": 1, "maps": "AdjustmentTuning.window", "source": "core-default", "doc": "recent quests the difficulty adjustment reads (10)" },
+    { "id": "adjustmentHighScore", "type": "integer", "min": 0, "max": 1000, "maps": "AdjustmentTuning.highScore", "source": "core-default", "doc": "performance, in permille, at which quests get harder (850)" },
+    { "id": "adjustmentLowScore", "type": "integer", "min": 0, "max": 1000, "maps": "AdjustmentTuning.lowScore", "source": "core-default", "doc": "performance, in permille, at or below which quests get easier (400)" },
+    { "id": "todayKey", "type": "string", "maps": "binding", "source": "game", "doc": "today's date as YYYY-MM-DD, from the host's clock; the tracker's day step takes it" }
+  ],
+  "extensionPoints": [
+    { "id": "level-curve", "kind": "binding-hook", "signature": "GamificationConfig {levelThresholds, tierLabels} (src/progression/gamification.ts)", "doc": "a world's own XP curve and tier labels; the genre bundle's gamification.tierLabels by default" },
+    { "id": "skill-trees", "kind": "prolog-facts", "signature": "WorldIR.skills {skills, trees, pointsPerLevel, defaultNodeCost}", "doc": "the trees a world authors; a node's requires are Prolog goals and its effects unlock, modify and permit" },
+    { "id": "feature-modules", "kind": "binding-hook", "signature": "resolveFeatureModules(ids, bundleId) (src/progression/feature-modules.ts)", "doc": "the modules a world enables; a host shows tabs and toggles only for the enabled ones" },
+    { "id": "on-quest", "kind": "event-handler", "signature": "quest_completed", "doc": "a quest's XP and counters (the tracker's quest step, once per completion)" },
+    { "id": "on-level", "kind": "event-handler", "signature": "level_up", "doc": "a toast; a skill panel refreshes" },
+    { "id": "on-achievement", "kind": "event-handler", "signature": "achievement_unlocked", "doc": "an achievement toast" }
+  ],
+  "events": {
+    "emits": ["xp_gained", "level_up", "achievement_unlocked", "skill_advanced", "skill_node_unlocked"],
+    "consumes": ["quest_completed", "utterance_quest_completed", "puzzle_solved", "item_collected", "location_discovered", "npc_talked", "object_examined", "enemy_defeated", "skill_rewards_applied"]
+  },
+  "panels": ["skill_tree"],
+  "styles": {
+    "tokens": ["accent"],
+    "layouts": ["skill-tree", "xp-bar", "achievement-toast"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "src/progression/gamification.ts is the tracker (XP, levels, tiers, achievements, daily challenges, streaks) as pure steps over plain state; src/progression/feature-modules.ts defines the feature modules, resolves a world's enabled ones and holds proficiency, adaptive difficulty and the quest difficulty adjustment; src/skills/ and SkillProgression own the skill trees; src/progression/progression-save.ts is the extensions.progression block. The engine draws the XP bar, the toasts and the skill panel.",
+    "notes": [
+      "Feed each thing that happened to the tracker once: a quest completion is one quest step (with its category and XP reward when the host has them), not quest_completed and a direct call both.",
+      "Give the tracker today's date (a day step) from the host's clock; without one, no daily challenge is tracked.",
+      "Hand resolveFeatureModules(resolution.bundle.featureModules, resolution.bundle.id).enabled to the pause menu: performance-scoring and world-lore are refused (unimplemented, catalog progression-performance-scoring-world-lore, core-only), assessment and npc-exams are refused (port-later), so their tabs and toggles do not show.",
+      "The NPC exam half of the tracker (its XP, examsPassed, Exam Ace) waits for language-npc-exams (port-later): do not raise or count npc_exam_completed from this pack.",
+      "Level-up rewards (progression-level-up-rewards) and content gating (progression-content-gating) are port-later: level_up.rewards is always empty, and core's ContentGatingManager is not part of this pack. Do not generate either from this pack.",
+      "Restore SkillProgression from extensions.progression.skills with restore(), then publishActors and publishModifiers as a live world needs."
+    ],
+    "doNot": [
+      "Store a level, a tier or the day's template in a save: they are derived from XP and the date.",
+      "Show a tab or toggle for a refused feature module."
+    ]
+  }
+}

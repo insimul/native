@@ -17,6 +17,7 @@
       "packs/mining/pack.json",
       "packs/npc-life/pack.json",
       "packs/npc-presentation/pack.json",
+      "packs/progression/pack.json",
       "packs/saves/pack.json",
       "packs/shops/pack.json",
       "packs/social/pack.json",
@@ -10030,6 +10031,545 @@
             "code": "invalid-parameter",
             "pack": "language-learning",
             "detail": "'language-learning' parameter 'identificationPassScore': 101 is outside [0, 100]"
+          }
+        ],
+        "notes": []
+      }
+    },
+    {
+      "name": "progression on the village, combat still off (P9i)",
+      "claim": "Switching progression on runs it on Thistlecombe's living world, whose genre has experience on; its hud and saves dependencies are base packs. A parameter in range is kept on its pack and one outside its range (a streak cap below 1.0x) is refused and dropped. Combat is untouched and stays the world's to decide (off).",
+      "input": {
+        "recipe": "rpg-adventure",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "adventure",
+              "name": "Adventure",
+              "description": "Exploration, narrative, and puzzle-solving",
+              "cameraMode": "third_person",
+              "movementPlane": "free",
+              "controlScheme": "wasd_mouse",
+              "combatStyle": "none",
+              "movementStyle": "free",
+              "uiLayout": "action_rpg",
+              "defaultWorldType": "tropical-pirate",
+              "features": {
+                "inventory": true,
+                "crafting": false,
+                "dialogue": true,
+                "combat": false,
+                "building": false,
+                "resources": false,
+                "permadeath": false,
+                "quests": true,
+                "experience": true,
+                "skills": true
+              },
+              "questTypes": [
+                "rpg"
+              ],
+              "difficultyLevels": [
+                "easy",
+                "normal",
+                "hard"
+              ],
+              "defaultPlayerSpeed": 1,
+              "defaultJumpHeight": 1,
+              "gravityMultiplier": 1,
+              "showMinimap": true,
+              "showHealthBar": false,
+              "showStaminaBar": false,
+              "showAmmoCounter": false,
+              "showCompass": true
+            },
+            "cameraPerspective": null
+          }
+        },
+        "game": {
+          "packs": {
+            "progression": {
+              "enabled": true,
+              "parameters": {
+                "questXp": 40,
+                "streakCapTenths": 9
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "recipe": {
+          "id": "rpg-adventure",
+          "bound": true
+        },
+        "engine": null,
+        "preset": {
+          "recipe": "rpg-adventure",
+          "packs": [
+            "saves",
+            "hud",
+            "map",
+            "menus-settings",
+            "quests",
+            "time-weather",
+            "audio",
+            "inventory",
+            "shops",
+            "interiors",
+            "camera",
+            "controls",
+            "npc-life",
+            "npc-presentation",
+            "dialogue",
+            "onboarding"
+          ],
+          "changes": 1
+        },
+        "packs": [
+          {
+            "id": "foundation",
+            "kind": "always-on",
+            "phase": "P1",
+            "authored": false,
+            "version": null,
+            "source": "always-on",
+            "requiredBy": [
+              "audio",
+              "camera",
+              "composer",
+              "hud",
+              "interiors",
+              "npc-life",
+              "saves",
+              "time-weather"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "composer",
+            "kind": "always-on",
+            "phase": "P9a",
+            "authored": false,
+            "version": null,
+            "source": "always-on",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "saves",
+            "kind": "base",
+            "phase": "P1",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "inventory",
+              "progression",
+              "quests"
+            ],
+            "variants": {
+              "storage": "local"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "hud",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "dialogue",
+              "inventory",
+              "map",
+              "menus-settings",
+              "onboarding",
+              "progression",
+              "quests"
+            ],
+            "variants": {
+              "uiLayout": "action_rpg"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "map",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "menus-settings",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "quests",
+            "kind": "base",
+            "phase": "P3",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "onboarding"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "time-weather",
+            "kind": "base",
+            "phase": "P4",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "npc-life"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "audio",
+            "kind": "base",
+            "phase": "P5",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "inventory",
+            "kind": "base",
+            "phase": "P6",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "shops"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": {
+              "feature": "inventory",
+              "policy": "composer",
+              "on": true
+            },
+            "active": true
+          },
+          {
+            "id": "npc-life",
+            "kind": "base",
+            "phase": "P9f",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "preset",
+            "requiredBy": [
+              "dialogue",
+              "npc-presentation"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "dialogue",
+            "kind": "base",
+            "phase": "P9g",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "shops"
+            ],
+            "variants": {
+              "provider": "server"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "shops",
+            "kind": "optional",
+            "phase": "P6",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "interiors",
+            "kind": "base",
+            "phase": "P6",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "camera",
+            "kind": "base",
+            "phase": "P7",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "controls"
+            ],
+            "variants": {
+              "cameraMode": "third_person"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "controls",
+            "kind": "base",
+            "phase": "P7",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {
+              "controlScheme": "wasd_mouse",
+              "movementStyle": "free"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "onboarding",
+            "kind": "base",
+            "phase": "P8",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {
+              "flow": "generic"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "npc-presentation",
+            "kind": "base",
+            "phase": "P9f",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "progression",
+            "kind": "optional",
+            "phase": "P9i",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "game",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {
+              "questXp": 40
+            },
+            "gate": {
+              "feature": "experience",
+              "policy": "composer",
+              "on": true
+            },
+            "active": true
+          }
+        ],
+        "offered": [
+          "combat",
+          "stealth",
+          "crafting",
+          "fishing",
+          "farming",
+          "social",
+          "photo-mode"
+        ],
+        "overrides": [
+          {
+            "pack": "progression",
+            "from": "gate",
+            "path": "features.experience",
+            "value": true
+          }
+        ],
+        "genre": {
+          "id": "adventure",
+          "known": true,
+          "configSource": "world",
+          "config": {
+            "id": "adventure",
+            "name": "Adventure",
+            "description": "Exploration, narrative, and puzzle-solving",
+            "cameraMode": "third_person",
+            "movementPlane": "free",
+            "controlScheme": "wasd_mouse",
+            "combatStyle": "none",
+            "movementStyle": "free",
+            "uiLayout": "action_rpg",
+            "defaultWorldType": "tropical-pirate",
+            "features": {
+              "inventory": true,
+              "crafting": false,
+              "dialogue": true,
+              "combat": false,
+              "building": false,
+              "resources": false,
+              "permadeath": false,
+              "quests": true,
+              "experience": true,
+              "skills": true
+            },
+            "questTypes": [
+              "rpg"
+            ],
+            "difficultyLevels": [
+              "easy",
+              "normal",
+              "hard"
+            ],
+            "defaultPlayerSpeed": 1,
+            "defaultJumpHeight": 1,
+            "gravityMultiplier": 1,
+            "showMinimap": true,
+            "showHealthBar": false,
+            "showStaminaBar": false,
+            "showAmmoCounter": false,
+            "showCompass": true
+          },
+          "camera": {
+            "mode": "third_person",
+            "decidedBy": "world-default"
+          },
+          "bundle": {
+            "id": "adventure",
+            "featureModules": [
+              "knowledge-acquisition",
+              "gamification",
+              "world-lore",
+              "conversation-analytics",
+              "onboarding"
+            ]
+          },
+          "activation": {
+            "genre": "adventure",
+            "known": true,
+            "modules": [
+              "perception",
+              "skill",
+              "traversal",
+              "agentAi",
+              "routine",
+              "map",
+              "volition",
+              "weather",
+              "dialogue"
+            ],
+            "predicatePacks": [
+              "perception",
+              "skill",
+              "traversal",
+              "gameplayState",
+              "agentAi",
+              "routine",
+              "volition",
+              "weather",
+              "dialogue",
+              "script",
+              "placement",
+              "map",
+              "scaffold"
+            ],
+            "hostInterfaces": [
+              "IPerceptionProbe",
+              "ISkillModifierSink",
+              "ITraversalProbe",
+              "ILocomotionHost",
+              "IAgentActionHost",
+              "IWeatherSink"
+            ]
+          }
+        },
+        "refusals": [
+          {
+            "code": "invalid-parameter",
+            "pack": "progression",
+            "detail": "'progression' parameter 'streakCapTenths': 9 is outside [10, inf]"
           }
         ],
         "notes": []
