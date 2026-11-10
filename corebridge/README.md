@@ -786,7 +786,9 @@ the case's. Both projections are self-tested on every start.
 with no case, and five answers an engine keeping one of Unreal's interim rules
 would give — the board's host sign also read as a sign, a fence offered, a nearer
 barrel examined before a pick-up, a tie kept by the last prop, a second full stop
-— each reported. The hand cases in `tests/cases/bridge-props.json` pin the answer
+— and two runner controls no core case can be (a case's own `ranges` reaching a
+prop the defaults do not; an `interact` case that states one `prop` alone), each
+reported. The hand cases in `tests/cases/bridge-props.json` pin the answer
 shapes, the refusal values and the errors.
 
 **Cost.** One core module (`props/interactables`; 158 → 159 at the 72c658c pin):
@@ -973,7 +975,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (132 of 147 cases at 72c658c; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (128 cases, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
-| `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (27 cases, 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op and five answers an engine keeping one of Unreal's interim rules would give seen as wrong |
+| `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (27 cases, 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give and two runner controls (a case's `ranges`, a lone `prop`) seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's

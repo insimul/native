@@ -1,6 +1,6 @@
 {
   "area": "props-interactables",
-  "description": "NEGATIVE CONTROL for props_interactables_corpus_negative (PL.native-interact-target): a deliberately WRONG copy of core's conformance/props/interactables.json. contract.rangesM.talk is wrong, no case drives the noun op, and five cases expect the answer an engine keeping one of Unreal's interim rules would give (core's deviations board-sign, fence, tiers, prop-tie and full-stop). One correct case of each op but noun rides beside them, so the run shows every other op driven. The runner must report every wrong one and fail.",
+  "description": "NEGATIVE CONTROL for props_interactables_corpus_negative (PL.native-interact-target): a deliberately WRONG copy of core's conformance/props/interactables.json. contract.rangesM.talk is wrong, no case drives the noun op, five cases expect the answer an engine keeping one of Unreal's interim rules would give (core's deviations board-sign, fence, tiers, prop-tie and full-stop), and two hand-made cases expect what a runner that dropped a case's ranges or its lone prop would see (core's corpus has no case either would fail). One correct case of each op but noun rides beside them, so the run shows every other op driven. The runner must report every wrong one and fail.",
   "version": 1,
   "sources": [
     "tests/props-negative/interactables-wrong.json, made from corebridge/vendor/core/conformance/props/interactables.json at core 72c658c"
@@ -968,6 +968,55 @@
             }
           }
         ]
+      }
+    },
+    {
+      "name": "target: expected WRONGLY nothing in reach where the host's own ranges reach the crate (a runner that drops the case's ranges)",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "examine": 5
+        },
+        "props": [
+          {
+            "id": "crate_far",
+            "archetype": "prop.container.crate",
+            "position": {
+              "x": 4,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": null
+      }
+    },
+    {
+      "name": "interact: expected WRONGLY no result for a lone prop (a runner that reads only the case's props)",
+      "op": "interact",
+      "input": {
+        "board": null,
+        "prop": {
+          "id": "sign_inn",
+          "archetype": "prop.structural.sign",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 1
+          },
+          "text": "Inn"
+        }
+      },
+      "expected": {
+        "results": []
       }
     },
     {

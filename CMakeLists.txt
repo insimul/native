@@ -800,12 +800,15 @@ set_tests_properties(props_pickup_placement_corpus_negative PROPERTIES
 # answer an engine keeping one of Unreal's interim rules would give (the
 # deviations core records): the board's host sign also read as a sign, a fence
 # offered, a pick-up passed over for a nearer barrel, a tie kept by the LAST prop,
-# and a text that ends in its own full stop given a second one. It passes only
-# when the runner reports each of them and the run as failed, in that order.
+# and a text that ends in its own full stop given a second one; and two runner
+# controls core's corpus cannot be (no core case changes its answer with them): a
+# target whose `ranges` reach a prop the defaults do not, and an interact case that
+# states one `prop` alone. It passes only when the runner reports each of them and
+# the run as failed, in that order.
 add_test(NAME props_interactables_corpus_negative COMMAND insimulcore_props_corpus
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/interactables-wrong.json)
 set_tests_properties(props_interactables_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "contract.rangesM.talk: 3 != 3.5.*expected WRONGLY the board's host sign read as a sign [^\n]*.*expected WRONGLY a fence offered [^\n]*.*expected WRONGLY the nearer barrel examined before the pick-up [^\n]*.*expected WRONGLY the last listed prop on a tie [^\n]*.*expected WRONGLY a second full stop [^\n]*.*op noun of area props-interactables: no case of it was driven.*props_corpus: FAIL")
+  PASS_REGULAR_EXPRESSION "contract.rangesM.talk: 3 != 3.5.*expected WRONGLY the board's host sign read as a sign [^\n]*.*expected WRONGLY a fence offered [^\n]*.*expected WRONGLY the nearer barrel examined before the pick-up [^\n]*.*expected WRONGLY the last listed prop on a tie [^\n]*.*expected WRONGLY a second full stop [^\n]*.*expected WRONGLY nothing in reach where the host's own ranges reach the crate [^\n]*.*expected WRONGLY no result for a lone prop [^\n]*.*op noun of area props-interactables: no case of it was driven.*props_corpus: FAIL")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
