@@ -176,7 +176,7 @@ game; **meta** = about the bridge itself.
 | `genre.camera` | `{ value }` → `{ mode }` | `game-genres/resolution` `normalizeCameraMode` | P7 |
 | `genre.resolveGame` | `{ recipe?, world? }` → core's `GameGenreResolution` (refusals are errors with a code) | `game-genres/resolution` `resolveGameGenre` | P7/P9 |
 | `genre.recipes` | `{}` → `{ ids, bindings }` | `game-genres/recipes` | P9 |
-| `ui.genreHud` | `{ op: config, view or genre_view, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }`; an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`) | P9a.native (U84) |
+| `ui.genreHud` | `{ op: config, view, genre_view, config_of or view_of, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`; `config_of` / `view_of` take a game's own settings, `{ genreConfig }` or `{ recipe, world? }`, plus `state?` for `view_of`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }` (`unresolved_recipe` also carries `reason`); an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`, `genreHudConfigOf`; `game-genres/resolution` `resolveGameGenre` for a recipe) | P9a.native (U84); `config_of` / `view_of` PL.native-genre-hud-config (U92(2)) |
 | `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
 | `modules.activate` | `{ ir }` or `{ genre }` or `{}` → `{ source, active, predicatePacks, hostInterfaces, reason }` | `modules/module-activation` | P9 (Godot's fork has the same row) |
@@ -362,7 +362,18 @@ nothing else, as the layout rows are:
 - **`ui.genreHud { op, ...input }`** is `runGenreHudOp(op, input)`: `config {
   genre }` (the registry entry's HUD config), `view { config, state? }` (core's
   `genreHudView`: which base HUD parts show and the genre's own elements, text
-  and tone formatted by core) and `genre_view { genre, state? }`.
+  and tone formatted by core) and `genre_view { genre, state? }`; and, for a
+  game's OWN settings rather than a registry id (PL.native-genre-hud-config,
+  U92(2)), `config_of { genreConfig }` (a world's `meta.genreConfig` as stated,
+  any genre id, projected by core's `genreHudConfigOf`: the fighting HUD for the
+  fighting camera or combat style, else `uiLayout`; an absent flag stays absent)
+  or `config_of { recipe, world? }` (core's `resolveGameGenre`, then the
+  projection of its `config`), and `view_of { …the same, state? }`, that
+  projection composed with `view`. Refusal values: `no_genre_source`,
+  `two_genre_sources`, `not_a_genre_config`, `world_without_recipe`,
+  `unresolved_recipe` (with `reason`, core's `GenreResolutionError` code) and
+  `unknown_layout` at `genreConfig.uiLayout` or `world.meta.genreConfig.uiLayout`.
+  The row adds nothing: it checks `op` against core's `GENRE_HUD_OPS`.
 - **`ui.rulesPanel { op, ...input }`** is `runRulesPanelOp(op, input)`: `panel {
   worldRules?, baseRules? }`, `card { rule }`, `byCategory { rules, category }`,
   `byType { rules, ruleType }`, `isActive { rules, ruleId }`.
@@ -413,16 +424,20 @@ rows of P9b–P9j. When core exports a per-step function, a session pair can wra
 it without restating anything.
 
 The evidence is core's corpora, not a transcription:
-`vendor/core/conformance/ui/genre-hud-cases.json` (63 cases),
+`vendor/core/conformance/ui/genre-hud-cases.json` (106 cases at 6c6d4a4: config
+16, view 31, genre_view 16, config_of 28, view_of 15),
 `ui/rules-panel-cases.json` (17) and `modules/mechanic-runtime.json` (8 cases at
 fc88be9, 25 steps each), copied byte for byte by `tools/vendor-core-bundle.mjs` and hashed
 in `VENDORED.json` (`core_vendor`; `--check --core` byte-compares them with core).
 `tests/p9a_corpus.cpp` sends every case through `insimulcore.h` and compares
 exactly; it is three ctests, `genre_hud_corpus`, `rules_panel_corpus` and
 `mechanic_runtime_corpus`, so removing one row turns its own test red, and it
-also fails when a UI corpus declares an op (`ops`) no case exercises.
-`p9a_corpus_negative` must see it fail one wrong answer per row
-(`tests/p9a-negative/`). The hand cases in `tests/cases/bridge-p9a.json` pin the
+also fails when a UI corpus declares an op (`ops`) no case exercises or when a
+case is not driven through the row (each file's line prints `driven N (<op>
+<count>, …), 0 undriven`). `p9a_corpus_negative` must see it fail one wrong answer
+per row (`tests/p9a-negative/`), plus, for the genre HUD, a wrong `config_of`
+projection (the fighting rule dropped) and a case it cannot drive, counted
+undriven. The hand cases in `tests/cases/bridge-p9a.json` pin the
 rows' own contract (the coded errors, a refusal as a value).
 
 **Cost.** The three rows bring core's HUD and rules-panel models and the whole
@@ -430,7 +445,11 @@ mechanic assembly (the seven layers' directors, combat resolution, perception,
 traversal, routines, skills, and the Prolog helper text those modules import):
 47 core modules. At the f9aef13 pin the bundle grew from 1,005,516 bytes (the pin
 bump alone, from 988,816 at b38e60d) to 1,392,156. The 86 cases take about 60 ms
-under QuickJS.
+under QuickJS. `config_of` / `view_of` (PL.native-genre-hud-config) add no core
+module (152 before and after; `game-genres/resolution` was already in): the bundle
+went from 1,553,471 bytes at eff846a to 1,563,073 with the 6c6d4a4 pin bump alone
+(+9,602, core's runner and its cases) and 1,563,744 with this row's comment
+(+10,273 in all, +0.66 %). The 106 genre HUD cases take about 3 ms.
 
 ### The saves.slots session: save slots, Continue, autosave, quick save (PL.native-catchup)
 

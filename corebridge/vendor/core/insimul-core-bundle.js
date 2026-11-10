@@ -12864,7 +12864,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     let source = "genreConfig.cameraMode";
     const perspective = normalizeCameraMode(worldPerspective);
     const playerCamera = cameraModeOf(worldPlayerCamera);
-    const stated = (v) => v !== null && v.trim() !== "";
+    const stated2 = (v) => v !== null && v.trim() !== "";
     if (input.policy === "world-default") {
       if (perspective) {
         mode = perspective;
@@ -12876,7 +12876,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
           });
         }
       } else {
-        if (stated(worldPerspective)) {
+        if (stated2(worldPerspective)) {
           notes.push({
             code: "world-perspective-ignored",
             detail: `meta.cameraPerspective '${worldPerspective}' names no camera mode; genreConfig.cameraMode '${mode}' stands`
@@ -12885,7 +12885,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         if (playerCamera) {
           mode = playerCamera;
           source = "player.camera";
-        } else if (stated(worldPlayerCamera)) {
+        } else if (stated2(worldPlayerCamera)) {
           notes.push({
             code: "world-player-camera-ignored",
             detail: `player.camera '${worldPlayerCamera}' names no camera mode; '${mode}' stands`
@@ -13047,7 +13047,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       throw new GenreResolutionError("invalid-recipe", `recipe '${recipe.id}': keepWorldConfigFor is a list of genre ids`);
     }
     const bound = getRecipeGenreBinding(recipe.id);
-    const stated = {
+    const stated2 = {
       recipeId: recipe.id,
       genreId: g.id,
       // Only what the binding reads: a recipe's override also carries its `why`.
@@ -13057,12 +13057,12 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     };
     if (bound) {
       const drift = [];
-      if (stated.genreId !== bound.genreId) drift.push(`genre '${stated.genreId}' (core: '${bound.genreId}')`);
-      if (!sameJson(stated.overrides, bound.overrides)) drift.push("overrides");
-      if (!sameJson([...stated.keepWorldConfigFor].sort(), [...bound.keepWorldConfigFor].sort())) {
+      if (stated2.genreId !== bound.genreId) drift.push(`genre '${stated2.genreId}' (core: '${bound.genreId}')`);
+      if (!sameJson(stated2.overrides, bound.overrides)) drift.push("overrides");
+      if (!sameJson([...stated2.keepWorldConfigFor].sort(), [...bound.keepWorldConfigFor].sort())) {
         drift.push("keepWorldConfigFor");
       }
-      if (stated.camera !== bound.camera) drift.push(`camera '${stated.camera}' (core: '${bound.camera}')`);
+      if (stated2.camera !== bound.camera) drift.push(`camera '${stated2.camera}' (core: '${bound.camera}')`);
       if (drift.length > 0) {
         throw new GenreResolutionError(
           "recipe-drift",
@@ -13071,7 +13071,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       }
     }
     if (g.config !== void 0) {
-      const expected = recipeConfig(stated);
+      const expected = recipeConfig(stated2);
       if (!sameJson(g.config, expected)) {
         const fields = Object.keys({ ...expected, ...g.config }).filter(
           (k) => !sameJson(
@@ -13085,7 +13085,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         );
       }
     }
-    return { binding: bound ?? stated, bound: bound !== void 0 };
+    return { binding: bound ?? stated2, bound: bound !== void 0 };
   }
   function worldConfig(world2) {
     const g = world2?.meta?.genreConfig;
@@ -13372,11 +13372,33 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
   }
 
   // @insimul/core/src/ui/genre-hud-corpus.ts
-  var GENRE_HUD_OPS = Object.freeze(["config", "view", "genre_view"]);
+  var GENRE_HUD_OPS = Object.freeze(["config", "view", "genre_view", "config_of", "view_of"]);
   var json = (v) => JSON.parse(JSON.stringify(v));
   var refusal = (code, field) => ({ ok: false, refusal: { code, field } });
   function genreConfig(genre) {
     return typeof genre === "string" && Object.prototype.hasOwnProperty.call(GENRE_REGISTRY, genre) ? GENRE_REGISTRY[genre] : null;
+  }
+  var stated = (v) => v !== void 0 && v !== null;
+  var isObject = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
+  function settingsOf(input) {
+    const hasConfig = stated(input.genreConfig);
+    const hasRecipe = stated(input.recipe);
+    if (hasConfig && hasRecipe) return { ok: false, answer: refusal("two_genre_sources", "recipe") };
+    if (!hasConfig && !hasRecipe) return { ok: false, answer: refusal("no_genre_source", "genreConfig") };
+    if (hasConfig) {
+      if (stated(input.world)) return { ok: false, answer: refusal("world_without_recipe", "world") };
+      if (!isObject(input.genreConfig)) return { ok: false, answer: refusal("not_a_genre_config", "genreConfig") };
+      return { ok: true, settings: input.genreConfig, layoutField: "genreConfig.uiLayout" };
+    }
+    try {
+      const r = resolveGameGenre({ recipe: input.recipe, world: input.world });
+      return { ok: true, settings: r.config, layoutField: r.configSource === "world" ? "world.meta.genreConfig.uiLayout" : "recipe" };
+    } catch (e) {
+      if (e instanceof GenreResolutionError) {
+        return { ok: false, answer: { ok: false, refusal: { code: "unresolved_recipe", field: "recipe", reason: e.code } } };
+      }
+      throw e;
+    }
   }
   function runGenreHudOp(op, input) {
     const state = input.state ?? {};
@@ -13394,6 +13416,17 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
         const g = genreConfig(input.genre);
         return g ? json({ ok: true, value: genreHudView(genreHudConfigOf(g), state) }) : refusal("unknown_genre", "genre");
       }
+      case "config_of": {
+        const s = settingsOf(input);
+        return s.ok ? json({ ok: true, value: genreHudConfigOf(s.settings) }) : s.answer;
+      }
+      case "view_of": {
+        const s = settingsOf(input);
+        if (!s.ok) return s.answer;
+        const config = genreHudConfigOf(s.settings);
+        if (!isGenreHudLayout(config.layout)) return refusal("unknown_layout", s.layoutField);
+        return json({ ok: true, value: genreHudView(config, state) });
+      }
       default:
         throw new Error(`genre-hud corpus: unknown op '${op}'`);
     }
@@ -13402,6 +13435,68 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
   var RTS = { layout: "rts", showMinimap: true, showHealthBar: false, showStaminaBar: false, showAmmoCounter: false, showCompass: false };
   var ACTION = { layout: "action_rpg", showMinimap: true, showHealthBar: true, showStaminaBar: true, showAmmoCounter: false, showCompass: true };
   var ammo = (current, magazine, total, reloading = false) => ({ ammo: { current, magazine, total, reloading } });
+  var RPG_WORLD = {
+    id: "rpg",
+    uiLayout: "action_rpg",
+    cameraMode: "third_person",
+    combatStyle: "melee",
+    showMinimap: false,
+    showHealthBar: true,
+    showStaminaBar: true,
+    showAmmoCounter: false,
+    showCompass: false
+  };
+  var FIGHTING_CAMERA_WORLD = { id: "rpg", uiLayout: "action_rpg", cameraMode: "fighting", showMinimap: true, showHealthBar: true };
+  var UNDRAWN_WORLD = { id: "rpg", uiLayout: "vr", showMinimap: true };
+  var SETTINGS_CASES = [
+    // genreConfig: projected as stated
+    { name: "config_of: a world's own rpg settings, every flag as the world states it", op: "config_of", input: { genreConfig: RPG_WORLD } },
+    { name: "config_of: an absent flag stays absent", op: "config_of", input: { genreConfig: { id: "rpg", uiLayout: "fps", showCompass: true } } },
+    { name: "config_of: the fighting camera gives the fighting HUD", op: "config_of", input: { genreConfig: FIGHTING_CAMERA_WORLD } },
+    { name: "config_of: the fighting combat style gives the fighting HUD", op: "config_of", input: { genreConfig: { id: "action", uiLayout: "action_rpg", combatStyle: "fighting", showHealthBar: true } } },
+    { name: "config_of: the registry's fighting entry, stated whole, is the fighting HUD (its uiLayout says minimal)", op: "config_of", input: { genreConfig: GENRE_REGISTRY.fighting } },
+    { name: "config_of: a genre the registry does not hold is projected from its own settings", op: "config_of", input: { genreConfig: { id: "mystery", uiLayout: "puzzle", showMinimap: true } } },
+    { name: "config_of: settings with no uiLayout project no layout", op: "config_of", input: { genreConfig: { id: "rpg", showMinimap: true } } },
+    { name: "config_of: a uiLayout the model does not draw is projected as it is", op: "config_of", input: { genreConfig: UNDRAWN_WORLD } },
+    // refusals
+    { name: "config_of: neither genreConfig nor recipe is refused no_genre_source", op: "config_of", input: {} },
+    { name: "config_of: a null genreConfig is no source", op: "config_of", input: { genreConfig: null } },
+    { name: "config_of: genreConfig and recipe together are refused two_genre_sources", op: "config_of", input: { genreConfig: { uiLayout: "fps" }, recipe: "puzzle" } },
+    { name: "config_of: a genre id string is not a genreConfig", op: "config_of", input: { genreConfig: "rpg" } },
+    { name: "config_of: a list is not a genreConfig", op: "config_of", input: { genreConfig: [RPG_WORLD] } },
+    { name: "config_of: a world beside a genreConfig is refused world_without_recipe", op: "config_of", input: { genreConfig: RPG_WORLD, world: { meta: { genreConfig: RPG_WORLD } } } },
+    // recipe: resolveGameGenre's config
+    { name: "config_of: the puzzle recipe", op: "config_of", input: { recipe: "puzzle" } },
+    { name: "config_of: the strategy recipe is the rts HUD", op: "config_of", input: { recipe: "strategy" } },
+    { name: "config_of: the platformer recipe", op: "config_of", input: { recipe: "platformer" } },
+    { name: "config_of: the rpg-adventure recipe with no world is the adventure entry", op: "config_of", input: { recipe: "rpg-adventure" } },
+    { name: "config_of: rpg-adventure keeps an rpg world's own settings, its fighting camera too", op: "config_of", input: { recipe: "rpg-adventure", world: { meta: { genreConfig: FIGHTING_CAMERA_WORLD } } } },
+    { name: "config_of: rpg-adventure on a world whose perspective is the fighting camera (world default)", op: "config_of", input: { recipe: "rpg-adventure", world: { meta: { genreConfig: { id: "adventure", uiLayout: "action_rpg", showCompass: true }, cameraPerspective: "Fighting" } } } },
+    { name: "config_of: the puzzle recipe replaces an rpg world's settings, fighting camera and all", op: "config_of", input: { recipe: "puzzle", world: { meta: { genreConfig: FIGHTING_CAMERA_WORLD } } } },
+    { name: "config_of: a recipe file's genre block core does not bind", op: "config_of", input: { recipe: { id: "arena-shooter", genre: { id: "shooter" } } } },
+    { name: "config_of: rpg-adventure keeping a world whose uiLayout the model does not draw projects it as it is", op: "config_of", input: { recipe: "rpg-adventure", world: { meta: { genreConfig: UNDRAWN_WORLD } } } },
+    { name: "config_of: a recipe id core does not bind is refused unresolved_recipe (unknown-recipe)", op: "config_of", input: { recipe: "racing" } },
+    { name: "config_of: a recipe with no genre block is refused unresolved_recipe (invalid-recipe)", op: "config_of", input: { recipe: { id: "no-genre" } } },
+    { name: "config_of: a number is not a recipe (invalid-recipe)", op: "config_of", input: { recipe: 7 } },
+    { name: "config_of: a recipe naming a genre the registry does not hold (unknown-recipe-genre)", op: "config_of", input: { recipe: { id: "whodunit", genre: { id: "mystery" } } } },
+    { name: "config_of: a recipe file that disagrees with core's binding (recipe-drift)", op: "config_of", input: { recipe: { id: "puzzle", genre: { id: "strategy" } } } },
+    // view_of: the projection composed with view
+    { name: "view_of: a world's fps settings, ammo on the last quarter, heading 90", op: "view_of", input: { genreConfig: { id: "shooter", uiLayout: "fps", showAmmoCounter: true, showCompass: true }, state: { ...ammo(2, 8, 40), heading: 90 } } },
+    { name: "view_of: the fighting camera draws the fighting HUD", op: "view_of", input: { genreConfig: FIGHTING_CAMERA_WORLD, state: { fighters: [{ name: "Ryn", health: 0.4 }] } } },
+    { name: "view_of: the registry's fighting entry, stated whole, at its start values", op: "view_of", input: { genreConfig: GENRE_REGISTRY.fighting } },
+    { name: "view_of: a world's own rpg settings, stamina 0.4", op: "view_of", input: { genreConfig: RPG_WORLD, state: { stamina: 0.4 } } },
+    { name: "view_of: a genre the registry does not hold, drawn from its own settings", op: "view_of", input: { genreConfig: { id: "mystery", uiLayout: "puzzle", showMinimap: true }, state: { moves: 3 } } },
+    { name: "view_of: settings with no uiLayout are refused unknown_layout at genreConfig.uiLayout", op: "view_of", input: { genreConfig: { id: "rpg", showMinimap: true } } },
+    { name: "view_of: a uiLayout the model does not draw is refused unknown_layout at genreConfig.uiLayout", op: "view_of", input: { genreConfig: UNDRAWN_WORLD } },
+    { name: "view_of: the strategy recipe with a resource row", op: "view_of", input: { recipe: "strategy", state: { resources: [{ id: "gold", label: "Gold", value: "120" }] } } },
+    { name: "view_of: rpg-adventure on a fighting-perspective world draws the fighting HUD", op: "view_of", input: { recipe: "rpg-adventure", world: { meta: { genreConfig: { id: "adventure", uiLayout: "action_rpg" }, cameraPerspective: "fighting" } }, state: { round: 2 } } },
+    { name: "view_of: rpg-adventure keeping a world whose uiLayout the model does not draw is refused at world.meta.genreConfig.uiLayout", op: "view_of", input: { recipe: "rpg-adventure", world: { meta: { genreConfig: UNDRAWN_WORLD } } } },
+    { name: "view_of: neither source is refused no_genre_source", op: "view_of", input: { state: { stamina: 0.4 } } },
+    { name: "view_of: both sources are refused two_genre_sources", op: "view_of", input: { genreConfig: RPG_WORLD, recipe: "rpg-adventure" } },
+    { name: "view_of: a genre id string is not a genreConfig", op: "view_of", input: { genreConfig: "fighting" } },
+    { name: "view_of: a world beside a genreConfig is refused world_without_recipe", op: "view_of", input: { genreConfig: RPG_WORLD, world: {} } },
+    { name: "view_of: a recipe id core does not bind is refused unresolved_recipe", op: "view_of", input: { recipe: "racing" } }
+  ];
   var INPUTS = [
     ...GENRE_IDS.map((genre) => ({ name: `config: ${genre}`, op: "config", input: { genre } })),
     { name: "config: an unknown genre is refused", op: "config", input: { genre: "mystery" } },
@@ -13455,7 +13550,9 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
     // Minimal, chrome, refusal
     { name: "minimal: no elements; chrome from the flags", op: "view", input: { config: { layout: "minimal", showMinimap: true, showHealthBar: true, showStaminaBar: false, showAmmoCounter: false, showCompass: true } } },
     { name: "chrome: an absent flag is not shown", op: "view", input: { config: { layout: "minimal" } } },
-    { name: "view: a layout the model does not draw is refused", op: "view", input: { config: { layout: "vr" } } }
+    { name: "view: a layout the model does not draw is refused", op: "view", input: { config: { layout: "vr" } } },
+    // config_of / view_of: a game's own settings, not a registry id (PL.native-genre-hud-config, U92(2))
+    ...SETTINGS_CASES
   ];
 
   // @insimul/core/src/ui/rules-panel-model.ts
@@ -23245,8 +23342,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     return pages.length > 0 ? pages : [""];
   }
   function kindOf(input) {
-    const stated = isText(input.kind) ? input.kind : isText(input.textCategory) ? input.textCategory : null;
-    if (stated !== null) return DOCUMENT_KINDS.includes(stated) ? stated : null;
+    const stated2 = isText(input.kind) ? input.kind : isText(input.textCategory) ? input.textCategory : null;
+    if (stated2 !== null) return DOCUMENT_KINDS.includes(stated2) ? stated2 : null;
     return input.documentType === "story" || input.documentType === "poem" ? "book" : "notice";
   }
   function questionsOf(input) {
@@ -29113,9 +29210,9 @@ player_meets_cefr(Player, RequiredLevel) :-
     if (recipe !== null) {
       const id = typeof recipe === "string" ? recipe : recipe.id;
       const core = getRecipePackPreset(id);
-      const stated = typeof recipe === "string" ? void 0 : recipe.packs;
-      if (stated !== void 0) {
-        const checked = checkPresetShape(stated, `recipe '${id}' packs`, known);
+      const stated2 = typeof recipe === "string" ? void 0 : recipe.packs;
+      if (stated2 !== void 0) {
+        const checked = checkPresetShape(stated2, `recipe '${id}' packs`, known);
         if (core && !sameJson2(checked, core)) {
           throw new CompositionError("preset-drift", `recipe '${id}' packs block disagrees with core's preset`);
         }
@@ -29375,9 +29472,9 @@ player_meets_cefr(Player, RequiredLevel) :-
           const fallbackPick = gamePick !== void 0 && !landed ? void 0 : picked.get(a.axis);
           const resolved = (landed ? gamePick : void 0) ?? configOpt ?? fallbackPick ?? a.default;
           variants[a.axis] = resolved;
-          const stated = picked.get(a.axis);
-          if (stated !== void 0 && stated !== resolved && c?.from.variant === "preset") {
-            passNotes.push({ code: "preset-variant-differs", pack: id, detail: `the preset says '${stated}' for ${a.axis}; the game's settings say '${resolved}'` });
+          const stated2 = picked.get(a.axis);
+          if (stated2 !== void 0 && stated2 !== resolved && c?.from.variant === "preset") {
+            passNotes.push({ code: "preset-variant-differs", pack: id, detail: `the preset says '${stated2}' for ${a.axis}; the game's settings say '${resolved}'` });
           }
         }
         let style = null;
@@ -33446,8 +33543,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     const r = rules.network;
     const { plan: plan2 } = input;
     const notes = [];
-    const widthOf2 = (stated, fallbackHalf, note) => {
-      const half = stated != null && stated > 0 ? stated / 2 : fallbackHalf;
+    const widthOf2 = (stated2, fallbackHalf, note) => {
+      const half = stated2 != null && stated2 > 0 ? stated2 / 2 : fallbackHalf;
       if (half < r.minVisibleHalfWidthM) {
         notes.push(note);
         return r.minVisibleHalfWidthM;
@@ -35646,12 +35743,20 @@ player_meets_cefr(Player, RequiredLevel) :-
     // op the runner does not declare, or an input the row cannot pass on, is an
     // ERROR with a code (`[unknown-op]`, `[invalid-input]`).
     /**
-     * `ui.genreHud { op: 'config'|'view'|'genre_view', ...input }` → core's
-     * `runGenreHudOp(op, input)` (`ui/genre-hud-corpus`): `config { genre }` → `{ ok,
-     * value: GenreHudConfig }`; `view { config, state? }` → `{ ok, value:
+     * `ui.genreHud { op: 'config'|'view'|'genre_view'|'config_of'|'view_of', ...input }`
+     * → core's `runGenreHudOp(op, input)` (`ui/genre-hud-corpus`): `config { genre }`
+     * → `{ ok, value: GenreHudConfig }`; `view { config, state? }` → `{ ok, value:
      * GenreHudView }`; `genre_view { genre, state? }` → the view of that genre's own
-     * config. Refusal values: `unknown_genre`, `unknown_layout`. The row checks only
-     * `op` (core's `GENRE_HUD_OPS`): core's runner reads every input it is given.
+     * config. A game's OWN settings (PL.native-genre-hud-config, U92(2)): `config_of
+     * { genreConfig }` (a world's `meta.genreConfig`, any genre id, projected by
+     * core's `genreHudConfigOf` as stated) or `config_of { recipe, world? }` (core's
+     * `resolveGameGenre`, then the projection of its `config`) → `{ ok, value:
+     * GenreHudConfig }`; `view_of { …the same, state? }` → that projection's view.
+     * Refusal values: `unknown_genre`, `unknown_layout`, `no_genre_source`,
+     * `two_genre_sources`, `not_a_genre_config`, `world_without_recipe`,
+     * `unresolved_recipe` (with `reason`). The row checks only `op` (core's
+     * `GENRE_HUD_OPS`): core's runner reads every input it is given, so the
+     * fighting rule and the recipe resolution stay core's and nothing is restated here.
      */
     "ui.genreHud": (args) => {
       const { op, ...input } = args;

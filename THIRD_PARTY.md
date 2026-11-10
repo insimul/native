@@ -123,9 +123,11 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `eff846a` (core
-  `main` on 2026-11-10, holding the layout and composition rules the `layout.*` rows
-  run, the composer the `packs.compose` row runs, P9a.core's genre HUD, rules
+  what to quote in a bug report about core behaviour. Today: `6c6d4a4` (core's
+  PL.native-genre-hud-config commit on core `main` eff846a, landing on core `main`
+  by fast-forward before this pin; it adds the genre HUD runner's `config_of` /
+  `view_of` ops; core `main` eff846a on 2026-11-10 holds the layout and
+  composition rules the `layout.*` rows run, the composer the `packs.compose` row runs, P9a.core's genre HUD, rules
   panel and mechanic runtime the `ui.genreHud`, `ui.rulesPanel` and `mechanics.run`
   rows run, the mechanic step op list `mechanics.run` imports, P1.core-slots'
   save-slots session the `saves.slots.*` rows run, P6.core's props and

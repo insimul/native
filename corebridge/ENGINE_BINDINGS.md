@@ -141,6 +141,40 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `InsimulMechanicSurface.h` marks `BridgeHasNoRow` still need per-system rows
   (P9b–P9j). The existing `genre.*`, `modules.*` and `packs.compose` rows answer
   the six genres P9a.core added and `meta.enabledModules` with no row change.
+- **The genre HUD of a game's own settings (Unreal's
+  `P9a.unreal.retire-genre-hud-copy`, after PL.native-genre-hud-config, U92(2)).**
+  `ui.genreHud` takes the settings a game is built with, not only a registry id,
+  so a binding keeps no copy of core's `genreHudConfigOf` (Unreal's
+  `GenreHudConfigOf` in `Portable/InsimulGenreGate.cpp`, the interim copy U92(2)
+  accepts). The input shapes:
+  - `{ "op": "view_of", "genreConfig": <the World IR's meta.genreConfig, as
+    stated>, "state"?: {…} }` → `{ ok, value: { layout, chrome, elements } }`:
+    the projection and the view in one call. This replaces the copy plus the
+    `view` call. `{ "op": "config_of", "genreConfig": … }` answers the projection
+    alone (`{ ok, value: { layout?, showMinimap?, … } }`; an absent flag stays
+    absent, a `uiLayout` the model does not draw is projected as it is).
+  - `{ "op": "view_of" | "config_of", "recipe": <a recipe id core binds, or a
+    recipe file's { id, genre }>, "world"?: <the World IR, or its { meta } > }`:
+    core resolves the game's settings with `resolveGameGenre` (what
+    `genre.resolveGame` answers as `config`) and projects those.
+  - Exactly one of `genreConfig` / `recipe` (a JSON `null` counts as absent);
+    `world` only beside a recipe. Refusals are VALUES `{ ok: false, refusal: {
+    code, field } }`: `no_genre_source`, `two_genre_sources`,
+    `not_a_genre_config` (a string id or a list), `world_without_recipe`,
+    `unresolved_recipe` (plus `reason`: `unknown-recipe`, `invalid-recipe`,
+    `unknown-recipe-genre`, `recipe-drift`, …) and, for `view_of`,
+    `unknown_layout` at `genreConfig.uiLayout` (or
+    `world.meta.genreConfig.uiLayout` when a recipe kept the world's settings).
+  - A world with NO `meta.genreConfig` keeps today's fallback, `{ "op":
+    "genre_view", "genre": <id> }` (or `config { genre }`), which still refuses
+    an id the registry does not hold (`unknown_genre`). Note the two differ in
+    one place: Unreal's copy builds a config with no `layout` key from a
+    `genreConfig` that has no `uiLayout`, and its `view` call is then refused
+    `unknown_layout` at `config.layout`; `view_of` refuses the same settings at
+    `genreConfig.uiLayout`.
+  The evidence is core's corpus at this pin (`config_of` 28 cases, `view_of` 15),
+  driven by `genre_hud_corpus`; re-vendor `conformance/ui/genre-hud-cases.json`
+  and replay those ops the way the other ops are replayed.
 - **Save slots (Unreal's `P1.unreal.slots` interim port, after PL.native-catchup).**
   Two session rows (`README.md`, "The saves.slots session") wrap core's
   `SaveSlotsSession`: `saves.slots.create { config?, slots?, activeSlot? }` →

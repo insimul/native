@@ -692,16 +692,18 @@ add_test(NAME rules_panel_corpus COMMAND insimulcore_p9a
   rules-panel=${INSIMUL_P9A_CORPUS}/ui/rules-panel-cases.json)
 add_test(NAME mechanic_runtime_corpus COMMAND insimulcore_p9a
   mechanics=${INSIMUL_P9A_CORPUS}/modules/mechanic-runtime.json)
-# The negative control: the same runner over three deliberately wrong one-case
-# files (tests/p9a-negative/), one per row. It passes only when the runner reports
-# ALL THREE cases as differing and the run as failed — not on any non-zero exit,
-# which a missing file or a crash would also give.
+# The negative control: the same runner over three deliberately wrong files
+# (tests/p9a-negative/), one per row; the genre HUD one also holds a wrong
+# config_of projection and a case it cannot drive, counted undriven
+# (PL.native-genre-hud-config). It passes only when the runner reports EVERY wrong
+# case as differing or undriven, in order, and the run as failed —
+# not on any non-zero exit, which a missing file or a crash would also give.
 add_test(NAME p9a_corpus_negative COMMAND insimulcore_p9a
   genre-hud=${CMAKE_CURRENT_SOURCE_DIR}/tests/p9a-negative/genre-hud-wrong.json
   rules-panel=${CMAKE_CURRENT_SOURCE_DIR}/tests/p9a-negative/rules-panel-wrong.json
   mechanics=${CMAKE_CURRENT_SOURCE_DIR}/tests/p9a-negative/mechanics-wrong.json)
 set_tests_properties(p9a_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "expected WRONGLY without a compass [^\n]*showCompass: boolean differs.*expected WRONGLY inactive [^\n]*\\$: boolean differs.*expected WRONGLY to deal 7 [^\n]*damage: 7 != 6.*p9a_corpus: FAIL")
+  PASS_REGULAR_EXPRESSION "expected WRONGLY without a compass [^\n]*showCompass: boolean differs.*expected WRONGLY as its uiLayout [^\n]*value[.]layout: \"action_rpg\" != \"fighting\".*WRONGLY undriven [^\n]*needs an input object.*genre-hud-wrong[.]json [^\n]*1 case[(]s[)] undriven.*genre-hud-wrong[.]json via ui[.]genreHud: 3 case[(]s[)], driven 2 [(]config 1, config_of 1[)], 1 undriven.*expected WRONGLY inactive [^\n]*\\$: boolean differs.*expected WRONGLY to deal 7 [^\n]*damage: 7 != 6.*p9a_corpus: FAIL")
 
 # saves_slots_corpus (PL.native-catchup, rulings U83(1), U84 and U87): core's
 # SaveSlotsSession (save slots, Continue, autosave, quick save / load) as

@@ -1,11 +1,13 @@
 {
   "area": "ui-genre-hud",
-  "description": "The genre HUD view-model (P9a.core; catalog genre-hud-layouts): a genre's uiLayout and show* flags → which base HUD parts show (chrome) and the genre's own elements, in reading order, with text and tone (a colour role) formatted by the model. Moved from Babylon's genre-hud-model.ts, plus a fighting layout (a genre seen through the fighting camera, or fighting in the fighting style). Runner: src/ui/genre-hud-corpus.ts. Ops: config {genre} → genreHudConfigOf(the registry entry); view {config, state?} → genreHudView; genre_view {genre, state?} → the view of that genre's own config. Refusals {ok:false, refusal:{code, field}}: unknown_genre, unknown_layout. Compare exactly, object key sets included. Regenerate with npm run genre-hud-corpus; npm run genre-hud-corpus:check fails on any difference. See docs/game-genres.md §6.",
+  "description": "The genre HUD view-model (P9a.core; catalog genre-hud-layouts): a genre's uiLayout and show* flags → which base HUD parts show (chrome) and the genre's own elements, in reading order, with text and tone (a colour role) formatted by the model. Moved from Babylon's genre-hud-model.ts, plus a fighting layout (a genre seen through the fighting camera, or fighting in the fighting style). Runner: src/ui/genre-hud-corpus.ts. Ops: config {genre} → genreHudConfigOf(the registry entry); view {config, state?} → genreHudView; genre_view {genre, state?} → the view of that genre's own config; config_of {genreConfig} | {recipe, world?} → genreHudConfigOf(a game's own settings: the genreConfig as stated, or the config resolveGameGenre gives the recipe on its world); view_of {the same, state?} → the view of that projection. Refusals {ok:false, refusal:{code, field}}: unknown_genre, unknown_layout, no_genre_source, two_genre_sources, not_a_genre_config, world_without_recipe, and unresolved_recipe (which also carries reason: the GenreResolutionError code). Compare exactly, object key sets included. Regenerate with npm run genre-hud-corpus; npm run genre-hud-corpus:check fails on any difference. See docs/game-genres.md §6.",
   "version": 1,
   "ops": [
     "config",
     "view",
-    "genre_view"
+    "genre_view",
+    "config_of",
+    "view_of"
   ],
   "contract": {
     "layouts": [
@@ -23,7 +25,8 @@
     "ammoToneRule": "reloading: warning; current <= floor(magazine * 0.25): danger; else text_primary",
     "headingRule": "heading wrapped into [0, 360), printed rounded (360 prints 0); point = compassCardinal",
     "fighterToneRule": "health > 0.5 success; > 0.25 warning; else danger",
-    "comboRule": "shown only when hits > 1"
+    "comboRule": "shown only when hits > 1",
+    "settingsRule": "config_of/view_of read exactly one source: genreConfig (a JSON object, projected as stated, any genre id, an absent flag absent) or recipe (with world only beside it), resolved by resolveGameGenre and projected from its config; a null source is no source. view_of refuses a projected layout the model does not draw at the field it came from (genreConfig.uiLayout, or world.meta.genreConfig.uiLayout when the recipe kept the world's)"
   },
   "cases": [
     {
@@ -2501,6 +2504,1202 @@
         "refusal": {
           "code": "unknown_layout",
           "field": "config.layout"
+        }
+      }
+    },
+    {
+      "name": "config_of: a world's own rpg settings, every flag as the world states it",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "action_rpg",
+          "cameraMode": "third_person",
+          "combatStyle": "melee",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config_of: an absent flag stays absent",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "fps",
+          "showCompass": true
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config_of: the fighting camera gives the fighting HUD",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "action_rpg",
+          "cameraMode": "fighting",
+          "showMinimap": true,
+          "showHealthBar": true
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "showMinimap": true,
+          "showHealthBar": true
+        }
+      }
+    },
+    {
+      "name": "config_of: the fighting combat style gives the fighting HUD",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "id": "action",
+          "uiLayout": "action_rpg",
+          "combatStyle": "fighting",
+          "showHealthBar": true
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "showHealthBar": true
+        }
+      }
+    },
+    {
+      "name": "config_of: the registry's fighting entry, stated whole, is the fighting HUD (its uiLayout says minimal)",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "id": "fighting",
+          "name": "Fighting",
+          "description": "One-on-one combat with combos and special moves",
+          "cameraMode": "fighting",
+          "movementPlane": "xy",
+          "controlScheme": "wasd_mouse",
+          "combatStyle": "melee",
+          "movementStyle": "free",
+          "uiLayout": "minimal",
+          "defaultWorldType": "generic",
+          "features": {
+            "inventory": false,
+            "crafting": false,
+            "dialogue": false,
+            "combat": true,
+            "building": false,
+            "resources": false,
+            "permadeath": false,
+            "quests": false,
+            "experience": false,
+            "skills": false
+          },
+          "questTypes": [],
+          "difficultyLevels": [
+            "easy",
+            "normal",
+            "hard"
+          ],
+          "defaultPlayerSpeed": 1,
+          "defaultJumpHeight": 1.2,
+          "gravityMultiplier": 1,
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config_of: a genre the registry does not hold is projected from its own settings",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "id": "mystery",
+          "uiLayout": "puzzle",
+          "showMinimap": true
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "puzzle",
+          "showMinimap": true
+        }
+      }
+    },
+    {
+      "name": "config_of: settings with no uiLayout project no layout",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "showMinimap": true
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "showMinimap": true
+        }
+      }
+    },
+    {
+      "name": "config_of: a uiLayout the model does not draw is projected as it is",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "vr",
+          "showMinimap": true
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "vr",
+          "showMinimap": true
+        }
+      }
+    },
+    {
+      "name": "config_of: neither genreConfig nor recipe is refused no_genre_source",
+      "op": "config_of",
+      "input": {},
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "no_genre_source",
+          "field": "genreConfig"
+        }
+      }
+    },
+    {
+      "name": "config_of: a null genreConfig is no source",
+      "op": "config_of",
+      "input": {
+        "genreConfig": null
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "no_genre_source",
+          "field": "genreConfig"
+        }
+      }
+    },
+    {
+      "name": "config_of: genreConfig and recipe together are refused two_genre_sources",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "uiLayout": "fps"
+        },
+        "recipe": "puzzle"
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "two_genre_sources",
+          "field": "recipe"
+        }
+      }
+    },
+    {
+      "name": "config_of: a genre id string is not a genreConfig",
+      "op": "config_of",
+      "input": {
+        "genreConfig": "rpg"
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_a_genre_config",
+          "field": "genreConfig"
+        }
+      }
+    },
+    {
+      "name": "config_of: a list is not a genreConfig",
+      "op": "config_of",
+      "input": {
+        "genreConfig": [
+          {
+            "id": "rpg",
+            "uiLayout": "action_rpg",
+            "cameraMode": "third_person",
+            "combatStyle": "melee",
+            "showMinimap": false,
+            "showHealthBar": true,
+            "showStaminaBar": true,
+            "showAmmoCounter": false,
+            "showCompass": false
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_a_genre_config",
+          "field": "genreConfig"
+        }
+      }
+    },
+    {
+      "name": "config_of: a world beside a genreConfig is refused world_without_recipe",
+      "op": "config_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "action_rpg",
+          "cameraMode": "third_person",
+          "combatStyle": "melee",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": false
+        },
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "rpg",
+              "uiLayout": "action_rpg",
+              "cameraMode": "third_person",
+              "combatStyle": "melee",
+              "showMinimap": false,
+              "showHealthBar": true,
+              "showStaminaBar": true,
+              "showAmmoCounter": false,
+              "showCompass": false
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "world_without_recipe",
+          "field": "world"
+        }
+      }
+    },
+    {
+      "name": "config_of: the puzzle recipe",
+      "op": "config_of",
+      "input": {
+        "recipe": "puzzle"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "puzzle",
+          "showMinimap": false,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config_of: the strategy recipe is the rts HUD",
+      "op": "config_of",
+      "input": {
+        "recipe": "strategy"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "rts",
+          "showMinimap": true,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config_of: the platformer recipe",
+      "op": "config_of",
+      "input": {
+        "recipe": "platformer"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "platformer",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config_of: the rpg-adventure recipe with no world is the adventure entry",
+      "op": "config_of",
+      "input": {
+        "recipe": "rpg-adventure"
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config_of: rpg-adventure keeps an rpg world's own settings, its fighting camera too",
+      "op": "config_of",
+      "input": {
+        "recipe": "rpg-adventure",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "rpg",
+              "uiLayout": "action_rpg",
+              "cameraMode": "fighting",
+              "showMinimap": true,
+              "showHealthBar": true
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "showMinimap": true,
+          "showHealthBar": true
+        }
+      }
+    },
+    {
+      "name": "config_of: rpg-adventure on a world whose perspective is the fighting camera (world default)",
+      "op": "config_of",
+      "input": {
+        "recipe": "rpg-adventure",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "adventure",
+              "uiLayout": "action_rpg",
+              "showCompass": true
+            },
+            "cameraPerspective": "Fighting"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config_of: the puzzle recipe replaces an rpg world's settings, fighting camera and all",
+      "op": "config_of",
+      "input": {
+        "recipe": "puzzle",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "rpg",
+              "uiLayout": "action_rpg",
+              "cameraMode": "fighting",
+              "showMinimap": true,
+              "showHealthBar": true
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "puzzle",
+          "showMinimap": false,
+          "showHealthBar": false,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      }
+    },
+    {
+      "name": "config_of: a recipe file's genre block core does not bind",
+      "op": "config_of",
+      "input": {
+        "recipe": {
+          "id": "arena-shooter",
+          "genre": {
+            "id": "shooter"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "showMinimap": true,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": true,
+          "showCompass": true
+        }
+      }
+    },
+    {
+      "name": "config_of: rpg-adventure keeping a world whose uiLayout the model does not draw projects it as it is",
+      "op": "config_of",
+      "input": {
+        "recipe": "rpg-adventure",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "rpg",
+              "uiLayout": "vr",
+              "showMinimap": true
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "vr",
+          "showMinimap": true
+        }
+      }
+    },
+    {
+      "name": "config_of: a recipe id core does not bind is refused unresolved_recipe (unknown-recipe)",
+      "op": "config_of",
+      "input": {
+        "recipe": "racing"
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unresolved_recipe",
+          "field": "recipe",
+          "reason": "unknown-recipe"
+        }
+      }
+    },
+    {
+      "name": "config_of: a recipe with no genre block is refused unresolved_recipe (invalid-recipe)",
+      "op": "config_of",
+      "input": {
+        "recipe": {
+          "id": "no-genre"
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unresolved_recipe",
+          "field": "recipe",
+          "reason": "invalid-recipe"
+        }
+      }
+    },
+    {
+      "name": "config_of: a number is not a recipe (invalid-recipe)",
+      "op": "config_of",
+      "input": {
+        "recipe": 7
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unresolved_recipe",
+          "field": "recipe",
+          "reason": "invalid-recipe"
+        }
+      }
+    },
+    {
+      "name": "config_of: a recipe naming a genre the registry does not hold (unknown-recipe-genre)",
+      "op": "config_of",
+      "input": {
+        "recipe": {
+          "id": "whodunit",
+          "genre": {
+            "id": "mystery"
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unresolved_recipe",
+          "field": "recipe",
+          "reason": "unknown-recipe-genre"
+        }
+      }
+    },
+    {
+      "name": "config_of: a recipe file that disagrees with core's binding (recipe-drift)",
+      "op": "config_of",
+      "input": {
+        "recipe": {
+          "id": "puzzle",
+          "genre": {
+            "id": "strategy"
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unresolved_recipe",
+          "field": "recipe",
+          "reason": "recipe-drift"
+        }
+      }
+    },
+    {
+      "name": "view_of: a world's fps settings, ammo on the last quarter, heading 90",
+      "op": "view_of",
+      "input": {
+        "genreConfig": {
+          "id": "shooter",
+          "uiLayout": "fps",
+          "showAmmoCounter": true,
+          "showCompass": true
+        },
+        "state": {
+          "ammo": {
+            "current": 2,
+            "magazine": 8,
+            "total": 40,
+            "reloading": false
+          },
+          "heading": 90
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fps",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": true,
+            "compass": true
+          },
+          "elements": [
+            {
+              "id": "crosshair",
+              "kind": "reticle",
+              "text": "+",
+              "tone": "text_primary"
+            },
+            {
+              "id": "ammo",
+              "kind": "text",
+              "label": "Ammo",
+              "text": "2 / 40",
+              "tone": "danger"
+            },
+            {
+              "id": "weapon",
+              "kind": "text",
+              "label": "Weapon",
+              "text": "",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "compass",
+              "kind": "text",
+              "label": "Compass",
+              "text": "Heading: 90° E",
+              "tone": "text_primary"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view_of: the fighting camera draws the fighting HUD",
+      "op": "view_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "action_rpg",
+          "cameraMode": "fighting",
+          "showMinimap": true,
+          "showHealthBar": true
+        },
+        "state": {
+          "fighters": [
+            {
+              "name": "Ryn",
+              "health": 0.4
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": true,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Ryn",
+              "text": "",
+              "fraction": 0.4,
+              "tone": "warning"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 1",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "99",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view_of: the registry's fighting entry, stated whole, at its start values",
+      "op": "view_of",
+      "input": {
+        "genreConfig": {
+          "id": "fighting",
+          "name": "Fighting",
+          "description": "One-on-one combat with combos and special moves",
+          "cameraMode": "fighting",
+          "movementPlane": "xy",
+          "controlScheme": "wasd_mouse",
+          "combatStyle": "melee",
+          "movementStyle": "free",
+          "uiLayout": "minimal",
+          "defaultWorldType": "generic",
+          "features": {
+            "inventory": false,
+            "crafting": false,
+            "dialogue": false,
+            "combat": true,
+            "building": false,
+            "resources": false,
+            "permadeath": false,
+            "quests": false,
+            "experience": false,
+            "skills": false
+          },
+          "questTypes": [],
+          "difficultyLevels": [
+            "easy",
+            "normal",
+            "hard"
+          ],
+          "defaultPlayerSpeed": 1,
+          "defaultJumpHeight": 1.2,
+          "gravityMultiplier": 1,
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": false,
+          "showAmmoCounter": false,
+          "showCompass": false
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Player 1",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 1",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "99",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view_of: a world's own rpg settings, stamina 0.4",
+      "op": "view_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "action_rpg",
+          "cameraMode": "third_person",
+          "combatStyle": "melee",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": false
+        },
+        "state": {
+          "stamina": 0.4
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "action_rpg",
+          "chrome": {
+            "minimap": false,
+            "healthBar": true,
+            "staminaBar": true,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "stamina",
+              "kind": "meter",
+              "label": "Stamina",
+              "text": "",
+              "fraction": 0.4,
+              "tone": "success"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view_of: a genre the registry does not hold, drawn from its own settings",
+      "op": "view_of",
+      "input": {
+        "genreConfig": {
+          "id": "mystery",
+          "uiLayout": "puzzle",
+          "showMinimap": true
+        },
+        "state": {
+          "moves": 3
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "puzzle",
+          "chrome": {
+            "minimap": true,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "⏱️ 0:00",
+              "tone": "text_primary"
+            },
+            {
+              "id": "moves",
+              "kind": "text",
+              "label": "Moves",
+              "text": "Moves: 3",
+              "tone": "text_secondary"
+            },
+            {
+              "id": "hint",
+              "kind": "action",
+              "label": "Hint",
+              "text": "💡 Hint",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view_of: settings with no uiLayout are refused unknown_layout at genreConfig.uiLayout",
+      "op": "view_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "showMinimap": true
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unknown_layout",
+          "field": "genreConfig.uiLayout"
+        }
+      }
+    },
+    {
+      "name": "view_of: a uiLayout the model does not draw is refused unknown_layout at genreConfig.uiLayout",
+      "op": "view_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "vr",
+          "showMinimap": true
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unknown_layout",
+          "field": "genreConfig.uiLayout"
+        }
+      }
+    },
+    {
+      "name": "view_of: the strategy recipe with a resource row",
+      "op": "view_of",
+      "input": {
+        "recipe": "strategy",
+        "state": {
+          "resources": [
+            {
+              "id": "gold",
+              "label": "Gold",
+              "value": "120"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "rts",
+          "chrome": {
+            "minimap": true,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "resource_gold",
+              "kind": "text",
+              "label": "Gold",
+              "text": "120",
+              "tone": "warning"
+            },
+            {
+              "id": "build_menu",
+              "kind": "action",
+              "label": "Build",
+              "text": "Open build menu",
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view_of: rpg-adventure on a fighting-perspective world draws the fighting HUD",
+      "op": "view_of",
+      "input": {
+        "recipe": "rpg-adventure",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "adventure",
+              "uiLayout": "action_rpg"
+            },
+            "cameraPerspective": "fighting"
+          }
+        },
+        "state": {
+          "round": 2
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "layout": "fighting",
+          "chrome": {
+            "minimap": false,
+            "healthBar": false,
+            "staminaBar": false,
+            "ammoCounter": false,
+            "compass": false
+          },
+          "elements": [
+            {
+              "id": "fighter_1",
+              "kind": "meter",
+              "label": "Player 1",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "fighter_2",
+              "kind": "meter",
+              "label": "Player 2",
+              "text": "",
+              "fraction": 1,
+              "tone": "success"
+            },
+            {
+              "id": "round",
+              "kind": "text",
+              "label": "Round",
+              "text": "Round 2",
+              "tone": "text_primary"
+            },
+            {
+              "id": "fight_timer",
+              "kind": "text",
+              "label": "Time",
+              "text": "99",
+              "tone": "text_primary"
+            },
+            {
+              "id": "special",
+              "kind": "meter",
+              "label": "Special",
+              "text": "",
+              "fraction": 0,
+              "tone": "accent"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view_of: rpg-adventure keeping a world whose uiLayout the model does not draw is refused at world.meta.genreConfig.uiLayout",
+      "op": "view_of",
+      "input": {
+        "recipe": "rpg-adventure",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "rpg",
+              "uiLayout": "vr",
+              "showMinimap": true
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unknown_layout",
+          "field": "world.meta.genreConfig.uiLayout"
+        }
+      }
+    },
+    {
+      "name": "view_of: neither source is refused no_genre_source",
+      "op": "view_of",
+      "input": {
+        "state": {
+          "stamina": 0.4
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "no_genre_source",
+          "field": "genreConfig"
+        }
+      }
+    },
+    {
+      "name": "view_of: both sources are refused two_genre_sources",
+      "op": "view_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "action_rpg",
+          "cameraMode": "third_person",
+          "combatStyle": "melee",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": false
+        },
+        "recipe": "rpg-adventure"
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "two_genre_sources",
+          "field": "recipe"
+        }
+      }
+    },
+    {
+      "name": "view_of: a genre id string is not a genreConfig",
+      "op": "view_of",
+      "input": {
+        "genreConfig": "fighting"
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "not_a_genre_config",
+          "field": "genreConfig"
+        }
+      }
+    },
+    {
+      "name": "view_of: a world beside a genreConfig is refused world_without_recipe",
+      "op": "view_of",
+      "input": {
+        "genreConfig": {
+          "id": "rpg",
+          "uiLayout": "action_rpg",
+          "cameraMode": "third_person",
+          "combatStyle": "melee",
+          "showMinimap": false,
+          "showHealthBar": true,
+          "showStaminaBar": true,
+          "showAmmoCounter": false,
+          "showCompass": false
+        },
+        "world": {}
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "world_without_recipe",
+          "field": "world"
+        }
+      }
+    },
+    {
+      "name": "view_of: a recipe id core does not bind is refused unresolved_recipe",
+      "op": "view_of",
+      "input": {
+        "recipe": "racing"
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unresolved_recipe",
+          "field": "recipe",
+          "reason": "unknown-recipe"
         }
       }
     }

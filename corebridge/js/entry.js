@@ -1963,12 +1963,20 @@ const METHODS = {
 	// ERROR with a code (`[unknown-op]`, `[invalid-input]`).
 
 	/**
-	 * `ui.genreHud { op: 'config'|'view'|'genre_view', ...input }` → core's
-	 * `runGenreHudOp(op, input)` (`ui/genre-hud-corpus`): `config { genre }` → `{ ok,
-	 * value: GenreHudConfig }`; `view { config, state? }` → `{ ok, value:
+	 * `ui.genreHud { op: 'config'|'view'|'genre_view'|'config_of'|'view_of', ...input }`
+	 * → core's `runGenreHudOp(op, input)` (`ui/genre-hud-corpus`): `config { genre }`
+	 * → `{ ok, value: GenreHudConfig }`; `view { config, state? }` → `{ ok, value:
 	 * GenreHudView }`; `genre_view { genre, state? }` → the view of that genre's own
-	 * config. Refusal values: `unknown_genre`, `unknown_layout`. The row checks only
-	 * `op` (core's `GENRE_HUD_OPS`): core's runner reads every input it is given.
+	 * config. A game's OWN settings (PL.native-genre-hud-config, U92(2)): `config_of
+	 * { genreConfig }` (a world's `meta.genreConfig`, any genre id, projected by
+	 * core's `genreHudConfigOf` as stated) or `config_of { recipe, world? }` (core's
+	 * `resolveGameGenre`, then the projection of its `config`) → `{ ok, value:
+	 * GenreHudConfig }`; `view_of { …the same, state? }` → that projection's view.
+	 * Refusal values: `unknown_genre`, `unknown_layout`, `no_genre_source`,
+	 * `two_genre_sources`, `not_a_genre_config`, `world_without_recipe`,
+	 * `unresolved_recipe` (with `reason`). The row checks only `op` (core's
+	 * `GENRE_HUD_OPS`): core's runner reads every input it is given, so the
+	 * fighting rule and the recipe resolution stay core's and nothing is restated here.
 	 */
 	'ui.genreHud': (args) => {
 		const { op, ...input } = args;

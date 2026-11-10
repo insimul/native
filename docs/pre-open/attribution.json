@@ -1,8 +1,8 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-pl-native-pickup-settle",
-    "gitHead": "db14cb691d2b0cc3d0fd39dababa44f13adfb001"
+    "root": "native-pl-native-genre-hud-config",
+    "gitHead": "2e0bfedc4efd16a4a8e32faa34c4fd8607e06d2a"
   },
   "coverage": {
     "trackedFiles": 407,
@@ -124,7 +124,7 @@
       "spdx": "Apache-2.0",
       "package": null,
       "pinnedVersion": null,
-      "pinnedCommit": "eff846adaad6d414c83c4c8b29346b1e10045411",
+      "pinnedCommit": "6c6d4a495136b302d019d351d6c68d980f7cca60",
       "pinSource": "corebridge/vendor/core/VENDORED.json#coreCommit",
       "vendoredPath": "corebridge/vendor/core",
       "derivedWork": []

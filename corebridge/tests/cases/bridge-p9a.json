@@ -56,6 +56,196 @@
    ]
   },
   {
+   "name": "ui.genreHud: config_of / view_of project a game's own settings in core (a world genreConfig or a recipe on its world); refusals are values",
+   "steps": [
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "config_of",
+      "genreConfig": {
+       "id": "rpg",
+       "uiLayout": "action_rpg",
+       "cameraMode": "fighting",
+       "showMinimap": true
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "layout": "fighting",
+       "showMinimap": true
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "config_of",
+      "genreConfig": {
+       "id": "mystery",
+       "uiLayout": "puzzle",
+       "showCompass": false
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "layout": "puzzle",
+       "showCompass": false
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "config_of",
+      "recipe": "strategy",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "uiLayout": "action_rpg",
+         "cameraMode": "fighting",
+         "showMinimap": true
+        }
+       }
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "layout": "rts",
+       "showMinimap": true,
+       "showHealthBar": false,
+       "showStaminaBar": false,
+       "showAmmoCounter": false,
+       "showCompass": false
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "config_of",
+      "recipe": "rpg-adventure",
+      "world": {
+       "meta": {
+        "genreConfig": {
+         "id": "rpg",
+         "uiLayout": "action_rpg",
+         "cameraMode": "fighting",
+         "showMinimap": true
+        }
+       }
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "layout": "fighting",
+       "showMinimap": true
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "view_of",
+      "genreConfig": {
+       "id": "rpg",
+       "uiLayout": "action_rpg",
+       "showStaminaBar": true
+      },
+      "state": {
+       "stamina": 0.25
+      }
+     },
+     "expect": {
+      "ok": true,
+      "value": {
+       "layout": "action_rpg",
+       "chrome": {
+        "minimap": false,
+        "healthBar": false,
+        "staminaBar": true,
+        "ammoCounter": false,
+        "compass": false
+       },
+       "elements": [
+        {
+         "id": "stamina",
+         "kind": "meter",
+         "label": "Stamina",
+         "text": "",
+         "fraction": 0.25,
+         "tone": "success"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "view_of",
+      "genreConfig": {
+       "id": "rpg",
+       "showMinimap": true
+      }
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unknown_layout",
+       "field": "genreConfig.uiLayout"
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "config_of",
+      "genreConfig": "rpg"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "not_a_genre_config",
+       "field": "genreConfig"
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "config_of",
+      "recipe": "racing"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "unresolved_recipe",
+       "field": "recipe",
+       "reason": "unknown-recipe"
+      }
+     }
+    },
+    {
+     "call": "ui.genreHud",
+     "args": {
+      "op": "view_of"
+     },
+     "expect": {
+      "ok": false,
+      "refusal": {
+       "code": "no_genre_source",
+       "field": "genreConfig"
+      }
+     }
+    }
+   ]
+  },
+  {
    "name": "ui.genreHud: an op core's runner does not declare is [unknown-op]",
    "steps": [
     {
@@ -63,7 +253,7 @@
      "args": {
       "genre": "rpg"
      },
-     "expectError": "insimulcore: Error: [unknown-op] insimulcore: ui.genreHud: `op` must be one of config, view, genre_view (got undefined)"
+     "expectError": "insimulcore: Error: [unknown-op] insimulcore: ui.genreHud: `op` must be one of config, view, genre_view, config_of, view_of (got undefined)"
     },
     {
      "call": "ui.genreHud",
@@ -71,7 +261,7 @@
       "op": "layout",
       "genre": "rpg"
      },
-     "expectError": "insimulcore: Error: [unknown-op] insimulcore: ui.genreHud: `op` must be one of config, view, genre_view (got \"layout\")"
+     "expectError": "insimulcore: Error: [unknown-op] insimulcore: ui.genreHud: `op` must be one of config, view, genre_view, config_of, view_of (got \"layout\")"
     }
    ]
   },

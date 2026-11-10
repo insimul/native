@@ -441,8 +441,12 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` eff846a (2026-11-10,
-  PL.native-pickup-settle: every core item the Unreal-first queue landed after
+  and pin disagree. The pin today is core 6c6d4a4 (2026-11-10,
+  PL.native-genre-hud-config: core's PL.native-genre-hud-config commit, one
+  commit on core `main` eff846a that lands on core `main` by checked fast-forward
+  before this pin does; it gives core's genre HUD runner the `config_of` /
+  `view_of` ops that the `ui.genreHud` row passes through, and 43 corpus cases).
+  Before that, core `main` eff846a (2026-11-10, PL.native-pickup-settle: every core item the Unreal-first queue landed after
   ac229a7, among them P9f/P9g/P9h.core's packs, PL.quick-slot-one-based's 1-based
   `quickSlot` that the `saves.slots.*` rows pass through, and PL.quest-converter-gaps;
   core's pick-up placement and its corpus, which the `props.pickups.*` rows run,
@@ -487,7 +491,12 @@
   `tests/p9a_corpus.cpp` sends `{ op, ...input }` to `ui.genreHud` / `ui.rulesPanel`
   and `input` to `mechanics.run`, compared exactly; one ctest per row
   (`genre_hud_corpus`, `rules_panel_corpus`, `mechanic_runtime_corpus`) and
-  `p9a_corpus_negative`. A domain refusal those corpora pin is a VALUE; the rows'
+  `p9a_corpus_negative`; every case must be DRIVEN (the per-file line prints the
+  driven count per op and `0 undriven`). `ui.genreHud` checks only `op` against
+  core's `GENRE_HUD_OPS`, so a game's own settings (`config_of` / `view_of` over a
+  world's `genreConfig` or a `recipe` on its `world`, PL.native-genre-hud-config,
+  U92(2)) are projected by core's `genreHudConfigOf` and never restated in
+  `entry.js` or a binding. A domain refusal those corpora pin is a VALUE; the rows'
   own refusals are errors with a code (`[unknown-op]`, `[invalid-input]`).
   `mechanics.run` is a stateless replay (core's `runMechanicRuntimeCase`), not a
   session: core keeps the per-step projection private, so a session would restate

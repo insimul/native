@@ -3,7 +3,7 @@
  "description": "core's save/load slot matrix through ui.saveSlots",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "eff846adaad6d414c83c4c8b29346b1e10045411",
+  "coreCommit": "6c6d4a495136b302d019d351d6c68d980f7cca60",
   "files": {
    "conformance/ui/save-slot-cases.json": "60d14158ee3194bcdd94a1ea71762e8689a65f3b8054ec6e29769c17b473d8b6"
   }

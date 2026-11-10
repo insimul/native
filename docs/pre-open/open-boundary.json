@@ -3,8 +3,8 @@
   "rules": "scripts/open-boundary.rules.json",
   "rulesVersion": 1,
   "repository": {
-    "root": "native-pl-native-pickup-settle",
-    "gitHead": "db14cb691d2b0cc3d0fd39dababa44f13adfb001"
+    "root": "native-pl-native-genre-hud-config",
+    "gitHead": "2e0bfedc4efd16a4a8e32faa34c4fd8607e06d2a"
   },
   "coverage": {
     "files": 407,
@@ -15,7 +15,7 @@
     "cargoManifests": 3,
     "cargoDependencies": 3,
     "cFiles": 142,
-    "cIncludes": 796,
+    "cIncludes": 797,
     "buildFiles": 21
   },
   "content": [

@@ -240,7 +240,7 @@ Copyright: Copyright 2026 Overpowered Inc.
 Upstream: @insimul/core (`packages/core`) — first-party, the same TypeScript the
   web runtime executes
 Vendored-Path: corebridge/vendor/core
-Pinned-Commit: eff846adaad6d414c83c4c8b29346b1e10045411
+Pinned-Commit: 6c6d4a495136b302d019d351d6c68d980f7cca60
 Pin-Source: corebridge/vendor/core/VENDORED.json#coreCommit
 Redistributed-In: libinsimulcore.a, libinsimulcore.dylib (embedded as a C byte array)
 License-Text: LICENSE (beside this file)

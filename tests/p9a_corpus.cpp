@@ -22,8 +22,15 @@
 // It also fails when the method table lacks one of the rows a file needs, when a
 // file holds no case or is not the corpus its kind names, when a UI corpus
 // declares an op (`ops`) no case exercises, when a UI case's input already has an
-// `op` key, and when its comparator cannot tell a wrong answer from a right one
-// (a self-test on every start).
+// `op` key, when any case is not DRIVEN (sent through insimul_core_call and its
+// answer read back; the per-file line prints the driven count per op and the
+// undriven count, which must be 0), and when its comparator cannot tell a wrong
+// answer from a right one (a self-test on every start).
+//
+// The genre HUD corpus's `config_of` / `view_of` cases (PL.native-genre-hud-config,
+// U92(2)) are a game's own settings — a world's `genreConfig`, or a `recipe` on its
+// `world` — projected by core's genreHudConfigOf; they go through the same row the
+// same way, so the projection is core's and none of it is restated here.
 //
 // A pure consumer of insimulcore.h (no quickjs.h, no insimul.h). The JSON reader
 // is tests/radiant/json_value.{h,cpp}, used as is.
@@ -38,6 +45,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fstream>
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
@@ -291,8 +299,9 @@ int main(int argc, char **argv) {
 			std::printf("  [FAIL] surface: the method table has no %s row\n", kind->method);
 		}
 		files++;
-		int file_failed = 0;
+		int file_failed = 0, file_driven = 0;
 		std::set<std::string> ops_seen;
+		std::map<std::string, int> driven_by_op; // driven cases per op, printed sorted by op name
 		const auto t0 = std::chrono::steady_clock::now();
 		for (const auto &cp : case_list->array_items) {
 			const JsonValue &c = *cp;
@@ -326,6 +335,9 @@ int main(int argc, char **argv) {
 			}
 
 			const char *raw = insimul_core_call(core, kind->method, args.c_str());
+			// Driven: the case went through the C ABI (an answer or a recorded error).
+			file_driven++;
+			if (kind->op_cases) driven_by_op[c.get_string("op")]++;
 			if (!raw) {
 				std::printf("  [FAIL] %s :: %s — %s failed: %s\n", file.c_str(), name.c_str(), kind->method,
 				            insimul_core_last_error(core));
@@ -361,9 +373,17 @@ int main(int argc, char **argv) {
 				}
 			}
 		}
+		const int undriven = static_cast<int>(case_list->size()) - file_driven;
+		if (undriven != 0) {
+			std::printf("  [FAIL] %s — %d case(s) undriven\n", file.c_str(), undriven);
+			if (file_failed == 0) file_failed++;
+		}
+		std::string by_op;
+		for (const auto &kv : driven_by_op) by_op += (by_op.empty() ? "" : ", ") + kv.first + " " + std::to_string(kv.second);
 		const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
-		std::printf("  %s %s via %s: %zu case(s), %d failed, %.0f ms\n", file_failed ? "[FAIL]" : "[ ok ]", file.c_str(),
-		            kind->method, case_list->size(), file_failed, ms);
+		std::printf("  %s %s via %s: %zu case(s), driven %d%s%s%s, %d undriven, %d failed, %.0f ms\n",
+		            file_failed ? "[FAIL]" : "[ ok ]", file.c_str(), kind->method, case_list->size(), file_driven,
+		            by_op.empty() ? "" : " (", by_op.c_str(), by_op.empty() ? "" : ")", undriven, file_failed, ms);
 		failed += file_failed;
 	}
 	insimul_core_destroy(core);
