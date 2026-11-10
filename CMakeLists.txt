@@ -788,6 +788,41 @@ add_test(NAME props_pickup_placement_corpus_negative COMMAND insimulcore_props_c
 set_tests_properties(props_pickup_placement_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "numerics: the file states \"[^\"]*float32[^\"]*\", not double precision.*contract.frames.unreal: .*contract.constants.spacingM: 2.5 != 3.*expected WRONGLY a clearance with ok false [^\n]*ok: boolean differs.*expected WRONGLY with the building's axis mirrored [^\n]*.*expected WRONGLY the second pick-up 0.01 m further out [^\n]*placements.*expected WRONGLY bad-spot for a settled spot [^\n]*.*op ring of area props-pickup-placement: no case of it was driven.*props_corpus: FAIL")
 
+# title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
+# the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
+# (TutorialQuestSystem) and the onboarding flow on it (OnboardingManager) — as
+# libinsimulcore's `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows,
+# held to core's own corpora: conformance/ui/title-flow.json and
+# conformance/quests/tutorial.json, COPIED byte for byte into
+# corebridge/vendor/core/conformance/ at the pin (sha256s in VENDORED.json, checked
+# by core_vendor; byte-compared with core by `--check --core`). The runner drives
+# EVERY case through the rows (a title `session` case through a `saves.slots`
+# session the title menu links; tutorial and onboarding sessions on a host clock
+# at the file's `contract.t0`), compares by the corpus's rule, prints the driven
+# count per op and the undriven count, and holds each file's contract tables to
+# `ui.titleFlow.contract` / `ui.tutorial.contract` (tests/title_corpus.cpp). A run
+# fails on a missing row, an undriven case, an op no case drives, a session left
+# open, and a comparator that cannot fail. One ctest per file; never skips.
+add_executable(insimulcore_title_corpus tests/title_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_title_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_title_corpus PRIVATE insimulcore)
+set(INSIMUL_TITLE_CORPUS ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance)
+add_test(NAME title_flow_corpus COMMAND insimulcore_title_corpus ${INSIMUL_TITLE_CORPUS}/ui/title-flow.json)
+add_test(NAME tutorial_corpus COMMAND insimulcore_title_corpus ${INSIMUL_TITLE_CORPUS}/quests/tutorial.json)
+# The negative controls (tests/title-negative/), one per file: each holds a wrong
+# contract table, wrong cases and a case the runner cannot drive. They pass only
+# when the runner reports each of them, the undriven count and the run as failed,
+# in that order — not on any non-zero exit, which a missing file or a crash would
+# also give.
+add_test(NAME title_flow_corpus_negative COMMAND insimulcore_title_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/title-negative/title-flow-wrong.json)
+set_tests_properties(title_flow_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract.defaultTitle: \"Untitled\" != \"Insimul\".*expected WRONGLY with Load Game refused [^\n]*entries.2.[.]enabled: boolean differs.*expected WRONGLY to open New Game into the empty dedicated quick slot [^\n]*newGame[.]slot: expected a number, got a null.*expected WRONGLY with the menu not busy [^\n]*menu[.]busy: boolean differs.*WRONGLY undriven, a step no row takes [^\n]*not driven.*title-flow-wrong[.]json [^\n]*1 case[(]s[)] undriven.*ui-title-flow: 4 case[(]s[)], driven 3 [(]menu 1, choose 1, session 1[)], 1 undriven, 5 failed.*title_corpus: FAIL")
+add_test(NAME tutorial_corpus_negative COMMAND insimulcore_title_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/title-negative/tutorial-wrong.json)
+set_tests_properties(tutorial_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract.flows: length 1 != 2.*expected WRONGLY with the unbound quest log lesson kept [^\n]*objectives: length 6 != 5.*expected WRONGLY with the first lesson 1 ms longer [^\n]*durationMs: 4001 != 4000.*expected WRONGLY with one more step [^\n]*totalSteps: 7 != 6.*expected WRONGLY with no onCompleted [^\n]*calls: length 0 != 1.*WRONGLY undriven, a step no row takes [^\n]*not driven.*tutorial-wrong[.]json [^\n]*1 case[(]s[)] undriven.*quests-tutorial: 5 case[(]s[)], driven 4 [(]objectives 1, run 1, onboarding 2[)], 1 undriven, 6 failed.*title_corpus: FAIL")
+
 # corebridge_sha256: the SHA-256 the C host gives core's save envelope
 # (corebridge/src/insimulcore_sha256.c), against the NIST vectors, at every
 # split point. Compiled straight from the source: the function is internal to

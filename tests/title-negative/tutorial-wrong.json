@@ -1,0 +1,1451 @@
+{
+  "area": "quests-tutorial",
+  "description": "NEGATIVE CONTROL for tests/title_corpus.cpp (PL.native-title-rows): a wrong contract table, four wrong cases (objectives, run, the onboarding totalStepsRule/bindingsRule and nothingLeftRule) and one case the runner cannot drive. The tutorial_corpus_negative ctest passes only when the runner reports every one of them and fails the run.",
+  "version": 1,
+  "tolerance": 1e-09,
+  "contract": {
+    "objectives": [
+      {
+        "id": "tut_movement",
+        "type": "movement",
+        "title": "Walk to the town square",
+        "description": "Use {keys} to move around. Walk towards the settlement.",
+        "control": "move",
+        "hint": "{keys} to move",
+        "completesOn": [
+          "settlement_entered",
+          "location_visited"
+        ]
+      },
+      {
+        "id": "tut_camera",
+        "type": "camera",
+        "title": "Approach an NPC",
+        "description": "Use the {keys} to look around, then walk near a villager.",
+        "control": "look",
+        "hint": "{keys} to look",
+        "completesOn": [
+          "player_near_npc"
+        ]
+      },
+      {
+        "id": "tut_interact_npc",
+        "type": "interaction",
+        "title": "Talk to a villager",
+        "description": "Walk up to an NPC and press {keys} to start a conversation.",
+        "control": "interact",
+        "hint": "{keys} to interact",
+        "completesOn": [
+          "npc_talked"
+        ],
+        "highlightElement": "prompt"
+      },
+      {
+        "id": "tut_reading",
+        "type": "reading",
+        "title": "Read a sign",
+        "description": "Find a sign in the world and press {keys} beside it to read it.",
+        "control": "interact",
+        "hint": "{keys} near a sign",
+        "completesOn": [
+          "sign_read"
+        ],
+        "highlightElement": "notice_board"
+      },
+      {
+        "id": "tut_examine",
+        "type": "interaction",
+        "title": "Examine an object",
+        "description": "Look at an object in the world and press {keys} to examine it.",
+        "control": "interact",
+        "hint": "{keys} near an object",
+        "completesOn": [
+          "object_examined"
+        ]
+      },
+      {
+        "id": "tut_inventory",
+        "type": "inventory",
+        "title": "Open your inventory",
+        "description": "Press {keys} to open your inventory.",
+        "control": "inventory",
+        "hint": "{keys} for the inventory",
+        "completesOn": [
+          "inventory_opened"
+        ],
+        "highlightElement": "inventory"
+      },
+      {
+        "id": "tut_menu",
+        "type": "quest_log",
+        "title": "Open the quest log",
+        "description": "Press {keys} to open your quest log and see your objectives.",
+        "control": "quest_log",
+        "hint": "{keys} to open the quest log",
+        "completesOn": [
+          "quest_log_opened"
+        ],
+        "highlightElement": "quest_journal"
+      },
+      {
+        "id": "tut_combat",
+        "type": "combat",
+        "title": "Attack an enemy",
+        "description": "Press {keys} to attack.",
+        "control": "attack",
+        "hint": "{keys} to attack",
+        "completesOn": [
+          "combat_action"
+        ]
+      }
+    ],
+    "assessmentObjective": {
+      "id": "tut_assessment",
+      "type": "assessment",
+      "title": "Take the arrival assessment",
+      "description": "Find the notice board and complete your language assessment.",
+      "control": null,
+      "hint": "Complete the assessment",
+      "completesOn": [
+        "assessment_completed"
+      ],
+      "highlightElement": "notice_board",
+      "isAssessment": true,
+      "assessmentPhaseId": "arrival"
+    },
+    "flows": [
+      "generic"
+    ],
+    "events": [
+      "onboarding_step_started",
+      "onboarding_step_completed",
+      "onboarding_completed"
+    ],
+    "ops": [
+      "objectives",
+      "run",
+      "onboarding"
+    ],
+    "runSteps": [
+      "start",
+      "event",
+      "complete",
+      "completeById",
+      "skip",
+      "skipNonAssessment",
+      "tick",
+      "dispose"
+    ],
+    "onboardingSteps": [
+      "start",
+      "complete",
+      "skip",
+      "event",
+      "tick",
+      "inspect"
+    ],
+    "t0": "2026-11-06T09:00:00.000Z"
+  },
+  "cases": [
+    {
+      "name": "objectives: expected WRONGLY with the unbound quest log lesson kept",
+      "op": "objectives",
+      "input": {
+        "options": {
+          "unbind": [
+            "quest_log"
+          ]
+        }
+      },
+      "expected": {
+        "objectives": [
+          {
+            "id": "tut_movement",
+            "type": "movement",
+            "title": "Walk to the town square",
+            "description": "Use WASD to move around. Walk towards the settlement.",
+            "controlHint": "WASD to move",
+            "control": "move",
+            "controlKeys": [
+              "KeyW",
+              "KeyA",
+              "KeyS",
+              "KeyD",
+              "ArrowUp",
+              "ArrowLeft",
+              "ArrowDown",
+              "ArrowRight"
+            ],
+            "controlGamepad": [
+              "leftStick"
+            ],
+            "completesOn": [
+              "settlement_entered",
+              "location_visited"
+            ],
+            "isAssessment": false,
+            "completed": false,
+            "skipped": false
+          },
+          {
+            "id": "tut_camera",
+            "type": "camera",
+            "title": "Approach an NPC",
+            "description": "Use the mouse to look around, then walk near a villager.",
+            "controlHint": "Mouse to look",
+            "control": "look",
+            "controlKeys": [],
+            "controlGamepad": [
+              "rightStick"
+            ],
+            "completesOn": [
+              "player_near_npc"
+            ],
+            "isAssessment": false,
+            "completed": false,
+            "skipped": false
+          },
+          {
+            "id": "tut_interact_npc",
+            "type": "interaction",
+            "title": "Talk to a villager",
+            "description": "Walk up to an NPC and press E to start a conversation.",
+            "controlHint": "E to interact",
+            "control": "interact",
+            "controlKeys": [
+              "KeyE"
+            ],
+            "controlGamepad": [
+              "west"
+            ],
+            "completesOn": [
+              "npc_talked"
+            ],
+            "isAssessment": false,
+            "completed": false,
+            "skipped": false,
+            "highlightElement": "prompt"
+          },
+          {
+            "id": "tut_reading",
+            "type": "reading",
+            "title": "Read a sign",
+            "description": "Find a sign in the world and press E beside it to read it.",
+            "controlHint": "E near a sign",
+            "control": "interact",
+            "controlKeys": [
+              "KeyE"
+            ],
+            "controlGamepad": [
+              "west"
+            ],
+            "completesOn": [
+              "sign_read"
+            ],
+            "isAssessment": false,
+            "completed": false,
+            "skipped": false,
+            "highlightElement": "notice_board"
+          },
+          {
+            "id": "tut_examine",
+            "type": "interaction",
+            "title": "Examine an object",
+            "description": "Look at an object in the world and press E to examine it.",
+            "controlHint": "E near an object",
+            "control": "interact",
+            "controlKeys": [
+              "KeyE"
+            ],
+            "controlGamepad": [
+              "west"
+            ],
+            "completesOn": [
+              "object_examined"
+            ],
+            "isAssessment": false,
+            "completed": false,
+            "skipped": false
+          },
+          {
+            "id": "tut_menu",
+            "type": "quest_log",
+            "title": "Open the quest log",
+            "description": "Press J to open your quest log and see your objectives.",
+            "controlHint": "J to open the quest log",
+            "control": "quest_log",
+            "controlKeys": [
+              "KeyJ"
+            ],
+            "controlGamepad": [],
+            "completesOn": [
+              "quest_log_opened"
+            ],
+            "isAssessment": false,
+            "completed": false,
+            "skipped": false,
+            "highlightElement": "quest_journal"
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: expected WRONGLY with the first lesson 1 ms longer",
+      "op": "run",
+      "input": {
+        "config": {
+          "worldName": "Brightwater",
+          "targetLanguage": "French",
+          "includeAssessment": false
+        },
+        "steps": [
+          {
+            "start": true
+          },
+          {
+            "tick": 4000
+          },
+          {
+            "event": "settlement_entered"
+          },
+          {
+            "tick": 2500
+          },
+          {
+            "event": "player_near_npc"
+          },
+          {
+            "tick": 6000
+          },
+          {
+            "event": "npc_talked"
+          },
+          {
+            "tick": 1000
+          },
+          {
+            "event": "sign_read"
+          },
+          {
+            "tick": 1500
+          },
+          {
+            "event": "object_examined"
+          },
+          {
+            "tick": 800
+          },
+          {
+            "event": "quest_log_opened"
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Welcome to Brightwater",
+          "description": "Learn the basics and explore your surroundings.",
+          "objectives": [
+            {
+              "id": "tut_movement",
+              "type": "movement",
+              "title": "Walk to the town square",
+              "description": "Use WASD to move around. Walk towards the settlement.",
+              "controlHint": "WASD to move",
+              "control": "move",
+              "controlKeys": [
+                "KeyW",
+                "KeyA",
+                "KeyS",
+                "KeyD",
+                "ArrowUp",
+                "ArrowLeft",
+                "ArrowDown",
+                "ArrowRight"
+              ],
+              "controlGamepad": [
+                "leftStick"
+              ],
+              "completesOn": [
+                "settlement_entered",
+                "location_visited"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false
+            },
+            {
+              "id": "tut_camera",
+              "type": "camera",
+              "title": "Approach an NPC",
+              "description": "Use the mouse to look around, then walk near a villager.",
+              "controlHint": "Mouse to look",
+              "control": "look",
+              "controlKeys": [],
+              "controlGamepad": [
+                "rightStick"
+              ],
+              "completesOn": [
+                "player_near_npc"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false
+            },
+            {
+              "id": "tut_interact_npc",
+              "type": "interaction",
+              "title": "Talk to a villager",
+              "description": "Walk up to an NPC and press E to start a conversation.",
+              "controlHint": "E to interact",
+              "control": "interact",
+              "controlKeys": [
+                "KeyE"
+              ],
+              "controlGamepad": [
+                "west"
+              ],
+              "completesOn": [
+                "npc_talked"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false,
+              "highlightElement": "prompt"
+            },
+            {
+              "id": "tut_reading",
+              "type": "reading",
+              "title": "Read a sign",
+              "description": "Find a sign in the world and press E beside it to read it.",
+              "controlHint": "E near a sign",
+              "control": "interact",
+              "controlKeys": [
+                "KeyE"
+              ],
+              "controlGamepad": [
+                "west"
+              ],
+              "completesOn": [
+                "sign_read"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false,
+              "highlightElement": "notice_board"
+            },
+            {
+              "id": "tut_examine",
+              "type": "interaction",
+              "title": "Examine an object",
+              "description": "Look at an object in the world and press E to examine it.",
+              "controlHint": "E near an object",
+              "control": "interact",
+              "controlKeys": [
+                "KeyE"
+              ],
+              "controlGamepad": [
+                "west"
+              ],
+              "completesOn": [
+                "object_examined"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false
+            },
+            {
+              "id": "tut_menu",
+              "type": "quest_log",
+              "title": "Open the quest log",
+              "description": "Press J to open your quest log and see your objectives.",
+              "controlHint": "J to open the quest log",
+              "control": "quest_log",
+              "controlKeys": [
+                "KeyJ"
+              ],
+              "controlGamepad": [],
+              "completesOn": [
+                "quest_log_opened"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false,
+              "highlightElement": "quest_journal"
+            }
+          ],
+          "events": [],
+          "state": {
+            "questId": "tutorial",
+            "current": "tut_movement",
+            "currentObjectiveIndex": 0,
+            "completed": [],
+            "skipped": [],
+            "progress": {
+              "completed": 0,
+              "total": 6,
+              "percentage": 0
+            },
+            "isComplete": false,
+            "endedBySkip": false,
+            "canSkip": true,
+            "canAbandon": false,
+            "startedAt": "2026-11-06T09:00:00.000Z",
+            "completedAt": null
+          }
+        },
+        "steps": [
+          {
+            "result": "tut_movement",
+            "events": [
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_movement",
+                "stepIndex": 0,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_movement",
+              "currentObjectiveIndex": 0,
+              "completed": [],
+              "skipped": [],
+              "progress": {
+                "completed": 0,
+                "total": 6,
+                "percentage": 0
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_movement",
+              "currentObjectiveIndex": 0,
+              "completed": [],
+              "skipped": [],
+              "progress": {
+                "completed": 0,
+                "total": 6,
+                "percentage": 0
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [
+              {
+                "type": "onboarding_step_completed",
+                "stepId": "tut_movement",
+                "stepIndex": 0,
+                "totalSteps": 6,
+                "durationMs": 4001
+              },
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_camera",
+                "stepIndex": 1,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_camera",
+              "currentObjectiveIndex": 1,
+              "completed": [
+                "tut_movement"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 1,
+                "total": 6,
+                "percentage": 17
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_camera",
+              "currentObjectiveIndex": 1,
+              "completed": [
+                "tut_movement"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 1,
+                "total": 6,
+                "percentage": 17
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [
+              {
+                "type": "onboarding_step_completed",
+                "stepId": "tut_camera",
+                "stepIndex": 1,
+                "totalSteps": 6,
+                "durationMs": 2500
+              },
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_interact_npc",
+                "stepIndex": 2,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_interact_npc",
+              "currentObjectiveIndex": 2,
+              "completed": [
+                "tut_movement",
+                "tut_camera"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 2,
+                "total": 6,
+                "percentage": 33
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_interact_npc",
+              "currentObjectiveIndex": 2,
+              "completed": [
+                "tut_movement",
+                "tut_camera"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 2,
+                "total": 6,
+                "percentage": 33
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [
+              {
+                "type": "onboarding_step_completed",
+                "stepId": "tut_interact_npc",
+                "stepIndex": 2,
+                "totalSteps": 6,
+                "durationMs": 6000
+              },
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_reading",
+                "stepIndex": 3,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_reading",
+              "currentObjectiveIndex": 3,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 3,
+                "total": 6,
+                "percentage": 50
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_reading",
+              "currentObjectiveIndex": 3,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 3,
+                "total": 6,
+                "percentage": 50
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [
+              {
+                "type": "onboarding_step_completed",
+                "stepId": "tut_reading",
+                "stepIndex": 3,
+                "totalSteps": 6,
+                "durationMs": 1000
+              },
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_examine",
+                "stepIndex": 4,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_examine",
+              "currentObjectiveIndex": 4,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 4,
+                "total": 6,
+                "percentage": 67
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_examine",
+              "currentObjectiveIndex": 4,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 4,
+                "total": 6,
+                "percentage": 67
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [
+              {
+                "type": "onboarding_step_completed",
+                "stepId": "tut_examine",
+                "stepIndex": 4,
+                "totalSteps": 6,
+                "durationMs": 1500
+              },
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_menu",
+                "stepIndex": 5,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_menu",
+              "currentObjectiveIndex": 5,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 5,
+                "total": 6,
+                "percentage": 83
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_menu",
+              "currentObjectiveIndex": 5,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 5,
+                "total": 6,
+                "percentage": 83
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [
+              {
+                "type": "onboarding_step_completed",
+                "stepId": "tut_menu",
+                "stepIndex": 5,
+                "totalSteps": 6,
+                "durationMs": 800
+              },
+              {
+                "type": "onboarding_completed",
+                "totalSteps": 6,
+                "totalDurationMs": 15800
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": null,
+              "currentObjectiveIndex": 6,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine",
+                "tut_menu"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 6,
+                "total": 6,
+                "percentage": 100
+              },
+              "isComplete": true,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": "2026-11-06T09:00:15.800Z"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "onboarding: expected WRONGLY with one more step than the game's bindings build",
+      "op": "onboarding",
+      "input": {
+        "definition": null,
+        "options": {
+          "unbind": [
+            "look"
+          ],
+          "rebind": {
+            "interact": [
+              "KeyF"
+            ]
+          },
+          "bind": [
+            {
+              "action": "inventory",
+              "kind": "button",
+              "keys": [
+                "KeyI"
+              ]
+            }
+          ]
+        },
+        "steps": [
+          {
+            "inspect": true
+          },
+          {
+            "start": true
+          },
+          {
+            "event": "settlement_entered"
+          },
+          {
+            "inspect": true
+          },
+          {
+            "event": "npc_talked"
+          },
+          {
+            "event": "sign_read"
+          },
+          {
+            "event": "object_examined"
+          },
+          {
+            "inspect": true
+          }
+        ]
+      },
+      "expected": {
+        "totalSteps": 7,
+        "steps": [
+          {
+            "result": {
+              "totalSteps": 6,
+              "step": null
+            },
+            "calls": [],
+            "state": {
+              "current": null,
+              "isComplete": false
+            }
+          },
+          {
+            "result": null,
+            "calls": [
+              {
+                "started": {
+                  "stepId": "tut_movement",
+                  "stepIndex": 0,
+                  "totalSteps": 6
+                }
+              }
+            ],
+            "state": {
+              "current": "tut_movement",
+              "isComplete": false
+            }
+          },
+          {
+            "result": null,
+            "calls": [
+              {
+                "completed": {
+                  "stepId": "tut_movement",
+                  "stepIndex": 0,
+                  "totalSteps": 6,
+                  "durationMs": 0
+                }
+              },
+              {
+                "started": {
+                  "stepId": "tut_interact_npc",
+                  "stepIndex": 1,
+                  "totalSteps": 6
+                }
+              }
+            ],
+            "state": {
+              "current": "tut_interact_npc",
+              "isComplete": false
+            }
+          },
+          {
+            "result": {
+              "totalSteps": 6,
+              "step": {
+                "id": "tut_interact_npc",
+                "type": "interaction",
+                "title": "Talk to a villager",
+                "description": "Walk up to an NPC and press F to start a conversation.",
+                "controlHint": "F to interact",
+                "control": "interact",
+                "controlKeys": [
+                  "KeyF"
+                ],
+                "controlGamepad": [
+                  "west"
+                ],
+                "completesOn": [
+                  "npc_talked"
+                ],
+                "isAssessment": false,
+                "completed": false,
+                "skipped": false,
+                "highlightElement": "prompt"
+              }
+            },
+            "calls": [],
+            "state": {
+              "current": "tut_interact_npc",
+              "isComplete": false
+            }
+          },
+          {
+            "result": null,
+            "calls": [
+              {
+                "completed": {
+                  "stepId": "tut_interact_npc",
+                  "stepIndex": 1,
+                  "totalSteps": 6,
+                  "durationMs": 0
+                }
+              },
+              {
+                "started": {
+                  "stepId": "tut_reading",
+                  "stepIndex": 2,
+                  "totalSteps": 6
+                }
+              }
+            ],
+            "state": {
+              "current": "tut_reading",
+              "isComplete": false
+            }
+          },
+          {
+            "result": null,
+            "calls": [
+              {
+                "completed": {
+                  "stepId": "tut_reading",
+                  "stepIndex": 2,
+                  "totalSteps": 6,
+                  "durationMs": 0
+                }
+              },
+              {
+                "started": {
+                  "stepId": "tut_examine",
+                  "stepIndex": 3,
+                  "totalSteps": 6
+                }
+              }
+            ],
+            "state": {
+              "current": "tut_examine",
+              "isComplete": false
+            }
+          },
+          {
+            "result": null,
+            "calls": [
+              {
+                "completed": {
+                  "stepId": "tut_examine",
+                  "stepIndex": 3,
+                  "totalSteps": 6,
+                  "durationMs": 0
+                }
+              },
+              {
+                "started": {
+                  "stepId": "tut_inventory",
+                  "stepIndex": 4,
+                  "totalSteps": 6
+                }
+              }
+            ],
+            "state": {
+              "current": "tut_inventory",
+              "isComplete": false
+            }
+          },
+          {
+            "result": {
+              "totalSteps": 6,
+              "step": {
+                "id": "tut_inventory",
+                "type": "inventory",
+                "title": "Open your inventory",
+                "description": "Press I to open your inventory.",
+                "controlHint": "I for the inventory",
+                "control": "inventory",
+                "controlKeys": [
+                  "KeyI"
+                ],
+                "controlGamepad": [],
+                "completesOn": [
+                  "inventory_opened"
+                ],
+                "isAssessment": false,
+                "completed": false,
+                "skipped": false,
+                "highlightElement": "inventory"
+              }
+            },
+            "calls": [],
+            "state": {
+              "current": "tut_inventory",
+              "isComplete": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "onboarding: expected WRONGLY with no onCompleted when a flow with no steps starts",
+      "op": "onboarding",
+      "input": {
+        "definition": {
+          "steps": []
+        },
+        "options": {},
+        "steps": [
+          {
+            "inspect": true
+          },
+          {
+            "start": true
+          },
+          {
+            "start": true
+          },
+          {
+            "complete": true
+          }
+        ]
+      },
+      "expected": {
+        "totalSteps": 0,
+        "steps": [
+          {
+            "result": {
+              "totalSteps": 0,
+              "step": null
+            },
+            "calls": [],
+            "state": {
+              "current": null,
+              "isComplete": false
+            }
+          },
+          {
+            "result": null,
+            "calls": [],
+            "state": {
+              "current": null,
+              "isComplete": true
+            }
+          },
+          {
+            "result": null,
+            "calls": [],
+            "state": {
+              "current": null,
+              "isComplete": true
+            }
+          },
+          {
+            "result": null,
+            "calls": [],
+            "state": {
+              "current": null,
+              "isComplete": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: WRONGLY undriven, a step no row takes",
+      "op": "run",
+      "input": {
+        "config": {
+          "worldName": "Brightwater",
+          "targetLanguage": "French",
+          "includeAssessment": false
+        },
+        "steps": [
+          {
+            "teleport": true
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Welcome to Brightwater",
+          "description": "Learn the basics and explore your surroundings.",
+          "objectives": [
+            {
+              "id": "tut_movement",
+              "type": "movement",
+              "title": "Walk to the town square",
+              "description": "Use WASD to move around. Walk towards the settlement.",
+              "controlHint": "WASD to move",
+              "control": "move",
+              "controlKeys": [
+                "KeyW",
+                "KeyA",
+                "KeyS",
+                "KeyD",
+                "ArrowUp",
+                "ArrowLeft",
+                "ArrowDown",
+                "ArrowRight"
+              ],
+              "controlGamepad": [
+                "leftStick"
+              ],
+              "completesOn": [
+                "settlement_entered",
+                "location_visited"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false
+            },
+            {
+              "id": "tut_camera",
+              "type": "camera",
+              "title": "Approach an NPC",
+              "description": "Use the mouse to look around, then walk near a villager.",
+              "controlHint": "Mouse to look",
+              "control": "look",
+              "controlKeys": [],
+              "controlGamepad": [
+                "rightStick"
+              ],
+              "completesOn": [
+                "player_near_npc"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false
+            },
+            {
+              "id": "tut_interact_npc",
+              "type": "interaction",
+              "title": "Talk to a villager",
+              "description": "Walk up to an NPC and press E to start a conversation.",
+              "controlHint": "E to interact",
+              "control": "interact",
+              "controlKeys": [
+                "KeyE"
+              ],
+              "controlGamepad": [
+                "west"
+              ],
+              "completesOn": [
+                "npc_talked"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false,
+              "highlightElement": "prompt"
+            },
+            {
+              "id": "tut_reading",
+              "type": "reading",
+              "title": "Read a sign",
+              "description": "Find a sign in the world and press E beside it to read it.",
+              "controlHint": "E near a sign",
+              "control": "interact",
+              "controlKeys": [
+                "KeyE"
+              ],
+              "controlGamepad": [
+                "west"
+              ],
+              "completesOn": [
+                "sign_read"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false,
+              "highlightElement": "notice_board"
+            },
+            {
+              "id": "tut_examine",
+              "type": "interaction",
+              "title": "Examine an object",
+              "description": "Look at an object in the world and press E to examine it.",
+              "controlHint": "E near an object",
+              "control": "interact",
+              "controlKeys": [
+                "KeyE"
+              ],
+              "controlGamepad": [
+                "west"
+              ],
+              "completesOn": [
+                "object_examined"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false
+            },
+            {
+              "id": "tut_menu",
+              "type": "quest_log",
+              "title": "Open the quest log",
+              "description": "Press J to open your quest log and see your objectives.",
+              "controlHint": "J to open the quest log",
+              "control": "quest_log",
+              "controlKeys": [
+                "KeyJ"
+              ],
+              "controlGamepad": [],
+              "completesOn": [
+                "quest_log_opened"
+              ],
+              "isAssessment": false,
+              "completed": false,
+              "skipped": false,
+              "highlightElement": "quest_journal"
+            }
+          ],
+          "events": [],
+          "state": {
+            "questId": "tutorial",
+            "current": "tut_movement",
+            "currentObjectiveIndex": 0,
+            "completed": [],
+            "skipped": [],
+            "progress": {
+              "completed": 0,
+              "total": 6,
+              "percentage": 0
+            },
+            "isComplete": false,
+            "endedBySkip": false,
+            "canSkip": true,
+            "canAbandon": false,
+            "startedAt": "2026-11-06T09:00:00.000Z",
+            "completedAt": null
+          }
+        },
+        "steps": [
+          {
+            "result": "tut_movement",
+            "events": [
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_movement",
+                "stepIndex": 0,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_movement",
+              "currentObjectiveIndex": 0,
+              "completed": [],
+              "skipped": [],
+              "progress": {
+                "completed": 0,
+                "total": 6,
+                "percentage": 0
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": "tut_movement",
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_movement",
+              "currentObjectiveIndex": 0,
+              "completed": [],
+              "skipped": [],
+              "progress": {
+                "completed": 0,
+                "total": 6,
+                "percentage": 0
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

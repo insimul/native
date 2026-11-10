@@ -1,0 +1,1330 @@
+{
+  "area": "title",
+  "description": "Hand-written: the ui.titleFlow.*, ui.tutorial.* and ui.onboarding.* rows' own contract (PL.native-title-rows, U92(1); core's P8 logic, P8.core: src/ui/title-flow.ts, TutorialQuestSystem, OnboardingManager) — each row's answer shape, a domain refusal as a VALUE (core's), a title menu linked LIVE to a saves.slots session, the host clock and its tick, the events a tutorial raises (never the host's own), the onboarding callbacks per op, the session kinds, and the rows' own refusals as errors coded [invalid-input]. Core's own corpora (conformance/ui/title-flow.json, conformance/quests/tutorial.json) are driven whole through these rows by the title_flow_corpus and tutorial_corpus ctests (tests/title_corpus.cpp), not transcribed here.",
+  "cases": [
+    {
+      "name": "ui.titleFlow.contract and ui.tutorial.contract: the tables of the two P8 corpora, from core's constants",
+      "steps": [
+        {
+          "call": "ui.titleFlow.contract",
+          "expect": {
+            "ui-title-flow": {
+              "entries": [
+                "continue",
+                "new_game",
+                "load_game",
+                "settings",
+                "quit"
+              ],
+              "labels": {
+                "continue": "Continue",
+                "new_game": "New Game",
+                "load_game": "Load Game",
+                "settings": "Settings",
+                "quit": "Quit"
+              },
+              "messages": {
+                "nothing_to_continue": "No saved game to continue.",
+                "no_saves": "No saved games."
+              },
+              "slotMessages": {
+                "$type": "object"
+              },
+              "defaultTitle": "Insimul",
+              "defaultSlotCount": 3,
+              "ops": [
+                "menu",
+                "choose",
+                "session"
+              ],
+              "steps": [
+                "save",
+                "load",
+                "continue",
+                "delete",
+                "ask_delete",
+                "confirm_delete",
+                "cancel_delete",
+                "key",
+                "tick",
+                "finished",
+                "choose"
+              ]
+            }
+          }
+        },
+        {
+          "call": "ui.tutorial.contract",
+          "expect": {
+            "quests-tutorial": {
+              "objectives": {
+                "$ids": [
+                  "tut_movement",
+                  "tut_camera",
+                  "tut_interact_npc",
+                  "tut_reading",
+                  "tut_examine",
+                  "tut_inventory",
+                  "tut_menu",
+                  "tut_combat"
+                ]
+              },
+              "assessmentObjective": {
+                "$subset": {
+                  "id": "tut_assessment",
+                  "isAssessment": true,
+                  "completesOn": [
+                    "assessment_completed"
+                  ]
+                }
+              },
+              "flows": [
+                "generic",
+                "language"
+              ],
+              "ops": [
+                "objectives",
+                "run",
+                "onboarding"
+              ],
+              "runSteps": [
+                "start",
+                "event",
+                "complete",
+                "completeById",
+                "skip",
+                "skipNonAssessment",
+                "tick",
+                "dispose"
+              ],
+              "onboardingSteps": [
+                "start",
+                "complete",
+                "skip",
+                "event",
+                "tick",
+                "inspect"
+              ],
+              "t0": "2026-11-06T09:00:00.000Z"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ui.titleFlow: a fresh install; choices and refusals as values; set makes the host busy",
+      "steps": [
+        {
+          "call": "ui.titleFlow.create",
+          "expect": {
+            "session": 1,
+            "view": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "nothing_to_continue",
+                  "reason": "No saved game to continue."
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "no_saves",
+                  "reason": "No saved games."
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "new_game",
+              "busy": false,
+              "continueSlot": null,
+              "continueRow": null,
+              "newGameSlot": 0,
+              "onboarding": true
+            }
+          }
+        },
+        {
+          "call": "ui.titleFlow.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "choose",
+                "entry": "new_game"
+              },
+              {
+                "op": "choose",
+                "entry": "continue"
+              },
+              {
+                "op": "choose",
+                "entry": "New Game"
+              },
+              {
+                "op": "set",
+                "menu": {
+                  "title": "  Brightwater ",
+                  "busy": true,
+                  "quit": false
+                }
+              },
+              {
+                "op": "choose",
+                "entry": "settings"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "action": {
+                  "newGame": {
+                    "slot": 0,
+                    "onboarding": true
+                  }
+                }
+              },
+              {
+                "ok": false,
+                "refusal": "nothing_to_continue",
+                "action": null
+              },
+              {
+                "ok": false,
+                "refusal": "unknown_entry",
+                "action": null
+              },
+              null,
+              {
+                "ok": false,
+                "refusal": "busy",
+                "action": null
+              }
+            ],
+            "view": {
+              "$subset": {
+                "title": "Brightwater",
+                "focus": null,
+                "busy": true,
+                "entries": [
+                  {
+                    "$subset": {
+                      "id": "continue",
+                      "refusal": "busy",
+                      "reason": ""
+                    }
+                  },
+                  {
+                    "$subset": {
+                      "id": "new_game",
+                      "refusal": "busy"
+                    }
+                  },
+                  {
+                    "$subset": {
+                      "id": "load_game",
+                      "refusal": "busy"
+                    }
+                  },
+                  {
+                    "$subset": {
+                      "id": "settings",
+                      "refusal": "busy"
+                    }
+                  },
+                  {
+                    "$subset": {
+                      "id": "quit",
+                      "shown": false,
+                      "refusal": "not_shown"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ui.titleFlow linked to a saves.slots session: the menu reads it live; a pending write is busy",
+      "steps": [
+        {
+          "call": "saves.slots.create",
+          "args": {
+            "slots": [
+              {
+                "index": 0,
+                "outcome": "ok",
+                "summary": {
+                  "savedAt": "2026-11-06T10:00:00.000Z"
+                }
+              }
+            ]
+          },
+          "expect": {
+            "$subset": {
+              "session": 1
+            }
+          }
+        },
+        {
+          "call": "ui.titleFlow.create",
+          "args": {
+            "menu": {
+              "title": "Brightwater"
+            },
+            "savesSession": 1
+          },
+          "expect": {
+            "session": 2,
+            "view": {
+              "$subset": {
+                "title": "Brightwater",
+                "focus": "continue",
+                "busy": false,
+                "continueSlot": 0,
+                "newGameSlot": 1,
+                "continueRow": {
+                  "$subset": {
+                    "index": 0,
+                    "status": "ok",
+                    "title": "Slot 1",
+                    "message": "Saved 2026-11-06T10:00:00.000Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "call": "ui.titleFlow.apply",
+          "args": {
+            "session": 2,
+            "ops": [
+              {
+                "op": "choose",
+                "entry": "continue"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "action": {
+                  "continue": {
+                    "slot": 0
+                  }
+                }
+              }
+            ],
+            "view": {
+              "$subset": {
+                "busy": false
+              }
+            }
+          }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "save",
+                "slot": 1
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "effect": {
+                  "write": {
+                    "slot": 1,
+                    "kind": "manual",
+                    "autosave": false
+                  }
+                }
+              }
+            ],
+            "view": {
+              "$any": true
+            }
+          }
+        },
+        {
+          "call": "ui.titleFlow.apply",
+          "args": {
+            "session": 2,
+            "ops": [
+              {
+                "op": "choose",
+                "entry": "new_game"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": false,
+                "refusal": "busy",
+                "action": null
+              }
+            ],
+            "view": {
+              "$subset": {
+                "busy": true,
+                "focus": null
+              }
+            }
+          }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "finished",
+                "ok": true,
+                "savedAt": "2026-11-06T11:00:00.000Z"
+              }
+            ]
+          },
+          "expect": {
+            "$subset": {
+              "results": [
+                {
+                  "$subset": {
+                    "ok": true
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "ui.titleFlow.apply",
+          "args": {
+            "session": 2,
+            "ops": []
+          },
+          "expect": {
+            "results": [],
+            "view": {
+              "$subset": {
+                "busy": false,
+                "continueSlot": 1,
+                "newGameSlot": 2
+              }
+            }
+          }
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "disposed": true
+          }
+        },
+        {
+          "call": "ui.titleFlow.apply",
+          "args": {
+            "session": 2,
+            "ops": []
+          },
+          "expectError": "ui.titleFlow.apply: the linked `savesSession` 1 is not an open saves.slots session (no open session 1)"
+        }
+      ]
+    },
+    {
+      "name": "ui.tutorial: objectives from the game's bindings; a session on a host clock raises the onboarding events, never the host's own",
+      "steps": [
+        {
+          "call": "ui.tutorial.objectives",
+          "args": {
+            "rebind": {
+              "interact": [
+                "KeyF"
+              ]
+            },
+            "unbind": [
+              "quest_log"
+            ]
+          },
+          "expect": {
+            "objectives": {
+              "$ids": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine"
+              ]
+            }
+          }
+        },
+        {
+          "call": "ui.tutorial.objectives",
+          "args": {
+            "rebind": {
+              "interact": [
+                "KeyF"
+              ]
+            }
+          },
+          "expect": {
+            "objectives": [
+              {
+                "$subset": {
+                  "id": "tut_movement",
+                  "controlHint": "WASD to move"
+                }
+              },
+              {
+                "$subset": {
+                  "id": "tut_camera",
+                  "controlHint": "Mouse to look"
+                }
+              },
+              {
+                "$subset": {
+                  "id": "tut_interact_npc",
+                  "controlHint": "F to interact",
+                  "controlKeys": [
+                    "KeyF"
+                  ]
+                }
+              },
+              {
+                "$subset": {
+                  "id": "tut_reading"
+                }
+              },
+              {
+                "$subset": {
+                  "id": "tut_examine"
+                }
+              },
+              {
+                "$subset": {
+                  "id": "tut_menu",
+                  "controlHint": "J to open the quest log"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "call": "ui.tutorial.create",
+          "args": {
+            "config": {
+              "worldName": "Brightwater",
+              "targetLanguage": "French",
+              "includeAssessment": true
+            },
+            "now": "2026-11-06T09:00:00.000Z"
+          },
+          "expect": {
+            "session": 1,
+            "title": "Welcome to Brightwater",
+            "description": "Learn the basics and complete your language assessment.",
+            "objectives": {
+              "$ids": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine",
+                "tut_menu",
+                "tut_assessment"
+              ]
+            },
+            "events": [],
+            "view": {
+              "questId": "tutorial",
+              "current": "tut_movement",
+              "currentObjectiveIndex": 0,
+              "completed": [],
+              "skipped": [],
+              "progress": {
+                "completed": 0,
+                "total": 7,
+                "percentage": 0
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          }
+        },
+        {
+          "call": "ui.tutorial.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "start"
+              },
+              {
+                "op": "tick",
+                "ms": 2500
+              },
+              {
+                "op": "event",
+                "type": "settlement_entered"
+              },
+              {
+                "op": "event",
+                "type": "onboarding_step_started",
+                "stepId": "the host's own"
+              },
+              {
+                "op": "complete"
+              },
+              {
+                "op": "completeById",
+                "id": "tut_examine"
+              },
+              {
+                "op": "skip"
+              },
+              {
+                "op": "event",
+                "type": "assessment_completed"
+              },
+              {
+                "op": "dispose"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "result": "tut_movement",
+                "events": [
+                  {
+                    "type": "onboarding_step_started",
+                    "stepId": "tut_movement",
+                    "stepIndex": 0,
+                    "totalSteps": 7
+                  }
+                ]
+              },
+              {
+                "result": null,
+                "events": []
+              },
+              {
+                "result": null,
+                "events": [
+                  {
+                    "type": "onboarding_step_completed",
+                    "stepId": "tut_movement",
+                    "stepIndex": 0,
+                    "totalSteps": 7,
+                    "durationMs": 2500
+                  },
+                  {
+                    "type": "onboarding_step_started",
+                    "stepId": "tut_camera",
+                    "stepIndex": 1,
+                    "totalSteps": 7
+                  }
+                ]
+              },
+              {
+                "result": null,
+                "events": []
+              },
+              {
+                "result": "tut_interact_npc",
+                "events": {
+                  "$len": 2
+                }
+              },
+              {
+                "result": false,
+                "events": []
+              },
+              {
+                "result": true,
+                "events": [
+                  {
+                    "type": "onboarding_step_started",
+                    "stepId": "tut_assessment",
+                    "stepIndex": 6,
+                    "totalSteps": 7
+                  }
+                ]
+              },
+              {
+                "result": null,
+                "events": [
+                  {
+                    "type": "onboarding_step_completed",
+                    "stepId": "tut_assessment",
+                    "stepIndex": 6,
+                    "totalSteps": 7,
+                    "durationMs": 0
+                  },
+                  {
+                    "type": "onboarding_completed",
+                    "totalSteps": 7,
+                    "totalDurationMs": 2500
+                  }
+                ]
+              },
+              {
+                "result": null,
+                "events": []
+              }
+            ],
+            "view": {
+              "$subset": {
+                "current": null,
+                "isComplete": true,
+                "endedBySkip": false,
+                "completed": [
+                  "tut_movement",
+                  "tut_camera",
+                  "tut_assessment"
+                ],
+                "skipped": [
+                  "tut_interact_npc",
+                  "tut_reading",
+                  "tut_examine",
+                  "tut_menu"
+                ],
+                "completedAt": "2026-11-06T09:00:02.500Z"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ui.onboarding: inspect before start, the callbacks and the quest's events per op, a skip refused at the assessment, the quest's state, a flow with nothing left",
+      "steps": [
+        {
+          "call": "ui.onboarding.create",
+          "args": {
+            "definition": {
+              "steps": [
+                {
+                  "id": "intro",
+                  "type": "narrative",
+                  "name": "Arrival"
+                },
+                {
+                  "id": "tut_movement"
+                },
+                {
+                  "id": "arrival",
+                  "type": "assessment"
+                }
+              ]
+            },
+            "now": 0
+          },
+          "expect": {
+            "session": 1,
+            "totalSteps": 3,
+            "view": {
+              "current": null,
+              "isComplete": false
+            }
+          }
+        },
+        {
+          "call": "ui.onboarding.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "state"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "result": null,
+                "calls": [],
+                "events": []
+              }
+            ],
+            "totalSteps": 3,
+            "view": {
+              "current": null,
+              "isComplete": false
+            }
+          }
+        },
+        {
+          "call": "ui.onboarding.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "inspect"
+              },
+              {
+                "op": "start"
+              },
+              {
+                "op": "tick",
+                "ms": 1000
+              },
+              {
+                "op": "complete"
+              },
+              {
+                "op": "event",
+                "type": "location_visited"
+              },
+              {
+                "op": "skip"
+              },
+              {
+                "op": "complete"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "result": {
+                  "totalSteps": 3,
+                  "step": null
+                },
+                "calls": [],
+                "events": []
+              },
+              {
+                "result": null,
+                "calls": [
+                  {
+                    "started": {
+                      "stepId": "intro",
+                      "stepIndex": 0,
+                      "totalSteps": 3
+                    }
+                  }
+                ],
+                "events": [
+                  {
+                    "type": "onboarding_step_started",
+                    "stepId": "intro",
+                    "stepIndex": 0,
+                    "totalSteps": 3
+                  }
+                ]
+              },
+              {
+                "result": null,
+                "calls": [],
+                "events": []
+              },
+              {
+                "result": null,
+                "calls": [
+                  {
+                    "completed": {
+                      "stepId": "intro",
+                      "stepIndex": 0,
+                      "totalSteps": 3,
+                      "durationMs": 1000
+                    }
+                  },
+                  {
+                    "started": {
+                      "stepId": "tut_movement",
+                      "stepIndex": 1,
+                      "totalSteps": 3
+                    }
+                  }
+                ],
+                "events": [
+                  {
+                    "type": "onboarding_step_completed",
+                    "stepId": "intro",
+                    "stepIndex": 0,
+                    "totalSteps": 3,
+                    "durationMs": 1000
+                  },
+                  {
+                    "type": "onboarding_step_started",
+                    "stepId": "tut_movement",
+                    "stepIndex": 1,
+                    "totalSteps": 3
+                  }
+                ]
+              },
+              {
+                "result": null,
+                "calls": [
+                  {
+                    "completed": {
+                      "stepId": "tut_movement",
+                      "stepIndex": 1,
+                      "totalSteps": 3,
+                      "durationMs": 0
+                    }
+                  },
+                  {
+                    "started": {
+                      "stepId": "arrival",
+                      "stepIndex": 2,
+                      "totalSteps": 3
+                    }
+                  }
+                ],
+                "events": [
+                  {
+                    "type": "onboarding_step_completed",
+                    "stepId": "tut_movement",
+                    "stepIndex": 1,
+                    "totalSteps": 3,
+                    "durationMs": 0
+                  },
+                  {
+                    "type": "onboarding_step_started",
+                    "stepId": "arrival",
+                    "stepIndex": 2,
+                    "totalSteps": 3
+                  }
+                ]
+              },
+              {
+                "result": false,
+                "calls": [],
+                "events": []
+              },
+              {
+                "result": null,
+                "calls": [
+                  {
+                    "completed": {
+                      "stepId": "arrival",
+                      "stepIndex": 2,
+                      "totalSteps": 3,
+                      "durationMs": 0
+                    }
+                  },
+                  {
+                    "done": {
+                      "totalSteps": 3,
+                      "totalDurationMs": 1000
+                    }
+                  }
+                ],
+                "events": [
+                  {
+                    "type": "onboarding_step_completed",
+                    "stepId": "arrival",
+                    "stepIndex": 2,
+                    "totalSteps": 3,
+                    "durationMs": 0
+                  },
+                  {
+                    "type": "onboarding_completed",
+                    "totalSteps": 3,
+                    "totalDurationMs": 1000
+                  }
+                ]
+              }
+            ],
+            "totalSteps": 3,
+            "view": {
+              "current": null,
+              "isComplete": true
+            }
+          }
+        },
+        {
+          "call": "ui.onboarding.create",
+          "args": {
+            "definition": {
+              "steps": []
+            }
+          },
+          "expect": {
+            "session": 2,
+            "totalSteps": 0,
+            "view": {
+              "current": null,
+              "isComplete": false
+            }
+          }
+        },
+        {
+          "call": "ui.onboarding.apply",
+          "args": {
+            "session": 2,
+            "ops": [
+              {
+                "op": "start"
+              },
+              {
+                "op": "inspect"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "result": null,
+                "calls": [
+                  {
+                    "done": {
+                      "totalSteps": 0,
+                      "totalDurationMs": 0
+                    }
+                  }
+                ],
+                "events": []
+              },
+              {
+                "result": {
+                  "totalSteps": 0,
+                  "step": null
+                },
+                "calls": [],
+                "events": []
+              }
+            ],
+            "totalSteps": 0,
+            "view": {
+              "current": null,
+              "isComplete": true
+            }
+          }
+        },
+        {
+          "call": "ui.onboarding.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "state"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "result": {
+                  "$subset": {
+                    "questId": "tutorial",
+                    "isComplete": true,
+                    "skipped": false,
+                    "objectives": {
+                      "$ids": [
+                        "intro",
+                        "tut_movement",
+                        "arrival"
+                      ]
+                    }
+                  }
+                },
+                "calls": [],
+                "events": []
+              }
+            ],
+            "totalSteps": 3,
+            "view": {
+              "current": null,
+              "isComplete": true
+            }
+          }
+        },
+        {
+          "call": "ui.onboarding.apply",
+          "args": {
+            "session": 2,
+            "ops": [
+              {
+                "op": "event",
+                "type": "onboarding_completed"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "result": null,
+                "calls": [],
+                "events": []
+              }
+            ],
+            "totalSteps": 0,
+            "view": {
+              "current": null,
+              "isComplete": true
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "the title, tutorial and onboarding rows' own refusals are errors coded [invalid-input]; a session of the wrong kind is refused by name",
+      "steps": [
+        {
+          "call": "ui.titleFlow.create",
+          "args": {
+            "menu": []
+          },
+          "expectError": "[invalid-input] insimulcore: ui.titleFlow.create: `menu` must be a JSON object"
+        },
+        {
+          "call": "ui.titleFlow.create",
+          "args": {
+            "savesSession": "1"
+          },
+          "expectError": "[invalid-input] insimulcore: ui.titleFlow.create: `savesSession` must be a finite number"
+        },
+        {
+          "call": "ui.titleFlow.create",
+          "args": {
+            "savesSession": 9
+          },
+          "expectError": "the linked `savesSession` 9 is not an open saves.slots session"
+        },
+        {
+          "call": "ui.titleFlow.create",
+          "expect": {
+            "$subset": {
+              "session": 1
+            }
+          }
+        },
+        {
+          "call": "ui.titleFlow.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "set",
+                "menu": "busy"
+              }
+            ]
+          },
+          "expectError": "ops[0] (set) failed: insimulcore: ui.titleFlow.apply: `menu` must be a JSON object"
+        },
+        {
+          "call": "ui.titleFlow.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "pick",
+                "entry": "quit"
+              }
+            ]
+          },
+          "expectError": "ops[0] has no known op \"pick\""
+        },
+        {
+          "call": "ui.titleFlow.create",
+          "args": {
+            "savesSession": 1
+          },
+          "expectError": "the linked `savesSession` 1 is not an open saves.slots session (session 1 is a ui.titleFlow session, not saves.slots)"
+        },
+        {
+          "call": "ui.tutorial.objectives",
+          "args": {
+            "includeAssessment": "yes"
+          },
+          "expectError": "[invalid-input] insimulcore: ui.tutorial.objectives: `includeAssessment` must be a boolean"
+        },
+        {
+          "call": "ui.tutorial.objectives",
+          "args": {
+            "rebind": {
+              "interact": "KeyF"
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: ui.tutorial.objectives: `options.rebind.interact` must be an array"
+        },
+        {
+          "call": "ui.tutorial.create",
+          "args": {
+            "config": {
+              "bindings": [],
+              "unbind": [
+                "move"
+              ]
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: ui.tutorial.create: `config.bindings` is the whole table: state it or the changes (unbind), not both"
+        },
+        {
+          "call": "ui.tutorial.create",
+          "args": {
+            "config": {
+              "completedObjectiveIds": [
+                1
+              ]
+            }
+          },
+          "expectError": "`config.completedObjectiveIds[0]` must be a string"
+        },
+        {
+          "call": "ui.tutorial.create",
+          "args": {
+            "now": "yesterday"
+          },
+          "expectError": "[invalid-input] insimulcore: ui.tutorial.create: `now` must be an ISO date-time string or finite epoch milliseconds"
+        },
+        {
+          "call": "ui.tutorial.create",
+          "args": {
+            "config": {
+              "worldName": "Brightwater",
+              "targetLanguage": "French"
+            },
+            "now": 0
+          },
+          "expect": {
+            "$subset": {
+              "session": 2,
+              "events": []
+            }
+          }
+        },
+        {
+          "call": "ui.tutorial.apply",
+          "args": {
+            "session": 2,
+            "ops": [
+              {
+                "op": "tick",
+                "ms": "5"
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.tutorial.apply: ops[0] (tick) failed: insimulcore: ui.tutorial.apply: `ms` must be a finite number"
+        },
+        {
+          "call": "ui.tutorial.apply",
+          "args": {
+            "session": 2,
+            "ops": [
+              {
+                "op": "event"
+              }
+            ]
+          },
+          "expectError": "ops[0] (event) failed: insimulcore: ui.tutorial.apply: `type` must be a string"
+        },
+        {
+          "call": "ui.tutorial.apply",
+          "args": {
+            "session": 2,
+            "ops": [
+              {
+                "op": "completeById"
+              }
+            ]
+          },
+          "expectError": "ops[0] (completeById) failed: insimulcore: ui.tutorial.apply: `id` must be a string"
+        },
+        {
+          "call": "ui.onboarding.create",
+          "args": {
+            "definition": "generic"
+          },
+          "expectError": "[invalid-input] insimulcore: ui.onboarding.create: `definition` must be a JSON object"
+        },
+        {
+          "call": "ui.onboarding.create",
+          "args": {
+            "options": {
+              "skippable": "no"
+            }
+          },
+          "expectError": "`options.skippable` must be a boolean"
+        },
+        {
+          "call": "ui.onboarding.create",
+          "expect": {
+            "session": 3,
+            "totalSteps": 6,
+            "view": {
+              "current": null,
+              "isComplete": false
+            }
+          }
+        },
+        {
+          "call": "ui.onboarding.apply",
+          "args": {
+            "session": 3,
+            "ops": [
+              {
+                "op": "tick",
+                "ms": 5
+              }
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: ui.onboarding.apply: ops[0] (tick) failed: insimulcore: ui.onboarding.apply: `tick` moves a host clock: open the session with `now`"
+        },
+        {
+          "call": "ui.tutorial.apply",
+          "args": {
+            "session": 3,
+            "ops": []
+          },
+          "expectError": "session 3 is a ui.onboarding session, not ui.tutorial"
+        },
+        {
+          "call": "ui.onboarding.apply",
+          "args": {
+            "session": 2,
+            "ops": []
+          },
+          "expectError": "session 2 is a ui.tutorial session, not ui.onboarding"
+        }
+      ]
+    }
+  ]
+}

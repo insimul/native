@@ -124,8 +124,8 @@
     if (typeof value === "string") return value;
     if (value instanceof Error) return `${value.name}: ${value.message}`;
     try {
-      const text3 = JSON.stringify(value);
-      return text3 === void 0 ? String(value) : text3;
+      const text4 = JSON.stringify(value);
+      return text4 === void 0 ? String(value) : text4;
     } catch {
       return String(value);
     }
@@ -384,10 +384,10 @@
     buildContentBlocks(facts, rules, contentBlocks, source, lines2);
     return { facts, rules, contentBlocks, errors };
   }
-  function parseTerm(text3) {
-    text3 = text3.trim();
-    if (!text3) return null;
-    const match = text3.match(/^([a-z_][a-z0-9_]*)\s*\(([\s\S]*)\)$/);
+  function parseTerm(text4) {
+    text4 = text4.trim();
+    if (!text4) return null;
+    const match = text4.match(/^([a-z_][a-z0-9_]*)\s*\(([\s\S]*)\)$/);
     if (!match) {
       return null;
     }
@@ -399,16 +399,16 @@
       fact: { predicate, arity: args.length, args, line: 0 }
     };
   }
-  function parseArgList(text3) {
+  function parseArgList(text4) {
     const args = [];
     let current = "";
     let depth = 0;
     let inSingleQuote = false;
     let i = 0;
-    while (i < text3.length) {
-      const ch = text3[i];
+    while (i < text4.length) {
+      const ch = text4[i];
       if (inSingleQuote) {
-        if (ch === "'" && i + 1 < text3.length && text3[i + 1] === "'") {
+        if (ch === "'" && i + 1 < text4.length && text4[i + 1] === "'") {
           current += "''";
           i += 2;
           continue;
@@ -449,31 +449,31 @@
     }
     return args;
   }
-  function parseArg(text3) {
-    text3 = text3.trim();
-    if (text3.startsWith("'") && text3.endsWith("'") && text3.length >= 2) {
-      const inner = text3.slice(1, -1).replace(/''/g, "'");
+  function parseArg(text4) {
+    text4 = text4.trim();
+    if (text4.startsWith("'") && text4.endsWith("'") && text4.length >= 2) {
+      const inner = text4.slice(1, -1).replace(/''/g, "'");
       return { type: "string", value: inner };
     }
-    if (/^-?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?$/.test(text3)) {
-      return { type: "number", value: parseFloat(text3) };
+    if (/^-?[0-9]+(\.[0-9]+)?([eE][+-]?[0-9]+)?$/.test(text4)) {
+      return { type: "number", value: parseFloat(text4) };
     }
-    if (/^[A-Z_][A-Za-z0-9_]*$/.test(text3)) {
-      return { type: "variable", value: text3 };
+    if (/^[A-Z_][A-Za-z0-9_]*$/.test(text4)) {
+      return { type: "variable", value: text4 };
     }
-    if (text3.startsWith("[") && text3.endsWith("]")) {
-      const inner = text3.slice(1, -1).trim();
+    if (text4.startsWith("[") && text4.endsWith("]")) {
+      const inner = text4.slice(1, -1).trim();
       if (!inner) return { type: "list", elements: [] };
       const elements = parseArgList(inner);
       return { type: "list", elements };
     }
-    const compMatch = text3.match(/^([a-z_][a-z0-9_]*)\s*\(([\s\S]*)\)$/);
+    const compMatch = text4.match(/^([a-z_][a-z0-9_]*)\s*\(([\s\S]*)\)$/);
     if (compMatch) {
       const functor = compMatch[1];
       const innerArgs = parseArgList(compMatch[2]);
       return { type: "compound", functor, args: innerArgs };
     }
-    return { type: "atom", value: text3 };
+    return { type: "atom", value: text4 };
   }
   function clauseEnds(clause) {
     let inQuote = false;
@@ -2697,9 +2697,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       __publicField(this, "nextId", 1);
     }
     /** Enqueue a notification. Returns its id (so a caller can `dismiss` it early). */
-    push(text3, kind = "info", lifetime2 = DEFAULT_NOTIFICATION_LIFETIME) {
+    push(text4, kind = "info", lifetime2 = DEFAULT_NOTIFICATION_LIFETIME) {
       const id = this.nextId++;
-      this.items.push({ id, text: text3, kind, remaining: lifetime2, color: KIND_COLOR[kind] });
+      this.items.push({ id, text: text4, kind, remaining: lifetime2, color: KIND_COLOR[kind] });
       return id;
     }
     /**
@@ -4449,7 +4449,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         }
       });
     }
-    trackWritingSubmission(text3, wordCount, questId) {
+    trackWritingSubmission(text4, wordCount, questId) {
       this.trackByTrigger("writing_submitted", questId);
       this.forEachObjective(questId, ["writing", "arrival_writing", "departure_writing"], (quest, obj3) => {
         const minWords = obj3.minWordCount || OBJECTIVE_TYPE_DEFAULTS[obj3.type]?.minWordCount || OBJECTIVE_TYPE_DEFAULTS["writing"]?.minWordCount || 20;
@@ -4459,7 +4459,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       });
       this.forEachObjective(questId, ["write_response", "describe_scene"], (quest, obj3) => {
         if (!obj3.writtenResponses) obj3.writtenResponses = [];
-        obj3.writtenResponses.push(text3);
+        obj3.writtenResponses.push(text4);
         obj3.currentCount = (obj3.currentCount || 0) + 1;
         const minWords = obj3.minWordCount || 0;
         if (minWords > 0 && wordCount < minWords) return;
@@ -5985,10 +5985,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
 
   // @insimul/core/src/ai/deterministic-stream.ts
-  function hashSeedString(text3) {
+  function hashSeedString(text4) {
     let h = 2166136261 >>> 0;
-    for (let i = 0; i < text3.length; i++) {
-      h ^= text3.charCodeAt(i);
+    for (let i = 0; i < text4.length; i++) {
+      h ^= text4.charCodeAt(i);
       h = Math.imul(h, 16777619);
     }
     return h >>> 0;
@@ -6004,8 +6004,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   function streamKey(parts) {
     return parts.map((part) => {
-      const text3 = String(part);
-      return `${text3.length}:${text3}`;
+      const text4 = String(part);
+      return `${text4.length}:${text4}`;
     }).join("");
   }
   function derivedStream(...parts) {
@@ -16811,29 +16811,29 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
     for (const percept of input.percepts) perceptsById.set(percept.id, percept);
     const pairs = /* @__PURE__ */ new Map();
     for (const exposure of input.exposures) {
-      const agentCurie = formatCurie(exposure.agent);
-      if (!agentsByCurie.has(agentCurie) || !perceptsById.has(exposure.percept)) continue;
-      const key = streamKey([agentCurie, exposure.percept]);
+      const agentCurie2 = formatCurie(exposure.agent);
+      if (!agentsByCurie.has(agentCurie2) || !perceptsById.has(exposure.percept)) continue;
+      const key = streamKey([agentCurie2, exposure.percept]);
       const clarity = clamp01(exposure.clarity);
       const prev = pairs.get(key);
       if (prev === void 0 || clarity > prev.clarity) {
-        pairs.set(key, { agentCurie, perceptId: exposure.percept, clarity });
+        pairs.set(key, { agentCurie: agentCurie2, perceptId: exposure.percept, clarity });
       }
     }
     const perceptions = [];
-    for (const { agentCurie, perceptId, clarity } of pairs.values()) {
-      const agent = agentsByCurie.get(agentCurie);
+    for (const { agentCurie: agentCurie2, perceptId, clarity } of pairs.values()) {
+      const agent = agentsByCurie.get(agentCurie2);
       const percept = perceptsById.get(perceptId);
       const acuity = acuityFor(agent, percept.channel);
       if (acuity === null) continue;
       const base = clarity * clamp01(acuity) * clamp01(percept.strength / 100);
-      const noise = thresholds.jitter === 0 ? 0 : (derivedValue(input.seed, input.tick, agentCurie, perceptId) * 2 - 1) * thresholds.jitter;
+      const noise = thresholds.jitter === 0 ? 0 : (derivedValue(input.seed, input.tick, agentCurie2, perceptId) * 2 - 1) * thresholds.jitter;
       const confidence = roundDeterministic(clamp01(base + noise));
       const fidelity = fidelityOf(confidence, thresholds);
       if (fidelity === null) continue;
       const learned = learnedTriple(percept, fidelity);
       perceptions.push({
-        agent: agentCurie,
+        agent: agentCurie2,
         percept: perceptId,
         channel: percept.channel,
         fidelity,
@@ -23215,6 +23215,1064 @@ player_meets_cefr(Player, RequiredLevel) :-
     }
   };
 
+  // @insimul/core/src/ui/title-flow.ts
+  var TITLE_ENTRIES = ["continue", "new_game", "load_game", "settings", "quit"];
+  var TITLE_ENTRY_LABELS = Object.freeze({
+    continue: "Continue",
+    new_game: "New Game",
+    load_game: "Load Game",
+    settings: "Settings",
+    quit: "Quit"
+  });
+  var DEFAULT_GAME_TITLE = "Insimul";
+  var TITLE_MESSAGES = Object.freeze({
+    nothing_to_continue: "No saved game to continue.",
+    no_saves: "No saved games."
+  });
+  function rowsOf2(input) {
+    const s = input.session;
+    if (s) return { rows: [...s.rows], cont: s.continueSlot, busy: s.pending !== null || (s.confirm ?? null) !== null };
+    const config = resolveSaveSlotsConfig(input.saves);
+    return { rows: slotRows(input.slots, config, null), cont: continueSlot(input.slots, slotTableSize(config)), busy: false };
+  }
+  function titleMenu(input) {
+    const i = input ?? {};
+    const { rows, cont, busy: sessionBusy } = rowsOf2(i);
+    const busy = sessionBusy || i.busy === true;
+    const title = typeof i.title === "string" && i.title.trim() !== "" ? i.title.trim() : DEFAULT_GAME_TITLE;
+    const continueRow = rows.find((r) => r.index === cont) ?? null;
+    const anySave = rows.some((r) => r.status !== "empty");
+    const corrupted = rows.find((r) => r.status === "corrupted");
+    const newGameSlot = rows.find((r) => r.status === "empty" && r.isManual !== false)?.index ?? null;
+    const shown = { continue: true, new_game: true, load_game: true, settings: i.settings !== false, quit: i.quit !== false };
+    const entry = (id, blocked, reason = "") => {
+      const refusal3 = !shown[id] ? "not_shown" : busy ? "busy" : blocked;
+      return { id, label: TITLE_ENTRY_LABELS[id], shown: shown[id], enabled: refusal3 === null, refusal: refusal3, reason: refusal3 === blocked && refusal3 !== null ? reason : "" };
+    };
+    const entries = [
+      entry("continue", cont === null ? "nothing_to_continue" : null, corrupted ? corrupted.message : TITLE_MESSAGES.nothing_to_continue),
+      entry("new_game", null),
+      entry("load_game", anySave ? null : "no_saves", TITLE_MESSAGES.no_saves),
+      entry("settings", null),
+      entry("quit", null)
+    ];
+    return {
+      title,
+      entries,
+      focus: entries.find((e) => e.enabled)?.id ?? null,
+      busy,
+      continueSlot: cont,
+      continueRow,
+      newGameSlot,
+      onboarding: i.onboarding !== false
+    };
+  }
+  function chooseTitleEntry(input, entry) {
+    if (!TITLE_ENTRIES.includes(entry)) return { ok: false, refusal: "unknown_entry", action: null };
+    const view2 = titleMenu(input);
+    const e = view2.entries.find((x) => x.id === entry);
+    if (!e.enabled) return { ok: false, refusal: e.refusal, action: null };
+    switch (e.id) {
+      case "continue":
+        return { ok: true, action: { continue: { slot: view2.continueSlot } } };
+      case "new_game":
+        return { ok: true, action: { newGame: { slot: view2.newGameSlot, onboarding: view2.onboarding } } };
+      case "load_game":
+        return { ok: true, action: { openLoad: true } };
+      case "settings":
+        return { ok: true, action: { openSettings: true } };
+      default:
+        return { ok: true, action: { quit: true } };
+    }
+  }
+
+  // @insimul/core/src/survival/needs.ts
+  var SURVIVAL_NEED_IDS = Object.freeze(["hunger", "thirst", "temperature", "sleep"]);
+  var DEFAULT_SURVIVAL_NEEDS = Object.freeze([
+    { id: "hunger", name: "Hunger", maxValue: 100, startValue: 80, decayRate: 0.15, warningThreshold: 30, criticalThreshold: 15, damageRate: 2 },
+    { id: "thirst", name: "Thirst", maxValue: 100, startValue: 90, decayRate: 0.25, warningThreshold: 30, criticalThreshold: 15, damageRate: 3 },
+    { id: "temperature", name: "Temperature", maxValue: 100, startValue: 50, decayRate: 0, warningThreshold: 20, criticalThreshold: 10, damageRate: 1.5 },
+    { id: "sleep", name: "Rest", maxValue: 100, startValue: 100, decayRate: 0.08, warningThreshold: 25, criticalThreshold: 10, damageRate: 0.5 }
+  ]);
+  var DEFAULT_RESTORE_ACTIONS = Object.freeze({
+    eat: { need: "hunger", amount: 30 },
+    drink: { need: "thirst", amount: 25 },
+    sleep: { need: "sleep", amount: 50 }
+  });
+  var DEFAULT_SURVIVAL_TUNING = Object.freeze({
+    needs: DEFAULT_SURVIVAL_NEEDS.map((n) => ({ ...n })),
+    tickMs: 1e3,
+    maxTicksPerAdvance: 86400,
+    damageEnabled: true,
+    globalDamageMultiplier: 1,
+    temperatureEnvironmentDriven: false,
+    comfortMin: 20,
+    comfortMax: 80,
+    criticalAtBothExtremes: true,
+    temperatureDriftPerSecond: 10,
+    satisfiedFraction: 0.9,
+    hudFlashMs: 1500,
+    restoreActions: { ...DEFAULT_RESTORE_ACTIONS },
+    modifierPresets: []
+  });
+  var SURVIVAL_BLOCK_MEMBERS = Object.freeze(["readings", "modifiers"]);
+  var SURVIVAL_MODIFIER_KEYS = Object.freeze(["id", "needType", "rateMultiplier", "remainingMs", "source"]);
+
+  // @insimul/core/src/gathering/physical-actions.ts
+  var PHYSICAL_ACTION_IDS = Object.freeze([
+    "chopping",
+    "cooking",
+    "crafting",
+    "farm_harvest",
+    "farm_plant",
+    "farm_water",
+    "fishing",
+    "harvesting",
+    "herbalism",
+    "mining",
+    "painting",
+    "praying",
+    "reading",
+    "sweeping"
+  ]);
+  var def = (id, displayName, promptVerb, clip, clipFallback, seconds, energyCost, xp, rewards, places, extra = {}) => ({
+    id,
+    displayName,
+    promptVerb,
+    clip,
+    clipFallback,
+    durationMs: seconds * 1e3,
+    energyCost,
+    xp,
+    rewards: extra.production ? [] : rewards.map(([item, chancePercent, min, max]) => ({ item, chancePercent, min, max })),
+    production: extra.production ?? null,
+    tool: extra.tool ?? null,
+    places
+  });
+  var FARM = ["farm", "field", "garden", "plantation", "greenhouse"];
+  var DEFAULT_PHYSICAL_ACTIONS = Object.freeze([
+    def("chopping", "Chop Wood", "Chop", "TreeChopping_Loop", "Interact", 6, 7, 12, [["firewood", 90, 1, 3], ["timber", 30, 1, 1]], ["wood_pile", "lumber_yard", "tree_stump", "forest"], { tool: "axe" }),
+    def("cooking", "Cook", "Cook", "Interact", "Idle_Talking_Loop", 6, 4, 12, [["prepared_food", 80, 1, 1], ["baked_goods", 30, 1, 2]], ["kitchen", "oven", "stove", "hearth", "campfire", "bakery", "restaurant"]),
+    def("crafting", "Craft", "Craft", "Fixing_Kneeling", "Interact", 8, 6, 18, [], ["workbench", "forge", "blacksmith", "workshop", "anvil"], { production: { craft: "crafting", verb: "craft" } }),
+    def("farm_harvest", "Harvest Crops", "Harvest", "Farm_Harvest", "Interact", 6, 10, 15, [], FARM, { production: { craft: "farming", verb: "harvest" } }),
+    def("farm_plant", "Plant Crops", "Plant", "Farm_Harvest", "Interact", 5, 8, 10, [], FARM, { production: { craft: "farming", verb: "plant" } }),
+    def("farm_water", "Water Crops", "Water", "Farm_Watering", "Interact", 4, 5, 8, [], FARM, { production: { craft: "farming", verb: "water" } }),
+    def("fishing", "Fish", "Fish", "Farm_Harvest", "Interact", 10, 15, 15, [], ["water", "river", "lake", "pond", "dock", "pier", "stream", "marsh", "canal"], { production: { craft: "fishing", verb: "fish" } }),
+    def("harvesting", "Harvest", "Harvest", "Farm_Harvest", "Interact", 5, 3, 10, [["herbs", 60, 1, 3], ["vegetables", 50, 1, 2], ["flowers", 30, 1, 2]], ["garden", "farm", "field", "greenhouse", "plantation"]),
+    def("herbalism", "Pick", "Pick", "Farm_Harvest", "Interact", 4, 5, 8, [["lavande", 20, 1, 1], ["romarin", 20, 1, 1], ["menthe", 15, 1, 1], ["rose", 10, 1, 1], ["thym", 10, 1, 1], ["sauge", 10, 1, 1], ["basilic", 5, 1, 1], ["fleur_sauvage", 5, 1, 1]], ["garden", "forest", "meadow", "farm", "herb_shop", "greenhouse", "grove"]),
+    def("mining", "Mine", "Mine", "TreeChopping_Loop", "Interact", 8, 20, 20, [], ["mine", "quarry", "rock", "cave", "mountain", "ore_deposit"], { production: { craft: "mining", verb: "mine" } }),
+    def("painting", "Paint", "Paint", "Interact", "Idle_Talking_Loop", 10, 4, 15, [["painting", 70, 1, 1]], ["easel", "studio", "art_room"]),
+    def("praying", "Pray", "Pray", "Fixing_Kneeling", "Idle", 5, 1, 5, [["blessing_token", 15, 1, 1]], ["altar", "church", "chapel", "shrine", "temple"]),
+    def("reading", "Read", "Study", "Sitting_Idle_Loop", "Idle", 5, 1, 8, [["knowledge_scroll", 20, 1, 1]], ["bookshelf", "library", "desk", "study"]),
+    def("sweeping", "Sweep", "Sweep", "Farm_Watering", "Interact", 4, 2, 5, [["dust_bundle", 30, 1, 1]], ["broom", "porch", "floor", "entrance"])
+  ]);
+  var DEFAULT_PHYSICAL_ACTION_TUNING = Object.freeze({
+    actions: DEFAULT_PHYSICAL_ACTIONS.map((a) => ({ ...a })),
+    seed: "insimul",
+    energyCostPercent: 100,
+    energyGate: true
+  });
+  var BUSINESS_ACTIONS = Object.freeze({
+    art_studio: [{ action: "painting", furniture: "workbench" }],
+    bakery: [{ action: "cooking", furniture: "counter" }],
+    blacksmith: [{ action: "crafting", furniture: "workbench" }],
+    blacksmith_yard: [{ action: "mining", furniture: "anvil" }],
+    bookstore: [{ action: "reading", furniture: "bookshelf" }],
+    carpentry: [{ action: "crafting", furniture: "workbench" }],
+    chapel: [{ action: "praying", furniture: "pew" }],
+    church: [{ action: "praying", furniture: "pew" }],
+    farm: ["farm_plant", "farm_water", "farm_harvest", "harvesting"].map((action) => ({ action, furniture: "counter" })),
+    garden: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
+    greenhouse: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
+    herb_shop: [{ action: "herbalism", furniture: "counter" }],
+    library: [{ action: "reading", furniture: "bookshelf" }],
+    mine: [{ action: "mining", furniture: "workbench" }],
+    pharmacy: [{ action: "herbalism", furniture: "counter" }],
+    restaurant: [{ action: "cooking", furniture: "counter" }],
+    school: [{ action: "reading", furniture: "bookshelf" }],
+    tavern: [{ action: "cooking", furniture: "counter" }],
+    temple: [{ action: "praying", furniture: "pew" }],
+    university: [{ action: "reading", furniture: "bookshelf" }],
+    workshop: [{ action: "crafting", furniture: "workbench" }]
+  });
+  var ACTION_REFUSALS = Object.freeze(["unknown_action", "busy", "wrong_place", "no_tool", "too_tired"]);
+
+  // @insimul/core/src/gathering/resource-nodes.ts
+  var DEFAULT_RESOURCE_KINDS = Object.freeze(
+    [
+      ["crystal", 5e3, 3e5, "pickaxe"],
+      ["fiber", 1200, 45e3, null],
+      ["food", 1e3, 3e4, null],
+      ["gold", 4e3, 18e4, "pickaxe"],
+      ["iron", 3e3, 12e4, "pickaxe"],
+      ["oil", 3e3, 15e4, null],
+      ["stone", 2e3, 9e4, "pickaxe"],
+      ["water", 800, 2e4, null],
+      ["wood", 1500, 6e4, "axe"]
+    ].map(([id, gatherMs, respawnMs, tool]) => Object.freeze({ id, item: id, gatherMs, respawnMs, tool }))
+  );
+  var DEFAULT_RESOURCE_TUNING = Object.freeze({
+    kinds: DEFAULT_RESOURCE_KINDS.map((k) => ({ ...k })),
+    nodes: [],
+    defaultMaxAmount: 3,
+    defaultRespawnMs: 6e4,
+    defaultGatherMs: 2e3,
+    toolsRequired: true
+  });
+  var GATHER_REFUSALS = Object.freeze(["unknown_node", "actor_busy", "no_tool", "depleted", "node_busy"]);
+  var SAVED_NODE_KEYS = Object.freeze(["id", "remaining", "respawnInMs"]);
+
+  // @insimul/core/src/gathering/gathering-save.ts
+  var GATHERING_BLOCK_MEMBERS = Object.freeze(["nodes", "actions", "production"]);
+  var GATHERING_PRODUCTION_KEYS = Object.freeze(["plots", "spots", "veins", "carried", "day"]);
+
+  // @insimul/core/src/traversal/personal-vehicles.ts
+  var DEFAULT_PERSONAL_VEHICLE_TUNING = Object.freeze({
+    kinds: Object.freeze({
+      bicycle: Object.freeze({ id: "bicycle", label: "Bicycle", walk: 2e3, run: 1800, turn: 1200, mode: null }),
+      horse: Object.freeze({ id: "horse", label: "Horse", walk: 3e3, run: 2500, turn: 800, mode: "ride" })
+    }),
+    cycle: Object.freeze(["bicycle", "horse"]),
+    onFoot: Object.freeze({ walk: 1e3, run: 1e3, turn: 1e3, strafe: 800, back: 600 }),
+    mountedStrafePermille: 800,
+    mountedBackPermille: 500
+  });
+  var PERSONAL_VEHICLE_REFUSALS = Object.freeze(["unknown_kind", "in_vehicle", "redundant", "not_riding"]);
+
+  // @insimul/core/src/traversal/traversal-save.ts
+  var TRAVERSAL_BLOCK_MEMBERS = Object.freeze(["planner", "vehicles", "fastTravel", "riding"]);
+  var TRAVERSAL_ACTOR_KEYS = Object.freeze(["id", "location", "modes", "lent"]);
+  var EDGE_KEYS = ["from", "to"];
+  var TRAVERSAL_EDGE_KEYS = Object.freeze(EDGE_KEYS);
+  var TRAVERSAL_VEHICLE_KEYS = Object.freeze(["id", "location", "occupants", "owner", "driver"]);
+  var TRAVERSAL_FAST_TRAVEL_KEYS = Object.freeze(["discovered", "journeys"]);
+
+  // @insimul/core/src/conversation/context-memory.ts
+  var ACCESSORY_PHRASES = Object.freeze({
+    chef_hat: "a tall white chef's hat",
+    guard_helmet: "a grey metallic helmet",
+    sword: "a sword on your hip",
+    merchant_satchel: "a leather satchel at your waist",
+    apron: "a cloth apron tied at the waist",
+    hammer: "a wooden-handled hammer in your hand",
+    hammer_head: "a hammer in your hand",
+    book: "a book in your hand",
+    backpack: "a leather backpack",
+    medical_bag: "a small white medical bag",
+    scroll: "a rolled parchment scroll",
+    pickaxe_handle: "a pickaxe slung across your back",
+    holy_symbol: "a gold holy symbol on your belt",
+    farming_hoe: "a farming hoe slung across your back"
+  });
+  var ROLE_CLOTHING = Object.freeze({
+    guard: "dark, reddish-brown clothing with a uniformed, rugged look",
+    soldier: "dark iron-brown clothing with a military cut",
+    merchant: "colorful, well-kept clothes with warm yellow-brown tones",
+    questgiver: "clothes that set you apart \u2014 slightly finer or more deliberate than the crowd",
+    civilian: "plain, muted everyday clothes",
+    farmer: "earthy green and brown workwear, weathered from outdoor labor",
+    blacksmith: "heavy, soot-stained clothes built for hot, physical work",
+    innkeeper: "homey, warm-toned clothes suited to a busy tavern",
+    priest: "modest robes in muted, ceremonial colors",
+    teacher: "neat, scholarly clothes in quiet blue and grey tones",
+    doctor: "clean, practical clothes with a reserved palette",
+    child: "simple, slightly oversized clothes",
+    elder: "modest, well-worn clothes in muted colors",
+    noble: "refined, stately clothes in rich, darker tones",
+    beggar: "ragged, patched clothes",
+    sailor: "sturdy, weather-beaten clothes in blue and grey tones"
+  });
+  var BODY = Object.freeze({
+    athletic: "an athletic, broad-shouldered build",
+    stocky: "a stocky, powerful build",
+    heavyset: "a heavyset build",
+    lean: "a lean, slim build"
+  });
+  var HAIR = Object.freeze({
+    bald: "a shaved head",
+    short: "short hair",
+    medium: "medium-length hair",
+    long: "long hair",
+    ponytail: "hair pulled back in a ponytail",
+    mohawk: "a mohawk"
+  });
+  var FACIAL = Object.freeze({
+    stubble: "stubble",
+    beard: "a full beard",
+    longBeard: "a long beard",
+    mustache: "a mustache",
+    goatee: "a goatee"
+  });
+  var QUEST_OUTCOMES = Object.freeze(["assigned", "completed", "failed", "abandoned"]);
+  var CHAT_PROVIDER_REFUSALS = Object.freeze(["unknown_variant", "no_on_device_model", "no_server"]);
+
+  // @insimul/core/src/social/reputation.ts
+  var STANDINGS = Object.freeze(["hostile", "unfriendly", "neutral", "friendly", "revered"]);
+  var THRESHOLDS = Object.freeze([
+    { min: 51, standing: "revered" },
+    { min: 1, standing: "friendly" },
+    { min: -49, standing: "neutral" },
+    { min: -99, standing: "unfriendly" }
+  ]);
+  var STANDING_PRICE_PERMILLE = Object.freeze({
+    hostile: 2e3,
+    unfriendly: 1300,
+    neutral: 1e3,
+    friendly: 900,
+    revered: 750
+  });
+  var REPUTATION_DELTAS = Object.freeze({
+    quest_completed: 10,
+    quest_failed: -5,
+    conversation: 2,
+    item_purchased: 2,
+    gift_given: 3,
+    theft: -15,
+    polite: 1,
+    rude: -3
+  });
+  var CONVERSATION_COOLDOWN_MS = 5 * 60 * 1e3;
+  var PAY_FINES_REFUSALS = Object.freeze(["no_record", "no_fines", "insufficient_gold"]);
+  var REPUTATION_ENTRY_KEYS = Object.freeze([
+    "entityType",
+    "entityId",
+    "entityName",
+    "score",
+    "isBanned",
+    "banExpiryMs",
+    "violationCount",
+    "outstandingFines"
+  ]);
+
+  // @insimul/core/src/social/romance.ts
+  var DEFAULT_ROMANCE_LADDER = Object.freeze([
+    { stage: "none", threshold: 0 },
+    { stage: "attracted", threshold: 100 },
+    { stage: "flirting", threshold: 250 },
+    { stage: "dating", threshold: 400 },
+    { stage: "committed", threshold: 600 },
+    { stage: "engaged", threshold: 750 },
+    { stage: "married", threshold: 900 }
+  ]);
+  var ROMANCE_ACTIONS = Object.freeze([
+    { id: "compliment", name: "Compliment", requiredStage: "none", gain: 50, loss: 20 },
+    { id: "flirt", name: "Flirt", requiredStage: "attracted", gain: 80, loss: 50 },
+    { id: "give_gift", name: "Give Gift", requiredStage: "none", gain: 100, loss: 10 },
+    { id: "ask_on_date", name: "Ask on Date", requiredStage: "flirting", gain: 150, loss: 100 },
+    { id: "confess_feelings", name: "Confess Feelings", requiredStage: "dating", gain: 200, loss: 150 },
+    { id: "propose", name: "Propose", requiredStage: "committed", gain: 250, loss: 200 }
+  ]);
+  var DEFAULT_ROMANCE_TUNING = Object.freeze({
+    ladder: DEFAULT_ROMANCE_LADDER,
+    decayPerStep: 5,
+    decayAfter: 3,
+    rejectionCooldown: 5,
+    demoteMargin: 100,
+    jealousyFloor: 300
+  });
+  var ROMANCE_REFUSALS = Object.freeze(["unknown_action", "locked", "cooldown"]);
+  var ROMANCE_TRACK_KEYS = Object.freeze([
+    "npcId",
+    "npcName",
+    "stage",
+    "spark",
+    "lastInteraction",
+    "totalInteractions",
+    "giftsGiven",
+    "datesCompleted",
+    "rejected",
+    "rejectionCooldown"
+  ]);
+
+  // @insimul/core/src/relationship-tiers.ts
+  var RELATIONSHIP_TIERS = [
+    {
+      id: "enemy",
+      label: "Enemy",
+      minStrength: -1,
+      maxStrength: -0.6,
+      priceMultiplier: 1.5,
+      canOfferQuests: false,
+      canShareSecrets: false,
+      greetingStyle: "hostile",
+      conversationContext: "You deeply dislike this person. Be curt, distrustful, and reluctant to help them."
+    },
+    {
+      id: "disliked",
+      label: "Disliked",
+      minStrength: -0.6,
+      maxStrength: -0.3,
+      priceMultiplier: 1.25,
+      canOfferQuests: false,
+      canShareSecrets: false,
+      greetingStyle: "cold",
+      conversationContext: "You do not like this person. Be distant and uncooperative."
+    },
+    {
+      id: "unfriendly",
+      label: "Unfriendly",
+      minStrength: -0.3,
+      maxStrength: -0.1,
+      priceMultiplier: 1.1,
+      canOfferQuests: false,
+      canShareSecrets: false,
+      greetingStyle: "cold",
+      conversationContext: "You are wary of this person. Be polite but guarded."
+    },
+    {
+      id: "stranger",
+      label: "Stranger",
+      minStrength: -0.1,
+      maxStrength: 0.1,
+      priceMultiplier: 1,
+      canOfferQuests: true,
+      canShareSecrets: false,
+      greetingStyle: "neutral",
+      conversationContext: "You barely know this person. Be polite and professional."
+    },
+    {
+      id: "acquaintance",
+      label: "Acquaintance",
+      minStrength: 0.1,
+      maxStrength: 0.35,
+      priceMultiplier: 1,
+      canOfferQuests: true,
+      canShareSecrets: false,
+      greetingStyle: "neutral",
+      conversationContext: "You recognize this person and have had a few interactions. Be friendly."
+    },
+    {
+      id: "friend",
+      label: "Friend",
+      minStrength: 0.35,
+      maxStrength: 0.65,
+      priceMultiplier: 0.9,
+      canOfferQuests: true,
+      canShareSecrets: true,
+      greetingStyle: "warm",
+      conversationContext: "This person is your friend. Be warm, helpful, and willing to share information."
+    },
+    {
+      id: "close_friend",
+      label: "Close Friend",
+      minStrength: 0.65,
+      maxStrength: 0.85,
+      priceMultiplier: 0.8,
+      canOfferQuests: true,
+      canShareSecrets: true,
+      greetingStyle: "enthusiastic",
+      conversationContext: "This person is a close friend. Be enthusiastic, offer help freely, and share personal stories."
+    },
+    {
+      id: "best_friend",
+      label: "Best Friend",
+      minStrength: 0.85,
+      maxStrength: 1,
+      priceMultiplier: 0.75,
+      canOfferQuests: true,
+      canShareSecrets: true,
+      greetingStyle: "enthusiastic",
+      conversationContext: "This person is your best friend. Treat them like family \u2014 be open, generous, and deeply loyal."
+    }
+  ];
+  var RELATIONSHIP_DELTAS = {
+    /** Completing a quest assigned by the NPC */
+    quest_completed: 0.1,
+    /** Failing a quest assigned by the NPC */
+    quest_failed: -0.05,
+    /** Having a normal conversation */
+    conversation: 0.02,
+    /** Giving a gift */
+    gift_given: 0.08,
+    /** Delivering an item to the NPC */
+    item_delivered: 0.06,
+    /** NPC-initiated conversation accepted */
+    npc_conversation_accepted: 0.03,
+    /** NPC-initiated conversation rejected */
+    npc_conversation_rejected: -0.01
+  };
+
+  // @insimul/core/src/social/relationships.ts
+  var permille = (v) => Math.round(v * 1e3);
+  var RELATIONSHIP_TIERS_PERMILLE = Object.freeze(
+    RELATIONSHIP_TIERS.map(
+      (t) => Object.freeze({
+        id: t.id,
+        label: t.label,
+        min: permille(t.minStrength),
+        max: permille(t.maxStrength),
+        pricePermille: permille(t.priceMultiplier),
+        canOfferQuests: t.canOfferQuests,
+        canShareSecrets: t.canShareSecrets,
+        greeting: t.greetingStyle,
+        context: t.conversationContext
+      })
+    )
+  );
+  var RELATIONSHIP_DELTAS_PERMILLE = Object.freeze(
+    Object.fromEntries(Object.entries(RELATIONSHIP_DELTAS).map(([k, v]) => [k, permille(v)]))
+  );
+
+  // @insimul/core/src/social/social-save.ts
+  var SOCIAL_BLOCK_MEMBERS = Object.freeze(["relationships", "romance", "reputation", "memory", "volition"]);
+  var SOCIAL_ROMANCE_KEYS = Object.freeze(["timestep", "tracks"]);
+  var SOCIAL_MEMORY_KEYS = Object.freeze(["quests", "conversations"]);
+  var SOCIAL_VOLITION_AGENT_KEYS = Object.freeze(["agent", "motives", "appeals", "spent"]);
+  var SOCIAL_VOLITION_PAIR_KEYS = Object.freeze(["agent", "other", "spark", "status"]);
+
+  // @insimul/core/src/language-learning/progress.ts
+  var CEFR_ORDER = Object.freeze(["A1", "A2", "B1", "B2", "C1", "C2"]);
+  var ENCOUNTER_TYPES = Object.freeze(["active_use", "passive_hover", "passive_read", "quiz_correct", "quiz_incorrect"]);
+  var ENCOUNTER_HALVES = Object.freeze({
+    active_use: 2,
+    passive_hover: 1,
+    passive_read: 1,
+    quiz_correct: 2,
+    quiz_incorrect: 0
+  });
+  var GRAMMAR_WEAKNESS_RATE = Object.freeze({ num: 2, den: 5 });
+  var BOOK_REFUSALS = Object.freeze(["empty_word", "unknown_encounter"]);
+
+  // @insimul/core/src/language-learning/language-save.ts
+  var LANGUAGE_BLOCK_MEMBERS = Object.freeze(["book", "collected", "naming", "identification"]);
+  var LANGUAGE_BOOK_KEYS = Object.freeze(["language", "clockMs", "fluency", "cefr", "conversations", "correctUsages", "words", "grammar"]);
+  var LANGUAGE_WORD_KEYS = Object.freeze(["word", "language", "meaning", "category", "context", "encountered", "correct", "incorrect", "halves", "last", "types"]);
+  var LANGUAGE_GRAMMAR_KEYS = Object.freeze(["pattern", "correct", "incorrect", "mastered", "examples", "explanations"]);
+  var LANGUAGE_NAMING_KEYS = Object.freeze(["attempts", "named"]);
+  var LANGUAGE_IDENTIFICATION_KEYS = Object.freeze(["attempts", "identified", "bestScore"]);
+
+  // @insimul/core/src/npc-life/escort.ts
+  var DEFAULT_ESCORT_TUNING = Object.freeze({
+    followDistanceMm: 4e3,
+    maxFollowRangeMm: 3e4,
+    arriveRadiusMm: 8e3
+  });
+  var NO_ESCORTS = Object.freeze({});
+
+  // @insimul/core/src/npc-life/navigation.ts
+  var MOVEMENT_SPEEDS = Object.freeze(["stroll", "walk", "hurry"]);
+  var DEFAULT_NAVIGATION_TUNING = Object.freeze({
+    speedMmPerS: Object.freeze({ stroll: 1500, walk: 3e3, hurry: 5e3 }),
+    arriveMm: 500,
+    stuckCheckMs: 4e3,
+    stuckProgressMm: 400,
+    stuckRetries: 2,
+    doorReachMm: 3e3,
+    patrolRadiusMm: 2e4,
+    patrolIntervalMs: 5e3
+  });
+  var IDLE_MOVER = Object.freeze({ current: null, queue: Object.freeze([]), conversation: null, anchor: null, anchorMs: 0, retries: 0, snags: 0, draws: 0 });
+
+  // @insimul/core/src/npc-life/staging.ts
+  var STATION_KINDS = Object.freeze(["anvil", "hearth", "stall", "shopper", "talker"]);
+  var STALL_TRADES = Object.freeze(["grocer", "merchant", "baker", "farmer", "shopkeeper", "fishmonger", "butcher", "cook", "cashier", "farmhand", "waiter"]);
+  var NO_POSTS = Object.freeze({});
+
+  // @insimul/core/src/npc-life/npc-life-save.ts
+  var NPC_LIFE_BLOCK_MEMBERS = Object.freeze(["routines", "locomotion", "planner", "escorts", "posts", "movers"]);
+  var NPC_LIFE_ROUTINE_KEYS = Object.freeze(["agent", "routine", "adopted", "suspension", "resuming"]);
+  var NPC_LIFE_LOCOMOTION_KEYS = Object.freeze(["actor", "destination", "failures"]);
+  var NPC_LIFE_CURSOR_KEYS = Object.freeze(["plan", "stepIndex", "interrupted"]);
+  var NPC_LIFE_ESCORT_KEYS = Object.freeze(["npcId", "questId", "objectiveId", "destination", "radiusMm"]);
+  var NPC_LIFE_POST_KEYS = Object.freeze(["npcId", "questId", "hold"]);
+  var NPC_LIFE_MOVER_KEYS = Object.freeze(["current", "queue", "conversation", "snags", "draws"]);
+
+  // @insimul/core/src/save-slots-corpus.ts
+  var SAVE_SLOTS_STEPS = ["save", "load", "continue", "delete", "ask_delete", "confirm_delete", "cancel_delete", "key", "tick", "finished"];
+
+  // @insimul/core/src/ui/title-flow-corpus.ts
+  var TITLE_FLOW_OPS = ["menu", "choose", "session"];
+  var TITLE_FLOW_STEPS = [...SAVE_SLOTS_STEPS, "choose"];
+
+  // @insimul/core/src/game-engine/logic/TutorialQuestSystem.ts
+  var objectiveDef = (d) => Object.freeze({ ...d, completesOn: Object.freeze([...d.completesOn]) });
+  var TUTORIAL_OBJECTIVES = Object.freeze([
+    objectiveDef({
+      id: "tut_movement",
+      type: "movement",
+      title: "Walk to the town square",
+      description: "Use {keys} to move around. Walk towards the settlement.",
+      control: "move",
+      hint: "{keys} to move",
+      completesOn: ["settlement_entered", "location_visited"]
+    }),
+    objectiveDef({
+      id: "tut_camera",
+      type: "camera",
+      title: "Approach an NPC",
+      description: "Use the {keys} to look around, then walk near a villager.",
+      control: "look",
+      hint: "{keys} to look",
+      completesOn: ["player_near_npc"]
+    }),
+    objectiveDef({
+      id: "tut_interact_npc",
+      type: "interaction",
+      title: "Talk to a villager",
+      description: "Walk up to an NPC and press {keys} to start a conversation.",
+      control: "interact",
+      hint: "{keys} to interact",
+      completesOn: ["npc_talked"],
+      highlightElement: "prompt"
+    }),
+    objectiveDef({
+      id: "tut_reading",
+      type: "reading",
+      title: "Read a sign",
+      description: "Find a sign in the world and press {keys} beside it to read it.",
+      control: "interact",
+      hint: "{keys} near a sign",
+      completesOn: ["sign_read"],
+      highlightElement: "notice_board"
+    }),
+    objectiveDef({
+      id: "tut_examine",
+      type: "interaction",
+      title: "Examine an object",
+      description: "Look at an object in the world and press {keys} to examine it.",
+      control: "interact",
+      hint: "{keys} near an object",
+      completesOn: ["object_examined"]
+    }),
+    objectiveDef({
+      id: "tut_inventory",
+      type: "inventory",
+      title: "Open your inventory",
+      description: "Press {keys} to open your inventory.",
+      control: "inventory",
+      hint: "{keys} for the inventory",
+      completesOn: ["inventory_opened"],
+      highlightElement: "inventory"
+    }),
+    objectiveDef({
+      id: "tut_menu",
+      type: "quest_log",
+      title: "Open the quest log",
+      description: "Press {keys} to open your quest log and see your objectives.",
+      control: "quest_log",
+      hint: "{keys} to open the quest log",
+      completesOn: ["quest_log_opened"],
+      highlightElement: "quest_journal"
+    }),
+    objectiveDef({
+      id: "tut_combat",
+      type: "combat",
+      title: "Attack an enemy",
+      description: "Press {keys} to attack.",
+      control: "attack",
+      hint: "{keys} to attack",
+      completesOn: ["combat_action"]
+    })
+  ]);
+  var TUTORIAL_ASSESSMENT_OBJECTIVE = objectiveDef({
+    id: "tut_assessment",
+    type: "assessment",
+    title: "Take the arrival assessment",
+    description: "Find the notice board and complete your language assessment.",
+    control: null,
+    hint: "Complete the assessment",
+    completesOn: ["assessment_completed"],
+    highlightElement: "notice_board",
+    isAssessment: true,
+    assessmentPhaseId: "arrival"
+  });
+  function keyLabel(code) {
+    if (/^Key[A-Z]$/.test(code)) return code.slice(3);
+    if (/^Digit[0-9]$/.test(code)) return code.slice(5);
+    if (/^Arrow(Up|Down|Left|Right)$/.test(code)) return code.slice(5);
+    return code;
+  }
+  function controlKeysText(action, bindings = CONTROL_BINDINGS) {
+    if (action === null) return "";
+    const b = bindings.find((x) => x.action === action);
+    if (!b) return "";
+    if (b.keys.length > 0) {
+      if (b.kind === "axis2d") {
+        const letters = b.keys.map(keyLabel).filter((k) => /^[A-Z]$/.test(k));
+        if (letters.length > 0) return letters.join("");
+        if (b.keys.every((k) => /^Arrow(Up|Down|Left|Right)$/.test(k))) return "arrow keys";
+      }
+      return keyLabel(b.keys[0]);
+    }
+    if (b.pointer.includes("move")) return "mouse";
+    return "";
+  }
+  var fill = (text4, keys) => {
+    const t = text4.replace(/\{keys\}/g, keys);
+    return t.charAt(0).toUpperCase() + t.slice(1);
+  };
+  function buildTutorialObjectives(options = {}) {
+    const o = typeof options === "boolean" ? { includeAssessment: options } : options;
+    const bindings = o.bindings ?? CONTROL_BINDINGS;
+    const defs = [...o.objectives ?? TUTORIAL_OBJECTIVES];
+    if (o.includeAssessment === true && !defs.some((d) => d.id === TUTORIAL_ASSESSMENT_OBJECTIVE.id)) defs.push(TUTORIAL_ASSESSMENT_OBJECTIVE);
+    return defs.filter((d) => d.control === null || controlKeysText(d.control, bindings) !== "").map((d) => {
+      const b = d.control === null ? void 0 : bindings.find((x) => x.action === d.control);
+      const keys = controlKeysText(d.control, bindings);
+      const obj3 = {
+        id: d.id,
+        type: d.type,
+        title: d.title,
+        description: fill(d.description, keys),
+        controlHint: fill(d.hint, keys),
+        control: d.control,
+        controlKeys: b ? [...b.keys] : [],
+        controlGamepad: b ? [...b.gamepad] : [],
+        completesOn: [...d.completesOn],
+        isAssessment: d.isAssessment === true,
+        completed: false,
+        skipped: false
+      };
+      if (d.highlightElement !== void 0) obj3.highlightElement = d.highlightElement;
+      if (d.assessmentPhaseId !== void 0) obj3.assessmentPhaseId = d.assessmentPhaseId;
+      return obj3;
+    });
+  }
+  var TutorialQuestSystem = class {
+    constructor(eventBus, config) {
+      __publicField(this, "state");
+      __publicField(this, "eventBus");
+      __publicField(this, "disposed", false);
+      __publicField(this, "unsubscribers", []);
+      __publicField(this, "now");
+      __publicField(this, "startedAtMs");
+      __publicField(this, "stepStartedAtMs");
+      /** The index whose `onboarding_step_started` has been raised, or -1. */
+      __publicField(this, "announced", -1);
+      __publicField(this, "listener");
+      this.eventBus = eventBus;
+      this.now = config.now ?? Date.now;
+      this.listener = config.listener ?? {};
+      const objectives = buildTutorialObjectives({ includeAssessment: config.includeAssessment, bindings: config.bindings, objectives: config.objectives });
+      const done = new Set(config.completedObjectiveIds ?? []);
+      for (const o of objectives) if (done.has(o.id)) o.completed = true;
+      this.startedAtMs = this.now();
+      this.stepStartedAtMs = this.startedAtMs;
+      const first = objectives.findIndex((o) => !o.completed);
+      this.state = {
+        questId: config.questId ?? "tutorial",
+        questType: "tutorial",
+        title: `Welcome to ${config.worldName}`,
+        description: `Learn the basics and ${config.includeAssessment ? "complete your language assessment" : "explore your surroundings"}.`,
+        objectives,
+        currentObjectiveIndex: first === -1 ? objectives.length : first,
+        startedAt: new Date(this.startedAtMs).toISOString(),
+        introShown: false,
+        isComplete: first === -1,
+        skipped: false,
+        canAbandon: false,
+        canSkip: config.skippable !== false
+      };
+      if (this.state.isComplete) this.state.completedAt = this.state.startedAt;
+      this.wireEventListeners();
+    }
+    getState() {
+      return this.state;
+    }
+    getCurrentObjective() {
+      if (this.state.isComplete) return null;
+      return this.state.objectives[this.state.currentObjectiveIndex] ?? null;
+    }
+    /** Done objectives (completed or skipped) out of all of them; an empty tutorial is 100 %. */
+    getProgress() {
+      const completed = this.state.objectives.filter((o) => o.completed).length;
+      const total = this.state.objectives.length;
+      return { completed, total, percentage: total > 0 ? Math.round(completed / total * 100) : 100 };
+    }
+    markIntroShown() {
+      this.state.introShown = true;
+    }
+    /**
+     * Announce the current objective (`onboarding_step_started`), once. Returns it, or null when the
+     * tutorial is done. **The clock starts here:** when nothing has been announced yet, the tutorial's
+     * start (`startedAt`, the total duration) and the first lesson's duration count from this call,
+     * not from construction, so a host that builds the tutorial at load and starts it after an intro
+     * reports the time the player spent. A tutorial driven without `start()` counts from construction.
+     */
+    start() {
+      if (this.disposed) return null;
+      const cur = this.getCurrentObjective();
+      if (cur && this.announced === -1) {
+        this.startedAtMs = this.now();
+        this.stepStartedAtMs = this.startedAtMs;
+        this.state.startedAt = new Date(this.startedAtMs).toISOString();
+      }
+      if (cur) this.announce();
+      return cur;
+    }
+    /**
+     * Complete the current objective and advance to the next one.
+     * Returns the next objective, or null if the tutorial is complete.
+     */
+    completeCurrentObjective() {
+      if (this.disposed || this.state.isComplete) return null;
+      const index = this.state.currentObjectiveIndex;
+      const current = this.state.objectives[index];
+      if (!current || current.completed) return null;
+      current.completed = true;
+      const at = this.now();
+      const durationMs = Math.max(0, at - this.stepStartedAtMs);
+      const total = this.state.objectives.length;
+      this.eventBus.emit({ type: "onboarding_step_completed", stepId: current.id, stepIndex: index, totalSteps: total, durationMs });
+      this.listener.onStepCompleted?.(current, index, total, durationMs);
+      return this.advance(at);
+    }
+    /** Complete a specific objective by ID (for event-driven completion). Only the current one completes. */
+    completeObjectiveById(objectiveId) {
+      const cur = this.getCurrentObjective();
+      if (this.disposed || !cur || cur.id !== objectiveId) return false;
+      this.completeCurrentObjective();
+      return true;
+    }
+    /** A game event: completes the current objective when it is one of its `completesOn`. */
+    handleEvent(event) {
+      const cur = this.getCurrentObjective();
+      if (this.disposed || !cur || !cur.completesOn.includes(event.type)) return false;
+      return this.completeObjectiveById(cur.id);
+    }
+    /** The player skips the tutorial: refused (false) when the game forbids it, it is over, or only assessments are left. */
+    skip() {
+      if (this.disposed || this.state.isComplete || !this.state.canSkip) return false;
+      if (!this.state.objectives.some((o) => !o.completed && !o.isAssessment)) return false;
+      this.skipNonAssessmentObjectives();
+      return true;
+    }
+    /**
+     * Skip all non-assessment tutorial objectives (used when player
+     * selects their CEFR level manually instead of doing the full tutorial).
+     * Moves to the first assessment left, announcing it, or completes the tutorial.
+     */
+    skipNonAssessmentObjectives() {
+      if (this.disposed || this.state.isComplete) return;
+      const total = this.state.objectives.length;
+      this.state.objectives.forEach((obj3, i) => {
+        if (!obj3.isAssessment && !obj3.completed) {
+          obj3.completed = true;
+          obj3.skipped = true;
+          this.listener.onStepSkipped?.(obj3, i, total);
+        }
+      });
+      const nextIdx = this.state.objectives.findIndex((o) => !o.completed);
+      if (nextIdx === -1) {
+        this.state.skipped = true;
+        this.finish(this.now());
+        return;
+      }
+      if (nextIdx !== this.state.currentObjectiveIndex) {
+        this.state.currentObjectiveIndex = nextIdx;
+        this.stepStartedAtMs = this.now();
+      }
+      this.announce();
+    }
+    advance(at) {
+      const objs = this.state.objectives;
+      let i = this.state.currentObjectiveIndex + 1;
+      while (i < objs.length && objs[i].completed) i++;
+      if (i >= objs.length) {
+        this.finish(at);
+        return null;
+      }
+      this.state.currentObjectiveIndex = i;
+      this.stepStartedAtMs = at;
+      this.announce();
+      return objs[i];
+    }
+    finish(at) {
+      const total = this.state.objectives.length;
+      this.state.currentObjectiveIndex = total;
+      this.state.isComplete = true;
+      this.state.completedAt = new Date(at).toISOString();
+      const totalDurationMs = Math.max(0, at - this.startedAtMs);
+      this.eventBus.emit({ type: "onboarding_completed", totalSteps: total, totalDurationMs });
+      this.listener.onCompleted?.(total, totalDurationMs, this.state.skipped);
+    }
+    announce() {
+      const index = this.state.currentObjectiveIndex;
+      const obj3 = this.state.objectives[index];
+      if (this.announced === index) return;
+      this.announced = index;
+      const total = this.state.objectives.length;
+      this.eventBus.emit({ type: "onboarding_step_started", stepId: obj3.id, stepIndex: index, totalSteps: total });
+      this.listener.onStepStarted?.(obj3, index, total);
+    }
+    wireEventListeners() {
+      const types = /* @__PURE__ */ new Set();
+      for (const o of this.state.objectives) for (const t of o.completesOn) types.add(t);
+      for (const t of types) {
+        this.unsubscribers.push(this.eventBus.on(t, (e) => {
+          this.handleEvent(e);
+        }));
+      }
+    }
+    dispose() {
+      this.disposed = true;
+      for (const unsub of this.unsubscribers) {
+        unsub();
+      }
+      this.unsubscribers = [];
+    }
+  };
+
+  // @insimul/core/src/game-engine/logic/OnboardingManager.ts
+  var ONBOARDING_FLOWS = Object.freeze(["generic", "language"]);
+  var STEP_TYPES = [
+    "movement",
+    "camera",
+    "interaction",
+    "inventory",
+    "reading",
+    "quest_log",
+    "assessment",
+    "assessment_reading",
+    "assessment_listening",
+    "assessment_conversation",
+    "narrative",
+    "ui",
+    "combat",
+    "custom"
+  ];
+  var stepType = (t) => STEP_TYPES.includes(t) ? t : "custom";
+  var text3 = (v, fallback) => typeof v === "string" && v.trim() !== "" ? v : fallback;
+  function onboardingObjectives(definition) {
+    const d = definition ?? {};
+    if (!Array.isArray(d.steps)) {
+      return d.flow === "language" ? [...TUTORIAL_OBJECTIVES, TUTORIAL_ASSESSMENT_OBJECTIVE] : [...TUTORIAL_OBJECTIVES];
+    }
+    const known = new Map([...TUTORIAL_OBJECTIVES, TUTORIAL_ASSESSMENT_OBJECTIVE].map((o) => [o.id, o]));
+    const seen = /* @__PURE__ */ new Set();
+    const out = [];
+    for (const s of d.steps) {
+      if (!s || typeof s.id !== "string" || s.id === "" || seen.has(s.id)) continue;
+      seen.add(s.id);
+      const k = known.get(s.id);
+      if (k) {
+        out.push(s.skippable === false && k.isAssessment !== true ? { ...k, isAssessment: true } : k);
+        continue;
+      }
+      const type = stepType(s.type);
+      out.push({
+        id: s.id,
+        type,
+        title: text3(s.name, s.id),
+        description: text3(s.description, ""),
+        control: null,
+        hint: "",
+        completesOn: Array.isArray(s.completesOn) ? s.completesOn.filter((e) => typeof e === "string") : [],
+        isAssessment: type === "assessment" || s.skippable === false
+      });
+    }
+    return out;
+  }
+  var OnboardingManager = class {
+    constructor(definition, options = {}) {
+      /** The bus the steps listen and speak on: the game's, or the manager's own. */
+      __publicField(this, "eventBus");
+      __publicField(this, "definition");
+      __publicField(this, "options");
+      __publicField(this, "tutorial", null);
+      __publicField(this, "callbacks", {});
+      __publicField(this, "disposed", false);
+      this.definition = definition ?? {};
+      this.options = options;
+      this.eventBus = options.eventBus ?? new GameEventBus();
+    }
+    /**
+     * The step count the flow runs, the same before `start()` as after it: the definition's steps
+     * built against the game's bindings, so a lesson the bindings leave out is not counted.
+     */
+    get totalSteps() {
+      if (this.tutorial) return this.tutorial.getState().objectives.length;
+      return buildTutorialObjectives({ objectives: onboardingObjectives(this.definition), bindings: this.options.bindings }).length;
+    }
+    /**
+     * Start the flow: the first step left is announced. A flow with no step left (no steps, or every
+     * one in `completedStepIds`) calls `onCompleted(totalSteps, 0)` here, so a host that awaits it
+     * does not wait forever; the bus stays silent (the tutorial's resume rule). A second start does
+     * nothing.
+     */
+    async start(config = {}) {
+      if (this.disposed || this.tutorial) return;
+      this.callbacks = config;
+      const o = this.options;
+      this.tutorial = new TutorialQuestSystem(this.eventBus, {
+        worldName: o.worldName ?? "the world",
+        targetLanguage: o.targetLanguage ?? "",
+        includeAssessment: false,
+        objectives: onboardingObjectives(this.definition),
+        questId: o.questId,
+        now: o.now,
+        bindings: o.bindings,
+        skippable: o.skippable,
+        completedObjectiveIds: o.completedStepIds,
+        listener: {
+          onStepStarted: (s, i, n) => this.callbacks.onStepStarted?.(s.id, i, n),
+          onStepCompleted: (s, i, n, ms) => this.callbacks.onStepCompleted?.(s.id, i, n, ms),
+          onStepSkipped: (s, i, n) => this.callbacks.onStepSkipped?.(s.id, i, n),
+          onCompleted: (n, ms) => this.callbacks.onCompleted?.(n, ms)
+        }
+      });
+      if (this.tutorial.getState().isComplete) this.callbacks.onCompleted?.(this.tutorial.getState().objectives.length, 0);
+      else this.tutorial.start();
+    }
+    /** The host completes the current step (an assessment's results panel, a narrative beat). */
+    completeCurrentStep() {
+      this.tutorial?.completeCurrentObjective();
+    }
+    /** Skip what a skip may pass. False when the game forbids it, the flow has not started, or it is over. */
+    skip() {
+      if (this.disposed || !this.tutorial) return false;
+      return this.tutorial.skip();
+    }
+    /** The current step, or null (not started, or over). */
+    getCurrentStep() {
+      return this.tutorial ? this.tutorial.getCurrentObjective() : null;
+    }
+    /** The tutorial quest's state, or null before start. */
+    getState() {
+      return this.tutorial ? this.tutorial.getState() : null;
+    }
+    isComplete() {
+      return this.tutorial ? this.tutorial.getState().isComplete : false;
+    }
+    dispose() {
+      this.disposed = true;
+      this.tutorial?.dispose();
+      this.callbacks = {};
+    }
+  };
+
+  // @insimul/core/src/quests/tutorial-corpus.ts
+  var TUTORIAL_CORPUS_T0 = Date.parse("2026-11-06T09:00:00.000Z");
+  var TUTORIAL_OPS = ["objectives", "run", "onboarding"];
+  var TUTORIAL_RUN_STEPS = ["start", "event", "complete", "completeById", "skip", "skipNonAssessment", "tick", "dispose"];
+  var ONBOARDING_STEPS = ["start", "complete", "skip", "event", "tick", "inspect"];
+  var json3 = (v) => v === void 0 ? null : JSON.parse(JSON.stringify(v));
+  function corpusBindings(input) {
+    const rebind = input.rebind ?? {};
+    const unbind = new Set(input.unbind ?? []);
+    const added = (input.bind ?? []).map(
+      (b) => ({ action: b.action, kind: b.kind, contexts: ["play"], keys: [...b.keys], pointer: [...b.pointer ?? []], gamepad: [...b.gamepad ?? []], source: "corpus" })
+    );
+    return [...CONTROL_BINDINGS.filter((b) => !unbind.has(b.action)).map((b) => b.action in rebind ? { ...b, keys: [...rebind[b.action]] } : b), ...added];
+  }
+  function tutorialStateJson(t) {
+    const s = t.getState();
+    return json3({
+      questId: s.questId,
+      current: t.getCurrentObjective()?.id ?? null,
+      currentObjectiveIndex: s.currentObjectiveIndex,
+      completed: s.objectives.filter((o) => o.completed && !o.skipped).map((o) => o.id),
+      skipped: s.objectives.filter((o) => o.skipped).map((o) => o.id),
+      progress: t.getProgress(),
+      isComplete: s.isComplete,
+      endedBySkip: s.skipped,
+      canSkip: s.canSkip,
+      canAbandon: s.canAbandon,
+      startedAt: s.startedAt,
+      completedAt: s.completedAt ?? null
+    });
+  }
+
   // @insimul/core/src/props/containers.ts
   var DEFAULT_CONTAINER_CAPACITY = 10;
   var CONTAINER_ACCESS_STATES = ["open", "locked", "unreachable"];
@@ -23318,24 +24376,24 @@ player_meets_cefr(Player, RequiredLevel) :-
   var DOCUMENT_REFUSALS = ["missing_field", "unknown_kind", "bad_pages", "bad_chars_per_page"];
   var isText = (v) => typeof v === "string";
   var str = (v) => isText(v) ? v : "";
-  function paginateText(text3, charsPerPage = DEFAULT_CHARS_PER_PAGE) {
+  function paginateText(text4, charsPerPage = DEFAULT_CHARS_PER_PAGE) {
     if (!Number.isInteger(charsPerPage) || charsPerPage < 1) charsPerPage = DEFAULT_CHARS_PER_PAGE;
     const pages = [];
-    const len = text3.length;
+    const len = text4.length;
     let start = 0;
     while (start < len) {
       let end = Math.min(start + charsPerPage, len);
       if (end < len) {
         const searchEnd = Math.max(start + Math.floor(charsPerPage / 2), start);
         for (let j = end; j >= searchEnd; j--) {
-          const ch = text3[j];
+          const ch = text4[j];
           if (ch === " " || ch === "\n") {
             end = j + 1;
             break;
           }
         }
       }
-      const page = text3.slice(start, end).trim();
+      const page = text4.slice(start, end).trim();
       if (page !== "") pages.push(page);
       start = end;
     }
@@ -25007,8 +26065,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     "not_finite"
   ]);
   var quotelessJson = (obj3) => {
-    const json4 = JSON.stringify(obj3, null, 2);
-    return json4.replace(/"([^"]+)":/g, "$1:");
+    const json5 = JSON.stringify(obj3, null, 2);
+    return json5.replace(/"([^"]+)":/g, "$1:");
   };
   var ZodError = class _ZodError extends Error {
     get errors() {
@@ -25572,9 +26630,9 @@ player_meets_cefr(Player, RequiredLevel) :-
     superRefine(refinement) {
       return this._refinement(refinement);
     }
-    constructor(def) {
+    constructor(def2) {
       this.spa = this.safeParseAsync;
-      this._def = def;
+      this._def = def2;
       this.parse = this.parse.bind(this);
       this.safeParse = this.safeParse.bind(this);
       this.parseAsync = this.parseAsync.bind(this);
@@ -25634,8 +26692,8 @@ player_meets_cefr(Player, RequiredLevel) :-
         effect: { type: "transform", transform }
       });
     }
-    default(def) {
-      const defaultValueFunc = typeof def === "function" ? def : () => def;
+    default(def2) {
+      const defaultValueFunc = typeof def2 === "function" ? def2 : () => def2;
       return new ZodDefault({
         ...processCreateParams(this._def),
         innerType: this,
@@ -25650,8 +26708,8 @@ player_meets_cefr(Player, RequiredLevel) :-
         ...processCreateParams(this._def)
       });
     }
-    catch(def) {
-      const catchValueFunc = typeof def === "function" ? def : () => def;
+    catch(def2) {
+      const catchValueFunc = typeof def2 === "function" ? def2 : () => def2;
       return new ZodCatch({
         ...processCreateParams(this._def),
         innerType: this,
@@ -26985,7 +28043,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   var ZodArray = class _ZodArray extends ZodType {
     _parse(input) {
       const { ctx, status } = this._processInputParams(input);
-      const def = this._def;
+      const def2 = this._def;
       if (ctx.parsedType !== ZodParsedType.array) {
         addIssueToContext(ctx, {
           code: ZodIssueCode.invalid_type,
@@ -26994,57 +28052,57 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      if (def.exactLength !== null) {
-        const tooBig = ctx.data.length > def.exactLength.value;
-        const tooSmall = ctx.data.length < def.exactLength.value;
+      if (def2.exactLength !== null) {
+        const tooBig = ctx.data.length > def2.exactLength.value;
+        const tooSmall = ctx.data.length < def2.exactLength.value;
         if (tooBig || tooSmall) {
           addIssueToContext(ctx, {
             code: tooBig ? ZodIssueCode.too_big : ZodIssueCode.too_small,
-            minimum: tooSmall ? def.exactLength.value : void 0,
-            maximum: tooBig ? def.exactLength.value : void 0,
+            minimum: tooSmall ? def2.exactLength.value : void 0,
+            maximum: tooBig ? def2.exactLength.value : void 0,
             type: "array",
             inclusive: true,
             exact: true,
-            message: def.exactLength.message
+            message: def2.exactLength.message
           });
           status.dirty();
         }
       }
-      if (def.minLength !== null) {
-        if (ctx.data.length < def.minLength.value) {
+      if (def2.minLength !== null) {
+        if (ctx.data.length < def2.minLength.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_small,
-            minimum: def.minLength.value,
+            minimum: def2.minLength.value,
             type: "array",
             inclusive: true,
             exact: false,
-            message: def.minLength.message
+            message: def2.minLength.message
           });
           status.dirty();
         }
       }
-      if (def.maxLength !== null) {
-        if (ctx.data.length > def.maxLength.value) {
+      if (def2.maxLength !== null) {
+        if (ctx.data.length > def2.maxLength.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_big,
-            maximum: def.maxLength.value,
+            maximum: def2.maxLength.value,
             type: "array",
             inclusive: true,
             exact: false,
-            message: def.maxLength.message
+            message: def2.maxLength.message
           });
           status.dirty();
         }
       }
       if (ctx.common.async) {
         return Promise.all([...ctx.data].map((item, i) => {
-          return def.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+          return def2.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
         })).then((result2) => {
           return ParseStatus.mergeArray(status, result2);
         });
       }
       const result = [...ctx.data].map((item, i) => {
-        return def.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+        return def2.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
       });
       return ParseStatus.mergeArray(status, result);
     }
@@ -27933,29 +28991,29 @@ player_meets_cefr(Player, RequiredLevel) :-
         });
         return INVALID;
       }
-      const def = this._def;
-      if (def.minSize !== null) {
-        if (ctx.data.size < def.minSize.value) {
+      const def2 = this._def;
+      if (def2.minSize !== null) {
+        if (ctx.data.size < def2.minSize.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_small,
-            minimum: def.minSize.value,
+            minimum: def2.minSize.value,
             type: "set",
             inclusive: true,
             exact: false,
-            message: def.minSize.message
+            message: def2.minSize.message
           });
           status.dirty();
         }
       }
-      if (def.maxSize !== null) {
-        if (ctx.data.size > def.maxSize.value) {
+      if (def2.maxSize !== null) {
+        if (ctx.data.size > def2.maxSize.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_big,
-            maximum: def.maxSize.value,
+            maximum: def2.maxSize.value,
             type: "set",
             inclusive: true,
             exact: false,
-            message: def.maxSize.message
+            message: def2.maxSize.message
           });
           status.dirty();
         }
@@ -30861,10 +31919,10 @@ player_meets_cefr(Player, RequiredLevel) :-
     }
     return t;
   })();
-  function strCrc32(text3, crc = 0) {
+  function strCrc32(text4, crc = 0) {
     let c = ~crc >>> 0;
-    for (let i = 0; i < text3.length; i += 1) {
-      const ch = text3.charCodeAt(i);
+    for (let i = 0; i < text4.length; i += 1) {
+      const ch = text4.charCodeAt(i);
       for (let b = 0; b < 4; b += 1) {
         const byte = ch >>> 8 * b & 255;
         c = (CRC_TABLE[(c ^ byte) & 255] ^ c >>> 8) >>> 0;
@@ -34067,7 +35125,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     if (typeof v !== "string" || !TRANSITION_SURFACES.includes(v)) bad2(`unknown transition surface ${JSON.stringify(v)}`);
     return v;
   }
-  function json3(v) {
+  function json4(v) {
     return JSON.parse(JSON.stringify(v));
   }
   function applyRuleOverrides(rules, input) {
@@ -34166,7 +35224,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     const r = applyRuleOverrides(rules, i);
     switch (op) {
       case "composeLaneNetwork":
-        return json3(
+        return json4(
           composeLaneNetwork(
             {
               plan: plannedOn(i),
@@ -34187,7 +35245,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return points2(i.points, "points").map((p) => edgeBreakup(p[0], p[1], r));
       case "groundTransitionCoverage": {
         const plan2 = compositionPlan(i.plan);
-        return points2(i.points, "points").map((p) => json3(groundTransitionCoverage(plan2, p[0], p[1], r)));
+        return points2(i.points, "points").map((p) => json4(groundTransitionCoverage(plan2, p[0], p[1], r)));
       }
       case "transitionBounds": {
         const out = {};
@@ -34196,7 +35254,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return out;
       }
       case "auditGroundEdges":
-        return json3(auditGroundEdges(arr2(i.samples, "samples").map((s) => point2(s, "an [s, w] sample")), r));
+        return json4(auditGroundEdges(arr2(i.samples, "samples").map((s) => point2(s, "an [s, w] sample")), r));
       case "coverageAudit": {
         const source = str3(i, "source");
         if (source !== "transition" && source !== "paint") bad2(`unknown coverage source '${source}'`);
@@ -34209,7 +35267,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           source,
           r
         );
-        return json3({ samples: profile.length, ...auditGroundEdges(profile, r) });
+        return json4({ samples: profile.length, ...auditGroundEdges(profile, r) });
       }
       case "propPurpose":
         return arr2(i.archetypes, "archetypes").map((a) => {
@@ -34217,9 +35275,9 @@ player_meets_cefr(Player, RequiredLevel) :-
           return propPurpose(a, r);
         });
       case "groupProps":
-        return json3(groupProps(groupingInput(i), r));
+        return json4(groupProps(groupingInput(i), r));
       case "auditPropGroups":
-        return json3(auditPropGroups(groupingInput(i), r));
+        return json4(auditPropGroups(groupingInput(i), r));
       case "trimFloraOffSquare":
         return trimFloraOffSquare(compositionPlan(i.plan), points2(i.points, "points"), r);
       case "yardRole":
@@ -34232,7 +35290,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj2(b, "a building");
           return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
         });
-        return json3(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
+        return json4(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
       }
       case "lanternsOnRoutes": {
         const routes = i.routes === void 0 ? [] : compositionPlan({ strips: i.routes }).strips;
@@ -34241,7 +35299,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj2(q, "a line");
           return { entityId: str3(o, "entityId"), points: points2(o.points, "a line's points") };
         });
-        return json3(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
+        return json4(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
       }
       case "foliageKind":
         return arr2(i.archetypes, "archetypes").map((a) => {
@@ -34249,28 +35307,28 @@ player_meets_cefr(Player, RequiredLevel) :-
           return foliageKind(a, r);
         });
       case "composeFoliage":
-        return json3(composeFoliage({ plan: compositionPlan(i.plan ?? {}), buildings: outlinedBuildings(i.buildings), foliage: foliageOf(i.foliage) }, r));
+        return json4(composeFoliage({ plan: compositionPlan(i.plan ?? {}), buildings: outlinedBuildings(i.buildings), foliage: foliageOf(i.foliage) }, r));
       case "auditFoliageSpacing":
-        return json3(auditFoliageSpacing(points2(i.points, "points"), r));
+        return json4(auditFoliageSpacing(points2(i.points, "points"), r));
       case "assignHouseModels": {
         const houses = arr2(i.houses ?? [], "houses").map((h) => {
           const o = obj2(h, "a house");
           return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
         });
-        return json3(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: compositionHouseModels(i.models) }, r));
+        return json4(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: compositionHouseModels(i.models) }, r));
       }
       case "seatCapacity":
         return seatsOf(i.seats).map((s) => seatCapacity(s, r));
       case "seatVillagers":
-        return json3(seatVillagers({ seats: seatsOf(i.seats), sitters: sittersOf(i.sitters), props: reachProps(i.props) }, r));
+        return json4(seatVillagers({ seats: seatsOf(i.seats), sitters: sittersOf(i.sitters), props: reachProps(i.props) }, r));
       case "keepClearOfProps":
-        return json3(keepClearOfProps({ villagers: villagersOf(i.villagers), props: reachProps(i.props) }, r));
+        return json4(keepClearOfProps({ villagers: villagersOf(i.villagers), props: reachProps(i.props) }, r));
       case "composeVillage": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
           return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), outline: points2(o.outline, "an outline") };
         });
-        return json3(
+        return json4(
           composeVillage(
             {
               plan: plannedOn(i),
@@ -34445,6 +35503,88 @@ player_meets_cefr(Player, RequiredLevel) :-
         return plain(model.finished(result));
       }
     };
+  }
+  function titleContract() {
+    return plain({
+      "ui-title-flow": {
+        entries: TITLE_ENTRIES,
+        labels: TITLE_ENTRY_LABELS,
+        messages: TITLE_MESSAGES,
+        slotMessages: SLOT_MESSAGES,
+        defaultTitle: DEFAULT_GAME_TITLE,
+        defaultSlotCount: SAVE_SLOTS_DEFAULTS.slotCount,
+        ops: TITLE_FLOW_OPS,
+        steps: TITLE_FLOW_STEPS
+      },
+      "quests-tutorial": {
+        objectives: TUTORIAL_OBJECTIVES,
+        assessmentObjective: TUTORIAL_ASSESSMENT_OBJECTIVE,
+        flows: ONBOARDING_FLOWS,
+        ops: TUTORIAL_OPS,
+        runSteps: TUTORIAL_RUN_STEPS,
+        onboardingSteps: ONBOARDING_STEPS,
+        t0: new Date(TUTORIAL_CORPUS_T0).toISOString()
+      }
+    });
+  }
+  function titleInputOf(method, s) {
+    if (s.saves === null) return s.menu;
+    let linked;
+    try {
+      linked = session(method, { session: s.saves }, "saves.slots");
+    } catch (err) {
+      throw refuse2(method, `the linked \`savesSession\` ${s.saves} is not an open saves.slots session (${err.message.replace(/^insimulcore: [^:]+: /, "")})`);
+    }
+    return { ...s.menu, session: linked.model.view() };
+  }
+  function tutorialBindingsOf(method, src, name) {
+    const changes = ["unbind", "rebind", "bind"].filter((k) => src[k] !== void 0 && src[k] !== null);
+    if (src.bindings !== void 0 && src.bindings !== null) {
+      if (changes.length) {
+        throw refuse2(method, `\`${name}.bindings\` is the whole table: state it or the changes (${changes.join(", ")}), not both`);
+      }
+      return needArray(method, src.bindings, `${name}.bindings`).map((b, i) => needObject(method, b, `${name}.bindings[${i}]`));
+    }
+    (optArrayValue(method, src.unbind, `${name}.unbind`) ?? []).forEach((a, i) => needString(method, a, `${name}.unbind[${i}]`));
+    Object.entries(optObject(method, src.rebind, `${name}.rebind`) ?? {}).forEach(
+      ([action, keys]) => needArray(method, keys, `${name}.rebind.${action}`).forEach((k, i) => needString(method, k, `${name}.rebind.${action}[${i}]`))
+    );
+    (optArrayValue(method, src.bind, `${name}.bind`) ?? []).forEach((b, i) => {
+      needObject(method, b, `${name}.bind[${i}]`);
+      needString(method, b.action, `${name}.bind[${i}].action`);
+      needArray(method, b.keys, `${name}.bind[${i}].keys`);
+    });
+    return corpusBindings(src);
+  }
+  function optStringValue(method, value, name) {
+    return value === void 0 || value === null ? void 0 : needString(method, value, name);
+  }
+  function optStrings(method, value, name) {
+    const list = optArrayValue(method, value, name);
+    if (list !== void 0) list.forEach((v, i) => needString(method, v, `${name}[${i}]`));
+    return list;
+  }
+  function sessionClockOf(method, value) {
+    if (value === void 0 || value === null) return { manual: false, at: 0 };
+    const ms = typeof value === "number" ? value : typeof value === "string" ? Date.parse(value) : Number.NaN;
+    if (!Number.isFinite(ms)) throw refuse2(method, "`now` must be an ISO date-time string or finite epoch milliseconds");
+    return { manual: true, at: ms };
+  }
+  function clockReader(io) {
+    return () => io.manual ? io.at : Date.now();
+  }
+  function tickClock(method, io, op) {
+    if (!io.manual) throw refuse2(method, "`tick` moves a host clock: open the session with `now`");
+    io.at += needNumber(method, op.ms, "ms");
+    return null;
+  }
+  function gameEventOf(method, op) {
+    const { op: _name, ...event } = op;
+    needString(method, event.type, "type");
+    return event;
+  }
+  function onboardingView(model) {
+    return { current: model.getCurrentStep()?.id ?? null, isComplete: model.isComplete() };
   }
   function optObject(method, value, name) {
     return value === void 0 || value === null ? void 0 : needObject(method, value, name);
@@ -35063,6 +36203,272 @@ player_meets_cefr(Player, RequiredLevel) :-
       const results = await applyOps(m, s, args, saveSlotsOps(m));
       return { results, view: plain(s.model.view()) };
     },
+    /**
+     * `ui.titleFlow.contract {}` → `{ 'ui-title-flow': {…} }` — the data tables
+     * core's title-flow corpus states in its `contract`, from core's constants: the
+     * menu's `entries` (in order), `labels`, `messages`, `slotMessages`,
+     * `defaultTitle`, `defaultSlotCount`, and the corpus's `ops` and `steps`.
+     */
+    "ui.titleFlow.contract": () => ({ "ui-title-flow": titleContract()["ui-title-flow"] }),
+    /**
+     * `ui.titleFlow.create { menu?, savesSession? }` → `{ session, view }` — core's
+     * title menu (`ui/title-flow`, P8.core): Continue, New Game, Load Game,
+     * Settings, Quit, which are shown and offered, why one is not, and the focus.
+     * `menu` is core's `TitleFlowInput` — `title`, `slots` (the codec's
+     * `SlotLoadResult[]`), `saves` (the saves pack's parameters), `session` (a
+     * `SaveSlotsView`), `busy`, `quit`, `settings`, `onboarding` — and its fields go
+     * to core UNCHECKED: core reads a flag of the wrong type as its default on
+     * purpose (`busy` only when true; `quit`, `settings`, `onboarding` off only when
+     * false; a title that is not a non-blank string is the default), and the corpus
+     * pins each reading. `savesSession` links an open `saves.slots` session: the
+     * menu then reads that session's view LIVE (its rows, Continue target, pending
+     * operation and delete prompt), so the title screen and the slot list never
+     * disagree. view: core's `TitleMenuView` — `{ title, entries: [{ id, label,
+     * shown, enabled, refusal, reason }], focus, busy, continueSlot, continueRow,
+     * newGameSlot, onboarding }`.
+     */
+    "ui.titleFlow.create": (args) => {
+      const m = "ui.titleFlow.create";
+      const s = coded("invalid-input", () => ({
+        menu: optObject(m, args.menu, "menu") ?? {},
+        saves: args.savesSession === void 0 || args.savesSession === null ? null : needNumber(m, args.savesSession, "savesSession")
+      }));
+      const view2 = plain(titleMenu(titleInputOf(m, s)));
+      return { session: openSession("ui.titleFlow", s), view: view2 };
+    },
+    /**
+     * `ui.titleFlow.apply { session, ops }` → `{ results, view }` (the menu after
+     * the ops, read again from the linked `saves.slots` session when there is one).
+     * ops: `choose { entry }` → core's `TitleChoice` `{ ok, refusal?, action }`:
+     * the action the host does (`{ continue: { slot } }`, `{ newGame: { slot,
+     * onboarding } }`, `{ openLoad: true }`, `{ openSettings: true }`, `{ quit: true
+     * }`) or a refusal VALUE (`busy`, `nothing_to_continue`, `no_saves`,
+     * `not_shown`, `unknown_entry` — `entry` goes to core unchecked) · `set { menu
+     * }` replaces the host's `menu` (a new title, the host busy or not).
+     */
+    "ui.titleFlow.apply": async (args) => {
+      const m = "ui.titleFlow.apply";
+      const s = session(m, args, "ui.titleFlow");
+      const results = await applyOps(m, s, args, {
+        choose: (st, op) => plain(chooseTitleEntry(titleInputOf(m, st), op.entry)),
+        set: (st, op) => {
+          st.menu = coded("invalid-input", () => optObject(m, op.menu, "menu") ?? {});
+          return null;
+        }
+      });
+      return { results, view: plain(titleMenu(titleInputOf(m, s))) };
+    },
+    /**
+     * `ui.tutorial.contract {}` → `{ 'quests-tutorial': {…} }` — the data tables
+     * core's tutorial corpus states in its `contract`, from core's constants: the
+     * lessons (`objectives`), the `assessmentObjective`, the onboarding `flows`, and
+     * the corpus's `ops`, `runSteps`, `onboardingSteps` and its clock's `t0`.
+     */
+    "ui.tutorial.contract": () => ({ "quests-tutorial": titleContract()["quests-tutorial"] }),
+    /**
+     * `ui.tutorial.objectives { includeAssessment?, bindings? | unbind?, rebind?,
+     * bind? }` → `{ objectives }` — core's `buildTutorialObjectives`: the lessons a
+     * game's bindings build (an unbound lesson is left out, the hints name the
+     * game's keys), the arrival assessment last when `includeAssessment` is true.
+     */
+    "ui.tutorial.objectives": (args) => {
+      const m = "ui.tutorial.objectives";
+      const [includeAssessment, bindings] = coded("invalid-input", () => [
+        optBoolean(m, args.includeAssessment, "includeAssessment") === true,
+        tutorialBindingsOf(m, args, "options")
+      ]);
+      return { objectives: plain(buildTutorialObjectives({ includeAssessment, bindings })) };
+    },
+    /**
+     * `ui.tutorial.create { config?, now? }` → `{ session, title, description,
+     * objectives, events, view }` — core's `TutorialQuestSystem` over the session's
+     * own game bus. `config` is core's `TutorialQuestConfig`: `worldName`,
+     * `targetLanguage`, `includeAssessment`, `questId?`, `skippable?`,
+     * `completedObjectiveIds?` (a resumed playthrough), and the game's bindings
+     * (`bindings`, or the `unbind` / `rebind` / `bind` changes; see
+     * `ui.tutorial.objectives`). `now` (epoch ms or an ISO string) gives the session
+     * a host clock that moves only on `tick`; absent, the wall clock. `objectives`
+     * are the quest's objectives in full (id, title, description, controlHint,
+     * control keys, completesOn, …: what a HUD draws for the current one); `events`
+     * what the construction raised. view: the quest's state as core's corpus
+     * records it (`tutorialStateJson`): `{ questId, current, currentObjectiveIndex,
+     * completed, skipped, progress, isComplete, endedBySkip, canSkip, canAbandon,
+     * startedAt, completedAt }`.
+     */
+    "ui.tutorial.create": (args) => {
+      const m = "ui.tutorial.create";
+      const [config, io] = coded("invalid-input", () => {
+        const c = optObject(m, args.config, "config") ?? {};
+        optStringValue(m, c.worldName, "config.worldName");
+        optStringValue(m, c.targetLanguage, "config.targetLanguage");
+        optBoolean(m, c.includeAssessment, "config.includeAssessment");
+        optStringValue(m, c.questId, "config.questId");
+        optBoolean(m, c.skippable, "config.skippable");
+        optStrings(m, c.completedObjectiveIds, "config.completedObjectiveIds");
+        const bindings = tutorialBindingsOf(m, c, "config");
+        return [{ ...c, bindings }, { ...sessionClockOf(m, args.now), events: [], hostEvent: null }];
+      });
+      const bus = new GameEventBus();
+      bus.onAny((e) => {
+        if (e !== io.hostEvent) io.events.push(e);
+      });
+      const model = new TutorialQuestSystem(bus, {
+        worldName: config.worldName,
+        targetLanguage: config.targetLanguage,
+        includeAssessment: config.includeAssessment === true,
+        ...config.questId !== void 0 && config.questId !== null ? { questId: config.questId } : {},
+        ...config.skippable !== void 0 && config.skippable !== null ? { skippable: config.skippable } : {},
+        ...config.completedObjectiveIds !== void 0 && config.completedObjectiveIds !== null ? { completedObjectiveIds: config.completedObjectiveIds } : {},
+        bindings: config.bindings,
+        now: clockReader(io)
+      });
+      const state = model.getState();
+      return {
+        session: openSession("ui.tutorial", { model, bus, io }),
+        title: state.title,
+        description: state.description,
+        objectives: plain(state.objectives),
+        events: plain(io.events.splice(0)),
+        view: plain(tutorialStateJson(model))
+      };
+    },
+    /**
+     * `ui.tutorial.apply { session, ops }` → `{ results, view }`. Each result is
+     * `{ result, events }`: `events` are the onboarding events the quest raised on
+     * the session's bus during that op (`onboarding_step_started`,
+     * `onboarding_step_completed` with its `durationMs`, `onboarding_completed`
+     * with its `totalDurationMs`; the host raises them on its own bus), never an
+     * event the host sent. ops: `start` (result: the current objective's id, or
+     * null) · `event { type, … }` (a game event on the session's bus; only the
+     * current lesson completes, on one of its `completesOn`) · `complete` (the host
+     * completes the current objective; result: its id, or null) · `completeById {
+     * id }` (result: whether it completed) · `skip` (result: whether the game
+     * allowed it; never past an assessment) · `skipNonAssessment` · `tick { ms }`
+     * (moves a host clock) · `dispose` (the quest stops listening).
+     */
+    "ui.tutorial.apply": async (args) => {
+      const m = "ui.tutorial.apply";
+      const s = session(m, args, "ui.tutorial");
+      const done = (io, result) => ({ result: plain(result ?? null), events: plain(io.events.splice(0)) });
+      const results = await applyOps(m, s, args, {
+        start: ({ model, io }) => done(io, model.start()?.id),
+        event: ({ bus, io }, op) => {
+          const event = coded("invalid-input", () => gameEventOf(m, op));
+          io.hostEvent = event;
+          try {
+            bus.emit(event);
+          } finally {
+            io.hostEvent = null;
+          }
+          return done(io, null);
+        },
+        complete: ({ model, io }) => done(io, model.completeCurrentObjective()?.id),
+        completeById: ({ model, io }, op) => done(io, model.completeObjectiveById(coded("invalid-input", () => needString(m, op.id, "id")))),
+        skip: ({ model, io }) => done(io, model.skip()),
+        skipNonAssessment: ({ model, io }) => {
+          model.skipNonAssessmentObjectives();
+          return done(io, null);
+        },
+        tick: ({ io }, op) => done(io, coded("invalid-input", () => tickClock(m, io, op))),
+        dispose: ({ model, io }) => {
+          model.dispose();
+          return done(io, null);
+        }
+      });
+      return { results, view: plain(tutorialStateJson(s.model)) };
+    },
+    /**
+     * `ui.onboarding.create { definition?, options?, now? }` → `{ session,
+     * totalSteps, view }` — core's `OnboardingManager` (the onboarding flow, run as
+     * ONE tutorial quest) over its own bus. `definition` is core's
+     * `OnboardingDefinition` (`{ id?, flow?: generic | language, steps? }`; a step
+     * named like a tutorial lesson is that lesson, any other is completed by the
+     * host or by its own `completesOn`), read by core. `options`: `skippable?`,
+     * `completedStepIds?`, `worldName?`, `targetLanguage?`, `questId?` and the
+     * game's bindings (as `ui.tutorial.create`'s `config`). `now` as there.
+     * `totalSteps` is the flow's step count built against those bindings, the same
+     * before `start` as after it. view: `{ current, isComplete }`.
+     */
+    "ui.onboarding.create": (args) => {
+      const m = "ui.onboarding.create";
+      const [definition, options, io] = coded("invalid-input", () => {
+        const d = optObject(m, args.definition, "definition") ?? null;
+        const o = optObject(m, args.options, "options") ?? {};
+        optBoolean(m, o.skippable, "options.skippable");
+        optStrings(m, o.completedStepIds, "options.completedStepIds");
+        optStringValue(m, o.worldName, "options.worldName");
+        optStringValue(m, o.targetLanguage, "options.targetLanguage");
+        optStringValue(m, o.questId, "options.questId");
+        const bindings = tutorialBindingsOf(m, o, "options");
+        return [d, { ...o, bindings }, { ...sessionClockOf(m, args.now), calls: [], events: [], hostEvent: null }];
+      });
+      const pick2 = (k) => options[k] !== void 0 && options[k] !== null ? { [k]: options[k] } : {};
+      const model = new OnboardingManager(definition, {
+        ...pick2("skippable"),
+        ...pick2("completedStepIds"),
+        ...pick2("worldName"),
+        ...pick2("targetLanguage"),
+        ...pick2("questId"),
+        bindings: options.bindings,
+        now: clockReader(io)
+      });
+      model.eventBus.onAny((e) => {
+        if (e !== io.hostEvent) io.events.push(e);
+      });
+      return { session: openSession("ui.onboarding", { model, io }), totalSteps: model.totalSteps, view: onboardingView(model) };
+    },
+    /**
+     * `ui.onboarding.apply { session, ops }` → `{ results, totalSteps, view }`.
+     * Each result is `{ result, calls, events }`: `calls` are the manager's
+     * callbacks that came during that op, in order — `{ started: { stepId,
+     * stepIndex, totalSteps } }`, `{ completed: { stepId, stepIndex, totalSteps,
+     * durationMs } }`, `{ skipped: { stepId, stepIndex, totalSteps } }`, `{ done: {
+     * totalSteps, totalDurationMs } }` (a flow with nothing left is done on `start`,
+     * 0 ms, and raises nothing on the bus) — and `events` the onboarding events its
+     * quest raised on the manager's bus during it (as `ui.tutorial.apply`'s; never
+     * the host's own). ops: `start` · `complete` (the host completes the current
+     * step) · `skip` (result: whether it skipped) · `event { type, … }` (a game
+     * event on the manager's bus) · `tick { ms }` · `inspect` (reads without
+     * acting; result: `{ totalSteps, step }`, the current step in full or null) ·
+     * `state` (reads without acting; result: core's `getState()`, the tutorial
+     * quest's whole state — its objectives with `completed` and `skipped`, `skipped`
+     * when a skip ended it — or null before `start`).
+     */
+    "ui.onboarding.apply": async (args) => {
+      const m = "ui.onboarding.apply";
+      const s = session(m, args, "ui.onboarding");
+      const done = (io, result) => ({ result: plain(result ?? null), calls: plain(io.calls.splice(0)), events: plain(io.events.splice(0)) });
+      const results = await applyOps(m, s, args, {
+        start: async ({ model, io }) => {
+          await model.start({
+            onStepStarted: (stepId, stepIndex, totalSteps) => io.calls.push({ started: { stepId, stepIndex, totalSteps } }),
+            onStepCompleted: (stepId, stepIndex, totalSteps, durationMs) => io.calls.push({ completed: { stepId, stepIndex, totalSteps, durationMs } }),
+            onStepSkipped: (stepId, stepIndex, totalSteps) => io.calls.push({ skipped: { stepId, stepIndex, totalSteps } }),
+            onCompleted: (totalSteps, totalDurationMs) => io.calls.push({ done: { totalSteps, totalDurationMs } })
+          });
+          return done(io, null);
+        },
+        complete: ({ model, io }) => {
+          model.completeCurrentStep();
+          return done(io, null);
+        },
+        skip: ({ model, io }) => done(io, model.skip()),
+        event: ({ model, io }, op) => {
+          const event = coded("invalid-input", () => gameEventOf(m, op));
+          io.hostEvent = event;
+          try {
+            model.eventBus.emit(event);
+          } finally {
+            io.hostEvent = null;
+          }
+          return done(io, null);
+        },
+        tick: ({ io }, op) => done(io, coded("invalid-input", () => tickClock(m, io, op))),
+        inspect: ({ model, io }) => done(io, { totalSteps: model.totalSteps, step: model.getCurrentStep() }),
+        state: ({ model, io }) => done(io, model.getState())
+      });
+      return { results, totalSteps: s.model.totalSteps, view: onboardingView(s.model) };
+    },
     /** `ui.loading.create { phases?, tips? }` → `{ session, view }` — core's `LoadingScreenModel`. */
     "ui.loading.create": (args) => {
       const m = "ui.loading.create";
@@ -35212,8 +36618,8 @@ player_meets_cefr(Player, RequiredLevel) :-
      */
     "props.documents.paginate": (args) => {
       const m = "props.documents.paginate";
-      const [text3, per] = coded("invalid-input", () => [needString(m, args.text, "text"), optNumber(m, args.charsPerPage, "charsPerPage")]);
-      return { pages: per === void 0 ? paginateText(text3) : paginateText(text3, per) };
+      const [text4, per] = coded("invalid-input", () => [needString(m, args.text, "text"), optNumber(m, args.charsPerPage, "charsPerPage")]);
+      return { pages: per === void 0 ? paginateText(text4) : paginateText(text4, per) };
     },
     /**
      * `props.reader.create { document, options?, open?: { alreadyRead?,

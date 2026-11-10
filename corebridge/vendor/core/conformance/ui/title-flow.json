@@ -1,0 +1,5492 @@
+{
+  "area": "ui-title-flow",
+  "description": "The title screen (Features WV3, P8.core; catalog onboarding-title-main-menu): Continue, New Game, Load Game, Settings and Quit, which are shown and offered from the save slots (P1.core-slots: the same slot table, Continue target and busy state the slot list draws), why one is not, where the focus goes, and what each choice asks the host to do. Nothing here does I/O. Runner: src/ui/title-flow-corpus.ts (ops menu, choose, session). Numbers compare within tolerance; everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Regenerate with npm run title-onboarding-corpora; npm run title-onboarding-corpora:check fails on any difference.",
+  "version": 1,
+  "sources": [
+    "godot 6599874 addons/insimul/ui/main_menu.gd (InsimulMainMenu: the entries and their order, Continue gated on a loadable slot); unreal d8b05f1 Source/InsimulRuntime/Private/InsimulMainMenuPanel.cpp and Portable/InsimulSaveSlotModel.cpp (Continue is the slot model's answer; ContinueBlockedReason); babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/MainMenuScreen.ts (Continue is the most recent continuable save; Load Game offered when any save exists).",
+    "Core's own rules (no engine had one): New Game opens into the first empty slot; focus on the first offered entry; the platform and game flags for Quit and Settings.",
+    "Inputs are synthetic; every expected is core's answer, and src/ui/__tests__/title-flow.test.ts pins the same rules independently."
+  ],
+  "tolerance": 1e-9,
+  "contract": {
+    "entries": [
+      "continue",
+      "new_game",
+      "load_game",
+      "settings",
+      "quit"
+    ],
+    "labels": {
+      "continue": "Continue",
+      "new_game": "New Game",
+      "load_game": "Load Game",
+      "settings": "Settings",
+      "quit": "Quit"
+    },
+    "messages": {
+      "nothing_to_continue": "No saved game to continue.",
+      "no_saves": "No saved games."
+    },
+    "slotMessages": {
+      "empty": "",
+      "ok": "",
+      "invalid_format": "Unrecognized save format — this slot cannot be loaded.",
+      "missing_save_file": "Save data is missing or unreadable.",
+      "integrity_mismatch": "Save file integrity check failed — file may be corrupted or tampered."
+    },
+    "defaultTitle": "Insimul",
+    "defaultSlotCount": 3,
+    "refusals": [
+      "busy",
+      "nothing_to_continue",
+      "no_saves",
+      "not_shown",
+      "unknown_entry"
+    ],
+    "actions": [
+      "continue",
+      "newGame",
+      "openLoad",
+      "openSettings",
+      "quit"
+    ],
+    "ops": [
+      "menu",
+      "choose",
+      "session"
+    ],
+    "steps": [
+      "save",
+      "load",
+      "continue",
+      "delete",
+      "ask_delete",
+      "confirm_delete",
+      "cancel_delete",
+      "key",
+      "tick",
+      "finished",
+      "choose"
+    ],
+    "continueRule": "offered when continueSlot (P1.core-slots) is not null; otherwise its reason is the message of the first corrupted slot in slot order, else \"No saved game to continue.\"",
+    "loadRule": "offered when any slot is not empty (a corrupted one included); otherwise \"No saved games.\"",
+    "newGameRule": "always offered; opens into the first empty manual slot (never the dedicated quick slot, PL.quick-slot), or none when every manual slot is used; carries onboarding (false only when the game turns it off)",
+    "shownRule": "Settings is not shown when settings is false; Quit is not shown when quit is false; a not-shown entry is refused not_shown",
+    "busyRule": "busy (the input flag true, or the session has a pending operation or an open delete prompt) refuses every shown entry busy and focuses nothing",
+    "focusRule": "the first entry, in order, that is offered",
+    "titleRule": "the input title trimmed, when it is a string that is not blank; otherwise the default"
+  },
+  "cases": [
+    {
+      "name": "menu: a fresh install offers New Game, Settings and Quit; Continue and Load say why not",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": []
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: no slot list at all is a fresh install",
+      "op": "menu",
+      "input": {
+        "menu": {}
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: one save offers Continue on it, focused, and New Game opens into the next empty slot",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 0,
+          "continueRow": {
+            "index": 0,
+            "status": "ok",
+            "title": "Ash · Lv 1 · Brightwater",
+            "message": "Saved 2026-11-01T10:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 1,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-01T10:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 1,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: Continue resumes the most recent save, whatever order the slots come in",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 2,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 3,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            },
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-03T08:30:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 0,
+          "continueRow": {
+            "index": 0,
+            "status": "ok",
+            "title": "Ash · Lv 1 · Brightwater",
+            "message": "Saved 2026-11-03T08:30:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 1,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-03T08:30:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": null,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: two saves at the same time: Continue takes the lower slot",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            },
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 0,
+          "continueRow": {
+            "index": 0,
+            "status": "ok",
+            "title": "Ash · Lv 1 · Brightwater",
+            "message": "Saved 2026-11-02T09:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 1,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-02T09:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 2,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a save with a time beats one without",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 1,
+          "continueRow": {
+            "index": 1,
+            "status": "ok",
+            "title": "Ash · Lv 2 · Brightwater",
+            "message": "Saved 2026-11-01T10:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 2,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-01T10:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 2,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a save with no time is still continued when it is the only one",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 1,
+          "continueRow": {
+            "index": 1,
+            "status": "ok",
+            "title": "Ash · Lv 2 · Brightwater",
+            "message": "",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 2,
+              "locationName": "Brightwater"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: only a corrupted save: no Continue (the slot says why), but Load is offered so it can be deleted",
+      "note": "Babylon lists every save; Godot's menu offered Load only for a loadable one, which leaves a corrupted save unreachable from the title.",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "integrity_mismatch"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "Save file integrity check failed — file may be corrupted or tampered."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 1,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: several broken saves: the first in slot order says why, whatever order they come in",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 2,
+              "outcome": "integrity_mismatch"
+            },
+            {
+              "index": 1,
+              "outcome": "invalid_format"
+            },
+            {
+              "index": 0,
+              "outcome": "empty"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "Unrecognized save format — this slot cannot be loaded."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: missing save data says so",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "missing_save_file"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "Save data is missing or unreadable."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 1,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a save beside a corrupted one: Continue is offered and says nothing",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "integrity_mismatch"
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 1,
+          "continueRow": {
+            "index": 1,
+            "status": "ok",
+            "title": "Ash · Lv 2 · Brightwater",
+            "message": "Saved 2026-11-01T10:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 2,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-01T10:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 2,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: every slot used: New Game opens into none (it never overwrites a save)",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "integrity_mismatch"
+            },
+            {
+              "index": 2,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 3,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 2,
+          "continueRow": {
+            "index": 2,
+            "status": "ok",
+            "title": "Ash · Lv 3 · Brightwater",
+            "message": "Saved 2026-11-02T09:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 3,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-02T09:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": null,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: the saves pack's maxSlots gives more slots, so New Game finds an empty one",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            },
+            {
+              "index": 2,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 3,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-03T08:30:00Z"
+              }
+            }
+          ],
+          "saves": {
+            "maxSlots": 5
+          }
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 2,
+          "continueRow": {
+            "index": 2,
+            "status": "ok",
+            "title": "Ash · Lv 3 · Brightwater",
+            "message": "Saved 2026-11-03T08:30:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 3,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-03T08:30:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 3,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a slot past the slot count is not a slot",
+      "note": "Three slots by default, so slot 4 is ignored: a fresh install.",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 4,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 5,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: an empty slot listed explicitly is still empty",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "empty"
+            },
+            {
+              "index": 1,
+              "outcome": "empty"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a platform that cannot quit shows no Quit",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ],
+          "quit": false
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": false,
+              "enabled": false,
+              "refusal": "not_shown",
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 0,
+          "continueRow": {
+            "index": 0,
+            "status": "ok",
+            "title": "Ash · Lv 1 · Brightwater",
+            "message": "Saved 2026-11-01T10:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 1,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-01T10:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 1,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a game with no settings shows no Settings",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [],
+          "settings": false
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": false,
+              "enabled": false,
+              "refusal": "not_shown",
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: quit and settings flags that are not false leave the entries shown",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [],
+          "quit": "no",
+          "settings": 0
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: busy: nothing is offered and nothing is focused",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ],
+          "busy": true
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "busy",
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "busy",
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "busy",
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": false,
+              "refusal": "busy",
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": false,
+              "refusal": "busy",
+              "reason": ""
+            }
+          ],
+          "focus": null,
+          "busy": true,
+          "continueSlot": 0,
+          "continueRow": {
+            "index": 0,
+            "status": "ok",
+            "title": "Ash · Lv 1 · Brightwater",
+            "message": "Saved 2026-11-01T10:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 1,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-01T10:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 1,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: busy with Quit hidden: Quit stays not shown",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [],
+          "busy": true,
+          "quit": false
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "busy",
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "busy",
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "busy",
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": false,
+              "refusal": "busy",
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": false,
+              "enabled": false,
+              "refusal": "not_shown",
+              "reason": ""
+            }
+          ],
+          "focus": null,
+          "busy": true,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a busy flag that is not true is not busy",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [],
+          "busy": "yes"
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: the world's title, trimmed",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "title": "  Brightwater  ",
+          "slots": []
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Brightwater",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a blank or missing title is the default",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "title": "   ",
+          "slots": []
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a title that is not a string is the default",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "title": 42,
+          "slots": []
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: onboarding off: New Game skips it",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [],
+          "onboarding": false
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": false
+        }
+      }
+    },
+    {
+      "name": "menu: an onboarding flag that is not false keeps it on",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [],
+          "onboarding": 0
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a session's view wins over a slot list",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [],
+          "session": {
+            "rows": [
+              {
+                "index": 0,
+                "status": "ok",
+                "title": "Ash · Lv 3",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": true,
+                "isQuick": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 3,
+                  "savedAt": "2026-11-02T09:00:00Z"
+                }
+              },
+              {
+                "index": 1,
+                "status": "empty",
+                "title": "Empty Slot",
+                "message": "",
+                "canLoad": false,
+                "canSave": true,
+                "canDelete": false,
+                "isContinue": false,
+                "isActive": false,
+                "isQuick": false
+              }
+            ],
+            "continueSlot": 0,
+            "activeSlot": 0,
+            "pending": null,
+            "autosave": {
+              "on": true,
+              "target": 0,
+              "inSec": 300
+            },
+            "indicator": {
+              "visible": false,
+              "state": "hidden",
+              "label": "",
+              "detail": "",
+              "inProgress": false,
+              "opacity": 0
+            }
+          }
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 0,
+          "continueRow": {
+            "index": 0,
+            "status": "ok",
+            "title": "Ash · Lv 3",
+            "message": "Saved 2026-11-02T09:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": true,
+            "isQuick": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 3,
+              "savedAt": "2026-11-02T09:00:00Z"
+            }
+          },
+          "newGameSlot": 1,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "menu: a session view's empty dedicated quick slot is never New Game's slot",
+      "note": "Only a row marked isManual: false is passed over; a row without the flag (a view from before PL.quick-slot) is still a New Game target.",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [],
+          "session": {
+            "rows": [
+              {
+                "index": 0,
+                "status": "ok",
+                "title": "Ash · Lv 3",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": true,
+                "isQuick": false,
+                "isManual": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 3,
+                  "savedAt": "2026-11-02T09:00:00Z"
+                }
+              },
+              {
+                "index": 1,
+                "status": "empty",
+                "title": "Quick save",
+                "message": "",
+                "canLoad": false,
+                "canSave": false,
+                "canDelete": false,
+                "isContinue": false,
+                "isActive": false,
+                "isQuick": true,
+                "isManual": false
+              }
+            ],
+            "continueSlot": 0,
+            "activeSlot": 0,
+            "pending": null,
+            "autosave": {
+              "on": true,
+              "target": 0,
+              "inSec": 300
+            },
+            "indicator": {
+              "visible": false,
+              "state": "hidden",
+              "label": "",
+              "detail": "",
+              "inProgress": false,
+              "opacity": 0
+            }
+          }
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 0,
+          "continueRow": {
+            "index": 0,
+            "status": "ok",
+            "title": "Ash · Lv 3",
+            "message": "Saved 2026-11-02T09:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": true,
+            "isQuick": false,
+            "isManual": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 3,
+              "savedAt": "2026-11-02T09:00:00Z"
+            }
+          },
+          "newGameSlot": null,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "choose: Continue resumes the most recent save",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            }
+          ]
+        },
+        "entry": "continue"
+      },
+      "expected": {
+        "choice": {
+          "ok": true,
+          "action": {
+            "continue": {
+              "slot": 1
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "choose: Continue with nothing to continue is refused",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "integrity_mismatch"
+            }
+          ]
+        },
+        "entry": "continue"
+      },
+      "expected": {
+        "choice": {
+          "ok": false,
+          "refusal": "nothing_to_continue",
+          "action": null
+        }
+      }
+    },
+    {
+      "name": "choose: New Game opens into the first empty slot and starts the onboarding",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "empty"
+            }
+          ]
+        },
+        "entry": "new_game"
+      },
+      "expected": {
+        "choice": {
+          "ok": true,
+          "action": {
+            "newGame": {
+              "slot": 1,
+              "onboarding": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "choose: New Game with every slot used opens into none",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            },
+            {
+              "index": 2,
+              "outcome": "integrity_mismatch"
+            }
+          ]
+        },
+        "entry": "new_game"
+      },
+      "expected": {
+        "choice": {
+          "ok": true,
+          "action": {
+            "newGame": {
+              "slot": null,
+              "onboarding": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "choose: New Game never opens into the empty dedicated quick slot",
+      "note": "PL.quick-slot (U88(5)): the dedicated quick slot (index 3) is F5's, so with every manual slot used New Game opens into none.",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            },
+            {
+              "index": 2,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 3,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-03T08:30:00Z"
+              }
+            },
+            {
+              "index": 3,
+              "outcome": "empty"
+            }
+          ]
+        },
+        "entry": "new_game"
+      },
+      "expected": {
+        "choice": {
+          "ok": true,
+          "action": {
+            "newGame": {
+              "slot": null,
+              "onboarding": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "menu: a quick save alone is Continue and offers Load; New Game opens into Slot 1, not the quick slot",
+      "note": "The dedicated quick slot counts for Continue and Load Game like any save.",
+      "op": "menu",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 3,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 4,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "view": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 3,
+          "continueRow": {
+            "index": 3,
+            "status": "ok",
+            "title": "Quick save · Ash · Lv 4 · Brightwater",
+            "message": "Saved 2026-11-02T09:00:00Z",
+            "canLoad": true,
+            "canSave": false,
+            "summary": {
+              "playerName": "Ash",
+              "level": 4,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-02T09:00:00Z"
+            },
+            "canDelete": false,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": true,
+            "isManual": false
+          },
+          "newGameSlot": 0,
+          "onboarding": true
+        }
+      }
+    },
+    {
+      "name": "choose: with an explicit manual quick slot New Game may open into it, as before",
+      "note": "quickSlot 1 is \"Slot 1\", slot 0 (PL.quick-slot-one-based, U90(6)).",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": [],
+          "saves": {
+            "quickSlot": 1
+          }
+        },
+        "entry": "new_game"
+      },
+      "expected": {
+        "choice": {
+          "ok": true,
+          "action": {
+            "newGame": {
+              "slot": 0,
+              "onboarding": true
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "choose: New Game with the onboarding off",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": [],
+          "onboarding": false
+        },
+        "entry": "new_game"
+      },
+      "expected": {
+        "choice": {
+          "ok": true,
+          "action": {
+            "newGame": {
+              "slot": 0,
+              "onboarding": false
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "choose: Load Game opens the slot list",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 1,
+              "outcome": "integrity_mismatch"
+            }
+          ]
+        },
+        "entry": "load_game"
+      },
+      "expected": {
+        "choice": {
+          "ok": true,
+          "action": {
+            "openLoad": true
+          }
+        }
+      }
+    },
+    {
+      "name": "choose: Load Game with no saves is refused",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": []
+        },
+        "entry": "load_game"
+      },
+      "expected": {
+        "choice": {
+          "ok": false,
+          "refusal": "no_saves",
+          "action": null
+        }
+      }
+    },
+    {
+      "name": "choose: Settings opens the settings",
+      "op": "choose",
+      "input": {
+        "menu": {},
+        "entry": "settings"
+      },
+      "expected": {
+        "choice": {
+          "ok": true,
+          "action": {
+            "openSettings": true
+          }
+        }
+      }
+    },
+    {
+      "name": "choose: Settings in a game with none is refused",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "settings": false
+        },
+        "entry": "settings"
+      },
+      "expected": {
+        "choice": {
+          "ok": false,
+          "refusal": "not_shown",
+          "action": null
+        }
+      }
+    },
+    {
+      "name": "choose: Quit quits",
+      "op": "choose",
+      "input": {
+        "menu": {},
+        "entry": "quit"
+      },
+      "expected": {
+        "choice": {
+          "ok": true,
+          "action": {
+            "quit": true
+          }
+        }
+      }
+    },
+    {
+      "name": "choose: Quit where the platform cannot quit is refused",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "quit": false
+        },
+        "entry": "quit"
+      },
+      "expected": {
+        "choice": {
+          "ok": false,
+          "refusal": "not_shown",
+          "action": null
+        }
+      }
+    },
+    {
+      "name": "choose: anything while busy is refused busy",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ],
+          "busy": true
+        },
+        "entry": "continue"
+      },
+      "expected": {
+        "choice": {
+          "ok": false,
+          "refusal": "busy",
+          "action": null
+        }
+      }
+    },
+    {
+      "name": "choose: New Game while busy is refused busy",
+      "op": "choose",
+      "input": {
+        "menu": {
+          "busy": true
+        },
+        "entry": "new_game"
+      },
+      "expected": {
+        "choice": {
+          "ok": false,
+          "refusal": "busy",
+          "action": null
+        }
+      }
+    },
+    {
+      "name": "choose: an entry that is not one is refused",
+      "op": "choose",
+      "input": {
+        "menu": {},
+        "entry": "options"
+      },
+      "expected": {
+        "choice": {
+          "ok": false,
+          "refusal": "unknown_entry",
+          "action": null
+        }
+      }
+    },
+    {
+      "name": "choose: an entry that is not a string is refused",
+      "op": "choose",
+      "input": {
+        "menu": {},
+        "entry": 3
+      },
+      "expected": {
+        "choice": {
+          "ok": false,
+          "refusal": "unknown_entry",
+          "action": null
+        }
+      }
+    },
+    {
+      "name": "choose: a label is not an entry id",
+      "op": "choose",
+      "input": {
+        "menu": {},
+        "entry": "New Game"
+      },
+      "expected": {
+        "choice": {
+          "ok": false,
+          "refusal": "unknown_entry",
+          "action": null
+        }
+      }
+    },
+    {
+      "name": "session: Continue reads the newest slot; the menu is busy until the read finishes",
+      "note": "The choice names slot 1; the host then calls the session's continueGame(). While it reads, every entry is refused busy.",
+      "op": "session",
+      "input": {
+        "init": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            }
+          ]
+        },
+        "menu": {},
+        "steps": [
+          {
+            "choose": "continue"
+          },
+          {
+            "continue": true
+          },
+          {
+            "choose": "new_game"
+          },
+          {
+            "finished": {
+              "ok": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 1,
+          "continueRow": {
+            "index": 1,
+            "status": "ok",
+            "title": "Ash · Lv 2 · Brightwater",
+            "message": "Saved 2026-11-02T09:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 2,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-02T09:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 2,
+          "onboarding": true
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "action": {
+                "continue": {
+                  "slot": 1
+                }
+              }
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "continue",
+              "busy": false,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "read": {
+                  "slot": 1,
+                  "kind": "manual"
+                }
+              }
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": false,
+                "canSave": false,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": false,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": "busy",
+              "action": null
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": false,
+                "canSave": false,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": false,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": null
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "continue",
+              "busy": false,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": true,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: deleting the only save turns Continue and Load off and frees its slot for New Game",
+      "op": "session",
+      "input": {
+        "init": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ]
+        },
+        "menu": {},
+        "steps": [
+          {
+            "delete": 0
+          },
+          {
+            "finished": {
+              "ok": true
+            }
+          },
+          {
+            "choose": "continue"
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 0,
+          "continueRow": {
+            "index": 0,
+            "status": "ok",
+            "title": "Ash · Lv 1 · Brightwater",
+            "message": "Saved 2026-11-01T10:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 1,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-01T10:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 1,
+          "onboarding": true
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "remove": {
+                  "slot": 0
+                }
+              }
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": 0,
+              "continueRow": {
+                "index": 0,
+                "status": "ok",
+                "title": "Ash · Lv 1 · Brightwater",
+                "message": "Saved 2026-11-01T10:00:00Z",
+                "canLoad": false,
+                "canSave": false,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 1,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-01T10:00:00Z"
+                },
+                "canDelete": false,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 1,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": null,
+              "history": "Deleted Slot 1"
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "nothing_to_continue",
+                  "reason": "No saved game to continue."
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "no_saves",
+                  "reason": "No saved games."
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "new_game",
+              "busy": false,
+              "continueSlot": null,
+              "continueRow": null,
+              "newGameSlot": 0,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": "nothing_to_continue",
+              "action": null
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "nothing_to_continue",
+                  "reason": "No saved game to continue."
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "no_saves",
+                  "reason": "No saved games."
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "new_game",
+              "busy": false,
+              "continueSlot": null,
+              "continueRow": null,
+              "newGameSlot": 0,
+              "onboarding": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: deleting the newest save moves Continue to the next",
+      "op": "session",
+      "input": {
+        "init": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-03T08:30:00Z"
+              }
+            },
+            {
+              "index": 2,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 3,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            }
+          ]
+        },
+        "menu": {},
+        "steps": [
+          {
+            "delete": 1
+          },
+          {
+            "finished": {
+              "ok": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 1,
+          "continueRow": {
+            "index": 1,
+            "status": "ok",
+            "title": "Ash · Lv 2 · Brightwater",
+            "message": "Saved 2026-11-03T08:30:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 2,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-03T08:30:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": null,
+          "onboarding": true
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "remove": {
+                  "slot": 1
+                }
+              }
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-03T08:30:00Z",
+                "canLoad": false,
+                "canSave": false,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-03T08:30:00Z"
+                },
+                "canDelete": false,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": null,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": null,
+              "history": "Deleted Slot 2"
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "continue",
+              "busy": false,
+              "continueSlot": 2,
+              "continueRow": {
+                "index": 2,
+                "status": "ok",
+                "title": "Ash · Lv 3 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 3,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 1,
+              "onboarding": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: deleting a corrupted save clears the reason it gave",
+      "op": "session",
+      "input": {
+        "init": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "integrity_mismatch"
+            }
+          ]
+        },
+        "menu": {},
+        "steps": [
+          {
+            "delete": 0
+          },
+          {
+            "finished": {
+              "ok": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "Save file integrity check failed — file may be corrupted or tampered."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 1,
+          "onboarding": true
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "remove": {
+                  "slot": 0
+                }
+              }
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": null,
+              "continueRow": null,
+              "newGameSlot": 1,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": null,
+              "history": "Deleted Slot 1"
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "nothing_to_continue",
+                  "reason": "No saved game to continue."
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "no_saves",
+                  "reason": "No saved games."
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "new_game",
+              "busy": false,
+              "continueSlot": null,
+              "continueRow": null,
+              "newGameSlot": 0,
+              "onboarding": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: a quick save on a fresh install makes the dedicated quick slot the save to continue, and New Game still opens into Slot 1",
+      "note": "Until PL.quick-slot (U88(5)) this case was \"makes slot 0 the save to continue\": F5 wrote slot 0, the slot New Game opens into. The quick slot is now index 3, after the manual slots.",
+      "op": "session",
+      "input": {
+        "init": {
+          "slots": []
+        },
+        "menu": {},
+        "steps": [
+          {
+            "key": "F5"
+          },
+          {
+            "finished": {
+              "ok": true,
+              "savedAt": "2026-11-03T08:30:00Z"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": false,
+              "refusal": "nothing_to_continue",
+              "reason": "No saved game to continue."
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": false,
+              "refusal": "no_saves",
+              "reason": "No saved games."
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "new_game",
+          "busy": false,
+          "continueSlot": null,
+          "continueRow": null,
+          "newGameSlot": 0,
+          "onboarding": true
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "write": {
+                  "slot": 3,
+                  "kind": "quick",
+                  "autosave": false
+                }
+              }
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": null,
+              "continueRow": null,
+              "newGameSlot": 0,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": null
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "continue",
+              "busy": false,
+              "continueSlot": 3,
+              "continueRow": {
+                "index": 3,
+                "status": "ok",
+                "title": "Quick save",
+                "message": "Saved 2026-11-03T08:30:00Z",
+                "canLoad": true,
+                "canSave": false,
+                "summary": {
+                  "savedAt": "2026-11-03T08:30:00Z"
+                },
+                "canDelete": false,
+                "isContinue": true,
+                "isActive": true,
+                "isQuick": true,
+                "isManual": false
+              },
+              "newGameSlot": 0,
+              "onboarding": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: a read that finds the save corrupted marks it, and Continue moves to the next",
+      "op": "session",
+      "input": {
+        "init": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            }
+          ]
+        },
+        "menu": {},
+        "steps": [
+          {
+            "continue": true
+          },
+          {
+            "finished": {
+              "ok": false,
+              "outcome": "integrity_mismatch"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 1,
+          "continueRow": {
+            "index": 1,
+            "status": "ok",
+            "title": "Ash · Lv 2 · Brightwater",
+            "message": "Saved 2026-11-02T09:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 2,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-02T09:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 2,
+          "onboarding": true
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "read": {
+                  "slot": 1,
+                  "kind": "manual"
+                }
+              }
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": false,
+                "canSave": false,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": false,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "effect": null
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "continue",
+              "busy": false,
+              "continueSlot": 0,
+              "continueRow": {
+                "index": 0,
+                "status": "ok",
+                "title": "Ash · Lv 1 · Brightwater",
+                "message": "Saved 2026-11-01T10:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 1,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-01T10:00:00Z"
+                },
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: a failed delete leaves the menu as it was",
+      "op": "session",
+      "input": {
+        "init": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            }
+          ]
+        },
+        "menu": {},
+        "steps": [
+          {
+            "delete": 0
+          },
+          {
+            "finished": {
+              "ok": false
+            }
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 0,
+          "continueRow": {
+            "index": 0,
+            "status": "ok",
+            "title": "Ash · Lv 1 · Brightwater",
+            "message": "Saved 2026-11-01T10:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 1,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-01T10:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 1,
+          "onboarding": true
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "remove": {
+                  "slot": 0
+                }
+              }
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": 0,
+              "continueRow": {
+                "index": 0,
+                "status": "ok",
+                "title": "Ash · Lv 1 · Brightwater",
+                "message": "Saved 2026-11-01T10:00:00Z",
+                "canLoad": false,
+                "canSave": false,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 1,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-01T10:00:00Z"
+                },
+                "canDelete": false,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 1,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "effect": null
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "continue",
+              "busy": false,
+              "continueSlot": 0,
+              "continueRow": {
+                "index": 0,
+                "status": "ok",
+                "title": "Ash · Lv 1 · Brightwater",
+                "message": "Saved 2026-11-01T10:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 1,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-01T10:00:00Z"
+                },
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 1,
+              "onboarding": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: while the delete prompt is open the menu is busy; Cancel gives it back as it was",
+      "note": "PL.slots-delete-states: the session refuses everything but Delete and Cancel while its prompt is open (confirm_open), so the title menu offers nothing then.",
+      "op": "session",
+      "input": {
+        "init": {
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            }
+          ]
+        },
+        "menu": {},
+        "steps": [
+          {
+            "ask_delete": 1
+          },
+          {
+            "choose": "continue"
+          },
+          {
+            "cancel_delete": true
+          },
+          {
+            "choose": "continue"
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Insimul",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 1,
+          "continueRow": {
+            "index": 1,
+            "status": "ok",
+            "title": "Ash · Lv 2 · Brightwater",
+            "message": "Saved 2026-11-02T09:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 2,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-02T09:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 2,
+          "onboarding": true
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "effect": null
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": false,
+                "canSave": false,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": false,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": "busy",
+              "action": null
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": false,
+                  "refusal": "busy",
+                  "reason": ""
+                }
+              ],
+              "focus": null,
+              "busy": true,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": false,
+                "canSave": false,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": false,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": null
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "continue",
+              "busy": false,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "action": {
+                "continue": {
+                  "slot": 1
+                }
+              }
+            },
+            "menu": {
+              "title": "Insimul",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "continue",
+              "busy": false,
+              "continueSlot": 1,
+              "continueRow": {
+                "index": 1,
+                "status": "ok",
+                "title": "Ash · Lv 2 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 2,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 2,
+              "onboarding": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: the saves pack's maxSlots reaches the session",
+      "op": "session",
+      "input": {
+        "init": {
+          "config": {
+            "maxSlots": 4
+          },
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 2,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 3,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            }
+          ]
+        },
+        "menu": {
+          "title": "Brightwater"
+        },
+        "steps": [
+          {
+            "choose": "new_game"
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "title": "Brightwater",
+          "entries": [
+            {
+              "id": "continue",
+              "label": "Continue",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "new_game",
+              "label": "New Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "load_game",
+              "label": "Load Game",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "settings",
+              "label": "Settings",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            },
+            {
+              "id": "quit",
+              "label": "Quit",
+              "shown": true,
+              "enabled": true,
+              "refusal": null,
+              "reason": ""
+            }
+          ],
+          "focus": "continue",
+          "busy": false,
+          "continueSlot": 2,
+          "continueRow": {
+            "index": 2,
+            "status": "ok",
+            "title": "Ash · Lv 3 · Brightwater",
+            "message": "Saved 2026-11-02T09:00:00Z",
+            "canLoad": true,
+            "canSave": true,
+            "summary": {
+              "playerName": "Ash",
+              "level": 3,
+              "locationName": "Brightwater",
+              "savedAt": "2026-11-02T09:00:00Z"
+            },
+            "canDelete": true,
+            "isContinue": true,
+            "isActive": false,
+            "isQuick": false,
+            "isManual": true
+          },
+          "newGameSlot": 3,
+          "onboarding": true
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "action": {
+                "newGame": {
+                  "slot": 3,
+                  "onboarding": true
+                }
+              }
+            },
+            "menu": {
+              "title": "Brightwater",
+              "entries": [
+                {
+                  "id": "continue",
+                  "label": "Continue",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "new_game",
+                  "label": "New Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "load_game",
+                  "label": "Load Game",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "settings",
+                  "label": "Settings",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                },
+                {
+                  "id": "quit",
+                  "label": "Quit",
+                  "shown": true,
+                  "enabled": true,
+                  "refusal": null,
+                  "reason": ""
+                }
+              ],
+              "focus": "continue",
+              "busy": false,
+              "continueSlot": 2,
+              "continueRow": {
+                "index": 2,
+                "status": "ok",
+                "title": "Ash · Lv 3 · Brightwater",
+                "message": "Saved 2026-11-02T09:00:00Z",
+                "canLoad": true,
+                "canSave": true,
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 3,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-02T09:00:00Z"
+                },
+                "canDelete": true,
+                "isContinue": true,
+                "isActive": false,
+                "isQuick": false,
+                "isManual": true
+              },
+              "newGameSlot": 3,
+              "onboarding": true
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

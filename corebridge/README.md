@@ -159,6 +159,15 @@ game; **meta** = about the bridge itself.
 | `ui.journal.apply` | `{ session, ops: setQuests, upsert, accept, decline, complete, track, untrack, setFilter, get }` → `{ results, view }` | same | P3 |
 | `ui.loading.create` | `{ phases?, tips? }` → `{ session, view }` | `ui/loading-screen-model` `LoadingScreenModel` | P8 |
 | `ui.loading.apply` | `{ session, ops: advance, reset }` → `{ results, view }` | same | P8 |
+| `ui.titleFlow.contract` | `{}` → `{ 'ui-title-flow': { entries, labels, messages, slotMessages, defaultTitle, defaultSlotCount, ops, steps } }` | `ui/title-flow` constants (`TITLE_ENTRIES`, …), `save-slots` `SAVE_SLOTS_DEFAULTS`, `ui/title-flow-corpus` ops and steps | P8 title (PL.native-title-rows, U92(1)) |
+| `ui.titleFlow.create` | `{ menu?, savesSession? }` (`menu` core's `TitleFlowInput`, read by core; `savesSession` an open `saves.slots` session the menu reads live) → `{ session, view }` | `ui/title-flow` `titleMenu` | P8 title |
+| `ui.titleFlow.apply` | `{ session, ops: choose, set }` → `{ results: [TitleChoice or null], view }`; a refusal (`busy`, `nothing_to_continue`, `no_saves`, `not_shown`, `unknown_entry`) is a VALUE | `ui/title-flow` `chooseTitleEntry`, `titleMenu` | P8 title |
+| `ui.tutorial.contract` | `{}` → `{ 'quests-tutorial': { objectives, assessmentObjective, flows, ops, runSteps, onboardingSteps, t0 } }` | `TutorialQuestSystem` / `OnboardingManager` constants, `quests/tutorial-corpus` ops, steps and clock | P8 onboarding |
+| `ui.tutorial.objectives` | `{ includeAssessment?, bindings? or unbind?, rebind?, bind? }` → `{ objectives }` | `TutorialQuestSystem` `buildTutorialObjectives` (`corpusBindings` for the changes) | P8 onboarding |
+| `ui.tutorial.create` | `{ config?, now? }` → `{ session, title, description, objectives, events, view }` | `game-engine/logic/TutorialQuestSystem` over the session's own `GameEventBus`; view `tutorialStateJson` | P8 onboarding |
+| `ui.tutorial.apply` | `{ session, ops: start, event, complete, completeById, skip, skipNonAssessment, tick, dispose }` → `{ results: [{ result, events }], view }` | same | P8 onboarding |
+| `ui.onboarding.create` | `{ definition?, options?, now? }` → `{ session, totalSteps, view: { current, isComplete } }` | `game-engine/logic/OnboardingManager` | P8 onboarding |
+| `ui.onboarding.apply` | `{ session, ops: start, complete, skip, event, tick, inspect, state }` → `{ results: [{ result, calls, events }], totalSteps, view }` | same (`getState` for `state`) | P8 onboarding |
 | `ui.trade` | `{ state, ops: takeFromContainer, takeAllFromContainer, buy, sell }` → `{ results, state }` | `ui/trade-model` `TradeModel` | P6 |
 | `quest.completion.create` | `{ quests? }` → `{ session, view }` | `game-engine/logic/QuestCompletionEngine` | P3 |
 | `quest.completion.apply` | `{ session, ops: addQuest, removeQuest, clear, trackEvent, handleGameEvent, completeObjective, trackByTrigger, revealHint, checkTimedObjectives, restoreObjectiveStates }` → `{ results, events, view }` | same | P3 |
@@ -677,6 +686,90 @@ and the errors.
 pin): the bundle went from 1,530,726 bytes (the eff846a pin bump alone, from
 1,511,366 at ac229a7) to 1,553,471. The 66 cases take about 20 ms under QuickJS.
 
+### The title, tutorial and onboarding rows (PL.native-title-rows)
+
+Core's P8 work (P8.core, ff599d7; in the pin since 7376894 and before) is the title
+screen and the first minute of play: the title menu over the save slots
+(`src/ui/title-flow.ts`), the tutorial quest (`TutorialQuestSystem`) and the
+onboarding flow built on it (`OnboardingManager`). Unreal's P8 cell copied them as
+an interim engine-side copy (`Portable/InsimulTitleFlow`,
+`Portable/InsimulTutorialQuest`, U92(1)); these rows are what its retirement
+(`P8.unreal.retire-title-copy`) binds instead, as `P6.unreal.retire-props-copy`
+binds the `props.*` rows. They call core and decide nothing:
+
+- **`ui.titleFlow.create` / `.apply`** — a session holding the host's `menu`
+  (core's `TitleFlowInput`: `title`, `slots`, `saves`, `session`, `busy`, `quit`,
+  `settings`, `onboarding`). Its fields go to core UNCHECKED, because core reads a
+  flag of the wrong type as its default on purpose and the corpus pins each
+  reading. `savesSession` LINKS an open `saves.slots` session: every view is then
+  core's `titleMenu` over that session's live view (its rows, Continue target,
+  pending write or read, delete prompt), so the title screen and the slot list
+  never disagree. ops: `choose { entry }` → core's `TitleChoice` (an action the
+  host does, or a refusal VALUE; `entry` goes to core unchecked, so a label or a
+  number is core's `unknown_entry`) · `set { menu }` (replaces the host's input).
+- **`ui.tutorial.objectives`** — the lessons a game's bindings build
+  (`buildTutorialObjectives`).
+- **`ui.tutorial.create` / `.apply`** — a `TutorialQuestSystem` on the session's
+  own `GameEventBus`. Each op answers `{ result, events }`: the onboarding events
+  the quest raised during it (`onboarding_step_started`,
+  `onboarding_step_completed` with `durationMs`, `onboarding_completed` with
+  `totalDurationMs`), which the host raises on its own bus; an event the host
+  sent through `event` is never echoed back. The view is the state core's corpus
+  records (`tutorialStateJson`); `create` also answers the quest's `title`,
+  `description` and full `objectives` (what a HUD draws for the current one).
+- **`ui.onboarding.create` / `.apply`** — an `OnboardingManager` (a definition's
+  steps run as ONE tutorial quest) on its own bus. Each op answers `{ result,
+  calls, events }`: the manager's callbacks during it (`started`, `completed` with
+  `durationMs`, `skipped`, `done` with `totalDurationMs`) and the onboarding events
+  its quest raised (as `ui.tutorial.apply`'s); `totalSteps` beside every answer is
+  the flow's count against the game's bindings, the same before `start` as after
+  (core's `totalStepsRule`); a flow with nothing left is `done` on `start` and
+  raises nothing (`nothingLeftRule`). `inspect` (the count and the current step in
+  full) and `state` (core's `getState()`: the quest's objectives with `completed`
+  and `skipped`, and whether a skip ended it; null before `start`) read without
+  acting.
+- **`ui.titleFlow.contract`**, **`ui.tutorial.contract`** — each corpus file's
+  data tables from core's constants. The title menu's refusal and action names and
+  the three onboarding event names are literals in core's emitter, with no
+  exported constant, so they are not restated here; the cases pin them.
+
+**The game's bindings** are `bindings` (the whole `ControlBinding[]` table) or the
+changes core's corpus writes (`unbind: [action]`, `rebind: { action: [keys] }`,
+`bind: [binding]`, applied to `CONTROL_BINDINGS` by core's own `corpusBindings`),
+never both. **The clock**: `now` (epoch ms or an ISO string) gives a session a host
+clock that moves only on `tick { ms }`, as core's corpus clock does; without it the
+session reads the wall clock and `tick` is an error.
+
+**Errors** (`[invalid-input]`) are only a field of the wrong JSON type core's types
+declare (`menu`, `config`, `options`, `definition` not an object; a flag not a
+boolean; an id list not of strings; `bindings` beside its changes; an unreadable
+`now`; `tick` without a host clock; an event without a string `type`). A linked
+`savesSession` that is not an open `saves.slots` session is an error naming it.
+
+**The evidence** is core's `conformance/ui/title-flow.json` (56 cases at 7376894:
+menu 29, choose 18, session 9; it was 51 at ff599d7 and gained the quick-slot and
+delete-prompt cases since) and `conformance/quests/tutorial.json` (40 cases:
+objectives 8, run 18, onboarding 14; contract `totalStepsRule`, `bindingsRule`,
+`nothingLeftRule`), copied byte for byte (`TITLE_CORPUS_FILES`) and driven by
+`tests/title_corpus.cpp` as the ctests `title_flow_corpus` and `tutorial_corpus`:
+every case through the rows, 0 undriven, each file's contract tables held to its
+contract row. A title `session` case runs a `saves.slots` session and a title
+session linked to it, one `saves.slots.apply` per slot step and the menu read
+after it; tutorial and onboarding sessions open on a host clock at the file's
+`contract.t0`. `title_flow_corpus_negative` and `tutorial_corpus_negative`
+(`tests/title-negative/`) must see a wrong contract table, a wrong case per op and
+an undrivable case each reported. The hand cases in `tests/cases/bridge-title.json`
+pin the answer shapes, the live link, the clock, the events and the errors.
+
+**Cost.** Five core modules for the rows (`ui/title-flow`,
+`TutorialQuestSystem`, `OnboardingManager`, and the two corpus modules
+`ui/title-flow-corpus`, `quests/tutorial-corpus`), and the modules the corpus
+modules pull in through core's corpus comparator (`save-file-game-state-corpus` and
+the save-file modules behind it): 152 → 183 at the 7376894 pin. The bundle went
+from 1,563,744 bytes to 1,627,255 (+63,511, +4.1 %); the three models alone would
+be about 1,603,200, and the rest is `tutorialStateJson` and `corpusBindings`
+living in core's corpus module. The 96 cases take about 30 ms under QuickJS.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
@@ -765,6 +858,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (111 cases at ac229a7; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (128 cases, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (66 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
+| `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (96 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's
 OWN corpora (saves, the UI matrices, weather progression, genre resolution,

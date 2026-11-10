@@ -283,6 +283,45 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   the args of `props.pickups.<op>`, the answer compared whole within the file's
   `tolerance`, the contract's tables held to `props.contract`, the constants on
   their `value`).
+- **Title menu, tutorial and onboarding (Unreal's `P8.unreal.retire-title-copy`,
+  after PL.native-title-rows; U92(1)).** `Portable/InsimulTitleFlow.{h,cpp}` and
+  `Portable/InsimulTutorialQuest.{h,cpp}` (unreal `feat/p8-unreal` 981b59b, read
+  only) are an interim port of core's P8 logic; every entry point of them has a
+  row (`README.md`, "The title, tutorial and onboarding rows"), so the retirement
+  is a substitution, entry point by entry point:
+
+  | `InsimulTitleFlow.h` / `InsimulTutorialQuest.h` entry point | Row (and what of its answer) |
+  |---|---|
+  | `TitleEntries()`, `TitleEntryLabel`, `kDefaultGameTitle`, `kNothingToContinue`, `kNoSaves` | `ui.titleFlow.contract` → `ui-title-flow.entries`, `.labels`, `.defaultTitle`, `.messages` |
+  | `TitleRefusals()`, `TitleActions()` | no row: core states them only in its corpus (`contract.refusals`, `contract.actions`); a choice's `refusal` and the one key of its `action` are the names |
+  | `FTitleInput` with `FromSession(View, In)` | `ui.titleFlow.create { menu, savesSession }` — link the game's `saves.slots` session (the menu then reads its rows, Continue target, pending operation and delete prompt live); or `menu.session` = the session's view as JSON |
+  | `FTitleInput` with `FromSlots(Slots, SavesConfig, In)` | `ui.titleFlow.create { menu: { slots, saves } }` (`SlotLoadResult[]` and the saves pack's parameters) |
+  | `FTitleInput.Title`, `bBusy`, `bQuit`, `bSettings`, `bOnboarding` | `menu.title`, `.busy`, `.quit`, `.settings`, `.onboarding` (core reads them; `ui.titleFlow.apply` op `set { menu }` changes them) |
+  | `TitleMenu(In)`; `FTitleMenuView::Entry(Id)` | the `view` of `create` / `apply` → `{ title, entries, focus, busy, continueSlot, continueRow, newGameSlot, onboarding }`; the entry is `view.entries[i]` with that `id` (`ContinueRowPos` → `view.continueRow` itself) |
+  | `ChooseTitleEntry(In, Entry)`, `ChoiceJson` | `ui.titleFlow.apply` op `choose { entry }` → `{ ok, refusal?, action }` (`action` is `{ continue: { slot } }`, `{ newGame: { slot, onboarding } }`, `{ openLoad: true }`, `{ openSettings: true }` or `{ quit: true }`) |
+  | `EntryViewJson`, `JsTrim` | no row: the view is JSON already, and core trims the title |
+  | `TutorialObjectives()`, `TutorialAssessmentObjective()`, `OnboardingFlows()` | `ui.tutorial.contract` → `quests-tutorial.objectives`, `.assessmentObjective`, `.flows` |
+  | `OnboardingEvents()` | no row: the three names (`onboarding_step_started`, `onboarding_step_completed`, `onboarding_completed`) are each event's `type` |
+  | `KeyLabel`, `ControlKeysText` | no row of their own: they write a lesson's `controlHint` and `description`, which `ui.tutorial.objectives` answers built against the game's bindings |
+  | `BuildTutorialObjectives(bIncludeAssessment, Bindings)` | `ui.tutorial.objectives { includeAssessment, bindings }` → `objectives` (the bindings as core's `ControlBinding[]`, or as `unbind` / `rebind` / `bind` changes to `CONTROL_BINDINGS`) |
+  | `FEventBus`, `FGameEvent` | the session's own bus: the host sends a game event as op `event { type, … }` and reads what the quest raised in each op's `events`; it raises those on its own bus |
+  | `FTutorialQuest(Bus, Config)` (`FTutorialConfig`: `WorldName`, `TargetLanguage`, `bIncludeAssessment`, `QuestId`, `bSkippable`, `CompletedObjectiveIds`, `Bindings`, `Now`) | `ui.tutorial.create { config: { worldName, targetLanguage, includeAssessment, questId?, skippable?, completedObjectiveIds?, bindings? }, now? }` → `{ session, title, description, objectives, events, view }`; `Now` is the session clock (`now` and op `tick { ms }`, or the wall clock) |
+  | `FTutorialQuest::State()`, `CurrentObjective()`, `Progress(…)` | `view` → `questId`, `current`, `currentObjectiveIndex`, `completed`, `skipped`, `progress { completed, total, percentage }`, `isComplete`, `endedBySkip`, `canSkip`, `startedAt`, `completedAt`; the current objective in full from `create`'s `objectives` by `current` |
+  | `Start()`, `CompleteCurrentObjective()`, `CompleteObjectiveById(Id)`, `HandleEvent(E)`, `Skip()`, `SkipNonAssessmentObjectives()`, `Dispose()` | `ui.tutorial.apply` ops `start`, `complete`, `completeById { id }`, `event { type }`, `skip`, `skipNonAssessment`, `dispose` → each `{ result, events }` |
+  | `FTutorialListener` (`OnStepStarted`, `OnStepCompleted`, `OnStepSkipped`, `OnCompleted`) | each op's `events` (the same facts as the bus events); for the callbacks themselves, run the flow through `ui.onboarding.*` |
+  | `MarkIntroShown()`, `IsoOfMs` | no row: the game calls neither through the title flow at 981b59b (the intro is the host's), and the dates come back as ISO strings |
+  | `FOnboardingDefinition::FromJson`, `OnboardingObjectives(Definition)` | `ui.onboarding.create { definition }` (core reads the JSON as it stands; the objectives it runs are `state`'s) |
+  | `FOnboardingManager(Definition, Options)` (`FOnboardingOptions`: `Bus`, `Now`, `WorldName`, `TargetLanguage`, `bSkippable`, `Bindings`, `CompletedStepIds`, `QuestId`) | `ui.onboarding.create { definition, options: { worldName?, targetLanguage?, skippable?, completedStepIds?, questId?, bindings? }, now? }` → `{ session, totalSteps, view }`. `Bus`: the manager runs on its own bus — forward the game's events with op `event`, raise each op's `events` on the game's bus |
+  | `TotalSteps()`, `CurrentStep()`, `IsComplete()`, `Quest()->State()` | `totalSteps` beside every answer; op `inspect` → `{ totalSteps, step }`; `view.isComplete`; op `state` → the quest's whole state (objectives with `completed` / `skipped`, `skipped` when a skip ended it), null before `start` |
+  | `Start(Callbacks)`, `CompleteCurrentStep()`, `Skip()`, `Bus().Emit(E)`, `Dispose()` | `ui.onboarding.apply` ops `start`, `complete`, `skip`, `event { type }` → each `{ result, calls, events }` (`calls`: `started`, `completed`, `skipped`, `done` in the order the callbacks came); `session.dispose` |
+
+  The sessions are `ui.titleFlow`, `ui.tutorial` and `ui.onboarding` (dispose each
+  with `session.dispose`; a title session linked to a `saves.slots` session needs
+  that session open, and errors naming it otherwise). Re-vendor
+  `conformance/ui/title-flow.json` and `conformance/quests/tutorial.json` from core
+  at this library's pin and drive each case as `tests/title_corpus.cpp` does (its
+  header lists the mapping per op; the sessions open with `now` = the file's
+  `contract.t0`).
 - **Save slots: `quickSlot` is 1-based since the eff846a pin** (core's
   PL.quick-slot-one-based). A character or pack config that states
   `quickSlot: 0` (the old "Slot 1") is now refused `quick_slot_out_of_range`, and

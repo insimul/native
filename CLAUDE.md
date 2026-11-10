@@ -441,11 +441,13 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core 7376894 (2026-11-10,
-  PL.native-genre-hud-config: the head of core's PL.native-genre-hud-config
-  branch, two commits on core `main` eff846a that lands on core `main` by checked fast-forward
-  before this pin does; it gives core's genre HUD runner the `config_of` /
+  and pin disagree. The pin today is core `main` 7376894 (2026-11-10,
+  PL.native-genre-hud-config: its two commits on eff846a, landed on core `main` by
+  checked fast-forward; it gives core's genre HUD runner the `config_of` /
   `view_of` ops that the `ui.genreHud` row passes through, and 43 corpus cases).
+  PL.native-title-rows (2026-11-10) found core `main` still at 7376894 and kept the
+  pin: P8.core's title menu, tutorial and onboarding (ff599d7) were already in it;
+  it added their rows and copied their two corpora.
   Before that, core `main` eff846a (2026-11-10, PL.native-pickup-settle: every core item the Unreal-first queue landed after
   ac229a7, among them P9f/P9g/P9h.core's packs, PL.quick-slot-one-based's 1-based
   `quickSlot` that the `saves.slots.*` rows pass through, and PL.quest-converter-gaps;
@@ -541,6 +543,23 @@
   checks, they are what an engine port must also honour. Core's `isWalkable`
   callback has no row (nothing callable crosses the ABI); walkable ground is
   `walkable` areas.
+- **The title, tutorial and onboarding rows (PL.native-title-rows, U92(1)) run
+  core's P8 corpora UNCHANGED**, copied the same way (`TITLE_CORPUS_FILES`:
+  `conformance/ui/title-flow.json`, which shares `conformance/ui/` and belongs to
+  the list that names it, and `conformance/quests/tutorial.json`).
+  `tests/title_corpus.cpp` drives EVERY case through `ui.titleFlow.*`,
+  `ui.tutorial.*` and `ui.onboarding.*` (a title `session` case through a
+  `saves.slots` session the title session links with `savesSession`; tutorial
+  and onboarding sessions on a host clock at the file's `contract.t0`), prints
+  the driven count per op and `0 undriven`, and holds each file's contract tables
+  to `ui.titleFlow.contract` / `ui.tutorial.contract`; one ctest per file
+  (`title_flow_corpus`, `tutorial_corpus`) plus one negative each. The title
+  menu's `menu` fields go to core UNCHECKED (core reads a wrong-typed flag as its
+  default, and the corpus pins that). The tutorial's state is core's
+  `tutorialStateJson` and the bindings' changes core's `corpusBindings`, both
+  IMPORTED from `quests/tutorial-corpus` — never restate them in `entry.js`. An
+  op's `events` are what the quest raised on the session's bus, never the
+  host's own event.
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

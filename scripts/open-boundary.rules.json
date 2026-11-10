@@ -596,6 +596,60 @@
     },
     {
       "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/title-flow",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.titleFlow.* rows (PL.native-title-rows, rulings U92(1) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-title-rows (Features Gauntlet PL.native-title-rows)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/ui/title-flow-corpus",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of ui.titleFlow.contract (the title corpus's ops and steps) (PL.native-title-rows, rulings U92(1) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-title-rows (Features Gauntlet PL.native-title-rows)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/GameEventBus",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.tutorial.* rows (the session's own game bus) (PL.native-title-rows, rulings U92(1) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-title-rows (Features Gauntlet PL.native-title-rows)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/TutorialQuestSystem",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.tutorial.* rows (PL.native-title-rows, rulings U92(1) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-title-rows (Features Gauntlet PL.native-title-rows)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/OnboardingManager",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.onboarding.* rows (PL.native-title-rows, rulings U92(1) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-title-rows (Features Gauntlet PL.native-title-rows)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/quests/tutorial-corpus",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the ui.tutorial.* and ui.onboarding.* rows (tutorialStateJson, corpusBindings) and ui.tutorial.contract (PL.native-title-rows, rulings U92(1) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-title-rows (Features Gauntlet PL.native-title-rows)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
       "path": "tests/open_boundary_selftest.mjs",
       "specifier": "${CLOSED_BACKEND}",
       "classification": "keep",

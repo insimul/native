@@ -108,7 +108,37 @@ import { MECHANIC_STEP_OPS, runMechanicRuntimeCase } from '@insimul/core/game-en
 // (which slot a request goes to, what is refused, the rows and Continue, when an
 // autosave is due, the indicator). It does no I/O; the host does the I/O each
 // step's `effect` names and answers with `finished`.
-import { SaveSlotsSession } from '@insimul/core/save-slots';
+import { SAVE_SLOTS_DEFAULTS, SaveSlotsSession } from '@insimul/core/save-slots';
+
+// ── the title screen, the tutorial quest and the onboarding (P8.core; PL.native-title-rows, U92(1)) ──
+// Core's title menu over the save slots (`titleMenu`, `chooseTitleEntry`), the
+// tutorial quest (`TutorialQuestSystem`) and the onboarding flow built on it
+// (`OnboardingManager`). The `ui.titleFlow.*`, `ui.tutorial.*` and
+// `ui.onboarding.*` rows call these and decide nothing, so an engine drops its
+// own copy (Unreal's interim `Portable/InsimulTitleFlow` and
+// `Portable/InsimulTutorialQuest`, U92(1)) for them. From the corpus runners
+// come only what a host needs beside the models: the ops and steps the corpora
+// name (for the contract rows), core's bindings-as-changes reading
+// (`corpusBindings`) and the tutorial state the corpus records
+// (`tutorialStateJson`), so neither is restated here.
+import { DEFAULT_GAME_TITLE, TITLE_ENTRIES, TITLE_ENTRY_LABELS, TITLE_MESSAGES, chooseTitleEntry, titleMenu } from '@insimul/core/ui/title-flow';
+import { TITLE_FLOW_OPS, TITLE_FLOW_STEPS } from '@insimul/core/ui/title-flow-corpus';
+import { GameEventBus } from '@insimul/core/game-engine/logic/GameEventBus';
+import {
+	TUTORIAL_ASSESSMENT_OBJECTIVE,
+	TUTORIAL_OBJECTIVES,
+	TutorialQuestSystem,
+	buildTutorialObjectives,
+} from '@insimul/core/game-engine/logic/TutorialQuestSystem';
+import { ONBOARDING_FLOWS, OnboardingManager } from '@insimul/core/game-engine/logic/OnboardingManager';
+import {
+	ONBOARDING_STEPS,
+	TUTORIAL_CORPUS_T0,
+	TUTORIAL_OPS,
+	TUTORIAL_RUN_STEPS,
+	corpusBindings,
+	tutorialStateJson,
+} from '@insimul/core/quests/tutorial-corpus';
 
 // ── props, interiors and the inventory panel (P6.core; PL.native-props-rows, U89(2)) ──
 // Core's P6 logic (core 31764b1 onward): containers (access, unlock, the deposit
@@ -434,6 +464,135 @@ function saveSlotsOps(m) {
 			return plain(model.finished(result));
 		},
 	};
+}
+
+// ── the title screen, the tutorial and the onboarding (P8; PL.native-title-rows) ──
+
+/**
+ * The tables core's P8 corpora (`conformance/ui/title-flow.json`,
+ * `conformance/quests/tutorial.json`) state as data in their `contract`, built
+ * from core's exported constants exactly as core's emitter
+ * (`scripts/emit-title-onboarding-corpora.ts`) builds them, keyed by each file's
+ * `area`. The prose rules are not data and are not here; nor are the tables the
+ * emitter writes as literals (the title menu's refusal and action names, the
+ * three onboarding event names), which core exports no constant for — those are
+ * pinned by the cases themselves.
+ */
+function titleContract() {
+	return plain({
+		'ui-title-flow': {
+			entries: TITLE_ENTRIES,
+			labels: TITLE_ENTRY_LABELS,
+			messages: TITLE_MESSAGES,
+			slotMessages: SLOT_MESSAGES,
+			defaultTitle: DEFAULT_GAME_TITLE,
+			defaultSlotCount: SAVE_SLOTS_DEFAULTS.slotCount,
+			ops: TITLE_FLOW_OPS,
+			steps: TITLE_FLOW_STEPS,
+		},
+		'quests-tutorial': {
+			objectives: TUTORIAL_OBJECTIVES,
+			assessmentObjective: TUTORIAL_ASSESSMENT_OBJECTIVE,
+			flows: ONBOARDING_FLOWS,
+			ops: TUTORIAL_OPS,
+			runSteps: TUTORIAL_RUN_STEPS,
+			onboardingSteps: ONBOARDING_STEPS,
+			t0: new Date(TUTORIAL_CORPUS_T0).toISOString(),
+		},
+	});
+}
+
+/**
+ * The title menu's input for session `s`: the host's `menu` (core's
+ * `TitleFlowInput`, its fields read by core), with the linked `saves.slots`
+ * session's view as `session` when one is linked — core then reads the rows,
+ * Continue target and busy state from it, as the slot list does.
+ */
+function titleInputOf(method, s) {
+	if (s.saves === null) return s.menu;
+	let linked;
+	try {
+		linked = session(method, { session: s.saves }, 'saves.slots');
+	} catch (err) {
+		throw refuse(method, `the linked \`savesSession\` ${s.saves} is not an open saves.slots session (${err.message.replace(/^insimulcore: [^:]+: /, '')})`);
+	}
+	return { ...s.menu, session: linked.model.view() };
+}
+
+/**
+ * The game's control bindings a tutorial or onboarding is built against, from
+ * `src` (a tutorial `config` or onboarding `options`): `bindings`, the whole table
+ * (core's `ControlBinding[]`), or the changes core's corpus writes — `unbind:
+ * [action]`, `rebind: { action: [keys] }`, `bind: [binding]` — applied to core's
+ * `CONTROL_BINDINGS` by core's own `corpusBindings`. Neither: `CONTROL_BINDINGS`.
+ */
+function tutorialBindingsOf(method, src, name) {
+	const changes = ['unbind', 'rebind', 'bind'].filter((k) => src[k] !== undefined && src[k] !== null);
+	if (src.bindings !== undefined && src.bindings !== null) {
+		if (changes.length) {
+			throw refuse(method, `\`${name}.bindings\` is the whole table: state it or the changes (${changes.join(', ')}), not both`);
+		}
+		return needArray(method, src.bindings, `${name}.bindings`).map((b, i) => needObject(method, b, `${name}.bindings[${i}]`));
+	}
+	(optArrayValue(method, src.unbind, `${name}.unbind`) ?? []).forEach((a, i) => needString(method, a, `${name}.unbind[${i}]`));
+	Object.entries(optObject(method, src.rebind, `${name}.rebind`) ?? {}).forEach(([action, keys]) =>
+		needArray(method, keys, `${name}.rebind.${action}`).forEach((k, i) => needString(method, k, `${name}.rebind.${action}[${i}]`)),
+	);
+	(optArrayValue(method, src.bind, `${name}.bind`) ?? []).forEach((b, i) => {
+		needObject(method, b, `${name}.bind[${i}]`);
+		needString(method, b.action, `${name}.bind[${i}].action`);
+		needArray(method, b.keys, `${name}.bind[${i}].keys`);
+	});
+	return corpusBindings(src);
+}
+
+/** `value` absent or null (undefined), else a string. */
+function optStringValue(method, value, name) {
+	return value === undefined || value === null ? undefined : needString(method, value, name);
+}
+
+/** `value` absent or null (undefined), else an array of strings. */
+function optStrings(method, value, name) {
+	const list = optArrayValue(method, value, name);
+	if (list !== undefined) list.forEach((v, i) => needString(method, v, `${name}[${i}]`));
+	return list;
+}
+
+/**
+ * A tutorial or onboarding session's clock. `now` stated (epoch ms, or an ISO
+ * date-time string): a host clock that starts there and moves only on a `tick`
+ * op, as core's corpus clock does. Absent: the wall clock (`Date.now()`), which a
+ * `tick` cannot move.
+ */
+function sessionClockOf(method, value) {
+	if (value === undefined || value === null) return { manual: false, at: 0 };
+	const ms = typeof value === 'number' ? value : typeof value === 'string' ? Date.parse(value) : Number.NaN;
+	if (!Number.isFinite(ms)) throw refuse(method, '`now` must be an ISO date-time string or finite epoch milliseconds');
+	return { manual: true, at: ms };
+}
+
+/** The `now` core's models read from the session clock `io`. */
+function clockReader(io) {
+	return () => (io.manual ? io.at : Date.now());
+}
+
+/** A `tick { ms }` op on the session clock `io`. */
+function tickClock(method, io, op) {
+	if (!io.manual) throw refuse(method, '`tick` moves a host clock: open the session with `now`');
+	io.at += needNumber(method, op.ms, 'ms');
+	return null;
+}
+
+/** An `event { type, … }` op as the game event it raises (the op less its `op`). */
+function gameEventOf(method, op) {
+	const { op: _name, ...event } = op;
+	needString(method, event.type, 'type');
+	return event;
+}
+
+/** The onboarding flow's view: its current step's id and whether it is over. */
+function onboardingView(model) {
+	return { current: model.getCurrentStep()?.id ?? null, isComplete: model.isComplete() };
 }
 
 // ── props and the inventory panel (P6; PL.native-props-rows) ──────────────────
@@ -1222,6 +1381,284 @@ const METHODS = {
 		const s = session(m, args, 'saves.slots');
 		const results = await applyOps(m, s, args, saveSlotsOps(m));
 		return { results, view: plain(s.model.view()) };
+	},
+
+	/**
+	 * `ui.titleFlow.contract {}` → `{ 'ui-title-flow': {…} }` — the data tables
+	 * core's title-flow corpus states in its `contract`, from core's constants: the
+	 * menu's `entries` (in order), `labels`, `messages`, `slotMessages`,
+	 * `defaultTitle`, `defaultSlotCount`, and the corpus's `ops` and `steps`.
+	 */
+	'ui.titleFlow.contract': () => ({ 'ui-title-flow': titleContract()['ui-title-flow'] }),
+
+	/**
+	 * `ui.titleFlow.create { menu?, savesSession? }` → `{ session, view }` — core's
+	 * title menu (`ui/title-flow`, P8.core): Continue, New Game, Load Game,
+	 * Settings, Quit, which are shown and offered, why one is not, and the focus.
+	 * `menu` is core's `TitleFlowInput` — `title`, `slots` (the codec's
+	 * `SlotLoadResult[]`), `saves` (the saves pack's parameters), `session` (a
+	 * `SaveSlotsView`), `busy`, `quit`, `settings`, `onboarding` — and its fields go
+	 * to core UNCHECKED: core reads a flag of the wrong type as its default on
+	 * purpose (`busy` only when true; `quit`, `settings`, `onboarding` off only when
+	 * false; a title that is not a non-blank string is the default), and the corpus
+	 * pins each reading. `savesSession` links an open `saves.slots` session: the
+	 * menu then reads that session's view LIVE (its rows, Continue target, pending
+	 * operation and delete prompt), so the title screen and the slot list never
+	 * disagree. view: core's `TitleMenuView` — `{ title, entries: [{ id, label,
+	 * shown, enabled, refusal, reason }], focus, busy, continueSlot, continueRow,
+	 * newGameSlot, onboarding }`.
+	 */
+	'ui.titleFlow.create': (args) => {
+		const m = 'ui.titleFlow.create';
+		const s = coded('invalid-input', () => ({
+			menu: optObject(m, args.menu, 'menu') ?? {},
+			saves: args.savesSession === undefined || args.savesSession === null ? null : needNumber(m, args.savesSession, 'savesSession'),
+		}));
+		const view = plain(titleMenu(titleInputOf(m, s)));
+		return { session: openSession('ui.titleFlow', s), view };
+	},
+
+	/**
+	 * `ui.titleFlow.apply { session, ops }` → `{ results, view }` (the menu after
+	 * the ops, read again from the linked `saves.slots` session when there is one).
+	 * ops: `choose { entry }` → core's `TitleChoice` `{ ok, refusal?, action }`:
+	 * the action the host does (`{ continue: { slot } }`, `{ newGame: { slot,
+	 * onboarding } }`, `{ openLoad: true }`, `{ openSettings: true }`, `{ quit: true
+	 * }`) or a refusal VALUE (`busy`, `nothing_to_continue`, `no_saves`,
+	 * `not_shown`, `unknown_entry` — `entry` goes to core unchecked) · `set { menu
+	 * }` replaces the host's `menu` (a new title, the host busy or not).
+	 */
+	'ui.titleFlow.apply': async (args) => {
+		const m = 'ui.titleFlow.apply';
+		const s = session(m, args, 'ui.titleFlow');
+		const results = await applyOps(m, s, args, {
+			choose: (st, op) => plain(chooseTitleEntry(titleInputOf(m, st), op.entry)),
+			set: (st, op) => {
+				st.menu = coded('invalid-input', () => optObject(m, op.menu, 'menu') ?? {});
+				return null;
+			},
+		});
+		return { results, view: plain(titleMenu(titleInputOf(m, s))) };
+	},
+
+	/**
+	 * `ui.tutorial.contract {}` → `{ 'quests-tutorial': {…} }` — the data tables
+	 * core's tutorial corpus states in its `contract`, from core's constants: the
+	 * lessons (`objectives`), the `assessmentObjective`, the onboarding `flows`, and
+	 * the corpus's `ops`, `runSteps`, `onboardingSteps` and its clock's `t0`.
+	 */
+	'ui.tutorial.contract': () => ({ 'quests-tutorial': titleContract()['quests-tutorial'] }),
+
+	/**
+	 * `ui.tutorial.objectives { includeAssessment?, bindings? | unbind?, rebind?,
+	 * bind? }` → `{ objectives }` — core's `buildTutorialObjectives`: the lessons a
+	 * game's bindings build (an unbound lesson is left out, the hints name the
+	 * game's keys), the arrival assessment last when `includeAssessment` is true.
+	 */
+	'ui.tutorial.objectives': (args) => {
+		const m = 'ui.tutorial.objectives';
+		const [includeAssessment, bindings] = coded('invalid-input', () => [
+			optBoolean(m, args.includeAssessment, 'includeAssessment') === true,
+			tutorialBindingsOf(m, args, 'options'),
+		]);
+		return { objectives: plain(buildTutorialObjectives({ includeAssessment, bindings })) };
+	},
+
+	/**
+	 * `ui.tutorial.create { config?, now? }` → `{ session, title, description,
+	 * objectives, events, view }` — core's `TutorialQuestSystem` over the session's
+	 * own game bus. `config` is core's `TutorialQuestConfig`: `worldName`,
+	 * `targetLanguage`, `includeAssessment`, `questId?`, `skippable?`,
+	 * `completedObjectiveIds?` (a resumed playthrough), and the game's bindings
+	 * (`bindings`, or the `unbind` / `rebind` / `bind` changes; see
+	 * `ui.tutorial.objectives`). `now` (epoch ms or an ISO string) gives the session
+	 * a host clock that moves only on `tick`; absent, the wall clock. `objectives`
+	 * are the quest's objectives in full (id, title, description, controlHint,
+	 * control keys, completesOn, …: what a HUD draws for the current one); `events`
+	 * what the construction raised. view: the quest's state as core's corpus
+	 * records it (`tutorialStateJson`): `{ questId, current, currentObjectiveIndex,
+	 * completed, skipped, progress, isComplete, endedBySkip, canSkip, canAbandon,
+	 * startedAt, completedAt }`.
+	 */
+	'ui.tutorial.create': (args) => {
+		const m = 'ui.tutorial.create';
+		const [config, io] = coded('invalid-input', () => {
+			const c = optObject(m, args.config, 'config') ?? {};
+			optStringValue(m, c.worldName, 'config.worldName');
+			optStringValue(m, c.targetLanguage, 'config.targetLanguage');
+			optBoolean(m, c.includeAssessment, 'config.includeAssessment');
+			optStringValue(m, c.questId, 'config.questId');
+			optBoolean(m, c.skippable, 'config.skippable');
+			optStrings(m, c.completedObjectiveIds, 'config.completedObjectiveIds');
+			const bindings = tutorialBindingsOf(m, c, 'config');
+			return [{ ...c, bindings }, { ...sessionClockOf(m, args.now), events: [], hostEvent: null }];
+		});
+		const bus = new GameEventBus();
+		bus.onAny((e) => {
+			if (e !== io.hostEvent) io.events.push(e);
+		});
+		const model = new TutorialQuestSystem(bus, {
+			worldName: config.worldName,
+			targetLanguage: config.targetLanguage,
+			includeAssessment: config.includeAssessment === true,
+			...(config.questId !== undefined && config.questId !== null ? { questId: config.questId } : {}),
+			...(config.skippable !== undefined && config.skippable !== null ? { skippable: config.skippable } : {}),
+			...(config.completedObjectiveIds !== undefined && config.completedObjectiveIds !== null
+				? { completedObjectiveIds: config.completedObjectiveIds }
+				: {}),
+			bindings: config.bindings,
+			now: clockReader(io),
+		});
+		const state = model.getState();
+		return {
+			session: openSession('ui.tutorial', { model, bus, io }),
+			title: state.title,
+			description: state.description,
+			objectives: plain(state.objectives),
+			events: plain(io.events.splice(0)),
+			view: plain(tutorialStateJson(model)),
+		};
+	},
+
+	/**
+	 * `ui.tutorial.apply { session, ops }` → `{ results, view }`. Each result is
+	 * `{ result, events }`: `events` are the onboarding events the quest raised on
+	 * the session's bus during that op (`onboarding_step_started`,
+	 * `onboarding_step_completed` with its `durationMs`, `onboarding_completed`
+	 * with its `totalDurationMs`; the host raises them on its own bus), never an
+	 * event the host sent. ops: `start` (result: the current objective's id, or
+	 * null) · `event { type, … }` (a game event on the session's bus; only the
+	 * current lesson completes, on one of its `completesOn`) · `complete` (the host
+	 * completes the current objective; result: its id, or null) · `completeById {
+	 * id }` (result: whether it completed) · `skip` (result: whether the game
+	 * allowed it; never past an assessment) · `skipNonAssessment` · `tick { ms }`
+	 * (moves a host clock) · `dispose` (the quest stops listening).
+	 */
+	'ui.tutorial.apply': async (args) => {
+		const m = 'ui.tutorial.apply';
+		const s = session(m, args, 'ui.tutorial');
+		const done = (io, result) => ({ result: plain(result ?? null), events: plain(io.events.splice(0)) });
+		const results = await applyOps(m, s, args, {
+			start: ({ model, io }) => done(io, model.start()?.id),
+			event: ({ bus, io }, op) => {
+				const event = coded('invalid-input', () => gameEventOf(m, op));
+				io.hostEvent = event;
+				try {
+					bus.emit(event);
+				} finally {
+					io.hostEvent = null;
+				}
+				return done(io, null);
+			},
+			complete: ({ model, io }) => done(io, model.completeCurrentObjective()?.id),
+			completeById: ({ model, io }, op) => done(io, model.completeObjectiveById(coded('invalid-input', () => needString(m, op.id, 'id')))),
+			skip: ({ model, io }) => done(io, model.skip()),
+			skipNonAssessment: ({ model, io }) => {
+				model.skipNonAssessmentObjectives();
+				return done(io, null);
+			},
+			tick: ({ io }, op) => done(io, coded('invalid-input', () => tickClock(m, io, op))),
+			dispose: ({ model, io }) => {
+				model.dispose();
+				return done(io, null);
+			},
+		});
+		return { results, view: plain(tutorialStateJson(s.model)) };
+	},
+
+	/**
+	 * `ui.onboarding.create { definition?, options?, now? }` → `{ session,
+	 * totalSteps, view }` — core's `OnboardingManager` (the onboarding flow, run as
+	 * ONE tutorial quest) over its own bus. `definition` is core's
+	 * `OnboardingDefinition` (`{ id?, flow?: generic | language, steps? }`; a step
+	 * named like a tutorial lesson is that lesson, any other is completed by the
+	 * host or by its own `completesOn`), read by core. `options`: `skippable?`,
+	 * `completedStepIds?`, `worldName?`, `targetLanguage?`, `questId?` and the
+	 * game's bindings (as `ui.tutorial.create`'s `config`). `now` as there.
+	 * `totalSteps` is the flow's step count built against those bindings, the same
+	 * before `start` as after it. view: `{ current, isComplete }`.
+	 */
+	'ui.onboarding.create': (args) => {
+		const m = 'ui.onboarding.create';
+		const [definition, options, io] = coded('invalid-input', () => {
+			const d = optObject(m, args.definition, 'definition') ?? null;
+			const o = optObject(m, args.options, 'options') ?? {};
+			optBoolean(m, o.skippable, 'options.skippable');
+			optStrings(m, o.completedStepIds, 'options.completedStepIds');
+			optStringValue(m, o.worldName, 'options.worldName');
+			optStringValue(m, o.targetLanguage, 'options.targetLanguage');
+			optStringValue(m, o.questId, 'options.questId');
+			const bindings = tutorialBindingsOf(m, o, 'options');
+			return [d, { ...o, bindings }, { ...sessionClockOf(m, args.now), calls: [], events: [], hostEvent: null }];
+		});
+		const pick = (k) => (options[k] !== undefined && options[k] !== null ? { [k]: options[k] } : {});
+		const model = new OnboardingManager(definition, {
+			...pick('skippable'),
+			...pick('completedStepIds'),
+			...pick('worldName'),
+			...pick('targetLanguage'),
+			...pick('questId'),
+			bindings: options.bindings,
+			now: clockReader(io),
+		});
+		model.eventBus.onAny((e) => {
+			if (e !== io.hostEvent) io.events.push(e);
+		});
+		return { session: openSession('ui.onboarding', { model, io }), totalSteps: model.totalSteps, view: onboardingView(model) };
+	},
+
+	/**
+	 * `ui.onboarding.apply { session, ops }` → `{ results, totalSteps, view }`.
+	 * Each result is `{ result, calls, events }`: `calls` are the manager's
+	 * callbacks that came during that op, in order — `{ started: { stepId,
+	 * stepIndex, totalSteps } }`, `{ completed: { stepId, stepIndex, totalSteps,
+	 * durationMs } }`, `{ skipped: { stepId, stepIndex, totalSteps } }`, `{ done: {
+	 * totalSteps, totalDurationMs } }` (a flow with nothing left is done on `start`,
+	 * 0 ms, and raises nothing on the bus) — and `events` the onboarding events its
+	 * quest raised on the manager's bus during it (as `ui.tutorial.apply`'s; never
+	 * the host's own). ops: `start` · `complete` (the host completes the current
+	 * step) · `skip` (result: whether it skipped) · `event { type, … }` (a game
+	 * event on the manager's bus) · `tick { ms }` · `inspect` (reads without
+	 * acting; result: `{ totalSteps, step }`, the current step in full or null) ·
+	 * `state` (reads without acting; result: core's `getState()`, the tutorial
+	 * quest's whole state — its objectives with `completed` and `skipped`, `skipped`
+	 * when a skip ended it — or null before `start`).
+	 */
+	'ui.onboarding.apply': async (args) => {
+		const m = 'ui.onboarding.apply';
+		const s = session(m, args, 'ui.onboarding');
+		const done = (io, result) => ({ result: plain(result ?? null), calls: plain(io.calls.splice(0)), events: plain(io.events.splice(0)) });
+		const results = await applyOps(m, s, args, {
+			start: async ({ model, io }) => {
+				await model.start({
+					onStepStarted: (stepId, stepIndex, totalSteps) => io.calls.push({ started: { stepId, stepIndex, totalSteps } }),
+					onStepCompleted: (stepId, stepIndex, totalSteps, durationMs) =>
+						io.calls.push({ completed: { stepId, stepIndex, totalSteps, durationMs } }),
+					onStepSkipped: (stepId, stepIndex, totalSteps) => io.calls.push({ skipped: { stepId, stepIndex, totalSteps } }),
+					onCompleted: (totalSteps, totalDurationMs) => io.calls.push({ done: { totalSteps, totalDurationMs } }),
+				});
+				return done(io, null);
+			},
+			complete: ({ model, io }) => {
+				model.completeCurrentStep();
+				return done(io, null);
+			},
+			skip: ({ model, io }) => done(io, model.skip()),
+			event: ({ model, io }, op) => {
+				const event = coded('invalid-input', () => gameEventOf(m, op));
+				io.hostEvent = event;
+				try {
+					model.eventBus.emit(event);
+				} finally {
+					io.hostEvent = null;
+				}
+				return done(io, null);
+			},
+			tick: ({ io }, op) => done(io, coded('invalid-input', () => tickClock(m, io, op))),
+			inspect: ({ model, io }) => done(io, { totalSteps: model.totalSteps, step: model.getCurrentStep() }),
+			state: ({ model, io }) => done(io, model.getState()),
+		});
+		return { results, totalSteps: s.model.totalSteps, view: onboardingView(s.model) };
 	},
 
 	/** `ui.loading.create { phases?, tips? }` → `{ session, view }` — core's `LoadingScreenModel`. */
