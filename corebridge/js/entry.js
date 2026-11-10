@@ -177,6 +177,64 @@ import {
 	inventoryItemName,
 } from '@insimul/core/ui/inventory-model';
 
+// ── where a pick-up is put down (PL.pickup-placement; PL.native-pickup-settle, U91(2), U89(3)) ──
+// Core's pick-up placement (core ac229a7 onward, src/props/pickup-placement.ts):
+// the authored spot settled clear of props, buildings, plants by their trunk,
+// containers, roads, doors, villagers and the pick-ups settled before it, or
+// refused with a code; the search pattern it walks; how clear a spot is. Data in,
+// decision out, in core's metres on its ground plane (x, z). The `props.pickups.*`
+// rows call these and decide nothing, so an engine drops its own settle (Unreal's
+// interim one in InsimulVillageProps, U89(3)) for them. The constants are imported
+// for `props.contract`, which answers the tables core's pick-up corpus states.
+import {
+	PICKUP_APPROACH_HEADINGS,
+	PICKUP_APPROACH_PROBES_M,
+	PICKUP_CLEARANCE_KINDS,
+	PICKUP_CLEARANCE_M,
+	PICKUP_CONTAINER_CLEARANCE_M,
+	PICKUP_CONTAINER_RADIUS_M,
+	PICKUP_CULL_RADIUS_M,
+	PICKUP_DOOR_CLEARANCE_M,
+	PICKUP_DOOR_RADIUS_M,
+	PICKUP_GROUND_COVER_M,
+	PICKUP_GROUND_KINDS,
+	PICKUP_GROUND_PIECE_HALF_M,
+	PICKUP_MOVED_M,
+	PICKUP_NAV_SNAP_M,
+	PICKUP_NOTHING_NEAR_M,
+	PICKUP_OBSTACLE_KINDS,
+	PICKUP_PLACEMENT_DEVIATIONS,
+	PICKUP_PLACEMENT_FRAMES,
+	PICKUP_PLACEMENT_REFUSALS,
+	PICKUP_PLANT_ARCHETYPE_MARKS,
+	PICKUP_PLANT_ENTITY_KINDS,
+	PICKUP_RING_ARC_M,
+	PICKUP_RING_MAX_POINTS,
+	PICKUP_RING_MIN_POINTS,
+	PICKUP_RING_STEP_M,
+	PICKUP_ROAD_CLEARANCE_M,
+	PICKUP_ROAD_DEFAULT_WIDTH_M,
+	PICKUP_ROAD_POINT_SQ_M2,
+	PICKUP_SEARCH,
+	PICKUP_SEARCH_RADIUS_M,
+	PICKUP_SPACING_M,
+	PICKUP_STAND_HIGH_M,
+	PICKUP_STAND_LOW_M,
+	PICKUP_STATIC_CLEARANCE_M,
+	PICKUP_STATIC_KINDS,
+	PICKUP_TREE_HEIGHT_M,
+	PICKUP_TRUNK_FRACTION,
+	PICKUP_TRUNK_MAX_M,
+	PICKUP_TRUNK_MIN_M,
+	PICKUP_VILLAGER_CLEARANCE_M,
+	PICKUP_VILLAGER_RADIUS_M,
+	pickupClearance,
+	pickupSearchPattern,
+	pickupSearchRing,
+	settlePickup,
+	settlePickups,
+} from '@insimul/core/props/pickup-placement';
+
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
 // settings and activation, over the pack catalog the caller sends.
@@ -400,9 +458,10 @@ function optBoolean(method, value, name) {
 
 /**
  * The tables core's P6 corpora state as data in their `contract`, built from
- * core's own exported constants exactly as core's emitter
- * (`scripts/emit-props-corpora.ts`) builds them, keyed by each file's `area`. The
- * prose keys of those contracts (orders, rules) are not data and are not here.
+ * core's own exported constants exactly as core's emitters
+ * (`scripts/emit-props-corpora.ts`, `scripts/emit-pickup-placement-corpus.ts`)
+ * build them, keyed by each file's `area`. The prose keys of those contracts
+ * (orders, rules, units, source lines) are not data and are not here.
  */
 function propsContract() {
 	return plain({
@@ -447,7 +506,82 @@ function propsContract() {
 			pinnedGroup: INVENTORY_PINNED_GROUP,
 			emptyMessages: INVENTORY_EMPTY_MESSAGES,
 		},
+		// PL.native-pickup-settle: the data tables of conformance/props/pickup-placement.json
+		// (core's scripts/emit-pickup-placement-corpus.ts). Its `constants` table
+		// states each value with the Unreal line it was measured from; the value is
+		// data and is here, the `source` line is prose and is not (nor `units` or
+		// `sourceAbbreviation`).
+		'props-pickup-placement': {
+			frames: PICKUP_PLACEMENT_FRAMES,
+			obstacleKinds: PICKUP_OBSTACLE_KINDS,
+			clearanceKinds: PICKUP_CLEARANCE_KINDS,
+			staticKinds: PICKUP_STATIC_KINDS,
+			refusals: PICKUP_PLACEMENT_REFUSALS,
+			clearanceM: PICKUP_CLEARANCE_M,
+			search: PICKUP_SEARCH,
+			constants: {
+				staticClearanceM: PICKUP_STATIC_CLEARANCE_M,
+				containerClearanceM: PICKUP_CONTAINER_CLEARANCE_M,
+				doorClearanceM: PICKUP_DOOR_CLEARANCE_M,
+				villagerClearanceM: PICKUP_VILLAGER_CLEARANCE_M,
+				roadClearanceM: PICKUP_ROAD_CLEARANCE_M,
+				spacingM: PICKUP_SPACING_M,
+				doorRadiusM: PICKUP_DOOR_RADIUS_M,
+				villagerRadiusM: PICKUP_VILLAGER_RADIUS_M,
+				containerRadiusM: PICKUP_CONTAINER_RADIUS_M,
+				roadDefaultWidthM: PICKUP_ROAD_DEFAULT_WIDTH_M,
+				roadPointSqM2: PICKUP_ROAD_POINT_SQ_M2,
+				standLowM: PICKUP_STAND_LOW_M,
+				standHighM: PICKUP_STAND_HIGH_M,
+				groundCoverM: PICKUP_GROUND_COVER_M,
+				treeHeightM: PICKUP_TREE_HEIGHT_M,
+				trunkFraction: PICKUP_TRUNK_FRACTION,
+				trunkMinM: PICKUP_TRUNK_MIN_M,
+				trunkMaxM: PICKUP_TRUNK_MAX_M,
+				groundPieceHalfM: PICKUP_GROUND_PIECE_HALF_M,
+				ringStepM: PICKUP_RING_STEP_M,
+				searchRadiusM: PICKUP_SEARCH_RADIUS_M,
+				ringArcM: PICKUP_RING_ARC_M,
+				ringMinPoints: PICKUP_RING_MIN_POINTS,
+				ringMaxPoints: PICKUP_RING_MAX_POINTS,
+				movedM: PICKUP_MOVED_M,
+				nothingNearM: PICKUP_NOTHING_NEAR_M,
+				approachHeadings: PICKUP_APPROACH_HEADINGS,
+				approachProbesM: PICKUP_APPROACH_PROBES_M,
+				navSnapM: PICKUP_NAV_SNAP_M,
+				cullRadiusM: PICKUP_CULL_RADIUS_M,
+			},
+			groundKinds: PICKUP_GROUND_KINDS,
+			plantEntityKinds: PICKUP_PLANT_ENTITY_KINDS,
+			plantArchetypeMarks: PICKUP_PLANT_ARCHETYPE_MARKS,
+			deviations: PICKUP_PLACEMENT_DEVIATIONS,
+		},
 	});
+}
+
+/**
+ * The world a pick-up rule reads (core's `PickupWorld`, plus a settle's `spot`,
+ * `groundY` and `settled` and a sequence's `pickups`), checked for the JSON types
+ * core declares and nothing more, and returned AS IS: the lists are arrays (core
+ * walks them) and `clearance` and `search` objects, when present; a road object's
+ * `waypoints` an array when it states them. Everything core reads itself goes to
+ * core unchanged, because core's corpus pins each of those readings: a spot or
+ * ground height that is not a finite number (core's `bad-spot`), a list entry
+ * that is null or not a point (skipped, its index kept), an obstacle of a kind
+ * core does not know (not kept off), a clearance or search field that is not a
+ * usable number (its default). Coordinates are core's metres on its ground plane
+ * `(x, z)`; nothing here converts or mirrors a frame.
+ */
+function pickupWorldOf(method, args) {
+	for (const key of ['obstacles', 'settled', 'walkable', 'pickups']) optArrayValue(method, args[key], key);
+	(optArrayValue(method, args.roads, 'roads') ?? []).forEach((road, i) => {
+		if (road !== null && typeof road === 'object' && !Array.isArray(road)) {
+			optArrayValue(method, road.waypoints, `roads[${i}].waypoints`);
+		}
+	});
+	optObject(method, args.clearance, 'clearance');
+	optObject(method, args.search, 'search');
+	return args;
 }
 
 /** A `ContainerRecord`: a JSON object (core reads every field of it itself). */
@@ -1161,9 +1295,10 @@ const METHODS = {
 	 * `props.contract {}` → `{ <area>: { <table>: value } }` — the tables each P6
 	 * corpus file's `contract` states as data (states, refusals, actions, the
 	 * capacity, page size, quiz XP, the door's prompt radius and stand-off, the
-	 * inventory's filters, colours, slot labels and empty messages), from core's
-	 * exported constants, keyed by the file's `area`. A binding reads its words
-	 * and numbers here instead of restating them.
+	 * inventory's filters, colours, slot labels and empty messages, and the pick-up
+	 * placement's kinds, clearances, search, frames, constants and deviations),
+	 * from core's exported constants, keyed by the file's `area`. A binding reads
+	 * its words and numbers here instead of restating them.
 	 */
 	'props.contract': () => propsContract(),
 
@@ -1399,6 +1534,71 @@ const METHODS = {
 			}),
 		]);
 		return { articles: plain(generateSettlementNotices(id, name, npcs)) };
+	},
+
+	// Where a pick-up is put down (PL.native-pickup-settle, U91(2); core's
+	// PL.pickup-placement, U89(3)). Stateless, one core function each, answering
+	// the shape core's corpus runner (`runPickupPlacementOp`) records. Metres on
+	// core's ground plane `(x, z)`, heights `y`; a binding maps its own frame in
+	// (`props.contract`'s `props-pickup-placement.frames`; Unreal: its (X, Y) ÷ 100
+	// as (x, z), its forward as `axis` unmirrored, its Z ÷ 100 as y). A refusal
+	// (`bad-spot`, `no-clear-spot`) is a VALUE `{ ok: false, code }`; the rows'
+	// own errors are `[invalid-input]` for a field of the wrong JSON type.
+
+	/**
+	 * `props.pickups.settle { spot, groundY?, settled?, obstacles?, roads?,
+	 * walkable?, clearance?, search? }` → core's `settlePickup`: `{ ok: true, at,
+	 * moved, shiftM, ring, clearanceM, nearest, authored, approach }`, or `{ ok:
+	 * false, code: 'no-clear-spot', clearest, authored, approach }` (`clearest` is
+	 * where an engine that still draws the pick-up draws it), or `{ ok: false,
+	 * code: 'bad-spot' }`. `walkable` is the walkable ground as areas (absent:
+	 * everywhere; empty: nowhere); core's `isWalkable` callback has no row.
+	 */
+	'props.pickups.settle': (args) => {
+		const input = coded('invalid-input', () => pickupWorldOf('props.pickups.settle', args));
+		return plain(settlePickup(input));
+	},
+
+	/**
+	 * `props.pickups.sequence { pickups: [{ spot, groundY? }], obstacles?, roads?,
+	 * walkable?, clearance?, search? }` → `{ placements }` — core's
+	 * `settlePickups`: each settled in order, kept clear of those before it (a
+	 * refused one where its `clearest` is; a `bad-spot` one nowhere).
+	 */
+	'props.pickups.sequence': (args) => {
+		const input = coded('invalid-input', () => pickupWorldOf('props.pickups.sequence', args));
+		return plain(settlePickups(input));
+	},
+
+	/**
+	 * `props.pickups.clearance { spot, groundY?, settled?, obstacles?, roads?,
+	 * clearance? }` → core's `pickupClearance`: `{ ok: true, clearanceM, nearest:
+	 * { kind, index } | null }` (`clearanceM >= 0` is clear) or `{ ok: false,
+	 * code: 'bad-spot' }`. A binding reads `ok` before `clearanceM`.
+	 */
+	'props.pickups.clearance': (args) => {
+		const input = coded('invalid-input', () => pickupWorldOf('props.pickups.clearance', args));
+		return plain(pickupClearance(input));
+	},
+
+	/**
+	 * `props.pickups.pattern { search? }` → `{ rings: [{ radiusM, points }] }` —
+	 * core's `pickupSearchPattern`: the rings the search walks out on.
+	 */
+	'props.pickups.pattern': (args) => {
+		const search = coded('invalid-input', () => optObject('props.pickups.pattern', args.search, 'search'));
+		return { rings: plain(pickupSearchPattern(search)) };
+	},
+
+	/**
+	 * `props.pickups.ring { ring, search? }` → `{ points: [{ x, z }] }` — core's
+	 * `pickupSearchRing`: ring `ring`'s (1-based) offsets from the authored spot,
+	 * in the order tried, from +x toward +z (none past the search).
+	 */
+	'props.pickups.ring': (args) => {
+		const m = 'props.pickups.ring';
+		const [ring, search] = coded('invalid-input', () => [needNumber(m, args.ring, 'ring'), optObject(m, args.search, 'search')]);
+		return { points: plain(pickupSearchRing(ring, search)) };
 	},
 
 	/**

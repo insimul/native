@@ -103,6 +103,11 @@
        "props.doors.prompt",
        "props.doors.step",
        "props.notices.generate",
+       "props.pickups.clearance",
+       "props.pickups.pattern",
+       "props.pickups.ring",
+       "props.pickups.sequence",
+       "props.pickups.settle",
        "props.reader.apply",
        "props.reader.create",
        "quest.completion.apply",
@@ -164,7 +169,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 130}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 135}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -210,7 +215,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 130}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 135}}}}
    ]
   },
   {

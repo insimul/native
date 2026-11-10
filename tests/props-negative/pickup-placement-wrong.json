@@ -1,0 +1,827 @@
+{
+  "area": "props-pickup-placement",
+  "description": "NEGATIVE CONTROL for props_pickup_placement_corpus_negative (PL.native-pickup-settle): a deliberately WRONG copy of core's conformance/props/pickup-placement.json. Its numerics names float32, contract.frames.unreal and contract.constants.spacingM are wrong, no case drives the ring op, and four cases expect WRONG answers. The runner must report every one of them and fail.",
+  "version": 1,
+  "sources": [
+    "tests/props-negative/pickup-placement-wrong.json, made from corebridge/vendor/core/conformance/props/pickup-placement.json at core eff846a"
+  ],
+  "tolerance": 1e-06,
+  "numerics": "Runners may compute in float32; the tolerance covers every decision.",
+  "contract": {
+    "units": "metres on the ground plane {x, z}; y is up",
+    "frames": {
+      "unreal": "right-handed, z up; core (x, z) = Unreal (X, -Y) / 100 (MIRRORED: wrong on purpose)",
+      "godot": "right-handed, y up; core (x, y, z) = Godot (x, y, z) in metres; +x toward +z is clockwise seen from above",
+      "unity": "left-handed, y up; core (x, y, z) = Unity (x, y, z) in metres; +x toward +z is counter-clockwise seen from above",
+      "babylon": "left-handed, y up; core (x, y, z) = Babylon (x, y, z) in metres; +x toward +z is counter-clockwise seen from above"
+    },
+    "obstacleKinds": [
+      "prop",
+      "building",
+      "plant",
+      "container",
+      "door",
+      "villager"
+    ],
+    "clearanceKinds": [
+      "prop",
+      "building",
+      "plant",
+      "container",
+      "door",
+      "villager",
+      "road",
+      "pickup"
+    ],
+    "staticKinds": [
+      "prop",
+      "building",
+      "plant"
+    ],
+    "refusals": [
+      "no-clear-spot",
+      "bad-spot"
+    ],
+    "clearanceM": {
+      "prop": 1,
+      "building": 1,
+      "plant": 1,
+      "container": 1,
+      "door": 2,
+      "villager": 1.5,
+      "road": 1,
+      "pickup": 3
+    },
+    "search": {
+      "ringStepM": 0.5,
+      "radiusM": 20,
+      "arcM": 0.6,
+      "minPoints": 8,
+      "maxPoints": 64
+    },
+    "constants": {
+      "staticClearanceM": {
+        "value": 1,
+        "source": "VP:525 Margin = 100.0 cm"
+      },
+      "containerClearanceM": {
+        "value": 1,
+        "source": "VP:658–664 (no margin set: VP:525 100.0 cm)"
+      },
+      "doorClearanceM": {
+        "value": 2,
+        "source": "VP:654 O.Margin = 200.0 cm"
+      },
+      "villagerClearanceM": {
+        "value": 1.5,
+        "source": "VP:645 O.Margin = 150.0 cm"
+      },
+      "roadClearanceM": {
+        "value": 1,
+        "source": "VP:698 - R.HalfWidth - 100.0 cm"
+      },
+      "spacingM": {
+        "value": 2.5,
+        "source": "VP:704 - 300.0 cm"
+      },
+      "doorRadiusM": {
+        "value": 0.6,
+        "source": "VP:653 O.Radius = 60.0 cm"
+      },
+      "villagerRadiusM": {
+        "value": 0.4,
+        "source": "VP:644 O.Radius = 40.0 cm"
+      },
+      "containerRadiusM": {
+        "value": 0.5,
+        "source": "VP:662 O.Radius = 50.0 cm"
+      },
+      "roadDefaultWidthM": {
+        "value": 3,
+        "source": "VP:630 (… : 3.0) * 50.0, a width in metres halved in cm"
+      },
+      "roadPointSqM2": {
+        "value": 0.0001,
+        "source": "VP:697 Ab.SizeSquared() > 1.0 cm²"
+      },
+      "standLowM": {
+        "value": 0.15,
+        "source": "VP:690 O->ZMax < At.Z + 15.0 cm"
+      },
+      "standHighM": {
+        "value": 1.5,
+        "source": "VP:690 O->ZMin > At.Z + 150.0 cm"
+      },
+      "groundCoverM": {
+        "value": 0.4,
+        "source": "VP:583 Height < 40.0 cm"
+      },
+      "treeHeightM": {
+        "value": 2.5,
+        "source": "VP:588 Height > 250.0 cm"
+      },
+      "trunkFraction": {
+        "value": 0.15,
+        "source": "VP:592 0.15 * Min(Half.X, Half.Y)"
+      },
+      "trunkMinM": {
+        "value": 0.25,
+        "source": "VP:592 Clamp(…, 25.0, 80.0) cm"
+      },
+      "trunkMaxM": {
+        "value": 0.8,
+        "source": "VP:592 Clamp(…, 25.0, 80.0) cm"
+      },
+      "groundPieceHalfM": {
+        "value": 25,
+        "source": "VP:581 Half.X > 2500.0 && Half.Y > 2500.0 cm"
+      },
+      "ringStepM": {
+        "value": 0.5,
+        "source": "VP:726 Radius = 50.0; Radius += 50.0 cm"
+      },
+      "searchRadiusM": {
+        "value": 20,
+        "source": "VP:726 Radius <= 2000.0 cm"
+      },
+      "ringArcM": {
+        "value": 0.6,
+        "source": "VP:728 CeilToInt(2π · Radius / 60.0) cm"
+      },
+      "ringMinPoints": {
+        "value": 8,
+        "source": "VP:728 Clamp(…, 8, 64)"
+      },
+      "ringMaxPoints": {
+        "value": 64,
+        "source": "VP:728 Clamp(…, 8, 64)"
+      },
+      "movedM": {
+        "value": 0.01,
+        "source": "VP:753 Shift > 1.0 cm"
+      },
+      "nothingNearM": {
+        "value": 10000000,
+        "source": "VP:680 double Best = 1e9 cm"
+      },
+      "approachHeadings": {
+        "value": 16,
+        "source": "VP:769–771 K < 16, 2π · K / 16"
+      },
+      "approachProbesM": {
+        "value": [
+          0.6,
+          1.5,
+          2.5,
+          3.5
+        ],
+        "source": "VP:774 {60.0, 150.0, 250.0, 350.0} cm"
+      },
+      "navSnapM": {
+        "value": 0.3,
+        "source": "VP:712–713 (engine-side: the walkable test core does not run)"
+      },
+      "cullRadiusM": {
+        "value": 21,
+        "source": "VP:719 Near(P.At, 2100.0) cm (engine-side: core does not cull)"
+      }
+    },
+    "groundKinds": [
+      "terrain_field",
+      "road",
+      "ground_surface",
+      "player_start",
+      "nav_region",
+      "environment",
+      "street",
+      "lane",
+      "path"
+    ],
+    "plantEntityKinds": [
+      "foliage",
+      "nature"
+    ],
+    "plantArchetypeMarks": [
+      "vegetation",
+      "tree"
+    ],
+    "deviations": [
+      {
+        "id": "refuse-when-nothing-clear",
+        "unreal": "no clear spot within 20 m: draws the pick-up at the clearest walkable spot and logs \"NO clear spot\" (VP:744–758)",
+        "core": "refuses with `no-clear-spot`, carrying that same spot as `clearest`",
+        "why": "the ruling asks for a decision or a refusal with a code; an engine that still draws the pick-up draws it at `clearest`, as Unreal does"
+      },
+      {
+        "id": "walkable-areas",
+        "unreal": "a spot is walkable when the navmesh projects it within 0.3 m (VP:709–714)",
+        "core": "the caller states the walkable areas (`walkable`), or passes a predicate; absent, every spot is walkable",
+        "why": "core has no navmesh; the engine binds its own query, as the pass-by rule takes `room` from the caller"
+      },
+      {
+        "id": "one-ground-height",
+        "unreal": "each search point is re-grounded by a line trace (VP:733–734) and the 0.15–1.5 m height band is read at that point's ground",
+        "core": "the band is read at the authored spot's ground (`groundY`) for every point",
+        "why": "core works on (x, z) with no terrain; on a village's ground the height within 20 m changes little against a 1.35 m band"
+      },
+      {
+        "id": "no-culling",
+        "unreal": "statics are culled to 21 m of the authored spot first (VP:719), for speed over tens of thousands of instances",
+        "core": "every obstacle stated is read",
+        "why": "the settled spot is the same (a culled static is more than 1 m clear of every search point); only a reported clearance or an approach probe more than 21 m out can differ"
+      },
+      {
+        "id": "stated-footprints",
+        "unreal": "a static's footprint is its mesh bounds through its transform, its axes projected to the ground, the world-aligned bounds when an axis stands upright (VP:571–605)",
+        "core": "the caller states each footprint as a box on the ground (`at`, `half`, `axis`) or a circle",
+        "why": "meshes and transforms are the engine's; the box rule (signed distance, VP:529–537) is core's"
+      },
+      {
+        "id": "kinds-split",
+        "unreal": "props, buildings and plants are one kind of static with one 1 m margin",
+        "core": "`prop`, `building` and `plant` each take a clearance (all 1 m by default)",
+        "why": "the task names building footprints apart from props; the defaults keep Unreal's answer"
+      },
+      {
+        "id": "nearest-order",
+        "unreal": "a tie for the nearest names the first of statics, villagers, doors, containers, roads, pick-ups (VP:678–706)",
+        "core": "a tie names the first of the obstacles in the caller's order, then roads, then pick-ups",
+        "why": "only the reported `nearest` differs, never a spot or a clearance"
+      },
+      {
+        "id": "bad-spot",
+        "unreal": "no check (a non-finite position would settle as NaN)",
+        "core": "a spot or ground height that is not a finite number is refused with `bad-spot`, by `settlePickup` and `pickupClearance` alike; a road waypoint or a settled pick-up that is not a finite point is skipped (a road is broken there, not joined across it), keeping every other index as given",
+        "why": "a refusal is a decision an engine can act on"
+      }
+    ],
+    "sourceAbbreviation": "VP = unreal 29c37ab Source/InsimulRuntime/Private/InsimulVillageProps.cpp"
+  },
+  "cases": [
+    {
+      "name": "pattern: Unreal's search, 40 rings 0.5 m apart out to 20 m, 8 to 64 points each",
+      "op": "pattern",
+      "input": {},
+      "expected": {
+        "rings": [
+          {
+            "radiusM": 0.5,
+            "points": 8
+          },
+          {
+            "radiusM": 1,
+            "points": 11
+          },
+          {
+            "radiusM": 1.5,
+            "points": 16
+          },
+          {
+            "radiusM": 2,
+            "points": 21
+          },
+          {
+            "radiusM": 2.5,
+            "points": 27
+          },
+          {
+            "radiusM": 3,
+            "points": 32
+          },
+          {
+            "radiusM": 3.5,
+            "points": 37
+          },
+          {
+            "radiusM": 4,
+            "points": 42
+          },
+          {
+            "radiusM": 4.5,
+            "points": 48
+          },
+          {
+            "radiusM": 5,
+            "points": 53
+          },
+          {
+            "radiusM": 5.5,
+            "points": 58
+          },
+          {
+            "radiusM": 6,
+            "points": 63
+          },
+          {
+            "radiusM": 6.5,
+            "points": 64
+          },
+          {
+            "radiusM": 7,
+            "points": 64
+          },
+          {
+            "radiusM": 7.5,
+            "points": 64
+          },
+          {
+            "radiusM": 8,
+            "points": 64
+          },
+          {
+            "radiusM": 8.5,
+            "points": 64
+          },
+          {
+            "radiusM": 9,
+            "points": 64
+          },
+          {
+            "radiusM": 9.5,
+            "points": 64
+          },
+          {
+            "radiusM": 10,
+            "points": 64
+          },
+          {
+            "radiusM": 10.5,
+            "points": 64
+          },
+          {
+            "radiusM": 11,
+            "points": 64
+          },
+          {
+            "radiusM": 11.5,
+            "points": 64
+          },
+          {
+            "radiusM": 12,
+            "points": 64
+          },
+          {
+            "radiusM": 12.5,
+            "points": 64
+          },
+          {
+            "radiusM": 13,
+            "points": 64
+          },
+          {
+            "radiusM": 13.5,
+            "points": 64
+          },
+          {
+            "radiusM": 14,
+            "points": 64
+          },
+          {
+            "radiusM": 14.5,
+            "points": 64
+          },
+          {
+            "radiusM": 15,
+            "points": 64
+          },
+          {
+            "radiusM": 15.5,
+            "points": 64
+          },
+          {
+            "radiusM": 16,
+            "points": 64
+          },
+          {
+            "radiusM": 16.5,
+            "points": 64
+          },
+          {
+            "radiusM": 17,
+            "points": 64
+          },
+          {
+            "radiusM": 17.5,
+            "points": 64
+          },
+          {
+            "radiusM": 18,
+            "points": 64
+          },
+          {
+            "radiusM": 18.5,
+            "points": 64
+          },
+          {
+            "radiusM": 19,
+            "points": 64
+          },
+          {
+            "radiusM": 19.5,
+            "points": 64
+          },
+          {
+            "radiusM": 20,
+            "points": 64
+          }
+        ]
+      }
+    },
+    {
+      "name": "clearance: a building turned 30 degrees, read off its side: half.z is across it",
+      "note": "The spot is 0.34 m back along the axis and 1.81 m across: 1.31 m off the long side, 0.31 m clear.",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": -1.2,
+          "z": 1.4
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 3,
+              "z": 0.5
+            },
+            "axis": {
+              "x": 1.7320508075688772,
+              "z": 1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.3124355652982138,
+        "nearest": {
+          "kind": "building",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "settle: against a prop: out to the nearest clear spot",
+      "note": "The crate's edge is 0.2 m off; 1.2 m clear needs ring 2 or beyond on the far side.",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0.4,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 1.4,
+          "z": 0
+        },
+        "moved": true,
+        "shiftM": 0.9999999999999999,
+        "ring": 2,
+        "clearanceM": 0.19999999999999996,
+        "nearest": {
+          "kind": "prop",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": -0.8,
+          "nearest": {
+            "kind": "prop",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": 0.8
+        }
+      }
+    },
+    {
+      "name": "sequence: two pick-ups authored 1 m apart: the first stays, the second moves 3 m off it",
+      "op": "sequence",
+      "input": {
+        "pickups": [
+          {
+            "spot": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          {
+            "spot": {
+              "x": 1,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "placements": [
+          {
+            "ok": true,
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "moved": false,
+            "shiftM": 0,
+            "ring": 0,
+            "clearanceM": 10000000,
+            "nearest": null,
+            "authored": {
+              "clearanceM": 10000000,
+              "nearest": null,
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 10000000
+            }
+          },
+          {
+            "ok": true,
+            "at": {
+              "x": 3,
+              "z": 0
+            },
+            "moved": true,
+            "shiftM": 2,
+            "ring": 4,
+            "clearanceM": 0,
+            "nearest": {
+              "kind": "pickup",
+              "index": 0
+            },
+            "authored": {
+              "clearanceM": -2,
+              "nearest": {
+                "kind": "pickup",
+                "index": 0
+              },
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 0.6000000000000001
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "expected WRONGLY a clearance with ok false (it is clear: ok true, clearance 0)",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 1.5,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.5,
+              "z": 0.5
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "clearanceM": 0,
+        "nearest": {
+          "kind": "prop",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "expected WRONGLY with the building's axis mirrored (its z negated, as a binding that flipped its forward would send it)",
+      "note": "The building is 6 m by 4 m, turned 30 degrees. The spot is 1.85 m along and 2.40 m across: 0.40 m past its long side, 0.60 m short of clear. It settles on ring 2.",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0.4,
+          "z": 3
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 3,
+              "z": 2
+            },
+            "axis": {
+              "x": 1.7320508075688772,
+              "z": -1
+            },
+            "yMin": 0,
+            "yMax": 6
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 0.257685161726715,
+          "z": 3.989821441880933
+        },
+        "moved": true,
+        "shiftM": 1,
+        "ring": 2,
+        "clearanceM": 0.3264441443693884,
+        "nearest": {
+          "kind": "building",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": -0.6019237886466842,
+          "nearest": {
+            "kind": "building",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": -0.3826834323650897,
+            "z": 0.9238795325112867
+          },
+          "headingDeg": 112.50000000000001,
+          "roomM": 0.9213110611936748
+        }
+      }
+    },
+    {
+      "name": "expected WRONGLY the second pick-up 0.01 m further out (more than the 1e-6 tolerance)",
+      "op": "sequence",
+      "input": {
+        "pickups": [
+          {
+            "spot": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          {
+            "spot": {
+              "x": 1,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "placements": [
+          {
+            "ok": true,
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "moved": false,
+            "shiftM": 0,
+            "ring": 0,
+            "clearanceM": 10000000,
+            "nearest": null,
+            "authored": {
+              "clearanceM": 10000000,
+              "nearest": null,
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 10000000
+            }
+          },
+          {
+            "ok": true,
+            "at": {
+              "x": 3.01,
+              "z": 0
+            },
+            "moved": true,
+            "shiftM": 2,
+            "ring": 4,
+            "clearanceM": 0,
+            "nearest": {
+              "kind": "pickup",
+              "index": 0
+            },
+            "authored": {
+              "clearanceM": -2,
+              "nearest": {
+                "kind": "pickup",
+                "index": 0
+              },
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 0.6000000000000001
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "expected WRONGLY bad-spot for a settled spot (the spot is a finite point)",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 5,
+          "z": 5
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          },
+          {
+            "kind": "villager",
+            "at": {
+              "x": 12,
+              "z": 5
+            }
+          }
+        ],
+        "roads": [
+          {
+            "waypoints": [
+              {
+                "x": -10,
+                "z": -4
+              },
+              {
+                "x": 20,
+                "z": -4
+              }
+            ],
+            "width": 3
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "code": "bad-spot"
+      }
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "ambient-animals",
+  "version": "0.1.0",
+  "name": "Ambient animals",
+  "summary": "Cats, dogs and birds about the village, and the animals a world type shows (wolves and foxes in a horror world, none in a cyberpunk city): they wander, sit, perch and fly round their home.",
+  "kind": "optional",
+  "phase": "P9f",
+  "catalog": ["npc-ambient-animals"],
+  "core": {
+    "corpus": ["conformance/npc-life/animals.json"]
+  },
+  "requires": [{ "id": "npc-life" }],
+  "parameters": [
+    { "id": "walkerRadiusMm", "type": "integer", "min": 0, "maps": "AnimalTuning.walkerRadiusMm", "source": "core-default", "doc": "a cat's or dog's leash when the world names none" },
+    { "id": "birdRadiusMm", "type": "integer", "min": 0, "maps": "AnimalTuning.birdRadiusMm", "source": "core-default" },
+    { "id": "arriveMm", "type": "integer", "min": 0, "maps": "AnimalTuning.arriveMm", "source": "core-default" }
+  ],
+  "extensionPoints": [
+    { "id": "world-animals", "kind": "binding-hook", "signature": "WorldIR entities.animals[] (AnimalIR: home, wanderRadius, speed) -> placeAnimal", "doc": "animals the world places itself" },
+    { "id": "animal-sets", "kind": "binding-hook", "signature": "animalSetFor(worldType) (src/npc-life/animals.ts)", "doc": "which animals a world type shows" }
+  ],
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "Animal behaviour is core's (src/npc-life/animals.ts), seeded per animal; the engine walks or flies the body to the target and reports arrival.",
+    "notes": ["Rideable animals and pets are traversal-mounts-pets (port-later), not this pack."],
+    "doNot": ["Let a walker cross its radius: it stops at the edge and rests."]
+  }
+}

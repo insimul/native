@@ -4,16 +4,22 @@
   "catalog": {
     "index": "packs/index.json",
     "manifests": [
+      "packs/ambient-animals/pack.json",
       "packs/business-sim/pack.json",
       "packs/combat/pack.json",
       "packs/crafting/pack.json",
+      "packs/dialogue/pack.json",
       "packs/farming/pack.json",
       "packs/fishing/pack.json",
       "packs/gathering/pack.json",
       "packs/inventory/pack.json",
+      "packs/language-learning/pack.json",
       "packs/mining/pack.json",
+      "packs/npc-life/pack.json",
+      "packs/npc-presentation/pack.json",
       "packs/saves/pack.json",
       "packs/shops/pack.json",
+      "packs/social/pack.json",
       "packs/stamina/pack.json",
       "packs/stealth/pack.json",
       "packs/survival-needs/pack.json",
@@ -283,8 +289,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -300,8 +306,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -397,8 +403,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -739,8 +745,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -756,8 +762,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -853,8 +859,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -1247,8 +1253,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "dependency",
             "requiredBy": [
               "dialogue"
@@ -1263,8 +1269,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {
@@ -1605,8 +1611,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "dependency",
             "requiredBy": [
               "dialogue"
@@ -1621,8 +1627,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {
@@ -2687,8 +2693,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue"
@@ -2703,8 +2709,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {
@@ -3048,8 +3054,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue"
@@ -3064,8 +3070,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {
@@ -3763,8 +3769,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -3780,8 +3786,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -3877,8 +3883,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -4461,8 +4467,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -4478,8 +4484,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -4611,8 +4617,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -4965,8 +4971,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -4982,8 +4988,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -5115,8 +5121,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -5475,8 +5481,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -5492,8 +5498,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -5625,8 +5631,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -5984,8 +5990,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -6001,8 +6007,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -6134,8 +6140,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -6497,8 +6503,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -6514,8 +6520,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -6649,8 +6655,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -7021,8 +7027,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -7038,8 +7044,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -7185,8 +7191,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -7555,8 +7561,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -7572,8 +7578,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -7737,8 +7743,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -8149,8 +8155,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -8166,8 +8172,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -8298,8 +8304,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -8419,6 +8425,1611 @@
             "code": "invalid-parameter",
             "pack": "traversal",
             "detail": "'traversal' parameter 'upFactor': 0 is outside [1, inf]"
+          }
+        ],
+        "notes": []
+      }
+    },
+    {
+      "name": "npc life, presentation and ambient animals on the village (P9f)",
+      "claim": "Thistlecombe's living world runs npc-life and npc-presentation as base packs; switching ambient-animals on runs it once npc-life does. Parameters in range are kept on their packs; a greeting chance above one in a million million and a negative door spacing are refused and dropped.",
+      "input": {
+        "recipe": "rpg-adventure",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "adventure",
+              "name": "Adventure",
+              "description": "Exploration, narrative, and puzzle-solving",
+              "cameraMode": "third_person",
+              "movementPlane": "free",
+              "controlScheme": "wasd_mouse",
+              "combatStyle": "none",
+              "movementStyle": "free",
+              "uiLayout": "action_rpg",
+              "defaultWorldType": "tropical-pirate",
+              "features": {
+                "inventory": true,
+                "crafting": false,
+                "dialogue": true,
+                "combat": false,
+                "building": false,
+                "resources": false,
+                "permadeath": false,
+                "quests": true,
+                "experience": true,
+                "skills": true
+              },
+              "questTypes": [
+                "rpg"
+              ],
+              "difficultyLevels": [
+                "easy",
+                "normal",
+                "hard"
+              ],
+              "defaultPlayerSpeed": 1,
+              "defaultJumpHeight": 1,
+              "gravityMultiplier": 1,
+              "showMinimap": true,
+              "showHealthBar": false,
+              "showStaminaBar": false,
+              "showAmmoCounter": false,
+              "showCompass": true
+            },
+            "cameraPerspective": null
+          }
+        },
+        "game": {
+          "packs": {
+            "npc-life": {
+              "parameters": {
+                "lodPreset": "low",
+                "greetingBasePpm": 2000000,
+                "doorMinSpacingMm": -1,
+                "maxCustomers": 2
+              }
+            },
+            "npc-presentation": {
+              "parameters": {
+                "headTurnRangeMm": 3000
+              }
+            },
+            "ambient-animals": {
+              "enabled": true,
+              "parameters": {
+                "walkerRadiusMm": 8000
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "recipe": {
+          "id": "rpg-adventure",
+          "bound": true
+        },
+        "engine": null,
+        "preset": {
+          "recipe": "rpg-adventure",
+          "packs": [
+            "saves",
+            "hud",
+            "map",
+            "menus-settings",
+            "quests",
+            "time-weather",
+            "audio",
+            "inventory",
+            "shops",
+            "interiors",
+            "camera",
+            "controls",
+            "npc-life",
+            "npc-presentation",
+            "dialogue",
+            "onboarding"
+          ],
+          "changes": 3
+        },
+        "packs": [
+          {
+            "id": "foundation",
+            "kind": "always-on",
+            "phase": "P1",
+            "authored": false,
+            "version": null,
+            "source": "always-on",
+            "requiredBy": [
+              "audio",
+              "camera",
+              "composer",
+              "hud",
+              "interiors",
+              "npc-life",
+              "saves",
+              "time-weather"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "composer",
+            "kind": "always-on",
+            "phase": "P9a",
+            "authored": false,
+            "version": null,
+            "source": "always-on",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "saves",
+            "kind": "base",
+            "phase": "P1",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "inventory",
+              "quests"
+            ],
+            "variants": {
+              "storage": "local"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "hud",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "dialogue",
+              "inventory",
+              "map",
+              "menus-settings",
+              "onboarding",
+              "quests"
+            ],
+            "variants": {
+              "uiLayout": "action_rpg"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "map",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "menus-settings",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "quests",
+            "kind": "base",
+            "phase": "P3",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "onboarding"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "time-weather",
+            "kind": "base",
+            "phase": "P4",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "npc-life"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "audio",
+            "kind": "base",
+            "phase": "P5",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "inventory",
+            "kind": "base",
+            "phase": "P6",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "shops"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": {
+              "feature": "inventory",
+              "policy": "composer",
+              "on": true
+            },
+            "active": true
+          },
+          {
+            "id": "npc-life",
+            "kind": "base",
+            "phase": "P9f",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "preset",
+            "requiredBy": [
+              "ambient-animals",
+              "dialogue",
+              "npc-presentation"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {
+              "lodPreset": "low",
+              "maxCustomers": 2
+            },
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "dialogue",
+            "kind": "base",
+            "phase": "P9g",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "shops"
+            ],
+            "variants": {
+              "provider": "server"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "shops",
+            "kind": "optional",
+            "phase": "P6",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "interiors",
+            "kind": "base",
+            "phase": "P6",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "camera",
+            "kind": "base",
+            "phase": "P7",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "controls"
+            ],
+            "variants": {
+              "cameraMode": "third_person"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "controls",
+            "kind": "base",
+            "phase": "P7",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {
+              "controlScheme": "wasd_mouse",
+              "movementStyle": "free"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "onboarding",
+            "kind": "base",
+            "phase": "P8",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {
+              "flow": "generic"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "npc-presentation",
+            "kind": "base",
+            "phase": "P9f",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {
+              "headTurnRangeMm": 3000
+            },
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "ambient-animals",
+            "kind": "optional",
+            "phase": "P9f",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "game",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {
+              "walkerRadiusMm": 8000
+            },
+            "gate": null,
+            "active": true
+          }
+        ],
+        "offered": [
+          "combat",
+          "stealth",
+          "crafting",
+          "fishing",
+          "farming",
+          "social",
+          "progression",
+          "photo-mode"
+        ],
+        "overrides": [],
+        "genre": {
+          "id": "adventure",
+          "known": true,
+          "configSource": "world",
+          "config": {
+            "id": "adventure",
+            "name": "Adventure",
+            "description": "Exploration, narrative, and puzzle-solving",
+            "cameraMode": "third_person",
+            "movementPlane": "free",
+            "controlScheme": "wasd_mouse",
+            "combatStyle": "none",
+            "movementStyle": "free",
+            "uiLayout": "action_rpg",
+            "defaultWorldType": "tropical-pirate",
+            "features": {
+              "inventory": true,
+              "crafting": false,
+              "dialogue": true,
+              "combat": false,
+              "building": false,
+              "resources": false,
+              "permadeath": false,
+              "quests": true,
+              "experience": true,
+              "skills": true
+            },
+            "questTypes": [
+              "rpg"
+            ],
+            "difficultyLevels": [
+              "easy",
+              "normal",
+              "hard"
+            ],
+            "defaultPlayerSpeed": 1,
+            "defaultJumpHeight": 1,
+            "gravityMultiplier": 1,
+            "showMinimap": true,
+            "showHealthBar": false,
+            "showStaminaBar": false,
+            "showAmmoCounter": false,
+            "showCompass": true
+          },
+          "camera": {
+            "mode": "third_person",
+            "decidedBy": "world-default"
+          },
+          "bundle": {
+            "id": "adventure",
+            "featureModules": [
+              "knowledge-acquisition",
+              "gamification",
+              "world-lore",
+              "conversation-analytics",
+              "onboarding"
+            ]
+          },
+          "activation": {
+            "genre": "adventure",
+            "known": true,
+            "modules": [
+              "perception",
+              "traversal",
+              "agentAi",
+              "routine",
+              "map",
+              "volition",
+              "weather",
+              "dialogue"
+            ],
+            "predicatePacks": [
+              "perception",
+              "traversal",
+              "gameplayState",
+              "agentAi",
+              "routine",
+              "volition",
+              "weather",
+              "dialogue",
+              "script",
+              "placement",
+              "map",
+              "scaffold"
+            ],
+            "hostInterfaces": [
+              "IPerceptionProbe",
+              "ITraversalProbe",
+              "ILocomotionHost",
+              "IAgentActionHost",
+              "IWeatherSink"
+            ]
+          }
+        },
+        "refusals": [
+          {
+            "code": "invalid-parameter",
+            "pack": "npc-life",
+            "detail": "'npc-life' parameter 'greetingBasePpm': 2000000 is outside [0, 1000000]"
+          },
+          {
+            "code": "invalid-parameter",
+            "pack": "npc-life",
+            "detail": "'npc-life' parameter 'doorMinSpacingMm': -1 is outside [0, inf]"
+          }
+        ],
+        "notes": []
+      }
+    },
+    {
+      "name": "dialogue and social on the village, combat still off (P9g)",
+      "claim": "Thistlecombe's living world already presets dialogue (server); switching social on runs it once dialogue does, and neither is gated by a genre feature. The provider variant auto is kept; combat is untouched and stays the world's to decide (off). A parameter in range is kept on its pack and one outside its range is refused and dropped.",
+      "input": {
+        "recipe": "rpg-adventure",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "adventure",
+              "name": "Adventure",
+              "description": "Exploration, narrative, and puzzle-solving",
+              "cameraMode": "third_person",
+              "movementPlane": "free",
+              "controlScheme": "wasd_mouse",
+              "combatStyle": "none",
+              "movementStyle": "free",
+              "uiLayout": "action_rpg",
+              "defaultWorldType": "tropical-pirate",
+              "features": {
+                "inventory": true,
+                "crafting": false,
+                "dialogue": true,
+                "combat": false,
+                "building": false,
+                "resources": false,
+                "permadeath": false,
+                "quests": true,
+                "experience": true,
+                "skills": true
+              },
+              "questTypes": [
+                "rpg"
+              ],
+              "difficultyLevels": [
+                "easy",
+                "normal",
+                "hard"
+              ],
+              "defaultPlayerSpeed": 1,
+              "defaultJumpHeight": 1,
+              "gravityMultiplier": 1,
+              "showMinimap": true,
+              "showHealthBar": false,
+              "showStaminaBar": false,
+              "showAmmoCounter": false,
+              "showCompass": true
+            },
+            "cameraPerspective": null
+          }
+        },
+        "game": {
+          "packs": {
+            "dialogue": {
+              "variant": "auto",
+              "parameters": {
+                "silenceMs": 2000
+              }
+            },
+            "social": {
+              "enabled": true,
+              "parameters": {
+                "romanceDecayPerStep": 10,
+                "romanceJealousyFloor": -1
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "recipe": {
+          "id": "rpg-adventure",
+          "bound": true
+        },
+        "engine": null,
+        "preset": {
+          "recipe": "rpg-adventure",
+          "packs": [
+            "saves",
+            "hud",
+            "map",
+            "menus-settings",
+            "quests",
+            "time-weather",
+            "audio",
+            "inventory",
+            "shops",
+            "interiors",
+            "camera",
+            "controls",
+            "npc-life",
+            "npc-presentation",
+            "dialogue",
+            "onboarding"
+          ],
+          "changes": 2
+        },
+        "packs": [
+          {
+            "id": "foundation",
+            "kind": "always-on",
+            "phase": "P1",
+            "authored": false,
+            "version": null,
+            "source": "always-on",
+            "requiredBy": [
+              "audio",
+              "camera",
+              "composer",
+              "hud",
+              "interiors",
+              "npc-life",
+              "saves",
+              "time-weather"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "composer",
+            "kind": "always-on",
+            "phase": "P9a",
+            "authored": false,
+            "version": null,
+            "source": "always-on",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "saves",
+            "kind": "base",
+            "phase": "P1",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "inventory",
+              "quests"
+            ],
+            "variants": {
+              "storage": "local"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "hud",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "dialogue",
+              "inventory",
+              "map",
+              "menus-settings",
+              "onboarding",
+              "quests"
+            ],
+            "variants": {
+              "uiLayout": "action_rpg"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "map",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "menus-settings",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "quests",
+            "kind": "base",
+            "phase": "P3",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "onboarding"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "time-weather",
+            "kind": "base",
+            "phase": "P4",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "npc-life"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "audio",
+            "kind": "base",
+            "phase": "P5",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "inventory",
+            "kind": "base",
+            "phase": "P6",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "shops"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": {
+              "feature": "inventory",
+              "policy": "composer",
+              "on": true
+            },
+            "active": true
+          },
+          {
+            "id": "npc-life",
+            "kind": "base",
+            "phase": "P9f",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "preset",
+            "requiredBy": [
+              "dialogue",
+              "npc-presentation"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "dialogue",
+            "kind": "base",
+            "phase": "P9g",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "shops",
+              "social"
+            ],
+            "variants": {
+              "provider": "auto"
+            },
+            "style": null,
+            "parameters": {
+              "silenceMs": 2000
+            },
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "shops",
+            "kind": "optional",
+            "phase": "P6",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "interiors",
+            "kind": "base",
+            "phase": "P6",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "camera",
+            "kind": "base",
+            "phase": "P7",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "controls"
+            ],
+            "variants": {
+              "cameraMode": "third_person"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "controls",
+            "kind": "base",
+            "phase": "P7",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {
+              "controlScheme": "wasd_mouse",
+              "movementStyle": "free"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "onboarding",
+            "kind": "base",
+            "phase": "P8",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {
+              "flow": "generic"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "npc-presentation",
+            "kind": "base",
+            "phase": "P9f",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "social",
+            "kind": "optional",
+            "phase": "P9g",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "game",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {
+              "romanceDecayPerStep": 10
+            },
+            "gate": null,
+            "active": true
+          }
+        ],
+        "offered": [
+          "combat",
+          "stealth",
+          "crafting",
+          "fishing",
+          "farming",
+          "progression",
+          "photo-mode"
+        ],
+        "overrides": [],
+        "genre": {
+          "id": "adventure",
+          "known": true,
+          "configSource": "world",
+          "config": {
+            "id": "adventure",
+            "name": "Adventure",
+            "description": "Exploration, narrative, and puzzle-solving",
+            "cameraMode": "third_person",
+            "movementPlane": "free",
+            "controlScheme": "wasd_mouse",
+            "combatStyle": "none",
+            "movementStyle": "free",
+            "uiLayout": "action_rpg",
+            "defaultWorldType": "tropical-pirate",
+            "features": {
+              "inventory": true,
+              "crafting": false,
+              "dialogue": true,
+              "combat": false,
+              "building": false,
+              "resources": false,
+              "permadeath": false,
+              "quests": true,
+              "experience": true,
+              "skills": true
+            },
+            "questTypes": [
+              "rpg"
+            ],
+            "difficultyLevels": [
+              "easy",
+              "normal",
+              "hard"
+            ],
+            "defaultPlayerSpeed": 1,
+            "defaultJumpHeight": 1,
+            "gravityMultiplier": 1,
+            "showMinimap": true,
+            "showHealthBar": false,
+            "showStaminaBar": false,
+            "showAmmoCounter": false,
+            "showCompass": true
+          },
+          "camera": {
+            "mode": "third_person",
+            "decidedBy": "world-default"
+          },
+          "bundle": {
+            "id": "adventure",
+            "featureModules": [
+              "knowledge-acquisition",
+              "gamification",
+              "world-lore",
+              "conversation-analytics",
+              "onboarding"
+            ]
+          },
+          "activation": {
+            "genre": "adventure",
+            "known": true,
+            "modules": [
+              "perception",
+              "traversal",
+              "agentAi",
+              "routine",
+              "map",
+              "volition",
+              "weather",
+              "dialogue"
+            ],
+            "predicatePacks": [
+              "perception",
+              "traversal",
+              "gameplayState",
+              "agentAi",
+              "routine",
+              "volition",
+              "weather",
+              "dialogue",
+              "script",
+              "placement",
+              "map",
+              "scaffold"
+            ],
+            "hostInterfaces": [
+              "IPerceptionProbe",
+              "ITraversalProbe",
+              "ILocomotionHost",
+              "IAgentActionHost",
+              "IWeatherSink"
+            ]
+          }
+        },
+        "refusals": [
+          {
+            "code": "invalid-parameter",
+            "pack": "social",
+            "detail": "'social' parameter 'romanceJealousyFloor': -1 is outside [0, inf]"
+          }
+        ],
+        "notes": []
+      }
+    },
+    {
+      "name": "language learning on the village, combat still off (P9h)",
+      "claim": "Switching language-learning on runs it once dialogue and quests do (Thistlecombe's living world presets both); no genre feature gates it. A parameter in range is kept on its pack and one outside its range (a pass score over 100) is refused and dropped. Combat is untouched and stays the world's to decide (off).",
+      "input": {
+        "recipe": "rpg-adventure",
+        "world": {
+          "meta": {
+            "genreConfig": {
+              "id": "adventure",
+              "name": "Adventure",
+              "description": "Exploration, narrative, and puzzle-solving",
+              "cameraMode": "third_person",
+              "movementPlane": "free",
+              "controlScheme": "wasd_mouse",
+              "combatStyle": "none",
+              "movementStyle": "free",
+              "uiLayout": "action_rpg",
+              "defaultWorldType": "tropical-pirate",
+              "features": {
+                "inventory": true,
+                "crafting": false,
+                "dialogue": true,
+                "combat": false,
+                "building": false,
+                "resources": false,
+                "permadeath": false,
+                "quests": true,
+                "experience": true,
+                "skills": true
+              },
+              "questTypes": [
+                "rpg"
+              ],
+              "difficultyLevels": [
+                "easy",
+                "normal",
+                "hard"
+              ],
+              "defaultPlayerSpeed": 1,
+              "defaultJumpHeight": 1,
+              "gravityMultiplier": 1,
+              "showMinimap": true,
+              "showHealthBar": false,
+              "showStaminaBar": false,
+              "showAmmoCounter": false,
+              "showCompass": true
+            },
+            "cameraPerspective": null
+          }
+        },
+        "game": {
+          "packs": {
+            "language-learning": {
+              "enabled": true,
+              "parameters": {
+                "collectionXp": 5,
+                "identificationPassScore": 101
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "recipe": {
+          "id": "rpg-adventure",
+          "bound": true
+        },
+        "engine": null,
+        "preset": {
+          "recipe": "rpg-adventure",
+          "packs": [
+            "saves",
+            "hud",
+            "map",
+            "menus-settings",
+            "quests",
+            "time-weather",
+            "audio",
+            "inventory",
+            "shops",
+            "interiors",
+            "camera",
+            "controls",
+            "npc-life",
+            "npc-presentation",
+            "dialogue",
+            "onboarding"
+          ],
+          "changes": 1
+        },
+        "packs": [
+          {
+            "id": "foundation",
+            "kind": "always-on",
+            "phase": "P1",
+            "authored": false,
+            "version": null,
+            "source": "always-on",
+            "requiredBy": [
+              "audio",
+              "camera",
+              "composer",
+              "hud",
+              "interiors",
+              "npc-life",
+              "saves",
+              "time-weather"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "composer",
+            "kind": "always-on",
+            "phase": "P9a",
+            "authored": false,
+            "version": null,
+            "source": "always-on",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "saves",
+            "kind": "base",
+            "phase": "P1",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "inventory",
+              "quests"
+            ],
+            "variants": {
+              "storage": "local"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "hud",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "dialogue",
+              "inventory",
+              "map",
+              "menus-settings",
+              "onboarding",
+              "quests"
+            ],
+            "variants": {
+              "uiLayout": "action_rpg"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "map",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "menus-settings",
+            "kind": "base",
+            "phase": "P2",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "quests",
+            "kind": "base",
+            "phase": "P3",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "language-learning",
+              "onboarding"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "time-weather",
+            "kind": "base",
+            "phase": "P4",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "npc-life"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "audio",
+            "kind": "base",
+            "phase": "P5",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "inventory",
+            "kind": "base",
+            "phase": "P6",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "shops"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": {
+              "feature": "inventory",
+              "policy": "composer",
+              "on": true
+            },
+            "active": true
+          },
+          {
+            "id": "npc-life",
+            "kind": "base",
+            "phase": "P9f",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "preset",
+            "requiredBy": [
+              "dialogue",
+              "npc-presentation"
+            ],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "dialogue",
+            "kind": "base",
+            "phase": "P9g",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [
+              "language-learning",
+              "shops"
+            ],
+            "variants": {
+              "provider": "server"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "shops",
+            "kind": "optional",
+            "phase": "P6",
+            "authored": true,
+            "version": "1.0.0",
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "interiors",
+            "kind": "base",
+            "phase": "P6",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "camera",
+            "kind": "base",
+            "phase": "P7",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [
+              "controls"
+            ],
+            "variants": {
+              "cameraMode": "third_person"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "controls",
+            "kind": "base",
+            "phase": "P7",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {
+              "controlScheme": "wasd_mouse",
+              "movementStyle": "free"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "onboarding",
+            "kind": "base",
+            "phase": "P8",
+            "authored": false,
+            "version": null,
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {
+              "flow": "generic"
+            },
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "npc-presentation",
+            "kind": "base",
+            "phase": "P9f",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "preset",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {},
+            "gate": null,
+            "active": true
+          },
+          {
+            "id": "language-learning",
+            "kind": "optional",
+            "phase": "P9h",
+            "authored": true,
+            "version": "0.1.0",
+            "source": "game",
+            "requiredBy": [],
+            "variants": {},
+            "style": null,
+            "parameters": {
+              "collectionXp": 5
+            },
+            "gate": null,
+            "active": true
+          }
+        ],
+        "offered": [
+          "combat",
+          "stealth",
+          "crafting",
+          "fishing",
+          "farming",
+          "social",
+          "progression",
+          "photo-mode"
+        ],
+        "overrides": [],
+        "genre": {
+          "id": "adventure",
+          "known": true,
+          "configSource": "world",
+          "config": {
+            "id": "adventure",
+            "name": "Adventure",
+            "description": "Exploration, narrative, and puzzle-solving",
+            "cameraMode": "third_person",
+            "movementPlane": "free",
+            "controlScheme": "wasd_mouse",
+            "combatStyle": "none",
+            "movementStyle": "free",
+            "uiLayout": "action_rpg",
+            "defaultWorldType": "tropical-pirate",
+            "features": {
+              "inventory": true,
+              "crafting": false,
+              "dialogue": true,
+              "combat": false,
+              "building": false,
+              "resources": false,
+              "permadeath": false,
+              "quests": true,
+              "experience": true,
+              "skills": true
+            },
+            "questTypes": [
+              "rpg"
+            ],
+            "difficultyLevels": [
+              "easy",
+              "normal",
+              "hard"
+            ],
+            "defaultPlayerSpeed": 1,
+            "defaultJumpHeight": 1,
+            "gravityMultiplier": 1,
+            "showMinimap": true,
+            "showHealthBar": false,
+            "showStaminaBar": false,
+            "showAmmoCounter": false,
+            "showCompass": true
+          },
+          "camera": {
+            "mode": "third_person",
+            "decidedBy": "world-default"
+          },
+          "bundle": {
+            "id": "adventure",
+            "featureModules": [
+              "knowledge-acquisition",
+              "gamification",
+              "world-lore",
+              "conversation-analytics",
+              "onboarding"
+            ]
+          },
+          "activation": {
+            "genre": "adventure",
+            "known": true,
+            "modules": [
+              "perception",
+              "traversal",
+              "agentAi",
+              "routine",
+              "map",
+              "volition",
+              "weather",
+              "dialogue"
+            ],
+            "predicatePacks": [
+              "perception",
+              "traversal",
+              "gameplayState",
+              "agentAi",
+              "routine",
+              "volition",
+              "weather",
+              "dialogue",
+              "script",
+              "placement",
+              "map",
+              "scaffold"
+            ],
+            "hostInterfaces": [
+              "IPerceptionProbe",
+              "ITraversalProbe",
+              "ILocomotionHost",
+              "IAgentActionHost",
+              "IWeatherSink"
+            ]
+          }
+        },
+        "refusals": [
+          {
+            "code": "invalid-parameter",
+            "pack": "language-learning",
+            "detail": "'language-learning' parameter 'identificationPassScore': 101 is outside [0, 100]"
           }
         ],
         "notes": []
@@ -8639,8 +10250,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue"
@@ -8655,8 +10266,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -9091,8 +10702,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue"
@@ -9107,8 +10718,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -9603,8 +11214,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "dependency",
             "requiredBy": [
               "dialogue"
@@ -9619,8 +11230,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {
@@ -10044,8 +11655,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "dependency",
             "requiredBy": [
               "dialogue"
@@ -10060,8 +11671,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {
@@ -10412,8 +12023,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -10429,8 +12040,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -10526,8 +12137,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -10916,8 +12527,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -10933,8 +12544,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -11030,8 +12641,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -11466,8 +13077,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -11483,8 +13094,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -11497,8 +13108,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {
@@ -11854,8 +13465,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "dependency",
             "requiredBy": [
               "dialogue"
@@ -11870,8 +13481,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {
@@ -12216,8 +13827,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "dependency",
             "requiredBy": [
               "dialogue"
@@ -12232,8 +13843,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {
@@ -12923,8 +14534,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -12940,8 +14551,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -13037,8 +14648,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -13179,7 +14790,7 @@
     },
     {
       "name": "dialogue on-device",
-      "claim": "A variant on an axis that is not a genre setting is recorded on the pack and writes no override.",
+      "claim": "On-device inference is port-later (catalog dialogue-offline-local-ai), so the dialogue manifest (P9g.core) marks the variant port-later: it is shown, not offered, and refused (variant-port-later); the pack keeps its server default and no override is written. Before the manifest the index's bare option was recorded; the P9g case records auto, a variant off the genre axes, instead.",
       "input": {
         "recipe": "rpg-adventure",
         "world": {
@@ -13441,8 +15052,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -13458,14 +15069,14 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
             ],
             "variants": {
-              "provider": "on-device"
+              "provider": "server"
             },
             "style": null,
             "parameters": {},
@@ -13555,8 +15166,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -13671,7 +15282,13 @@
             ]
           }
         },
-        "refusals": [],
+        "refusals": [
+          {
+            "code": "variant-port-later",
+            "pack": "dialogue",
+            "detail": "'dialogue' variant 'on-device' is port-later and is not offered yet"
+          }
+        ],
         "notes": []
       }
     },
@@ -13939,8 +15556,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -13956,8 +15573,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -14053,8 +15670,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -14446,8 +16063,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -14463,8 +16080,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -14560,8 +16177,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -14949,8 +16566,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -14966,8 +16583,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -15063,8 +16680,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -15181,6 +16798,16 @@
             "code": "world-modules-pack-outside",
             "pack": "inventory",
             "detail": "'inventory' runs, but the world's enabledModules selects none of its modules (equipment), so none of them is activated"
+          },
+          {
+            "code": "world-modules-pack-outside",
+            "pack": "npc-life",
+            "detail": "'npc-life' runs, but the world's enabledModules selects none of its modules (routine, agentAi), so none of them is activated"
+          },
+          {
+            "code": "world-modules-pack-outside",
+            "pack": "dialogue",
+            "detail": "'dialogue' runs, but the world's enabledModules selects none of its modules (dialogue), so none of them is activated"
           },
           {
             "code": "world-modules-pack-outside",
@@ -15452,8 +17079,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [
               "dialogue",
@@ -15469,8 +17096,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [
               "shops"
@@ -15566,8 +17193,8 @@
             "id": "npc-presentation",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {},
@@ -15941,8 +17568,8 @@
             "id": "npc-life",
             "kind": "base",
             "phase": "P9f",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "0.1.0",
             "source": "dependency",
             "requiredBy": [
               "dialogue"
@@ -15957,8 +17584,8 @@
             "id": "dialogue",
             "kind": "base",
             "phase": "P9g",
-            "authored": false,
-            "version": null,
+            "authored": true,
+            "version": "1.0.0",
             "source": "preset",
             "requiredBy": [],
             "variants": {

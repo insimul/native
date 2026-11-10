@@ -426,6 +426,15 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/props/pickup-placement",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.pickups.* rows (PL.native-pickup-settle, rulings U91(2) and U89(3)), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-pickup-settle (Features Gauntlet PL.native-pickup-settle)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/game-engine/logic/NoticeGenerator",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

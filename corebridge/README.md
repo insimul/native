@@ -128,7 +128,7 @@ game; **meta** = about the bridge itself.
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
 | `saves.slots.apply` | `{ session, ops: save, load, continue, delete, ask_delete, confirm_delete, cancel_delete, key, tick, finished }` → `{ results: [{ ok, refusal?, outcome?, effect, history? }], view }` | same | P1 slots |
-| `props.contract` | `{}` → `{ <area>: { <table>: value } }` — the data tables each P6 corpus file's `contract` states (`props-containers`, `props-documents`, `props-notice-board`, `props-doors`, `ui-inventory`) | `props/containers`, `props/documents`, `props/doors`, `props/notice-board`, `ui/inventory-model` constants | P6 (PL.native-props-rows, U89(2)) |
+| `props.contract` | `{}` → `{ <area>: { <table>: value } }` — the data tables each P6 corpus file's `contract` states (`props-containers`, `props-documents`, `props-notice-board`, `props-doors`, `ui-inventory`, `props-pickup-placement`) | `props/containers`, `props/documents`, `props/doors`, `props/notice-board`, `ui/inventory-model`, `props/pickup-placement` constants | P6 (PL.native-props-rows, U89(2); `props-pickup-placement` PL.native-pickup-settle, U91(2)) |
 | `props.containers.view` | `{ container, context?: { playerItemIds?, buildings?, now? } }` → `{ view }` | `props/containers` `containerView` | P6 |
 | `props.containers.unlock` | `{ container, context? }` → `{ result, container }` | `props/containers` `unlockContainer` | P6 |
 | `props.containers.move` | `{ container, move: { kind: take } or { kind: put, itemId }, context? }` → `{ refusal }` (null: `ui.trade` may run it) | `props/containers` `containerMoveRefusal` | P6 |
@@ -144,6 +144,11 @@ game; **meta** = about the bridge itself.
 | `props.board.create` | `{ notices, fluency?, read?, answered?, questStatus? }` → `{ session, view }` | `props/notice-board` `NoticeBoard` | P6 |
 | `props.board.apply` | `{ session, ops: select, answer, take_quest }` (every op goes to core) → `{ results, view }` | same | P6 |
 | `props.notices.generate` | `{ settlementId, settlementName, npcs: [{ characterId, name, occupation? }] }` → `{ articles }` | `game-engine/logic/NoticeGenerator` `generateSettlementNotices` | P6 |
+| `props.pickups.settle` | `{ spot, groundY?, settled?, obstacles?, roads?, walkable?, clearance?, search? }` → `{ ok: true, at, moved, shiftM, ring, clearanceM, nearest, authored, approach }`, or the refusal value `{ ok: false, code: no-clear-spot, clearest, authored, approach }` or `{ ok: false, code: bad-spot }` | `props/pickup-placement` `settlePickup` | P6 pick-up settle (PL.native-pickup-settle, U91(2); core's PL.pickup-placement, U89(3)) |
+| `props.pickups.sequence` | `{ pickups: [{ spot, groundY? }], obstacles?, roads?, walkable?, clearance?, search? }` → `{ placements }` | `props/pickup-placement` `settlePickups` | P6 pick-up settle |
+| `props.pickups.clearance` | `{ spot, groundY?, settled?, obstacles?, roads?, clearance? }` → `{ ok: true, clearanceM, nearest }` or `{ ok: false, code: bad-spot }` | `props/pickup-placement` `pickupClearance` | P6 pick-up settle |
+| `props.pickups.pattern` | `{ search? }` → `{ rings: [{ radiusM, points }] }` | `props/pickup-placement` `pickupSearchPattern` | P6 pick-up settle |
+| `props.pickups.ring` | `{ ring, search? }` → `{ points: [{ x, z }] }` | `props/pickup-placement` `pickupSearchRing` | P6 pick-up settle |
 | `inventory.create` | `{ player?: { gold, inventory } }` → `{ session, view: { filter, counts, gold, rows, equipment, save } }` | `ui/inventory-model` `InventoryViewModel` | P6 |
 | `inventory.apply` | `{ session, ops: add, remove, filter, toggle, set_gold, add_gold, remove_gold, equip_flag, get, items, load, clear }` → `{ results, view }` | same | P6 |
 | `ui.notifications.create` | `{}` → `{ session, view }` | `ui/notifications` `Notifications` | P2 |
@@ -463,8 +468,13 @@ quick load on F5 / F9. It does no I/O, so it is a session pair like the clock:
   delete prompt, or null), `autosave { on, target, inSec }` and `indicator`
   (state, label, detail, kind, opacity). Since core's PL.quick-slot (in from the
   ac229a7 pin) an unset `quickSlot` is a DEDICATED quick slot after the manual
-  ones (index `slotCount`), so the table holds `slotCount + 1` rows; a manual
-  slot's index (0 was the old default) or null still names that slot or none.
+  ones (index `slotCount`), so the table holds `slotCount + 1` rows; null names
+  none. Since core's PL.quick-slot-one-based (in from the eff846a pin) a stated
+  `quickSlot` is the 1-BASED slot number the player reads (`quickSlot: 1` is
+  "Slot 1", index 0 — the old default), which core maps to the session's 0-based
+  index in the resolved `config`; 0 and any number past the manual slots are
+  refused `quick_slot_out_of_range` (F5 and F9 then answer that refusal and write
+  nothing). A binding that stated a 0-based index must add one.
 
 What the rows refuse as errors is only what core's types declare and JSON cannot
 hold: a `config` that is not an object, a slot that is not `{ index: number,
@@ -574,6 +584,80 @@ ac229a7 pin the bundle went from 1,435,892 bytes (the pin bump and the
 saves.slots catch-up alone, from 1,422,744 at fc88be9) to 1,511,366. The 128 cases take about 30 ms under
 QuickJS.
 
+### The pick-up settle rows: where a pick-up is put down (PL.native-pickup-settle)
+
+Core's pick-up placement (PL.pickup-placement, ac229a7 onward; ruling U89(3), in
+U78's shape) is the rule Unreal's P6 cell wrote as an interim settle
+(`InsimulVillageProps.cpp`, unreal `feat/p6-unreal` 29c37ab, VP:513–790): a
+world's quest-object position is a point on the map, not a free one, so before a
+pick-up is drawn its authored spot is settled clear of what stands round it
+(props, buildings, plants by their trunk, containers), of the villagers' paths
+(roads, doors, where a villager stands) and of the pick-ups settled before it, or
+refused with a code. `src/props/pickup-placement.ts` states it as data in,
+decision out, in core's metres on its ground plane `(x, z)` with heights `y`; the
+rows (ruling U91(2)) call it and decide nothing:
+
+- **`props.pickups.settle`** — one pick-up (`settlePickup`): the settled spot,
+  whether it `moved`, the `ring` it was found on (0: the authored spot), its
+  clearance and what it is `nearest`, how clear the `authored` spot was, and the
+  `approach` (the side it is walked up to from); or `no-clear-spot` with the
+  `clearest` spot (where an engine that still draws it draws it, as Unreal does),
+  or `bad-spot` for a spot or ground height that is not a finite number. Both
+  refusals are VALUES.
+- **`props.pickups.sequence`** — several, in settle order (`settlePickups`), each
+  kept clear of those settled before it (a refused one where its `clearest` is).
+- **`props.pickups.clearance`** — how clear a spot is (`pickupClearance`;
+  `clearanceM >= 0` is clear, `ok` first: a `bad-spot` has no clearance).
+- **`props.pickups.pattern`** / **`props.pickups.ring`** — the search the settle
+  walks (`pickupSearchPattern`, `pickupSearchRing`: rings 0.5 m apart out to 20 m,
+  from +x toward +z).
+- **`props.contract`'s `props-pickup-placement`** — the corpus's data tables from
+  core's constants: the kinds, `clearanceM`, `search`, `refusals`, `frames` (how
+  each engine maps its frame onto core's), every constant's value (`constants`;
+  the Unreal line each was measured from is prose and stays in the corpus), the
+  engine-side ground and plant kinds, and the `deviations` from Unreal.
+
+**Frames, and what a binding sends.** Everything crosses in core's frame; the rows
+convert nothing. Unreal sends its `(X, Y)` ÷ 100 as `(x, z)` and its `Z` ÷ 100 as
+`y`, and a turned footprint's forward as `axis` UNMIRRORED (`half.x` is along it,
+`half.z` across): core's ring and heading angles turn from +x toward +z, which is
++X toward +Y in Unreal (`frames.unreal`). Walkable ground is `walkable` areas (a
+circle or a box each; absent is everywhere, empty is nowhere): core's
+`isWalkable` callback (an engine's navmesh query) has no row, because a callback
+cannot cross the C ABI — a binding states its navmesh as areas, or settles with
+`walkable` absent and keeps its own navmesh test on the answer
+(`ENGINE_BINDINGS.md`, "Pick-up settle").
+
+**Errors** (`[invalid-input]`) are only a field of the wrong JSON type core's types
+declare: `obstacles`, `roads`, `settled`, `walkable` or `pickups` that is not an
+array, a road object's `waypoints` that is not an array, `clearance` or `search`
+that is not an object, and a `ring` that is not a number. Every value core reads
+itself goes to core, which answers it as its corpus pins: a null or non-point
+list entry (skipped, keeping its index), an obstacle of a kind core does not know
+(not kept off), a clearance or search field that is not a usable number (its
+default), a spot that is not a point (`bad-spot`).
+
+**The evidence** is core's `conformance/props/pickup-placement.json` (66 cases over
+`pattern`, `ring`, `clearance`, `settle`, `sequence`), copied byte for byte with
+the other P6 corpora (`PROPS_CORPUS_FILES`) and driven by the same runner,
+`tests/props_corpus.cpp`, as the ctest `props_pickup_placement_corpus`: every
+case's `input` is the row's args as is, every answer compared whole within the
+file's `tolerance` (1e-6), none undriven. The runner also requires the file's
+top-level `numerics` to name double precision (the rows run in QuickJS, whose
+numbers are IEEE-754 doubles; several cases decide exactly on a boundary) and
+holds the contract's data tables, `frames` and the constants' values among them,
+to `props.contract`. `props_pickup_placement_corpus_negative`
+(`tests/props-negative/pickup-placement-wrong.json`) must see a float32
+`numerics`, a wrong frame, a wrong constant, an op with no case, a clearance's
+wrong `ok`, a settle whose building axis was mirrored, a placement off by 0.01 m
+and a refusal where core settles each reported. The hand cases in
+`tests/cases/bridge-props.json` pin the rows' answer shapes, the refusal values
+and the errors.
+
+**Cost.** One core module (`props/pickup-placement`; 151 → 152 at the eff846a
+pin): the bundle went from 1,530,726 bytes (the eff846a pin bump alone, from
+1,511,366 at ac229a7) to 1,553,471. The 66 cases take about 20 ms under QuickJS.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
@@ -661,6 +745,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `core_vendor` | every vendored file matches its recorded sha256 and the pin |
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (111 cases at ac229a7; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (128 cases, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
+| `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (66 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's
 OWN corpora (saves, the UI matrices, weather progression, genre resolution,

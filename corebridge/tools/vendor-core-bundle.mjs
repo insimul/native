@@ -47,7 +47,10 @@
 // corpora are copied the same way (PL.native-props-rows, U89(2)):
 // `conformance/props/{containers,documents,doors,notice-board}.json` and
 // `conformance/ui/inventory-cases.json`; tests/props_corpus.cpp drives them
-// through the `props.*` and `inventory.*` rows.
+// through the `props.*` and `inventory.*` rows. Core's pick-up placement corpus
+// `conformance/props/pickup-placement.json` is copied with them
+// (PL.native-pickup-settle, U91(2)) and driven through the `props.pickups.*` rows
+// by the same runner.
 //
 // TWO MODES:
 //
@@ -143,13 +146,14 @@ const SAVES_CORPUS_FILES = ['conformance/saves/slots.json'];
 // file shares `conformance/ui/` with the P9a corpora, so a file there belongs to
 // the set that LISTS it (p9aFilesOnDisk leaves these out); `conformance/props/`
 // is the props set's alone, so a file left there by an earlier pin is seen too.
-// pickup-placement.json, also in conformance/props/, has no row yet and is not
-// copied (and would be removed if found).
+// pickup-placement.json (PL.pickup-placement) joined the set with its
+// `props.pickups.*` rows (PL.native-pickup-settle, U91(2)).
 const PROPS_CORPUS_FILES = [
   'conformance/props/containers.json',
   'conformance/props/documents.json',
   'conformance/props/doors.json',
   'conformance/props/notice-board.json',
+  'conformance/props/pickup-placement.json',
   'conformance/ui/inventory-cases.json',
 ];
 

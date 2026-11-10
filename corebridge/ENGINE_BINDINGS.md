@@ -214,6 +214,46 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   with `session.dispose`). Every row answers in exactly the JSON the corpora pin,
   so the `FJsonValue` code around the calls stays; what goes is the port's own
   rules.
+- **Pick-up settle (Unreal's `P6.unreal.retire-pickup-settle`, after
+  PL.native-pickup-settle; U91(2), U89(3)).** The interim settle in
+  `Private/InsimulVillageProps.cpp` (unreal main a0ec591 lines 515–797; at
+  `feat/p6-unreal` 29c37ab, VP:513–790, the lines core cites) is core's
+  `src/props/pickup-placement.ts` now, through the `props.pickups.*` rows
+  (`README.md`, "The pick-up settle rows"). What the block keeps is what is the
+  engine's: walking the level for what stands (the actor and mesh walk, its
+  `Ground` kinds and plant test, each mesh's bounds through its transform) and
+  the navmesh. What goes is the rule:
+
+  | In the settle block | Row (and what the binding sends or reads) |
+  |---|---|
+  | `FObstacle` statics (each mesh's footprint: `C`, `Half`, `Ax`, `ZMin`/`ZMax`; a plant over 250 cm as its trunk at the pivot) | `obstacles: [{ kind: prop \| building \| plant, at, half, axis, pivot?, yMin, yMax }]` — the box as measured, ÷ 100; core decides ground pieces, ground cover, trees by their trunk and the height band itself (`props-pickup-placement.constants`), so state a plant's full footprint and pivot, not the trunk |
+  | `Movers`: villagers (40 cm, 150 cm off), doors (60 cm, 200 cm off), containers (50 cm) | `obstacles: [{ kind: villager \| door \| container, at }]` (the radius is core's unless stated) |
+  | `FRoadSeg` from the world's `roads` (`width` or 3 m) | `roads: [{ waypoints, width? }]` as the world states them (core joins the waypoints and breaks a road at one that is not a point) |
+  | `Near(At, 2100)` (the cull) | nothing: core reads every obstacle stated (deviation `no-culling`); a binding may still send only those within 21 m (`constants.cullRadiusM`) of the spot |
+  | `Clearance(At, …)` | `props.pickups.clearance` → `{ ok, clearanceM, nearest: { kind, index } }` (read `ok` first; `nearest.index` is into the list sent) |
+  | `OnNav(At)` (navmesh within 30 cm) | `walkable` areas — no callback crosses the C ABI. Either send the navmesh as areas, or settle with `walkable` absent and keep `OnNav` as the binding's own check of the answer (deviation `walkable-areas`) |
+  | the ring search (`Radius` 50 → 2000 cm, 8–64 steps), `Was`/`Found`/`bClear`, `Shift > 1.0` | `props.pickups.sequence { pickups: [{ spot, groundY }], … }` in `S.PickUps` order → `placements[i]`: `ok` and `at`, `moved`, `shiftM`, `ring`; `{ ok: false, code: no-clear-spot, clearest }` is Unreal's "NO clear spot within 20 m, the clearest taken" — draw it at `clearest.at` (deviation `refuse-when-nothing-clear`) |
+  | `P.Approach` (16 headings, probes 60/150/250/350 cm) | `approach.heading` (core's `(x, z)`, so Unreal `(X, Y)`), `headingDeg`, `roomM` |
+  | the `UE_LOG` lines | the same facts from the answer: `authored.clearanceM` and `.nearest` (`Was`, `WasNear`), `clearanceM`, `nearest` |
+
+  **Frames** (`props.contract` → `props-pickup-placement.frames.unreal`): every
+  point is Unreal's `(X, Y)` ÷ 100 as core's `(x, z)` and its `Z` ÷ 100 as `y`
+  (`groundY`, `yMin`, `yMax`); a static's forward `Ax` goes as `axis` UNMIRRORED
+  (`axis: { x: Ax.X, z: Ax.Y }`, `half: { x: Half.X / 100, z: Half.Y / 100 }`:
+  `half.x` is along `axis`, `half.z` across), and the answers come back in the
+  same frame. Core's ring and heading angles turn from +x toward +z, which is +X
+  toward +Y in Unreal, the same order the block walks. The rows compute in double
+  precision, as the corpus's `numerics` asks (several cases decide exactly on a
+  boundary). Re-vendor `conformance/props/pickup-placement.json` from core at this
+  library's pin and drive each case as `tests/props_corpus.cpp` does (`input` as
+  the args of `props.pickups.<op>`, the answer compared whole within the file's
+  `tolerance`, the contract's tables held to `props.contract`, the constants on
+  their `value`).
+- **Save slots: `quickSlot` is 1-based since the eff846a pin** (core's
+  PL.quick-slot-one-based). A character or pack config that states
+  `quickSlot: 0` (the old "Slot 1") is now refused `quick_slot_out_of_range`, and
+  F5/F9 answer that refusal and write nothing: state `1`. The resolved `config`'s
+  `quickSlot` is still the session's 0-based index.
 - **Layout: one more op.** Core f9aef13 added `startClearOutline` to `LAYOUT_OPS`
   (PL.start-clearance, U78): the `layout.startClearOutline` row answers it, and
   `Tests/layout_corpus_ops.h` needs the matching entry when Unreal re-vendors

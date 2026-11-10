@@ -1,0 +1,92 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "social",
+  "version": "0.1.0",
+  "name": "Social and relationships",
+  "summary": "What the villagers think of the player: relationship tiers that set prices, quests and greetings; romance from attraction to marriage; the town's standing, fines and bans; gifts; haggling and ordering food; the radial action wheel; and NPC volition.",
+  "kind": "optional",
+  "phase": "P9g",
+  "catalog": [
+    "social-relationships",
+    "social-romance",
+    "social-reputation-fines",
+    "social-gift-giving",
+    "npc-volition",
+    "ui-radial-action-wheel",
+    "economy-haggling-food-ordering"
+  ],
+  "core": {
+    "modules": ["volition"],
+    "predicatePacks": ["volition"],
+    "hostInterfaces": ["IAgentActionHost"],
+    "corpus": [
+      "conformance/social/relationships.json",
+      "conformance/social/romance.json",
+      "conformance/social/reputation.json",
+      "conformance/social/gifts.json",
+      "conformance/social/haggling.json",
+      "conformance/social/actions.json",
+      "conformance/social/save.json",
+      "conformance/prolog/mechanic-volition.json",
+      "conformance/items/pricing.json"
+    ],
+    "saveExtensions": ["social"]
+  },
+  "requires": [{ "id": "dialogue" }],
+  "parameters": [
+    { "id": "romanceDecayPerStep", "type": "integer", "min": 0, "maps": "RomanceTuning.decayPerStep", "source": "core-default", "doc": "spark lost per quiet step, in tenths of a point (RomanceSystem 0.5)" },
+    { "id": "romanceDecayAfter", "type": "integer", "min": 0, "maps": "RomanceTuning.decayAfter", "source": "core-default", "doc": "quiet steps before the spark decays (RomanceSystem 3)" },
+    { "id": "romanceRejectionCooldown", "type": "integer", "min": 0, "maps": "RomanceTuning.rejectionCooldown", "source": "core-default", "doc": "steps a rejection holds further attempts off (RomanceSystem 5)" },
+    { "id": "romanceDemoteMargin", "type": "integer", "min": 0, "maps": "RomanceTuning.demoteMargin", "source": "core-default", "doc": "how far below its threshold (tenths) a stage falls back a rung (RomanceSystem 10 points)" },
+    { "id": "romanceJealousyFloor", "type": "integer", "min": 0, "maps": "RomanceTuning.jealousyFloor", "source": "core-default", "doc": "spark (tenths) below which an NPC is never jealous (RomanceSystem 30 points)" },
+    { "id": "wheelHoldKey", "type": "string", "maps": "binding", "source": "game", "doc": "the key or button held to open the radial wheel (Unreal lists it as the gamepad wheel)" }
+  ],
+  "extensionPoints": [
+    { "id": "world-actions", "kind": "binding-hook", "signature": "wheelActions(world) (src/social/action-wheel.ts)", "doc": "a world's social actions over the template exporters' eight, merged by id; a parameter-level hook, not Prolog facts" },
+    { "id": "romance-ladder", "kind": "binding-hook", "signature": "romanceTuning({ladder}) (src/social/romance.ts)", "doc": "a world's own stages and thresholds (tenths) in place of none → married" },
+    { "id": "world-desires", "kind": "prolog-facts", "signature": "WorldIR.volition {desires, courtship}", "doc": "what NPCs want of their own accord and the courtship ladder between them (docs/npc-volition.md)" },
+    { "id": "on-relationship-changed", "kind": "event-handler", "signature": "npc_relationship_changed", "doc": "a build_friendship objective, a toast" },
+    { "id": "on-gift", "kind": "event-handler", "signature": "gift_given", "doc": "a give_gift objective" },
+    { "id": "on-haggle", "kind": "event-handler", "signature": "price_haggled", "doc": "a haggle_price objective" },
+    { "id": "on-food", "kind": "event-handler", "signature": "food_ordered", "doc": "an order_food objective" }
+  ],
+  "events": {
+    "emits": [
+      "npc_relationship_changed",
+      "romance_action",
+      "romance_stage_changed",
+      "reputation_changed",
+      "gift_given",
+      "food_ordered",
+      "price_haggled",
+      "courtship_advanced",
+      "npc_volition_action",
+      "volition_schedule_override",
+      "volition_return_to_schedule"
+    ],
+    "consumes": ["npc_talked", "quest_completed", "quest_failed", "item_delivered", "item_purchased", "settlement_entered"]
+  },
+  "styles": {
+    "tokens": ["surface", "border", "text_primary", "text_secondary", "accent", "danger"],
+    "layouts": ["radial-wheel", "reputation-panel", "relationship-toast"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "src/social/ owns relationship strengths and tiers, romance tracks, the town's standing, fines and bans, which gift goes, haggling detection and the action wheel's model; VolitionDirector owns NPC-to-NPC desire and courtship. The engine draws the wheel, the toasts and the reputation panel, and moves the gold and the items.",
+    "notes": [
+      "Hear npc_talked, quest_completed, quest_failed, item_delivered and gift_given with applyRelationshipEvent; hear the same and item_purchased with applyReputationEvent after enterSettlement.",
+      "A relationship view is the play-time gate: consult canOfferQuests before a quest offer and pricePermille (with the standing's) at a merchant.",
+      "Strengths are thousandths (-1000..1000), romance spark tenths (0..1000), standing whole points (-100..100).",
+      "A gift is giveGift then the three kernels in order: relationship, standing, and romance's give_gift when romance runs.",
+      "Romance draws are seeded (romanceDraw): give every game one seed so an attempt replays.",
+      "npc-temporary-states and social-contact-list are port-later; do not generate them from this pack."
+    ],
+    "doNot": [
+      "Let an unaffordable wheel action fire (activateSlot refuses too_tired).",
+      "Store NPC names or the current settlement in the save: the world gives the names again and the host re-enters the settlement."
+    ]
+  }
+}

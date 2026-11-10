@@ -3,9 +3,9 @@
  "description": "core's quest-golden corpora through quest.hydrate and quest.radiantTick (the engines' parity surface); the radiant facts are an order-independent multiset, as core declares them",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "ac229a731186272f7612980165de0243b4bd7b1f",
+  "coreCommit": "eff846adaad6d414c83c4c8b29346b1e10045411",
   "files": {
-   "conformance/quests/hydration-cases.json": "dfd33f88b950262726a5b99638942f76f614105ff9666f58290ba5617ca39a1e",
+   "conformance/quests/hydration-cases.json": "f735845a1c2d227867e5c8a489117e10a462ed387df104d25a48cfdd47a477f1",
    "conformance/quests/radiant-cases.json": "d09e08e434fb1c4adcc09c2bb7727f5719a3352052b81b2ebb8eae840ed448d5"
   }
  },
@@ -152,6 +152,72 @@
      },
      "expect": {
       "quest": {}
+     }
+    }
+   ]
+  },
+  {
+   "name": "hydrate objective_fields_and_locks",
+   "steps": [
+    {
+     "call": "quest.hydrate",
+     "args": {
+      "content": "quest(q_ledger, 'The Missing Ledger', mystery, normal, active).\nquest_objective(q_ledger, 0, read_text('journal_2')).\nquest_objective(q_ledger, 1, find_text(1)).\nquest_objective(q_ledger, 2, collect_clue(1)).\nquest_objective(q_ledger, 3, objective('Name the thief')).\nquest_objective_field(q_ledger, 0, text_title, 'Marie\\'s Ledger').\nquest_objective_field(q_ledger, 0, mood, 'tense').\nquest_objective_field(q_ledger, 1, text_id, 'letter_3').\nquest_objective_field(q_ledger, 1, text_category, 'letters').\nquest_objective_field(q_ledger, 1, item_name, 'Sealed Letter').\nquest_objective_order(q_ledger, 1, 1).\nquest_objective_field(q_ledger, 2, clue_category, 'written').\nquest_objective_field(q_ledger, 2, clue_source, 'npc_marie').\nquest_objective_order(q_ledger, 2, 2.5).\nquest_objective_depends_on(q_ledger, 2, 0).\nquest_objective_depends_on(q_ledger, 2, 1).\nquest_objective_field(q_ledger, 3, completion_trigger, 'clue_discovered').\nquest_objective_depends_on(q_ledger, 3, 2).\nquest_objective_order(q_ledger, 9, 4).\nquest_completion(q_ledger, all_objectives_complete)."
+     },
+     "expect": {
+      "quest": {
+       "title": "The Missing Ledger",
+       "questType": "mystery",
+       "difficulty": "normal",
+       "status": "active",
+       "completionCriteria": {
+        "type": "all_objectives",
+        "description": "Complete all objectives"
+       },
+       "objectives": [
+        {
+         "id": "obj_0",
+         "type": "read_text",
+         "description": "Read journal_2",
+         "requiredCount": 1,
+         "target": "journal_2",
+         "textTitle": "Marie's Ledger"
+        },
+        {
+         "id": "obj_1",
+         "type": "find_text",
+         "description": "Find 1 text",
+         "requiredCount": 1,
+         "textId": "letter_3",
+         "textCategory": "letters",
+         "itemName": "Sealed Letter",
+         "order": 1
+        },
+        {
+         "id": "obj_2",
+         "type": "collect_clue",
+         "description": "Collect 1 clue",
+         "requiredCount": 1,
+         "clueCategory": "written",
+         "clueSource": "npc_marie",
+         "order": 2.5,
+         "dependsOn": [
+          "obj_0",
+          "obj_1"
+         ]
+        },
+        {
+         "id": "obj_3",
+         "type": "objective",
+         "description": "Name the thief",
+         "requiredCount": 1,
+         "completionTrigger": "clue_discovered",
+         "dependsOn": [
+          "obj_2"
+         ]
+        }
+       ]
+      }
      }
     }
    ]

@@ -1,9 +1,9 @@
 {
   "area": "props",
-  "description": "Hand-written: the props.* and inventory.* rows' own contract (PL.native-props-rows, U89(2); core's P6 logic, P6.core) — each row's answer shape, a domain refusal as a VALUE (core's), an action core does not know going to core and coming back as its unknown_action, a refused document opening no session, the session kinds, and the rows' own refusals as errors coded [invalid-input]. Core's own corpora (conformance/props/*.json, conformance/ui/inventory-cases.json) are driven whole through these rows by the props_*_corpus and inventory_corpus ctests (tests/props_corpus.cpp), not transcribed here.",
+  "description": "Hand-written: the props.* and inventory.* rows' own contract (PL.native-props-rows, U89(2); core's P6 logic, P6.core; and the props.pickups.* rows, PL.native-pickup-settle, U91(2), over core's PL.pickup-placement) — each row's answer shape, a domain refusal as a VALUE (core's), an action core does not know going to core and coming back as its unknown_action, a refused document opening no session, the session kinds, and the rows' own refusals as errors coded [invalid-input]. Core's own corpora (conformance/props/*.json, conformance/ui/inventory-cases.json) are driven whole through these rows by the props_*_corpus (props_pickup_placement_corpus among them) and inventory_corpus ctests (tests/props_corpus.cpp), not transcribed here.",
   "cases": [
     {
-      "name": "props.contract: the tables of the five P6 corpora, from core's constants",
+      "name": "props.contract: the tables of the six P6 corpora, from core's constants",
       "steps": [
         {
           "call": "props.contract",
@@ -12,7 +12,16 @@
             "props-documents": { "$subset": { "defaultCharsPerPage": 800, "defaultQuizXp": 10, "phases": ["reading", "quiz", "answered", "closed"], "actions": ["next", "prev", "answer", "close"] } },
             "props-notice-board": { "$subset": { "fluencyThresholds": { "beginner": 0, "intermediate": 25, "advanced": 55 }, "actions": ["select", "answer", "take_quest"] } },
             "props-doors": { "$subset": { "promptRadiusM": 2, "standoffM": 0.5, "actions": ["enter", "exit"] } },
-            "ui-inventory": { "$subset": { "pinnedGroup": "Quest", "emptyMessages": { "$type": "object" }, "filters": { "$len": 6 } } }
+            "ui-inventory": { "$subset": { "pinnedGroup": "Quest", "emptyMessages": { "$type": "object" }, "filters": { "$len": 6 } } },
+            "props-pickup-placement": { "$subset": {
+              "obstacleKinds": ["prop", "building", "plant", "container", "door", "villager"],
+              "refusals": ["no-clear-spot", "bad-spot"],
+              "clearanceM": { "prop": 1, "building": 1, "plant": 1, "container": 1, "door": 2, "villager": 1.5, "road": 1, "pickup": 3 },
+              "search": { "ringStepM": 0.5, "radiusM": 20, "arcM": 0.6, "minPoints": 8, "maxPoints": 64 },
+              "frames": { "unreal": { "$type": "string" }, "godot": { "$type": "string" }, "unity": { "$type": "string" }, "babylon": { "$type": "string" } },
+              "constants": { "$subset": { "spacingM": 3, "doorRadiusM": 0.6, "approachProbesM": [0.6, 1.5, 2.5, 3.5], "nothingNearM": 10000000 } },
+              "deviations": { "$type": "array" }
+            } }
           }
         }
       ]
@@ -265,6 +274,40 @@
         { "call": "inventory.apply", "args": { "session": 2, "ops": [] }, "expectError": "session 2 is a props.board session, not inventory" },
         { "call": "session.dispose", "args": { "session": 1 }, "expect": { "disposed": true } },
         { "call": "inventory.apply", "args": { "session": 1, "ops": [] }, "expectError": "no open session 1" }
+      ]
+    },
+    {
+      "name": "props.pickups: settle, sequence, clearance, pattern and ring; a refusal is a value; what core reads itself goes to core",
+      "steps": [
+        { "call": "props.pickups.pattern", "expect": { "rings": { "$len": 40 } } },
+        { "call": "props.pickups.pattern", "args": { "search": { "radiusM": 1 } }, "expect": { "rings": [{ "radiusM": 0.5, "points": 8 }, { "radiusM": 1, "points": 11 }] } },
+        { "call": "props.pickups.ring", "args": { "ring": 1 }, "expect": { "points": { "$len": 8 } } },
+        { "call": "props.pickups.ring", "args": { "ring": 41 }, "expect": { "points": [] } },
+        { "call": "props.pickups.ring", "args": { "ring": 2, "search": { "radiusM": 2, "arcM": 1, "minPoints": 4, "maxPoints": 12 } }, "expect": { "points": { "$len": 7 } } },
+        { "call": "props.pickups.clearance", "args": { "spot": { "x": 2, "z": 0 }, "obstacles": [{ "kind": "door", "at": { "x": 0, "z": 0 } }] }, "expect": { "ok": true, "clearanceM": { "$approx": -0.6, "$tol": 1e-9 }, "nearest": { "kind": "door", "index": 0 } } },
+        { "call": "props.pickups.clearance", "args": { "spot": { "x": 0, "z": 0 }, "obstacles": [{ "kind": "dragon", "at": { "x": 0, "z": 0 } }, null], "roads": [null, { "waypoints": [{ "x": -1, "z": 9 }, null, { "x": 1, "z": 9 }] }], "settled": [null] }, "expect": { "ok": true, "clearanceM": 10000000, "nearest": null } },
+        { "call": "props.pickups.clearance", "args": { "spot": { "x": 0, "z": null } }, "expect": { "ok": false, "code": "bad-spot" } },
+        { "call": "props.pickups.settle", "args": { "spot": { "x": 0, "z": 0 } }, "expect": { "$subset": { "ok": true, "at": { "x": 0, "z": 0 }, "moved": false, "shiftM": 0, "ring": 0 } } },
+        { "call": "props.pickups.settle", "args": { "spot": { "x": 1, "z": 0 }, "obstacles": [{ "kind": "villager", "at": { "x": 0, "z": 0 } }] }, "expect": { "$subset": { "ok": true, "at": { "x": 2, "z": 0 }, "moved": true, "ring": 2, "nearest": { "kind": "villager", "index": 0 }, "approach": { "heading": { "x": 1, "z": 0 }, "headingDeg": 0, "roomM": { "$approx": 0.7, "$tol": 1e-9 } } } } },
+        { "call": "props.pickups.settle", "args": { "spot": { "x": 0, "z": 0 }, "walkable": [] }, "expect": { "$subset": { "ok": false, "code": "no-clear-spot", "clearest": { "$subset": { "at": { "x": 0, "z": 0 }, "ring": 0 } } } } },
+        { "call": "props.pickups.settle", "args": { "spot": null }, "expect": { "ok": false, "code": "bad-spot" } },
+        { "call": "props.pickups.sequence", "args": { "pickups": [{ "spot": { "x": 0, "z": 0 } }, { "spot": { "x": 1, "z": 0 } }] }, "expect": { "placements": [{ "$subset": { "ok": true, "moved": false } }, { "$subset": { "ok": true, "moved": true, "nearest": { "kind": "pickup", "index": 0 } } }] } },
+        { "call": "props.pickups.sequence", "expect": { "placements": [] } }
+      ]
+    },
+    {
+      "name": "props.pickups: the rows refuse a field of the wrong JSON type as [invalid-input]",
+      "steps": [
+        { "call": "props.pickups.settle", "args": { "spot": { "x": 0, "z": 0 }, "obstacles": {} }, "expectError": "[invalid-input] insimulcore: props.pickups.settle: `obstacles` must be an array" },
+        { "call": "props.pickups.settle", "args": { "spot": { "x": 0, "z": 0 }, "roads": [{ "waypoints": { "x": 0, "z": 0 } }] }, "expectError": "[invalid-input] insimulcore: props.pickups.settle: `roads[0].waypoints` must be an array" },
+        { "call": "props.pickups.settle", "args": { "spot": { "x": 0, "z": 0 }, "walkable": 1 }, "expectError": "`walkable` must be an array" },
+        { "call": "props.pickups.settle", "args": { "spot": { "x": 0, "z": 0 }, "search": [] }, "expectError": "`search` must be a JSON object" },
+        { "call": "props.pickups.clearance", "args": { "spot": { "x": 0, "z": 0 }, "settled": {} }, "expectError": "[invalid-input] insimulcore: props.pickups.clearance: `settled` must be an array" },
+        { "call": "props.pickups.clearance", "args": { "spot": { "x": 0, "z": 0 }, "clearance": 2 }, "expectError": "`clearance` must be a JSON object" },
+        { "call": "props.pickups.sequence", "args": { "pickups": "two" }, "expectError": "[invalid-input] insimulcore: props.pickups.sequence: `pickups` must be an array" },
+        { "call": "props.pickups.pattern", "args": { "search": "wide" }, "expectError": "[invalid-input] insimulcore: props.pickups.pattern: `search` must be a JSON object" },
+        { "call": "props.pickups.ring", "expectError": "[invalid-input] insimulcore: props.pickups.ring: `ring` must be a finite number" },
+        { "call": "props.pickups.ring", "args": { "ring": 1, "search": 7 }, "expectError": "`search` must be a JSON object" }
       ]
     }
   ]

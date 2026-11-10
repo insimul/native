@@ -1,0 +1,108 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "npc-life",
+  "version": "0.1.0",
+  "name": "NPC life",
+  "summary": "Villagers who keep a day: routines and the agent planner decide where each wants to be, then they walk there, work their trade with breaks, staff and shop at open businesses, rest at home, follow the player on an escort, greet the player, talk among themselves, gather at meeting places and hold posts, with simulation LOD keeping a crowd affordable.",
+  "kind": "base",
+  "phase": "P9f",
+  "catalog": [
+    "npc-schedules-routines",
+    "npc-agent-ai-planner",
+    "npc-navigation-movement",
+    "npc-ambient-life",
+    "npc-occupation-work",
+    "npc-business-population",
+    "npc-residence-activities",
+    "npc-ambient-conversations",
+    "npc-proximity-greetings",
+    "npc-hold-poses-stations",
+    "npc-village-staging",
+    "npc-meeting-places",
+    "npc-building-approach-points",
+    "npc-follow-escort",
+    "npc-belief-knowledge",
+    "npc-slm-decision-advisor",
+    "npc-simulation-lod"
+  ],
+  "core": {
+    "modules": ["routine", "agentAi"],
+    "predicatePacks": ["routine", "agentAi"],
+    "hostInterfaces": ["ILocomotionHost", "IAgentActionHost"],
+    "corpus": [
+      "conformance/routines/goals.json",
+      "conformance/routines/intents.json",
+      "conformance/routines/interruption.json",
+      "conformance/prolog/mechanic-routine.json",
+      "conformance/ai/action-selection.json",
+      "conformance/prolog/agent-ai.json",
+      "conformance/npc-life/navigation.json",
+      "conformance/npc-life/escort.json",
+      "conformance/npc-life/work.json",
+      "conformance/npc-life/population.json",
+      "conformance/npc-life/residence.json",
+      "conformance/npc-life/ambient.json",
+      "conformance/npc-life/greetings.json",
+      "conformance/npc-life/places.json",
+      "conformance/npc-life/staging.json",
+      "conformance/npc-life/lod.json",
+      "conformance/npc-life/minds.json"
+    ],
+    "saveExtensions": ["aiBlackboards", "npcLife"]
+  },
+  "requires": [{ "id": "foundation" }, { "id": "time-weather" }],
+  "parameters": [
+    { "id": "lodPreset", "type": "enum", "values": ["minimal", "low", "medium", "high", "ultra"], "maps": "LodTuning.preset", "source": "core-default", "doc": "caps how many villagers run at once (8, 15, 30, 60, 100)" },
+    { "id": "lodNearMaxMm", "type": "integer", "min": 0, "maps": "LodTuning.nearMaxMm", "source": "core-default" },
+    { "id": "lodMediumMaxMm", "type": "integer", "min": 0, "maps": "LodTuning.mediumMaxMm", "source": "core-default" },
+    { "id": "lodFarMaxMm", "type": "integer", "min": 0, "maps": "LodTuning.farMaxMm", "source": "core-default" },
+    { "id": "settlementCulling", "type": "boolean", "maps": "LodTuning.settlementCulling", "source": "core-default", "doc": "villagers of another settlement pause beyond the near band" },
+    { "id": "greetingRadiusMm", "type": "integer", "min": 0, "maps": "GreetingTuning.radiusMm", "source": "core-default" },
+    { "id": "greetingBasePpm", "type": "integer", "min": 0, "max": 1000000, "maps": "GreetingTuning.basePpm", "source": "world", "doc": "how chatty a world's villagers are, before personality" },
+    { "id": "greetingCooldownMs", "type": "integer", "min": 0, "maps": "GreetingTuning.perNpcCooldownMs", "source": "core-default" },
+    { "id": "greetingGlobalCooldownMs", "type": "integer", "min": 0, "maps": "GreetingTuning.globalCooldownMs", "source": "core-default" },
+    { "id": "followDistanceMm", "type": "integer", "min": 0, "maps": "EscortTuning.followDistanceMm", "source": "core-default" },
+    { "id": "maxFollowRangeMm", "type": "integer", "min": 0, "maps": "EscortTuning.maxFollowRangeMm", "source": "core-default", "doc": "an escort left farther behind than this is put down near the player" },
+    { "id": "minCustomers", "type": "integer", "min": 0, "maps": "PopulationTuning.minCustomers", "source": "world" },
+    { "id": "maxCustomers", "type": "integer", "min": 0, "maps": "PopulationTuning.maxCustomers", "source": "world" },
+    { "id": "stuckCheckMs", "type": "integer", "min": 1, "maps": "NavigationTuning.stuckCheckMs", "source": "core-default" },
+    { "id": "stuckRetries", "type": "integer", "min": 0, "maps": "NavigationTuning.stuckRetries", "source": "core-default" },
+    { "id": "patrolRadiusMm", "type": "integer", "min": 0, "maps": "NavigationTuning.patrolRadiusMm", "source": "world" },
+    { "id": "doorMinSpacingMm", "type": "integer", "min": 0, "maps": "DoorSlotTuning.minSpacingMm", "source": "core-default", "doc": "how far apart people stand at a door or on the street edge" }
+  ],
+  "extensionPoints": [
+    { "id": "routines", "kind": "prolog-facts", "signature": "WorldIR.routines (routine_block/…, published by RoutineDirector)", "doc": "a villager's day as goals by hour; never engine code" },
+    { "id": "agent-actions", "kind": "host-slot", "signature": "IAgentActionHost.perform(order) with ActionOrder.animation", "doc": "the planner's decision carried out, with the animation intent on the same order" },
+    { "id": "locomotion", "kind": "host-slot", "signature": "ILocomotionHost.travel(order) (urgency, stance)", "doc": "a routine's movement intent leaves through traversal's interface" },
+    { "id": "path-follower", "kind": "binding-hook", "signature": "moveTo / queueMoveTo / startConversation / stepMover (src/npc-life/navigation.ts)", "doc": "the engine paths and steers; core keeps the order book, stuck recovery and patrol points" },
+    { "id": "standing-spots", "kind": "binding-hook", "signature": "approachPoint / pickSlot / takeMeetingSpot (src/npc-life/places.ts) over the host's walkable answers", "doc": "where a villager stands at a building or a meeting place" },
+    { "id": "trades", "kind": "binding-hook", "signature": "occupationProfile(businessType, authored) (src/npc-life/occupation-profiles.ts)", "doc": "a world's own trades, their activities and breaks" },
+    { "id": "greeting-lines", "kind": "binding-hook", "signature": "greetingContext({authored}) (src/npc-life/greetings.ts)", "doc": "a world's stock greetings per language; the dialogue stack voices the rest" },
+    { "id": "advisor", "kind": "host-slot", "signature": "ILocalInferenceProvider (src/inference/local-inference.ts) through admitProposal", "doc": "an on-device model proposes from the permitted shortlist; core re-gates it into one bounded action_bias row" }
+  ],
+  "events": {
+    "emits": ["escort_started", "escort_completed", "npc_greeting", "ambient_conversation_started", "ambient_conversation_ended", "vocabulary_overheard"]
+  },
+  "styles": {
+    "tokens": ["text_primary", "accent"],
+    "layouts": ["greeting-bubble"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "RoutineDirector, LocomotionDirector and AgentPlanner (src/game-engine/logic/) decide what each villager wants; src/npc-life/ decides how that shows up as village life (movement orders, work, homes, shops, greetings, escorts, meeting places, posts, LOD), all integer and seeded so every engine agrees.",
+    "notes": [
+      "Author a villager's day in WorldIR.routines; a new trade is an occupation profile, not code.",
+      "Every draw is core's deterministic stream named by (seed, villager, decision number): pass the world seed, never Math.random().",
+      "Positions are integer millimetres on the ground plane; the engine answers walkability and hands core the answers.",
+      "One voice at a time: greetings and ambient conversations share the speech lock (src/npc-life/greetings.ts).",
+      "npc-socialization (the old 5-minute socialization controller) is a retire-candidate: not in this pack's catalog and not ported; the socialize behaviour it fed is AmbientLifeBehaviorSystem's, kept (merge decision 4)."
+    ],
+    "doNot": [
+      "Path or steer in core, or stream per-frame positions into it: report arrivals and snags only.",
+      "Let a model command a villager: a proposal is a candidate core re-gates, never an order."
+    ]
+  }
+}

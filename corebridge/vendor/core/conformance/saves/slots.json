@@ -1,9 +1,9 @@
 {
   "area": "saves-slots",
-  "description": "Save slots around the village-state save (Features WV1, P1.core-slots; catalog saves-slots-autosave; ruling U83(1)): deleting a slot and what the slot list and the Continue target become; autosave at an interval with its indicator (\"Saving…\", \"Saved!\", \"Save failed\"); quick save on F5 and quick load on F9 (core's KeyboardMap), including F9 with an empty or corrupted quick slot and a game with no quick slot. The quick slot is dedicated by default, after the manual slots and titled \"Quick save\", so F5 never writes over a manual save; a game may name a manual slot instead, and a quickSlot that is not one is refused with a code (PL.quick-slot, ruling U88(5)). Delete asks first and says what happened in core's words (PL.slots-delete-states, ruling U88(2)): the prompt, the five delete states of the indicator and the history line, all from one table (contract deleteWords, {n} the slot's index + 1). The session does no I/O: each step returns the effect the host performs (write, read, remove) and the host reports it with a finished step. Runner: src/save-slots-corpus.ts (ops config, continue, rows, indicator, run). Numbers compare within tolerance; everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). A non-finite number is written as null in an input. Regenerate with npm run save-slots-corpus; npm run save-slots-corpus:check fails on any difference.",
+  "description": "Save slots around the village-state save (Features WV1, P1.core-slots; catalog saves-slots-autosave; ruling U83(1)): deleting a slot and what the slot list and the Continue target become; autosave at an interval with its indicator (\"Saving…\", \"Saved!\", \"Save failed\"); quick save on F5 and quick load on F9 (core's KeyboardMap), including F9 with an empty or corrupted quick slot and a game with no quick slot. The quick slot is dedicated by default, after the manual slots and titled \"Quick save\", so F5 never writes over a manual save; a game may name a manual slot instead, by its 1-based number (quickSlot 1 is \"Slot 1\", PL.quick-slot-one-based, ruling U90(6)), and a quickSlot that is not one is refused with a code (PL.quick-slot, ruling U88(5)). Delete asks first and says what happened in core's words (PL.slots-delete-states, ruling U88(2)): the prompt, the five delete states of the indicator and the history line, all from one table (contract deleteWords, {n} the slot's index + 1). The session does no I/O: each step returns the effect the host performs (write, read, remove) and the host reports it with a finished step. Runner: src/save-slots-corpus.ts (ops config, continue, rows, indicator, run). Numbers compare within tolerance; everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). A non-finite number is written as null in an input. Regenerate with npm run save-slots-corpus; npm run save-slots-corpus:check fails on any difference.",
   "version": 1,
   "sources": [
-    "Rules new in core (src/save-slots.ts, src/ui/save-indicator-model.ts), from the original game: babylon origin/main WorldStateManager (MAX_SAVE_SLOTS 3, AUTO_SAVE_INTERVAL_MS 5 min, deleteSlot), SaveIndicator (hold 1000 ms, fade 2000 ms, \"Saved!\" / \"Save failed\"), GameMenuSystem (one save, load or delete at a time; \"No save data\"), MainMenuScreen (Continue is the most recent); core KeyboardMap KEY_QUICK_SAVE F5 / KEY_QUICK_LOAD F9 (its old \"slot 0\" is now the explicit quickSlot 0; the default is the dedicated quick slot, PL.quick-slot, U88(5)).",
+    "Rules new in core (src/save-slots.ts, src/ui/save-indicator-model.ts), from the original game: babylon origin/main WorldStateManager (MAX_SAVE_SLOTS 3, AUTO_SAVE_INTERVAL_MS 5 min, deleteSlot), SaveIndicator (hold 1000 ms, fade 2000 ms, \"Saved!\" / \"Save failed\"), GameMenuSystem (one save, load or delete at a time; \"No save data\"), MainMenuScreen (Continue is the most recent); core KeyboardMap KEY_QUICK_SAVE F5 / KEY_QUICK_LOAD F9 (its old \"slot 0\" is now the explicit quickSlot 1, \"Slot 1\"; the default is the dedicated quick slot, PL.quick-slot, U88(5)).",
     "Inputs are synthetic; every expected is core's answer, and src/conformance/__tests__/save-slots.test.ts pins the same rules independently."
   ],
   "tolerance": 1e-9,
@@ -20,12 +20,12 @@
       "autosaveIntervalSec": "autosaveIntervalSec",
       "autosaveIndicator": "autosaveIndicator"
     },
-    "packParametersRule": "packs/saves/pack.json names its parameters as the keys of packParameters; each sets the session config key it maps to. Only the slot count differs (pack maxSlots, session slotCount); config reads maxSlots when slotCount is absent, so a binding may pass the pack's parameters as they are",
+    "packParametersRule": "packs/saves/pack.json names its parameters as the keys of packParameters; each sets the session config key it maps to. Only the slot count's name differs (pack maxSlots, session slotCount); config reads maxSlots when slotCount is absent, so a binding may pass the pack's parameters as they are. quickSlot keeps its name and is a 1-based slot number (1 is \"Slot 1\"); config resolution maps it to the session's 0-based slot index (expected.config.quickSlot), the one place it is mapped (PL.quick-slot-one-based, U90(6))",
     "quickSlotWords": {
       "title": "Quick save",
       "separator": " · "
     },
-    "configRule": "slotCount (else maxSlots): a finite number of at least 1, rounded down, else 3 (the manual slots); quickSlot: unset or \"dedicated\" is the dedicated quick slot, index slotCount, one more row after the manual ones; null is none; an integer index of a manual slot is that slot; an integer that is not one (negative, or slotCount or more) is refused quick_slot_out_of_range and any other value quick_slot_not_an_index: quickSlot is then null and the resolved config carries refusal (absent otherwise), never clamped, never the dedicated slot; autosaveIntervalSec: finite and at least 0, else 300; autosaveIndicator: a boolean, else true",
+    "configRule": "slotCount (else maxSlots): a finite number of at least 1, rounded down, else 3 (the manual slots); quickSlot: unset or \"dedicated\" is the dedicated quick slot, index slotCount, one more row after the manual ones; null is none; a manual slot's 1-based number (an integer from 1 to slotCount, as the player reads \"Slot N\") is that slot, resolved to its 0-based index number - 1; an integer that is not one (0 or less, or more than slotCount) is refused quick_slot_out_of_range and any other value quick_slot_not_an_index: quickSlot is then null and the resolved config carries refusal (absent otherwise), never clamped, never the dedicated slot; autosaveIntervalSec: finite and at least 0, else 300; autosaveIndicator: a boolean, else true",
     "rowsRule": "one row per slot in index order: the manual slots (isManual true), then the dedicated quick slot when there is one (isManual false, isQuick true; title \"Quick save\", or \"Quick save · \" and the save's preview line or \"Corrupted Save\"; canSave and canDelete false, canLoad as any slot); every action off while an operation runs or the prompt is open",
     "keys": {
       "quickSave": "F5",
@@ -181,11 +181,12 @@
     },
     {
       "name": "config: the pack parameters as a game states them",
+      "note": "quickSlot 3 is \"Slot 3\", the session's slot index 2 (PL.quick-slot-one-based, U90(6)).",
       "op": "config",
       "input": {
         "config": {
           "slotCount": 5,
-          "quickSlot": 2,
+          "quickSlot": 3,
           "autosaveIntervalSec": 60,
           "autosaveIndicator": false
         }
@@ -392,11 +393,12 @@
       }
     },
     {
-      "name": "config: an explicit quickSlot 0 is manual Slot 1, the old default, and there is no dedicated quick slot",
+      "name": "config: an explicit quickSlot 1 is manual Slot 1 (index 0), the old default, and there is no dedicated quick slot",
+      "note": "quickSlot is a 1-based slot number, as the player reads \"Slot 1\"; the resolved config holds the session's 0-based index (PL.quick-slot-one-based, U90(6)).",
       "op": "config",
       "input": {
         "config": {
-          "quickSlot": 0
+          "quickSlot": 1
         }
       },
       "expected": {
@@ -409,11 +411,11 @@
       }
     },
     {
-      "name": "config: an explicit quickSlot 1 is manual Slot 2, as before",
+      "name": "config: an explicit quickSlot 2 is manual Slot 2 (index 1)",
       "op": "config",
       "input": {
         "config": {
-          "quickSlot": 1
+          "quickSlot": 2
         }
       },
       "expected": {
@@ -426,13 +428,51 @@
       }
     },
     {
-      "name": "config: a quick slot past the last manual slot is refused quick_slot_out_of_range, never clamped",
-      "note": "Index 3 is where the dedicated quick slot sits, but only an unset quickSlot (or \"dedicated\") names it: a stated integer must be a manual slot.",
+      "name": "config: quickSlot 3 with 3 manual slots is the last manual slot, Slot 3 (index 2)",
+      "note": "The slot count itself is a slot number; it is not the dedicated quick slot, which only an unset quickSlot (or \"dedicated\") names.",
       "op": "config",
       "input": {
         "config": {
           "slotCount": 3,
           "quickSlot": 3
+        }
+      },
+      "expected": {
+        "config": {
+          "slotCount": 3,
+          "quickSlot": 2,
+          "autosaveIntervalSec": 300,
+          "autosaveIndicator": true
+        }
+      }
+    },
+    {
+      "name": "config: quickSlot 0 is refused quick_slot_out_of_range: slot numbers start at 1",
+      "note": "Before PL.quick-slot-one-based, 0 named Slot 1; now it names no slot, and is never read as Slot 1 or as the dedicated slot.",
+      "op": "config",
+      "input": {
+        "config": {
+          "quickSlot": 0
+        }
+      },
+      "expected": {
+        "config": {
+          "slotCount": 3,
+          "quickSlot": null,
+          "autosaveIntervalSec": 300,
+          "autosaveIndicator": true,
+          "refusal": "quick_slot_out_of_range"
+        }
+      }
+    },
+    {
+      "name": "config: a quick slot past the last manual slot is refused quick_slot_out_of_range, never clamped",
+      "note": "Slot number 4 would sit where the dedicated quick slot does (index 3), but only an unset quickSlot (or \"dedicated\") names it: a stated number must be a manual slot's.",
+      "op": "config",
+      "input": {
+        "config": {
+          "slotCount": 3,
+          "quickSlot": 4
         }
       },
       "expected": {
@@ -487,7 +527,7 @@
       "op": "config",
       "input": {
         "config": {
-          "quickSlot": "0"
+          "quickSlot": "1"
         }
       },
       "expected": {
@@ -520,12 +560,12 @@
     },
     {
       "name": "config: the quick slot is checked against the resolved slot count",
-      "note": "slotCount resolves to 2, so slot 2 does not exist: refused quick_slot_out_of_range, and there is no quick slot.",
+      "note": "slotCount resolves to 2, so Slot 3 does not exist: refused quick_slot_out_of_range, and there is no quick slot.",
       "op": "config",
       "input": {
         "config": {
           "slotCount": 2.9,
-          "quickSlot": 2
+          "quickSlot": 3
         }
       },
       "expected": {
@@ -1039,7 +1079,7 @@
     },
     {
       "name": "rows: two saves and a corrupted slot; slot 1 is active, newest and Continue; slot 0 is quick",
-      "note": "canDelete is true for any slot that is not empty, the corrupted one too. A corrupted slot can be saved over and deleted but not loaded. quickSlot 0 names manual slot 0 (the old default).",
+      "note": "canDelete is true for any slot that is not empty, the corrupted one too. A corrupted slot can be saved over and deleted but not loaded. quickSlot 1 names manual Slot 1, slot 0 (the old default).",
       "op": "rows",
       "input": {
         "slots": [
@@ -1069,7 +1109,7 @@
           }
         ],
         "config": {
-          "quickSlot": 0
+          "quickSlot": 1
         },
         "activeSlot": 1
       },
@@ -1812,7 +1852,7 @@
         ],
         "config": {
           "slotCount": 5,
-          "quickSlot": 4
+          "quickSlot": 5
         },
         "activeSlot": 0
       },
@@ -6780,13 +6820,447 @@
       }
     },
     {
-      "name": "run: an explicit quickSlot 0 (Slot 1) behaves as the old default: F5 writes over Slot 1's save and F9 reads it",
+      "name": "run: an explicit quickSlot 1 writes \"Slot 1\": F5 creates slot 0, the first row, titled \"Slot 1\", and F9 reads it",
+      "note": "PL.quick-slot-one-based (U90(6)): quickSlot is the slot number the player reads. The save carries no preview, so its row is titled by its number: \"Slot 1\", the row F5 wrote.",
+      "op": "run",
+      "input": {
+        "init": {
+          "config": {
+            "quickSlot": 1
+          },
+          "slots": [
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            },
+            {
+              "index": 2,
+              "outcome": "integrity_mismatch"
+            }
+          ],
+          "activeSlot": 1
+        },
+        "steps": [
+          {
+            "key": "F5"
+          },
+          {
+            "finished": {
+              "ok": true,
+              "savedAt": "2026-11-04T07:15:00Z"
+            }
+          },
+          {
+            "key": "F9"
+          },
+          {
+            "finished": {
+              "ok": true
+            }
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "rows": [
+            {
+              "index": 0,
+              "status": "empty",
+              "title": "Empty Slot",
+              "message": "",
+              "canLoad": false,
+              "canSave": true,
+              "canDelete": false,
+              "isContinue": false,
+              "isActive": false,
+              "isQuick": true,
+              "isManual": true
+            },
+            {
+              "index": 1,
+              "status": "ok",
+              "title": "Ash · Lv 2 · Brightwater",
+              "message": "Saved 2026-11-02T09:00:00Z",
+              "canLoad": true,
+              "canSave": true,
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              },
+              "canDelete": true,
+              "isContinue": true,
+              "isActive": true,
+              "isQuick": false,
+              "isManual": true
+            },
+            {
+              "index": 2,
+              "status": "corrupted",
+              "title": "Corrupted Save",
+              "message": "Save file integrity check failed — file may be corrupted or tampered.",
+              "canLoad": false,
+              "canSave": true,
+              "canDelete": true,
+              "isContinue": false,
+              "isActive": false,
+              "isQuick": false,
+              "isManual": true
+            }
+          ],
+          "continueSlot": 1,
+          "activeSlot": 1,
+          "pending": null,
+          "confirm": null,
+          "autosave": {
+            "on": true,
+            "target": 1,
+            "inSec": 300
+          },
+          "indicator": {
+            "visible": false,
+            "state": "hidden",
+            "label": "",
+            "detail": "",
+            "kind": null,
+            "opacity": 0
+          }
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "write": {
+                  "slot": 0,
+                  "kind": "quick",
+                  "autosave": false
+                }
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "index": 0,
+                  "status": "empty",
+                  "title": "Empty Slot",
+                  "message": "",
+                  "canLoad": false,
+                  "canSave": false,
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": true,
+                  "isManual": true
+                },
+                {
+                  "index": 1,
+                  "status": "ok",
+                  "title": "Ash · Lv 2 · Brightwater",
+                  "message": "Saved 2026-11-02T09:00:00Z",
+                  "canLoad": false,
+                  "canSave": false,
+                  "summary": {
+                    "playerName": "Ash",
+                    "level": 2,
+                    "locationName": "Brightwater",
+                    "savedAt": "2026-11-02T09:00:00Z"
+                  },
+                  "canDelete": false,
+                  "isContinue": true,
+                  "isActive": true,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 2,
+                  "status": "corrupted",
+                  "title": "Corrupted Save",
+                  "message": "Save file integrity check failed — file may be corrupted or tampered.",
+                  "canLoad": false,
+                  "canSave": false,
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                }
+              ],
+              "continueSlot": 1,
+              "activeSlot": 1,
+              "pending": {
+                "op": "save",
+                "slot": 0,
+                "kind": "quick"
+              },
+              "confirm": null,
+              "autosave": {
+                "on": true,
+                "target": 1,
+                "inSec": null
+              },
+              "indicator": {
+                "visible": true,
+                "state": "saving",
+                "label": "Saving…",
+                "detail": "",
+                "kind": "quick",
+                "opacity": 1
+              }
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": null
+            },
+            "view": {
+              "rows": [
+                {
+                  "index": 0,
+                  "status": "ok",
+                  "title": "Slot 1",
+                  "message": "Saved 2026-11-04T07:15:00Z",
+                  "canLoad": true,
+                  "canSave": true,
+                  "summary": {
+                    "savedAt": "2026-11-04T07:15:00Z"
+                  },
+                  "canDelete": true,
+                  "isContinue": true,
+                  "isActive": true,
+                  "isQuick": true,
+                  "isManual": true
+                },
+                {
+                  "index": 1,
+                  "status": "ok",
+                  "title": "Ash · Lv 2 · Brightwater",
+                  "message": "Saved 2026-11-02T09:00:00Z",
+                  "canLoad": true,
+                  "canSave": true,
+                  "summary": {
+                    "playerName": "Ash",
+                    "level": 2,
+                    "locationName": "Brightwater",
+                    "savedAt": "2026-11-02T09:00:00Z"
+                  },
+                  "canDelete": true,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 2,
+                  "status": "corrupted",
+                  "title": "Corrupted Save",
+                  "message": "Save file integrity check failed — file may be corrupted or tampered.",
+                  "canLoad": false,
+                  "canSave": true,
+                  "canDelete": true,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                }
+              ],
+              "continueSlot": 0,
+              "activeSlot": 0,
+              "pending": null,
+              "confirm": null,
+              "autosave": {
+                "on": true,
+                "target": 0,
+                "inSec": 300
+              },
+              "indicator": {
+                "visible": true,
+                "state": "saved",
+                "label": "Saved!",
+                "detail": "",
+                "kind": "quick",
+                "opacity": 1
+              }
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": {
+                "read": {
+                  "slot": 0,
+                  "kind": "quick"
+                }
+              }
+            },
+            "view": {
+              "rows": [
+                {
+                  "index": 0,
+                  "status": "ok",
+                  "title": "Slot 1",
+                  "message": "Saved 2026-11-04T07:15:00Z",
+                  "canLoad": false,
+                  "canSave": false,
+                  "summary": {
+                    "savedAt": "2026-11-04T07:15:00Z"
+                  },
+                  "canDelete": false,
+                  "isContinue": true,
+                  "isActive": true,
+                  "isQuick": true,
+                  "isManual": true
+                },
+                {
+                  "index": 1,
+                  "status": "ok",
+                  "title": "Ash · Lv 2 · Brightwater",
+                  "message": "Saved 2026-11-02T09:00:00Z",
+                  "canLoad": false,
+                  "canSave": false,
+                  "summary": {
+                    "playerName": "Ash",
+                    "level": 2,
+                    "locationName": "Brightwater",
+                    "savedAt": "2026-11-02T09:00:00Z"
+                  },
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 2,
+                  "status": "corrupted",
+                  "title": "Corrupted Save",
+                  "message": "Save file integrity check failed — file may be corrupted or tampered.",
+                  "canLoad": false,
+                  "canSave": false,
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                }
+              ],
+              "continueSlot": 0,
+              "activeSlot": 0,
+              "pending": {
+                "op": "load",
+                "slot": 0,
+                "kind": "quick"
+              },
+              "confirm": null,
+              "autosave": {
+                "on": true,
+                "target": 0,
+                "inSec": null
+              },
+              "indicator": {
+                "visible": true,
+                "state": "loading",
+                "label": "Loading…",
+                "detail": "",
+                "kind": "quick",
+                "opacity": 1
+              }
+            }
+          },
+          {
+            "result": {
+              "ok": true,
+              "effect": null
+            },
+            "view": {
+              "rows": [
+                {
+                  "index": 0,
+                  "status": "ok",
+                  "title": "Slot 1",
+                  "message": "Saved 2026-11-04T07:15:00Z",
+                  "canLoad": true,
+                  "canSave": true,
+                  "summary": {
+                    "savedAt": "2026-11-04T07:15:00Z"
+                  },
+                  "canDelete": true,
+                  "isContinue": true,
+                  "isActive": true,
+                  "isQuick": true,
+                  "isManual": true
+                },
+                {
+                  "index": 1,
+                  "status": "ok",
+                  "title": "Ash · Lv 2 · Brightwater",
+                  "message": "Saved 2026-11-02T09:00:00Z",
+                  "canLoad": true,
+                  "canSave": true,
+                  "summary": {
+                    "playerName": "Ash",
+                    "level": 2,
+                    "locationName": "Brightwater",
+                    "savedAt": "2026-11-02T09:00:00Z"
+                  },
+                  "canDelete": true,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 2,
+                  "status": "corrupted",
+                  "title": "Corrupted Save",
+                  "message": "Save file integrity check failed — file may be corrupted or tampered.",
+                  "canLoad": false,
+                  "canSave": true,
+                  "canDelete": true,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                }
+              ],
+              "continueSlot": 0,
+              "activeSlot": 0,
+              "pending": null,
+              "confirm": null,
+              "autosave": {
+                "on": true,
+                "target": 0,
+                "inSec": 300
+              },
+              "indicator": {
+                "visible": true,
+                "state": "loaded",
+                "label": "Loaded!",
+                "detail": "",
+                "kind": "quick",
+                "opacity": 1
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "run: an explicit quickSlot 1 (Slot 1) behaves as the old default: F5 writes over Slot 1's save and F9 reads it",
       "note": "A world or pack that wants the old behaviour states it. There is no dedicated row.",
       "op": "run",
       "input": {
         "init": {
           "config": {
-            "quickSlot": 0
+            "quickSlot": 1
           },
           "slots": [
             {
@@ -7245,12 +7719,12 @@
       }
     },
     {
-      "name": "run: an explicit quickSlot 1 (Slot 2) behaves as today: F5 writes over Slot 2's save and F9 reads it",
+      "name": "run: an explicit quickSlot 2 (Slot 2) writes over Slot 2's save and F9 reads it",
       "op": "run",
       "input": {
         "init": {
           "config": {
-            "quickSlot": 1
+            "quickSlot": 2
           },
           "slots": [
             {
@@ -7709,6 +8183,287 @@
       }
     },
     {
+      "name": "run: quickSlot 0 is refused quick_slot_out_of_range on F5 and F9 and shows nothing; it never writes Slot 1",
+      "note": "Slot numbers start at 1 (PL.quick-slot-one-based, U90(6)). Slot 1 keeps its save and time, and there is no dedicated row.",
+      "op": "run",
+      "input": {
+        "init": {
+          "config": {
+            "quickSlot": 0
+          },
+          "slots": [
+            {
+              "index": 0,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              }
+            },
+            {
+              "index": 1,
+              "outcome": "ok",
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              }
+            },
+            {
+              "index": 2,
+              "outcome": "integrity_mismatch"
+            }
+          ],
+          "activeSlot": 1
+        },
+        "steps": [
+          {
+            "key": "F5"
+          },
+          {
+            "key": "F9"
+          }
+        ]
+      },
+      "expected": {
+        "start": {
+          "rows": [
+            {
+              "index": 0,
+              "status": "ok",
+              "title": "Ash · Lv 1 · Brightwater",
+              "message": "Saved 2026-11-01T10:00:00Z",
+              "canLoad": true,
+              "canSave": true,
+              "summary": {
+                "playerName": "Ash",
+                "level": 1,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-01T10:00:00Z"
+              },
+              "canDelete": true,
+              "isContinue": false,
+              "isActive": false,
+              "isQuick": false,
+              "isManual": true
+            },
+            {
+              "index": 1,
+              "status": "ok",
+              "title": "Ash · Lv 2 · Brightwater",
+              "message": "Saved 2026-11-02T09:00:00Z",
+              "canLoad": true,
+              "canSave": true,
+              "summary": {
+                "playerName": "Ash",
+                "level": 2,
+                "locationName": "Brightwater",
+                "savedAt": "2026-11-02T09:00:00Z"
+              },
+              "canDelete": true,
+              "isContinue": true,
+              "isActive": true,
+              "isQuick": false,
+              "isManual": true
+            },
+            {
+              "index": 2,
+              "status": "corrupted",
+              "title": "Corrupted Save",
+              "message": "Save file integrity check failed — file may be corrupted or tampered.",
+              "canLoad": false,
+              "canSave": true,
+              "canDelete": true,
+              "isContinue": false,
+              "isActive": false,
+              "isQuick": false,
+              "isManual": true
+            }
+          ],
+          "continueSlot": 1,
+          "activeSlot": 1,
+          "pending": null,
+          "confirm": null,
+          "autosave": {
+            "on": true,
+            "target": 1,
+            "inSec": 300
+          },
+          "indicator": {
+            "visible": false,
+            "state": "hidden",
+            "label": "",
+            "detail": "",
+            "kind": null,
+            "opacity": 0
+          }
+        },
+        "steps": [
+          {
+            "result": {
+              "ok": false,
+              "refusal": "quick_slot_out_of_range",
+              "effect": null
+            },
+            "view": {
+              "rows": [
+                {
+                  "index": 0,
+                  "status": "ok",
+                  "title": "Ash · Lv 1 · Brightwater",
+                  "message": "Saved 2026-11-01T10:00:00Z",
+                  "canLoad": true,
+                  "canSave": true,
+                  "summary": {
+                    "playerName": "Ash",
+                    "level": 1,
+                    "locationName": "Brightwater",
+                    "savedAt": "2026-11-01T10:00:00Z"
+                  },
+                  "canDelete": true,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 1,
+                  "status": "ok",
+                  "title": "Ash · Lv 2 · Brightwater",
+                  "message": "Saved 2026-11-02T09:00:00Z",
+                  "canLoad": true,
+                  "canSave": true,
+                  "summary": {
+                    "playerName": "Ash",
+                    "level": 2,
+                    "locationName": "Brightwater",
+                    "savedAt": "2026-11-02T09:00:00Z"
+                  },
+                  "canDelete": true,
+                  "isContinue": true,
+                  "isActive": true,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 2,
+                  "status": "corrupted",
+                  "title": "Corrupted Save",
+                  "message": "Save file integrity check failed — file may be corrupted or tampered.",
+                  "canLoad": false,
+                  "canSave": true,
+                  "canDelete": true,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                }
+              ],
+              "continueSlot": 1,
+              "activeSlot": 1,
+              "pending": null,
+              "confirm": null,
+              "autosave": {
+                "on": true,
+                "target": 1,
+                "inSec": 300
+              },
+              "indicator": {
+                "visible": false,
+                "state": "hidden",
+                "label": "",
+                "detail": "",
+                "kind": null,
+                "opacity": 0
+              }
+            }
+          },
+          {
+            "result": {
+              "ok": false,
+              "refusal": "quick_slot_out_of_range",
+              "effect": null
+            },
+            "view": {
+              "rows": [
+                {
+                  "index": 0,
+                  "status": "ok",
+                  "title": "Ash · Lv 1 · Brightwater",
+                  "message": "Saved 2026-11-01T10:00:00Z",
+                  "canLoad": true,
+                  "canSave": true,
+                  "summary": {
+                    "playerName": "Ash",
+                    "level": 1,
+                    "locationName": "Brightwater",
+                    "savedAt": "2026-11-01T10:00:00Z"
+                  },
+                  "canDelete": true,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 1,
+                  "status": "ok",
+                  "title": "Ash · Lv 2 · Brightwater",
+                  "message": "Saved 2026-11-02T09:00:00Z",
+                  "canLoad": true,
+                  "canSave": true,
+                  "summary": {
+                    "playerName": "Ash",
+                    "level": 2,
+                    "locationName": "Brightwater",
+                    "savedAt": "2026-11-02T09:00:00Z"
+                  },
+                  "canDelete": true,
+                  "isContinue": true,
+                  "isActive": true,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 2,
+                  "status": "corrupted",
+                  "title": "Corrupted Save",
+                  "message": "Save file integrity check failed — file may be corrupted or tampered.",
+                  "canLoad": false,
+                  "canSave": true,
+                  "canDelete": true,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                }
+              ],
+              "continueSlot": 1,
+              "activeSlot": 1,
+              "pending": null,
+              "confirm": null,
+              "autosave": {
+                "on": true,
+                "target": 1,
+                "inSec": 300
+              },
+              "indicator": {
+                "visible": false,
+                "state": "hidden",
+                "label": "",
+                "detail": "",
+                "kind": null,
+                "opacity": 0
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "run: a game with no quick slot refuses F5 and F9 and shows nothing",
       "op": "run",
       "input": {
@@ -7994,7 +8749,7 @@
         "init": {
           "config": {
             "slotCount": 2,
-            "quickSlot": 2
+            "quickSlot": 3
           },
           "slots": []
         },
@@ -8169,12 +8924,12 @@
     },
     {
       "name": "run: an out-of-range quickSlot is refused quick_slot_out_of_range, never clamped and never the dedicated slot",
-      "note": "With 3 manual slots, index 3 would be the dedicated slot, but a stated 3 is refused: the game has no quick slot and no fourth row.",
+      "note": "With 3 manual slots, a fourth slot (index 3) would be the dedicated slot, but a stated 4 is refused: the game has no quick slot and no fourth row.",
       "op": "run",
       "input": {
         "init": {
           "config": {
-            "quickSlot": 3
+            "quickSlot": 4
           },
           "slots": [
             {
@@ -8811,12 +9566,12 @@
     },
     {
       "name": "run: the quick slot follows the config",
-      "note": "Slot 2 was corrupted; the quick save writes over it.",
+      "note": "quickSlot 3 is Slot 3 (index 2), which was corrupted; the quick save writes over it.",
       "op": "run",
       "input": {
         "init": {
           "config": {
-            "quickSlot": 2
+            "quickSlot": 3
           },
           "slots": [
             {

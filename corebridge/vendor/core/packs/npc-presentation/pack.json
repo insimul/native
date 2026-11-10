@@ -1,0 +1,48 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "npc-presentation",
+  "version": "0.1.0",
+  "name": "NPC presentation",
+  "summary": "How villagers look and show what they are doing: model variety by role, gender and genre, animation intents, activity labels and nameplates, a talking bubble, head turns toward the player, idle fidgets and gestures between lines, and lip sync from visemes or text.",
+  "kind": "base",
+  "phase": "P9f",
+  "catalog": ["npc-labels-indicators", "npc-appearance-variety", "npc-animation", "npc-lip-sync", "npc-attention-idle-life"],
+  "core": {
+    "corpus": [
+      "conformance/routines/intents.json",
+      "conformance/npc-life/presentation.json",
+      "conformance/npc-life/appearance.json",
+      "conformance/npc-life/animation.json"
+    ]
+  },
+  "requires": [{ "id": "npc-life" }],
+  "parameters": [
+    { "id": "labelRangeMm", "type": "integer", "min": 0, "maps": "LabelTuning.labelRangeMm", "source": "core-default" },
+    { "id": "nameplateRangeMm", "type": "integer", "min": 0, "maps": "LabelTuning.nameplateRangeMm", "source": "core-default" },
+    { "id": "observeMs", "type": "integer", "min": 0, "maps": "LabelTuning.observeMs", "source": "core-default", "doc": "how long watching an activity counts as observing it" },
+    { "id": "headTurnRangeMm", "type": "integer", "min": 0, "maps": "AttentionTuning.headTurnRangeMm", "source": "core-default" },
+    { "id": "headTurnInfluencePermille", "type": "integer", "min": 0, "max": 1000, "maps": "AttentionTuning.influencePermille", "source": "core-default" }
+  ],
+  "extensionPoints": [
+    { "id": "character-models", "kind": "binding-hook", "signature": "collectMatchingModels(characterModels, role, gender) (src/game-engine/logic/NPCModelVariety.ts)", "doc": "a world's own bodies by role_gender_N keys" },
+    { "id": "clips", "kind": "binding-hook", "signature": "gesturePool(clipNames) / stepGestures (src/npc-life/presentation.ts)", "doc": "the body's own gesture clips, chosen by name" },
+    { "id": "visemes", "kind": "binding-hook", "signature": "appendVisemes / textVisemes / mouthAt (src/npc-life/presentation.ts)", "doc": "TTS visemes, or dialogue text, drive the jaw" }
+  ],
+  "events": { "emits": ["activity_observed"] },
+  "styles": {
+    "tokens": ["text_primary", "text_secondary"],
+    "layouts": ["activity-label", "nameplate", "talking-bubble"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "Core decides what is shown and when (src/npc-life/presentation.ts; model choice in game-engine/logic/NPCModelVariety.ts and NPCModelManifest.ts); the engine draws it.",
+    "notes": [
+      "An animation is one of core's 24 intents on the order; the clip, blend and state machine are the engine's.",
+      "Fidgets and talker gestures are overlays over the wanted clip; they never run while walking, seated or at a station."
+    ],
+    "doNot": ["Stream frames into core: hand it elapsed time and the clips a body has."]
+  }
+}

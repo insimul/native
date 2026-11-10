@@ -123,16 +123,17 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `ac229a7` (core
-  `main` on 2026-11-09, holding the layout and composition rules the `layout.*` rows
+  what to quote in a bug report about core behaviour. Today: `eff846a` (core
+  `main` on 2026-11-10, holding the layout and composition rules the `layout.*` rows
   run, the composer the `packs.compose` row runs, P9a.core's genre HUD, rules
   panel and mechanic runtime the `ui.genreHud`, `ui.rulesPanel` and `mechanics.run`
   rows run, the mechanic step op list `mechanics.run` imports, P1.core-slots'
-  save-slots session the `saves.slots.*` rows run, and P6.core's props and
-  inventory logic the `props.*` and `inventory.*` rows run; see the pin's
+  save-slots session the `saves.slots.*` rows run, P6.core's props and
+  inventory logic the `props.*` and `inventory.*` rows run, and the pick-up
+  placement the `props.pickups.*` rows run; see the pin's
   `coreRefNote`). The vendor directory also holds core's layout corpora, its
   pack-composition corpus, its P9a corpora, its save-slots corpus and its P6
-  props and inventory corpora
+  props, inventory and pick-up placement corpora
   (`corebridge/vendor/core/conformance/`) and the pack
   catalog that corpus names (`corebridge/vendor/core/packs/`), copied byte for byte
   at the pin.

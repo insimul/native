@@ -1,0 +1,81 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "dialogue",
+  "version": "1.0.0",
+  "name": "Dialogue",
+  "summary": "Talking to NPCs: the chat panel and the request each line sends (what the NPC looks like, its kin, what it knows of the day and remembers of the player), the provider that answers, gestures, eavesdropping, the conversation history and voice input.",
+  "kind": "base",
+  "phase": "P9g",
+  "catalog": [
+    "dialogue-npc-chat",
+    "dialogue-ai-chat-service",
+    "dialogue-conversation-history",
+    "dialogue-social-actions-sidebar",
+    "dialogue-gestures",
+    "dialogue-eavesdrop",
+    "dialogue-voice-input",
+    "npc-dialogue-context",
+    "npc-player-memory"
+  ],
+  "core": {
+    "modules": ["dialogue"],
+    "predicatePacks": ["dialogue"],
+    "hostInterfaces": ["IAgentActionHost"],
+    "corpus": [
+      "conformance/ui/chat-cases.json",
+      "conformance/prolog/mechanic-dialogue.json",
+      "conformance/dialogue/conversation.json",
+      "conformance/dialogue/voice.json",
+      "conformance/dialogue/context.json",
+      "conformance/social/actions.json",
+      "conformance/social/save.json"
+    ],
+    "saveExtensions": []
+  },
+  "requires": [{ "id": "npc-life" }, { "id": "hud" }],
+  "variants": {
+    "axis": "provider",
+    "default": "server",
+    "options": [
+      { "id": "server", "name": "The game's server", "status": "ready", "doc": "Each line goes to the server's NPC chat, which keeps the NPC's memory of the player (chatProvider, src/conversation/context-memory.ts)." },
+      { "id": "on-device", "name": "A model on the device", "status": "port-later", "doc": "Local inference (catalog dialogue-offline-local-ai, port-later). The provider rule already refuses no_on_device_model when the host has none." },
+      { "id": "auto", "name": "On the device when it can, else the server", "status": "ready", "doc": "The device's model when the host has one, else the server." }
+    ]
+  },
+  "parameters": [
+    { "id": "speechThresholdPpm", "type": "integer", "min": 1, "maps": "VoiceTuning.speechThresholdPpm", "source": "core-default", "doc": "the microphone level, in millionths of full scale, at which hands-free listening hears speech (Babylon 15000)" },
+    { "id": "silenceMs", "type": "integer", "min": 1, "maps": "VoiceTuning.silenceMs", "source": "core-default", "doc": "quiet this long ends an utterance (Babylon 1500 ms)" },
+    { "id": "pushToTalkKey", "type": "string", "maps": "binding", "source": "game", "doc": "the key held to talk (core's KEY_PUSH_TO_TALK, T)" }
+  ],
+  "extensionPoints": [
+    { "id": "persona", "kind": "binding-hook", "signature": "chatRequest({persona, …}) (src/conversation/context-memory.ts)", "doc": "the NPC's persona block: the world's own, or kinPrompt() for a generated villager" },
+    { "id": "on-overheard", "kind": "event-handler", "signature": "conversation_overheard", "doc": "a clue or a quest step heard by eavesdropping" },
+    { "id": "on-gesture", "kind": "event-handler", "signature": "conversational_action", "doc": "a gesture counts as gesture_<id>, with its objective tags" },
+    { "id": "dialogue-panel", "kind": "panel-override", "signature": "UiRegistry key 'dialogue'" }
+  ],
+  "events": { "emits": ["conversational_action", "conversation_overheard", "npc_talked"] },
+  "panels": ["dialogue", "prompt"],
+  "styles": {
+    "tokens": ["surface", "border", "text_primary", "text_secondary", "accent"],
+    "layouts": ["chat-panel", "gesture-row", "history-card"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "panels", "kind": "contract" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "src/conversation/ owns what a line carries (appearance, kin, awareness, memory, the request and its provider), the gesture row, the look-at prompt, the history panel's model and the voice state machine; the engine owns the transport, the recogniser, the TTS voice and the widgets.",
+    "notes": [
+      "Bind push-to-talk to KEY_PUSH_TO_TALK (T): press and release are voiceStep's press and release; feed hands-free polls with the RMS level in millionths and the game ms.",
+      "Pause hands-free listening while an NPC speaks (TTS) and resume after, or the NPC hears itself.",
+      "The look-at prompt shows within 12 m; Y eavesdrops on two NPCs talking, G talks to one.",
+      "The social-actions sidebar's actions come from the social pack's list (conformance/social/actions.json); without social, a host shows the chat alone.",
+      "On-device inference (dialogue-offline-local-ai) is port-later; do not generate it from this pack."
+    ],
+    "doNot": [
+      "Send a line without the recall key (chat:<world>:<npc>:<player>): the server's memory of the player is keyed by it.",
+      "Count a gesture that is cooling down."
+    ]
+  }
+}

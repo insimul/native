@@ -1,0 +1,3780 @@
+{
+  "area": "props-pickup-placement",
+  "description": "Where a pick-up is put down (PL.pickup-placement, U89(3), U49(3); the P6 cell's M4): given its authored spot, the obstacles by kind, the clearance per kind and the search pattern, the settled spot and the side it is walked up to from, or a refusal with a code. Metres on core's ground plane (x, z); heights are y. Data in, decision out: no navmesh (the caller states where the ground is walkable).",
+  "version": 1,
+  "sources": [
+    "packages/core/src/props/pickup-placement.ts (the rule) and src/props/pickup-placement-corpus.ts (the runner)",
+    "unreal feat/p6-unreal 29c37ab, Source/InsimulRuntime/Private/InsimulVillageProps.cpp 513–790 (the interim settle every constant is measured from, U89(3)); unreal's settle is not changed by this corpus",
+    "packages/core/docs/props-and-interiors.md §4b"
+  ],
+  "tolerance": 0.000001,
+  "numerics": "Runners compute in IEEE-754 double precision (Unreal: double, as its FVector is). The tolerance covers reported numbers, not decisions: several cases decide exactly on a boundary (a clearance of exactly 0 is clear; a point exactly on a walkable area's edge is walkable), each exact in binary and in Unreal's whole centimetres, so a float32 runner may decide them the other way.",
+  "contract": {
+    "units": "metres on the ground plane {x, z}; y is up",
+    "frames": {
+      "unreal": "left-handed, z up; core (x, z) = Unreal (X, Y) ÷ 100 and core y = Unreal Z ÷ 100 (cm → m); +x toward +z is +X toward +Y, clockwise seen from above",
+      "godot": "right-handed, y up; core (x, y, z) = Godot (x, y, z) in metres; +x toward +z is clockwise seen from above",
+      "unity": "left-handed, y up; core (x, y, z) = Unity (x, y, z) in metres; +x toward +z is counter-clockwise seen from above",
+      "babylon": "left-handed, y up; core (x, y, z) = Babylon (x, y, z) in metres; +x toward +z is counter-clockwise seen from above"
+    },
+    "obstacleKinds": [
+      "prop",
+      "building",
+      "plant",
+      "container",
+      "door",
+      "villager"
+    ],
+    "clearanceKinds": [
+      "prop",
+      "building",
+      "plant",
+      "container",
+      "door",
+      "villager",
+      "road",
+      "pickup"
+    ],
+    "staticKinds": [
+      "prop",
+      "building",
+      "plant"
+    ],
+    "refusals": [
+      "no-clear-spot",
+      "bad-spot"
+    ],
+    "clearanceM": {
+      "prop": 1,
+      "building": 1,
+      "plant": 1,
+      "container": 1,
+      "door": 2,
+      "villager": 1.5,
+      "road": 1,
+      "pickup": 3
+    },
+    "search": {
+      "ringStepM": 0.5,
+      "radiusM": 20,
+      "arcM": 0.6,
+      "minPoints": 8,
+      "maxPoints": 64
+    },
+    "constants": {
+      "staticClearanceM": {
+        "value": 1,
+        "source": "VP:525 Margin = 100.0 cm"
+      },
+      "containerClearanceM": {
+        "value": 1,
+        "source": "VP:658–664 (no margin set: VP:525 100.0 cm)"
+      },
+      "doorClearanceM": {
+        "value": 2,
+        "source": "VP:654 O.Margin = 200.0 cm"
+      },
+      "villagerClearanceM": {
+        "value": 1.5,
+        "source": "VP:645 O.Margin = 150.0 cm"
+      },
+      "roadClearanceM": {
+        "value": 1,
+        "source": "VP:698 - R.HalfWidth - 100.0 cm"
+      },
+      "spacingM": {
+        "value": 3,
+        "source": "VP:704 - 300.0 cm"
+      },
+      "doorRadiusM": {
+        "value": 0.6,
+        "source": "VP:653 O.Radius = 60.0 cm"
+      },
+      "villagerRadiusM": {
+        "value": 0.4,
+        "source": "VP:644 O.Radius = 40.0 cm"
+      },
+      "containerRadiusM": {
+        "value": 0.5,
+        "source": "VP:662 O.Radius = 50.0 cm"
+      },
+      "roadDefaultWidthM": {
+        "value": 3,
+        "source": "VP:630 (… : 3.0) * 50.0, a width in metres halved in cm"
+      },
+      "roadPointSqM2": {
+        "value": 0.0001,
+        "source": "VP:697 Ab.SizeSquared() > 1.0 cm²"
+      },
+      "standLowM": {
+        "value": 0.15,
+        "source": "VP:690 O->ZMax < At.Z + 15.0 cm"
+      },
+      "standHighM": {
+        "value": 1.5,
+        "source": "VP:690 O->ZMin > At.Z + 150.0 cm"
+      },
+      "groundCoverM": {
+        "value": 0.4,
+        "source": "VP:583 Height < 40.0 cm"
+      },
+      "treeHeightM": {
+        "value": 2.5,
+        "source": "VP:588 Height > 250.0 cm"
+      },
+      "trunkFraction": {
+        "value": 0.15,
+        "source": "VP:592 0.15 * Min(Half.X, Half.Y)"
+      },
+      "trunkMinM": {
+        "value": 0.25,
+        "source": "VP:592 Clamp(…, 25.0, 80.0) cm"
+      },
+      "trunkMaxM": {
+        "value": 0.8,
+        "source": "VP:592 Clamp(…, 25.0, 80.0) cm"
+      },
+      "groundPieceHalfM": {
+        "value": 25,
+        "source": "VP:581 Half.X > 2500.0 && Half.Y > 2500.0 cm"
+      },
+      "ringStepM": {
+        "value": 0.5,
+        "source": "VP:726 Radius = 50.0; Radius += 50.0 cm"
+      },
+      "searchRadiusM": {
+        "value": 20,
+        "source": "VP:726 Radius <= 2000.0 cm"
+      },
+      "ringArcM": {
+        "value": 0.6,
+        "source": "VP:728 CeilToInt(2π · Radius / 60.0) cm"
+      },
+      "ringMinPoints": {
+        "value": 8,
+        "source": "VP:728 Clamp(…, 8, 64)"
+      },
+      "ringMaxPoints": {
+        "value": 64,
+        "source": "VP:728 Clamp(…, 8, 64)"
+      },
+      "movedM": {
+        "value": 0.01,
+        "source": "VP:753 Shift > 1.0 cm"
+      },
+      "nothingNearM": {
+        "value": 10000000,
+        "source": "VP:680 double Best = 1e9 cm"
+      },
+      "approachHeadings": {
+        "value": 16,
+        "source": "VP:769–771 K < 16, 2π · K / 16"
+      },
+      "approachProbesM": {
+        "value": [
+          0.6,
+          1.5,
+          2.5,
+          3.5
+        ],
+        "source": "VP:774 {60.0, 150.0, 250.0, 350.0} cm"
+      },
+      "navSnapM": {
+        "value": 0.3,
+        "source": "VP:712–713 (engine-side: the walkable test core does not run)"
+      },
+      "cullRadiusM": {
+        "value": 21,
+        "source": "VP:719 Near(P.At, 2100.0) cm (engine-side: core does not cull)"
+      }
+    },
+    "groundKinds": [
+      "terrain_field",
+      "road",
+      "ground_surface",
+      "player_start",
+      "nav_region",
+      "environment",
+      "street",
+      "lane",
+      "path"
+    ],
+    "plantEntityKinds": [
+      "foliage",
+      "nature"
+    ],
+    "plantArchetypeMarks": [
+      "vegetation",
+      "tree"
+    ],
+    "deviations": [
+      {
+        "id": "refuse-when-nothing-clear",
+        "unreal": "no clear spot within 20 m: draws the pick-up at the clearest walkable spot and logs \"NO clear spot\" (VP:744–758)",
+        "core": "refuses with `no-clear-spot`, carrying that same spot as `clearest`",
+        "why": "the ruling asks for a decision or a refusal with a code; an engine that still draws the pick-up draws it at `clearest`, as Unreal does"
+      },
+      {
+        "id": "walkable-areas",
+        "unreal": "a spot is walkable when the navmesh projects it within 0.3 m (VP:709–714)",
+        "core": "the caller states the walkable areas (`walkable`), or passes a predicate; absent, every spot is walkable",
+        "why": "core has no navmesh; the engine binds its own query, as the pass-by rule takes `room` from the caller"
+      },
+      {
+        "id": "one-ground-height",
+        "unreal": "each search point is re-grounded by a line trace (VP:733–734) and the 0.15–1.5 m height band is read at that point's ground",
+        "core": "the band is read at the authored spot's ground (`groundY`) for every point",
+        "why": "core works on (x, z) with no terrain; on a village's ground the height within 20 m changes little against a 1.35 m band"
+      },
+      {
+        "id": "no-culling",
+        "unreal": "statics are culled to 21 m of the authored spot first (VP:719), for speed over tens of thousands of instances",
+        "core": "every obstacle stated is read",
+        "why": "the settled spot is the same (a culled static is more than 1 m clear of every search point); only a reported clearance or an approach probe more than 21 m out can differ"
+      },
+      {
+        "id": "stated-footprints",
+        "unreal": "a static's footprint is its mesh bounds through its transform, its axes projected to the ground, the world-aligned bounds when an axis stands upright (VP:571–605)",
+        "core": "the caller states each footprint as a box on the ground (`at`, `half`, `axis`) or a circle",
+        "why": "meshes and transforms are the engine's; the box rule (signed distance, VP:529–537) is core's"
+      },
+      {
+        "id": "kinds-split",
+        "unreal": "props, buildings and plants are one kind of static with one 1 m margin",
+        "core": "`prop`, `building` and `plant` each take a clearance (all 1 m by default)",
+        "why": "the task names building footprints apart from props; the defaults keep Unreal's answer"
+      },
+      {
+        "id": "nearest-order",
+        "unreal": "a tie for the nearest names the first of statics, villagers, doors, containers, roads, pick-ups (VP:678–706)",
+        "core": "a tie names the first of the obstacles in the caller's order, then roads, then pick-ups",
+        "why": "only the reported `nearest` differs, never a spot or a clearance"
+      },
+      {
+        "id": "bad-spot",
+        "unreal": "no check (a non-finite position would settle as NaN)",
+        "core": "a spot or ground height that is not a finite number is refused with `bad-spot`, by `settlePickup` and `pickupClearance` alike; a road waypoint or a settled pick-up that is not a finite point is skipped (a road is broken there, not joined across it), keeping every other index as given",
+        "why": "a refusal is a decision an engine can act on"
+      }
+    ],
+    "sourceAbbreviation": "VP = unreal 29c37ab Source/InsimulRuntime/Private/InsimulVillageProps.cpp"
+  },
+  "cases": [
+    {
+      "name": "pattern: Unreal's search, 40 rings 0.5 m apart out to 20 m, 8 to 64 points each",
+      "op": "pattern",
+      "input": {},
+      "expected": {
+        "rings": [
+          {
+            "radiusM": 0.5,
+            "points": 8
+          },
+          {
+            "radiusM": 1,
+            "points": 11
+          },
+          {
+            "radiusM": 1.5,
+            "points": 16
+          },
+          {
+            "radiusM": 2,
+            "points": 21
+          },
+          {
+            "radiusM": 2.5,
+            "points": 27
+          },
+          {
+            "radiusM": 3,
+            "points": 32
+          },
+          {
+            "radiusM": 3.5,
+            "points": 37
+          },
+          {
+            "radiusM": 4,
+            "points": 42
+          },
+          {
+            "radiusM": 4.5,
+            "points": 48
+          },
+          {
+            "radiusM": 5,
+            "points": 53
+          },
+          {
+            "radiusM": 5.5,
+            "points": 58
+          },
+          {
+            "radiusM": 6,
+            "points": 63
+          },
+          {
+            "radiusM": 6.5,
+            "points": 64
+          },
+          {
+            "radiusM": 7,
+            "points": 64
+          },
+          {
+            "radiusM": 7.5,
+            "points": 64
+          },
+          {
+            "radiusM": 8,
+            "points": 64
+          },
+          {
+            "radiusM": 8.5,
+            "points": 64
+          },
+          {
+            "radiusM": 9,
+            "points": 64
+          },
+          {
+            "radiusM": 9.5,
+            "points": 64
+          },
+          {
+            "radiusM": 10,
+            "points": 64
+          },
+          {
+            "radiusM": 10.5,
+            "points": 64
+          },
+          {
+            "radiusM": 11,
+            "points": 64
+          },
+          {
+            "radiusM": 11.5,
+            "points": 64
+          },
+          {
+            "radiusM": 12,
+            "points": 64
+          },
+          {
+            "radiusM": 12.5,
+            "points": 64
+          },
+          {
+            "radiusM": 13,
+            "points": 64
+          },
+          {
+            "radiusM": 13.5,
+            "points": 64
+          },
+          {
+            "radiusM": 14,
+            "points": 64
+          },
+          {
+            "radiusM": 14.5,
+            "points": 64
+          },
+          {
+            "radiusM": 15,
+            "points": 64
+          },
+          {
+            "radiusM": 15.5,
+            "points": 64
+          },
+          {
+            "radiusM": 16,
+            "points": 64
+          },
+          {
+            "radiusM": 16.5,
+            "points": 64
+          },
+          {
+            "radiusM": 17,
+            "points": 64
+          },
+          {
+            "radiusM": 17.5,
+            "points": 64
+          },
+          {
+            "radiusM": 18,
+            "points": 64
+          },
+          {
+            "radiusM": 18.5,
+            "points": 64
+          },
+          {
+            "radiusM": 19,
+            "points": 64
+          },
+          {
+            "radiusM": 19.5,
+            "points": 64
+          },
+          {
+            "radiusM": 20,
+            "points": 64
+          }
+        ]
+      }
+    },
+    {
+      "name": "pattern: a caller's search (2 m out, a point per metre, 4 to 12 points)",
+      "op": "pattern",
+      "input": {
+        "search": {
+          "radiusM": 2,
+          "arcM": 1,
+          "minPoints": 4,
+          "maxPoints": 12
+        }
+      },
+      "expected": {
+        "rings": [
+          {
+            "radiusM": 0.5,
+            "points": 4
+          },
+          {
+            "radiusM": 1,
+            "points": 7
+          },
+          {
+            "radiusM": 1.5,
+            "points": 10
+          },
+          {
+            "radiusM": 2,
+            "points": 12
+          }
+        ]
+      }
+    },
+    {
+      "name": "ring 1 (0.5 m): the floor of 8 points, from +x toward +z",
+      "op": "ring",
+      "input": {
+        "ring": 1
+      },
+      "expected": {
+        "points": [
+          {
+            "x": 0.5,
+            "z": 0
+          },
+          {
+            "x": 0.3535533905932738,
+            "z": 0.35355339059327373
+          },
+          {
+            "x": 3.061616997868383e-17,
+            "z": 0.5
+          },
+          {
+            "x": -0.35355339059327373,
+            "z": 0.3535533905932738
+          },
+          {
+            "x": -0.5,
+            "z": 6.123233995736766e-17
+          },
+          {
+            "x": -0.35355339059327384,
+            "z": -0.35355339059327373
+          },
+          {
+            "x": -9.184850993605148e-17,
+            "z": -0.5
+          },
+          {
+            "x": 0.3535533905932737,
+            "z": -0.35355339059327384
+          }
+        ]
+      }
+    },
+    {
+      "name": "ring 2 (1 m): ceil(2π · 1 / 0.6) = 11 points",
+      "op": "ring",
+      "input": {
+        "ring": 2
+      },
+      "expected": {
+        "points": [
+          {
+            "x": 1,
+            "z": 0
+          },
+          {
+            "x": 0.8412535328311812,
+            "z": 0.5406408174555976
+          },
+          {
+            "x": 0.41541501300188644,
+            "z": 0.9096319953545183
+          },
+          {
+            "x": -0.142314838273285,
+            "z": 0.9898214418809328
+          },
+          {
+            "x": -0.654860733945285,
+            "z": 0.7557495743542584
+          },
+          {
+            "x": -0.9594929736144974,
+            "z": 0.28173255684142967
+          },
+          {
+            "x": -0.9594929736144975,
+            "z": -0.2817325568414294
+          },
+          {
+            "x": -0.6548607339452852,
+            "z": -0.7557495743542582
+          },
+          {
+            "x": -0.14231483827328523,
+            "z": -0.9898214418809327
+          },
+          {
+            "x": 0.41541501300188605,
+            "z": -0.9096319953545186
+          },
+          {
+            "x": 0.8412535328311812,
+            "z": -0.5406408174555974
+          }
+        ]
+      }
+    },
+    {
+      "name": "ring 12 (6 m): ceil(2π · 6 / 0.6) = 63 points",
+      "op": "ring",
+      "input": {
+        "ring": 12
+      },
+      "expected": {
+        "points": [
+          {
+            "x": 6,
+            "z": 0
+          },
+          {
+            "x": 5.970184652192408,
+            "z": 0.5974070795749
+          },
+          {
+            "x": 5.881034927091263,
+            "z": 1.1888768591963854
+          },
+          {
+            "x": 5.733436834716844,
+            "z": 1.7685310464654251
+          },
+          {
+            "x": 5.528857271222446,
+            "z": 2.3306087776481683
+          },
+          {
+            "x": 5.269329440221371,
+            "z": 2.869523871727909
+          },
+          {
+            "x": 4.957432645895969,
+            "z": 3.3799203483817326
+          },
+          {
+            "x": 4.596266658713868,
+            "z": 3.8567256581192355
+          },
+          {
+            "x": 4.189420908516437,
+            "z": 4.29520109555831
+          },
+          {
+            "x": 3.7409388111524016,
+            "z": 4.690988894808179
+          },
+          {
+            "x": 3.2552775831945566,
+            "z": 5.040155538904628
+          },
+          {
+            "x": 2.7372639441189786,
+            "z": 5.339230852868811
+          },
+          {
+            "x": 2.19204614619837,
+            "z": 5.585242491865225
+          },
+          {
+            "x": 1.6250428088580309,
+            "z": 5.775745481700072
+          },
+          {
+            "x": 1.0418890660015825,
+            "z": 5.908846518073248
+          },
+          {
+            "x": 0.44838056151854633,
+            "z": 5.983222783087081
+          },
+          {
+            "x": -0.14958415042843748,
+            "z": 5.9981350920048975
+          },
+          {
+            "x": -0.746062227884911,
+            "z": 5.953435239601032
+          },
+          {
+            "x": -1.335125603737886,
+            "z": 5.849567473090942
+          },
+          {
+            "x": -1.910919901510106,
+            "z": 5.687564077002791
+          },
+          {
+            "x": -2.4677226187836685,
+            "z": 5.4690351138700395
+          },
+          {
+            "x": -3.0000000000000013,
+            "z": 5.196152422706632
+          },
+          {
+            "x": -3.5024620334087375,
+            "z": 4.8716280342951395
+          },
+          {
+            "x": -3.970115025581155,
+            "z": 4.498687217806406
+          },
+          {
+            "x": -4.398311230978958,
+            "z": 4.081036426625516
+          },
+          {
+            "x": -4.782795043337535,
+            "z": 3.6228264619528643
+          },
+          {
+            "x": -5.119745289792934,
+            "z": 3.128611220276989
+          },
+          {
+            "x": -5.405813207414514,
+            "z": 2.6033024347053493
+          },
+          {
+            "x": -5.63815572471545,
+            "z": 2.0521208599540133
+          },
+          {
+            "x": -5.814463717374467,
+            "z": 1.480544386141763
+          },
+          {
+            "x": -5.932984957350771,
+            "z": 0.8942535970570483
+          },
+          {
+            "x": -5.992541527313534,
+            "z": 0.2990753139641849
+          },
+          {
+            "x": -5.992541527313534,
+            "z": -0.2990753139641834
+          },
+          {
+            "x": -5.932984957350771,
+            "z": -0.8942535970570469
+          },
+          {
+            "x": -5.814463717374467,
+            "z": -1.4805443861417618
+          },
+          {
+            "x": -5.638155724715451,
+            "z": -2.052120859954012
+          },
+          {
+            "x": -5.405813207414515,
+            "z": -2.603302434705348
+          },
+          {
+            "x": -5.1197452897929345,
+            "z": -3.128611220276987
+          },
+          {
+            "x": -4.7827950433375355,
+            "z": -3.622826461952863
+          },
+          {
+            "x": -4.398311230978958,
+            "z": -4.081036426625515
+          },
+          {
+            "x": -3.9701150255811584,
+            "z": -4.498687217806404
+          },
+          {
+            "x": -3.502462033408743,
+            "z": -4.871628034295137
+          },
+          {
+            "x": -2.999999999999998,
+            "z": -5.196152422706633
+          },
+          {
+            "x": -2.46772261878367,
+            "z": -5.469035113870039
+          },
+          {
+            "x": -1.91091990151011,
+            "z": -5.68756407700279
+          },
+          {
+            "x": -1.3351256037378876,
+            "z": -5.849567473090942
+          },
+          {
+            "x": -0.746062227884915,
+            "z": -5.953435239601031
+          },
+          {
+            "x": -0.14958415042843892,
+            "z": -5.9981350920048975
+          },
+          {
+            "x": 0.4483805615185462,
+            "z": -5.983222783087081
+          },
+          {
+            "x": 1.0418890660015798,
+            "z": -5.908846518073249
+          },
+          {
+            "x": 1.6250428088580307,
+            "z": -5.775745481700072
+          },
+          {
+            "x": 2.192046146198367,
+            "z": -5.585242491865227
+          },
+          {
+            "x": 2.737263944118977,
+            "z": -5.339230852868812
+          },
+          {
+            "x": 3.255277583194558,
+            "z": -5.040155538904628
+          },
+          {
+            "x": 3.7409388111524002,
+            "z": -4.6909888948081795
+          },
+          {
+            "x": 4.189420908516437,
+            "z": -4.29520109555831
+          },
+          {
+            "x": 4.5962666587138665,
+            "z": -3.8567256581192373
+          },
+          {
+            "x": 4.957432645895967,
+            "z": -3.379920348381736
+          },
+          {
+            "x": 5.2693294402213695,
+            "z": -2.8695238717279112
+          },
+          {
+            "x": 5.528857271222446,
+            "z": -2.3306087776481683
+          },
+          {
+            "x": 5.733436834716843,
+            "z": -1.7685310464654282
+          },
+          {
+            "x": 5.881034927091263,
+            "z": -1.1888768591963863
+          },
+          {
+            "x": 5.970184652192408,
+            "z": -0.5974070795749037
+          }
+        ]
+      }
+    },
+    {
+      "name": "ring 13 (6.5 m): the ceiling of 64 points",
+      "op": "ring",
+      "input": {
+        "ring": 13
+      },
+      "expected": {
+        "points": [
+          {
+            "x": 6.5,
+            "z": 0
+          },
+          {
+            "x": 6.46870072336928,
+            "z": 0.637111412142144
+          },
+          {
+            "x": 6.375104322620998,
+            "z": 1.2680870931048336
+          },
+          {
+            "x": 6.220112182259357,
+            "z": 1.8868504021540051
+          },
+          {
+            "x": 6.005216961323364,
+            "z": 2.4874423103730834
+          },
+          {
+            "x": 5.732488218264308,
+            "z": 3.0640787893689847
+          },
+          {
+            "x": 5.404552479966544,
+            "z": 3.611206514627414
+          },
+          {
+            "x": 5.024567946857791,
+            "z": 4.123556347063696
+          },
+          {
+            "x": 4.59619407771256,
+            "z": 4.596194077712559
+          },
+          {
+            "x": 4.123556347063696,
+            "z": 5.02456794685779
+          },
+          {
+            "x": 3.611206514627415,
+            "z": 5.404552479966544
+          },
+          {
+            "x": 3.0640787893689856,
+            "z": 5.732488218264307
+          },
+          {
+            "x": 2.487442310373084,
+            "z": 6.005216961323364
+          },
+          {
+            "x": 1.8868504021540051,
+            "z": 6.220112182259358
+          },
+          {
+            "x": 1.2680870931048343,
+            "z": 6.375104322620998
+          },
+          {
+            "x": 0.6371114121421451,
+            "z": 6.468700723369279
+          },
+          {
+            "x": 3.9801020972288977e-16,
+            "z": 6.5
+          },
+          {
+            "x": -0.6371114121421442,
+            "z": 6.46870072336928
+          },
+          {
+            "x": -1.2680870931048331,
+            "z": 6.375104322620998
+          },
+          {
+            "x": -1.886850402154004,
+            "z": 6.220112182259358
+          },
+          {
+            "x": -2.4874423103730834,
+            "z": 6.005216961323364
+          },
+          {
+            "x": -3.064078789368985,
+            "z": 5.732488218264308
+          },
+          {
+            "x": -3.611206514627413,
+            "z": 5.4045524799665445
+          },
+          {
+            "x": -4.123556347063695,
+            "z": 5.0245679468577915
+          },
+          {
+            "x": -4.596194077712559,
+            "z": 4.59619407771256
+          },
+          {
+            "x": -5.024567946857791,
+            "z": 4.123556347063696
+          },
+          {
+            "x": -5.4045524799665445,
+            "z": 3.611206514627414
+          },
+          {
+            "x": -5.732488218264307,
+            "z": 3.064078789368986
+          },
+          {
+            "x": -6.005216961323364,
+            "z": 2.4874423103730843
+          },
+          {
+            "x": -6.220112182259357,
+            "z": 1.8868504021540056
+          },
+          {
+            "x": -6.375104322620998,
+            "z": 1.268087093104836
+          },
+          {
+            "x": -6.468700723369279,
+            "z": 0.6371114121421454
+          },
+          {
+            "x": -6.5,
+            "z": 7.960204194457795e-16
+          },
+          {
+            "x": -6.46870072336928,
+            "z": -0.6371114121421438
+          },
+          {
+            "x": -6.375104322620998,
+            "z": -1.2680870931048343
+          },
+          {
+            "x": -6.220112182259358,
+            "z": -1.8868504021540038
+          },
+          {
+            "x": -6.005216961323365,
+            "z": -2.4874423103730825
+          },
+          {
+            "x": -5.732488218264308,
+            "z": -3.0640787893689847
+          },
+          {
+            "x": -5.404552479966545,
+            "z": -3.611206514627413
+          },
+          {
+            "x": -5.0245679468577915,
+            "z": -4.123556347063694
+          },
+          {
+            "x": -4.59619407771256,
+            "z": -4.596194077712559
+          },
+          {
+            "x": -4.1235563470636984,
+            "z": -5.024567946857788
+          },
+          {
+            "x": -3.611206514627414,
+            "z": -5.404552479966544
+          },
+          {
+            "x": -3.0640787893689865,
+            "z": -5.732488218264307
+          },
+          {
+            "x": -2.4874423103730874,
+            "z": -6.005216961323362
+          },
+          {
+            "x": -1.8868504021540058,
+            "z": -6.220112182259357
+          },
+          {
+            "x": -1.2680870931048362,
+            "z": -6.375104322620997
+          },
+          {
+            "x": -0.637111412142143,
+            "z": -6.46870072336928
+          },
+          {
+            "x": -1.1940306291686693e-15,
+            "z": -6.5
+          },
+          {
+            "x": 0.6371114121421406,
+            "z": -6.46870072336928
+          },
+          {
+            "x": 1.268087093104834,
+            "z": -6.375104322620998
+          },
+          {
+            "x": 1.8868504021540033,
+            "z": -6.220112182259358
+          },
+          {
+            "x": 2.487442310373085,
+            "z": -6.005216961323363
+          },
+          {
+            "x": 3.0640787893689843,
+            "z": -5.732488218264308
+          },
+          {
+            "x": 3.611206514627412,
+            "z": -5.404552479966545
+          },
+          {
+            "x": 4.123556347063697,
+            "z": -5.02456794685779
+          },
+          {
+            "x": 4.596194077712558,
+            "z": -4.59619407771256
+          },
+          {
+            "x": 5.024567946857788,
+            "z": -4.1235563470636984
+          },
+          {
+            "x": 5.404552479966544,
+            "z": -3.611206514627414
+          },
+          {
+            "x": 5.732488218264306,
+            "z": -3.0640787893689865
+          },
+          {
+            "x": 6.005216961323362,
+            "z": -2.4874423103730874
+          },
+          {
+            "x": 6.220112182259357,
+            "z": -1.8868504021540062
+          },
+          {
+            "x": 6.375104322620997,
+            "z": -1.2680870931048367
+          },
+          {
+            "x": 6.46870072336928,
+            "z": -0.6371114121421433
+          }
+        ]
+      }
+    },
+    {
+      "name": "ring 41: beyond the search, no points",
+      "op": "ring",
+      "input": {
+        "ring": 41
+      },
+      "expected": {
+        "points": []
+      }
+    },
+    {
+      "name": "pattern: a caller's ceiling below its floor is raised to the floor (12 points, at most 4)",
+      "note": "Every ring gets 12 points: the ceiling never undercuts the floor.",
+      "op": "pattern",
+      "input": {
+        "search": {
+          "radiusM": 2,
+          "arcM": 1,
+          "minPoints": 12,
+          "maxPoints": 4
+        }
+      },
+      "expected": {
+        "rings": [
+          {
+            "radiusM": 0.5,
+            "points": 12
+          },
+          {
+            "radiusM": 1,
+            "points": 12
+          },
+          {
+            "radiusM": 1.5,
+            "points": 12
+          },
+          {
+            "radiusM": 2,
+            "points": 12
+          }
+        ]
+      }
+    },
+    {
+      "name": "clearance: nothing to keep off: Unreal's 1e9 cm, in metres",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 10000000,
+        "nearest": null
+      }
+    },
+    {
+      "name": "clearance: a prop's footprint exactly 1 m off: 0, which is clear",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 1.5,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.5,
+              "z": 0.5
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0,
+        "nearest": {
+          "kind": "prop",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: inside a prop's footprint: the deeper of the two sides, less 1 m",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0.1,
+          "z": 0.2
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.5,
+              "z": 0.4
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -1.2,
+        "nearest": {
+          "kind": "prop",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: off a footprint's corner: the distance to the corner",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 1.5,
+          "z": 1.4
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.5,
+              "z": 0.4
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.4142135623730949,
+        "nearest": {
+          "kind": "building",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a building turned 45 degrees: its own axes",
+      "note": "The axis is normalised by core; the box is 2 m along (1, 1) and 0.5 m across. The spot is on the box's mirror line, so this case does not tell the axis from its mirror: the 30-degree cases below do.",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 1,
+              "z": 0.25
+            },
+            "axis": {
+              "x": 1,
+              "z": 1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.23570469533269245,
+        "nearest": {
+          "kind": "building",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a building turned 30 degrees, read off its end: half.x is along the axis",
+      "note": "The box is 2 m along (cos 30°, sin 30°) and 0.5 m across. The spot is 1.92 m along and 0.07 m across: 0.92 m past the end, so 0.08 m short of clear. Read mirrored (-30°), with x and z swapped (60°) or with half.x across the axis (120°), it would be 0.38 m clear, 0.004 m short and 0.67 m clear.",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 1.7,
+          "z": 0.9
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 1,
+              "z": 0.25
+            },
+            "axis": {
+              "x": 1.7320508075688772,
+              "z": 1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -0.07775681356645436,
+        "nearest": {
+          "kind": "building",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a building turned 30 degrees, read off its side: half.z is across it",
+      "note": "The spot is 0.34 m back along the axis and 1.81 m across: 1.31 m off the long side, 0.31 m clear.",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": -1.2,
+          "z": 1.4
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 3,
+              "z": 0.5
+            },
+            "axis": {
+              "x": 1.7320508075688772,
+              "z": 1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.3124355652982138,
+        "nearest": {
+          "kind": "building",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a road: from its centre line, less half its width and 1 m",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 1,
+          "z": 4
+        },
+        "roads": [
+          {
+            "waypoints": [
+              {
+                "x": -10,
+                "z": 0
+              },
+              {
+                "x": 10,
+                "z": 0
+              }
+            ],
+            "width": 4
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 1,
+        "nearest": {
+          "kind": "road",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a road with no width is 3 m wide",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 1,
+          "z": 4
+        },
+        "roads": [
+          {
+            "waypoints": [
+              {
+                "x": -10,
+                "z": 0
+              },
+              {
+                "x": 10,
+                "z": 0
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 1.5,
+        "nearest": {
+          "kind": "road",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a road past its last waypoint: from the end",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 13,
+          "z": 4
+        },
+        "roads": [
+          {
+            "waypoints": [
+              {
+                "x": -10,
+                "z": 0
+              },
+              {
+                "x": 10,
+                "z": 0
+              }
+            ],
+            "width": 2
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 3,
+        "nearest": {
+          "kind": "road",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a road broken by a waypoint that is not a point is not joined across the gap",
+      "note": "Two pieces, ending at (-2, 0) and (2, 0): the spot is √13 m off each end, 1.11 m clear. Joined across the gap it would be 3 m off the road, 0.5 m clear.",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 3
+        },
+        "roads": [
+          {
+            "waypoints": [
+              {
+                "x": -10,
+                "z": 0
+              },
+              {
+                "x": -2,
+                "z": 0
+              },
+              null,
+              {
+                "x": 2,
+                "z": 0
+              },
+              {
+                "x": 10,
+                "z": 0
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 1.1055512754639896,
+        "nearest": {
+          "kind": "road",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a road whose two waypoints coincide is a point",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 3,
+          "z": 4
+        },
+        "roads": [
+          {
+            "waypoints": [
+              {
+                "x": 0,
+                "z": 0
+              },
+              {
+                "x": 0,
+                "z": 0.005
+              }
+            ],
+            "width": 2
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 3,
+        "nearest": {
+          "kind": "road",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a door: 0.6 m round, kept 2 m off",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "door",
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -0.6000000000000001,
+        "nearest": {
+          "kind": "door",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a villager: 0.4 m round, kept 1.5 m off",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "villager",
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.10000000000000009,
+        "nearest": {
+          "kind": "villager",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a container: 0.5 m round, kept 1 m off",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "container",
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.5,
+        "nearest": {
+          "kind": "container",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a door with its own radius",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "door",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "radius": 1
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -1,
+        "nearest": {
+          "kind": "door",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a tree counts by its trunk at its pivot, not its canopy",
+      "note": "Canopy half 2 m: trunk 0.15 · 2 = 0.3 m, at the pivot. The spot stands under the canopy.",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 1.5,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "plant",
+            "at": {
+              "x": 0.5,
+              "z": 0
+            },
+            "half": {
+              "x": 2,
+              "z": 2
+            },
+            "pivot": {
+              "x": 0,
+              "z": 0
+            },
+            "yMin": 0,
+            "yMax": 6
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.19999999999999996,
+        "nearest": {
+          "kind": "plant",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a broad tree's trunk is no wider than 0.8 m",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "plant",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 10,
+              "z": 8
+            },
+            "yMin": 0,
+            "yMax": 9
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.19999999999999996,
+        "nearest": {
+          "kind": "plant",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a slim tree's trunk is no narrower than 0.25 m",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "plant",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.5,
+              "z": 1
+            },
+            "yMin": 0,
+            "yMax": 3
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.75,
+        "nearest": {
+          "kind": "plant",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a bush (1 m tall) counts by its footprint",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 1.2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "plant",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.6,
+              "z": 0.6
+            },
+            "yMin": 0,
+            "yMax": 1
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -0.4,
+        "nearest": {
+          "kind": "plant",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: ground cover (0.3 m tall) is not kept off: an item lies in the grass",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0.2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "plant",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.6,
+              "z": 0.6
+            },
+            "yMin": 0,
+            "yMax": 0.3
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 10000000,
+        "nearest": null
+      }
+    },
+    {
+      "name": "clearance: a plant with no height stated counts by its footprint",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 1.2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "plant",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.6,
+              "z": 0.6
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -0.4,
+        "nearest": {
+          "kind": "plant",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a static overhead (from 1.6 m up) is not kept off",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 2,
+              "z": 0.2
+            },
+            "yMin": 1.6,
+            "yMax": 1.9
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 10000000,
+        "nearest": null
+      }
+    },
+    {
+      "name": "clearance: a static flat on the ground (0.1 m high) is not kept off",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 2,
+              "z": 2
+            },
+            "yMin": 0,
+            "yMax": 0.1
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 10000000,
+        "nearest": null
+      }
+    },
+    {
+      "name": "clearance: CONTROL: the same overhead beam over ground 1 m higher stands at a dropped item's height",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "groundY": 1,
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 2,
+              "z": 0.2
+            },
+            "yMin": 1.6,
+            "yMax": 1.9
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -1.2,
+        "nearest": {
+          "kind": "prop",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a ground piece (wider than 25 m both ways) is not kept off",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 30,
+              "z": 30
+            },
+            "yMin": 0,
+            "yMax": 0.5
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 10000000,
+        "nearest": null
+      }
+    },
+    {
+      "name": "clearance: CONTROL: a wall 30 m long but 0.2 m thick is",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 1
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 30,
+              "z": 0.1
+            },
+            "yMin": 0,
+            "yMax": 3
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -0.09999999999999998,
+        "nearest": {
+          "kind": "building",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a pick-up already settled: 3 m apart",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "settled": [
+          {
+            "x": 0,
+            "z": 0
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -1,
+        "nearest": {
+          "kind": "pickup",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: the clearance per kind is the caller's",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "villager",
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          }
+        ],
+        "settled": [
+          {
+            "x": 4.5,
+            "z": 0
+          }
+        ],
+        "clearance": {
+          "villager": 0.5,
+          "pickup": 1
+        }
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 1.1,
+        "nearest": {
+          "kind": "villager",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: the caller's container clearance",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "container",
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          }
+        ],
+        "clearance": {
+          "container": 0.25
+        }
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 1.25,
+        "nearest": {
+          "kind": "container",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a settled pick-up that is not a point keeps its index; the next is named by its own",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0
+        },
+        "settled": [
+          null,
+          {
+            "x": 0,
+            "z": 0
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": -1,
+        "nearest": {
+          "kind": "pickup",
+          "index": 1
+        }
+      }
+    },
+    {
+      "name": "clearance: a spot that is not a point is refused",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": null
+        }
+      },
+      "expected": {
+        "ok": false,
+        "code": "bad-spot"
+      }
+    },
+    {
+      "name": "clearance: the least of several, and what it is",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 3,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          },
+          {
+            "kind": "villager",
+            "at": {
+              "x": 0,
+              "z": -2.5
+            }
+          },
+          {
+            "kind": "door",
+            "at": {
+              "x": -4,
+              "z": 0
+            }
+          }
+        ],
+        "roads": [
+          {
+            "waypoints": [
+              {
+                "x": -10,
+                "z": 6
+              },
+              {
+                "x": 10,
+                "z": 6
+              }
+            ],
+            "width": 3
+          }
+        ],
+        "settled": [
+          {
+            "x": 0,
+            "z": 3.5
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.5,
+        "nearest": {
+          "kind": "pickup",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "clearance: a tie names the first in the caller's order",
+      "op": "clearance",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 2,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          },
+          {
+            "kind": "prop",
+            "at": {
+              "x": -2,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "clearanceM": 0.8,
+        "nearest": {
+          "kind": "prop",
+          "index": 0
+        }
+      }
+    },
+    {
+      "name": "settle: the spot is already clear: it stays",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 5,
+          "z": 5
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          },
+          {
+            "kind": "villager",
+            "at": {
+              "x": 12,
+              "z": 5
+            }
+          }
+        ],
+        "roads": [
+          {
+            "waypoints": [
+              {
+                "x": -10,
+                "z": -4
+              },
+              {
+                "x": 20,
+                "z": -4
+              }
+            ],
+            "width": 3
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 5,
+          "z": 5
+        },
+        "moved": false,
+        "shiftM": 0,
+        "ring": 0,
+        "clearanceM": 5.1,
+        "nearest": {
+          "kind": "villager",
+          "index": 1
+        },
+        "authored": {
+          "clearanceM": 5.1,
+          "nearest": {
+            "kind": "villager",
+            "index": 1
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": -0.7071067811865475,
+            "z": 0.7071067811865476
+          },
+          "headingDeg": 135,
+          "roomM": 5.536376601676855
+        }
+      }
+    },
+    {
+      "name": "settle: against a prop: out to the nearest clear spot",
+      "note": "The crate's edge is 0.2 m off; 1.2 m clear needs ring 2 or beyond on the far side.",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0.4,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 1.4,
+          "z": 0
+        },
+        "moved": true,
+        "shiftM": 0.9999999999999999,
+        "ring": 2,
+        "clearanceM": 0.19999999999999996,
+        "nearest": {
+          "kind": "prop",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": -0.8,
+          "nearest": {
+            "kind": "prop",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": 0.8
+        }
+      }
+    },
+    {
+      "name": "settle: on a road: off it, past its edge and 1 m",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 2,
+          "z": 0.5
+        },
+        "roads": [
+          {
+            "waypoints": [
+              {
+                "x": -30,
+                "z": 0
+              },
+              {
+                "x": 30,
+                "z": 0
+              }
+            ],
+            "width": 4
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 3.1480502970952697,
+          "z": 3.27163859753386
+        },
+        "moved": true,
+        "shiftM": 3,
+        "ring": 6,
+        "clearanceM": 0.27163859753386,
+        "nearest": {
+          "kind": "road",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": -2.5,
+          "nearest": {
+            "kind": "road",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 6.123233995736766e-17,
+            "z": 1
+          },
+          "headingDeg": 90,
+          "roomM": 0.8716385975338601
+        }
+      }
+    },
+    {
+      "name": "settle: at a building's door: 2 m off it",
+      "note": "The door is on the building's front; the pick-up was authored on its step.",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0.8
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": -3
+            },
+            "half": {
+              "x": 4,
+              "z": 3
+            },
+            "yMin": 0,
+            "yMax": 6
+          },
+          {
+            "kind": "door",
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 1.2469796037174672,
+          "z": 2.3636629649360597
+        },
+        "moved": true,
+        "shiftM": 2,
+        "ring": 4,
+        "clearanceM": 0.07242600344662398,
+        "nearest": {
+          "kind": "door",
+          "index": 1
+        },
+        "authored": {
+          "clearanceM": -1.7999999999999998,
+          "nearest": {
+            "kind": "door",
+            "index": 1
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 0.38268343236508984,
+            "z": 0.9238795325112867
+          },
+          "headingDeg": 67.5,
+          "roomM": 0.6703190467868376
+        }
+      }
+    },
+    {
+      "name": "settle: near a villager: 1.5 m off where it stands",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0.9,
+          "z": 0.3
+        },
+        "obstacles": [
+          {
+            "kind": "villager",
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 1.9,
+          "z": 0.3
+        },
+        "moved": true,
+        "shiftM": 0.9999999999999999,
+        "ring": 2,
+        "clearanceM": 0.02353840616713443,
+        "nearest": {
+          "kind": "villager",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": -0.9513167019494861,
+          "nearest": {
+            "kind": "villager",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": 0.6179356624028345
+        }
+      }
+    },
+    {
+      "name": "settle: wedged between a tree trunk and a cauldron (the P6 cell's g4)",
+      "note": "The tree counts by a 0.45 m trunk; the fern beside is ground cover and does not count.",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0.9,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "plant",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 3,
+              "z": 3
+            },
+            "yMin": 0,
+            "yMax": 8
+          },
+          {
+            "kind": "prop",
+            "at": {
+              "x": 1.8,
+              "z": 0
+            },
+            "half": {
+              "x": 0.35,
+              "z": 0.35
+            },
+            "yMin": 0,
+            "yMax": 0.9
+          },
+          {
+            "kind": "plant",
+            "at": {
+              "x": 2.5,
+              "z": 2.5
+            },
+            "half": {
+              "x": 0.4,
+              "z": 0.4
+            },
+            "yMin": 0,
+            "yMax": 0.25
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 1.4740251485476348,
+          "z": 1.38581929876693
+        },
+        "moved": true,
+        "shiftM": 1.5,
+        "ring": 3,
+        "clearanceM": 0.03581929876692991,
+        "nearest": {
+          "kind": "prop",
+          "index": 1
+        },
+        "authored": {
+          "clearanceM": -0.5499999999999999,
+          "nearest": {
+            "kind": "plant",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 6.123233995736766e-17,
+            "z": 1
+          },
+          "headingDeg": 90,
+          "roomM": 0.63581929876693
+        }
+      }
+    },
+    {
+      "name": "settle: CONTROL: under the same canopy with no cauldron, it stays",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 1.6,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "plant",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 3,
+              "z": 3
+            },
+            "yMin": 0,
+            "yMax": 8
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 1.6,
+          "z": 0
+        },
+        "moved": false,
+        "shiftM": 0,
+        "ring": 0,
+        "clearanceM": 0.15000000000000013,
+        "nearest": {
+          "kind": "plant",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": 0.15000000000000013,
+          "nearest": {
+            "kind": "plant",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": 0.7500000000000002
+        }
+      }
+    },
+    {
+      "name": "settle: clear but off the walkable ground: onto it",
+      "note": "A walkable box 6 m by 2 m north of the spot (an engine's navmesh, stated).",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "walkable": [
+          {
+            "at": {
+              "x": 0,
+              "z": 4
+            },
+            "half": {
+              "x": 3,
+              "z": 1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 1.8369701987210297e-16,
+          "z": 3
+        },
+        "moved": true,
+        "shiftM": 3,
+        "ring": 6,
+        "clearanceM": 10000000,
+        "nearest": null,
+        "authored": {
+          "clearanceM": 10000000,
+          "nearest": null,
+          "walkable": false
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": 10000000
+        }
+      }
+    },
+    {
+      "name": "settle: against a building turned 30 degrees (a village lot): out past its own side",
+      "note": "The building is 6 m by 4 m, turned 30 degrees. The spot is 1.85 m along and 2.40 m across: 0.40 m past its long side, 0.60 m short of clear. It settles on ring 2.",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0.4,
+          "z": 3
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 3,
+              "z": 2
+            },
+            "axis": {
+              "x": 1.7320508075688772,
+              "z": 1
+            },
+            "yMin": 0,
+            "yMax": 6
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 0.257685161726715,
+          "z": 3.989821441880933
+        },
+        "moved": true,
+        "shiftM": 1,
+        "ring": 2,
+        "clearanceM": 0.3264441443693884,
+        "nearest": {
+          "kind": "building",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": -0.6019237886466842,
+          "nearest": {
+            "kind": "building",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": -0.3826834323650897,
+            "z": 0.9238795325112867
+          },
+          "headingDeg": 112.50000000000001,
+          "roomM": 0.9213110611936748
+        }
+      }
+    },
+    {
+      "name": "settle: a beam overhead is no obstacle on low ground …",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 2,
+              "z": 0.2
+            },
+            "yMin": 1.6,
+            "yMax": 1.9
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 0,
+          "z": 0
+        },
+        "moved": false,
+        "shiftM": 0,
+        "ring": 0,
+        "clearanceM": 10000000,
+        "nearest": null,
+        "authored": {
+          "clearanceM": 10000000,
+          "nearest": null,
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": 10000000
+        }
+      }
+    },
+    {
+      "name": "settle: … and is one on ground 1 m higher",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "groundY": 1,
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 2,
+              "z": 0.2
+            },
+            "yMin": 1.6,
+            "yMax": 1.9
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 0.5740251485476348,
+          "z": 1.38581929876693
+        },
+        "moved": true,
+        "shiftM": 1.5,
+        "ring": 3,
+        "clearanceM": 0.18581929876693004,
+        "nearest": {
+          "kind": "prop",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": -1.2,
+          "nearest": {
+            "kind": "prop",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 6.123233995736766e-17,
+            "z": 1
+          },
+          "headingDeg": 90,
+          "roomM": 0.7858192987669301
+        }
+      }
+    },
+    {
+      "name": "settle: walked up to from its open side: away from a wall",
+      "note": "The wall runs along x; the open side is +z.",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 1.5
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 6,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 3
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 0,
+          "z": 1.5
+        },
+        "moved": false,
+        "shiftM": 0,
+        "ring": 0,
+        "clearanceM": 0.30000000000000004,
+        "nearest": {
+          "kind": "building",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": 0.30000000000000004,
+          "nearest": {
+            "kind": "building",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 6.123233995736766e-17,
+            "z": 1
+          },
+          "headingDeg": 90,
+          "roomM": 0.9000000000000001
+        }
+      }
+    },
+    {
+      "name": "settle: the caller's clearance: a villager kept only 0.3 m off",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0.9,
+          "z": 0.3
+        },
+        "obstacles": [
+          {
+            "kind": "villager",
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          }
+        ],
+        "clearance": {
+          "villager": 0.3
+        }
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 0.9,
+          "z": 0.3
+        },
+        "moved": false,
+        "shiftM": 0,
+        "ring": 0,
+        "clearanceM": 0.24868329805051387,
+        "nearest": {
+          "kind": "villager",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": 0.24868329805051387,
+          "nearest": {
+            "kind": "villager",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 0.9238795325112867,
+            "z": 0.3826834323650898
+          },
+          "headingDeg": 22.500000000000004,
+          "roomM": 0.8477583567093478
+        }
+      }
+    },
+    {
+      "name": "settle: no clear spot: inside a building 44 m square, the clearest search point is named",
+      "note": "Refused with no-clear-spot. The clearest is the first point of the last ring, 20 m out, 3 m short of clear.",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 22,
+              "z": 22
+            },
+            "yMin": 0,
+            "yMax": 10
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "code": "no-clear-spot",
+        "clearest": {
+          "at": {
+            "x": 20,
+            "z": 0
+          },
+          "ring": 40,
+          "shiftM": 20,
+          "clearanceM": -3,
+          "nearest": {
+            "kind": "building",
+            "index": 0
+          }
+        },
+        "authored": {
+          "clearanceM": -23,
+          "nearest": {
+            "kind": "building",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": -2.3999999999999986
+        }
+      }
+    },
+    {
+      "name": "settle: no clear spot: nothing walkable, the authored spot is the clearest",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "walkable": []
+      },
+      "expected": {
+        "ok": false,
+        "code": "no-clear-spot",
+        "clearest": {
+          "at": {
+            "x": 0,
+            "z": 0
+          },
+          "ring": 0,
+          "shiftM": 0,
+          "clearanceM": 10000000,
+          "nearest": null
+        },
+        "authored": {
+          "clearanceM": 10000000,
+          "nearest": null,
+          "walkable": false
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": 10000000
+        }
+      }
+    },
+    {
+      "name": "settle: no clear spot within a caller's search of 0.5 m: the clearest of ring 1",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0.4,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          }
+        ],
+        "search": {
+          "radiusM": 0.5
+        }
+      },
+      "expected": {
+        "ok": false,
+        "code": "no-clear-spot",
+        "clearest": {
+          "at": {
+            "x": 0.9,
+            "z": 0
+          },
+          "ring": 1,
+          "shiftM": 0.5,
+          "clearanceM": -0.30000000000000004,
+          "nearest": {
+            "kind": "prop",
+            "index": 0
+          }
+        },
+        "authored": {
+          "clearanceM": -0.8,
+          "nearest": {
+            "kind": "prop",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": 0.30000000000000004
+        }
+      }
+    },
+    {
+      "name": "settle: CONTROL: the same with a search of 1 m finds a clear spot on ring 2",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0.4,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          }
+        ],
+        "search": {
+          "radiusM": 1
+        }
+      },
+      "expected": {
+        "ok": true,
+        "at": {
+          "x": 1.4,
+          "z": 0
+        },
+        "moved": true,
+        "shiftM": 0.9999999999999999,
+        "ring": 2,
+        "clearanceM": 0.19999999999999996,
+        "nearest": {
+          "kind": "prop",
+          "index": 0
+        },
+        "authored": {
+          "clearanceM": -0.8,
+          "nearest": {
+            "kind": "prop",
+            "index": 0
+          },
+          "walkable": true
+        },
+        "approach": {
+          "heading": {
+            "x": 1,
+            "z": 0
+          },
+          "headingDeg": 0,
+          "roomM": 0.8
+        }
+      }
+    },
+    {
+      "name": "settle: no clear spot: the clearest is the clearest WALKABLE point",
+      "note": "Only a disc 1.2 m round (-10, 0) is walkable: the clearest is its point nearest the building's wall, (-11, 0) on ring 22.",
+      "op": "settle",
+      "input": {
+        "spot": {
+          "x": 0,
+          "z": 0
+        },
+        "obstacles": [
+          {
+            "kind": "building",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 22,
+              "z": 22
+            },
+            "yMin": 0,
+            "yMax": 10
+          }
+        ],
+        "walkable": [
+          {
+            "at": {
+              "x": -10,
+              "z": 0
+            },
+            "radius": 1.2
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "code": "no-clear-spot",
+        "clearest": {
+          "at": {
+            "x": -11,
+            "z": 1.3471114790620886e-15
+          },
+          "ring": 22,
+          "shiftM": 11,
+          "clearanceM": -12,
+          "nearest": {
+            "kind": "building",
+            "index": 0
+          }
+        },
+        "authored": {
+          "clearanceM": -23,
+          "nearest": {
+            "kind": "building",
+            "index": 0
+          },
+          "walkable": false
+        },
+        "approach": {
+          "heading": {
+            "x": -1,
+            "z": 1.2246467991473532e-16
+          },
+          "headingDeg": 180,
+          "roomM": -11.4
+        }
+      }
+    },
+    {
+      "name": "settle: a spot that is not a point is refused",
+      "op": "settle",
+      "input": {
+        "spot": null
+      },
+      "expected": {
+        "ok": false,
+        "code": "bad-spot"
+      }
+    },
+    {
+      "name": "sequence: two pick-ups authored 1 m apart: the first stays, the second moves 3 m off it",
+      "op": "sequence",
+      "input": {
+        "pickups": [
+          {
+            "spot": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          {
+            "spot": {
+              "x": 1,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "placements": [
+          {
+            "ok": true,
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "moved": false,
+            "shiftM": 0,
+            "ring": 0,
+            "clearanceM": 10000000,
+            "nearest": null,
+            "authored": {
+              "clearanceM": 10000000,
+              "nearest": null,
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 10000000
+            }
+          },
+          {
+            "ok": true,
+            "at": {
+              "x": 3,
+              "z": 0
+            },
+            "moved": true,
+            "shiftM": 2,
+            "ring": 4,
+            "clearanceM": 0,
+            "nearest": {
+              "kind": "pickup",
+              "index": 0
+            },
+            "authored": {
+              "clearanceM": -2,
+              "nearest": {
+                "kind": "pickup",
+                "index": 0
+              },
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 0.6000000000000001
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "sequence: the same two in the other order: the other one stays",
+      "op": "sequence",
+      "input": {
+        "pickups": [
+          {
+            "spot": {
+              "x": 1,
+              "z": 0
+            }
+          },
+          {
+            "spot": {
+              "x": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "placements": [
+          {
+            "ok": true,
+            "at": {
+              "x": 1,
+              "z": 0
+            },
+            "moved": false,
+            "shiftM": 0,
+            "ring": 0,
+            "clearanceM": 10000000,
+            "nearest": null,
+            "authored": {
+              "clearanceM": 10000000,
+              "nearest": null,
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 10000000
+            }
+          },
+          {
+            "ok": true,
+            "at": {
+              "x": -1.2499999999999996,
+              "z": 2.165063509461097
+            },
+            "moved": true,
+            "shiftM": 2.5,
+            "ring": 5,
+            "clearanceM": 0.12249899919919915,
+            "nearest": {
+              "kind": "pickup",
+              "index": 0
+            },
+            "authored": {
+              "clearanceM": -2,
+              "nearest": {
+                "kind": "pickup",
+                "index": 0
+              },
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": -0.7071067811865475,
+                "z": 0.7071067811865476
+              },
+              "headingDeg": 135,
+              "roomM": 0.7224058908575595
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "sequence: three in a row near a prop, each clear of those before it",
+      "op": "sequence",
+      "input": {
+        "pickups": [
+          {
+            "spot": {
+              "x": 0.4,
+              "z": 0
+            }
+          },
+          {
+            "spot": {
+              "x": 1.2,
+              "z": 0
+            }
+          },
+          {
+            "spot": {
+              "x": -1,
+              "z": 0.5
+            }
+          }
+        ],
+        "obstacles": [
+          {
+            "kind": "prop",
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "half": {
+              "x": 0.2,
+              "z": 0.2
+            },
+            "yMin": 0,
+            "yMax": 0.8
+          }
+        ]
+      },
+      "expected": {
+        "placements": [
+          {
+            "ok": true,
+            "at": {
+              "x": 1.4,
+              "z": 0
+            },
+            "moved": true,
+            "shiftM": 0.9999999999999999,
+            "ring": 2,
+            "clearanceM": 0.19999999999999996,
+            "nearest": {
+              "kind": "prop",
+              "index": 0
+            },
+            "authored": {
+              "clearanceM": -0.8,
+              "nearest": {
+                "kind": "prop",
+                "index": 0
+              },
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 0.8
+            }
+          },
+          {
+            "ok": true,
+            "at": {
+              "x": 1.2000000000000002,
+              "z": 3
+            },
+            "moved": true,
+            "shiftM": 3,
+            "ring": 6,
+            "clearanceM": 0.006659275674581799,
+            "nearest": {
+              "kind": "pickup",
+              "index": 0
+            },
+            "authored": {
+              "clearanceM": -2.8,
+              "nearest": {
+                "kind": "pickup",
+                "index": 0
+              },
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 6.123233995736766e-17,
+                "z": 1
+              },
+              "headingDeg": 90,
+              "roomM": 0.6055512754639891
+            }
+          },
+          {
+            "ok": true,
+            "at": {
+              "x": -1.654860733945285,
+              "z": 1.2557495743542584
+            },
+            "moved": true,
+            "shiftM": 1,
+            "ring": 2,
+            "clearanceM": 0.30288981004386883,
+            "nearest": {
+              "kind": "pickup",
+              "index": 0
+            },
+            "authored": {
+              "clearanceM": -0.5484698655737477,
+              "nearest": {
+                "kind": "pickup",
+                "index": 0
+              },
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": -1,
+                "z": 1.2246467991473532e-16
+              },
+              "headingDeg": 180,
+              "roomM": 0.8645716422426393
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "sequence: a refused pick-up is held where its clearest is, and the next keeps clear of it there",
+      "note": "Nothing within 2 m of the first is walkable: it is refused at its own spot. The second settles on the walkable disc at (3, 0), 3 m clear of it; (2.5, 0) on ring 2 is walkable but 0.5 m short.",
+      "op": "sequence",
+      "input": {
+        "pickups": [
+          {
+            "spot": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          {
+            "spot": {
+              "x": 1.5,
+              "z": 0
+            }
+          }
+        ],
+        "walkable": [
+          {
+            "at": {
+              "x": 3.5,
+              "z": 0
+            },
+            "radius": 1.2
+          }
+        ],
+        "search": {
+          "radiusM": 2
+        }
+      },
+      "expected": {
+        "placements": [
+          {
+            "ok": false,
+            "code": "no-clear-spot",
+            "clearest": {
+              "at": {
+                "x": 0,
+                "z": 0
+              },
+              "ring": 0,
+              "shiftM": 0,
+              "clearanceM": 10000000,
+              "nearest": null
+            },
+            "authored": {
+              "clearanceM": 10000000,
+              "nearest": null,
+              "walkable": false
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 10000000
+            }
+          },
+          {
+            "ok": true,
+            "at": {
+              "x": 3,
+              "z": 0
+            },
+            "moved": true,
+            "shiftM": 1.5,
+            "ring": 3,
+            "clearanceM": 0,
+            "nearest": {
+              "kind": "pickup",
+              "index": 0
+            },
+            "authored": {
+              "clearanceM": -1.5,
+              "nearest": {
+                "kind": "pickup",
+                "index": 0
+              },
+              "walkable": false
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 0.6000000000000001
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "sequence: a spot that is not a point settles nothing and holds nothing",
+      "note": "The third keeps clear of the second, named as pick-up 1: its index in pickups, where the refused first keeps its slot.",
+      "op": "sequence",
+      "input": {
+        "pickups": [
+          {
+            "spot": null
+          },
+          {
+            "spot": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          {
+            "spot": {
+              "x": 1,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "placements": [
+          {
+            "ok": false,
+            "code": "bad-spot"
+          },
+          {
+            "ok": true,
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "moved": false,
+            "shiftM": 0,
+            "ring": 0,
+            "clearanceM": 10000000,
+            "nearest": null,
+            "authored": {
+              "clearanceM": 10000000,
+              "nearest": null,
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 10000000
+            }
+          },
+          {
+            "ok": true,
+            "at": {
+              "x": 3,
+              "z": 0
+            },
+            "moved": true,
+            "shiftM": 2,
+            "ring": 4,
+            "clearanceM": 0,
+            "nearest": {
+              "kind": "pickup",
+              "index": 1
+            },
+            "authored": {
+              "clearanceM": -2,
+              "nearest": {
+                "kind": "pickup",
+                "index": 1
+              },
+              "walkable": true
+            },
+            "approach": {
+              "heading": {
+                "x": 1,
+                "z": 0
+              },
+              "headingDeg": 0,
+              "roomM": 0.6000000000000001
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

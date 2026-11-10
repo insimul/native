@@ -1119,6 +1119,672 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     };
   }
 
+  // @insimul/core/src/quest-objective-types.ts
+  var ACHIEVABLE_OBJECTIVE_TYPES = [
+    // ── Movement / Exploration ───────────────────────────────────────────────
+    {
+      type: "visit_location",
+      description: "Go to a specific location in the game world",
+      playerAction: "Walk to a location marker",
+      requiresTarget: "location",
+      countable: false
+    },
+    {
+      type: "discover_location",
+      description: "Discover a new location by entering its area",
+      playerAction: "Walk into a new area for the first time",
+      requiresTarget: "location",
+      countable: false
+    },
+    // ── NPC Interaction ──────────────────────────────────────────────────────
+    {
+      type: "talk_to_npc",
+      description: "Talk to a specific NPC character",
+      playerAction: "Press G near an NPC to start a conversation",
+      requiresTarget: "npc",
+      countable: true
+    },
+    {
+      type: "complete_conversation",
+      description: "Complete a multi-turn conversation (with keyword usage or turn count)",
+      playerAction: "Have a sustained back-and-forth dialogue with NPCs",
+      requiresTarget: "none",
+      countable: true
+    },
+    {
+      type: "conversation_initiation",
+      description: "Respond to an NPC who proactively approaches and starts a conversation",
+      playerAction: "Accept an NPC-initiated conversation (press G) and respond appropriately",
+      requiresTarget: "npc",
+      countable: true
+    },
+    // ── Vocabulary & Language ────────────────────────────────────────────────
+    {
+      type: "use_vocabulary",
+      description: "Use specific target-language words in conversation",
+      playerAction: "Type or speak target-language words during NPC dialogue",
+      requiresTarget: "none",
+      countable: true
+    },
+    {
+      type: "collect_vocabulary",
+      description: "Collect vocabulary words by interacting with labeled world objects",
+      playerAction: "Walk near objects with vocabulary labels to add words to vocabulary bank",
+      requiresTarget: "none",
+      countable: true
+    },
+    {
+      type: "collect_text",
+      description: "Collect a text artifact (book, letter, journal, scroll) from the world",
+      playerAction: "Walk to a text object and press E to pick it up and add it to your library",
+      requiresTarget: "none",
+      countable: true
+    },
+    {
+      type: "identify_object",
+      description: "Identify an object by typing its name in the target language",
+      playerAction: "Click an object and type its target-language name",
+      requiresTarget: "none",
+      countable: true
+    },
+    // ── Items & Inventory ────────────────────────────────────────────────────
+    {
+      type: "collect_item",
+      description: "Pick up or collect a specific item in the world",
+      playerAction: "Walk to an item and pick it up",
+      requiresTarget: "item",
+      countable: true
+    },
+    {
+      type: "deliver_item",
+      description: "Bring a specific item to a specific NPC",
+      playerAction: "Talk to target NPC while holding the quest item",
+      requiresTarget: "npc",
+      countable: false
+    },
+    {
+      type: "buy_item",
+      description: "Purchase an item from a shop or merchant",
+      playerAction: "Visit a shop and buy an item using gold",
+      requiresTarget: "item",
+      countable: true
+    },
+    {
+      type: "sell_item",
+      description: "Sell an item to a merchant",
+      playerAction: "Talk to a merchant and sell an inventory item",
+      requiresTarget: "item",
+      countable: true
+    },
+    // ── Combat ───────────────────────────────────────────────────────────────
+    {
+      type: "defeat_enemies",
+      description: "Defeat enemies in combat",
+      playerAction: "Fight and defeat enemies using F key",
+      requiresTarget: "none",
+      countable: true
+    },
+    // ── Crafting ─────────────────────────────────────────────────────────────
+    {
+      type: "craft_item",
+      description: "Craft a specific item using the crafting system",
+      playerAction: "Gather materials and craft the item at a crafting station",
+      requiresTarget: "item",
+      countable: true
+    },
+    {
+      type: "physical_action",
+      description: "Perform a physical action at a hotspot (fishing, mining, farming, herbalism, etc.)",
+      playerAction: "Approach a hotspot and press G to perform the action",
+      requiresTarget: "none",
+      countable: true
+    },
+    // ── Escort & Arrival ─────────────────────────────────────────────────────
+    {
+      type: "escort_npc",
+      description: "Escort an NPC safely to a destination",
+      playerAction: "Walk alongside an NPC to guide them to a location",
+      requiresTarget: "npc",
+      countable: false
+    },
+    // ── Social / Relationships ──────────────────────────────────────────────
+    {
+      type: "build_friendship",
+      description: "Build a friendship with an NPC through repeated conversations",
+      playerAction: "Have multiple conversations with the same NPC to build rapport",
+      requiresTarget: "npc",
+      countable: true
+    },
+    {
+      type: "give_gift",
+      description: "Give a gift item to an NPC to strengthen a relationship",
+      playerAction: "Collect an item and present it to an NPC during conversation",
+      requiresTarget: "npc",
+      countable: false
+    },
+    // ── Reputation ───────────────────────────────────────────────────────────
+    {
+      type: "gain_reputation",
+      description: "Gain reputation with a faction through positive actions",
+      playerAction: "Complete tasks and interactions that improve faction standing",
+      requiresTarget: "none",
+      countable: false
+    },
+    // ── Listening & Comprehension ────────────────────────────────────────────
+    {
+      type: "listening_comprehension",
+      description: "Listen to an NPC story and answer comprehension questions",
+      playerAction: "Trigger NPC story, listen, then answer questions about it",
+      requiresTarget: "npc",
+      countable: true
+    },
+    // ── Translation ──────────────────────────────────────────────────────────
+    {
+      type: "translation_challenge",
+      description: "Translate phrases between English and the target language",
+      playerAction: "Type translations of prompted phrases",
+      requiresTarget: "none",
+      countable: true
+    },
+    // ── Navigation (language-based) ──────────────────────────────────────────
+    {
+      type: "navigate_language",
+      description: "Follow directions given in the target language to reach waypoints",
+      playerAction: "Read/listen to target-language directions and walk to each waypoint",
+      requiresTarget: "location",
+      countable: false
+    },
+    {
+      type: "follow_directions",
+      description: "Follow step-by-step directions in the target language",
+      playerAction: "Interpret target-language instructions and follow them physically",
+      requiresTarget: "none",
+      countable: true
+    },
+    // ── Pronunciation ────────────────────────────────────────────────────────
+    {
+      type: "pronunciation_check",
+      description: "Pronounce phrases aloud and get accuracy feedback",
+      playerAction: "Press R to record voice and pronounce target-language phrases",
+      requiresTarget: "none",
+      countable: true
+    },
+    // ── Language Learning Actions ──────────────────────────────────────────
+    {
+      type: "examine_object",
+      description: "Inspect a world object to see its name in the target language",
+      playerAction: "Press X near an object or click it to examine and learn its name",
+      requiresTarget: "item",
+      countable: true
+    },
+    {
+      type: "read_sign",
+      description: "Read text on signs, menus, or books written in the target language",
+      playerAction: "Approach a sign or readable surface and press X to read it",
+      requiresTarget: "item",
+      countable: true
+    },
+    {
+      type: "write_response",
+      description: "Compose written text in the target language in response to a prompt",
+      playerAction: "Type a written response in the target language when prompted",
+      requiresTarget: "none",
+      countable: true
+    },
+    {
+      type: "listen_and_repeat",
+      description: "Listen to an NPC phrase and repeat it back via speech",
+      playerAction: "Listen to the NPC, then press R to record and repeat the phrase",
+      requiresTarget: "npc",
+      countable: true
+    },
+    {
+      type: "point_and_name",
+      description: "Point at an object and name it in the target language",
+      playerAction: "Click an object and type or speak its target-language name",
+      requiresTarget: "item",
+      countable: true
+    },
+    {
+      type: "ask_for_directions",
+      description: "Ask an NPC for directions using the target language",
+      playerAction: "Talk to an NPC and request directions in the target language",
+      requiresTarget: "npc",
+      countable: true
+    },
+    {
+      type: "order_food",
+      description: "Order food or drinks at a restaurant or market in the target language",
+      playerAction: "Talk to a vendor NPC and order items in the target language",
+      requiresTarget: "npc",
+      countable: true
+    },
+    {
+      type: "haggle_price",
+      description: "Negotiate a price with a merchant in the target language",
+      playerAction: "Talk to a merchant NPC and negotiate the price in the target language",
+      requiresTarget: "npc",
+      countable: true
+    },
+    {
+      type: "introduce_self",
+      description: "Introduce yourself to an NPC in the target language",
+      playerAction: "Talk to an NPC and introduce yourself in the target language",
+      requiresTarget: "npc",
+      countable: false
+    },
+    {
+      type: "describe_scene",
+      description: "Describe what you see in the current location in the target language",
+      playerAction: "Type or speak a description of the scene in the target language",
+      requiresTarget: "none",
+      countable: true
+    },
+    // ── Text / Reading / Comprehension ─────────────────────────────────────
+    {
+      type: "find_text",
+      description: "Find a book, document, or text item in the world",
+      playerAction: "Explore the world to locate a specific book or document",
+      requiresTarget: "item",
+      countable: true
+    },
+    {
+      type: "read_text",
+      description: "Read the contents of a book, document, or text written in the target language",
+      playerAction: "Open a collected book or document and read through its contents",
+      requiresTarget: "item",
+      countable: true
+    },
+    {
+      type: "comprehension_quiz",
+      description: "Answer comprehension questions about a text that was read",
+      playerAction: "Answer multiple-choice or short-answer questions about a previously read text",
+      requiresTarget: "none",
+      countable: true
+    },
+    // ── Photography ─────────────────────────────────────────────────────────
+    {
+      type: "photograph_subject",
+      description: "Take a photograph of a specific subject (item, NPC, building, or nature feature)",
+      playerAction: "Use the camera to photograph the target subject",
+      requiresTarget: "none",
+      countable: true
+    },
+    {
+      type: "photograph_activity",
+      description: "Take a photograph of an NPC performing a specific activity (cooking, painting, reading, etc.)",
+      playerAction: "Use the camera to photograph an NPC while they are performing the target activity",
+      requiresTarget: "npc",
+      countable: true
+    },
+    // ── Eavesdropping ──────────────────────────────────────────────────────
+    {
+      type: "eavesdrop",
+      description: "Overhear a conversation between NPCs about a specific topic",
+      playerAction: "Stand near two NPCs who are conversing to overhear their discussion",
+      requiresTarget: "none",
+      countable: true
+    },
+    // ── Observation ────────────────────────────────────────────────────────
+    {
+      type: "observe_activity",
+      description: "Watch an NPC performing a specific activity by staying nearby for a period of time",
+      playerAction: "Stand within 10m of an NPC performing the target activity for 5+ seconds",
+      requiresTarget: "npc",
+      countable: true
+    },
+    // ── Teaching (player teaches NPC) ────────────────────────────────────────
+    {
+      type: "teach_vocabulary",
+      description: "Teach vocabulary words to an NPC by using them in conversation and confirming the NPC learned them",
+      playerAction: "Talk to an NPC learner and use target-language words until the NPC demonstrates understanding",
+      requiresTarget: "npc",
+      countable: true
+    },
+    {
+      type: "teach_phrase",
+      description: "Teach a phrase or sentence to an NPC by modeling it and having the NPC repeat it",
+      playerAction: "Talk to an NPC learner, model a phrase, and confirm they can repeat it",
+      requiresTarget: "npc",
+      countable: true
+    }
+  ];
+  var VALID_OBJECTIVE_TYPES = new Set(
+    ACHIEVABLE_OBJECTIVE_TYPES.map((t) => t.type)
+  );
+  var CONVERSATION_ONLY_OBJECTIVE_TYPES = /* @__PURE__ */ new Set([
+    "talk_to_npc",
+    "complete_conversation",
+    "use_vocabulary",
+    "listening_comprehension",
+    "pronunciation_check",
+    "translation_challenge",
+    "listen_and_repeat",
+    "ask_for_directions",
+    "order_food",
+    "haggle_price",
+    "introduce_self",
+    "describe_scene",
+    "write_response",
+    "build_friendship"
+  ]);
+  var CONVERSATION_ONLY_ACHIEVABLE_TYPES = ACHIEVABLE_OBJECTIVE_TYPES.filter(
+    (t) => CONVERSATION_ONLY_OBJECTIVE_TYPES.has(t.type)
+  );
+  var NORMALIZATION_MAP = {
+    // AI tends to generate these
+    "talk_to": "talk_to_npc",
+    "talk": "talk_to_npc",
+    "speak_to": "talk_to_npc",
+    "speak_with": "talk_to_npc",
+    "converse": "talk_to_npc",
+    "converse_with": "talk_to_npc",
+    "interview": "talk_to_npc",
+    "greet": "talk_to_npc",
+    "meet": "talk_to_npc",
+    "ask": "talk_to_npc",
+    "npc_initiated": "conversation_initiation",
+    "npc_initiation": "conversation_initiation",
+    "npc_proactive": "conversation_initiation",
+    "respond_to_npc": "conversation_initiation",
+    "accept_conversation": "conversation_initiation",
+    "npc_approach": "conversation_initiation",
+    "reach_location": "visit_location",
+    "go_to": "visit_location",
+    "travel_to": "visit_location",
+    "find_location": "visit_location",
+    "explore": "discover_location",
+    "explore_area": "discover_location",
+    "discover": "discover_location",
+    "investigate": "visit_location",
+    "investigate_location": "visit_location",
+    "search_area": "visit_location",
+    "collect": "collect_item",
+    "gather": "collect_item",
+    "pick_up": "collect_item",
+    "find_item": "collect_item",
+    "obtain": "collect_item",
+    "acquire": "collect_item",
+    "buy_item": "collect_item",
+    "purchase": "collect_item",
+    "purchase_item": "collect_item",
+    "shop": "collect_item",
+    "shop_for": "collect_item",
+    "buy_from": "collect_item",
+    "collect_items": "collect_item",
+    "deliver": "deliver_item",
+    "bring_item": "deliver_item",
+    "give_item": "deliver_item",
+    "hand_over": "deliver_item",
+    "kill": "defeat_enemies",
+    "defeat": "defeat_enemies",
+    "fight": "defeat_enemies",
+    "combat": "defeat_enemies",
+    "slay": "defeat_enemies",
+    "eliminate": "defeat_enemies",
+    "craft": "craft_item",
+    "create_item": "craft_item",
+    "build": "craft_item",
+    "forge": "craft_item",
+    "forge_item": "craft_item",
+    "smith": "craft_item",
+    "assemble": "craft_item",
+    "brew": "craft_item",
+    "brew_potion": "craft_item",
+    "cook_item": "craft_item",
+    "weave": "craft_item",
+    "sew_item": "craft_item",
+    "escort": "escort_npc",
+    "protect": "escort_npc",
+    "accompany": "escort_npc",
+    "guard": "escort_npc",
+    "befriend": "build_friendship",
+    "befriend_npc": "build_friendship",
+    "make_friend": "build_friendship",
+    "friendship": "build_friendship",
+    "build_rapport": "build_friendship",
+    "bond_with": "build_friendship",
+    "socialize": "build_friendship",
+    "gift": "give_gift",
+    "present_gift": "give_gift",
+    "give_present": "give_gift",
+    "gift_item": "give_gift",
+    "offer_gift": "give_gift",
+    "reputation": "gain_reputation",
+    "improve_standing": "gain_reputation",
+    "listen": "listening_comprehension",
+    "comprehension": "listening_comprehension",
+    "listen_to_story": "listening_comprehension",
+    "answer_questions": "comprehension_quiz",
+    "translate": "translation_challenge",
+    "translation": "translation_challenge",
+    "navigate": "navigate_language",
+    "follow_path": "follow_directions",
+    "follow_route": "follow_directions",
+    "pronounce": "pronunciation_check",
+    "speak_aloud": "pronunciation_check",
+    "read_aloud": "pronunciation_check",
+    "use_words": "use_vocabulary",
+    "vocabulary_usage": "use_vocabulary",
+    "practice_vocabulary": "use_vocabulary",
+    "use_word": "use_vocabulary",
+    "identify": "identify_object",
+    "name_object": "identify_object",
+    "label_object": "identify_object",
+    "learn_vocabulary": "collect_vocabulary",
+    "collect_words": "collect_vocabulary",
+    "find_words": "collect_vocabulary",
+    "collect_book": "collect_text",
+    "collect_letter": "collect_text",
+    "collect_journal": "collect_text",
+    "collect_scroll": "collect_text",
+    "find_text": "collect_text",
+    "pick_up_text": "collect_text",
+    "gather_text": "collect_text",
+    "text_collected": "collect_text",
+    // Business scavenger hunt aliases
+    "visit_business": "visit_location",
+    "enter_business": "visit_location",
+    "enter_shop": "visit_location",
+    "visit_shop": "visit_location",
+    "identify_business_item": "identify_object",
+    "name_item": "identify_object",
+    "name_business_item": "identify_object",
+    "find_item_in_business": "identify_object",
+    "get_clue": "talk_to_npc",
+    "get_clue_from_owner": "talk_to_npc",
+    "ask_owner": "talk_to_npc",
+    "collect_business_item": "collect_item",
+    // Customer service quest aliases
+    "request_refund": "complete_conversation",
+    "explain_problem": "complete_conversation",
+    "negotiate_resolution": "complete_conversation",
+    "reserve_slot": "complete_conversation",
+    "describe_preference": "complete_conversation",
+    "express_urgency": "complete_conversation",
+    "make_return": "complete_conversation",
+    "file_complaint": "complete_conversation",
+    "make_reservation": "complete_conversation",
+    "ask_recommendation": "complete_conversation",
+    "request_exchange": "complete_conversation",
+    "complain": "complete_conversation",
+    "reserve": "complete_conversation",
+    "book_table": "complete_conversation",
+    "book_room": "complete_conversation",
+    // Language learning action aliases
+    "examine": "examine_object",
+    "inspect_object": "examine_object",
+    "inspect": "examine_object",
+    "read": "read_sign",
+    "read_text": "read_sign",
+    "read_menu": "read_sign",
+    "write": "write_response",
+    "compose": "write_response",
+    "repeat": "listen_and_repeat",
+    "repeat_phrase": "listen_and_repeat",
+    "name": "point_and_name",
+    "label": "point_and_name",
+    "ask_directions": "ask_for_directions",
+    "get_directions": "ask_for_directions",
+    "order": "order_food",
+    "order_at_restaurant": "order_food",
+    "haggle": "haggle_price",
+    "negotiate": "haggle_price",
+    "negotiate_price": "haggle_price",
+    "introduce": "introduce_self",
+    "introduction": "introduce_self",
+    "describe": "describe_scene",
+    "describe_surroundings": "describe_scene",
+    // Storytelling / narrative quest aliases
+    "tell_story": "complete_conversation",
+    "retell_story": "complete_conversation",
+    "narrate": "complete_conversation",
+    "storytelling": "complete_conversation",
+    "collaborative_story": "complete_conversation",
+    "retell": "complete_conversation",
+    // Legacy template types that need normalization
+    "learn_new_words": "collect_vocabulary",
+    "find_vocabulary_items": "identify_object",
+    "use_vocabulary_category": "use_vocabulary",
+    "master_words": "use_vocabulary",
+    "sustained_conversation": "complete_conversation",
+    "practice_grammar": "use_vocabulary",
+    // SRS / spaced repetition review variations
+    "review_vocabulary": "use_vocabulary",
+    "vocabulary_review": "use_vocabulary",
+    "srs_review": "use_vocabulary",
+    "spaced_repetition": "use_vocabulary",
+    "review_words": "use_vocabulary",
+    "practice_words": "use_vocabulary",
+    "reinforce_vocabulary": "use_vocabulary",
+    "recall_vocabulary": "use_vocabulary",
+    // Teaching-back objective aliases
+    "teach_word": "teach_vocabulary",
+    "teach_words": "teach_vocabulary",
+    "teach_npc_vocabulary": "teach_vocabulary",
+    "teach_npc_words": "teach_vocabulary",
+    "teach_npc": "teach_vocabulary",
+    "tutor_vocabulary": "teach_vocabulary",
+    "teach_sentence": "teach_phrase",
+    "teach_npc_phrase": "teach_phrase",
+    "teach_expression": "teach_phrase",
+    "model_phrase": "teach_phrase",
+    "tutor_phrase": "teach_phrase",
+    // Text / reading / comprehension aliases
+    "find_book": "find_text",
+    "find_document": "find_text",
+    "locate_text": "find_text",
+    "locate_book": "find_text",
+    "locate_document": "find_text",
+    "find_scroll": "find_text",
+    "search_text": "find_text",
+    "read_book": "read_text",
+    "read_document": "read_text",
+    "read_scroll": "read_text",
+    "read_letter": "read_text",
+    "read_page": "read_text",
+    "study_text": "read_text",
+    "complete_reading": "read_text",
+    "text_quiz": "comprehension_quiz",
+    "reading_quiz": "comprehension_quiz",
+    "reading_comprehension": "comprehension_quiz",
+    "text_comprehension": "comprehension_quiz",
+    "book_quiz": "comprehension_quiz",
+    "answer_about_text": "comprehension_quiz",
+    // Photography objective aliases
+    "photograph": "photograph_subject",
+    "take_photo": "photograph_subject",
+    "take_photograph": "photograph_subject",
+    "photo": "photograph_subject",
+    "snap_photo": "photograph_subject",
+    "capture_photo": "photograph_subject",
+    "photograph_item": "photograph_subject",
+    "photograph_npc": "photograph_subject",
+    "photograph_building": "photograph_subject",
+    "photograph_nature": "photograph_subject",
+    "photo_subject": "photograph_subject",
+    // Photography activity aliases
+    "photo_activity": "photograph_activity",
+    "photograph_npc_activity": "photograph_activity",
+    "capture_activity": "photograph_activity",
+    "photo_action": "photograph_activity",
+    // Observation activity aliases
+    "watch_activity": "observe_activity",
+    "observe_npc": "observe_activity",
+    "watch_npc": "observe_activity",
+    "observe_work": "observe_activity",
+    "watch_work": "observe_activity",
+    "observe": "observe_activity",
+    // Eavesdrop aliases
+    "overhear": "eavesdrop",
+    "overhear_conversation": "eavesdrop",
+    "listen_to_conversation": "eavesdrop",
+    "eavesdrop_conversation": "eavesdrop",
+    "spy_on_conversation": "eavesdrop",
+    // Grammar-focused objective aliases (map to canonical types)
+    "grammar_pattern": "use_vocabulary",
+    "grammar_practice": "use_vocabulary",
+    "grammar_drill": "use_vocabulary",
+    "conjugation": "use_vocabulary",
+    "conjugate": "use_vocabulary",
+    "grammar_conversation": "complete_conversation",
+    "grammar_focus": "complete_conversation"
+  };
+  function normalizeObjectiveType(type) {
+    if (!type) return null;
+    const cleaned = type.toLowerCase().trim();
+    if (VALID_OBJECTIVE_TYPES.has(cleaned)) return cleaned;
+    if (NORMALIZATION_MAP[cleaned]) return NORMALIZATION_MAP[cleaned];
+    const withUnderscores = cleaned.replace(/\s+/g, "_");
+    if (VALID_OBJECTIVE_TYPES.has(withUnderscores)) return withUnderscores;
+    if (NORMALIZATION_MAP[withUnderscores]) return NORMALIZATION_MAP[withUnderscores];
+    return null;
+  }
+  var OBJECTIVE_TYPE_DEFAULTS = {
+    // Conversation types — minimum 4 exchanges matches MIN_ASSESSMENT_TURNS in BabylonGame
+    conversation: { requiredCount: 4 },
+    arrival_conversation: { requiredCount: 4 },
+    departure_conversation: { requiredCount: 4 },
+    periodic_conversational: { requiredCount: 4 },
+    complete_conversation: { requiredCount: 5 },
+    conversation_turns: { requiredCount: 5 },
+    // Language skill types
+    use_vocabulary: { requiredCount: 10 },
+    collect_vocabulary: { requiredCount: 10 },
+    pronunciation_check: { requiredCount: 3 },
+    listen_and_repeat: { requiredCount: 3 },
+    listening_comprehension: { requiredCount: 3 },
+    translation_challenge: { requiredCount: 3 },
+    comprehension_quiz: { requiredCount: 3 },
+    teach_vocabulary: { requiredCount: 3 },
+    grammar: { requiredCount: 2 },
+    // Writing types
+    writing: { minWordCount: 20 },
+    arrival_writing: { minWordCount: 20 },
+    departure_writing: { minWordCount: 20 },
+    write_response: { requiredCount: 1, minWordCount: 20 },
+    describe_scene: { requiredCount: 1, minWordCount: 20 },
+    // Social types
+    build_friendship: { requiredStrength: 0.5 },
+    gain_reputation: { reputationRequired: 100 },
+    // Observation types
+    observe_activity: { observeDurationSeconds: 5 }
+  };
+  function getDefaultRequiredCount(objectiveType) {
+    return OBJECTIVE_TYPE_DEFAULTS[objectiveType]?.requiredCount ?? 1;
+  }
+
+  // @insimul/core/src/prolog/quest-converter.ts
+  var QUEST_OBJECTIVE_FIELDS = {
+    text_title: "textTitle",
+    text_id: "textId",
+    text_category: "textCategory",
+    item_name: "itemName",
+    clue_category: "clueCategory",
+    clue_source: "clueSource",
+    completion_trigger: "completionTrigger"
+  };
+
   // @insimul/core/src/prolog/quest-hydrator.ts
   function hydrateQuestFromProlog(quest) {
     const content = quest?.content;
@@ -1355,6 +2021,25 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       if (obj3) {
         obj3.details = details;
       }
+    }
+    const fieldPattern = /quest_objective_field\(\s*\w+\s*,\s*(\d+)\s*,\s*(\w+)\s*,\s*'((?:[^'\\]|\\.)*)'\s*\)\s*\./g;
+    let fieldMatch;
+    while ((fieldMatch = fieldPattern.exec(content)) !== null) {
+      const obj3 = objectives.find((o) => o.id === `obj_${parseInt(fieldMatch[1])}`);
+      const key = Object.prototype.hasOwnProperty.call(QUEST_OBJECTIVE_FIELDS, fieldMatch[2]) ? QUEST_OBJECTIVE_FIELDS[fieldMatch[2]] : void 0;
+      if (obj3 && key) obj3[key] = unescape(fieldMatch[3]);
+    }
+    const orderPattern = /quest_objective_order\(\s*\w+\s*,\s*(\d+)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)\s*\./g;
+    let orderMatch;
+    while ((orderMatch = orderPattern.exec(content)) !== null) {
+      const obj3 = objectives.find((o) => o.id === `obj_${parseInt(orderMatch[1])}`);
+      if (obj3) obj3.order = Number(orderMatch[2]);
+    }
+    const dependsPattern = /quest_objective_depends_on\(\s*\w+\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\s*\./g;
+    let dependsMatch;
+    while ((dependsMatch = dependsPattern.exec(content)) !== null) {
+      const obj3 = objectives.find((o) => o.id === `obj_${parseInt(dependsMatch[1])}`);
+      if (obj3) obj3.dependsOn = [...obj3.dependsOn ?? [], `obj_${parseInt(dependsMatch[2])}`];
     }
     return objectives;
   }
@@ -1631,6 +2316,17 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
 
   // @insimul/core/scripts/quest-golden-manifest.ts
+  var HYDRATED_OBJECTIVE_KEPT_KEYS = [
+    "textTitle",
+    "textId",
+    "textCategory",
+    "itemName",
+    "clueCategory",
+    "clueSource",
+    "completionTrigger",
+    "order",
+    "dependsOn"
+  ];
   function projectHydratedQuest(q) {
     const out = {};
     const put = (k, v) => {
@@ -1659,6 +2355,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         };
         if (o.target !== void 0 && o.target !== null) obj3.target = o.target;
         if (o.npcId !== void 0 && o.npcId !== null) obj3.npcId = o.npcId;
+        for (const k of HYDRATED_OBJECTIVE_KEPT_KEYS) {
+          const v = o[k];
+          if (v === void 0 || v === null) continue;
+          if (Array.isArray(v) && v.length === 0) continue;
+          obj3[k] = v;
+        }
         return obj3;
       });
     }
@@ -1849,6 +2551,21 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     traversal: {
       owner: "traversal",
       describe: "Where a playthrough has been and how it travels (P9e.core; catalog traversal-planner, traversal-vehicles, traversal-fast-travel). Shape: {planner: TraversalPlanner.serialize() | null ({actors: [{id, location, modes}], blocked: [{from, to}]}), vehicles: VehicleRegistry.serialize() | null ({vehicles: [{id, location, occupants, owner?, driver?}]}), fastTravel: FastTravelDirector.serialize() | null ({discovered, journeys}), riding: {<actor>: <personal vehicle kind>}}, traversalSaveBlock() in src/traversal/traversal-save.ts, read back through readTraversalBlock(), TraversalPlanner.restore(), VehicleRegistry.restore(), FastTravelDirector.restore() and personalVehiclesFromSave(). Written by src/save-file-game-state.ts from GameSaveState.traversal. Not kept: anything authored (the link graph, costs, requirements, the vehicles' modes and seats, fast travel's hours, the personal vehicle kinds; WorldIR.traversal and the pack parameters) and ground seating (a load re-seats every body at once). null (the default) is a save with no traversal: everyone where the world places them, nothing found, everyone on foot.",
+      defaultValue: null
+    },
+    social: {
+      owner: "social",
+      describe: "The player's social standing in a playthrough (P9g.core; catalog social-relationships, social-romance, social-reputation-fines, npc-player-memory, npc-volition). Shape: {relationships: {<npc>: strength in thousandths, -1000..1000}, romance: {timestep, tracks: [RomanceTrack]} | null, reputation: {entries: [ReputationEntry]} | null, memory: {<npc>: {quests: {<quest>: assigned|completed|failed|abandoned}, conversations}}, volition: VolitionDirector.serialize() | null}, socialSaveBlock() in src/social/social-save.ts, read back through readSocialBlock(), relationshipsFromSave(), romanceFromSave(), reputationFromSave() and VolitionDirector.restore(). Written by src/save-file-game-state.ts from GameSaveState.social. Not kept: anything authored (the tier table, the romance ladder and actions, the standing thresholds, the desires and the courtship ladder), NPC names the world gives again, and what is per-session (the settlement the player stands in, the conversation and gesture cooldowns, the voice state). The legacy currentState.npcs.relationships, npcs.romance and currentState.reputation are carried untouched. null (the default) is a save with no social block: every NPC a stranger, no romance, every settlement neutral, nothing remembered.",
+      defaultValue: null
+    },
+    languageLearning: {
+      owner: "language-learning",
+      describe: "The player's language learning in a playthrough (P9h.core; catalog language-progress-learning-profile, language-vocabulary-bank, language-knowledge-collection, language-object-identification, interaction-world-object-actions). Shape: {book: {language, clockMs, fluency (thousandths, 0..100000), cefr: A1..C2 | null, conversations, correctUsages, words: [{word, language, meaning, category, context, encountered, correct, incorrect, halves, last, types}], grammar: [{pattern, correct, incorrect, mastered, examples, explanations}]} | null, collected: [objectId], naming: {<objectId>: {attempts, named}}, identification: {<targetId>: {attempts, identified, bestScore}}}, languageSaveBlock() in src/language-learning/language-save.ts, read back through readLanguageBlock(). Written by src/save-file-game-state.ts from GameSaveState.languageLearning. Not kept: anything authored (tags, targets, nameable objects, signs, translations, objectives), anything derived (mastery bands, weaknesses, the bank's cards, the learning profile) and what is per-session (the difficulty monitor, the hover cache, an open composition, a listening quest in progress, the quest feedback tracker). The legacy languageProgress, languageProgressDetailed and player.cefrLevel are carried untouched. null (the default) is a save with no language block: a learner who knows no word.",
+      defaultValue: null
+    },
+    npcLife: {
+      owner: "npc-life",
+      describe: "The villagers' day a playthrough reached (P9f.core; catalog npc-schedules-routines, npc-agent-ai-planner, npc-navigation-movement, npc-follow-escort, npc-village-staging). Shape: {routines: RoutineDirector.serialize() | null ({agents: [{agent, routine, adopted, suspension, resuming?}]}), locomotion: LocomotionDirector.serialize() | null ({actors: [{actor, destination, failures}]}), planner: AgentPlanner.serialize() | null ({cursors: {<agent>: {plan, stepIndex, interrupted}}}), escorts: [{npcId, questId, objectiveId, destination, radiusMm}], posts: [{npcId, questId, hold}], movers: {<npc>: {current, queue, conversation, snags, draws}}}, npcLifeSaveBlock() in src/npc-life/npc-life-save.ts, read back through readNpcLifeBlock(), the three directors' restore(), escortsFromSave(), stagingFromSave() and moversFromSave(). Written by src/save-file-game-state.ts from GameSaveState.npcLife. Not kept: anything authored (routines, windows, priorities, thresholds, occupation profiles, the pack parameters), the stuck watchdog, LOD tiers, greeting and speech cooldowns, attention and fidgets, and holds that are not posts. null (the default) is a save with no NPC life: every villager starts its day afresh.",
       defaultValue: null
     }
   };
@@ -2639,6 +3356,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         { eventField: "textId", objectiveField: "textId", comparison: "exact", optional: true },
         { eventField: "textCategory", objectiveField: "textCategory", comparison: "exact", optional: true }
       ],
+      // Distinct texts toward requiredCount (default 1); QuestCompletionEngine.trackTextFound counts them
+      // (PL.find-text-events: the generic pass skips find_text and collect_text for text_found).
       quantity: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: 1 },
       description: "Player finds/collects a text document"
     },
@@ -2651,6 +3370,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       ],
       quantity: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: 1 },
       description: "Player collects a text document (alias for find_text)"
+    },
+    {
+      // PL.find-text-events: the converter's read_sign(Count) names no sign, so every sign counts;
+      // QuestCompletionEngine.trackSignRead counts each sign once per objective. The quantity states
+      // progress (objective_progress/5) below requiredCount.
+      objectiveType: "read_sign",
+      eventType: "sign_read",
+      matchFields: [],
+      quantity: { currentField: "currentCount", requiredField: "requiredCount", defaultRequired: 1 },
+      description: "Player reads a sign or other readable surface"
     },
     {
       objectiveType: "comprehension_quiz",
@@ -2791,661 +3520,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
 
   // @insimul/core/src/game-engine/logic/ConversationQuestBridge.ts
   var MIN_CONVERSATION_GOAL_CONFIDENCE = 0.7;
-
-  // @insimul/core/src/quest-objective-types.ts
-  var ACHIEVABLE_OBJECTIVE_TYPES = [
-    // ── Movement / Exploration ───────────────────────────────────────────────
-    {
-      type: "visit_location",
-      description: "Go to a specific location in the game world",
-      playerAction: "Walk to a location marker",
-      requiresTarget: "location",
-      countable: false
-    },
-    {
-      type: "discover_location",
-      description: "Discover a new location by entering its area",
-      playerAction: "Walk into a new area for the first time",
-      requiresTarget: "location",
-      countable: false
-    },
-    // ── NPC Interaction ──────────────────────────────────────────────────────
-    {
-      type: "talk_to_npc",
-      description: "Talk to a specific NPC character",
-      playerAction: "Press G near an NPC to start a conversation",
-      requiresTarget: "npc",
-      countable: true
-    },
-    {
-      type: "complete_conversation",
-      description: "Complete a multi-turn conversation (with keyword usage or turn count)",
-      playerAction: "Have a sustained back-and-forth dialogue with NPCs",
-      requiresTarget: "none",
-      countable: true
-    },
-    {
-      type: "conversation_initiation",
-      description: "Respond to an NPC who proactively approaches and starts a conversation",
-      playerAction: "Accept an NPC-initiated conversation (press G) and respond appropriately",
-      requiresTarget: "npc",
-      countable: true
-    },
-    // ── Vocabulary & Language ────────────────────────────────────────────────
-    {
-      type: "use_vocabulary",
-      description: "Use specific target-language words in conversation",
-      playerAction: "Type or speak target-language words during NPC dialogue",
-      requiresTarget: "none",
-      countable: true
-    },
-    {
-      type: "collect_vocabulary",
-      description: "Collect vocabulary words by interacting with labeled world objects",
-      playerAction: "Walk near objects with vocabulary labels to add words to vocabulary bank",
-      requiresTarget: "none",
-      countable: true
-    },
-    {
-      type: "collect_text",
-      description: "Collect a text artifact (book, letter, journal, scroll) from the world",
-      playerAction: "Walk to a text object and press E to pick it up and add it to your library",
-      requiresTarget: "none",
-      countable: true
-    },
-    {
-      type: "identify_object",
-      description: "Identify an object by typing its name in the target language",
-      playerAction: "Click an object and type its target-language name",
-      requiresTarget: "none",
-      countable: true
-    },
-    // ── Items & Inventory ────────────────────────────────────────────────────
-    {
-      type: "collect_item",
-      description: "Pick up or collect a specific item in the world",
-      playerAction: "Walk to an item and pick it up",
-      requiresTarget: "item",
-      countable: true
-    },
-    {
-      type: "deliver_item",
-      description: "Bring a specific item to a specific NPC",
-      playerAction: "Talk to target NPC while holding the quest item",
-      requiresTarget: "npc",
-      countable: false
-    },
-    {
-      type: "buy_item",
-      description: "Purchase an item from a shop or merchant",
-      playerAction: "Visit a shop and buy an item using gold",
-      requiresTarget: "item",
-      countable: true
-    },
-    {
-      type: "sell_item",
-      description: "Sell an item to a merchant",
-      playerAction: "Talk to a merchant and sell an inventory item",
-      requiresTarget: "item",
-      countable: true
-    },
-    // ── Combat ───────────────────────────────────────────────────────────────
-    {
-      type: "defeat_enemies",
-      description: "Defeat enemies in combat",
-      playerAction: "Fight and defeat enemies using F key",
-      requiresTarget: "none",
-      countable: true
-    },
-    // ── Crafting ─────────────────────────────────────────────────────────────
-    {
-      type: "craft_item",
-      description: "Craft a specific item using the crafting system",
-      playerAction: "Gather materials and craft the item at a crafting station",
-      requiresTarget: "item",
-      countable: true
-    },
-    {
-      type: "physical_action",
-      description: "Perform a physical action at a hotspot (fishing, mining, farming, herbalism, etc.)",
-      playerAction: "Approach a hotspot and press G to perform the action",
-      requiresTarget: "none",
-      countable: true
-    },
-    // ── Escort & Arrival ─────────────────────────────────────────────────────
-    {
-      type: "escort_npc",
-      description: "Escort an NPC safely to a destination",
-      playerAction: "Walk alongside an NPC to guide them to a location",
-      requiresTarget: "npc",
-      countable: false
-    },
-    // ── Social / Relationships ──────────────────────────────────────────────
-    {
-      type: "build_friendship",
-      description: "Build a friendship with an NPC through repeated conversations",
-      playerAction: "Have multiple conversations with the same NPC to build rapport",
-      requiresTarget: "npc",
-      countable: true
-    },
-    {
-      type: "give_gift",
-      description: "Give a gift item to an NPC to strengthen a relationship",
-      playerAction: "Collect an item and present it to an NPC during conversation",
-      requiresTarget: "npc",
-      countable: false
-    },
-    // ── Reputation ───────────────────────────────────────────────────────────
-    {
-      type: "gain_reputation",
-      description: "Gain reputation with a faction through positive actions",
-      playerAction: "Complete tasks and interactions that improve faction standing",
-      requiresTarget: "none",
-      countable: false
-    },
-    // ── Listening & Comprehension ────────────────────────────────────────────
-    {
-      type: "listening_comprehension",
-      description: "Listen to an NPC story and answer comprehension questions",
-      playerAction: "Trigger NPC story, listen, then answer questions about it",
-      requiresTarget: "npc",
-      countable: true
-    },
-    // ── Translation ──────────────────────────────────────────────────────────
-    {
-      type: "translation_challenge",
-      description: "Translate phrases between English and the target language",
-      playerAction: "Type translations of prompted phrases",
-      requiresTarget: "none",
-      countable: true
-    },
-    // ── Navigation (language-based) ──────────────────────────────────────────
-    {
-      type: "navigate_language",
-      description: "Follow directions given in the target language to reach waypoints",
-      playerAction: "Read/listen to target-language directions and walk to each waypoint",
-      requiresTarget: "location",
-      countable: false
-    },
-    {
-      type: "follow_directions",
-      description: "Follow step-by-step directions in the target language",
-      playerAction: "Interpret target-language instructions and follow them physically",
-      requiresTarget: "none",
-      countable: true
-    },
-    // ── Pronunciation ────────────────────────────────────────────────────────
-    {
-      type: "pronunciation_check",
-      description: "Pronounce phrases aloud and get accuracy feedback",
-      playerAction: "Press R to record voice and pronounce target-language phrases",
-      requiresTarget: "none",
-      countable: true
-    },
-    // ── Language Learning Actions ──────────────────────────────────────────
-    {
-      type: "examine_object",
-      description: "Inspect a world object to see its name in the target language",
-      playerAction: "Press X near an object or click it to examine and learn its name",
-      requiresTarget: "item",
-      countable: true
-    },
-    {
-      type: "read_sign",
-      description: "Read text on signs, menus, or books written in the target language",
-      playerAction: "Approach a sign or readable surface and press X to read it",
-      requiresTarget: "item",
-      countable: true
-    },
-    {
-      type: "write_response",
-      description: "Compose written text in the target language in response to a prompt",
-      playerAction: "Type a written response in the target language when prompted",
-      requiresTarget: "none",
-      countable: true
-    },
-    {
-      type: "listen_and_repeat",
-      description: "Listen to an NPC phrase and repeat it back via speech",
-      playerAction: "Listen to the NPC, then press R to record and repeat the phrase",
-      requiresTarget: "npc",
-      countable: true
-    },
-    {
-      type: "point_and_name",
-      description: "Point at an object and name it in the target language",
-      playerAction: "Click an object and type or speak its target-language name",
-      requiresTarget: "item",
-      countable: true
-    },
-    {
-      type: "ask_for_directions",
-      description: "Ask an NPC for directions using the target language",
-      playerAction: "Talk to an NPC and request directions in the target language",
-      requiresTarget: "npc",
-      countable: true
-    },
-    {
-      type: "order_food",
-      description: "Order food or drinks at a restaurant or market in the target language",
-      playerAction: "Talk to a vendor NPC and order items in the target language",
-      requiresTarget: "npc",
-      countable: true
-    },
-    {
-      type: "haggle_price",
-      description: "Negotiate a price with a merchant in the target language",
-      playerAction: "Talk to a merchant NPC and negotiate the price in the target language",
-      requiresTarget: "npc",
-      countable: true
-    },
-    {
-      type: "introduce_self",
-      description: "Introduce yourself to an NPC in the target language",
-      playerAction: "Talk to an NPC and introduce yourself in the target language",
-      requiresTarget: "npc",
-      countable: false
-    },
-    {
-      type: "describe_scene",
-      description: "Describe what you see in the current location in the target language",
-      playerAction: "Type or speak a description of the scene in the target language",
-      requiresTarget: "none",
-      countable: true
-    },
-    // ── Text / Reading / Comprehension ─────────────────────────────────────
-    {
-      type: "find_text",
-      description: "Find a book, document, or text item in the world",
-      playerAction: "Explore the world to locate a specific book or document",
-      requiresTarget: "item",
-      countable: true
-    },
-    {
-      type: "read_text",
-      description: "Read the contents of a book, document, or text written in the target language",
-      playerAction: "Open a collected book or document and read through its contents",
-      requiresTarget: "item",
-      countable: true
-    },
-    {
-      type: "comprehension_quiz",
-      description: "Answer comprehension questions about a text that was read",
-      playerAction: "Answer multiple-choice or short-answer questions about a previously read text",
-      requiresTarget: "none",
-      countable: true
-    },
-    // ── Photography ─────────────────────────────────────────────────────────
-    {
-      type: "photograph_subject",
-      description: "Take a photograph of a specific subject (item, NPC, building, or nature feature)",
-      playerAction: "Use the camera to photograph the target subject",
-      requiresTarget: "none",
-      countable: true
-    },
-    {
-      type: "photograph_activity",
-      description: "Take a photograph of an NPC performing a specific activity (cooking, painting, reading, etc.)",
-      playerAction: "Use the camera to photograph an NPC while they are performing the target activity",
-      requiresTarget: "npc",
-      countable: true
-    },
-    // ── Eavesdropping ──────────────────────────────────────────────────────
-    {
-      type: "eavesdrop",
-      description: "Overhear a conversation between NPCs about a specific topic",
-      playerAction: "Stand near two NPCs who are conversing to overhear their discussion",
-      requiresTarget: "none",
-      countable: true
-    },
-    // ── Observation ────────────────────────────────────────────────────────
-    {
-      type: "observe_activity",
-      description: "Watch an NPC performing a specific activity by staying nearby for a period of time",
-      playerAction: "Stand within 10m of an NPC performing the target activity for 5+ seconds",
-      requiresTarget: "npc",
-      countable: true
-    },
-    // ── Teaching (player teaches NPC) ────────────────────────────────────────
-    {
-      type: "teach_vocabulary",
-      description: "Teach vocabulary words to an NPC by using them in conversation and confirming the NPC learned them",
-      playerAction: "Talk to an NPC learner and use target-language words until the NPC demonstrates understanding",
-      requiresTarget: "npc",
-      countable: true
-    },
-    {
-      type: "teach_phrase",
-      description: "Teach a phrase or sentence to an NPC by modeling it and having the NPC repeat it",
-      playerAction: "Talk to an NPC learner, model a phrase, and confirm they can repeat it",
-      requiresTarget: "npc",
-      countable: true
-    }
-  ];
-  var VALID_OBJECTIVE_TYPES = new Set(
-    ACHIEVABLE_OBJECTIVE_TYPES.map((t) => t.type)
-  );
-  var CONVERSATION_ONLY_OBJECTIVE_TYPES = /* @__PURE__ */ new Set([
-    "talk_to_npc",
-    "complete_conversation",
-    "use_vocabulary",
-    "listening_comprehension",
-    "pronunciation_check",
-    "translation_challenge",
-    "listen_and_repeat",
-    "ask_for_directions",
-    "order_food",
-    "haggle_price",
-    "introduce_self",
-    "describe_scene",
-    "write_response",
-    "build_friendship"
-  ]);
-  var CONVERSATION_ONLY_ACHIEVABLE_TYPES = ACHIEVABLE_OBJECTIVE_TYPES.filter(
-    (t) => CONVERSATION_ONLY_OBJECTIVE_TYPES.has(t.type)
-  );
-  var NORMALIZATION_MAP = {
-    // AI tends to generate these
-    "talk_to": "talk_to_npc",
-    "talk": "talk_to_npc",
-    "speak_to": "talk_to_npc",
-    "speak_with": "talk_to_npc",
-    "converse": "talk_to_npc",
-    "converse_with": "talk_to_npc",
-    "interview": "talk_to_npc",
-    "greet": "talk_to_npc",
-    "meet": "talk_to_npc",
-    "ask": "talk_to_npc",
-    "npc_initiated": "conversation_initiation",
-    "npc_initiation": "conversation_initiation",
-    "npc_proactive": "conversation_initiation",
-    "respond_to_npc": "conversation_initiation",
-    "accept_conversation": "conversation_initiation",
-    "npc_approach": "conversation_initiation",
-    "reach_location": "visit_location",
-    "go_to": "visit_location",
-    "travel_to": "visit_location",
-    "find_location": "visit_location",
-    "explore": "discover_location",
-    "explore_area": "discover_location",
-    "discover": "discover_location",
-    "investigate": "visit_location",
-    "investigate_location": "visit_location",
-    "search_area": "visit_location",
-    "collect": "collect_item",
-    "gather": "collect_item",
-    "pick_up": "collect_item",
-    "find_item": "collect_item",
-    "obtain": "collect_item",
-    "acquire": "collect_item",
-    "buy_item": "collect_item",
-    "purchase": "collect_item",
-    "purchase_item": "collect_item",
-    "shop": "collect_item",
-    "shop_for": "collect_item",
-    "buy_from": "collect_item",
-    "collect_items": "collect_item",
-    "deliver": "deliver_item",
-    "bring_item": "deliver_item",
-    "give_item": "deliver_item",
-    "hand_over": "deliver_item",
-    "kill": "defeat_enemies",
-    "defeat": "defeat_enemies",
-    "fight": "defeat_enemies",
-    "combat": "defeat_enemies",
-    "slay": "defeat_enemies",
-    "eliminate": "defeat_enemies",
-    "craft": "craft_item",
-    "create_item": "craft_item",
-    "build": "craft_item",
-    "forge": "craft_item",
-    "forge_item": "craft_item",
-    "smith": "craft_item",
-    "assemble": "craft_item",
-    "brew": "craft_item",
-    "brew_potion": "craft_item",
-    "cook_item": "craft_item",
-    "weave": "craft_item",
-    "sew_item": "craft_item",
-    "escort": "escort_npc",
-    "protect": "escort_npc",
-    "accompany": "escort_npc",
-    "guard": "escort_npc",
-    "befriend": "build_friendship",
-    "befriend_npc": "build_friendship",
-    "make_friend": "build_friendship",
-    "friendship": "build_friendship",
-    "build_rapport": "build_friendship",
-    "bond_with": "build_friendship",
-    "socialize": "build_friendship",
-    "gift": "give_gift",
-    "present_gift": "give_gift",
-    "give_present": "give_gift",
-    "gift_item": "give_gift",
-    "offer_gift": "give_gift",
-    "reputation": "gain_reputation",
-    "improve_standing": "gain_reputation",
-    "listen": "listening_comprehension",
-    "comprehension": "listening_comprehension",
-    "listen_to_story": "listening_comprehension",
-    "answer_questions": "comprehension_quiz",
-    "translate": "translation_challenge",
-    "translation": "translation_challenge",
-    "navigate": "navigate_language",
-    "follow_path": "follow_directions",
-    "follow_route": "follow_directions",
-    "pronounce": "pronunciation_check",
-    "speak_aloud": "pronunciation_check",
-    "read_aloud": "pronunciation_check",
-    "use_words": "use_vocabulary",
-    "vocabulary_usage": "use_vocabulary",
-    "practice_vocabulary": "use_vocabulary",
-    "use_word": "use_vocabulary",
-    "identify": "identify_object",
-    "name_object": "identify_object",
-    "label_object": "identify_object",
-    "learn_vocabulary": "collect_vocabulary",
-    "collect_words": "collect_vocabulary",
-    "find_words": "collect_vocabulary",
-    "collect_book": "collect_text",
-    "collect_letter": "collect_text",
-    "collect_journal": "collect_text",
-    "collect_scroll": "collect_text",
-    "find_text": "collect_text",
-    "pick_up_text": "collect_text",
-    "gather_text": "collect_text",
-    "text_collected": "collect_text",
-    // Business scavenger hunt aliases
-    "visit_business": "visit_location",
-    "enter_business": "visit_location",
-    "enter_shop": "visit_location",
-    "visit_shop": "visit_location",
-    "identify_business_item": "identify_object",
-    "name_item": "identify_object",
-    "name_business_item": "identify_object",
-    "find_item_in_business": "identify_object",
-    "get_clue": "talk_to_npc",
-    "get_clue_from_owner": "talk_to_npc",
-    "ask_owner": "talk_to_npc",
-    "collect_business_item": "collect_item",
-    // Customer service quest aliases
-    "request_refund": "complete_conversation",
-    "explain_problem": "complete_conversation",
-    "negotiate_resolution": "complete_conversation",
-    "reserve_slot": "complete_conversation",
-    "describe_preference": "complete_conversation",
-    "express_urgency": "complete_conversation",
-    "make_return": "complete_conversation",
-    "file_complaint": "complete_conversation",
-    "make_reservation": "complete_conversation",
-    "ask_recommendation": "complete_conversation",
-    "request_exchange": "complete_conversation",
-    "complain": "complete_conversation",
-    "reserve": "complete_conversation",
-    "book_table": "complete_conversation",
-    "book_room": "complete_conversation",
-    // Language learning action aliases
-    "examine": "examine_object",
-    "inspect_object": "examine_object",
-    "inspect": "examine_object",
-    "read": "read_sign",
-    "read_text": "read_sign",
-    "read_menu": "read_sign",
-    "write": "write_response",
-    "compose": "write_response",
-    "repeat": "listen_and_repeat",
-    "repeat_phrase": "listen_and_repeat",
-    "name": "point_and_name",
-    "label": "point_and_name",
-    "ask_directions": "ask_for_directions",
-    "get_directions": "ask_for_directions",
-    "order": "order_food",
-    "order_at_restaurant": "order_food",
-    "haggle": "haggle_price",
-    "negotiate": "haggle_price",
-    "negotiate_price": "haggle_price",
-    "introduce": "introduce_self",
-    "introduction": "introduce_self",
-    "describe": "describe_scene",
-    "describe_surroundings": "describe_scene",
-    // Storytelling / narrative quest aliases
-    "tell_story": "complete_conversation",
-    "retell_story": "complete_conversation",
-    "narrate": "complete_conversation",
-    "storytelling": "complete_conversation",
-    "collaborative_story": "complete_conversation",
-    "retell": "complete_conversation",
-    // Legacy template types that need normalization
-    "learn_new_words": "collect_vocabulary",
-    "find_vocabulary_items": "identify_object",
-    "use_vocabulary_category": "use_vocabulary",
-    "master_words": "use_vocabulary",
-    "sustained_conversation": "complete_conversation",
-    "practice_grammar": "use_vocabulary",
-    // SRS / spaced repetition review variations
-    "review_vocabulary": "use_vocabulary",
-    "vocabulary_review": "use_vocabulary",
-    "srs_review": "use_vocabulary",
-    "spaced_repetition": "use_vocabulary",
-    "review_words": "use_vocabulary",
-    "practice_words": "use_vocabulary",
-    "reinforce_vocabulary": "use_vocabulary",
-    "recall_vocabulary": "use_vocabulary",
-    // Teaching-back objective aliases
-    "teach_word": "teach_vocabulary",
-    "teach_words": "teach_vocabulary",
-    "teach_npc_vocabulary": "teach_vocabulary",
-    "teach_npc_words": "teach_vocabulary",
-    "teach_npc": "teach_vocabulary",
-    "tutor_vocabulary": "teach_vocabulary",
-    "teach_sentence": "teach_phrase",
-    "teach_npc_phrase": "teach_phrase",
-    "teach_expression": "teach_phrase",
-    "model_phrase": "teach_phrase",
-    "tutor_phrase": "teach_phrase",
-    // Text / reading / comprehension aliases
-    "find_book": "find_text",
-    "find_document": "find_text",
-    "locate_text": "find_text",
-    "locate_book": "find_text",
-    "locate_document": "find_text",
-    "find_scroll": "find_text",
-    "search_text": "find_text",
-    "read_book": "read_text",
-    "read_document": "read_text",
-    "read_scroll": "read_text",
-    "read_letter": "read_text",
-    "read_page": "read_text",
-    "study_text": "read_text",
-    "complete_reading": "read_text",
-    "text_quiz": "comprehension_quiz",
-    "reading_quiz": "comprehension_quiz",
-    "reading_comprehension": "comprehension_quiz",
-    "text_comprehension": "comprehension_quiz",
-    "book_quiz": "comprehension_quiz",
-    "answer_about_text": "comprehension_quiz",
-    // Photography objective aliases
-    "photograph": "photograph_subject",
-    "take_photo": "photograph_subject",
-    "take_photograph": "photograph_subject",
-    "photo": "photograph_subject",
-    "snap_photo": "photograph_subject",
-    "capture_photo": "photograph_subject",
-    "photograph_item": "photograph_subject",
-    "photograph_npc": "photograph_subject",
-    "photograph_building": "photograph_subject",
-    "photograph_nature": "photograph_subject",
-    "photo_subject": "photograph_subject",
-    // Photography activity aliases
-    "photo_activity": "photograph_activity",
-    "photograph_npc_activity": "photograph_activity",
-    "capture_activity": "photograph_activity",
-    "photo_action": "photograph_activity",
-    // Observation activity aliases
-    "watch_activity": "observe_activity",
-    "observe_npc": "observe_activity",
-    "watch_npc": "observe_activity",
-    "observe_work": "observe_activity",
-    "watch_work": "observe_activity",
-    "observe": "observe_activity",
-    // Eavesdrop aliases
-    "overhear": "eavesdrop",
-    "overhear_conversation": "eavesdrop",
-    "listen_to_conversation": "eavesdrop",
-    "eavesdrop_conversation": "eavesdrop",
-    "spy_on_conversation": "eavesdrop",
-    // Grammar-focused objective aliases (map to canonical types)
-    "grammar_pattern": "use_vocabulary",
-    "grammar_practice": "use_vocabulary",
-    "grammar_drill": "use_vocabulary",
-    "conjugation": "use_vocabulary",
-    "conjugate": "use_vocabulary",
-    "grammar_conversation": "complete_conversation",
-    "grammar_focus": "complete_conversation"
-  };
-  function normalizeObjectiveType(type) {
-    if (!type) return null;
-    const cleaned = type.toLowerCase().trim();
-    if (VALID_OBJECTIVE_TYPES.has(cleaned)) return cleaned;
-    if (NORMALIZATION_MAP[cleaned]) return NORMALIZATION_MAP[cleaned];
-    const withUnderscores = cleaned.replace(/\s+/g, "_");
-    if (VALID_OBJECTIVE_TYPES.has(withUnderscores)) return withUnderscores;
-    if (NORMALIZATION_MAP[withUnderscores]) return NORMALIZATION_MAP[withUnderscores];
-    return null;
-  }
-  var OBJECTIVE_TYPE_DEFAULTS = {
-    // Conversation types — minimum 4 exchanges matches MIN_ASSESSMENT_TURNS in BabylonGame
-    conversation: { requiredCount: 4 },
-    arrival_conversation: { requiredCount: 4 },
-    departure_conversation: { requiredCount: 4 },
-    periodic_conversational: { requiredCount: 4 },
-    complete_conversation: { requiredCount: 5 },
-    conversation_turns: { requiredCount: 5 },
-    // Language skill types
-    use_vocabulary: { requiredCount: 10 },
-    collect_vocabulary: { requiredCount: 10 },
-    pronunciation_check: { requiredCount: 3 },
-    listen_and_repeat: { requiredCount: 3 },
-    listening_comprehension: { requiredCount: 3 },
-    translation_challenge: { requiredCount: 3 },
-    comprehension_quiz: { requiredCount: 3 },
-    teach_vocabulary: { requiredCount: 3 },
-    grammar: { requiredCount: 2 },
-    // Writing types
-    writing: { minWordCount: 20 },
-    arrival_writing: { minWordCount: 20 },
-    departure_writing: { minWordCount: 20 },
-    write_response: { requiredCount: 1, minWordCount: 20 },
-    describe_scene: { requiredCount: 1, minWordCount: 20 },
-    // Social types
-    build_friendship: { requiredStrength: 0.5 },
-    gain_reputation: { reputationRequired: 100 },
-    // Observation types
-    observe_activity: { observeDurationSeconds: 5 }
-  };
-  function getDefaultRequiredCount(objectiveType) {
-    return OBJECTIVE_TYPE_DEFAULTS[objectiveType]?.requiredCount ?? 1;
-  }
 
   // @insimul/core/src/game-engine/logic/pronunciation-helpers.ts
   var DIFFICULTY_CONFIGS = {
@@ -3610,7 +3684,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   // @insimul/core/src/game-engine/logic/QuestCompletionEngine.ts
   var QUEST_EVENT_TYPE_HANDLED = {
     text_read: ["read_text", "read_document"],
-    clue_discovered: ["collect_clue"]
+    clue_discovered: ["collect_clue"],
+    // PL.find-text-events: one text_found put a find_text of requiredCount 3 at 2 (trackTextFound and
+    // the mapping's quantity each added one); sign_read is decided by trackSignRead alone.
+    text_found: ["find_text", "collect_text"],
+    sign_read: ["read_sign"]
   };
   var _QuestCompletionEngine = class _QuestCompletionEngine {
     constructor() {
@@ -3783,7 +3861,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           this.trackPriceHaggled(event.itemName, event.merchantId, event.typedWord, event.questId);
           break;
         case "text_found":
-          this.trackTextFound(event.textId, event.textName, event.questId);
+          this.trackTextFound(event.textId, event.textName, event.questId, event.textCategory);
           break;
         case "text_read":
           this.trackTextRead(event.textId, event.questId, event.textTitle);
@@ -4464,11 +4542,21 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         }
       });
     }
+    /**
+     * A sign was read (PL.find-text-events). Every `read_sign` objective counts it (the converter's
+     * `read_sign(Count)` names no sign), each sign once per objective (`signsRead`), toward
+     * `requiredCount` (default 1). Before, re-reading one sign counted again each time.
+     */
     trackSignRead(signId, questId) {
       this.forEachObjective(questId, "read_sign", (quest, obj3) => {
+        obj3.signsRead = obj3.signsRead || [];
+        if (obj3.signsRead.includes(signId)) return;
+        obj3.signsRead.push(signId);
         obj3.currentCount = (obj3.currentCount || 0) + 1;
         if (obj3.currentCount >= (obj3.requiredCount || 1)) {
           this.completeObjective(quest.id, obj3.id);
+        } else {
+          this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, obj3.requiredCount || 1, obj3.type);
         }
       });
     }
@@ -4541,9 +4629,20 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       });
     }
     // ── Text / reading / comprehension tracking ──────────────────────────
-    trackTextFound(textId, textName, questId) {
-      const lowerName = textName.toLowerCase();
+    /**
+     * A text was found (PL.find-text-events). It matches a `find_text`/`collect_text` objective by the
+     * quest-action mapping's rules (the objective's `textId` and `textCategory`, each exactly, when it
+     * names them) and by this handler's own name rule (an `itemName` it names must equal the text's
+     * name, case-folded, or its id). Each objective counts a text once (`textsFound`), toward
+     * `requiredCount` (default 1); the mapping's generic pass skips these types for `text_found`
+     * (`QUEST_EVENT_TYPE_HANDLED`), so one find counts once.
+     */
+    trackTextFound(textId, textName, questId, textCategory) {
+      const lowerName = (textName ?? "").toLowerCase();
+      const event = { textId, textCategory };
       this.forEachObjective(questId, ["find_text", "collect_text"], (quest, obj3) => {
+        const mapping = getMappingForObjective(obj3.type);
+        if (mapping && !matchesAllFields(mapping, event, obj3)) return;
         const targetName = (obj3.itemName || "").toLowerCase();
         if (targetName && targetName !== lowerName && targetName !== textId) return;
         obj3.textsFound = obj3.textsFound || [];
@@ -4552,6 +4651,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         obj3.currentCount = (obj3.currentCount || 0) + 1;
         if (obj3.currentCount >= (obj3.requiredCount || 1)) {
           this.completeObjective(quest.id, obj3.id);
+        } else {
+          this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, obj3.requiredCount || 1, obj3.type);
         }
       });
     }
@@ -4953,6 +5054,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "textsRead",
     "quizAnswered",
     "quizCorrect",
+    // The per-objective ledgers of PL.read-clue-events and PL.find-text-events, so a restored game
+    // still counts each clue and sign once.
+    "cluesFound",
+    "signsRead",
     "photographedSubjects",
     "observedActivities",
     "conversationGoalMet",
@@ -19151,14 +19256,134 @@ objective_complete(Player, QuestId, Idx) :-
     survived(Player, ActualDuration),
     ActualDuration >= Duration.
 
-% \u2500\u2500 Find text / read text (language learning) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% \u2500\u2500 Reading, finding and clue evidence, quest by quest \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% (PL.prolog-helper-align, U90(10); docs/quest-host-contract.md "The helper
+% clauses".) These clauses say what core's quest lifecycle says
+% (src/quests/quest-lifecycle.ts, conformance/quests/lifecycle.json readRule,
+% clueRule, findTextRule, signRule): a read, a clue, a found text or a read sign
+% counts only for the quests ACTIVE WHEN IT HAPPENS, each id once per quest, so
+% one id counts for every quest active then, and one met with no active quest is
+% not remembered for a quest accepted later.
+%
+% quest_evidence(Player, QuestId, Kind, Id): Id reached Player while QuestId was
+% active. Kind is the event: text_read (a read), clue_found (a clue), text_found
+% (a text found) or sign_read (a sign read).
+%
+% A host asserts it from outside the KB (assertFact), one fact per answer of
+% quest_evidence_due(Player, Kind, Id, QuestId), asked when the event happens
+% and before the quest statuses the event changes are updated. Never from inside
+% a clause: a fact a clause asserts is not in the engine's fact list, so it is
+% neither exported nor saved.
+%
+% The world-wide text_read/2, clue_found/2, text_found/2 and sign_read/2 stay
+% declared as the player's record, but no objective reads them any more: they
+% hold no quest, so read_text(any) needed a literal text_read(Player, any) and
+% collect_clue counted clues found before the quest was active.
+:- dynamic(quest_evidence/4).
+
+quest_evidence_due(Player, Kind, Id, QuestId) :-
+    memberchk(Kind, [text_read, clue_found, text_found, sign_read]),
+    atomic(Id),
+    findall(Q, quest_status(Player, Q, active), Active),
+    sort(Active, Distinct),
+    member(QuestId, Distinct),
+    \\+ quest_evidence(Player, QuestId, Kind, Id).
+
+% quest_evidence_count(Player, QuestId, Kind, Total): distinct ids of Kind
+% counted for QuestId.
+quest_evidence_count(Player, QuestId, Kind, Total) :-
+    findall(Id, quest_evidence(Player, QuestId, Kind, Id), Ids),
+    sort(Ids, Distinct),
+    length(Distinct, Total).
+
+% \u2500\u2500 What evidence cannot decide (PL.quest-converter-gaps, U91(1)) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% The converter writes what an objective's goal does not carry as facts beside
+% it: quest_objective_field(QuestId, Idx, Field, Value) (text_title, text_id,
+% text_category, item_name, clue_category, clue_source, completion_trigger),
+% quest_objective_order(QuestId, Idx, Order) and
+% quest_objective_depends_on(QuestId, Idx, OtherIdx). The hydrator reads them
+% back, so the lifecycle keeps them; these clauses read what quest_evidence/4
+% can decide (docs/quest-host-contract.md, "What the converter keeps"):
+%  - text_id on a find_text: the evidence is the id, so it is read below;
+%  - completion_trigger clue_discovered: any clue found while the quest was
+%    active, read below; no other trigger has evidence here;
+%  - a lock (a dependsOn, or a sibling with a lower order): the lifecycle counts
+%    nothing for an objective while it is locked, and evidence holds an id per
+%    quest, not when it came, so a read while locked would count later;
+%  - text_title, text_category, item_name, clue_category, clue_source: the
+%    lifecycle matches them against what the event carried, and evidence holds
+%    the id only.
+% quest_objective_undecided(QuestId, Idx) names the last two: no clause below
+% completes such an objective, and core's objective_complete/3 delta is the
+% answer for it.
+:- dynamic(quest_objective_field/4).
+:- dynamic(quest_objective_order/3).
+:- dynamic(quest_objective_depends_on/3).
+
+quest_objective_locked(QuestId, Idx) :-
+    quest_objective_depends_on(QuestId, Idx, _).
+quest_objective_locked(QuestId, Idx) :-
+    quest_objective_order(QuestId, Idx, Order),
+    quest_objective_order(QuestId, Other, OtherOrder),
+    Other \\== Idx,
+    OtherOrder < Order.
+
+quest_objective_undecided(QuestId, Idx) :-
+    quest_objective_locked(QuestId, Idx).
+quest_objective_undecided(QuestId, Idx) :-
+    quest_objective_field(QuestId, Idx, Field, _),
+    memberchk(Field, [text_title, text_category, item_name, clue_category, clue_source]).
+
+% A completionTrigger objective completes on its trigger whatever its type says
+% (QuestCompletionEngine.trackByTrigger). clue_discovered is a find_clue: any
+% clue found while the quest was active.
 objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, find_text(TextId)),
-    text_found(Player, TextId).
+    quest_objective_field(QuestId, Idx, completion_trigger, clue_discovered),
+    \\+ quest_objective_locked(QuestId, Idx),
+    once(quest_evidence(Player, QuestId, clue_found, _)).
+
+% \u2500\u2500 Read text \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% read_text(TextId): a text read while the quest was active whose id equals
+% TextId exactly. read_text(any), the converter's form when no text is named,
+% and read_text('') take every text. The converter names the objective's
+% textId, else its target.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, read_text(TextId)),
+    atomic(TextId), TextId \\== any, TextId \\== '',
+    \\+ quest_objective_undecided(QuestId, Idx),
+    quest_evidence(Player, QuestId, text_read, TextId).
 
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, read_text(TextId)),
-    text_read(Player, TextId).
+    ( TextId == any ; TextId == '' ),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    once(quest_evidence(Player, QuestId, text_read, _)).
+
+% read_text(TextId, Count), the converter's form for a requiredCount above one:
+% Count distinct texts read while the quest was active. A named text is one
+% text, so it never reaches a Count above one, as in the lifecycle.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, read_text(TextId, Count)),
+    atomic(TextId), integer(Count),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    (   ( TextId == any ; TextId == '' )
+    ->  quest_evidence_count(Player, QuestId, text_read, Total)
+    ;   ( quest_evidence(Player, QuestId, text_read, TextId) -> Total = 1 ; Total = 0 )
+    ),
+    Total >= Count.
+
+% \u2500\u2500 Find text \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% find_text(Count): Count distinct texts found while the quest was active; with
+% a text_id field, only that text, so a Count above one is never reached.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, find_text(Count)),
+    integer(Count),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    (   quest_objective_field(QuestId, Idx, text_id, TextId)
+    ->  ( quest_evidence(Player, QuestId, text_found, TextId) -> Total = 1 ; Total = 0 )
+    ;   quest_evidence_count(Player, QuestId, text_found, Total)
+    ),
+    Total >= Count.
 
 % \u2500\u2500 Examine object \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
@@ -19167,9 +19392,12 @@ objective_complete(Player, QuestId, Idx) :-
     Total >= Count.
 
 % \u2500\u2500 Read sign \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% read_sign(Count): Count distinct signs read while the quest was active.
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, read_sign(Count)),
-    aggregate_all(count, sign_read(Player, _), Total),
+    integer(Count),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    quest_evidence_count(Player, QuestId, sign_read, Total),
     Total >= Count.
 
 % \u2500\u2500 Write response / describe scene \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -19313,10 +19541,14 @@ objective_complete(Player, QuestId, Idx) :-
     Total >= Count.
 
 % \u2500\u2500 Collect clue \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% collect_clue(Count): Count distinct clues found while the quest was active
+% (a clue id is the world's; the counting is the quest's).
 :- dynamic(clue_found/2).
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, collect_clue(Count)),
-    aggregate_all(count, clue_found(Player, _), Total),
+    integer(Count),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    quest_evidence_count(Player, QuestId, clue_found, Total),
     Total >= Count.
 
 % \u2500\u2500 Assessment objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -21132,6 +21364,41 @@ player_meets_cefr(Player, RequiredLevel) :-
     return serializedFactToProlog(fact).replace(/\.$/, "");
   }
 
+  // @insimul/core/src/traversal/mode-lending.ts
+  function canonicalLent(lent, modes) {
+    const out = {};
+    if (!lent) return out;
+    const held = new Set(modes);
+    for (const mode of Object.keys(lent).sort(compareIds)) {
+      if (!held.has(mode)) continue;
+      const lenders = [...new Set(lent[mode] ?? [])].sort(compareIds);
+      if (lenders.length > 0) out[mode] = lenders;
+    }
+    return out;
+  }
+  function lendMode(holding, mode, lender) {
+    const modes = [...holding.modes];
+    const lent = canonicalLent(holding.lent, modes);
+    const lenders = lent[mode];
+    if (lenders === void 0) {
+      if (modes.includes(mode)) return { modes, lent };
+      modes.push(mode);
+      return { modes, lent: canonicalLent({ ...lent, [mode]: [lender] }, modes) };
+    }
+    return { modes, lent: canonicalLent({ ...lent, [mode]: [...lenders, lender] }, modes) };
+  }
+  function returnMode(holding, mode, lender) {
+    const modes = [...holding.modes];
+    const lent = canonicalLent(holding.lent, modes);
+    const lenders = lent[mode];
+    if (lenders === void 0 || !lenders.includes(lender)) return { modes, lent };
+    const rest = lenders.filter((l) => l !== lender);
+    if (rest.length > 0) return { modes, lent: { ...lent, [mode]: rest } };
+    const next = { ...lent };
+    delete next[mode];
+    return { modes: modes.filter((m) => m !== mode), lent: next };
+  }
+
   // @insimul/core/src/traversal/traversal.ts
   var TRAVERSAL_MODES = Object.freeze([
     "walk",
@@ -21474,6 +21741,41 @@ player_meets_cefr(Player, RequiredLevel) :-
     modesOf(actorId) {
       return [...this.actors.get(actorId)?.modes ?? []];
     }
+    /** Which of this actor's modes a vehicle lent, and by whom (`{}` when none, or for an unknown actor). */
+    lentOf(actorId) {
+      const actor = this.actors.get(actorId);
+      return actor ? canonicalLent(actor.lent, actor.modes) : {};
+    }
+    /**
+     * A vehicle lends this actor a mode (`traversal/mode-lending.ts`). A mode the actor already holds
+     * of its own stays its own and nothing is recorded; otherwise the mode is held and `lender` is
+     * recorded as lending it. The registry's reins use it.
+     */
+    async lendMode(actorId, mode, lender) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      const next = lendMode({ modes: actor.modes, lent: actor.lent }, mode, lender);
+      return this.applyHolding(actor, next.modes, next.lent);
+    }
+    /**
+     * A vehicle gives back the mode it lent. Only a recorded lender gives anything back, and the mode
+     * goes only when nobody else still lends it, so an actor who held it another way keeps it.
+     */
+    async returnMode(actorId, mode, lender) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      const next = returnMode({ modes: actor.modes, lent: actor.lent }, mode, lender);
+      return this.applyHolding(actor, next.modes, next.lent);
+    }
+    async applyHolding(actor, modes, lent) {
+      const delta = movementModeDelta(actor.id, actor.modes, modes);
+      actor.modes = [...modes];
+      const kept = canonicalLent(lent, actor.modes);
+      if (Object.keys(kept).length > 0) actor.lent = kept;
+      else delete actor.lent;
+      await this.writeDelta(delta);
+      return delta;
+    }
     /**
      * Replace what modes an actor is using — they mounted, they got into the water,
      * they put the boat back.
@@ -21482,13 +21784,10 @@ player_meets_cefr(Player, RequiredLevel) :-
      * DOING and a character who is both walking and swimming is two facts that
      * cannot both be true.
      */
-    async setModes(actorId, modes) {
+    async setModes(actorId, modes, lent) {
       const actor = this.actors.get(actorId);
       if (!actor) return emptyTraversalDelta();
-      const delta = movementModeDelta(actorId, actor.modes, modes);
-      actor.modes = [...modes];
-      await this.writeDelta(delta);
-      return delta;
+      return this.applyHolding(actor, modes, lent ?? actor.lent);
     }
     /**
      * Record that an actor is somewhere — the ONE thing a host tells core about
@@ -21847,7 +22146,11 @@ player_meets_cefr(Player, RequiredLevel) :-
     // ── Save/restore ───────────────────────────────────────────────────────
     /** Every actor this planner knows, in canonical order. */
     roster() {
-      return [...this.actors.values()].map((actor) => ({ ...actor, modes: [...actor.modes] })).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+      return [...this.actors.values()].map(({ lent, ...actor }) => ({
+        ...actor,
+        modes: [...actor.modes],
+        ...lent && Object.keys(lent).length > 0 ? { lent: canonicalLent(lent, actor.modes) } : {}
+      })).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
     }
     /**
      * The per-playthrough state, and only that: where everyone is, what they are
@@ -21872,10 +22175,13 @@ player_meets_cefr(Player, RequiredLevel) :-
     restore(state) {
       this.actors = /* @__PURE__ */ new Map();
       for (const actor of state.actors ?? []) {
+        const modes = [...actor.modes ?? ["walk"]];
+        const lent = canonicalLent(actor.lent, modes);
         this.actors.set(actor.id, {
           id: actor.id,
           location: actor.location,
-          modes: [...actor.modes ?? ["walk"]]
+          modes,
+          ...Object.keys(lent).length > 0 ? { lent } : {}
         });
       }
       this.blocked = /* @__PURE__ */ new Map();
@@ -22526,6 +22832,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     return config.slotCount + (hasDedicatedQuickSlot(config) ? 1 : 0);
   }
   var isIndex = (v, count) => typeof v === "number" && Number.isInteger(v) && v >= 0 && v < count;
+  var isSlotNumber = (v, count) => typeof v === "number" && Number.isInteger(v) && v >= 1 && v <= count;
   function resolveSaveSlotsConfig(config) {
     const c = config ?? {};
     const n = c.slotCount === void 0 ? c.maxSlots : c.slotCount;
@@ -22535,7 +22842,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     let refusal3;
     if (q === void 0 || q === QUICK_SLOT_DEDICATED) quickSlot = slotCount;
     else if (q === null) quickSlot = null;
-    else if (isIndex(q, slotCount)) quickSlot = q;
+    else if (isSlotNumber(q, slotCount)) quickSlot = q - 1;
     else refusal3 = typeof q === "number" && Number.isInteger(q) ? "quick_slot_out_of_range" : "quick_slot_not_an_index";
     const i = c.autosaveIntervalSec;
     const autosaveIntervalSec = typeof i === "number" && Number.isFinite(i) && i >= 0 ? i : SAVE_SLOTS_DEFAULTS.autosaveIntervalSec;
@@ -23965,6 +24272,377 @@ player_meets_cefr(Player, RequiredLevel) :-
       };
     }
   };
+
+  // @insimul/core/src/props/pickup-placement.ts
+  var PICKUP_OBSTACLE_KINDS = Object.freeze([
+    "prop",
+    "building",
+    "plant",
+    "container",
+    "door",
+    "villager"
+  ]);
+  var PICKUP_CLEARANCE_KINDS = Object.freeze([...PICKUP_OBSTACLE_KINDS, "road", "pickup"]);
+  var PICKUP_STATIC_KINDS = Object.freeze(["prop", "building", "plant"]);
+  var PICKUP_PLACEMENT_REFUSALS = Object.freeze(["no-clear-spot", "bad-spot"]);
+  var PICKUP_STATIC_CLEARANCE_M = 1;
+  var PICKUP_CONTAINER_CLEARANCE_M = 1;
+  var PICKUP_DOOR_CLEARANCE_M = 2;
+  var PICKUP_VILLAGER_CLEARANCE_M = 1.5;
+  var PICKUP_ROAD_CLEARANCE_M = 1;
+  var PICKUP_SPACING_M = 3;
+  var PICKUP_DOOR_RADIUS_M = 0.6;
+  var PICKUP_VILLAGER_RADIUS_M = 0.4;
+  var PICKUP_CONTAINER_RADIUS_M = 0.5;
+  var PICKUP_ROAD_DEFAULT_WIDTH_M = 3;
+  var PICKUP_ROAD_POINT_SQ_M2 = 1e-4;
+  var PICKUP_STAND_LOW_M = 0.15;
+  var PICKUP_STAND_HIGH_M = 1.5;
+  var PICKUP_GROUND_COVER_M = 0.4;
+  var PICKUP_TREE_HEIGHT_M = 2.5;
+  var PICKUP_TRUNK_FRACTION = 0.15;
+  var PICKUP_TRUNK_MIN_M = 0.25;
+  var PICKUP_TRUNK_MAX_M = 0.8;
+  var PICKUP_GROUND_PIECE_HALF_M = 25;
+  var PICKUP_RING_STEP_M = 0.5;
+  var PICKUP_SEARCH_RADIUS_M = 20;
+  var PICKUP_RING_ARC_M = 0.6;
+  var PICKUP_RING_MIN_POINTS = 8;
+  var PICKUP_RING_MAX_POINTS = 64;
+  var PICKUP_MOVED_M = 0.01;
+  var PICKUP_NOTHING_NEAR_M = 1e7;
+  var PICKUP_APPROACH_HEADINGS = 16;
+  var PICKUP_APPROACH_PROBES_M = Object.freeze([0.6, 1.5, 2.5, 3.5]);
+  var PICKUP_NAV_SNAP_M = 0.3;
+  var PICKUP_CULL_RADIUS_M = 21;
+  var PICKUP_CLEARANCE_M = Object.freeze({
+    prop: PICKUP_STATIC_CLEARANCE_M,
+    building: PICKUP_STATIC_CLEARANCE_M,
+    plant: PICKUP_STATIC_CLEARANCE_M,
+    container: PICKUP_CONTAINER_CLEARANCE_M,
+    door: PICKUP_DOOR_CLEARANCE_M,
+    villager: PICKUP_VILLAGER_CLEARANCE_M,
+    road: PICKUP_ROAD_CLEARANCE_M,
+    pickup: PICKUP_SPACING_M
+  });
+  var PICKUP_SEARCH = Object.freeze({
+    ringStepM: PICKUP_RING_STEP_M,
+    radiusM: PICKUP_SEARCH_RADIUS_M,
+    arcM: PICKUP_RING_ARC_M,
+    minPoints: PICKUP_RING_MIN_POINTS,
+    maxPoints: PICKUP_RING_MAX_POINTS
+  });
+  var PICKUP_GROUND_KINDS = Object.freeze([
+    "terrain_field",
+    "road",
+    "ground_surface",
+    "player_start",
+    "nav_region",
+    "environment",
+    "street",
+    "lane",
+    "path"
+  ]);
+  var PICKUP_PLANT_ENTITY_KINDS = Object.freeze(["foliage", "nature"]);
+  var PICKUP_PLANT_ARCHETYPE_MARKS = Object.freeze(["vegetation", "tree"]);
+  var PICKUP_PLACEMENT_FRAMES = Object.freeze({
+    unreal: "left-handed, z up; core (x, z) = Unreal (X, Y) \xF7 100 and core y = Unreal Z \xF7 100 (cm \u2192 m); +x toward +z is +X toward +Y, clockwise seen from above",
+    godot: "right-handed, y up; core (x, y, z) = Godot (x, y, z) in metres; +x toward +z is clockwise seen from above",
+    unity: "left-handed, y up; core (x, y, z) = Unity (x, y, z) in metres; +x toward +z is counter-clockwise seen from above",
+    babylon: "left-handed, y up; core (x, y, z) = Babylon (x, y, z) in metres; +x toward +z is counter-clockwise seen from above"
+  });
+  var PICKUP_PLACEMENT_DEVIATIONS = Object.freeze([
+    {
+      id: "refuse-when-nothing-clear",
+      unreal: 'no clear spot within 20 m: draws the pick-up at the clearest walkable spot and logs "NO clear spot" (VP:744\u2013758)',
+      core: "refuses with `no-clear-spot`, carrying that same spot as `clearest`",
+      why: "the ruling asks for a decision or a refusal with a code; an engine that still draws the pick-up draws it at `clearest`, as Unreal does"
+    },
+    {
+      id: "walkable-areas",
+      unreal: "a spot is walkable when the navmesh projects it within 0.3 m (VP:709\u2013714)",
+      core: "the caller states the walkable areas (`walkable`), or passes a predicate; absent, every spot is walkable",
+      why: "core has no navmesh; the engine binds its own query, as the pass-by rule takes `room` from the caller"
+    },
+    {
+      id: "one-ground-height",
+      unreal: "each search point is re-grounded by a line trace (VP:733\u2013734) and the 0.15\u20131.5 m height band is read at that point's ground",
+      core: "the band is read at the authored spot's ground (`groundY`) for every point",
+      why: "core works on (x, z) with no terrain; on a village's ground the height within 20 m changes little against a 1.35 m band"
+    },
+    {
+      id: "no-culling",
+      unreal: "statics are culled to 21 m of the authored spot first (VP:719), for speed over tens of thousands of instances",
+      core: "every obstacle stated is read",
+      why: "the settled spot is the same (a culled static is more than 1 m clear of every search point); only a reported clearance or an approach probe more than 21 m out can differ"
+    },
+    {
+      id: "stated-footprints",
+      unreal: "a static's footprint is its mesh bounds through its transform, its axes projected to the ground, the world-aligned bounds when an axis stands upright (VP:571\u2013605)",
+      core: "the caller states each footprint as a box on the ground (`at`, `half`, `axis`) or a circle",
+      why: "meshes and transforms are the engine's; the box rule (signed distance, VP:529\u2013537) is core's"
+    },
+    {
+      id: "kinds-split",
+      unreal: "props, buildings and plants are one kind of static with one 1 m margin",
+      core: "`prop`, `building` and `plant` each take a clearance (all 1 m by default)",
+      why: "the task names building footprints apart from props; the defaults keep Unreal's answer"
+    },
+    {
+      id: "nearest-order",
+      unreal: "a tie for the nearest names the first of statics, villagers, doors, containers, roads, pick-ups (VP:678\u2013706)",
+      core: "a tie names the first of the obstacles in the caller's order, then roads, then pick-ups",
+      why: "only the reported `nearest` differs, never a spot or a clearance"
+    },
+    {
+      id: "bad-spot",
+      unreal: "no check (a non-finite position would settle as NaN)",
+      core: "a spot or ground height that is not a finite number is refused with `bad-spot`, by `settlePickup` and `pickupClearance` alike; a road waypoint or a settled pick-up that is not a finite point is skipped (a road is broken there, not joined across it), keeping every other index as given",
+      why: "a refusal is a decision an engine can act on"
+    }
+  ]);
+  var finite = (v) => typeof v === "number" && Number.isFinite(v);
+  var finitePoint = (p) => !!p && finite(p.x) && finite(p.z);
+  function unitAxis(axis) {
+    if (!finitePoint(axis)) return { x: 1, z: 0 };
+    const l = Math.hypot(axis.x, axis.z);
+    return l > 1e-9 ? { x: axis.x / l, z: axis.z / l } : { x: 1, z: 0 };
+  }
+  function shapeDistance(s, p) {
+    const dx = p.x - s.c.x;
+    const dz = p.z - s.c.z;
+    if (s.radius >= 0) return Math.hypot(dx, dz) - s.radius;
+    const lx = Math.abs(dx * s.ax.x + dz * s.ax.z) - s.half.x;
+    const lz = Math.abs(dx * -s.ax.z + dz * s.ax.x) - s.half.z;
+    if (lx <= 0 && lz <= 0) return Math.max(lx, lz);
+    return Math.hypot(Math.max(lx, 0), Math.max(lz, 0));
+  }
+  function areaShape(a) {
+    if (finitePoint(a.half)) return { c: a.at, radius: -1, ax: unitAxis(a.axis), half: { x: Math.abs(a.half.x), z: Math.abs(a.half.z) } };
+    return { c: a.at, radius: finite(a.radius) ? Math.max(0, a.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+  }
+  var DEFAULT_RADIUS = {
+    door: PICKUP_DOOR_RADIUS_M,
+    villager: PICKUP_VILLAGER_RADIUS_M,
+    container: PICKUP_CONTAINER_RADIUS_M
+  };
+  function pickupTrunkRadius(halfX, halfZ) {
+    return Math.min(PICKUP_TRUNK_MAX_M, Math.max(PICKUP_TRUNK_MIN_M, PICKUP_TRUNK_FRACTION * Math.min(halfX, halfZ)));
+  }
+  function obstacleShape(o, groundY) {
+    if (!finitePoint(o.at)) return null;
+    const circle2 = DEFAULT_RADIUS[o.kind];
+    if (circle2 !== void 0) {
+      return { c: o.at, radius: finite(o.radius) ? Math.max(0, o.radius) : circle2, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+    }
+    const half = finitePoint(o.half) ? { x: Math.abs(o.half.x), z: Math.abs(o.half.z) } : null;
+    if (half && half.x > PICKUP_GROUND_PIECE_HALF_M && half.z > PICKUP_GROUND_PIECE_HALF_M) return null;
+    const banded = finite(o.yMin) && finite(o.yMax);
+    if (o.kind === "plant" && banded) {
+      const height = o.yMax - o.yMin;
+      if (height < PICKUP_GROUND_COVER_M) return null;
+      if (height > PICKUP_TREE_HEIGHT_M) {
+        const h = half ?? (finite(o.radius) ? { x: Math.abs(o.radius), z: Math.abs(o.radius) } : { x: 0, z: 0 });
+        const pivot = finitePoint(o.pivot) ? o.pivot : o.at;
+        if (!bandHolds(o, groundY)) return null;
+        return { c: pivot, radius: pickupTrunkRadius(h.x, h.z), ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+      }
+    }
+    if (banded && !bandHolds(o, groundY)) return null;
+    if (half) return { c: o.at, radius: -1, ax: unitAxis(o.axis), half };
+    return { c: o.at, radius: finite(o.radius) ? Math.max(0, o.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+  }
+  function bandHolds(o, groundY) {
+    return !(o.yMin > groundY + PICKUP_STAND_HIGH_M || o.yMax < groundY + PICKUP_STAND_LOW_M);
+  }
+  function clearanceOf(world2) {
+    const out = { ...PICKUP_CLEARANCE_M };
+    for (const k of PICKUP_CLEARANCE_KINDS) {
+      const v = world2.clearance?.[k];
+      if (finite(v)) out[k] = v;
+    }
+    return out;
+  }
+  function searchOf(world2) {
+    const s = { ...PICKUP_SEARCH };
+    const given = world2.search ?? {};
+    if (finite(given.ringStepM) && given.ringStepM > 0) s.ringStepM = given.ringStepM;
+    if (finite(given.radiusM) && given.radiusM >= 0) s.radiusM = given.radiusM;
+    if (finite(given.arcM) && given.arcM > 0) s.arcM = given.arcM;
+    if (finite(given.minPoints) && given.minPoints >= 1) s.minPoints = Math.floor(given.minPoints);
+    if (finite(given.maxPoints) && given.maxPoints >= 1) s.maxPoints = Math.floor(given.maxPoints);
+    if (s.maxPoints < s.minPoints) s.maxPoints = s.minPoints;
+    return s;
+  }
+  function pickupSearchPattern(search) {
+    const s = searchOf({ search });
+    const rings = [];
+    for (let k = 1; k * s.ringStepM <= s.radiusM + 1e-9; k++) {
+      const r = k * s.ringStepM;
+      rings.push({ radiusM: r, points: Math.min(s.maxPoints, Math.max(s.minPoints, Math.ceil(2 * Math.PI * r / s.arcM))) });
+    }
+    return rings;
+  }
+  function pickupSearchRing(ring, search) {
+    const r = pickupSearchPattern(search)[ring - 1];
+    if (!r) return [];
+    const out = [];
+    for (let k = 0; k < r.points; k++) {
+      const a = 2 * Math.PI * k / r.points;
+      out.push({ x: Math.cos(a) * r.radiusM, z: Math.sin(a) * r.radiusM });
+    }
+    return out;
+  }
+  function prepare(world2, groundY) {
+    const shapes = [];
+    (world2.obstacles ?? []).forEach((o, index) => {
+      if (!o || !PICKUP_OBSTACLE_KINDS.includes(o.kind)) return;
+      const shape = obstacleShape(o, groundY);
+      if (shape) shapes.push({ shape, kind: o.kind, index });
+    });
+    const roads = [];
+    (world2.roads ?? []).forEach((r, index) => {
+      const w = finite(r?.width) ? r.width : PICKUP_ROAD_DEFAULT_WIDTH_M;
+      let prev = null;
+      for (const q of r?.waypoints ?? []) {
+        if (!finitePoint(q)) {
+          prev = null;
+          continue;
+        }
+        if (prev) roads.push({ a: prev, b: q, halfWidth: w / 2, index });
+        prev = q;
+      }
+    });
+    return { shapes, roads, clearance: clearanceOf(world2) };
+  }
+  function heldOf(settled) {
+    const out = [];
+    (settled ?? []).forEach((q, index) => {
+      if (finitePoint(q)) out.push({ at: q, index });
+    });
+    return out;
+  }
+  function groundOf(input) {
+    const groundY = input.groundY ?? 0;
+    return finitePoint(input.spot) && finite(groundY) ? groundY : null;
+  }
+  function clearanceAt(p, prep, settled) {
+    let best = PICKUP_NOTHING_NEAR_M;
+    let nearest = null;
+    const take = (d, n) => {
+      if (d < best) {
+        best = d;
+        nearest = n;
+      }
+    };
+    for (const s of prep.shapes) take(shapeDistance(s.shape, p) - prep.clearance[s.kind], { kind: s.kind, index: s.index });
+    for (const r of prep.roads) {
+      const abx = r.b.x - r.a.x;
+      const abz = r.b.z - r.a.z;
+      const l2 = abx * abx + abz * abz;
+      const t = l2 > PICKUP_ROAD_POINT_SQ_M2 ? Math.min(1, Math.max(0, ((p.x - r.a.x) * abx + (p.z - r.a.z) * abz) / l2)) : 0;
+      take(Math.hypot(p.x - (r.a.x + abx * t), p.z - (r.a.z + abz * t)) - r.halfWidth - prep.clearance.road, { kind: "road", index: r.index });
+    }
+    for (const q of settled) take(Math.hypot(p.x - q.at.x, p.z - q.at.z) - prep.clearance.pickup, { kind: "pickup", index: q.index });
+    return { clearanceM: best, nearest };
+  }
+  function pickupClearance(input) {
+    const groundY = groundOf(input);
+    if (groundY === null) return { ok: false, code: "bad-spot" };
+    return { ok: true, ...clearanceAt({ x: input.spot.x, z: input.spot.z }, prepare(input, groundY), heldOf(input.settled)) };
+  }
+  function walkableTest(world2, options) {
+    if (options?.isWalkable) return options.isWalkable;
+    if (!world2.walkable) return () => true;
+    const areas = world2.walkable.filter((a) => a && finitePoint(a.at)).map(areaShape);
+    return (p) => areas.some((s) => shapeDistance(s, p) <= 0);
+  }
+  function approachAt(at, prep, settled) {
+    let bestRoom = -PICKUP_NOTHING_NEAR_M;
+    let heading = { x: 1, z: 0 };
+    for (let k = 0; k < PICKUP_APPROACH_HEADINGS; k++) {
+      const a = 2 * Math.PI * k / PICKUP_APPROACH_HEADINGS;
+      const dir = { x: Math.cos(a), z: Math.sin(a) };
+      let room = PICKUP_NOTHING_NEAR_M;
+      for (const d of PICKUP_APPROACH_PROBES_M) {
+        room = Math.min(room, clearanceAt({ x: at.x + dir.x * d, z: at.z + dir.z * d }, prep, settled).clearanceM);
+      }
+      if (room > bestRoom) {
+        bestRoom = room;
+        heading = dir;
+      }
+    }
+    return { heading, headingDeg: Math.atan2(heading.z, heading.x) * 180 / Math.PI, roomM: bestRoom };
+  }
+  function settlePickup(input, options) {
+    return settleOne(input, heldOf(input.settled), options);
+  }
+  function settleOne(input, settled, options) {
+    const groundY = groundOf(input);
+    if (groundY === null) return { ok: false, code: "bad-spot" };
+    const prep = prepare(input, groundY);
+    const walkable = walkableTest(input, options);
+    const spot = { x: input.spot.x, z: input.spot.z };
+    const was = clearanceAt(spot, prep, settled);
+    const authored = { clearanceM: was.clearanceM, nearest: was.nearest, walkable: walkable(spot) };
+    let found = spot;
+    let foundRing = 0;
+    let foundClear = was;
+    let clear = was.clearanceM >= 0 && authored.walkable;
+    const pattern = pickupSearchPattern(input.search);
+    for (let ring = 1; !clear && ring <= pattern.length; ring++) {
+      const { radiusM, points: points3 } = pattern[ring - 1];
+      for (let k = 0; k < points3 && !clear; k++) {
+        const a = 2 * Math.PI * k / points3;
+        const at = { x: spot.x + Math.cos(a) * radiusM, z: spot.z + Math.sin(a) * radiusM };
+        const c = clearanceAt(at, prep, settled);
+        if (c.clearanceM >= 0 && walkable(at)) {
+          found = at;
+          foundRing = ring;
+          foundClear = c;
+          clear = true;
+        } else if (c.clearanceM > foundClear.clearanceM && walkable(at)) {
+          found = at;
+          foundRing = ring;
+          foundClear = c;
+        }
+      }
+    }
+    const shiftM = Math.hypot(found.x - spot.x, found.z - spot.z);
+    const approach = approachAt(found, prep, settled);
+    if (!clear) {
+      return {
+        ok: false,
+        code: "no-clear-spot",
+        clearest: { at: found, ring: foundRing, shiftM, clearanceM: foundClear.clearanceM, nearest: foundClear.nearest },
+        authored,
+        approach
+      };
+    }
+    return {
+      ok: true,
+      at: found,
+      moved: shiftM > PICKUP_MOVED_M,
+      shiftM,
+      ring: foundRing,
+      clearanceM: foundClear.clearanceM,
+      nearest: foundClear.nearest,
+      authored,
+      approach
+    };
+  }
+  function settlePickups(input, options) {
+    const settled = [];
+    const placements = [];
+    const { pickups, ...world2 } = input;
+    (pickups ?? []).forEach((p, index) => {
+      const r = settleOne({ ...world2, spot: p?.spot, groundY: p?.groundY }, [...settled], options);
+      placements.push(r);
+      if (r.ok) settled.push({ at: r.at, index });
+      else if (r.code === "no-clear-spot") settled.push({ at: r.clearest.at, index });
+    });
+    return { placements };
+  }
 
   // npm:zod/v3/external.js
   var external_exports = {};
@@ -28876,22 +29554,22 @@ player_meets_cefr(Player, RequiredLevel) :-
   function isRecord(v) {
     return typeof v === "object" && v !== null && !Array.isArray(v);
   }
-  function finite(v, fallback) {
+  function finite2(v, fallback) {
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
   }
   function vec3(v, fallback) {
     if (!isRecord(v)) return { ...fallback };
     return {
-      x: finite(v.x, fallback.x),
-      y: finite(v.y, fallback.y),
-      z: finite(v.z, fallback.z)
+      x: finite2(v.x, fallback.x),
+      y: finite2(v.y, fallback.y),
+      z: finite2(v.z, fallback.z)
     };
   }
   function readConvention(raw) {
     if (!isRecord(raw)) return { ...CORE_CONVENTION };
     const up = raw.up === "z" || raw.up === "y" ? raw.up : CORE_CONVENTION.up;
     const handedness = raw.handedness === "left" || raw.handedness === "right" ? raw.handedness : CORE_CONVENTION.handedness;
-    const units = finite(raw.unitsPerMetre, CORE_CONVENTION.unitsPerMetre);
+    const units = finite2(raw.unitsPerMetre, CORE_CONVENTION.unitsPerMetre);
     return {
       up,
       handedness,
@@ -28920,7 +29598,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       name,
       kind: typeof rec.kind === "string" ? rec.kind : "",
       position: vec3(rec.position, { x: 0, y: 0, z: 0 }),
-      yaw: finite(rec.yaw, 0),
+      yaw: finite2(rec.yaw, 0),
       node: typeof rec.node === "string" ? rec.node : ""
     };
   }
@@ -28936,7 +29614,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       measured: true,
       footprint: readFootprint(transform?.footprint, declared.up),
       offset: vec3(transform?.offset, { x: 0, y: 0, z: 0 }),
-      yaw: finite(transform?.yaw, 0),
+      yaw: finite2(transform?.yaw, 0),
       scale: readScale(transform?.scale),
       sockets: Object.keys(hasSockets ? sockets : {}).sort().map((name) => readSocket(name, sockets[name]))
     };
@@ -33725,8 +34403,69 @@ player_meets_cefr(Player, RequiredLevel) :-
         plainBorder: INVENTORY_PLAIN_BORDER,
         pinnedGroup: INVENTORY_PINNED_GROUP,
         emptyMessages: INVENTORY_EMPTY_MESSAGES
+      },
+      // PL.native-pickup-settle: the data tables of conformance/props/pickup-placement.json
+      // (core's scripts/emit-pickup-placement-corpus.ts). Its `constants` table
+      // states each value with the Unreal line it was measured from; the value is
+      // data and is here, the `source` line is prose and is not (nor `units` or
+      // `sourceAbbreviation`).
+      "props-pickup-placement": {
+        frames: PICKUP_PLACEMENT_FRAMES,
+        obstacleKinds: PICKUP_OBSTACLE_KINDS,
+        clearanceKinds: PICKUP_CLEARANCE_KINDS,
+        staticKinds: PICKUP_STATIC_KINDS,
+        refusals: PICKUP_PLACEMENT_REFUSALS,
+        clearanceM: PICKUP_CLEARANCE_M,
+        search: PICKUP_SEARCH,
+        constants: {
+          staticClearanceM: PICKUP_STATIC_CLEARANCE_M,
+          containerClearanceM: PICKUP_CONTAINER_CLEARANCE_M,
+          doorClearanceM: PICKUP_DOOR_CLEARANCE_M,
+          villagerClearanceM: PICKUP_VILLAGER_CLEARANCE_M,
+          roadClearanceM: PICKUP_ROAD_CLEARANCE_M,
+          spacingM: PICKUP_SPACING_M,
+          doorRadiusM: PICKUP_DOOR_RADIUS_M,
+          villagerRadiusM: PICKUP_VILLAGER_RADIUS_M,
+          containerRadiusM: PICKUP_CONTAINER_RADIUS_M,
+          roadDefaultWidthM: PICKUP_ROAD_DEFAULT_WIDTH_M,
+          roadPointSqM2: PICKUP_ROAD_POINT_SQ_M2,
+          standLowM: PICKUP_STAND_LOW_M,
+          standHighM: PICKUP_STAND_HIGH_M,
+          groundCoverM: PICKUP_GROUND_COVER_M,
+          treeHeightM: PICKUP_TREE_HEIGHT_M,
+          trunkFraction: PICKUP_TRUNK_FRACTION,
+          trunkMinM: PICKUP_TRUNK_MIN_M,
+          trunkMaxM: PICKUP_TRUNK_MAX_M,
+          groundPieceHalfM: PICKUP_GROUND_PIECE_HALF_M,
+          ringStepM: PICKUP_RING_STEP_M,
+          searchRadiusM: PICKUP_SEARCH_RADIUS_M,
+          ringArcM: PICKUP_RING_ARC_M,
+          ringMinPoints: PICKUP_RING_MIN_POINTS,
+          ringMaxPoints: PICKUP_RING_MAX_POINTS,
+          movedM: PICKUP_MOVED_M,
+          nothingNearM: PICKUP_NOTHING_NEAR_M,
+          approachHeadings: PICKUP_APPROACH_HEADINGS,
+          approachProbesM: PICKUP_APPROACH_PROBES_M,
+          navSnapM: PICKUP_NAV_SNAP_M,
+          cullRadiusM: PICKUP_CULL_RADIUS_M
+        },
+        groundKinds: PICKUP_GROUND_KINDS,
+        plantEntityKinds: PICKUP_PLANT_ENTITY_KINDS,
+        plantArchetypeMarks: PICKUP_PLANT_ARCHETYPE_MARKS,
+        deviations: PICKUP_PLACEMENT_DEVIATIONS
       }
     });
+  }
+  function pickupWorldOf(method, args) {
+    for (const key of ["obstacles", "settled", "walkable", "pickups"]) optArrayValue(method, args[key], key);
+    (optArrayValue(method, args.roads, "roads") ?? []).forEach((road, i) => {
+      if (road !== null && typeof road === "object" && !Array.isArray(road)) {
+        optArrayValue(method, road.waypoints, `roads[${i}].waypoints`);
+      }
+    });
+    optObject(method, args.clearance, "clearance");
+    optObject(method, args.search, "search");
+    return args;
   }
   function containerOf(method, value, name = "container") {
     return needObject(method, value, name);
@@ -34288,9 +35027,10 @@ player_meets_cefr(Player, RequiredLevel) :-
      * `props.contract {}` → `{ <area>: { <table>: value } }` — the tables each P6
      * corpus file's `contract` states as data (states, refusals, actions, the
      * capacity, page size, quiz XP, the door's prompt radius and stand-off, the
-     * inventory's filters, colours, slot labels and empty messages), from core's
-     * exported constants, keyed by the file's `area`. A binding reads its words
-     * and numbers here instead of restating them.
+     * inventory's filters, colours, slot labels and empty messages, and the pick-up
+     * placement's kinds, clearances, search, frames, constants and deviations),
+     * from core's exported constants, keyed by the file's `area`. A binding reads
+     * its words and numbers here instead of restating them.
      */
     "props.contract": () => propsContract(),
     /**
@@ -34511,6 +35251,65 @@ player_meets_cefr(Player, RequiredLevel) :-
         })
       ]);
       return { articles: plain(generateSettlementNotices(id, name, npcs)) };
+    },
+    // Where a pick-up is put down (PL.native-pickup-settle, U91(2); core's
+    // PL.pickup-placement, U89(3)). Stateless, one core function each, answering
+    // the shape core's corpus runner (`runPickupPlacementOp`) records. Metres on
+    // core's ground plane `(x, z)`, heights `y`; a binding maps its own frame in
+    // (`props.contract`'s `props-pickup-placement.frames`; Unreal: its (X, Y) ÷ 100
+    // as (x, z), its forward as `axis` unmirrored, its Z ÷ 100 as y). A refusal
+    // (`bad-spot`, `no-clear-spot`) is a VALUE `{ ok: false, code }`; the rows'
+    // own errors are `[invalid-input]` for a field of the wrong JSON type.
+    /**
+     * `props.pickups.settle { spot, groundY?, settled?, obstacles?, roads?,
+     * walkable?, clearance?, search? }` → core's `settlePickup`: `{ ok: true, at,
+     * moved, shiftM, ring, clearanceM, nearest, authored, approach }`, or `{ ok:
+     * false, code: 'no-clear-spot', clearest, authored, approach }` (`clearest` is
+     * where an engine that still draws the pick-up draws it), or `{ ok: false,
+     * code: 'bad-spot' }`. `walkable` is the walkable ground as areas (absent:
+     * everywhere; empty: nowhere); core's `isWalkable` callback has no row.
+     */
+    "props.pickups.settle": (args) => {
+      const input = coded("invalid-input", () => pickupWorldOf("props.pickups.settle", args));
+      return plain(settlePickup(input));
+    },
+    /**
+     * `props.pickups.sequence { pickups: [{ spot, groundY? }], obstacles?, roads?,
+     * walkable?, clearance?, search? }` → `{ placements }` — core's
+     * `settlePickups`: each settled in order, kept clear of those before it (a
+     * refused one where its `clearest` is; a `bad-spot` one nowhere).
+     */
+    "props.pickups.sequence": (args) => {
+      const input = coded("invalid-input", () => pickupWorldOf("props.pickups.sequence", args));
+      return plain(settlePickups(input));
+    },
+    /**
+     * `props.pickups.clearance { spot, groundY?, settled?, obstacles?, roads?,
+     * clearance? }` → core's `pickupClearance`: `{ ok: true, clearanceM, nearest:
+     * { kind, index } | null }` (`clearanceM >= 0` is clear) or `{ ok: false,
+     * code: 'bad-spot' }`. A binding reads `ok` before `clearanceM`.
+     */
+    "props.pickups.clearance": (args) => {
+      const input = coded("invalid-input", () => pickupWorldOf("props.pickups.clearance", args));
+      return plain(pickupClearance(input));
+    },
+    /**
+     * `props.pickups.pattern { search? }` → `{ rings: [{ radiusM, points }] }` —
+     * core's `pickupSearchPattern`: the rings the search walks out on.
+     */
+    "props.pickups.pattern": (args) => {
+      const search = coded("invalid-input", () => optObject("props.pickups.pattern", args.search, "search"));
+      return { rings: plain(pickupSearchPattern(search)) };
+    },
+    /**
+     * `props.pickups.ring { ring, search? }` → `{ points: [{ x, z }] }` — core's
+     * `pickupSearchRing`: ring `ring`'s (1-based) offsets from the authored spot,
+     * in the order tried, from +x toward +z (none past the search).
+     */
+    "props.pickups.ring": (args) => {
+      const m = "props.pickups.ring";
+      const [ring, search] = coded("invalid-input", () => [needNumber(m, args.ring, "ring"), optObject(m, args.search, "search")]);
+      return { points: plain(pickupSearchRing(ring, search)) };
     },
     /**
      * `inventory.create { player? }` → `{ session, view }` — the inventory panel's

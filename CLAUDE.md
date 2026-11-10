@@ -441,7 +441,12 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` ac229a7 (2026-11-09,
+  and pin disagree. The pin today is core `main` eff846a (2026-11-10,
+  PL.native-pickup-settle: every core item the Unreal-first queue landed after
+  ac229a7, among them P9f/P9g/P9h.core's packs, PL.quick-slot-one-based's 1-based
+  `quickSlot` that the `saves.slots.*` rows pass through, and PL.quest-converter-gaps;
+  core's pick-up placement and its corpus, which the `props.pickups.*` rows run,
+  were already in at ac229a7). Before that, ac229a7 (2026-11-09,
   PL.native-props-rows: every core item the Unreal-first queue landed through
   PL.pickup-placement, among them PL.slots-delete-states' delete prompt and
   PL.quick-slot's dedicated quick slot that the `saves.slots.*` rows answer, and
@@ -454,7 +459,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (the saves-slots and props corpus ctests match `corpus`), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (the saves-slots, props and pick-up corpus ctests match `corpus`), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -513,6 +518,20 @@
   each corpus file's data tables from core's constants; never restate one in
   `entry.js`. `ui.trade` (core's `TradeModel`) is a different model from the
   inventory panel and stays its own row.
+- **The pick-up settle rows (PL.native-pickup-settle, U91(2)) run core's
+  `conformance/props/pickup-placement.json` UNCHANGED**, copied with the P6 set
+  (`PROPS_CORPUS_FILES`) and driven by the same runner as
+  `props_pickup_placement_corpus` (+ `props_pickup_placement_corpus_negative`).
+  `props.pickups.{settle, sequence, clearance, pattern, ring}` are stateless, one
+  core function each, answering the shape core's corpus runner records; they
+  take and answer core's metres on its ground plane `(x, z)` and convert or
+  mirror NOTHING — a binding maps its own frame in (`props.contract` →
+  `props-pickup-placement.frames`). Refusals (`bad-spot`, `no-clear-spot`) are
+  values. The runner holds the file's `numerics` to double precision and the
+  contract's `constants` on their `value` (the `source` line is prose): keep both
+  checks, they are what an engine port must also honour. Core's `isWalkable`
+  callback has no row (nothing callable crosses the ABI); walkable ground is
+  `walkable` areas.
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

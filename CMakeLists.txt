@@ -753,6 +753,11 @@ add_test(NAME props_documents_corpus COMMAND insimulcore_props_corpus ${INSIMUL_
 add_test(NAME props_doors_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/doors.json)
 add_test(NAME props_notice_board_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/notice-board.json)
 add_test(NAME inventory_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/ui/inventory-cases.json)
+# PL.native-pickup-settle (U91(2)): core's pick-up placement corpus (PL.pickup-placement)
+# through the props.pickups.* rows, by the same runner: every case driven, the
+# contract's data tables (frames and the constants' values among them) held to
+# props.contract, the file's `numerics` required to name double precision.
+add_test(NAME props_pickup_placement_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/pickup-placement.json)
 # The negative control: the same runner over five deliberately wrong files
 # (tests/props-negative/), one per corpus file, one wrong case each (two through
 # a stateless row, two through a session, one through the door session), plus a
@@ -767,6 +772,19 @@ add_test(NAME props_corpus_negative COMMAND insimulcore_props_corpus
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/inventory-wrong.json)
 set_tests_properties(props_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "contract.defaultCapacity: 12 != 10.*expected WRONGLY a capacity of 12 [^\n]*capacity: 12 != 10.*op unlock of area props-containers: no case of it was driven.*expected WRONGLY page 2 after next [^\n]*page: 2 != 1.*expected WRONGLY to enter a locked door without its key [^\n]*boolean differs.*expected WRONGLY two notices for one NPC [^\n]*length 2 != 1.*expected WRONGLY four loaves [^\n]*quantity: 4 != 5.*props_corpus: FAIL")
+
+# Its negative control (tests/props-negative/pickup-placement-wrong.json): a
+# `numerics` that names float32, a wrong frame and a wrong constant in the contract, a
+# `ring` op with no case, and four wrong cases — a clearance whose `ok` is wrong,
+# a settle expected with a turned building's axis MIRRORED (z negated, the way a
+# binding that flipped its forward would read it), a sequence placement off by
+# more than the tolerance, and a `bad-spot` refusal expected where core settles.
+# It passes only when the runner reports each of them and the run as failed, in
+# that order.
+add_test(NAME props_pickup_placement_corpus_negative COMMAND insimulcore_props_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/pickup-placement-wrong.json)
+set_tests_properties(props_pickup_placement_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "numerics: the file states \"[^\"]*float32[^\"]*\", not double precision.*contract.frames.unreal: .*contract.constants.spacingM: 2.5 != 3.*expected WRONGLY a clearance with ok false [^\n]*ok: boolean differs.*expected WRONGLY with the building's axis mirrored [^\n]*.*expected WRONGLY the second pick-up 0.01 m further out [^\n]*placements.*expected WRONGLY bad-spot for a settled spot [^\n]*.*op ring of area props-pickup-placement: no case of it was driven.*props_corpus: FAIL")
 
 # corebridge_sha256: the SHA-256 the C host gives core's save envelope
 # (corebridge/src/insimulcore_sha256.c), against the NIST vectors, at every

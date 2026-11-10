@@ -13,6 +13,10 @@
 //   props/doors.json         area props-doors        door, prompt, session
 //   props/notice-board.json  area props-notice-board board, generate
 //   ui/inventory-cases.json  area ui-inventory       inventory
+//   props/pickup-placement.json  area props-pickup-placement
+//                                pattern, ring, clearance, settle, sequence
+//                                (PL.native-pickup-settle, U91(2): core's
+//                                PL.pickup-placement, src/props/pickup-placement.ts)
 //
 // Nothing here re-writes a case or computes an answer: every answer comes out of
 // a row. How each op is driven (core's runner, src/props/props-corpus.ts, is the
@@ -41,6 +45,18 @@
 //   ui-inventory inventory {player?, steps}: `inventory.create`, then one
 //   `inventory.apply` per step → `{initial, steps: [{result, state}]}` (`state` is
 //   the session's view, which is the snapshot core's corpus records).
+//   props-pickup-placement pattern/ring/clearance/settle/sequence: the case's
+//   `input` is the row's args AS IS (`props.pickups.<op>`), in core's metres on
+//   its ground plane (x, z) — a footprint's `axis` included, never mirrored — and
+//   the row's answer is compared whole: `clearance`'s `ok` before its numbers, a
+//   refusal (`bad-spot`, `no-clear-spot`) as the value core answers. The file's
+//   top-level `numerics` must be stated and name double precision (the rows run
+//   in QuickJS, whose numbers are IEEE-754 doubles, and several cases decide
+//   exactly on a boundary). Its `contract.constants` states each value as
+//   `{value, source}`; the `source` line is prose, so that table is held to
+//   `props.contract` on its values (a projection this runner self-tests), and
+//   `contract.frames` — how each engine maps its frame onto core's (x, z) — is
+//   held to it as core states it.
 //
 // Each file's `contract` tables (the data ones) are held to `props.contract`'s
 // answer for its area: every table the row states must equal the file's. The run
@@ -265,6 +281,32 @@ std::string compare(const JsonValue &expected, const JsonValue &actual, double t
 
 JsonValuePtr projected_article(const JsonValue &a, std::string &why);
 
+// A `{ <key>: { value, source } }` table as `{ <key>: value }` (the `source` line is
+// prose); nullptr with `why` when it is not an object or an entry states no value.
+JsonValuePtr projected_values(const JsonValue &table, std::string &why) {
+	if (!table.is_object()) {
+		why = "is not an object";
+		return nullptr;
+	}
+	std::vector<std::pair<std::string, JsonValuePtr>> items;
+	for (const auto &kv : table.object_items) {
+		const JsonValue *v = kv.second->is_object() ? kv.second->find("value") : nullptr;
+		if (!v) {
+			why = "entry '" + kv.first + "' states no value";
+			return nullptr;
+		}
+		items.emplace_back(kv.first, copy_of(*v));
+	}
+	return make_object(std::move(items));
+}
+
+// The file's `numerics` (empty when absent or not a string) and whether it names double precision.
+bool numerics_double(const JsonValue &doc, std::string &stated) {
+	const JsonValue *n = doc.find("numerics");
+	stated = n && n->type == JsonType::String ? n->string_value : std::string();
+	return stated.find("double precision") != std::string::npos;
+}
+
 // The comparator (and the one projection this runner makes) is the gate; it must be able to fail.
 bool self_test() {
 	auto parse = [](const char *t) { return insimul::parse_json(t).root; };
@@ -307,6 +349,29 @@ bool self_test() {
 			ok = false;
 		}
 	}
+	// The values projection: it keeps every key and each value, and refuses an entry with none.
+	{
+		std::string why;
+		auto t = parse("{\"a\":{\"value\":1,\"source\":\"x\"},\"b\":{\"value\":[0.6,1.5],\"source\":\"y\"}}");
+		auto p = t ? projected_values(*t, why) : nullptr;
+		auto want = parse("{\"a\":1,\"b\":[0.6,1.5]}");
+		if (!p || compare(*want, *p, 0.0, "$") != "") {
+			std::printf("  [FAIL] values projection self-test: {a:{value:1},b:{value:[0.6,1.5]}} should project to {a:1,b:[0.6,1.5]}\n");
+			ok = false;
+		}
+		auto bad = parse("{\"a\":{\"source\":\"x\"}}");
+		if (bad && projected_values(*bad, why)) {
+			std::printf("  [FAIL] values projection self-test: an entry with no value should be refused\n");
+			ok = false;
+		}
+		std::string stated;
+		auto with = parse("{\"numerics\":\"Runners compute in IEEE-754 double precision.\"}");
+		auto without = parse("{\"numerics\":\"float32 is fine\"}");
+		if (!with || !numerics_double(*with, stated) || !without || numerics_double(*without, stated)) {
+			std::printf("  [FAIL] numerics self-test: only a numerics naming double precision should pass\n");
+			ok = false;
+		}
+	}
 	for (const Probe &p : probes) {
 		auto e = parse(p.expected);
 		auto a = parse(p.actual);
@@ -326,6 +391,10 @@ struct Area {
 	std::vector<std::string> ops;     // core's PROPS_CORPUS_OPS for the area
 	std::vector<std::string> rows;    // the rows its cases go through
 	std::vector<std::string> tables;  // the data tables of its contract props.contract must state
+	// Tables the file states as `{ <key>: { value, source } }`: held to props.contract on each value.
+	std::vector<std::string> valued_tables = {};
+	// The file must state its top-level `numerics`, naming double precision.
+	bool numerics = false;
 };
 
 const std::vector<Area> &areas() {
@@ -353,6 +422,14 @@ const std::vector<Area> &areas() {
 	     {"inventory.create", "inventory.apply", "props.contract"},
 	     {"filters", "usableTypes", "slotLabels", "rarityColors", "rarityOrder", "typeColors", "defaultTypeColor",
 	      "equippedNameColor", "plainBorder", "pinnedGroup", "emptyMessages"}},
+	    {"props-pickup-placement",
+	     {"pattern", "ring", "clearance", "settle", "sequence"},
+	     {"props.pickups.pattern", "props.pickups.ring", "props.pickups.clearance", "props.pickups.settle",
+	      "props.pickups.sequence", "props.contract"},
+	     {"frames", "obstacleKinds", "clearanceKinds", "staticKinds", "refusals", "clearanceM", "search", "constants",
+	      "groundKinds", "plantEntityKinds", "plantArchetypeMarks", "deviations"},
+	     {"constants"},
+	     true},
 	};
 	return all;
 }
@@ -550,6 +627,12 @@ bool drive(Caller &c, const std::string &area, const std::string &op, const Json
 	if (area == "ui-inventory") {
 		return drive_session(c, "inventory.create", "inventory.apply", input, "state", false, out, why);
 	}
+	if (area == "props-pickup-placement") {
+		auto r = c.call("props.pickups." + op, json_of(input));
+		if (!r) return why = c.error, false;
+		out = r;
+		return true;
+	}
 	why = "area " + area + " is not one this runner drives";
 	return false;
 }
@@ -613,6 +696,18 @@ int main(int argc, char **argv) {
 		const double tol = tol_v && tol_v->is_number() ? tol_v->number_value : 0.0;
 		std::printf("── %s (area %s, %zu case(s))\n", file.c_str(), area_name.c_str(), case_list->size());
 
+		// How the file says its numbers are computed: the rows run in double precision.
+		if (area->numerics) {
+			std::string stated;
+			if (!numerics_double(doc, stated)) {
+				std::printf("  [FAIL] numerics: the file %s; this runner drives rows that compute in double precision\n",
+				            stated.empty() ? "states no numerics" : ("states \"" + stated + "\", not double precision").c_str());
+				failed++;
+			} else {
+				std::printf("  numerics: double precision, as the file states; tolerance %g\n", tol);
+			}
+		}
+
 		// The surface: a missing row would otherwise show only as every case failing.
 		for (const std::string &row : area->rows) {
 			if (!table.count(row)) {
@@ -639,6 +734,19 @@ int main(int argc, char **argv) {
 				}
 				for (const auto &kv : mine->object_items) {
 					const JsonValue *t = theirs ? theirs->find(kv.first) : nullptr;
+					JsonValuePtr projected;
+					bool valued = false;
+					for (const std::string &v : area->valued_tables) valued = valued || v == kv.first;
+					if (t && valued) {
+						std::string why;
+						projected = projected_values(*t, why);
+						if (!projected) {
+							std::printf("  [FAIL] contract.%s: %s\n", kv.first.c_str(), why.c_str());
+							bad++;
+							continue;
+						}
+						t = projected.get();
+					}
 					const std::string diff = t ? compare(*t, *kv.second, 0.0, "contract." + kv.first)
 					                           : "contract." + kv.first + ": the file states no such table";
 					if (!diff.empty()) {

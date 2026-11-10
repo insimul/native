@@ -1,0 +1,108 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "language-learning",
+  "version": "0.1.0",
+  "name": "Language learning",
+  "summary": "Learning a language by living in the village: the vocabulary book and its bank, words collected and named in the world, signs read, objects identified, listen-and-repeat pronunciation, written compositions and listening quests, hover translation, NPC speech and hints that adapt to the learner's CEFR band and struggle, real-time quest feedback on grammar and vocabulary, and the language quest types.",
+  "kind": "optional",
+  "phase": "P9h",
+  "catalog": [
+    "language-vocabulary-bank",
+    "language-knowledge-collection",
+    "language-object-identification",
+    "language-hover-translation",
+    "language-progress-learning-profile",
+    "language-adaptive-conversation-difficulty",
+    "language-cefr-npc-adaptation",
+    "language-composition-writing",
+    "language-listening-comprehension",
+    "language-pronunciation-listen-repeat",
+    "language-quest-feedback-grammar",
+    "quest-language-quest-types",
+    "interaction-world-object-actions"
+  ],
+  "core": {
+    "featureModules": ["knowledge-acquisition", "proficiency", "pattern-recognition", "adaptive-difficulty", "conversation-analytics"],
+    "corpus": [
+      "conformance/language/progress.json",
+      "conformance/language/bank.json",
+      "conformance/language/collection.json",
+      "conformance/language/objects.json",
+      "conformance/language/pronunciation.json",
+      "conformance/language/adaptation.json",
+      "conformance/language/hover.json",
+      "conformance/language/writing.json",
+      "conformance/language/quest-feedback.json",
+      "conformance/language/quest-types.json",
+      "conformance/language/save.json"
+    ],
+    "saveExtensions": ["languageLearning"]
+  },
+  "requires": [{ "id": "dialogue" }, { "id": "quests" }],
+  "parameters": [
+    { "id": "collectionXp", "type": "integer", "min": 0, "maps": "CollectionTuning.xpPerEntry", "source": "core-default", "doc": "XP for a collected word (KnowledgeCollectionSystem 3)" },
+    { "id": "quizOptions", "type": "integer", "min": 2, "maps": "CollectionTuning.options", "source": "core-default", "doc": "choices a collection quiz offers, the right one included (4)" },
+    { "id": "collectionRange", "type": "number", "min": 0, "maps": "CollectionTuning.range", "source": "core-default", "doc": "how near a tagged object raises its quiz, in world units (5)" },
+    { "id": "collectionKind", "type": "enum", "values": ["vocabulary", "knowledge"], "maps": "CollectionTuning.kind", "source": "world", "doc": "vocabulary in a language world (a word is used), knowledge elsewhere (a species, a fact)" },
+    { "id": "identificationPassScore", "type": "integer", "min": 0, "max": 100, "maps": "IdentificationTuning.passScore", "source": "core-default", "doc": "the edit-distance score an identification passes at (45)" },
+    { "id": "identificationHintAfter", "type": "integer", "min": 0, "maps": "IdentificationTuning.hintAfter", "source": "core-default", "doc": "tries before the hint shows (2)" },
+    { "id": "namingFirstTryXp", "type": "integer", "min": 0, "maps": "NamingTuning.xpFirstTry", "source": "core-default", "doc": "XP for naming an object on the first try (PointAndNameAction 5)" },
+    { "id": "namingRetryXp", "type": "integer", "min": 0, "maps": "NamingTuning.xpRetry", "source": "core-default", "doc": "XP for naming it on a later try (2)" },
+    { "id": "namingMaxAttempts", "type": "integer", "min": 1, "maps": "NamingTuning.maxAttempts", "source": "core-default", "doc": "tries before the word is revealed (3)" },
+    { "id": "targetLanguage", "type": "string", "maps": "binding", "source": "world", "doc": "the language the player learns, as the world names it (the key of an object's translations)" },
+    { "id": "pushToTranslateKey", "type": "string", "maps": "binding", "source": "game", "doc": "the key held over text to translate a word (Unity's template used T)" }
+  ],
+  "extensionPoints": [
+    { "id": "world-words", "kind": "binding-hook", "signature": "registerTags / registerTargets / registerNameable (src/language-learning/world-words.ts)", "doc": "the world's tagged objects, identification targets and nameable objects; nameableObjects(world, language) derives the last from translated objects" },
+    { "id": "quest-types", "kind": "binding-hook", "signature": "WorldIR config.questTypes / enabledModules (src/quest-types/index.ts)", "doc": "which language quest types a world offers" },
+    { "id": "on-vocabulary", "kind": "event-handler", "signature": "vocabulary_used", "doc": "a use_vocabulary objective, the quest feedback tracker" },
+    { "id": "on-pronunciation", "kind": "event-handler", "signature": "pronunciation_attempt", "doc": "a pronunciation_check or speak_phrase objective" },
+    { "id": "on-writing", "kind": "event-handler", "signature": "writing_submitted", "doc": "a write_response or describe_scene objective" },
+    { "id": "on-sign", "kind": "event-handler", "signature": "sign_read", "doc": "a read_sign objective" },
+    { "id": "on-band", "kind": "event-handler", "signature": "cefr_level_advanced", "doc": "a toast; the NPCs' language mode follows the new band" }
+  ],
+  "events": {
+    "emits": [
+      "vocabulary_used",
+      "knowledge_applied",
+      "item_collected",
+      "identification_prompted",
+      "identification_correct",
+      "identification_incorrect",
+      "visual_vocab_prompted",
+      "visual_vocab_answered",
+      "object_named",
+      "object_identified",
+      "object_examined",
+      "sign_read",
+      "pronunciation_attempt",
+      "writing_submitted",
+      "grammar_weakness_detected",
+      "cefr_level_advanced"
+    ],
+    "consumes": ["vocabulary_used", "object_examined", "vocabulary_overheard", "object_named"]
+  },
+  "styles": {
+    "tokens": ["surface", "border", "text_primary", "text_secondary", "accent", "danger", "warning", "success"],
+    "layouts": ["vocabulary-bank", "examine-overlay", "composition-modal", "translation-tooltip", "quest-feedback-strip"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "src/language-learning/ owns the language book (words, mastery, grammar patterns, fluency, the CEFR band), the vocabulary bank's cards and the learning profile, collection quizzes, identification, point and name, examine and read sign, pronunciation scoring, conversation difficulty and CEFR adaptation, hover translation, composition and listening comprehension, and real-time quest feedback; src/quest-types/ owns the language quest types. The engine draws the panels, overlays and tooltips, speaks and transcribes, and sends the chat; the server translates and grades.",
+    "notes": [
+      "Hear vocabulary_used, object_examined, vocabulary_overheard and object_named with encounterOfEvent then recordEncounter; a conversation ends with recordConversation; an assessment calls setCefr.",
+      "Fluency is thousandths of a point (0..100000), word weights halves, similarities and struggle thousandths, scores whole percents.",
+      "Collection quizzes draw from a seeded stream (quizDraw): give every game one seed so a quiz replays.",
+      "A hover lookup that misses returns a request: ask the translator, then hand the answer to resolveLookup.",
+      "Listening comprehension grades on the server; with no server, gradeListening with no score uses the local fallback.",
+      "The language-assessment pack's systems (arrival and departure assessments, research instruments, periodic speaking encounters, the proficiency dashboard, CEFR self-select, NPC exams, NPC mentors, SRS review, the quiz widget, activity observation, CEFR-localised UI text, the immersion setting, environmental target-language audio, guilds) are port-later, after NX.A1a: do not generate them from this pack. The NPC exam and mentor services were deleted; do not revive them."
+    ],
+    "doNot": [
+      "Store a word's mastery band or a pattern's weakness in the save: both are derived from the counts on load.",
+      "Shuffle quiz options with an unseeded random: a replay must ask the same quiz."
+    ]
+  }
+}
