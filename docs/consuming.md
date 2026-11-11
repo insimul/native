@@ -362,14 +362,18 @@ worth planning for:
   allowed by `connect-src` — `'self'` covers the same-origin case. A host that
   forbids fetching the binary altogether (a strict sandboxed iframe, an offline
   desktop bundle with no asset server) has one escape hatch: relink with
-  `-sSINGLE_FILE=1` in `cmake/wasm.cmake`, which base64-embeds the binary into
-  `insimul.mjs`. That is **not** the default because base64 costs ~33% on top of
-  the 2.0 MB binary and removes streaming compilation. This build does not read
+  `-sSINGLE_FILE=1` in `cmake/wasm.cmake`, which embeds the binary into
+  `insimul.mjs` (as base64 up to Emscripten 4.0.17, as a raw string from 4.0.18).
+  That is **not** the default because it grows the glue by at least the 2.0 MB
+  binary (base64 adds ~33% on top) and removes streaming compilation. The package
+  smoke refuses such a glue, so a relink with it is a deliberate fork, not a flag. This build does not read
   `Module.wasmBinary`, so `locateFile` or `SINGLE_FILE` are the two options.
 
 Node works out of the box (`-sENVIRONMENT=web,worker,node`); there the glue reads
 the sibling file from disk instead of fetching it, which is how
-`tests/wasm_package_smoke.mjs` verifies the assembled package.
+`tests/wasm_package_smoke.mjs` verifies the assembled package: it judges the glue's
+text (`tests/wasm_glue_shape.mjs`) and also starts a lone copy of the glue with no
+`insimul.wasm` beside it, which must fail after asking `locateFile` for that file.
 
 ### Size
 

@@ -1,0 +1,21 @@
+{
+  "about": "Glue-shape cases for tests/wasm_glue_shape.mjs. Each case applies a named transform to the REAL built glue (insimul.mjs) and binary (insimul.wasm) and states the verdict docs/consuming.md's 'fetched, not inlined' promise requires. 'rules' lists, in order, the rules (name, payload, size) that must fire. Replay: node tests/wasm_glue_shape.mjs <build-wasm>/insimul.mjs --cases tests/wasm-glue-shape/cases.json (the wasm_glue_shape ctest).",
+  "cases": [
+    { "id": "as-built", "transform": "as-built", "expect": "fetched", "rules": [],
+      "why": "The glue as linked by cmake/wasm.cmake fetches the sibling binary." },
+    { "id": "helper-constant-is-not-inlining", "transform": "with-helper-constant", "expect": "fetched", "rules": [],
+      "why": "Emscripten 3.1.50-4.0.2 emit the bare data-URI prefix in every build (URIUtils.js); it must not read as an inlined binary." },
+    { "id": "name-dropped", "transform": "name-dropped", "expect": "inlined", "rules": ["name"],
+      "why": "A glue that never names insimul.wasm has no sibling file to fetch." },
+    { "id": "data-uri-small-payload", "transform": "data-uri-small-payload", "expect": "inlined", "rules": ["payload"],
+      "why": "A data URI that carries base64 data is an inlined payload even when the glue stays small." },
+    { "id": "single-file-binary-string", "transform": "inline-binary-string", "expect": "inlined", "rules": ["size"],
+      "why": "SINGLE_FILE from Emscripten 4.0.18 embeds the binary as a raw string: no data URI, so only size sees it." },
+    { "id": "padded-just-under-threshold", "transform": "pad-to-ratio", "ratio": 0.45, "expect": "fetched", "rules": [],
+      "why": "A glue that grew to 0.45x the binary (no payload, name kept) is still a fetching glue: the size rule fires at 0.5." },
+    { "id": "padded-just-over-threshold", "transform": "pad-to-ratio", "ratio": 0.55, "expect": "inlined", "rules": ["size"],
+      "why": "At 0.55x the binary a glue has room for an inlined payload, whatever its encoding." },
+    { "id": "single-file-base64", "transform": "inline-base64-single-file", "expect": "inlined", "rules": ["name", "payload", "size"],
+      "why": "SINGLE_FILE up to 4.0.17 puts a base64 data URI where the file name was." }
+  ]
+}

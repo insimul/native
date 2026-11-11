@@ -30,8 +30,15 @@ build-wasm/
 ```
 
 **Requirements: Emscripten ≥ 3.1.50** on `PATH` (developed and verified against emsdk
-6.0.5 — the floor is the first version with a stable `EXPORT_ES6` +
-`EXPORTED_RUNTIME_METHODS` spelling; anything newer works):
+6.0.5, and the build, both corpus gates and `package.sh --target wasm` re-verified
+against 3.1.74 — the floor is the first version with a stable `EXPORT_ES6` +
+`EXPORTED_RUNTIME_METHODS` spelling; anything newer works). There is deliberately
+**no exact pin**: nothing in the build depends on one Emscripten release, and the
+glue-shape check (`tests/wasm_glue_shape.mjs`, ctest `wasm_glue_shape`) judges what
+every release in that range emits. One difference worth knowing when reading a glue
+file: Emscripten 3.1.50 – 4.0.2 carry the string `data:application/octet-stream;base64,`
+in **every** build (an unconditional `isDataURI` helper, dropped in 4.0.3), so its
+presence alone does not mean the binary was inlined:
 
 ```sh
 git clone https://github.com/emscripten-core/emsdk && cd emsdk

@@ -155,3 +155,12 @@ add_test(NAME wasm_conformance
   COMMAND ${INSIMUL_NODE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/wasm_conformance.mjs
           $<TARGET_FILE:insimul_wasm>
           --corpus ${INSIMUL_CONFORMANCE_DEFAULT_DIR})
+
+# The glue fetches insimul.wasm rather than inlining it (docs/consuming.md). The
+# judge (tests/wasm_glue_shape.mjs) runs on the glue as linked AND replays the
+# case file, whose cases turn each of its three rules red on transforms of the
+# real glue — so a rule that stops firing is a red ctest, not a silent pass.
+add_test(NAME wasm_glue_shape
+  COMMAND ${INSIMUL_NODE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/wasm_glue_shape.mjs
+          $<TARGET_FILE:insimul_wasm>
+          --cases ${CMAKE_CURRENT_SOURCE_DIR}/tests/wasm-glue-shape/cases.json)

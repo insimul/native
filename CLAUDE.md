@@ -329,6 +329,16 @@
   five fields), which is what makes shipping a stale `build-wasm/` a hard error.
   It also prints the raw/gzip/brotli size table `docs/consuming.md` records;
   regenerate those numbers from its output after any Trealla or Emscripten bump.
+- **"Fetched, not inlined" is judged by `tests/wasm_glue_shape.mjs`, never by
+  grepping for `data:application/octet-stream;base64,`.** Emscripten 3.1.50 –
+  4.0.2 emit that string in every glue (an unconditional `isDataURI` helper;
+  gone in 4.0.3), and 4.0.18+'s SINGLE_FILE embeds a raw string with no data URI
+  at all, so the grep was wrong in both directions. The judge's three rules
+  (names `insimul.wasm`; no data URI carrying a payload; glue < half the binary)
+  each have a red case in `tests/wasm-glue-shape/cases.json`, replayed by the
+  `wasm_glue_shape` ctest on the real glue; the package smoke adds the
+  behavioural proof (a lone glue cannot start). There is no exact emsdk pin —
+  the floor is 3.1.50 (`docs/webassembly.md`).
 
 ## The wasm target (US-1) — cross-build rules
 - **One CMakeLists, two toolchains.** `emcmake cmake` sets

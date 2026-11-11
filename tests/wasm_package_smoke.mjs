@@ -17,10 +17,12 @@
  * real cost and the number should be visible.
  */
 
-import { readFileSync, existsSync, statSync } from 'node:fs';
+import { readFileSync, existsSync, statSync, mkdtempSync, copyFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join, resolve, dirname } from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { gzipSync, brotliCompressSync, constants as zlibConstants } from 'node:zlib';
+import { judgeGlue, WASM_NAME } from './wasm_glue_shape.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = resolve(HERE, '..');
@@ -169,14 +171,53 @@ kb.destroy();
 /* ---------------------------------------- 6. fetched, not inlined (the docs) */
 // docs/consuming.md tells consumers the .wasm is a SEPARATE file the glue
 // fetches (it matters for CSP and for offline packaging), so assert the shape
-// rather than trusting the prose: a real wasm binary on disk, and glue that
-// names it.
-const wasmBytes = readFileSync(join(dist, 'insimul.wasm'));
+// rather than trusting the prose: a real wasm binary on disk, glue whose TEXT
+// carries no inlined binary (tests/wasm_glue_shape.mjs: it names the sibling
+// file, no data URI carries a payload, and it is far smaller than the binary),
+// and glue that by BEHAVIOUR cannot start without the sibling file.
+//
+// Never test for the bare `data:application/octet-stream;base64,` string:
+// Emscripten 3.1.50 - 4.0.2 emit it in every build (an unconditional helper),
+// so that test failed every correctly fetched glue from those versions while
+// missing 4.0.18+'s raw-string SINGLE_FILE. wasm_glue_shape.mjs's header has
+// the detail and tests/wasm-glue-shape/cases.json a case for each shape.
+const wasmBytes = readFileSync(join(dist, WASM_NAME));
 check('insimul.wasm is a real WebAssembly binary (\\0asm magic)',
   [...wasmBytes.subarray(0, 4)], [0x00, 0x61, 0x73, 0x6d]);
 const glue = readFileSync(join(dist, 'insimul.mjs'), 'utf8');
-checkThat('the glue fetches insimul.wasm as a sibling file rather than inlining it',
-  glue.includes('insimul.wasm') && !/data:application\/octet-stream;base64/.test(glue));
+const shape = judgeGlue(glue, wasmBytes.length);
+checkThat('the glue text carries no inlined binary (it names insimul.wasm, no data-URI payload, small)',
+  !shape.inlined, shape.reasons.join('; '));
+
+// A lone copy of the glue, with no insimul.wasm beside it, must fail to start,
+// and must have asked Emscripten's locateFile hook for exactly that file. A glue
+// with the binary inlined would start here (and never consult locateFile).
+{
+  const lone = mkdtempSync(join(tmpdir(), 'insimul-lone-glue-'));
+  const asked = [];
+  let started = false;
+  let error = '';
+  try {
+    copyFileSync(join(dist, 'insimul.mjs'), join(lone, 'insimul.mjs'));
+    const loneGlue = await import(pathToFileURL(join(lone, 'insimul.mjs')).href);
+    try {
+      await loneGlue.default({
+        locateFile: (path, prefix) => { asked.push(path); return prefix + path; },
+        print() {}, printErr() {},
+      });
+      started = true;
+    } catch (e) {
+      error = String(e?.message ?? e);
+    }
+  } finally {
+    rmSync(lone, { recursive: true, force: true });
+  }
+  checkThat('the glue asks locateFile for the sibling insimul.wasm',
+    asked.includes(WASM_NAME), `asked: ${JSON.stringify(asked)}`);
+  checkThat('a lone glue with no sibling insimul.wasm cannot start (the binary is fetched, not inlined)',
+    !started && error.includes(WASM_NAME),
+    started ? 'it started without the sibling file' : `error: ${error.slice(0, 200)}`);
+}
 
 /* ------------------------------------------------------- 7. the size table */
 // The AC asks for the artifact size to be visible before a browser bundle
