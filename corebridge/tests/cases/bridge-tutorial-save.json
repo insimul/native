@@ -1,0 +1,83 @@
+{
+  "area": "tutorial-save",
+  "description": "The tutorial's save block through the ui.tutorial and ui.onboarding rows (PL.native-tutorial-save, U99(1); core's PL.tutorial-progress-save, U97(4)): ui.tutorial.readProgress, the create rows' progress and the apply rows' save op, and what the core re-pin changes in the save rows (the registered tutorial extension). Hand-written: core's conformance/saves/tutorial-progress.json is driven whole by tutorial_progress_corpus; these pin the rows' own surface (absent vs null, unknown members dropped, the refusal text and code) and the new-lesson rule (U99(2)) once more on a host clock at 0.",
+  "cases": [
+    {
+      "name": "ui.tutorial.readProgress: absent and null are no block; unknown members are dropped; an unreadable block is a value naming every unreadable member",
+      "steps": [
+        {"call": "ui.tutorial.readProgress", "expect": {"ok": true, "progress": null}},
+        {"call": "ui.tutorial.readProgress", "args": {"stored": null}, "expect": {"ok": true, "progress": null}},
+        {"call": "ui.tutorial.readProgress", "args": {"stored": {"completed": ["tut_movement"], "current": "tut_camera", "note": "dropped"}},
+         "expect": {"ok": true, "progress": {"completed": ["tut_movement"], "skipped": [], "current": "tut_camera", "endedBySkip": false}}},
+        {"call": "ui.tutorial.readProgress", "args": {"stored": "tut_camera"}, "expect": {"ok": false, "keys": []}},
+        {"call": "ui.tutorial.readProgress", "args": {"stored": {"completed": ["tut_movement", ""], "skipped": ["tut_movement"], "endedBySkip": true}},
+         "expect": {"ok": false, "keys": ["completed[1]", "current", "skipped[0]"]}}
+      ]
+    },
+    {
+      "name": "the create rows refuse exactly the blocks readProgress refuses, coded [invalid-input]; a null progress starts fresh",
+      "steps": [
+        {"call": "ui.tutorial.create", "args": {"config": {"progress": {"completed": ["tut_movement", "tut_movement"], "current": "tut_movement", "endedBySkip": "yes"}}, "now": 0},
+         "expectError": "[invalid-input] insimulcore: ui.tutorial.create: `config.progress` is not a readable tutorial save block (unreadable: completed[1], current, endedBySkip)"},
+        {"call": "ui.tutorial.create", "args": {"config": {"progress": []}, "now": 0},
+         "expectError": "[invalid-input] insimulcore: ui.tutorial.create: `config.progress` is not a readable tutorial save block (it must be a JSON object)"},
+        {"call": "ui.onboarding.create", "args": {"options": {"progress": {"skipped": ["a"], "current": "a"}}, "now": 0},
+         "expectError": "[invalid-input] insimulcore: ui.onboarding.create: `options.progress` is not a readable tutorial save block (unreadable: current)"},
+        {"call": "ui.tutorial.create", "args": {"config": {"worldName": "Brightwater", "targetLanguage": "French", "progress": null}, "now": 0},
+         "expect": {"$subset": {"session": 1, "events": [], "view": {"$subset": {"current": "tut_movement", "completed": [], "skipped": []}}}}},
+        {"call": "ui.tutorial.apply", "args": {"session": 1, "ops": [{"op": "save"}]},
+         "expect": {"$subset": {"results": [{"result": {"completed": [], "skipped": [], "current": "tut_movement", "endedBySkip": false}, "events": []}]}}},
+        {"call": "session.dispose", "args": {"session": 1}}
+      ]
+    },
+    {
+      "name": "a mid-tutorial save loaded by a game that now teaches a lesson before the saved current: the new lesson is current, raised only on start, and saved (U99(2))",
+      "steps": [
+        {"call": "ui.tutorial.create",
+         "args": {"config": {"worldName": "Brightwater", "targetLanguage": "French", "bind": [{"action": "inventory", "kind": "button", "keys": ["KeyI"]}],
+                             "progress": {"completed": ["tut_movement", "tut_camera", "tut_interact_npc", "tut_reading", "tut_examine"], "skipped": [], "current": "tut_menu", "endedBySkip": false}},
+                  "now": 0},
+         "expect": {"$subset": {"session": 1, "events": [], "view": {"$subset": {"current": "tut_inventory", "currentObjectiveIndex": 5, "isComplete": false}}}}},
+        {"call": "ui.tutorial.apply", "args": {"session": 1, "ops": [{"op": "save"}, {"op": "start"}, {"op": "save"}]},
+         "expect": {"$subset": {"results": [
+           {"result": {"completed": ["tut_movement", "tut_camera", "tut_interact_npc", "tut_reading", "tut_examine"], "skipped": [], "current": "tut_inventory", "endedBySkip": false}, "events": []},
+           {"result": "tut_inventory", "events": [{"type": "onboarding_step_started", "stepId": "tut_inventory", "stepIndex": 5, "totalSteps": 7}]},
+           {"result": {"completed": ["tut_movement", "tut_camera", "tut_interact_npc", "tut_reading", "tut_examine"], "skipped": [], "current": "tut_inventory", "endedBySkip": false}, "events": []}]}}},
+        {"call": "session.dispose", "args": {"session": 1}},
+        {"call": "ui.onboarding.create",
+         "args": {"options": {"bind": [{"action": "inventory", "kind": "button", "keys": ["KeyI"]}],
+                              "progress": {"completed": ["tut_movement", "tut_camera", "tut_interact_npc", "tut_reading", "tut_examine"], "skipped": [], "current": "tut_menu", "endedBySkip": false}},
+                  "now": 0},
+         "expect": {"session": 2, "totalSteps": 7, "view": {"current": null, "isComplete": false}}},
+        {"call": "ui.onboarding.apply", "args": {"session": 2, "ops": [{"op": "save"}, {"op": "start"}, {"op": "save"}]},
+         "expect": {"results": [
+           {"result": {"completed": ["tut_movement", "tut_camera", "tut_interact_npc", "tut_reading", "tut_examine"], "skipped": [], "current": "tut_menu", "endedBySkip": false}, "calls": [], "events": []},
+           {"result": null, "calls": [{"started": {"stepId": "tut_inventory", "stepIndex": 5, "totalSteps": 7}}], "events": [{"type": "onboarding_step_started", "stepId": "tut_inventory", "stepIndex": 5, "totalSteps": 7}]},
+           {"result": {"completed": ["tut_movement", "tut_camera", "tut_interact_npc", "tut_reading", "tut_examine"], "skipped": [], "current": "tut_inventory", "endedBySkip": false}, "calls": [], "events": []}],
+           "totalSteps": 7, "view": {"current": "tut_inventory", "isComplete": false}}},
+        {"call": "session.dispose", "args": {"session": 2}}
+      ]
+    },
+    {
+      "name": "an onboarding flow given no progress saves nothing before start, so a new game's save carries no block",
+      "steps": [
+        {"call": "ui.onboarding.create", "args": {"now": 0}, "expect": {"$subset": {"session": 1}}},
+        {"call": "ui.onboarding.apply", "args": {"session": 1, "ops": [{"op": "save"}]},
+         "expect": {"results": [{"result": null, "calls": [], "events": []}], "totalSteps": 6, "view": {"current": null, "isComplete": false}}},
+        {"call": "session.dispose", "args": {"session": 1}}
+      ]
+    },
+    {
+      "name": "the core re-pin's save answers: tutorial is a registered extension, and a migrated save gains its null default",
+      "steps": [
+        {"call": "save.rules", "expect": {"$subset": {"extensionKeys": ["achievements", "aiBlackboards", "detectionStates", "droppedFacts", "evaluations", "gamification", "gathering", "introShown", "languageLearning", "npcLife", "playthroughTelemetry", "progression", "sessions", "skillTree", "social", "survivalNeeds", "traversal", "tutorial", "weather"]}}},
+        {"call": "save.migrate",
+         "args": {"saveFile": {"id": "t", "version": 3, "worldSnapshot": {"insimulVersion": "a", "engineRevision": "b", "snapshotCreatedAt": "c"}, "currentState": {"extensions": {}}}},
+         "expect": {"$subset": {"saveFile": {"$subset": {"currentState": {"$subset": {"extensions": {"$subset": {"tutorial": null}}}}}}}}},
+        {"call": "save.migrate",
+         "args": {"saveFile": {"id": "t", "version": 3, "worldSnapshot": {"insimulVersion": "a", "engineRevision": "b", "snapshotCreatedAt": "c"}, "currentState": {"extensions": {"tutorial": {"completed": ["tut_movement"], "current": "tut_camera"}}}}},
+         "expect": {"$subset": {"saveFile": {"$subset": {"currentState": {"$subset": {"extensions": {"$subset": {"tutorial": {"completed": ["tut_movement"], "current": "tut_camera"}}}}}}}, "outcome": {"$subset": {"orphanExtensionKeys": []}}}}}
+      ]
+    }
+  ]
+}

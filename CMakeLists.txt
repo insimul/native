@@ -893,6 +893,12 @@ target_link_libraries(insimulcore_title_corpus PRIVATE insimulcore)
 set(INSIMUL_TITLE_CORPUS ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/conformance)
 add_test(NAME title_flow_corpus COMMAND insimulcore_title_corpus ${INSIMUL_TITLE_CORPUS}/ui/title-flow.json)
 add_test(NAME tutorial_corpus COMMAND insimulcore_title_corpus ${INSIMUL_TITLE_CORPUS}/quests/tutorial.json)
+# The tutorial progress corpus (PL.native-tutorial-save, U99(1); core's
+# PL.tutorial-progress-save, U97(4)): conformance/saves/tutorial-progress.json,
+# copied with the save corpora, driven by the same runner through
+# `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows'
+# `save` op, on a host clock at the file's `contract.clockStart`.
+add_test(NAME tutorial_progress_corpus COMMAND insimulcore_title_corpus ${INSIMUL_TITLE_CORPUS}/saves/tutorial-progress.json)
 # The negative controls (tests/title-negative/), one per file: each holds a wrong
 # contract table, wrong cases and a case the runner cannot drive. They pass only
 # when the runner reports each of them, the undriven count and the run as failed,
@@ -906,6 +912,10 @@ add_test(NAME tutorial_corpus_negative COMMAND insimulcore_title_corpus
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/title-negative/tutorial-wrong.json)
 set_tests_properties(tutorial_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "contract.flows: length 1 != 2.*expected WRONGLY with the unbound quest log lesson kept [^\n]*objectives: length 6 != 5.*expected WRONGLY with the first lesson 1 ms longer [^\n]*durationMs: 4001 != 4000.*expected WRONGLY with one more step [^\n]*totalSteps: 7 != 6.*expected WRONGLY with no onCompleted [^\n]*calls: length 0 != 1.*WRONGLY undriven, a step no row takes [^\n]*not driven.*tutorial-wrong[.]json [^\n]*1 case[(]s[)] undriven.*quests-tutorial: 5 case[(]s[)], driven 4 [(]objectives 1, run 1, onboarding 2[)], 1 undriven, 6 failed.*title_corpus: FAIL")
+add_test(NAME tutorial_progress_corpus_negative COMMAND insimulcore_title_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/title-negative/tutorial-progress-wrong.json)
+set_tests_properties(tutorial_progress_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract.blockMembers: length 3 != 4.*contract.tutorialSteps: length 6 != 7 [(]the runner maps .*expected WRONGLY with the saved current lesson kept [^\n]*state.current: .tut_menu. != .tut_inventory.*expected WRONGLY with endedBySkip readable [^\n]*read.keys: length 2 != 3.*expected WRONGLY with an old save resuming at the second lesson [^\n]*state.current: .tut_camera. != .tut_movement.*expected WRONGLY with a new game saved before start reporting a block [^\n]*result: expected a object, got a null.*WRONGLY undriven, a step no row takes [^\n]*not driven: a tutorial progress step this runner does not know: completeById.*tutorial-progress-wrong[.]json [^\n]*1 case[(]s[)] undriven.*saves-tutorial-progress: 5 case[(]s[)], driven 4 [(]tutorial 3, onboarding 1[)], 1 undriven, 7 failed.*title_corpus: FAIL")
 
 # corebridge_sha256: the SHA-256 the C host gives core's save envelope
 # (corebridge/src/insimulcore_sha256.c), against the NIST vectors, at every

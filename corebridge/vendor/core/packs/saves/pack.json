@@ -15,6 +15,7 @@
       "conformance/saves/integrity-vectors.json",
       "conformance/saves/village-state.json",
       "conformance/saves/slots.json",
+      "conformance/saves/tutorial-progress.json",
       "conformance/ui/save-slot-cases.json",
       "conformance/events/save-load-cases.json"
     ]

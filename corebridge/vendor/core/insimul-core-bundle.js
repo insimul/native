@@ -2572,6 +2572,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       owner: "progression",
       describe: "The player's progression in a playthrough (P9i.core; catalog progression-xp-levels-achievements, progression-skill-trees). Shape: {gamification: {xp: whole, unlocked: {<achievement id>: at (integer ms)}, daily: {dateKey: YYYY-MM-DD, progress: whole, completed: boolean} | null, consecutiveDays, dailyStreak: whole, lastDailyDate: YYYY-MM-DD | null, counters: {<counter>: whole}} | null, skills: SkillProgression.serialize() ({actors: [{id, levels, xp, points, unlocked}]}) | null}, progressionSaveBlock() in src/progression/progression-save.ts, read back through readProgressionBlock() and SkillProgression.restore(). Written by src/save-file-game-state.ts from GameSaveState.progression. Not kept: anything authored (the level curve, tier labels, achievements, daily templates, skills, trees, costs, effects), anything derived (the level, the tier, the day's template) and today's date (per session). The legacy gamification, achievements and skillTree keys are carried untouched. null (the default) is a save with no progression block: no XP, nothing unlocked, nothing learned.",
       defaultValue: null
+    },
+    tutorial: {
+      owner: "onboarding",
+      describe: "The tutorial quest's and onboarding flow's progress in a playthrough (PL.tutorial-progress-save, U97(4); catalog onboarding-tutorial-quest, onboarding-flow). Shape: {completed: [objective id], skipped: [objective id], current: objective id | null, endedBySkip: boolean}, TutorialQuestSystem.saveProgress() / OnboardingManager.saveProgress() (src/game-engine/logic/), read back through readTutorialBlock() in src/quests/tutorial-save.ts and restored through TutorialQuestConfig.progress or the OnboardingManager's progress option. Written by src/save-file-game-state.ts from GameSaveState.tutorial. Not kept: anything authored or derived (the objectives, their text, keys and events), the quest id and the clock (times and durations count again from the restored start()). null (the default) is a save with no tutorial block, a new game's or one written before this key: the tutorial starts fresh.",
+      defaultValue: null
     }
   };
   function defaultOrphanLogger(key, _value) {
@@ -24086,6 +24091,14 @@ player_meets_cefr(Player, RequiredLevel) :-
   var TITLE_FLOW_STEPS = [...SAVE_SLOTS_STEPS, "choose"];
 
   // @insimul/core/src/game-engine/logic/TutorialQuestSystem.ts
+  function tutorialProgressOf(state) {
+    return {
+      completed: state.objectives.filter((o) => o.completed && !o.skipped).map((o) => o.id),
+      skipped: state.objectives.filter((o) => o.skipped).map((o) => o.id),
+      current: state.isComplete ? null : state.objectives[state.currentObjectiveIndex]?.id ?? null,
+      endedBySkip: state.isComplete && state.skipped
+    };
+  }
   var objectiveDef = (d) => Object.freeze({ ...d, completesOn: Object.freeze([...d.completesOn]) });
   var TUTORIAL_OBJECTIVES = Object.freeze([
     objectiveDef({
@@ -24241,12 +24254,34 @@ player_meets_cefr(Player, RequiredLevel) :-
       /** The index whose `onboarding_step_started` has been raised, or -1. */
       __publicField(this, "announced", -1);
       __publicField(this, "listener");
+      /** Restored ids this tutorial does not run, kept so a re-save does not lose them. */
+      __publicField(this, "carried");
       this.eventBus = eventBus;
       this.now = config.now ?? Date.now;
       this.listener = config.listener ?? {};
       const objectives = buildTutorialObjectives({ includeAssessment: config.includeAssessment, bindings: config.bindings, objectives: config.objectives });
-      const done = new Set(config.completedObjectiveIds ?? []);
-      for (const o of objectives) if (done.has(o.id)) o.completed = true;
+      const saved = config.progress ?? null;
+      const done = /* @__PURE__ */ new Set([...config.completedObjectiveIds ?? [], ...saved?.completed ?? []]);
+      const passed = new Set(saved?.skipped ?? []);
+      for (const o of objectives) {
+        if (passed.has(o.id)) {
+          o.completed = true;
+          o.skipped = true;
+        } else if (done.has(o.id)) o.completed = true;
+      }
+      if (saved && saved.current === null) {
+        for (const o of objectives) {
+          if (!o.completed) {
+            o.completed = true;
+            o.skipped = true;
+          }
+        }
+      }
+      const run = new Set(objectives.map((o) => o.id));
+      this.carried = {
+        completed: (saved?.completed ?? []).filter((id) => !run.has(id)),
+        skipped: (saved?.skipped ?? []).filter((id) => !run.has(id))
+      };
       this.startedAtMs = this.now();
       this.stepStartedAtMs = this.startedAtMs;
       const first = objectives.findIndex((o) => !o.completed);
@@ -24260,7 +24295,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         startedAt: new Date(this.startedAtMs).toISOString(),
         introShown: false,
         isComplete: first === -1,
-        skipped: false,
+        skipped: first === -1 && saved?.endedBySkip === true,
         canAbandon: false,
         canSkip: config.skippable !== false
       };
@@ -24279,6 +24314,15 @@ player_meets_cefr(Player, RequiredLevel) :-
       const completed = this.state.objectives.filter((o) => o.completed).length;
       const total = this.state.objectives.length;
       return { completed, total, percentage: total > 0 ? Math.round(completed / total * 100) : 100 };
+    }
+    /**
+     * What a save keeps of this tutorial ({@link TutorialProgress}): the objectives completed and
+     * skipped in the tutorial's order, then any a restored save named that this tutorial does not run,
+     * the current objective (null once it is over) and whether a skip ended it.
+     */
+    saveProgress() {
+      const p = tutorialProgressOf(this.state);
+      return { ...p, completed: [...p.completed, ...this.carried.completed], skipped: [...p.skipped, ...this.carried.skipped] };
     }
     markIntroShown() {
       this.state.introShown = true;
@@ -24505,6 +24549,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         bindings: o.bindings,
         skippable: o.skippable,
         completedObjectiveIds: o.completedStepIds,
+        progress: o.progress ?? null,
         listener: {
           onStepStarted: (s, i, n) => this.callbacks.onStepStarted?.(s.id, i, n),
           onStepCompleted: (s, i, n, ms) => this.callbacks.onStepCompleted?.(s.id, i, n, ms),
@@ -24531,6 +24576,16 @@ player_meets_cefr(Player, RequiredLevel) :-
     /** The tutorial quest's state, or null before start. */
     getState() {
       return this.tutorial ? this.tutorial.getState() : null;
+    }
+    /**
+     * What a save keeps of the flow ({@link TutorialProgress}). Before {@link start} it is the progress
+     * the manager was given to restore (a copy), or null when it was given none, so a save written
+     * before the flow starts carries the stored block untouched.
+     */
+    saveProgress() {
+      if (this.tutorial) return this.tutorial.saveProgress();
+      const p = this.options.progress;
+      return p ? { completed: [...p.completed], skipped: [...p.skipped], current: p.current, endedBySkip: p.endedBySkip } : null;
     }
     isComplete() {
       return this.tutorial ? this.tutorial.getState().isComplete : false;
@@ -24572,6 +24627,53 @@ player_meets_cefr(Player, RequiredLevel) :-
       startedAt: s.startedAt,
       completedAt: s.completedAt ?? null
     });
+  }
+
+  // @insimul/core/src/quests/tutorial-save.ts
+  var TUTORIAL_EXTENSION_KEY = "tutorial";
+  var TUTORIAL_BLOCK_MEMBERS = Object.freeze(["completed", "skipped", "current", "endedBySkip"]);
+  var isObj3 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var isId = (v) => typeof v === "string" && v.length > 0;
+  function readIds(v, name, bad3, taken = /* @__PURE__ */ new Set()) {
+    if (v === void 0) return [];
+    if (!Array.isArray(v)) {
+      bad3.push(name);
+      return null;
+    }
+    const out = [];
+    const seen = /* @__PURE__ */ new Set();
+    v.forEach((id, i) => {
+      if (!isId(id) || seen.has(id) || taken.has(id)) {
+        bad3.push(`${name}[${i}]`);
+        return;
+      }
+      seen.add(id);
+      out.push(id);
+    });
+    return out;
+  }
+  function readTutorialBlock(b) {
+    if (b === void 0 || b === null) return { ok: true, value: null };
+    if (!isObj3(b)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const completed = readIds(b.completed, "completed", bad3);
+    const skipped = readIds(b.skipped, "skipped", bad3, new Set(completed ?? []));
+    let current = null;
+    let currentOk = false;
+    if (!("current" in b) || b.current !== null && !isId(b.current)) bad3.push("current");
+    else if (b.current !== null && ((completed ?? []).includes(b.current) || (skipped ?? []).includes(b.current))) bad3.push("current");
+    else {
+      current = b.current;
+      currentOk = true;
+    }
+    let endedBySkip = false;
+    if (b.endedBySkip !== void 0) {
+      if (typeof b.endedBySkip !== "boolean") bad3.push("endedBySkip");
+      else if (b.endedBySkip && currentOk && skipped !== null && (current !== null || skipped.length === 0)) bad3.push("endedBySkip");
+      else endedBySkip = b.endedBySkip;
+    }
+    if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
+    return { ok: true, value: { completed, skipped, current, endedBySkip } };
   }
 
   // @insimul/core/src/props/containers.ts
@@ -35824,8 +35926,28 @@ player_meets_cefr(Player, RequiredLevel) :-
         runSteps: TUTORIAL_RUN_STEPS,
         onboardingSteps: ONBOARDING_STEPS,
         t0: new Date(TUTORIAL_CORPUS_T0).toISOString()
+      },
+      // conformance/saves/tutorial-progress.json's data tables (PL.native-tutorial-save).
+      // Its `ops`, `tutorialSteps` and `onboardingSteps` are core's corpus-runner lists,
+      // exported only by `quests/tutorial-progress-corpus`, whose comparator import is
+      // the save-file code UNBUNDLED_CORE_MODULES refuses; the runner checks those
+      // against the file instead (tests/title_corpus.cpp's areas()).
+      "saves-tutorial-progress": {
+        clockStart: new Date(TUTORIAL_CORPUS_T0).toISOString(),
+        extensionKey: TUTORIAL_EXTENSION_KEY,
+        blockMembers: TUTORIAL_BLOCK_MEMBERS
       }
     });
+  }
+  function tutorialProgressArg(method, value, name) {
+    const read = readTutorialBlock(value);
+    if (!read.ok) {
+      throw refuse2(
+        method,
+        `\`${name}\` is not a readable tutorial save block` + (read.keys.length ? ` (unreadable: ${read.keys.join(", ")})` : " (it must be a JSON object)")
+      );
+    }
+    return read.value;
   }
   function titleInputOf(method, s) {
     if (s.saves === null) return s.menu;
@@ -36624,12 +36746,38 @@ player_meets_cefr(Player, RequiredLevel) :-
       return { results, view: plain(titleMenu(titleInputOf(m, s))) };
     },
     /**
-     * `ui.tutorial.contract {}` → `{ 'quests-tutorial': {…} }` — the data tables
-     * core's tutorial corpus states in its `contract`, from core's constants: the
+     * `ui.tutorial.contract {}` → `{ 'quests-tutorial': {…},
+     * 'saves-tutorial-progress': {…} }` — the data tables core's tutorial corpora
+     * state in their `contract`, from core's constants. `quests-tutorial`: the
      * lessons (`objectives`), the `assessmentObjective`, the onboarding `flows`, and
      * the corpus's `ops`, `runSteps`, `onboardingSteps` and its clock's `t0`.
+     * `saves-tutorial-progress` (conformance/saves/tutorial-progress.json): the save
+     * block's `extensionKey` (`tutorial`, under `currentState.extensions`), its
+     * `blockMembers` in the order core's writer stores them, and the corpus clock's
+     * `clockStart`.
      */
-    "ui.tutorial.contract": () => ({ "quests-tutorial": titleContract()["quests-tutorial"] }),
+    "ui.tutorial.contract": () => {
+      const c = titleContract();
+      return { "quests-tutorial": c["quests-tutorial"], "saves-tutorial-progress": c["saves-tutorial-progress"] };
+    },
+    /**
+     * `ui.tutorial.readProgress { stored? }` → `{ ok: true, progress }` or `{ ok:
+     * false, keys }` — core's `readTutorialBlock` over `stored`, a save's
+     * `currentState.extensions.tutorial` (absent: a save without the key, a new
+     * game's or one written before the block; null: the registry default after
+     * migration). `progress` is the block as core reads it (unknown members
+     * dropped), or null for no block (the tutorial starts fresh). An unreadable
+     * block is a VALUE, as core's load answers it (`unreadable_tutorial`): `keys`
+     * names every unreadable member in ascending order (`completed`,
+     * `completed[<i>]`, `skipped`, `skipped[<i>]`, `current`, `endedBySkip`;
+     * empty when the block is not an object). `ui.tutorial.create`'s
+     * `config.progress` and `ui.onboarding.create`'s `options.progress` refuse
+     * exactly the blocks this answers `ok: false` for.
+     */
+    "ui.tutorial.readProgress": (args) => {
+      const read = readTutorialBlock(args.stored);
+      return read.ok ? { ok: true, progress: plain(read.value) } : { ok: false, keys: read.keys };
+    },
     /**
      * `ui.tutorial.objectives { includeAssessment?, bindings? | unbind?, rebind?,
      * bind? }` → `{ objectives }` — core's `buildTutorialObjectives`: the lessons a
@@ -36649,8 +36797,13 @@ player_meets_cefr(Player, RequiredLevel) :-
      * objectives, events, view }` — core's `TutorialQuestSystem` over the session's
      * own game bus. `config` is core's `TutorialQuestConfig`: `worldName`,
      * `targetLanguage`, `includeAssessment`, `questId?`, `skippable?`,
-     * `completedObjectiveIds?` (a resumed playthrough), and the game's bindings
-     * (`bindings`, or the `unbind` / `rebind` / `bind` changes; see
+     * `completedObjectiveIds?` (a resumed playthrough), `progress?` (a save's
+     * `currentState.extensions.tutorial` as stored, read by core's
+     * `readTutorialBlock`: absent or null starts fresh; unreadable is
+     * `[invalid-input]`, see `ui.tutorial.readProgress`; restored by core without
+     * raising anything, its first lesson left in this game's order current, so a
+     * lesson the game now teaches before the saved `current` is current), and the
+     * game's bindings (`bindings`, or the `unbind` / `rebind` / `bind` changes; see
      * `ui.tutorial.objectives`). `now` (epoch ms or an ISO string) gives the session
      * a host clock that moves only on `tick`; absent, the wall clock. `objectives`
      * are the quest's objectives in full (id, title, description, controlHint,
@@ -36670,8 +36823,9 @@ player_meets_cefr(Player, RequiredLevel) :-
         optStringValue(m, c.questId, "config.questId");
         optBoolean(m, c.skippable, "config.skippable");
         optStrings(m, c.completedObjectiveIds, "config.completedObjectiveIds");
+        const progress = tutorialProgressArg(m, c.progress, "config.progress");
         const bindings = tutorialBindingsOf(m, c, "config");
-        return [{ ...c, bindings }, { ...sessionClockOf(m, args.now), events: [], hostEvent: null }];
+        return [{ ...c, bindings, progress }, { ...sessionClockOf(m, args.now), events: [], hostEvent: null }];
       });
       const bus = new GameEventBus();
       bus.onAny((e) => {
@@ -36684,6 +36838,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         ...config.questId !== void 0 && config.questId !== null ? { questId: config.questId } : {},
         ...config.skippable !== void 0 && config.skippable !== null ? { skippable: config.skippable } : {},
         ...config.completedObjectiveIds !== void 0 && config.completedObjectiveIds !== null ? { completedObjectiveIds: config.completedObjectiveIds } : {},
+        progress: config.progress,
         bindings: config.bindings,
         now: clockReader(io)
       });
@@ -36709,7 +36864,10 @@ player_meets_cefr(Player, RequiredLevel) :-
      * completes the current objective; result: its id, or null) · `completeById {
      * id }` (result: whether it completed) · `skip` (result: whether the game
      * allowed it; never past an assessment) · `skipNonAssessment` · `tick { ms }`
-     * (moves a host clock) · `dispose` (the quest stops listening).
+     * (moves a host clock) · `save` (reads without acting; result: core's
+     * `saveProgress()`, the block a save stores at `currentState.extensions.tutorial`:
+     * `{ completed, skipped, current, endedBySkip }`) · `dispose` (the quest stops
+     * listening).
      */
     "ui.tutorial.apply": async (args) => {
       const m = "ui.tutorial.apply";
@@ -36735,6 +36893,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           return done(io, null);
         },
         tick: ({ io }, op) => done(io, coded("invalid-input", () => tickClock(m, io, op))),
+        save: ({ model, io }) => done(io, model.saveProgress()),
         dispose: ({ model, io }) => {
           model.dispose();
           return done(io, null);
@@ -36749,8 +36908,10 @@ player_meets_cefr(Player, RequiredLevel) :-
      * `OnboardingDefinition` (`{ id?, flow?: generic | language, steps? }`; a step
      * named like a tutorial lesson is that lesson, any other is completed by the
      * host or by its own `completesOn`), read by core. `options`: `skippable?`,
-     * `completedStepIds?`, `worldName?`, `targetLanguage?`, `questId?` and the
-     * game's bindings (as `ui.tutorial.create`'s `config`). `now` as there.
+     * `completedStepIds?`, `worldName?`, `targetLanguage?`, `questId?`,
+     * `progress?` (a save's `currentState.extensions.tutorial`, read and refused
+     * as `ui.tutorial.create`'s `config.progress`; restored when the flow starts)
+     * and the game's bindings (as `ui.tutorial.create`'s `config`). `now` as there.
      * `totalSteps` is the flow's step count built against those bindings, the same
      * before `start` as after it. view: `{ current, isComplete }`.
      */
@@ -36764,8 +36925,9 @@ player_meets_cefr(Player, RequiredLevel) :-
         optStringValue(m, o.worldName, "options.worldName");
         optStringValue(m, o.targetLanguage, "options.targetLanguage");
         optStringValue(m, o.questId, "options.questId");
+        const progress = tutorialProgressArg(m, o.progress, "options.progress");
         const bindings = tutorialBindingsOf(m, o, "options");
-        return [d, { ...o, bindings }, { ...sessionClockOf(m, args.now), calls: [], events: [], hostEvent: null }];
+        return [d, { ...o, bindings, progress }, { ...sessionClockOf(m, args.now), calls: [], events: [], hostEvent: null }];
       });
       const pick2 = (k) => options[k] !== void 0 && options[k] !== null ? { [k]: options[k] } : {};
       const model = new OnboardingManager(definition, {
@@ -36774,6 +36936,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         ...pick2("worldName"),
         ...pick2("targetLanguage"),
         ...pick2("questId"),
+        progress: options.progress,
         bindings: options.bindings,
         now: clockReader(io)
       });
@@ -36797,7 +36960,10 @@ player_meets_cefr(Player, RequiredLevel) :-
      * acting; result: `{ totalSteps, step }`, the current step in full or null) ·
      * `state` (reads without acting; result: core's `getState()`, the tutorial
      * quest's whole state — its objectives with `completed` and `skipped`, `skipped`
-     * when a skip ended it — or null before `start`).
+     * when a skip ended it — or null before `start`) · `save` (reads without acting;
+     * result: core's `saveProgress()`, the block a save stores; before `start` the
+     * progress the session was created with, or null when it was given none, so a
+     * save written then carries the stored block untouched).
      */
     "ui.onboarding.apply": async (args) => {
       const m = "ui.onboarding.apply";
@@ -36830,7 +36996,8 @@ player_meets_cefr(Player, RequiredLevel) :-
         },
         tick: ({ io }, op) => done(io, coded("invalid-input", () => tickClock(m, io, op))),
         inspect: ({ model, io }) => done(io, { totalSteps: model.totalSteps, step: model.getCurrentStep() }),
-        state: ({ model, io }) => done(io, model.getState())
+        state: ({ model, io }) => done(io, model.getState()),
+        save: ({ model, io }) => done(io, model.saveProgress())
       });
       return { results, totalSteps: s.model.totalSteps, view: onboardingView(s.model) };
     },

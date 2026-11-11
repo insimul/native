@@ -3,7 +3,7 @@
   "description": "Hand-written: the ui.titleFlow.*, ui.tutorial.* and ui.onboarding.* rows' own contract (PL.native-title-rows, U92(1); core's P8 logic, P8.core: src/ui/title-flow.ts, TutorialQuestSystem, OnboardingManager) — each row's answer shape, a domain refusal as a VALUE (core's), a title menu linked LIVE to a saves.slots session, the host clock and its tick, the events a tutorial raises (never the host's own), the onboarding callbacks per op, the session kinds, and the rows' own refusals as errors coded [invalid-input]. Core's own corpora (conformance/ui/title-flow.json, conformance/quests/tutorial.json) are driven whole through these rows by the title_flow_corpus and tutorial_corpus ctests (tests/title_corpus.cpp), not transcribed here.",
   "cases": [
     {
-      "name": "ui.titleFlow.contract and ui.tutorial.contract: the tables of the two P8 corpora, from core's constants",
+      "name": "ui.titleFlow.contract and ui.tutorial.contract: the tables of the two P8 corpora and of the tutorial progress corpus, from core's constants",
       "steps": [
         {
           "call": "ui.titleFlow.contract",
@@ -107,6 +107,16 @@
                 "inspect"
               ],
               "t0": "2026-11-06T09:00:00.000Z"
+            },
+            "saves-tutorial-progress": {
+              "clockStart": "2026-11-06T09:00:00.000Z",
+              "extensionKey": "tutorial",
+              "blockMembers": [
+                "completed",
+                "skipped",
+                "current",
+                "endedBySkip"
+              ]
             }
           }
         }

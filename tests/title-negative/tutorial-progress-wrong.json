@@ -1,0 +1,754 @@
+{
+  "area": "saves-tutorial-progress",
+  "description": "NEGATIVE CONTROL for tutorial_progress_corpus_negative (PL.native-tutorial-save): core's tutorial progress corpus with a wrong contract table, a wrong runner list, four wrong answers and one case no row can drive. The runner must FAIL it, naming each. Inputs are synthetic and copied from the vendored corpus (corebridge/vendor/core/conformance/saves/tutorial-progress.json); never a source of truth.",
+  "version": 1,
+  "sources": [
+    "New in core (PL.tutorial-progress-save): the Unreal P8 landing (run 7, p8-unreal) found tutorial progress missing from core's save. Inputs are synthetic; every expected is core's answer.",
+    "The lessons, events and bindings are conformance/quests/tutorial.json's (P8.core); its cases are unchanged."
+  ],
+  "tolerance": 1e-9,
+  "contract": {
+    "ops": [
+      "tutorial",
+      "onboarding"
+    ],
+    "tutorialSteps": [
+      "start",
+      "event",
+      "complete",
+      "skip",
+      "skipNonAssessment",
+      "tick"
+    ],
+    "onboardingSteps": [
+      "start",
+      "complete",
+      "skip",
+      "event",
+      "tick",
+      "save"
+    ],
+    "clockStart": "2026-11-06T09:00:00.000Z",
+    "extensionKey": "tutorial",
+    "blockMembers": [
+      "completed",
+      "skipped",
+      "current"
+    ],
+    "saveRule": "saveProgress() = {completed: the objectives the player completed, skipped: the objectives a skip passed (each in the tutorial's order, then any a restored save named that this tutorial does not run, in the save's order), current: the current objective, null once the tutorial is over, endedBySkip: a skip ended it}. The manager's, before start: the progress it was given (a copy), or null when it was given none (the save carries the stored block untouched).",
+    "loadRule": "progress restores without raising anything: completed objectives are done, skipped ones done by a skip, and the first objective left in the tutorial's order is current; start() announces it, and the clock (startedAt, durations) counts from that start. current null restores a tutorial that is over (endedBySkip as saved), passing as skipped any objective the save does not name. Ids the tutorial does not run are kept for saveProgress().",
+    "freshRule": "no block (stored absent: a new game's save or one written before the block; or null, the registry default after migrateExtensions) is no progress: the tutorial starts fresh, its first lesson current.",
+    "readRule": "readable: an object; completed and skipped absent ([]) or lists of non-empty ids, no repeat, no id in both; current required, null or a non-empty id in neither list; endedBySkip absent (false) or a boolean, true only when current is null and skipped names an objective. Otherwise {read: {ok: false, keys}}, keys = the unreadable members (completed, completed[<i>], skipped, skipped[<i>], current, endedBySkip) in ascending string order (empty when the block is not an object), and no tutorial is built."
+  },
+  "cases": [
+    {
+      "name": "expected WRONGLY with the saved current lesson kept where the game now teaches a new one before it",
+      "note": "tut_inventory sits before tut_menu in the tutorial's order and the save does not name it done, so it is current; current only says the tutorial was not over.",
+      "op": "tutorial",
+      "input": {
+        "config": {
+          "worldName": "Brightwater",
+          "targetLanguage": "French",
+          "includeAssessment": false,
+          "bind": [
+            {
+              "action": "inventory",
+              "kind": "button",
+              "keys": [
+                "KeyI"
+              ]
+            }
+          ]
+        },
+        "stored": {
+          "completed": [
+            "tut_movement",
+            "tut_camera",
+            "tut_interact_npc",
+            "tut_reading",
+            "tut_examine"
+          ],
+          "skipped": [],
+          "current": "tut_menu",
+          "endedBySkip": false
+        },
+        "steps": [
+          {
+            "start": true
+          },
+          {
+            "save": true
+          }
+        ]
+      },
+      "expected": {
+        "read": {
+          "ok": true,
+          "progress": {
+            "completed": [
+              "tut_movement",
+              "tut_camera",
+              "tut_interact_npc",
+              "tut_reading",
+              "tut_examine"
+            ],
+            "skipped": [],
+            "current": "tut_menu",
+            "endedBySkip": false
+          }
+        },
+        "start": {
+          "events": [],
+          "state": {
+            "questId": "tutorial",
+            "current": "tut_menu",
+            "currentObjectiveIndex": 5,
+            "completed": [
+              "tut_movement",
+              "tut_camera",
+              "tut_interact_npc",
+              "tut_reading",
+              "tut_examine"
+            ],
+            "skipped": [],
+            "progress": {
+              "completed": 5,
+              "total": 7,
+              "percentage": 71
+            },
+            "isComplete": false,
+            "endedBySkip": false,
+            "canSkip": true,
+            "canAbandon": false,
+            "startedAt": "2026-11-06T09:00:00.000Z",
+            "completedAt": null
+          },
+          "saved": {
+            "completed": [
+              "tut_movement",
+              "tut_camera",
+              "tut_interact_npc",
+              "tut_reading",
+              "tut_examine"
+            ],
+            "skipped": [],
+            "current": "tut_inventory",
+            "endedBySkip": false
+          }
+        },
+        "steps": [
+          {
+            "result": "tut_inventory",
+            "events": [
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_inventory",
+                "stepIndex": 5,
+                "totalSteps": 7
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_inventory",
+              "currentObjectiveIndex": 5,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 5,
+                "total": 7,
+                "percentage": 71
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": {
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine"
+              ],
+              "skipped": [],
+              "current": "tut_inventory",
+              "endedBySkip": false
+            },
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_inventory",
+              "currentObjectiveIndex": 5,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 5,
+                "total": 7,
+                "percentage": 71
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "expected WRONGLY with endedBySkip readable",
+      "note": "readVillageSave refuses the save (unreadable_tutorial); every unreadable member is named, in ascending order.",
+      "op": "tutorial",
+      "input": {
+        "config": {
+          "worldName": "Brightwater",
+          "targetLanguage": "French",
+          "includeAssessment": false
+        },
+        "stored": {
+          "completed": [
+            "tut_movement",
+            "tut_movement"
+          ],
+          "current": "tut_movement",
+          "endedBySkip": "yes"
+        },
+        "steps": [
+          {
+            "start": true
+          }
+        ]
+      },
+      "expected": {
+        "read": {
+          "ok": false,
+          "keys": [
+            "completed[1]",
+            "current"
+          ]
+        }
+      }
+    },
+    {
+      "name": "expected WRONGLY with an old save resuming at the second lesson",
+      "op": "tutorial",
+      "input": {
+        "config": {
+          "worldName": "Brightwater",
+          "targetLanguage": "French",
+          "includeAssessment": false
+        },
+        "steps": [
+          {
+            "start": true
+          },
+          {
+            "save": true
+          }
+        ]
+      },
+      "expected": {
+        "read": {
+          "ok": true,
+          "progress": null
+        },
+        "start": {
+          "events": [],
+          "state": {
+            "questId": "tutorial",
+            "current": "tut_camera",
+            "currentObjectiveIndex": 0,
+            "completed": [],
+            "skipped": [],
+            "progress": {
+              "completed": 0,
+              "total": 6,
+              "percentage": 0
+            },
+            "isComplete": false,
+            "endedBySkip": false,
+            "canSkip": true,
+            "canAbandon": false,
+            "startedAt": "2026-11-06T09:00:00.000Z",
+            "completedAt": null
+          },
+          "saved": {
+            "completed": [],
+            "skipped": [],
+            "current": "tut_movement",
+            "endedBySkip": false
+          }
+        },
+        "steps": [
+          {
+            "result": "tut_movement",
+            "events": [
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_movement",
+                "stepIndex": 0,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_movement",
+              "currentObjectiveIndex": 0,
+              "completed": [],
+              "skipped": [],
+              "progress": {
+                "completed": 0,
+                "total": 6,
+                "percentage": 0
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": {
+              "completed": [],
+              "skipped": [],
+              "current": "tut_movement",
+              "endedBySkip": false
+            },
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_movement",
+              "currentObjectiveIndex": 0,
+              "completed": [],
+              "skipped": [],
+              "progress": {
+                "completed": 0,
+                "total": 6,
+                "percentage": 0
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "expected WRONGLY with a new game saved before start reporting a block",
+      "note": "A new game writes into an empty save document; a null saveProgress() leaves it without a tutorial block, and a later save stores the flow.",
+      "op": "onboarding",
+      "input": {
+        "definition": null,
+        "options": {},
+        "steps": [
+          {
+            "save": true
+          },
+          {
+            "start": true
+          },
+          {
+            "event": "settlement_entered"
+          },
+          {
+            "save": true
+          }
+        ]
+      },
+      "expected": {
+        "read": {
+          "ok": true,
+          "progress": null
+        },
+        "totalSteps": 6,
+        "steps": [
+          {
+            "result": {
+              "completed": [],
+              "skipped": [],
+              "current": "tut_movement",
+              "endedBySkip": false
+            },
+            "calls": [],
+            "state": {
+              "current": null,
+              "isComplete": false
+            }
+          },
+          {
+            "result": null,
+            "calls": [
+              {
+                "started": {
+                  "stepId": "tut_movement",
+                  "stepIndex": 0,
+                  "totalSteps": 6
+                }
+              }
+            ],
+            "state": {
+              "current": "tut_movement",
+              "isComplete": false
+            }
+          },
+          {
+            "result": null,
+            "calls": [
+              {
+                "completed": {
+                  "stepId": "tut_movement",
+                  "stepIndex": 0,
+                  "totalSteps": 6,
+                  "durationMs": 0
+                }
+              },
+              {
+                "started": {
+                  "stepId": "tut_camera",
+                  "stepIndex": 1,
+                  "totalSteps": 6
+                }
+              }
+            ],
+            "state": {
+              "current": "tut_camera",
+              "isComplete": false
+            }
+          },
+          {
+            "result": {
+              "completed": [
+                "tut_movement"
+              ],
+              "skipped": [],
+              "current": "tut_camera",
+              "endedBySkip": false
+            },
+            "calls": [],
+            "state": {
+              "current": "tut_camera",
+              "isComplete": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "WRONGLY undriven, a step no row takes",
+      "op": "tutorial",
+      "input": {
+        "config": {
+          "worldName": "Brightwater",
+          "targetLanguage": "French",
+          "includeAssessment": false
+        },
+        "stored": {
+          "completed": [
+            "tut_movement",
+            "tut_camera",
+            "tut_interact_npc"
+          ],
+          "skipped": [],
+          "current": "tut_reading",
+          "endedBySkip": false
+        },
+        "steps": [
+          {
+            "start": true
+          },
+          {
+            "event": "sign_read"
+          },
+          {
+            "event": "object_examined"
+          },
+          {
+            "complete": true
+          },
+          {
+            "save": true
+          },
+          {
+            "completeById": "tut_camera"
+          }
+        ]
+      },
+      "expected": {
+        "read": {
+          "ok": true,
+          "progress": {
+            "completed": [
+              "tut_movement",
+              "tut_camera",
+              "tut_interact_npc"
+            ],
+            "skipped": [],
+            "current": "tut_reading",
+            "endedBySkip": false
+          }
+        },
+        "start": {
+          "events": [],
+          "state": {
+            "questId": "tutorial",
+            "current": "tut_reading",
+            "currentObjectiveIndex": 3,
+            "completed": [
+              "tut_movement",
+              "tut_camera",
+              "tut_interact_npc"
+            ],
+            "skipped": [],
+            "progress": {
+              "completed": 3,
+              "total": 6,
+              "percentage": 50
+            },
+            "isComplete": false,
+            "endedBySkip": false,
+            "canSkip": true,
+            "canAbandon": false,
+            "startedAt": "2026-11-06T09:00:00.000Z",
+            "completedAt": null
+          },
+          "saved": {
+            "completed": [
+              "tut_movement",
+              "tut_camera",
+              "tut_interact_npc"
+            ],
+            "skipped": [],
+            "current": "tut_reading",
+            "endedBySkip": false
+          }
+        },
+        "steps": [
+          {
+            "result": "tut_reading",
+            "events": [
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_reading",
+                "stepIndex": 3,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_reading",
+              "currentObjectiveIndex": 3,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 3,
+                "total": 6,
+                "percentage": 50
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [
+              {
+                "type": "onboarding_step_completed",
+                "stepId": "tut_reading",
+                "stepIndex": 3,
+                "totalSteps": 6,
+                "durationMs": 0
+              },
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_examine",
+                "stepIndex": 4,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_examine",
+              "currentObjectiveIndex": 4,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 4,
+                "total": 6,
+                "percentage": 67
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [
+              {
+                "type": "onboarding_step_completed",
+                "stepId": "tut_examine",
+                "stepIndex": 4,
+                "totalSteps": 6,
+                "durationMs": 0
+              },
+              {
+                "type": "onboarding_step_started",
+                "stepId": "tut_menu",
+                "stepIndex": 5,
+                "totalSteps": 6
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": "tut_menu",
+              "currentObjectiveIndex": 5,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 5,
+                "total": 6,
+                "percentage": 83
+              },
+              "isComplete": false,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": null
+            }
+          },
+          {
+            "result": null,
+            "events": [
+              {
+                "type": "onboarding_step_completed",
+                "stepId": "tut_menu",
+                "stepIndex": 5,
+                "totalSteps": 6,
+                "durationMs": 0
+              },
+              {
+                "type": "onboarding_completed",
+                "totalSteps": 6,
+                "totalDurationMs": 0
+              }
+            ],
+            "state": {
+              "questId": "tutorial",
+              "current": null,
+              "currentObjectiveIndex": 6,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine",
+                "tut_menu"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 6,
+                "total": 6,
+                "percentage": 100
+              },
+              "isComplete": true,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": "2026-11-06T09:00:00.000Z"
+            }
+          },
+          {
+            "result": {
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine",
+                "tut_menu"
+              ],
+              "skipped": [],
+              "current": null,
+              "endedBySkip": false
+            },
+            "events": [],
+            "state": {
+              "questId": "tutorial",
+              "current": null,
+              "currentObjectiveIndex": 6,
+              "completed": [
+                "tut_movement",
+                "tut_camera",
+                "tut_interact_npc",
+                "tut_reading",
+                "tut_examine",
+                "tut_menu"
+              ],
+              "skipped": [],
+              "progress": {
+                "completed": 6,
+                "total": 6,
+                "percentage": 100
+              },
+              "isComplete": true,
+              "endedBySkip": false,
+              "canSkip": true,
+              "canAbandon": false,
+              "startedAt": "2026-11-06T09:00:00.000Z",
+              "completedAt": "2026-11-06T09:00:00.000Z"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

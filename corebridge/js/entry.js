@@ -179,6 +179,13 @@ import {
 	corpusBindings,
 	tutorialStateJson,
 } from '@insimul/core/quests/tutorial-corpus-host';
+// The tutorial's save block (core's PL.tutorial-progress-save, U97(4);
+// PL.native-tutorial-save, U99(1)): `readTutorialBlock` reads a stored
+// `currentState.extensions.tutorial` exactly as core's load does, so the create
+// rows take saved progress only in the shape core's save writes, and the
+// contract states the block's key and members from core's constants. The module
+// imports only a type, so it brings no save-file code into the bundle.
+import { TUTORIAL_BLOCK_MEMBERS, TUTORIAL_EXTENSION_KEY, readTutorialBlock } from '@insimul/core/quests/tutorial-save';
 
 // ── props, interiors and the inventory panel (P6.core; PL.native-props-rows, U89(2)) ──
 // Core's P6 logic (core 31764b1 onward): containers (access, unlock, the deposit
@@ -586,7 +593,37 @@ function titleContract() {
 			onboardingSteps: ONBOARDING_STEPS,
 			t0: new Date(TUTORIAL_CORPUS_T0).toISOString(),
 		},
+		// conformance/saves/tutorial-progress.json's data tables (PL.native-tutorial-save).
+		// Its `ops`, `tutorialSteps` and `onboardingSteps` are core's corpus-runner lists,
+		// exported only by `quests/tutorial-progress-corpus`, whose comparator import is
+		// the save-file code UNBUNDLED_CORE_MODULES refuses; the runner checks those
+		// against the file instead (tests/title_corpus.cpp's areas()).
+		'saves-tutorial-progress': {
+			clockStart: new Date(TUTORIAL_CORPUS_T0).toISOString(),
+			extensionKey: TUTORIAL_EXTENSION_KEY,
+			blockMembers: TUTORIAL_BLOCK_MEMBERS,
+		},
 	});
+}
+
+/**
+ * Saved tutorial progress for a create row: `value` is a stored
+ * `currentState.extensions.tutorial` block, read by core's `readTutorialBlock`.
+ * Absent or null is no progress (null: a new game, or a save written before the
+ * block); a block core's load would refuse (`unreadable_tutorial`) is the row's
+ * `[invalid-input]`, naming every unreadable member as core does. Otherwise the
+ * block as core read it (unknown members dropped).
+ */
+function tutorialProgressArg(method, value, name) {
+	const read = readTutorialBlock(value);
+	if (!read.ok) {
+		throw refuse(
+			method,
+			`\`${name}\` is not a readable tutorial save block` +
+				(read.keys.length ? ` (unreadable: ${read.keys.join(', ')})` : ' (it must be a JSON object)'),
+		);
+	}
+	return read.value;
 }
 
 /**
@@ -1658,12 +1695,39 @@ const METHODS = {
 	},
 
 	/**
-	 * `ui.tutorial.contract {}` → `{ 'quests-tutorial': {…} }` — the data tables
-	 * core's tutorial corpus states in its `contract`, from core's constants: the
+	 * `ui.tutorial.contract {}` → `{ 'quests-tutorial': {…},
+	 * 'saves-tutorial-progress': {…} }` — the data tables core's tutorial corpora
+	 * state in their `contract`, from core's constants. `quests-tutorial`: the
 	 * lessons (`objectives`), the `assessmentObjective`, the onboarding `flows`, and
 	 * the corpus's `ops`, `runSteps`, `onboardingSteps` and its clock's `t0`.
+	 * `saves-tutorial-progress` (conformance/saves/tutorial-progress.json): the save
+	 * block's `extensionKey` (`tutorial`, under `currentState.extensions`), its
+	 * `blockMembers` in the order core's writer stores them, and the corpus clock's
+	 * `clockStart`.
 	 */
-	'ui.tutorial.contract': () => ({ 'quests-tutorial': titleContract()['quests-tutorial'] }),
+	'ui.tutorial.contract': () => {
+		const c = titleContract();
+		return { 'quests-tutorial': c['quests-tutorial'], 'saves-tutorial-progress': c['saves-tutorial-progress'] };
+	},
+
+	/**
+	 * `ui.tutorial.readProgress { stored? }` → `{ ok: true, progress }` or `{ ok:
+	 * false, keys }` — core's `readTutorialBlock` over `stored`, a save's
+	 * `currentState.extensions.tutorial` (absent: a save without the key, a new
+	 * game's or one written before the block; null: the registry default after
+	 * migration). `progress` is the block as core reads it (unknown members
+	 * dropped), or null for no block (the tutorial starts fresh). An unreadable
+	 * block is a VALUE, as core's load answers it (`unreadable_tutorial`): `keys`
+	 * names every unreadable member in ascending order (`completed`,
+	 * `completed[<i>]`, `skipped`, `skipped[<i>]`, `current`, `endedBySkip`;
+	 * empty when the block is not an object). `ui.tutorial.create`'s
+	 * `config.progress` and `ui.onboarding.create`'s `options.progress` refuse
+	 * exactly the blocks this answers `ok: false` for.
+	 */
+	'ui.tutorial.readProgress': (args) => {
+		const read = readTutorialBlock(args.stored);
+		return read.ok ? { ok: true, progress: plain(read.value) } : { ok: false, keys: read.keys };
+	},
 
 	/**
 	 * `ui.tutorial.objectives { includeAssessment?, bindings? | unbind?, rebind?,
@@ -1685,8 +1749,13 @@ const METHODS = {
 	 * objectives, events, view }` — core's `TutorialQuestSystem` over the session's
 	 * own game bus. `config` is core's `TutorialQuestConfig`: `worldName`,
 	 * `targetLanguage`, `includeAssessment`, `questId?`, `skippable?`,
-	 * `completedObjectiveIds?` (a resumed playthrough), and the game's bindings
-	 * (`bindings`, or the `unbind` / `rebind` / `bind` changes; see
+	 * `completedObjectiveIds?` (a resumed playthrough), `progress?` (a save's
+	 * `currentState.extensions.tutorial` as stored, read by core's
+	 * `readTutorialBlock`: absent or null starts fresh; unreadable is
+	 * `[invalid-input]`, see `ui.tutorial.readProgress`; restored by core without
+	 * raising anything, its first lesson left in this game's order current, so a
+	 * lesson the game now teaches before the saved `current` is current), and the
+	 * game's bindings (`bindings`, or the `unbind` / `rebind` / `bind` changes; see
 	 * `ui.tutorial.objectives`). `now` (epoch ms or an ISO string) gives the session
 	 * a host clock that moves only on `tick`; absent, the wall clock. `objectives`
 	 * are the quest's objectives in full (id, title, description, controlHint,
@@ -1706,8 +1775,9 @@ const METHODS = {
 			optStringValue(m, c.questId, 'config.questId');
 			optBoolean(m, c.skippable, 'config.skippable');
 			optStrings(m, c.completedObjectiveIds, 'config.completedObjectiveIds');
+			const progress = tutorialProgressArg(m, c.progress, 'config.progress');
 			const bindings = tutorialBindingsOf(m, c, 'config');
-			return [{ ...c, bindings }, { ...sessionClockOf(m, args.now), events: [], hostEvent: null }];
+			return [{ ...c, bindings, progress }, { ...sessionClockOf(m, args.now), events: [], hostEvent: null }];
 		});
 		const bus = new GameEventBus();
 		bus.onAny((e) => {
@@ -1722,6 +1792,7 @@ const METHODS = {
 			...(config.completedObjectiveIds !== undefined && config.completedObjectiveIds !== null
 				? { completedObjectiveIds: config.completedObjectiveIds }
 				: {}),
+			progress: config.progress,
 			bindings: config.bindings,
 			now: clockReader(io),
 		});
@@ -1748,7 +1819,10 @@ const METHODS = {
 	 * completes the current objective; result: its id, or null) · `completeById {
 	 * id }` (result: whether it completed) · `skip` (result: whether the game
 	 * allowed it; never past an assessment) · `skipNonAssessment` · `tick { ms }`
-	 * (moves a host clock) · `dispose` (the quest stops listening).
+	 * (moves a host clock) · `save` (reads without acting; result: core's
+	 * `saveProgress()`, the block a save stores at `currentState.extensions.tutorial`:
+	 * `{ completed, skipped, current, endedBySkip }`) · `dispose` (the quest stops
+	 * listening).
 	 */
 	'ui.tutorial.apply': async (args) => {
 		const m = 'ui.tutorial.apply';
@@ -1774,6 +1848,7 @@ const METHODS = {
 				return done(io, null);
 			},
 			tick: ({ io }, op) => done(io, coded('invalid-input', () => tickClock(m, io, op))),
+			save: ({ model, io }) => done(io, model.saveProgress()),
 			dispose: ({ model, io }) => {
 				model.dispose();
 				return done(io, null);
@@ -1789,8 +1864,10 @@ const METHODS = {
 	 * `OnboardingDefinition` (`{ id?, flow?: generic | language, steps? }`; a step
 	 * named like a tutorial lesson is that lesson, any other is completed by the
 	 * host or by its own `completesOn`), read by core. `options`: `skippable?`,
-	 * `completedStepIds?`, `worldName?`, `targetLanguage?`, `questId?` and the
-	 * game's bindings (as `ui.tutorial.create`'s `config`). `now` as there.
+	 * `completedStepIds?`, `worldName?`, `targetLanguage?`, `questId?`,
+	 * `progress?` (a save's `currentState.extensions.tutorial`, read and refused
+	 * as `ui.tutorial.create`'s `config.progress`; restored when the flow starts)
+	 * and the game's bindings (as `ui.tutorial.create`'s `config`). `now` as there.
 	 * `totalSteps` is the flow's step count built against those bindings, the same
 	 * before `start` as after it. view: `{ current, isComplete }`.
 	 */
@@ -1804,8 +1881,9 @@ const METHODS = {
 			optStringValue(m, o.worldName, 'options.worldName');
 			optStringValue(m, o.targetLanguage, 'options.targetLanguage');
 			optStringValue(m, o.questId, 'options.questId');
+			const progress = tutorialProgressArg(m, o.progress, 'options.progress');
 			const bindings = tutorialBindingsOf(m, o, 'options');
-			return [d, { ...o, bindings }, { ...sessionClockOf(m, args.now), calls: [], events: [], hostEvent: null }];
+			return [d, { ...o, bindings, progress }, { ...sessionClockOf(m, args.now), calls: [], events: [], hostEvent: null }];
 		});
 		const pick = (k) => (options[k] !== undefined && options[k] !== null ? { [k]: options[k] } : {});
 		const model = new OnboardingManager(definition, {
@@ -1814,6 +1892,7 @@ const METHODS = {
 			...pick('worldName'),
 			...pick('targetLanguage'),
 			...pick('questId'),
+			progress: options.progress,
 			bindings: options.bindings,
 			now: clockReader(io),
 		});
@@ -1838,7 +1917,10 @@ const METHODS = {
 	 * acting; result: `{ totalSteps, step }`, the current step in full or null) ·
 	 * `state` (reads without acting; result: core's `getState()`, the tutorial
 	 * quest's whole state — its objectives with `completed` and `skipped`, `skipped`
-	 * when a skip ended it — or null before `start`).
+	 * when a skip ended it — or null before `start`) · `save` (reads without acting;
+	 * result: core's `saveProgress()`, the block a save stores; before `start` the
+	 * progress the session was created with, or null when it was given none, so a
+	 * save written then carries the stored block untouched).
 	 */
 	'ui.onboarding.apply': async (args) => {
 		const m = 'ui.onboarding.apply';
@@ -1873,6 +1955,7 @@ const METHODS = {
 			tick: ({ io }, op) => done(io, coded('invalid-input', () => tickClock(m, io, op))),
 			inspect: ({ model, io }) => done(io, { totalSteps: model.totalSteps, step: model.getCurrentStep() }),
 			state: ({ model, io }) => done(io, model.getState()),
+			save: ({ model, io }) => done(io, model.saveProgress()),
 		});
 		return { results, totalSteps: s.model.totalSteps, view: onboardingView(s.model) };
 	},

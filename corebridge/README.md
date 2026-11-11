@@ -167,12 +167,13 @@ game; **meta** = about the bridge itself.
 | `ui.titleFlow.contract` | `{}` → `{ 'ui-title-flow': { entries, labels, messages, slotMessages, defaultTitle, defaultSlotCount, ops, steps } }` | `ui/title-flow` constants (`TITLE_ENTRIES`, …), `save-slots` `SAVE_SLOTS_DEFAULTS`, `ui/title-flow-corpus` ops and steps | P8 title (PL.native-title-rows, U92(1)) |
 | `ui.titleFlow.create` | `{ menu?, savesSession? }` (`menu` core's `TitleFlowInput`, read by core; `savesSession` an open `saves.slots` session the menu reads live) → `{ session, view }` | `ui/title-flow` `titleMenu` | P8 title |
 | `ui.titleFlow.apply` | `{ session, ops: choose, set }` → `{ results: [TitleChoice or null], view }`; a refusal (`busy`, `nothing_to_continue`, `no_saves`, `not_shown`, `unknown_entry`) is a VALUE | `ui/title-flow` `chooseTitleEntry`, `titleMenu` | P8 title |
-| `ui.tutorial.contract` | `{}` → `{ 'quests-tutorial': { objectives, assessmentObjective, flows, ops, runSteps, onboardingSteps, t0 } }` | `TutorialQuestSystem` / `OnboardingManager` constants, `quests/tutorial-corpus` ops, steps and clock | P8 onboarding |
+| `ui.tutorial.contract` | `{}` → `{ 'quests-tutorial': { objectives, assessmentObjective, flows, ops, runSteps, onboardingSteps, t0 }, 'saves-tutorial-progress': { clockStart, extensionKey, blockMembers } }` | `TutorialQuestSystem` / `OnboardingManager` constants, `quests/tutorial-corpus-host` ops, steps and clock; `quests/tutorial-save` `TUTORIAL_EXTENSION_KEY`, `TUTORIAL_BLOCK_MEMBERS` | P8 onboarding; tutorial save (PL.native-tutorial-save, U99(1)) |
 | `ui.tutorial.objectives` | `{ includeAssessment?, bindings? or unbind?, rebind?, bind? }` → `{ objectives }` | `TutorialQuestSystem` `buildTutorialObjectives` (`corpusBindings` for the changes) | P8 onboarding |
-| `ui.tutorial.create` | `{ config?, now? }` → `{ session, title, description, objectives, events, view }` | `game-engine/logic/TutorialQuestSystem` over the session's own `GameEventBus`; view `tutorialStateJson` | P8 onboarding |
-| `ui.tutorial.apply` | `{ session, ops: start, event, complete, completeById, skip, skipNonAssessment, tick, dispose }` → `{ results: [{ result, events }], view }` | same | P8 onboarding |
-| `ui.onboarding.create` | `{ definition?, options?, now? }` → `{ session, totalSteps, view: { current, isComplete } }` | `game-engine/logic/OnboardingManager` | P8 onboarding |
-| `ui.onboarding.apply` | `{ session, ops: start, complete, skip, event, tick, inspect, state }` → `{ results: [{ result, calls, events }], totalSteps, view }` | same (`getState` for `state`) | P8 onboarding |
+| `ui.tutorial.readProgress` | `{ stored? }` (a save's `currentState.extensions.tutorial`) → `{ ok: true, progress }` or `{ ok: false, keys }` (a VALUE, as core's load refuses it `unreadable_tutorial`) | `quests/tutorial-save` `readTutorialBlock` | tutorial save (PL.native-tutorial-save, U99(1)) |
+| `ui.tutorial.create` | `{ config?, now? }` (`config.progress`: a stored tutorial block, read by `readTutorialBlock`; unreadable is `[invalid-input]`) → `{ session, title, description, objectives, events, view }` | `game-engine/logic/TutorialQuestSystem` over the session's own `GameEventBus` (`progress` restores); view `tutorialStateJson` | P8 onboarding; tutorial save |
+| `ui.tutorial.apply` | `{ session, ops: start, event, complete, completeById, skip, skipNonAssessment, tick, save, dispose }` → `{ results: [{ result, events }], view }` (`save`: `saveProgress()`, the block a save stores) | same | P8 onboarding; tutorial save |
+| `ui.onboarding.create` | `{ definition?, options?, now? }` (`options.progress` as `ui.tutorial.create`'s `config.progress`) → `{ session, totalSteps, view: { current, isComplete } }` | `game-engine/logic/OnboardingManager` | P8 onboarding; tutorial save |
+| `ui.onboarding.apply` | `{ session, ops: start, complete, skip, event, tick, inspect, state, save }` → `{ results: [{ result, calls, events }], totalSteps, view }` | same (`getState` for `state`, `saveProgress` for `save`) | P8 onboarding; tutorial save |
 | `ui.trade` | `{ state, ops: takeFromContainer, takeAllFromContainer, buy, sell }` → `{ results, state }` | `ui/trade-model` `TradeModel` | P6 |
 | `quest.completion.create` | `{ quests? }` → `{ session, view }` | `game-engine/logic/QuestCompletionEngine` | P3 |
 | `quest.completion.apply` | `{ session, ops: addQuest, removeQuest, clear, trackEvent, handleGameEvent, completeObjective, trackByTrigger, revealHint, checkTimedObjectives, restoreObjectiveStates }` → `{ results, events, view }` | same | P3 |
@@ -1059,6 +1060,74 @@ PL.tutorial-corpus-bundle, U94(2)), which reach no save module: at 72c658c the
 repointed imports alone take the bundle from 1,639,824 bytes to 1,610,712
 (−29,112) and 188 core modules to 158.
 
+### The tutorial's save block: progress in, `save` out (PL.native-tutorial-save)
+
+Core's save carries the tutorial's progress (core's PL.tutorial-progress-save,
+U97(4)): the registered extension `currentState.extensions.tutorial`, `{ completed,
+skipped, current, endedBySkip }` (core's `TUTORIAL_BLOCK_MEMBERS`, in the order its
+writer stores them). The tutorial and onboarding rows carry it both ways (U99(1)),
+so an engine's save writes the block from a row and its load restores it through
+one, and decides nothing itself:
+
+- **`ui.tutorial.readProgress { stored? }`** — core's `readTutorialBlock` over a
+  save's stored block. Absent (a new game's save, or one written before the block)
+  and null (the registry default after `migrateExtensions`) are no block: `{ ok:
+  true, progress: null }`, and the tutorial starts fresh. A readable block answers
+  `{ ok: true, progress }` as core reads it (unknown members dropped). An
+  unreadable one is a VALUE, `{ ok: false, keys }`, naming every unreadable member
+  in ascending order (empty when the block is not an object): core's load refuses
+  that save as `unreadable_tutorial`.
+- **`ui.tutorial.create`'s `config.progress`** and **`ui.onboarding.create`'s
+  `options.progress`** take the stored block as it is. They read it with
+  `readTutorialBlock` and refuse exactly what `readProgress` answers `ok: false`
+  for, as `[invalid-input]` with the same member names. Core restores it without
+  raising anything: completed lessons done, skipped ones done by a skip, and the
+  first lesson left in THIS game's order current, which `start` then announces;
+  the clock counts from that `start`. So **a mid-tutorial save loaded by a game
+  that now teaches a new lesson before the saved `current` makes the new lesson
+  current** (core's rule, confirmed by U99(2)); a block whose `current` is null
+  restores a tutorial that is over. Ids the game does not run are kept for the
+  next save.
+- **The `save` op** on `ui.tutorial.apply` and `ui.onboarding.apply` reads without
+  acting: its result is core's `saveProgress()`, the block the engine stores at
+  `currentState.extensions.tutorial`. An onboarding session's `save` before
+  `start` is the progress it was created with, or null when it was given none (the
+  save then carries the stored block untouched).
+- **`ui.tutorial.contract`** also states the progress corpus's data tables under
+  `saves-tutorial-progress`: `extensionKey` (`tutorial`), `blockMembers` and the
+  corpus clock's `clockStart`. The corpus's `ops`, `tutorialSteps` and
+  `onboardingSteps` are core's runner lists, exported only by
+  `quests/tutorial-progress-corpus`, whose comparator import is the save-file code
+  the vendor tool refuses; the runner holds them to the steps it maps instead.
+
+**The evidence** is core's `conformance/saves/tutorial-progress.json` (23 cases at
+603063d: tutorial 18, onboarding 5), copied byte for byte with the save corpora
+(`SAVES_CORPUS_FILES`) and driven by `tests/title_corpus.cpp` as the ctest
+`tutorial_progress_corpus`: `stored` goes to `readProgress` (its answer is the
+case's `read`), then, when readable, as the create row's `progress` on a host clock
+at the file's `contract.clockStart`. A `save` op right after `create` gives
+`start.saved`, and one op per step follows. When unreadable, the create row must
+refuse the same block as `[invalid-input]`. `tutorial_progress_corpus_negative`
+(`tests/title-negative/tutorial-progress-wrong.json`) must see a wrong contract
+table, a wrong runner list, four wrong answers (among them the saved `current`
+kept where the game now teaches a new lesson) and an undrivable step, each
+reported. The hand cases in `tests/cases/bridge-tutorial-save.json` pin absent vs
+null, the refusal text and code, the new-lesson rule once more, and the save rows'
+answers the pin changed.
+
+**What the core pin changed in the save rows.** `tutorial` is a registered
+extension at 603063d. `save.rules`' `extensionKeys` gains it (19 keys), and
+`save.migrate` and `save.decode` give a save without the key `extensions.tutorial:
+null`, the registry default. A save that carries a block keeps it as a registered
+extension, no longer as an orphan. Engines that compare a migrated save field by
+field see the new key.
+
+**Cost.** One core module for the rows (`quests/tutorial-save`, which imports only
+a type; 165 → 166). The pin alone takes the bundle from 1,659,828 bytes to
+1,663,154 (+3,326: the restore and `saveProgress` code in `TutorialQuestSystem` and
+`OnboardingManager`, and the registry entry). The rows take it to 1,669,036
+(+5,882), for +9,208 in all. The 23 cases take about 5 ms under QuickJS.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
@@ -1151,6 +1220,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `audio_ground_corpus`, `audio_ground_corpus_negative` | core's ground reading corpus driven whole through the `audio.ground.*` rows (48 cases, 0 undriven; every case whose world lists two or more settlements, ground surfaces or roads driven again with them reversed; its contract's data held to `audio.ground.contract`), and Unreal's sidewalk for a footpath in the contract, an undriven op and six answers an engine keeping one of its interim readings would give seen as wrong |
 | `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (87 cases, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
+| `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's
 OWN corpora (saves, the UI matrices, weather progression, genre resolution,

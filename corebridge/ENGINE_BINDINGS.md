@@ -322,6 +322,33 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   at this library's pin and drive each case as `tests/title_corpus.cpp` does (its
   header lists the mapping per op; the sessions open with `now` = the file's
   `contract.t0`).
+- **The tutorial's save block (Unreal's `P8.unreal.tutorial-save`, after
+  PL.native-tutorial-save; U99(1), U97(4)).** Core's save carries the tutorial's
+  progress as the registered extension `currentState.extensions.tutorial`
+  (`{ completed, skipped, current, endedBySkip }`), and the rows carry it both ways,
+  so the game decides nothing about it. Read only, at unreal origin/main b577c11:
+  `Portable/InsimulTitleRows.cpp:227` `OnboardingArgs` opens the flow with no
+  progress; `FOnboardingSession::Apply` (`:339`) sends each op with `state` and
+  `inspect`; `Portable/InsimulVillageSave.cpp:36` `RegisteredExtensions()` has no
+  `tutorial`, and the block table ends at `unreadable_progression` (`:1946`, `:1964`).
+
+  | The game's need | Row (and what of its answer) |
+  |---|---|
+  | Load: is the stored block readable? | `ui.tutorial.readProgress { stored }` with the save's `currentState.extensions.tutorial` (absent stays absent) → `{ ok: true, progress }` (null: start fresh) or `{ ok: false, keys }`, which core's load refuses as `unreadable_tutorial` |
+  | Load: restore the flow | `ui.onboarding.create { options: { …, progress: <the stored block> } }` (or `ui.tutorial.create`'s `config.progress`); an unreadable block is `[invalid-input]`. `start` then announces the restored lesson; a lesson the game now teaches before the saved `current` is the one current (U99(2)) |
+  | Save: what to write | op `save` on `ui.onboarding.apply` / `ui.tutorial.apply` → `saveProgress()`, written as `currentState.extensions.tutorial`; before `start` it is the block the session was given (null when none, so the save keeps the stored block) |
+  | New Game | create with no `progress` |
+  | The block's key and members | `ui.tutorial.contract` → `saves-tutorial-progress.extensionKey`, `.blockMembers` |
+
+  Unreal's own village save (`InsimulVillageSave`, an interim copy of core's save
+  file) must also register `tutorial`, read and write the block, and refuse
+  `unreadable_tutorial` after `unreadable_progression`, against core's
+  `conformance/saves/village-state.json` (298 cases at 603063d; native has no
+  village-state rows). `save.migrate` and `save.decode` already give a save
+  without the key `extensions.tutorial: null`. Re-vendor
+  `conformance/saves/tutorial-progress.json` and drive it as `tests/title_corpus.cpp`
+  does (its header lists the mapping; sessions open with `now` = the file's
+  `contract.clockStart`).
 - **What E does by a prop (Unreal's P8 binding, after PL.native-interact-target;
   U94(3)).** Unreal's interim interact rule — the P8 prop rule in
   `Private/InsimulPlayerTitle.cpp` and the P6 target in

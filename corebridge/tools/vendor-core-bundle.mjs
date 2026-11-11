@@ -43,7 +43,10 @@
 // `ui.rulesPanel` and `mechanics.run` rows. The save-slots corpus is copied the
 // same way (PL.native-catchup, P1.core-slots): `conformance/saves/slots.json` at
 // its core path under vendor/core/; tests/saves_slots_corpus.cpp drives it
-// through the `saves.slots.create` / `saves.slots.apply` session rows. The P6
+// through the `saves.slots.create` / `saves.slots.apply` session rows; beside it
+// `conformance/saves/tutorial-progress.json` (PL.native-tutorial-save), which
+// tests/title_corpus.cpp drives through the `ui.tutorial.*` and
+// `ui.onboarding.*` rows. The P6
 // corpora are copied the same way (PL.native-props-rows, U89(2)):
 // `conformance/props/{containers,documents,doors,notice-board}.json` and
 // `conformance/ui/inventory-cases.json`; tests/props_corpus.cpp drives them
@@ -146,10 +149,14 @@ const P9A_CORPUS_FILES = [
 ];
 const P9A_COPY_ROOTS = ['conformance/modules', 'conformance/ui'];
 
-// core's save-slots corpus (PL.native-catchup; P1.core-slots, U83(1)), copied
-// verbatim the same way. Only `slots.json` of `conformance/saves/`: the rest of
-// that directory is the save-file corpora emit-bridge-cases.mjs transcribes.
-const SAVES_CORPUS_FILES = ['conformance/saves/slots.json'];
+// core's save corpora that rows here run, copied verbatim the same way: the
+// save-slots corpus (PL.native-catchup; P1.core-slots, U83(1)), driven through the
+// `saves.slots.*` rows, and the tutorial progress corpus (PL.native-tutorial-save,
+// U99(1); core's PL.tutorial-progress-save), driven through the `ui.tutorial.*`
+// and `ui.onboarding.*` rows by tests/title_corpus.cpp. Only these files of
+// `conformance/saves/`: the rest of that directory is the save-file corpora
+// emit-bridge-cases.mjs transcribes (village-state.json has no rows here).
+const SAVES_CORPUS_FILES = ['conformance/saves/slots.json', 'conformance/saves/tutorial-progress.json'];
 
 // core's P6 corpora (PL.native-props-rows, U89(2); P6.core), copied verbatim the
 // same way: the four props files and the inventory panel's cases. The inventory
@@ -365,7 +372,7 @@ function p9aFilesAtPin(src) {
   return filesAtPin(src, P9A_CORPUS_FILES, 'the P9a rows');
 }
 
-/** The vendored save-slots corpus files on disk (any file under their directories), sorted. */
+/** The vendored save corpus files on disk (any file under their directories), sorted. */
 function savesFilesOnDisk() {
   const out = [];
   for (const dir of new Set(SAVES_CORPUS_FILES.map((rel) => path.dirname(rel)))) {
@@ -446,9 +453,9 @@ function audioFilesAtPin(src) {
   return filesAtPin(src, AUDIO_CORPUS_FILES, 'the audio.ground rows');
 }
 
-/** core's save-slots corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
+/** core's save corpora (slots, tutorial progress) at the pin, as { 'vendor/core/<path>': Buffer }. */
 function savesFilesAtPin(src) {
-  return filesAtPin(src, SAVES_CORPUS_FILES, 'the saves.slots rows');
+  return filesAtPin(src, SAVES_CORPUS_FILES, 'the saves.slots and tutorial progress rows');
 }
 
 /** Exactly `files` (core-relative) at the pin, as { 'vendor/core/<path>': Buffer }. */
@@ -779,7 +786,7 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
-    // The save-slots corpus: the same exact-set replacement.
+    // The save corpora (slots, tutorial progress): the same exact-set replacement.
     const saves = savesFilesAtPin(src);
     for (const rel of savesFilesOnDisk()) if (!(rel in saves)) fs.rmSync(path.join(BRIDGE, rel));
     for (const [rel, bytes] of Object.entries(saves)) {
@@ -870,7 +877,7 @@ async function write(coreDir) {
     console.log(`  layout corpus files (${Object.keys(layout).length}), copied unchanged`);
     console.log(`  pack corpus and catalog files (${Object.keys(packs).length}), copied unchanged`);
     console.log(`  P9a corpus files (${Object.keys(p9a).length}), copied unchanged`);
-    console.log(`  save-slots corpus files (${Object.keys(saves).length}), copied unchanged`);
+    console.log(`  save corpus files, slots and tutorial progress (${Object.keys(saves).length}), copied unchanged`);
     console.log(`  P6 props and inventory corpus files (${Object.keys(props).length}), copied unchanged`);
     console.log(`  P8 title-flow and tutorial corpus files (${Object.keys(title).length}), copied unchanged`);
     console.log(`  camera movement corpus files (${Object.keys(camera).length}), copied unchanged`);
@@ -925,7 +932,7 @@ async function check(coreDir) {
   }
   const savesFiles = savesFilesOnDisk();
   for (const rel of SAVES_CORPUS_FILES) {
-    if (!savesFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the save-slots gate would run nothing`);
+    if (!savesFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the save-slots or tutorial progress gate would run nothing`);
   }
   const propsFiles = propsFilesOnDisk();
   for (const rel of PROPS_CORPUS_FILES) {
@@ -1003,7 +1010,7 @@ async function check(coreDir) {
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
-      `${savesFiles.length} save-slots, ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
+      `${savesFiles.length} saves (slots, tutorial progress), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
       `${cameraFiles.length} camera movement and ${audioFiles.length} audio ground corpus file(s), core ${manifest.coreCommit}, ` +
       `esbuild ${manifest.esbuild})`,
   );
@@ -1067,7 +1074,7 @@ async function check(coreDir) {
       const saves = savesFilesAtPin(src);
       const wantSaves = Object.keys(saves).sort();
       if (JSON.stringify(wantSaves) !== JSON.stringify(savesFiles)) {
-        fail(`DRIFT: core ${pin.coreCommit}'s save-slots corpus is ${wantSaves.join(', ')} but vendor/core/ holds ${savesFiles.join(', ')}`);
+        fail(`DRIFT: core ${pin.coreCommit}'s save corpora are ${wantSaves.join(', ')} but vendor/core/ holds ${savesFiles.join(', ')}`);
       }
       for (const rel of wantSaves) {
         if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(saves[rel])) {
@@ -1117,7 +1124,7 @@ async function check(coreDir) {
       console.log(
         `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
           `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s), all ` +
-          `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save-slots corpus file(s), all ` +
+          `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save (slots, tutorial progress) corpus file(s), all ` +
           `${wantProps.length} P6 props/inventory corpus file(s), all ${wantTitle.length} P8 title/tutorial ` +
           `corpus file(s), all ${wantCamera.length} camera movement corpus file(s) and all ${wantAudio.length} audio ground ` +
           `corpus file(s) byte for byte`,

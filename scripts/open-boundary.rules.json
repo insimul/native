@@ -686,6 +686,15 @@
     },
     {
       "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/quests/tutorial-save",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of ui.tutorial.readProgress, the progress the ui.tutorial.create and ui.onboarding.create rows take, and ui.tutorial.contract's saves-tutorial-progress tables (readTutorialBlock, TUTORIAL_EXTENSION_KEY, TUTORIAL_BLOCK_MEMBERS; PL.native-tutorial-save, rulings U99(1), U97(4) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. The module imports only a type, so it brings no save-file code. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-tutorial-save (Features Gauntlet PL.native-tutorial-save)",
+      "reviewedAt": "2026-11-11"
+    },
+    {
+      "rule": "undeclared-dependency",
       "path": "tests/open_boundary_selftest.mjs",
       "specifier": "${CLOSED_BACKEND}",
       "classification": "keep",

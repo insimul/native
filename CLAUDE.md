@@ -451,8 +451,13 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` 6667999 (2026-11-10,
-  PL.native-ground-row: PL.movement-prose-split's split of core's movement
+  and pin disagree. The pin today is core `main` 603063d (2026-11-11,
+  PL.native-tutorial-save: PL.tutorial-progress-save's tutorial save block — the
+  registered extension `tutorial`, `readTutorialBlock`, and the `progress` option
+  and `saveProgress()` of `TutorialQuestSystem` and `OnboardingManager` — which the
+  tutorial and onboarding rows now carry, with its corpus; and
+  PL.stale-corpora-checks, which changes nothing vendored here). Before that,
+  core `main` 6667999 (2026-11-10, PL.native-ground-row: PL.movement-prose-split's split of core's movement
   contract, after which the `camera.movement.*` rows import
   `camera/movement-rules` and the bundle leaves the prose tables out, and
   PL.core-doc-fixes; the `audio.ground.*` rows run PL.ground-from-ir's reading,
@@ -494,7 +499,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, camera movement and audio ground ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement and audio ground ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -592,6 +597,21 @@
   into the bundle (−29,112 bytes at 72c658c), and never restated in `entry.js`. An
   op's `events` are what the quest raised on the session's bus, never the
   host's own event.
+- **The tutorial save rows (PL.native-tutorial-save, U99(1)) run core's
+  `conformance/saves/tutorial-progress.json` UNCHANGED**, copied with the save
+  corpora (`SAVES_CORPUS_FILES`, beside `slots.json`) and driven by the title runner
+  as `tutorial_progress_corpus` (+ `tutorial_progress_corpus_negative`). The save
+  block is core's: `ui.tutorial.readProgress` answers core's `readTutorialBlock`
+  (an unreadable block is a VALUE, `{ ok: false, keys }`); `ui.tutorial.create`'s
+  `config.progress` and `ui.onboarding.create`'s `options.progress` read the stored
+  block with it and refuse exactly those blocks as `[invalid-input]`; the `save` op
+  on both apply rows is core's `saveProgress()`. Import `quests/tutorial-save`
+  (it imports only a type), never `quests/tutorial-progress-corpus` (its comparator
+  is the save-file code `UNBUNDLED_CORE_MODULES` refuses), which is why
+  `ui.tutorial.contract` states the progress file's `clockStart`, `extensionKey`
+  and `blockMembers` but not its runner lists; the runner holds those to the steps
+  it maps. The restore rule is core's and is not restated: a lesson the game now
+  teaches before a save's `current` becomes current (U99(2)).
 - **The interact rows (PL.native-interact-target, U94(3)) run core's
   `conformance/props/interactables.json` UNCHANGED**, copied with the props set
   (`PROPS_CORPUS_FILES`) and driven by the same runner as
