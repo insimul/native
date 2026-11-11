@@ -288,6 +288,18 @@ function layoutFilesAtPin(src) {
   return out;
 }
 
+/** Every file under `abs`, recursively, as paths relative to it, sorted. */
+function filesUnder(abs, rel = '') {
+  if (!fs.existsSync(abs)) return [];
+  const out = [];
+  for (const e of fs.readdirSync(abs, { withFileTypes: true })) {
+    const r = rel ? `${rel}/${e.name}` : e.name;
+    if (e.isDirectory()) out.push(...filesUnder(path.join(abs, e.name), r));
+    else out.push(r);
+  }
+  return out.sort();
+}
+
 /** Every *.json under `abs`, recursively, as paths relative to it, sorted. */
 function jsonFilesUnder(abs, rel = '') {
   if (!fs.existsSync(abs)) return [];
@@ -893,6 +905,17 @@ async function check(coreDir) {
     ...ADAPTER_MODULES,
     ...TOOL_INPUTS,
   ];
+  // Every file under vendor/core/ is claimed by one set above (PL.native-camera-movement):
+  // a copied corpus no set lists would ship with no hash, so drift in it would pass
+  // unseen (a set dropped from this tool, its file left behind on disk).
+  // VENDORED.json is the record itself; a dotfile (a desktop's .DS_Store) is not a corpus.
+  const unclaimed = filesUnder(OUT_DIR)
+    .filter((rel) => rel !== 'VENDORED.json' && !rel.split('/').some((seg) => seg.startsWith('.')))
+    .map((rel) => `vendor/core/${rel}`)
+    .filter((rel) => !expectedList.includes(rel));
+  if (unclaimed.length) {
+    fail(`${unclaimed.join(', ')} is under vendor/core/ but in no copied set — nothing hashes it; list it in a set or remove it`);
+  }
   const hashes = hashFiles(expectedList);
   const inputs = [...ADAPTER_MODULES, ...TOOL_INPUTS];
   for (const rel of expectedList) {

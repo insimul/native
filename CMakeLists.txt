@@ -821,6 +821,13 @@ set_tests_properties(props_interactables_corpus_negative PROPERTIES
 # (the file's order rule, as core's runner checks it), the contract's data tables
 # held to camera.movement.contract. Unreal's P7 cell binds these rows.
 add_test(NAME camera_movement_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/camera/movement.json)
+# The order run must have happened, and nothing may be left undriven: with no
+# order-dependent row there is no wrong answer for the reversed run to catch, so
+# the ctest asserts that the run reports it (a regex replaces the exit code, and
+# "props_corpus: PASS" is printed only when nothing failed). No ';' in it: CMake
+# would split the property into a list of regexes, any one of which passes.
+set_tests_properties(camera_movement_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "camera-movement: [0-9]+ case[(]s[)], driven [^\n]*, step [0-9]+. 0 undriven\n  order: [1-9][0-9]* case[(]s[)] driven again with solids and exclude reversed, the same answer\n.*props_corpus: PASS")
 # Its negative control (tests/props-negative/movement-wrong.json, made from the
 # vendored file): Unreal's 45 cm step in the contract, a slopeAtRest op with no
 # case, and six wrong cases, each the answer an engine keeping one of its interim
