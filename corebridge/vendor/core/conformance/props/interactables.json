@@ -1,13 +1,13 @@
 {
   "area": "props-interactables",
-  "description": "What the interact key does by a prop, and which one thing it acts on (PL.examine-props, U49(3); the Unreal P8 critic's m1 and its collision with P6's E actions): each stated prop (entities.props) has one meaning, read_sign, examine, open_board or none; what reading and examining say and raise; where the notice board is posted; and, where the player stands, the one target E acts on among a talk villager, pick-ups, containers, the board, a door and the props. Ops: noun {archetypes} -> {nouns}; meanings {props, board? | settlement?} -> {board, meanings, count}; host {props, settlement} -> {host}; interact {props, board? | settlement?} -> {results: [{id, ok, action, line, events} | {id, ok: false, refusal}]}; target {at, panel?, villager?, pickups?, containers?, buildings?, props?, board? | settlement?, ranges?, stands?: [{name, at, ...overrides}]} -> {ok, target} | {ok: false, refusal} (with stands: {board, stands: [{at, ok, target}]}). board is {host, name}; given a settlement instead, the board is posted by host and named for it. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
+  "description": "What the interact key does by a prop, and which one thing it acts on (PL.examine-props, U49(3); the Unreal P8 critic's m1 and its collision with P6's E actions): each stated prop (entities.props) has one meaning, read_sign, examine, open_board or none; what reading and examining say and raise; where the notice board is posted; and, where the player stands, the one target E acts on among a talk villager, pick-ups, containers, the board, a door and the props. Ops: noun {archetypes} -> {nouns}; meanings {props, board? | settlement?} -> {board, meanings, count}; host {props, settlement} -> {host}; interact {props | prop, board? | settlement?} -> {results: [{id, ok, action, line, events} | {id, ok: false, refusal}]}; target {at, panel?, villager?, pickups?, containers?, buildings?, props?, board? | settlement?, ranges?, stands?: [{name, at, ...overrides}]} -> {ok, target} | {ok: false, refusal} (with stands: {board, stands: [{at, ok, target}]}). board is {host, name}; given a settlement instead, the board is posted by host and named for it. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
   "version": 1,
   "tolerance": 1e-9,
   "sources": [
     "unreal feat/p8-unreal 981b59b Source/InsimulRuntime/Private/InsimulPlayerTitle.cpp: PropNoun (71-86), IsSign / IsOfferedProp (88-89), PropToInteract (572-598, kPropRange 260 cm), PropPrompt (600-609), InteractWithProp (611-641: \"The sign reads: ...\", \"The sign is blank.\", \"You examine the <noun>.\" / \": <text>.\", sign_read or object_examined).",
     "unreal origin/main 360c482 InsimulPlayerCharacter.cpp InteractWithNearest (425-470: an open panel closes; a P6 target strictly nearer than the talk villager wins) and the prompt (1399-1410: Pick up / Open the / Read / Enter); InsimulVillageProps.cpp the board on the sign nearest the settlement centre (414-446) and PropsTargetNear (953-1002: 220 cm, the board 100 cm more, a door at doorPrompt); InsimulPlayerCharacter.h InteractRange 350 cm.",
     "pipelines origin/main pipelines/game-export/settlement-dressing.ts DressingPropIR (entities.props: id, kind, archetype, position, text on a shop sign and a market stall, settlementId, buildingId, forCharacterId).",
-    "Brightwater: insimul-loops features/state/lot-sizing/round-3/ir/brightwater-ir-lot-sizing-r3.json (exported 2026-10-25): its 78 stated props, its one settlement and four of its buildings (interior null).",
+    "Brightwater export, pipelines feat/lot-sizing 1a22331 (L3 lot-sizing round 3, brightwater-ir-lot-sizing-r3.json, exported 2026-10-25): its 78 stated props, its one settlement and four of its buildings (interior null).",
     "core src/props/doors.ts doorPrompt; src/language-learning/world-words.ts examineNearest (the language world's objects, whose sign_read and object_examined shapes these events share); src/game-engine/logic/TutorialQuestSystem.ts (lessons completing on sign_read and object_examined)."
   ],
   "contract": {
@@ -6059,6 +6059,896 @@
               "id": "qobj_synthetic_0",
               "prompt": "Pick up Journal",
               "distance": 0.7
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "interact: a lone prop is stated as prop, in place of props: its one result",
+      "op": "interact",
+      "input": {
+        "board": null,
+        "prop": {
+          "id": "sign_lone",
+          "archetype": "prop.structural.sign",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "text": "The Gilded Goose"
+        }
+      },
+      "expected": {
+        "results": [
+          {
+            "id": "sign_lone",
+            "ok": true,
+            "action": "read_sign",
+            "line": "The sign reads: The Gilded Goose",
+            "events": [
+              {
+                "type": "sign_read",
+                "signId": "sign_lone",
+                "objectId": "sign_lone",
+                "targetText": "The Gilded Goose",
+                "nativeText": "The Gilded Goose"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "interact: given a settlement, the board is posted among the props stated, so a lone sign is the board host and opens the board",
+      "op": "interact",
+      "input": {
+        "settlement": {
+          "id": "s1",
+          "name": "Brightwater",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "prop": {
+          "id": "sign_lone",
+          "archetype": "prop.structural.sign",
+          "position": {
+            "x": 4,
+            "y": 0,
+            "z": 0
+          },
+          "text": "Malvern's Bakery",
+          "settlementId": "s1"
+        }
+      },
+      "expected": {
+        "results": [
+          {
+            "id": "sign_lone",
+            "ok": true,
+            "action": "open_board",
+            "line": null,
+            "events": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: stated ranges narrow the reach: what rangesM reaches is out, the edge of each stated range is in",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "talk": 1,
+          "pick_up": 0.5,
+          "open_container": 0.6,
+          "open_board": 0.8,
+          "read_sign": 0.9,
+          "examine": 1.2
+        },
+        "board": {
+          "host": "sign_board",
+          "name": "Brightwater"
+        },
+        "stands": [
+          {
+            "name": "a villager at 2 m is out (talk 1): nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 2,
+                "y": 0,
+                "z": 0
+              }
+            }
+          },
+          {
+            "name": "(control) a villager at exactly 1 m is in (talk 1): talk",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              }
+            }
+          },
+          {
+            "name": "a pick-up at 1 m is out (pick_up 0.5): the sign at 0.8 m is read instead",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "pickups": [
+              {
+                "id": "apple_0",
+                "name": "Apple",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ],
+            "props": [
+              {
+                "id": "sign_near",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0.8
+                },
+                "text": "Inn"
+              }
+            ]
+          },
+          {
+            "name": "(control) a pick-up at exactly 0.5 m is in (pick_up 0.5): picked up",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "pickups": [
+              {
+                "id": "apple_0",
+                "name": "Apple",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0.5
+                }
+              }
+            ]
+          },
+          {
+            "name": "a container at 1 m is out (open_container 0.6): nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "containers": [
+              {
+                "id": "chest_1",
+                "label": "Chest",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the board host at 1 m is out (open_board 0.8): nothing (it is never read as a sign)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "sign_board",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "text": "Malvern's Bakery"
+              }
+            ]
+          },
+          {
+            "name": "a sign at 1 m is out (read_sign 0.9): nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "sign_far",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "text": "Far"
+              }
+            ]
+          },
+          {
+            "name": "a crate at 1.1 m is in (examine 1.2) and a sign at 1 m is out (read_sign 0.9): the crate is examined",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "sign_far",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "text": "Far"
+              },
+              {
+                "id": "crate_1",
+                "archetype": "prop.container.crate",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1.1
+                }
+              }
+            ]
+          },
+          {
+            "name": "a crate at 2 m is out (examine 1.2): nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "crate_1",
+                "archetype": "prop.container.crate",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": {
+          "host": "sign_board",
+          "name": "Brightwater"
+        },
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "talk",
+              "kind": "villager",
+              "id": "v1",
+              "prompt": "Talk to Ada",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_near",
+              "prompt": "Read the sign",
+              "distance": 0.8
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "pick_up",
+              "kind": "pickup",
+              "id": "apple_0",
+              "prompt": "Pick up Apple",
+              "distance": 0.5
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "crate_1",
+              "prompt": "Examine the crate",
+              "distance": 1.1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: stated ranges widen the reach: what rangesM leaves out is in, just past each stated range is out",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "talk": 6,
+          "pick_up": 4,
+          "open_container": 4.5,
+          "open_board": 5,
+          "read_sign": 3.5,
+          "examine": 3
+        },
+        "board": {
+          "host": "sign_board",
+          "name": "Brightwater"
+        },
+        "stands": [
+          {
+            "name": "a villager at 5 m is in (talk 6): talk",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 5,
+                "y": 0,
+                "z": 0
+              }
+            }
+          },
+          {
+            "name": "(control) a villager at 6.1 m is out (talk 6): nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 6.1,
+                "y": 0,
+                "z": 0
+              }
+            }
+          },
+          {
+            "name": "a pick-up at 3.9 m is in (pick_up 4): picked up",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "pickups": [
+              {
+                "id": "apple_0",
+                "name": "Apple",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 3.9
+                }
+              }
+            ]
+          },
+          {
+            "name": "a container at 4.4 m is in (open_container 4.5): opened",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "containers": [
+              {
+                "id": "chest_1",
+                "label": "Chest",
+                "position": {
+                  "x": -4.4,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the board host at 4.9 m is in (open_board 5): the board",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "sign_board",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -4.9
+                },
+                "text": "Malvern's Bakery"
+              }
+            ]
+          },
+          {
+            "name": "a sign at 3.4 m is in (read_sign 3.5) and a crate at 3.1 m is out (examine 3): the sign is read though the crate is nearer",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "crate_1",
+                "archetype": "prop.container.crate",
+                "position": {
+                  "x": 3.1,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "id": "sign_far",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 3.4
+                },
+                "text": "Far"
+              }
+            ]
+          },
+          {
+            "name": "a crate at 2.9 m is in (examine 3): examined",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "crate_1",
+                "archetype": "prop.container.crate",
+                "position": {
+                  "x": 2.9,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "a pick-up at 3 m is in (pick_up 4): picked up before a sign at 1 m is read",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "pickups": [
+              {
+                "id": "apple_0",
+                "name": "Apple",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ],
+            "props": [
+              {
+                "id": "sign_near",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                },
+                "text": "Inn"
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": {
+          "host": "sign_board",
+          "name": "Brightwater"
+        },
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "talk",
+              "kind": "villager",
+              "id": "v1",
+              "prompt": "Talk to Ada",
+              "distance": 5
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "pick_up",
+              "kind": "pickup",
+              "id": "apple_0",
+              "prompt": "Pick up Apple",
+              "distance": 3.9
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_1",
+              "prompt": "Open the chest",
+              "distance": 4.4
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "open_board",
+              "kind": "prop",
+              "id": "sign_board",
+              "prompt": "Read the Brightwater notice board",
+              "distance": 4.9
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_far",
+              "prompt": "Read the sign",
+              "distance": 3.4
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "crate_1",
+              "prompt": "Examine the crate",
+              "distance": 2.9
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "pick_up",
+              "kind": "pickup",
+              "id": "apple_0",
+              "prompt": "Pick up Apple",
+              "distance": 3
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: stated ranges with no stands: a villager at 4 m is talked to (talk 4.5) before a sign at 1 m is read",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "talk": 4.5
+        },
+        "villager": {
+          "id": "v1",
+          "name": "Ada",
+          "position": {
+            "x": 0,
+            "y": 0,
+            "z": 4
+          }
+        },
+        "props": [
+          {
+            "id": "sign_near",
+            "archetype": "prop.structural.sign",
+            "position": {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            "text": "Inn"
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": {
+          "action": "talk",
+          "kind": "villager",
+          "id": "v1",
+          "prompt": "Talk to Ada",
+          "distance": 4
+        }
+      }
+    },
+    {
+      "name": "target: ranges states only what it overrides; every range it leaves out keeps rangesM",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "examine": 1
+        },
+        "stands": [
+          {
+            "name": "a crate at 2 m is out (examine 1): nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "crate_1",
+                "archetype": "prop.container.crate",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "a sign at 2 m is in (read_sign keeps 2.6): read, the crate beside it out",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "crate_1",
+                "archetype": "prop.container.crate",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "id": "sign_mid",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 2
+                },
+                "text": "Inn"
+              }
+            ]
+          },
+          {
+            "name": "a villager at 3 m is in (talk keeps 3.5): talk",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 3,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_mid",
+              "prompt": "Read the sign",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "talk",
+              "kind": "villager",
+              "id": "v1",
+              "prompt": "Talk to Ada",
+              "distance": 3
             }
           }
         ]

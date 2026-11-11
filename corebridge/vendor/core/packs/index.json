@@ -2,8 +2,8 @@
   "schema": "insimul.pack-index/1",
   "description": "The 48 system packs and the catalog systems each covers (SP.spec Appendix A, approved U51; the starting list, Q13). Every one of the 229 pack systems is assigned exactly once; the other 14 catalog systems are not packs. dependsOn is the pack's requires; a pack's manifest, once authored, must agree with its row (validateSystemPackSet). The composer reads this file. Changes from Appendix A are listed in changes, one line each.",
   "source": {
-    "spec": "insimul-loops features/sp/SPEC.md Appendix A (a804fc6, approved U51)",
-    "catalog": "insimul-loops features/catalog/catalog.json (e38d941): 243 systems = 229 in packs + 11 world layer + 3 web app"
+    "spec": "the system-pack spec (SP.spec), Appendix A (a804fc6, approved U51)",
+    "catalog": "the Features Gauntlet's feature catalog (e38d941): 243 systems = 229 in packs + 11 world layer + 3 web app"
   },
   "packs": [
     {

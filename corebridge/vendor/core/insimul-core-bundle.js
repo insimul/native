@@ -6996,6 +6996,389 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return Object.values(GENRE_REGISTRY);
   }
 
+  // @insimul/core/src/camera/camera-modes.ts
+  var round4 = (v) => Math.round(v * 1e4) / 1e4;
+  var degreesOf = (rad) => round4(rad * 180 / Math.PI);
+  var pitchOfBeta = (beta) => round4(degreesOf(beta) - 90);
+  function freezeParams(p) {
+    return Object.freeze({
+      ...p,
+      zoom: p.zoom ? Object.freeze({ ...p.zoom }) : null,
+      offset: Object.freeze({ ...p.offset }),
+      pitchDeg: Object.freeze({ ...p.pitchDeg }),
+      fov: Object.freeze({ ...p.fov }),
+      collision: p.collision ? Object.freeze({ ...p.collision }) : null,
+      movement: Object.freeze({ ...p.movement })
+    });
+  }
+  var BABYLON = "babylon bfcdeb2 rendering/CameraManager.ts CAMERA_CONFIGS";
+  var CAMERA_MODE_PARAMETERS = Object.freeze({
+    first_person: freezeParams({
+      mode: "first_person",
+      rig: "eye",
+      distanceM: 0,
+      zoom: null,
+      pivotHeightM: 1.7,
+      offset: { rightM: 0, upM: 0 },
+      pitchDeg: { rest: 0, min: degreesOf(-1.5), max: degreesOf(1.5) },
+      yaw: "follow",
+      fixedViewYawDeg: null,
+      fov: { deg: 70, axis: "vertical" },
+      playerVisible: false,
+      collision: null,
+      followLagPerSecond: null,
+      movement: { frame: "view", plane: "free" },
+      source: "godot 6599874 runtime/player/insimul_first_person_player.gd (eye_height 1.7, fov 70, pitch clamp \xB11.5 rad)"
+    }),
+    third_person: freezeParams({
+      mode: "third_person",
+      rig: "boom",
+      distanceM: 4.2,
+      zoom: null,
+      pivotHeightM: 0.96,
+      offset: { rightM: 0, upM: 0.6 },
+      pitchDeg: { rest: -10, min: degreesOf(-0.62), max: degreesOf(0.28) },
+      yaw: "follow",
+      fixedViewYawDeg: null,
+      fov: { deg: 90, axis: "horizontal" },
+      playerVisible: true,
+      collision: { probeRadiusM: 0.3, minDistanceM: 1.4 },
+      followLagPerSecond: 12,
+      movement: { frame: "view", plane: "free" },
+      source: "unreal d8b05f1 InsimulPlayerCharacter.cpp:101-111 and .h:56 (arm 420 cm on the 96 cm capsule centre, socket +60 cm, probe 30 cm, min 140 cm, lag 12, default 90\xB0 horizontal), :1161 (rest pitch \u221210\xB0, the opening control pitch); pitch range godot 6599874 insimul_third_person_rig.gd:50-51"
+    }),
+    isometric: freezeParams({
+      mode: "isometric",
+      rig: "overhead",
+      distanceM: 25,
+      zoom: { minM: 15, maxM: 50 },
+      pivotHeightM: 1.6,
+      offset: { rightM: 0, upM: 0 },
+      pitchDeg: { rest: pitchOfBeta(Math.PI / 4), min: pitchOfBeta(Math.PI / 6), max: pitchOfBeta(Math.PI / 3) },
+      yaw: "orbit",
+      fixedViewYawDeg: null,
+      fov: { deg: degreesOf(0.6), axis: "vertical" },
+      playerVisible: true,
+      collision: null,
+      followLagPerSecond: null,
+      movement: { frame: "world", plane: "free" },
+      source: `${BABYLON}.isometric (radius 25, limits 15-50, beta \u03C0/4 in \u03C0/6-\u03C0/3, fov 0.6 rad, controllerMode 1)`
+    }),
+    side_scroll: freezeParams({
+      mode: "side_scroll",
+      rig: "overhead",
+      distanceM: 15,
+      zoom: { minM: 8, maxM: 30 },
+      pivotHeightM: 1.6,
+      offset: { rightM: 0, upM: 0 },
+      pitchDeg: { rest: pitchOfBeta(Math.PI / 2), min: pitchOfBeta(Math.PI / 2 - 0.05), max: pitchOfBeta(Math.PI / 2 + 0.05) },
+      yaw: "fixed",
+      fixedViewYawDeg: 180,
+      fov: { deg: degreesOf(0.7), axis: "vertical" },
+      playerVisible: true,
+      collision: null,
+      followLagPerSecond: null,
+      movement: { frame: "view", plane: "xy" },
+      source: `${BABYLON}.side_scroll (radius 15, limits 8-30, beta \u03C0/2 \xB1 0.05, alpha \u03C0/2 locked, fov 0.7 rad, controllerMode 0, plane xy)`
+    }),
+    top_down: freezeParams({
+      mode: "top_down",
+      rig: "overhead",
+      distanceM: 30,
+      zoom: { minM: 15, maxM: 60 },
+      pivotHeightM: 1.6,
+      offset: { rightM: 0, upM: 0 },
+      pitchDeg: { rest: pitchOfBeta(0.05), min: pitchOfBeta(0.01), max: pitchOfBeta(0.2) },
+      yaw: "orbit",
+      fixedViewYawDeg: null,
+      fov: { deg: degreesOf(0.5), axis: "vertical" },
+      playerVisible: true,
+      collision: null,
+      followLagPerSecond: null,
+      movement: { frame: "world", plane: "free" },
+      source: `${BABYLON}.top_down (radius 30, limits 15-60, beta 0.05 in 0.01-0.2, fov 0.5 rad, controllerMode 1)`
+    }),
+    fighting: freezeParams({
+      mode: "fighting",
+      rig: "overhead",
+      distanceM: 12,
+      zoom: { minM: 8, maxM: 20 },
+      pivotHeightM: 1.6,
+      offset: { rightM: 0, upM: 0 },
+      pitchDeg: { rest: pitchOfBeta(Math.PI / 2.2), min: pitchOfBeta(Math.PI / 3), max: pitchOfBeta(Math.PI / 2) },
+      yaw: "fixed",
+      fixedViewYawDeg: 180,
+      fov: { deg: degreesOf(0.8), axis: "vertical" },
+      playerVisible: true,
+      collision: null,
+      followLagPerSecond: null,
+      movement: { frame: "view", plane: "xy" },
+      source: `${BABYLON}.fighting (radius 12, limits 8-20, beta \u03C0/2.2 in \u03C0/3-\u03C0/2, alpha \u03C0/2 locked, fov 0.8 rad, controllerMode 0, plane xy)`
+    })
+  });
+  var DIALOGUE_FRAMING = Object.freeze({
+    distanceM: 3,
+    offset: Object.freeze({ rightM: 1.05, upM: 0.45 }),
+    pitchDeg: -8,
+    /** The view turns this far off the line to the speaker, away from the shoulder side. */
+    sideYawDeg: 18,
+    /** The arm blends toward the framing at this exponential rate (and back to the mode's at rest). */
+    blendPerSecond: 5,
+    source: "unreal d8b05f1 InsimulPlayerCharacter.cpp:1219-1232 (arm 300 cm, offset (0, \xB1105, 45) cm, view pitch \u22128\xB0, yaw \u221318\xB0, blend 5/s)"
+  });
+  var CAMERA_TRANSITION = Object.freeze({
+    seconds: 0.5,
+    ease: "cubic-in-out",
+    cut: Object.freeze(["photo-enter", "photo-exit", "load", "spawn"]),
+    source: "babylon bfcdeb2 CameraManager.ts transitionDuration 500 ms, CubicEase EASINGMODE_EASEINOUT, setMode(mode, animate = true); BabylonGame.ts C handler setMode(first_person | prePhotoCameraMode, false), the start mode at spawn setMode(cameraMode, false)"
+  });
+  var CAMERA_OVERRIDE_FIELDS = Object.freeze([
+    "distanceM",
+    "zoom",
+    "pivotHeightM",
+    "offset",
+    "pitchDeg",
+    "fov",
+    "playerVisible",
+    "followLagPerSecond"
+  ]);
+
+  // @insimul/core/src/camera/movement-contract.ts
+  var BABYLON2 = "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering";
+  var CAMERA_OCCLUSION = Object.freeze({
+    first_person: "none",
+    third_person: "pull-in",
+    isometric: "hide",
+    side_scroll: "hide",
+    top_down: "hide",
+    fighting: "hide"
+  });
+  var CAMERA_OCCLUSION_RULES = Object.freeze({
+    sightLine: "the segment from the pivot (the feet plus the mode's pivotHeightM) to the lens (the pivot, back along the view by distanceM, then the offset)",
+    hide: "every solid the sight line touches is not drawn while it touches it and is drawn again once it does not; the player and the conversation partner are never hidden; listed nearest the pivot first (ties by id)",
+    pullIn: "the boom's own sweep (CAMERA_MODE_PARAMETERS.third_person.collision): the lens comes in front of the solid, never nearer than collision.minDistanceM; nothing is hidden",
+    none: "the eye sits at the pivot: there is no sight line to clear",
+    viewYaw: "the sight line is read at the mode's fixed yaw, else the view yaw given, else the mode's opening yaw; a mode that opens on the player's facing (first_person, third_person) given no view yaw is refused (error missing-view-yaw), as the move is",
+    source: `${BABYLON2}/BabylonGame.ts:10836-10837 (setCameraElasticity(true), makeObstructionInvisible(true), for every mode), :16405-16410 (the conversation partner is excluded); CharacterController.ts _handleObstruction. Unreal's follow arm keeps its sweep (pull-in), which the table already carries`
+  });
+  var BUILDING_STOREY_M = 4;
+  var isNum = (v) => typeof v === "number" && Number.isFinite(v);
+  var isObj = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var isVec = (v) => isObj(v) && isNum(v.x) && isNum(v.y) && isNum(v.z);
+  function buildingSolidOf(b) {
+    if (!isObj(b) || typeof b.id !== "string" || !isVec(b.position) || !isNum(b.rotation)) return null;
+    const w = b.spec?.width;
+    const d = b.spec?.depth;
+    if (!isNum(w) || !isNum(d) || w <= 0 || d <= 0) return null;
+    const f = b.spec?.floors;
+    const floors = isNum(f) ? Math.max(1, Math.floor(f)) : 1;
+    return Object.freeze({
+      id: b.id,
+      at: Object.freeze({ x: b.position.x, y: b.position.y, z: b.position.z }),
+      halfWidthM: w / 2,
+      halfDepthM: d / 2,
+      rotation: b.rotation,
+      heightM: floors * BUILDING_STOREY_M
+    });
+  }
+  function isMovementSolid(s) {
+    return isObj(s) && typeof s.id === "string" && isVec(s.at) && isNum(s.rotation) && isNum(s.halfWidthM) && s.halfWidthM > 0 && isNum(s.halfDepthM) && s.halfDepthM > 0 && isNum(s.heightM) && s.heightM > 0;
+  }
+  function localOf(s, p) {
+    const c = Math.cos(s.rotation);
+    const n = Math.sin(s.rotation);
+    const dx = p.x - s.at.x;
+    const dz = p.z - s.at.z;
+    return [dx * c - dz * n, p.y - s.at.y, dx * n + dz * c];
+  }
+  function segmentEntry(s, a, b) {
+    const p = localOf(s, a);
+    const q = localOf(s, b);
+    const lo = [-s.halfWidthM, 0, -s.halfDepthM];
+    const hi = [s.halfWidthM, s.heightM, s.halfDepthM];
+    let t0 = 0;
+    let t1 = 1;
+    for (let i = 0; i < 3; i += 1) {
+      const d = q[i] - p[i];
+      if (d === 0) {
+        if (p[i] < lo[i] || p[i] > hi[i]) return null;
+        continue;
+      }
+      const ta = (lo[i] - p[i]) / d;
+      const tb = (hi[i] - p[i]) / d;
+      t0 = Math.max(t0, Math.min(ta, tb));
+      t1 = Math.min(t1, Math.max(ta, tb));
+      if (t0 > t1) return null;
+    }
+    return t0;
+  }
+  function viewDirection(yawDeg, pitchDeg) {
+    const y = yawDeg * Math.PI / 180;
+    const p = pitchDeg * Math.PI / 180;
+    return { x: Math.sin(y) * Math.cos(p), y: Math.sin(p), z: Math.cos(y) * Math.cos(p) };
+  }
+  function viewRight(yawDeg) {
+    const y = yawDeg * Math.PI / 180;
+    return { x: Math.cos(y), y: 0, z: -Math.sin(y) };
+  }
+  function cameraSightLine(mode, feet, view2 = {}) {
+    const p = CAMERA_MODE_PARAMETERS[mode];
+    const yawDeg = viewYawOf(mode, view2.yawDeg);
+    if (yawDeg === null) return { error: "missing-view-yaw" };
+    const pitchDeg = isNum(view2.pitchDeg) ? view2.pitchDeg : p.pitchDeg.rest;
+    const distanceM = isNum(view2.distanceM) ? view2.distanceM : p.distanceM;
+    const pivot = { x: feet.x, y: feet.y + p.pivotHeightM, z: feet.z };
+    const look = viewDirection(yawDeg, pitchDeg);
+    const right = viewRight(yawDeg);
+    const lens = {
+      x: pivot.x - look.x * distanceM + right.x * p.offset.rightM,
+      y: pivot.y - look.y * distanceM + p.offset.upM,
+      z: pivot.z - look.z * distanceM + right.z * p.offset.rightM
+    };
+    return { pivot, lens, yawDeg };
+  }
+  function sightOccluders(input) {
+    const rule2 = CAMERA_OCCLUSION[input.mode];
+    const line = cameraSightLine(input.mode, input.feet, input.view);
+    if ("error" in line) return { error: line.error };
+    const { pivot, lens } = line;
+    let unreadable = 0;
+    const hidden = [];
+    const skip = new Set(input.exclude ?? []);
+    const length = Math.hypot(lens.x - pivot.x, lens.y - pivot.y, lens.z - pivot.z);
+    input.solids.forEach((s) => {
+      if (!isMovementSolid(s)) {
+        unreadable += 1;
+        return;
+      }
+      if (rule2 !== "hide" || skip.has(s.id)) return;
+      const t = segmentEntry(s, pivot, lens);
+      if (t !== null) hidden.push({ id: s.id, atM: t * length });
+    });
+    hidden.sort((a, b) => a.atM - b.atM || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    return { rule: rule2, pivot, lens, hidden, unreadable };
+  }
+  function clipToBand(poly, zLo, zHi) {
+    const clip = (pts, inside, edgeZ) => {
+      const out = [];
+      for (let i = 0; i < pts.length; i += 1) {
+        const a = pts[i];
+        const b = pts[(i + 1) % pts.length];
+        const ina = inside(a);
+        const inb = inside(b);
+        if (ina) out.push(a);
+        if (ina !== inb) {
+          const t = (edgeZ - a[1]) / (b[1] - a[1]);
+          out.push([a[0] + (b[0] - a[0]) * t, edgeZ]);
+        }
+      }
+      return out;
+    };
+    const lower = clip(poly, (p) => p[1] >= zLo, zLo);
+    return lower.length === 0 ? [] : clip(lower, (p) => p[1] <= zHi, zHi);
+  }
+  function sideViewBlockers(input) {
+    if (CAMERA_MODE_PARAMETERS[input.mode].movement.plane !== "xy") return { error: "not-a-side-view" };
+    if (!isNum(input.radiusM) || input.radiusM < 0) return { error: "invalid-radius" };
+    const z = input.feet.z;
+    const blockers = [];
+    let unreadable = 0;
+    input.solids.forEach((s) => {
+      if (!isMovementSolid(s)) {
+        unreadable += 1;
+        return;
+      }
+      const c = Math.cos(s.rotation);
+      const n = Math.sin(s.rotation);
+      const corner = (u, v) => [s.at.x + c * u + n * v, s.at.z - n * u + c * v];
+      const poly = [corner(-s.halfWidthM, -s.halfDepthM), corner(s.halfWidthM, -s.halfDepthM), corner(s.halfWidthM, s.halfDepthM), corner(-s.halfWidthM, s.halfDepthM)];
+      const cut = clipToBand(poly, z - input.radiusM, z + input.radiusM);
+      if (cut.length === 0) return;
+      const xs = cut.map((p) => p[0]);
+      blockers.push({ id: s.id, xMin: Math.min(...xs), xMax: Math.max(...xs), bottomY: s.at.y, topY: s.at.y + s.heightM });
+    });
+    blockers.sort((a, b) => a.xMin - b.xMin || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    return { depthZ: z, blockers, unreadable };
+  }
+  var CAMERA_OPENING_VIEW_YAW = Object.freeze({
+    first_person: "player",
+    third_person: "player",
+    isometric: 0,
+    side_scroll: CAMERA_MODE_PARAMETERS.side_scroll.fixedViewYawDeg ?? 180,
+    top_down: 0,
+    fighting: CAMERA_MODE_PARAMETERS.fighting.fixedViewYawDeg ?? 180
+  });
+  function viewYawOf(mode, given) {
+    const p = CAMERA_MODE_PARAMETERS[mode];
+    if (p.yaw === "fixed" && p.fixedViewYawDeg !== null) return p.fixedViewYawDeg;
+    if (isNum(given)) return given;
+    const open = CAMERA_OPENING_VIEW_YAW[mode];
+    return typeof open === "number" ? open : null;
+  }
+  var MOVEMENT_FRAME_MEANING = Object.freeze({
+    axes: "the IR's world frame: metres, left-handed, +Y up; forward is +Z, right is +X, which is the player's right while facing +Z (one statement in a left-handed frame)",
+    world: "the move input is read in the world frame whatever the view's yaw: forward moves along +Z and right along +X. Orbiting the lens (the look input, yaw orbit) never changes how the input maps. At the opening view (yaw 0) forward is screen-up and right is screen-right",
+    view: "the move input is read in the view's frame: forward along the view's yaw (sin \u03C8, 0, cos \u03C8), right along (cos \u03C8, 0, \u2212sin \u03C8). Under a fixed yaw of 180\xB0 right is \u2212X, which is screen-right",
+    isometric: "isometric: a perspective lens (not orthographic), pitch \u221245\xB0 at rest within [\u221260\xB0, \u221230\xB0], 25 m from a pivot 1.6 m above the feet (zoom 15\u201350 m), the yaw orbiting under the look input and opening at 0; the player moves on x and z (plane free: y is gravity and the jump), in the world frame",
+    input: "the input (forward, right) is clamped to length 1 first (a stick past its rim, or two keys, is length 1), turned into the frame, then the plane drops its component (xy: z; xz: y); so a diagonal in a side view keeps only its x part, as Babylon's avatar walks its facing and loses the z",
+    mirroredLevel: "an engine whose level mirrors the IR (Unreal's X = x, Y = z) keeps the player's right: right moves the player screen-right at the opening view, which is the image of the IR's \u2212X in that level; it maps the answers here through its import",
+    source: `${BABYLON2}/BabylonGame.ts:10763 (spawn alpha \u2212\u03C0/2: view yaw 0); CameraManager.ts CAMERA_CONFIGS (controllerMode, movementPlane); CharacterController.ts setMode ("the camera direction has no bearing on avatar movement") and the movementPlane zeroing; core camera-modes.ts movement`
+  });
+  var PLAYER_GAIT = Object.freeze({
+    runOverWalk: 2,
+    source: `${BABYLON2}/BabylonGame.ts:10771-10772 (setWalkSpeed(2.5), setRunSpeed(5): run is twice the walk)`
+  });
+  function playerMove(input) {
+    const p = CAMERA_MODE_PARAMETERS[input.mode];
+    const m = input.move;
+    if (!isObj(m) || !isNum(m.forward) || !isNum(m.right)) return { error: "invalid-move" };
+    if (!isNum(input.walkMps) || input.walkMps <= 0) return { error: "invalid-walk" };
+    const yaw = viewYawOf(input.mode, input.viewYawDeg);
+    if (p.movement.frame === "view" && yaw === null) return { error: "missing-view-yaw" };
+    const len = Math.hypot(m.forward, m.right);
+    const k = len > 1 ? 1 / len : 1;
+    const f = m.forward * k;
+    const r = m.right * k;
+    const fwd = p.movement.frame === "world" ? { x: 0, y: 0, z: 1 } : viewDirection(yaw, 0);
+    const rgt = p.movement.frame === "world" ? { x: 1, y: 0, z: 0 } : viewRight(yaw);
+    let dir = { x: fwd.x * f + rgt.x * r, y: 0, z: fwd.z * f + rgt.z * r };
+    if (p.movement.plane === "xy") dir = { ...dir, z: 0 };
+    if (p.movement.plane === "xz") dir = { ...dir, y: 0 };
+    const scale = input.walkMps * (input.running === true ? PLAYER_GAIT.runOverWalk : 1);
+    const velocity = { x: dir.x * scale, y: dir.y * scale, z: dir.z * scale };
+    return {
+      frame: p.movement.frame,
+      plane: p.movement.plane,
+      viewYawDeg: yaw,
+      velocity,
+      speedMps: Math.hypot(velocity.x, velocity.y, velocity.z)
+    };
+  }
+  var PLAYER_GROUND = Object.freeze({
+    standMaxDeg: 15,
+    climbMaxDeg: 75,
+    stepUpM: 0.75,
+    source: `${BABYLON2}/BabylonGame.ts:10769-10770 (setStepOffset(0.75), setSlopeLimit(15, 75)); CharacterController.ts:1463-1521 _doIdle (:1491-1497 and :1512-1518: slope <= the lower limit (_sl1) grounded, else ungrounded and slideBack, with no test of the upper limit), :1138-1153 _doMove (>= the upper limit (_sl2) going up: moved back to where it started; above the lower: slowed), the step offset (a rise > stepOffset is refused)`
+  });
+  function slopeResponse(slopeDeg) {
+    if (!isNum(slopeDeg) || slopeDeg < 0 || slopeDeg > 90) return null;
+    if (slopeDeg <= PLAYER_GROUND.standMaxDeg) return "walk";
+    if (slopeDeg < PLAYER_GROUND.climbMaxDeg) return "slide";
+    return "blocked";
+  }
+  function slopeAtRest(slopeDeg) {
+    if (!isNum(slopeDeg) || slopeDeg < 0 || slopeDeg > 90) return null;
+    return slopeDeg <= PLAYER_GROUND.standMaxDeg ? "stand" : "slideBack";
+  }
+  function stepResponse(riseM) {
+    if (!isNum(riseM)) return null;
+    if (riseM <= 0) return "none";
+    return riseM <= PLAYER_GROUND.stepUpM ? "step" : "blocked";
+  }
+  function movementModeTable() {
+    return CAMERA_MODES.map((mode) => ({ mode, occlusion: CAMERA_OCCLUSION[mode], openingViewYaw: CAMERA_OPENING_VIEW_YAW[mode] }));
+  }
+
   // @insimul/core/src/game-genres/recipes.ts
   function binding(b) {
     return Object.freeze({
@@ -30709,7 +31092,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     };
   }
 
-  // @insimul/core/src/editor/layout/plan-geometry.ts
+  // @insimul/core/src/geometry/plan-geometry.ts
   function planSub(a, b) {
     return [a[0] - b[0], a[1] - b[1]];
   }
@@ -35494,6 +35877,27 @@ player_meets_cefr(Player, RequiredLevel) :-
     for (const [k, v] of Object.entries(ranges)) needNumber(method, v, `ranges.${k}`);
     return [args, ranges];
   }
+  function movementContract() {
+    return plain({
+      "camera-movement": {
+        modes: movementModeTable(),
+        storeyM: BUILDING_STOREY_M,
+        gait: PLAYER_GAIT,
+        ground: PLAYER_GROUND
+      }
+    });
+  }
+  function movementModeOf(method, value) {
+    return oneOf(method, value, CAMERA_MODES, "mode");
+  }
+  function movementFeetOf(method, value) {
+    const feet = needObject(method, value, "feet");
+    for (const k of ["x", "y", "z"]) needNumber(method, feet[k], `feet.${k}`);
+    return feet;
+  }
+  function movementSolidsOf(method, value) {
+    return optArrayValue(method, value, "solids") ?? [];
+  }
   function statedPropOf(method, args) {
     return [needObject(method, args.prop, "prop"), optObject(method, args.board, "board") ?? null];
   }
@@ -37016,6 +37420,90 @@ player_meets_cefr(Player, RequiredLevel) :-
     "genre.resolveGame": (args) => resolveGameGenre({ recipe: args.recipe ?? null, world: args.world ?? null }),
     /** `genre.recipes` → `{ ids, bindings }` — core's recipe → genre bindings. */
     "genre.recipes": () => ({ ids: [...RECIPE_IDS], bindings: plain(RECIPE_GENRE_BINDINGS) }),
+    // ── camera movement (P7; PL.native-camera-movement, U95(5)) ─────────────────
+    // One row per op of core's `conformance/camera/movement.json`, each ONE core
+    // function of `camera/movement-contract`: the args are a case's `input` and the
+    // answer is in its `expected` shape. Core's metres in the IR's world frame
+    // (left-handed, +Y up, yaw from +Z toward +X); nothing is converted or
+    // mirrored here, the engine's import maps it. Core's refusals (`missing-view-yaw`,
+    // `not-a-side-view`, `invalid-radius`, `invalid-move`, `invalid-walk`) are
+    // VALUES `{ error }`; only a field of the wrong JSON type is an ERROR coded
+    // `[invalid-input]` (`movementModeOf`, `movementFeetOf`).
+    /** `camera.movement.contract` → `{ 'camera-movement': { modes, storeyM, gait, ground } }`. */
+    "camera.movement.contract": () => movementContract(),
+    /**
+     * `camera.movement.occluders { mode, feet, view?, solids?, exclude? }` → core's
+     * `sightOccluders`: `{ rule, pivot, lens, hidden: [{ id, atM }], unreadable }` —
+     * what the mode's lens hides this frame (`hide`: every solid on the sight line
+     * from the pivot to the lens, nearest first; `pull-in` and `none` hide
+     * nothing), or `{ error: 'missing-view-yaw' }` for a follow mode given no view
+     * yaw. `exclude` names solids never hidden (the player, the conversation partner).
+     */
+    "camera.movement.occluders": (args) => {
+      const m = "camera.movement.occluders";
+      const input = coded("invalid-input", () => {
+        const exclude = optArrayValue(m, args.exclude, "exclude") ?? [];
+        exclude.forEach((id, i) => needString(m, id, `exclude[${i}]`));
+        return {
+          mode: movementModeOf(m, args.mode),
+          feet: movementFeetOf(m, args.feet),
+          view: optObject(m, args.view, "view") ?? {},
+          solids: movementSolidsOf(m, args.solids),
+          exclude
+        };
+      });
+      return plain(sightOccluders(input));
+    },
+    /**
+     * `camera.movement.sideView { mode, feet, radiusM, solids? }` → core's
+     * `sideViewBlockers`: `{ depthZ, blockers: [{ id, xMin, xMax, bottomY, topY }],
+     * unreadable }` — the solids across the player's strip in a side view (plane
+     * `xy`), or `{ error: 'not-a-side-view' | 'invalid-radius' }`.
+     */
+    "camera.movement.sideView": (args) => {
+      const m = "camera.movement.sideView";
+      const input = coded("invalid-input", () => ({
+        mode: movementModeOf(m, args.mode),
+        feet: movementFeetOf(m, args.feet),
+        radiusM: args.radiusM,
+        solids: movementSolidsOf(m, args.solids)
+      }));
+      return plain(sideViewBlockers(input));
+    },
+    /**
+     * `camera.movement.buildingSolid { building }` → `{ solid }` — core's
+     * `buildingSolidOf`: a `BuildingIR`'s solid (its stated footprint about its
+     * position, turned by its rotation, `max(1, floor(floors)) × storeyM` tall), or
+     * null when the footprint, position or rotation is not stated (core never
+     * guesses a size). The building goes to core as is.
+     */
+    "camera.movement.buildingSolid": (args) => ({ solid: plain(buildingSolidOf(args.building)) }),
+    /**
+     * `camera.movement.move { mode, move: { forward, right }, viewYawDeg?, walkMps,
+     * running? }` → core's `playerMove`: `{ frame, plane, viewYawDeg, velocity,
+     * speedMps }` — the input clamped to length 1, turned into the mode's frame
+     * (`world`: forward +Z, right +X, whatever the view; `view`: along the view's
+     * yaw), the plane's component dropped, scaled by the walk and, running, by
+     * `gait.runOverWalk`; or `{ error: 'invalid-move' | 'invalid-walk' |
+     * 'missing-view-yaw' }`.
+     */
+    "camera.movement.move": (args) => {
+      const m = "camera.movement.move";
+      const input = coded("invalid-input", () => ({
+        mode: movementModeOf(m, args.mode),
+        move: args.move,
+        viewYawDeg: args.viewYawDeg ?? null,
+        walkMps: args.walkMps,
+        running: optBoolean(m, args.running, "running") === true
+      }));
+      return plain(playerMove(input));
+    },
+    /** `camera.movement.slope { slopeDeg }` → `{ response }` — core's `slopeResponse` (`walk`, `slide`, `blocked`; null unreadable). */
+    "camera.movement.slope": (args) => ({ response: slopeResponse(args.slopeDeg) }),
+    /** `camera.movement.slopeAtRest { slopeDeg }` → `{ atRest }` — core's `slopeAtRest` (`stand`, `slideBack`; null unreadable). */
+    "camera.movement.slopeAtRest": (args) => ({ atRest: slopeAtRest(args.slopeDeg) }),
+    /** `camera.movement.step { riseM }` → `{ response }` — core's `stepResponse` (`none`, `step`, `blocked`; null unreadable). */
+    "camera.movement.step": (args) => ({ response: stepResponse(args.riseM) }),
     // ── the genre HUD and the world rules panel (P9a) ──
     // Each row is one of core's corpus runners and nothing else: the args are
     // `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and

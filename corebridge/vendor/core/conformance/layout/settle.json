@@ -5,9 +5,9 @@
   "sources": [
     {
       "characterisedBy": "insimul-unreal tools/verify-unreal insimul_layout_characterise (Source/InsimulEditor/Tests/layout_characterise.cpp), the Portable code of unreal origin/main 6caede7 (BYOA B0-B8)",
-      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "ir": "Brightwater export of 2026-10-17 (brightwater-ir-20261017.json; its sha256 below)",
       "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
-      "pairing": "BYOA B8 round 5 (unreal/byoa/state/byoa-b8/round-5): houses by role, the 6 m neighbour gap, the seat sinks, the 2.01 m cast, MI_Landscape_01a's layers and its ground paint",
+      "pairing": "BYOA B8 round 5: houses by role, the 6 m neighbour gap, the seat sinks, the 2.01 m cast, MI_Landscape_01a's layers and its ground paint",
       "world": "Brightwater Vale (6abb84ae358820954abf1ea2)"
     },
     {
@@ -18,7 +18,7 @@
     {
       "cases": "'neighbours: Brightwater's seven fitted houses', 'clearance: Brightwater's props round its settled houses' and the four 'seat sink:' cases of House_03 and House_Large (PL.layout-standins, operator ruling U80(3))",
       "measuredBy": "the Unreal editor at unreal 86857a0 (P0.unreal.u23-boxes round 1, WV0 run 2, 2026-11-05): the 36 GB Mac's tools/probe_u23.py over the paired level PairedBrightwater. The houses as building-fit.json's source says (House_03's bottom -5.3567 m, BP_House_02's: its seat sink 0.72, was 0.81). Each clearance prop's plan length (its own forward axis), depth and height are CalculateComponentsBoundingBoxInLocalSpace over its colliding primitives times |scale|, to the centimetre as standins.txt states them (19 archetypes, e.g. barrel 0.71 x 0.73 x 0.99, lantern 0.24 x 0.97 x 2.92, bench 0.55 x 1.85 x 0.62, well 1.64 x 2.07 x 2.31, where the nominal sizes by kind were 0.6 x 0.6 x 0.9, 0.3 x 0.3 x 2.6, 1.6 x 0.5 x 0.5 and 1.6 x 1.6 x 1.2): 73 of the 85 props by their own entity id; the 12 the editor's newer world export did not stand (an anvil and 11 walls) by their archetype's measured size (anvil 0.33 x 0.35 x 0.48; wall 2.00 x 0.14 x 1.52, the more often measured of its two). Each prop keeps its characterised centre and axes",
-      "record": "$LOOPS_HOME/unreal/state/wv0-1104/p0-unreal-u23-boxes/round-1-builder.md (\"Results\"), standins.txt and runs/main-86857a0-r2/probe.json",
+      "record": "P0.unreal.u23-boxes round 1 (WV0 run 2): its builder record's Results, standins.txt and the run-2 probe.json at unreal main 86857a0",
       "writtenBy": "core scripts/restand-layout-corpus.ts --write (scripts/layout-standins.ts): the measured values set, then every expected answer, and every input that is another case's answer (the characteriser's chain), re-derived by core's projection; a value is rewritten only where it moved past the file's tolerance"
     }
   ],

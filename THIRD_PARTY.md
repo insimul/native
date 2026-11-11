@@ -123,7 +123,11 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `72c658c`, core `main` (2026-11-10,
+  what to quote in a bug report about core behaviour. Today: `431c95b`, core `main` (2026-11-10,
+  PL.native-camera-movement: PL.movement-contract's movement contract that the `camera.movement.*` rows run,
+  with PL.movement-followups; PL.ground-from-ir; PL.corpus-provenance-scrub, after which no vendored corpus
+  names a private repository path; PL.interactables-cases and PL.core-props-docs). Before that, `72c658c`,
+  core `main` (2026-11-10,
   PL.native-interact-target: PL.examine-props' interact rule that the `props.interactables.*` rows run,
   PL.disk-changed-step's `disk_changed` step, P9i.core's progression pack, PL.pickup-ring-search-case and
   PL.tutorial-corpus-bundle's `*-corpus-host` modules). Before that, `7376894`, core `main` (PL.native-genre-hud-config's

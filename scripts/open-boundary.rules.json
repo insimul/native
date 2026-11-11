@@ -444,6 +444,15 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/camera/movement-contract",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the camera.movement.* rows (PL.native-camera-movement, rulings U95(5) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-camera-movement (Features Gauntlet PL.native-camera-movement)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/game-engine/logic/NoticeGenerator",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

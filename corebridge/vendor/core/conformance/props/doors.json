@@ -6,7 +6,8 @@
   "sources": [
     "babylon origin/main bfcdeb2: packages/babylon/src/engine/game-engine/rendering/BuildingEntrySystem.ts (804 lines): the front-face door, the 0.5 m stand-off, DOOR_PROXIMITY_RADIUS 2.0 on the ground plane, the nearest door, the label, the exit facing outward.",
     "godot origin/main 6599874: templates/scripts/systems/building_entry_system.gd (798 lines): the same front-centre door.",
-    "pipelines origin/main 9b6a897: pipelines/game-export/ir-generator.ts writes interior: null on every building (no interior is stated today).",
+    "pipelines origin/main 5328ed2: pipelines/game-export/ir-generator.ts states an interior by a content-keyed rule (pipelines/generators/interior-generator.ts: when any exported text is found at a cafe or restaurant, each settlement's eating house gets one, laid out by core's lay_interior) and interior: null on every other building. On Brightwater it picks Denham's Tavern alone; pipelines' conformance/props-doors/brightwater-interiors.json replays that export's doors through this file's runner and contract.",
+    "core src/generation/primitives.ts lay_interior (the interior frame: origin at the minimum corner, width less two walls along x, depth less two walls along z, the entrance on the entry room's z = 0 edge at floor 0) and the door-warp convention (editor/scene/placement.ts: the interior is its own node at the origin).",
     "core BuildingIR, InteriorLayoutIR, InteriorDoorIR (ir-types.ts); editor/layout/building-fit.ts doorWorld and doorHeading (the measured door point and facing a host passes as door and doorYaw = pi/2 - doorHeading; the Unreal plugin's DoorWorldYawDegrees, which InsimulSceneSpawn orients its door socket by)."
   ],
   "contract": {
@@ -37,7 +38,8 @@
     "label": "name, else businessType, else spec.buildingRole, else Building (first non-empty)",
     "prompt": "inside: exit for the building the player is in (null if unlisted); outside: the nearest door not no_interior with ground-plane distance strictly < promptRadiusM, the first listed on a tie",
     "enter": "refusals in order: missing_field building, already_inside, unknown_building, no_interior, locked (without keyItemId held); else enter_interior {building, interior: interior:<id>, interiorFunction, arrive: the first entrance door's position (interior frame) or null when none is listed, entrance, unlocked}",
-    "exit": "not_inside, unknown_building; else exit_to_exterior {building, arrive: outside, yaw}"
+    "exit": "not_inside, unknown_building; else exit_to_exterior {building, arrive: outside, yaw}",
+    "interiorFrame": "enter's arrive is the entrance door's position exactly as the interior states it, in the interior's own frame (InteriorLayoutIR: metres, origin at its minimum corner, x across its width, z along its depth, y the base of the door's floor; the front wall, the one the entrance is on, is z = 0, and +z runs from the front toward the back). Neither the building's position nor its rotation is applied: the interior is its own scene (the door-warp convention). exit's arrive and yaw are in the world frame. A ContainerIR at location interior keeps its world-frame position; the door model never reads it"
   },
   "cases": [
     {
@@ -1961,6 +1963,134 @@
                   "z": 0
                 },
                 "yaw": 1.570796327
+              },
+              "inside": null
+            },
+            "inside": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "session: a turned building's interior hands off arrive in the interior's own frame, unturned and unmoved, at the entrance listed last (Brightwater's Denham's Tavern as pipelines 5328ed2 exports it); exit is in the world frame",
+      "op": "session",
+      "input": {
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "steps": [
+          {
+            "op": "enter",
+            "building": "bld_6abb84eef2e499b951eecec3"
+          },
+          {
+            "op": "exit"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "result": {
+              "ok": true,
+              "handoff": {
+                "op": "enter_interior",
+                "building": "bld_6abb84eef2e499b951eecec3",
+                "interior": "interior:bld_6abb84eef2e499b951eecec3",
+                "interiorFunction": "business.Restaurant",
+                "arrive": {
+                  "x": 5.0114,
+                  "y": 0,
+                  "z": 0
+                },
+                "entrance": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                "unlocked": false
+              },
+              "inside": "bld_6abb84eef2e499b951eecec3"
+            },
+            "inside": "bld_6abb84eef2e499b951eecec3"
+          },
+          {
+            "result": {
+              "ok": true,
+              "handoff": {
+                "op": "exit_to_exterior",
+                "building": "bld_6abb84eef2e499b951eecec3",
+                "arrive": {
+                  "x": 189.392000134,
+                  "y": 0,
+                  "z": 171.909676124
+                },
+                "yaw": -1.571
               },
               "inside": null
             },

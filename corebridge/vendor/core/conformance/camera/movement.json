@@ -1,0 +1,2502 @@
+{
+  "area": "camera-movement",
+  "description": "The movement contract (PL.movement-contract, U94(4); the Unreal P7 cell's m4, m5 and m6): what each camera mode does about a solid between the player and the lens (an overhead lens hides it), what blocks the player on a side view's strip and how a building's solid is read from the IR, what the world (isometric) and view frames mean for the move input, the run speed, and the slope and step limits. Data in, decision out: the engine's physics, sweep and renderer act on it.",
+  "version": 1,
+  "sources": [
+    "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/BabylonGame.ts:10763 (spawn alpha −π/2), :10769-10772 (setStepOffset(0.75), setSlopeLimit(15, 75), setWalkSpeed(2.5), setRunSpeed(5)), :10836-10837 (setCameraElasticity(true), makeObstructionInvisible(true)), :16405-16410 (the conversation partner excluded)",
+    "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/CharacterController.ts (_handleObstruction, _doIdle :1463-1521 (slideBack above the lower limit, :1491-1497 and :1512-1518), _doMove :1138-1153, the step offset, setMode, the movement plane)",
+    "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/BuildingCollisionSystem.ts (FLOOR_HEIGHT 4; the footprint width × depth about position)",
+    "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/CameraManager.ts:42-123 CAMERA_CONFIGS (controllerMode, movementPlane, lockAlpha)",
+    "core src/camera/camera-modes.ts CAMERA_MODE_PARAMETERS (pivot, distance, pitch, yaw, collision, movement), src/props/doors.ts (the IR yaw: forward (sin r, cos r), right (cos r, −sin r))",
+    "the Unreal P7 cell's round-2 verdict (run 7): m4 (the side view has no collision), m5 (the world frame against the mirrored level), m6 (run speed, slope and step)",
+    "PL.movement-followups (U95(5)), from the movement contract's round-1 critique: m2 (a follow mode's sight line with no view yaw is refused, as the move is) and m3 (a player at rest on any slope above the stand limit slides back, the blocked ones included)"
+  ],
+  "tolerance": 1e-9,
+  "contract": {
+    "modes": [
+      {
+        "mode": "first_person",
+        "occlusion": "none",
+        "openingViewYaw": "player"
+      },
+      {
+        "mode": "third_person",
+        "occlusion": "pull-in",
+        "openingViewYaw": "player"
+      },
+      {
+        "mode": "isometric",
+        "occlusion": "hide",
+        "openingViewYaw": 0
+      },
+      {
+        "mode": "side_scroll",
+        "occlusion": "hide",
+        "openingViewYaw": 180
+      },
+      {
+        "mode": "top_down",
+        "occlusion": "hide",
+        "openingViewYaw": 0
+      },
+      {
+        "mode": "fighting",
+        "occlusion": "hide",
+        "openingViewYaw": 180
+      }
+    ],
+    "occlusion": {
+      "sightLine": "the segment from the pivot (the feet plus the mode's pivotHeightM) to the lens (the pivot, back along the view by distanceM, then the offset)",
+      "hide": "every solid the sight line touches is not drawn while it touches it and is drawn again once it does not; the player and the conversation partner are never hidden; listed nearest the pivot first (ties by id)",
+      "pullIn": "the boom's own sweep (CAMERA_MODE_PARAMETERS.third_person.collision): the lens comes in front of the solid, never nearer than collision.minDistanceM; nothing is hidden",
+      "none": "the eye sits at the pivot: there is no sight line to clear",
+      "viewYaw": "the sight line is read at the mode's fixed yaw, else the view yaw given, else the mode's opening yaw; a mode that opens on the player's facing (first_person, third_person) given no view yaw is refused (error missing-view-yaw), as the move is",
+      "source": "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/BabylonGame.ts:10836-10837 (setCameraElasticity(true), makeObstructionInvisible(true), for every mode), :16405-16410 (the conversation partner is excluded); CharacterController.ts _handleObstruction. Unreal's follow arm keeps its sweep (pull-in), which the table already carries"
+    },
+    "solid": "a box standing on the ground: at (its base centre), halfWidthM across and halfDepthM along its facing, rotation (radians, the IR yaw: forward (sin r, cos r), right (cos r, −sin r)), heightM; every number finite, every extent > 0. A building's solid from the IR: spec.width × spec.depth about position, turned by rotation, max(1, floor(spec.floors)) × storeyM tall; no solid when width or depth is not a positive number",
+    "storeyM": 4,
+    "sideView": "plane xy: the player walks the line z = its own z. A solid whose footprint comes within the body radius of that line blocks the strip from xMin to xMax (the footprint clipped to the band z ± radius); the player passes over its top only (a jump, or a step when topY − the ground <= ground.stepUpM). Solids off the line are walked past; sorted by xMin, then id",
+    "frame": {
+      "axes": "the IR's world frame: metres, left-handed, +Y up; forward is +Z, right is +X, which is the player's right while facing +Z (one statement in a left-handed frame)",
+      "world": "the move input is read in the world frame whatever the view's yaw: forward moves along +Z and right along +X. Orbiting the lens (the look input, yaw orbit) never changes how the input maps. At the opening view (yaw 0) forward is screen-up and right is screen-right",
+      "view": "the move input is read in the view's frame: forward along the view's yaw (sin ψ, 0, cos ψ), right along (cos ψ, 0, −sin ψ). Under a fixed yaw of 180° right is −X, which is screen-right",
+      "isometric": "isometric: a perspective lens (not orthographic), pitch −45° at rest within [−60°, −30°], 25 m from a pivot 1.6 m above the feet (zoom 15–50 m), the yaw orbiting under the look input and opening at 0; the player moves on x and z (plane free: y is gravity and the jump), in the world frame",
+      "input": "the input (forward, right) is clamped to length 1 first (a stick past its rim, or two keys, is length 1), turned into the frame, then the plane drops its component (xy: z; xz: y); so a diagonal in a side view keeps only its x part, as Babylon's avatar walks its facing and loses the z",
+      "mirroredLevel": "an engine whose level mirrors the IR (Unreal's X = x, Y = z) keeps the player's right: right moves the player screen-right at the opening view, which is the image of the IR's −X in that level; it maps the answers here through its import",
+      "source": "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/BabylonGame.ts:10763 (spawn alpha −π/2: view yaw 0); CameraManager.ts CAMERA_CONFIGS (controllerMode, movementPlane); CharacterController.ts setMode (\"the camera direction has no bearing on avatar movement\") and the movementPlane zeroing; core camera-modes.ts movement"
+    },
+    "gait": {
+      "runOverWalk": 2,
+      "source": "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/BabylonGame.ts:10771-10772 (setWalkSpeed(2.5), setRunSpeed(5): run is twice the walk)"
+    },
+    "ground": {
+      "standMaxDeg": 15,
+      "climbMaxDeg": 75,
+      "stepUpM": 0.75,
+      "source": "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/BabylonGame.ts:10769-10770 (setStepOffset(0.75), setSlopeLimit(15, 75)); CharacterController.ts:1463-1521 _doIdle (:1491-1497 and :1512-1518: slope <= the lower limit (_sl1) grounded, else ungrounded and slideBack, with no test of the upper limit), :1138-1153 _doMove (>= the upper limit (_sl2) going up: moved back to where it started; above the lower: slowed), the step offset (a rise > stepOffset is refused)"
+    },
+    "slope": "slopeDeg in [0, 90], the player moving: <= standMaxDeg walk (walked, stood on); < climbMaxDeg slide (walked up slowed, slid down when idle); else blocked (not gone up: a step up it is undone; slid down when idle, as slopeAtRest says). Anything else is unreadable (null)",
+    "slopeAtRest": "slopeDeg in [0, 90], the player not moving: <= standMaxDeg stand (grounded, stays put); else slideBack (slides down the slope under gravity until it stands on ground no steeper than standMaxDeg), the blocked slopes at or above climbMaxDeg included: the climb limit plays no part at rest (Babylon _doIdle reads only the lower limit). Anything else is unreadable (null)",
+    "step": "riseM: <= 0 none; <= stepUpM step; else blocked. Not a number: null",
+    "order": "answers do not depend on the order of solids or exclude"
+  },
+  "cases": [
+    {
+      "name": "occluders: side view, a house between the lens and the player is hidden (the Smithy case)",
+      "note": "Unreal's P7 cell: every -side run opened \"hidden behind Denham's Smithy\". The overhead lens is not moved; the house is not drawn while it stands on the sight line.",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "smithy",
+            "atM": 5
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, a house behind the player and one beside the line are drawn",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "behind",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "beside",
+            "at": {
+              "x": 12,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, two houses on the line, nearest the player first",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "far",
+            "at": {
+              "x": 1,
+              "y": 0,
+              "z": 12
+            },
+            "halfWidthM": 2,
+            "halfDepthM": 1,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "smithy",
+            "atM": 5
+          },
+          {
+            "id": "far",
+            "atM": 11
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, a wall below the sight line is drawn",
+      "note": "The sight line runs 1.6 m up (the pivot). A 1.2 m wall stays under it; a 1.8 m wall crosses it and is hidden.",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "low-wall",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 4
+            },
+            "halfWidthM": 3,
+            "halfDepthM": 0.2,
+            "rotation": 0,
+            "heightM": 1.2
+          },
+          {
+            "id": "tall-wall",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 5
+            },
+            "halfWidthM": 3,
+            "halfDepthM": 0.2,
+            "rotation": 0,
+            "heightM": 1.8
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "tall-wall",
+            "atM": 4.8
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, a turned house reaches the line its unturned footprint misses",
+      "note": "Both are 4 m squares 2.5 m off the line; turned 45° the corner reaches 0.33 m past it.",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "square",
+            "at": {
+              "x": 2.5,
+              "y": 0,
+              "z": 7
+            },
+            "halfWidthM": 2,
+            "halfDepthM": 2,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "turned",
+            "at": {
+              "x": -2.5,
+              "y": 0,
+              "z": 7
+            },
+            "halfWidthM": 2,
+            "halfDepthM": 2,
+            "rotation": 0.7853981633974483,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "turned",
+            "atM": 6.671572875253808
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, a long wall turned +30° meets the line at its near end",
+      "note": "The IR yaw turns +Z toward +X: at +30° the wall's −Z end swings toward −X and crosses the line nearer the player.",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "turned-plus",
+            "at": {
+              "x": 1.2,
+              "y": 0,
+              "z": 7
+            },
+            "halfWidthM": 0.2,
+            "halfDepthM": 3,
+            "rotation": 0.5235987755982988,
+            "heightM": 3
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "turned-plus",
+            "atM": 4.521539030917346
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, the same wall turned −30° meets the line at its far end",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "turned-minus",
+            "at": {
+              "x": 1.2,
+              "y": 0,
+              "z": 7
+            },
+            "halfWidthM": 0.2,
+            "halfDepthM": 3,
+            "rotation": -0.5235987755982988,
+            "heightM": 3
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "turned-minus",
+            "atM": 8.678460969082655
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, the conversation partner and the player are never hidden",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "partner",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 2
+            },
+            "halfWidthM": 0.4,
+            "halfDepthM": 0.4,
+            "rotation": 0,
+            "heightM": 1.8
+          },
+          {
+            "id": "player",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "halfWidthM": 0.42,
+            "halfDepthM": 0.42,
+            "rotation": 0,
+            "heightM": 1.92
+          }
+        ],
+        "exclude": [
+          "player",
+          "partner"
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "smithy",
+            "atM": 5
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, zoomed in to 8 m, the house beyond the lens is drawn",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "view": {
+          "distanceM": 8
+        },
+        "solids": [
+          {
+            "id": "beyond",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 10
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 1.5,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -9.797174393178826e-16,
+          "y": 1.6,
+          "z": 8
+        },
+        "hidden": [],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, a given yaw is ignored (the yaw is fixed)",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "view": {
+          "yawDeg": 0
+        },
+        "solids": [
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "smithy",
+            "atM": 5
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, an unreadable solid is counted and left out",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "no-height",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 6
+            },
+            "halfWidthM": 1,
+            "halfDepthM": 1,
+            "rotation": 0
+          },
+          "shed"
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "smithy",
+            "atM": 5
+          }
+        ],
+        "unreadable": 2
+      }
+    },
+    {
+      "name": "occluders: fighting view, a house on the raised sight line is hidden",
+      "note": "The lens 12 m out on +Z, pitched −8.18°: it rises 1.71 m over the 12 m.",
+      "op": "occluders",
+      "input": {
+        "mode": "fighting",
+        "feet": {
+          "x": 3,
+          "y": 0,
+          "z": -2
+        },
+        "solids": [
+          {
+            "id": "arena-house",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 5
+            },
+            "halfWidthM": 4,
+            "halfDepthM": 2,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 3,
+          "y": 1.6,
+          "z": -2
+        },
+        "lens": {
+          "x": 2.9999999999999987,
+          "y": 3.3077742900480995,
+          "z": 9.877857844504232
+        },
+        "hidden": [
+          {
+            "id": "arena-house",
+            "atM": 5.051415902216863
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: isometric at its opening yaw, a two-storey house south of the player is hidden",
+      "note": "At yaw 0 the lens is on the −Z side, 25 m back at −45°: the sight line climbs 1 m per metre south.",
+      "op": "occluders",
+      "input": {
+        "mode": "isometric",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "two-storey",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -6
+            },
+            "halfWidthM": 4,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 8
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": 0,
+          "y": 19.277669529663687,
+          "z": -17.67766952966369
+        },
+        "hidden": [
+          {
+            "id": "two-storey",
+            "atM": 4.242640687119285
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: isometric at its opening yaw, a one-storey house there stays under the sight line",
+      "op": "occluders",
+      "input": {
+        "mode": "isometric",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "one-storey",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -6
+            },
+            "halfWidthM": 4,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": 0,
+          "y": 19.277669529663687,
+          "z": -17.67766952966369
+        },
+        "hidden": [],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: isometric orbited to yaw 90, the house west of the player hides it, the south one does not",
+      "op": "occluders",
+      "input": {
+        "mode": "isometric",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "view": {
+          "yawDeg": 90
+        },
+        "solids": [
+          {
+            "id": "two-storey",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -6
+            },
+            "halfWidthM": 4,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 8
+          },
+          {
+            "id": "west",
+            "at": {
+              "x": -6,
+              "y": 0,
+              "z": 0
+            },
+            "halfWidthM": 3,
+            "halfDepthM": 4,
+            "rotation": 0,
+            "heightM": 8
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -17.67766952966369,
+          "y": 19.277669529663687,
+          "z": -1.0824450702943668e-15
+        },
+        "hidden": [
+          {
+            "id": "west",
+            "atM": 4.242640687119285
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: top-down, the player in a doorway inside a footprint hides that building at 0 m",
+      "op": "occluders",
+      "input": {
+        "mode": "top_down",
+        "feet": {
+          "x": 10,
+          "y": 0,
+          "z": 4.8
+        },
+        "solids": [
+          {
+            "id": "house",
+            "at": {
+              "x": 10,
+              "y": 0,
+              "z": 7
+            },
+            "halfWidthM": 4,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "neighbour",
+            "at": {
+              "x": 20,
+              "y": 0,
+              "z": 7
+            },
+            "halfWidthM": 4,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 10,
+          "y": 1.6,
+          "z": 4.8
+        },
+        "lens": {
+          "x": 10,
+          "y": 31.562507523351975,
+          "z": 3.300619156759578
+        },
+        "hidden": [
+          {
+            "id": "house",
+            "atM": 0
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: third person pulls in, nothing is hidden",
+      "note": "The boom's own sweep brings the lens in front of the wall (collision 0.3 m probe, 1.4 m nearest).",
+      "op": "occluders",
+      "input": {
+        "mode": "third_person",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "view": {
+          "yawDeg": 180
+        },
+        "solids": [
+          {
+            "id": "wall-behind",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 3
+            },
+            "halfWidthM": 3,
+            "halfDepthM": 0.3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "pull-in",
+        "pivot": {
+          "x": 0,
+          "y": 0.96,
+          "z": 0
+        },
+        "lens": {
+          "x": -5.06537498250797e-16,
+          "y": 2.2893223462011076,
+          "z": 4.136192562651273
+        },
+        "hidden": [],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: first person has no sight line to clear",
+      "note": "A follow mode is read at the view yaw the host gives (here 0); with none it is refused (the next cases).",
+      "op": "occluders",
+      "input": {
+        "mode": "first_person",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "view": {
+          "yawDeg": 0
+        },
+        "solids": [
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "none",
+        "pivot": {
+          "x": 0,
+          "y": 1.7,
+          "z": 0
+        },
+        "lens": {
+          "x": 0,
+          "y": 1.7,
+          "z": 0
+        },
+        "hidden": [],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: first person with no view yaw is refused, as the move is",
+      "note": "A follow mode opens on the player's facing, so core has no yaw of its own to read the lens at: missing-view-yaw (PL.movement-followups, U95(5)), never yaw 0.",
+      "op": "occluders",
+      "input": {
+        "mode": "first_person",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "error": "missing-view-yaw"
+      }
+    },
+    {
+      "name": "occluders: third person with no view yaw is refused, as the move is",
+      "op": "occluders",
+      "input": {
+        "mode": "third_person",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "wall-behind",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 3
+            },
+            "halfWidthM": 3,
+            "halfDepthM": 0.3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "error": "missing-view-yaw"
+      }
+    },
+    {
+      "name": "occluders: third person with a view yaw that is not a number is refused",
+      "op": "occluders",
+      "input": {
+        "mode": "third_person",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "view": {
+          "yawDeg": "behind"
+        },
+        "solids": []
+      },
+      "expected": {
+        "error": "missing-view-yaw"
+      }
+    },
+    {
+      "name": "sideView: a house across the player's line blocks the strip; one behind the line does not",
+      "note": "The Smithy stands 5 m off the line: the player walks past in front of it (and the lens hides it).",
+      "op": "sideView",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": 0.42,
+        "solids": [
+          {
+            "id": "across",
+            "at": {
+              "x": 10,
+              "y": 0,
+              "z": 1
+            },
+            "halfWidthM": 4,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "depthZ": 0,
+        "blockers": [
+          {
+            "id": "across",
+            "xMin": 6,
+            "xMax": 14,
+            "bottomY": 0,
+            "topY": 4
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "sideView: a well 1 m tall blocks on the ground; its top is over the 0.75 m step",
+      "op": "sideView",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": 0.42,
+        "solids": [
+          {
+            "id": "well",
+            "at": {
+              "x": -6,
+              "y": 0,
+              "z": 0.3
+            },
+            "halfWidthM": 1,
+            "halfDepthM": 1,
+            "rotation": 0,
+            "heightM": 1
+          }
+        ]
+      },
+      "expected": {
+        "depthZ": 0,
+        "blockers": [
+          {
+            "id": "well",
+            "xMin": -7,
+            "xMax": -5,
+            "bottomY": 0,
+            "topY": 1
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "sideView: the body's radius decides a near miss",
+      "note": "Their near faces stand 0.4 m and 0.5 m off the line; the body reaches 0.42 m.",
+      "op": "sideView",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": 0.42,
+        "solids": [
+          {
+            "id": "just-in",
+            "at": {
+              "x": 4,
+              "y": 0,
+              "z": 0.9
+            },
+            "halfWidthM": 1,
+            "halfDepthM": 0.5,
+            "rotation": 0,
+            "heightM": 2
+          },
+          {
+            "id": "just-out",
+            "at": {
+              "x": -4,
+              "y": 0,
+              "z": 1
+            },
+            "halfWidthM": 1,
+            "halfDepthM": 0.5,
+            "rotation": 0,
+            "heightM": 2
+          }
+        ]
+      },
+      "expected": {
+        "depthZ": 0,
+        "blockers": [
+          {
+            "id": "just-in",
+            "xMin": 3,
+            "xMax": 5,
+            "bottomY": 0,
+            "topY": 2
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "sideView: a turned house blocks the stretch its footprint crosses",
+      "op": "sideView",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 2
+        },
+        "radiusM": 0.42,
+        "solids": [
+          {
+            "id": "turned",
+            "at": {
+              "x": 5,
+              "y": 0,
+              "z": 2
+            },
+            "halfWidthM": 3,
+            "halfDepthM": 1,
+            "rotation": 0.5235987755982988,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "depthZ": 2,
+        "blockers": [
+          {
+            "id": "turned",
+            "xMin": 2.2725386608210716,
+            "xMax": 7.727461339178928,
+            "bottomY": 0,
+            "topY": 4
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "sideView: a turned house off-centre on the line: the stretch depends on which way it is turned",
+      "op": "sideView",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": 0.42,
+        "solids": [
+          {
+            "id": "plus",
+            "at": {
+              "x": 5,
+              "y": 0,
+              "z": 1.2
+            },
+            "halfWidthM": 3,
+            "halfDepthM": 1,
+            "rotation": 0.5235987755982988,
+            "heightM": 4
+          },
+          {
+            "id": "minus",
+            "at": {
+              "x": -5,
+              "y": 0,
+              "z": 1.2
+            },
+            "halfWidthM": 3,
+            "halfDepthM": 1,
+            "rotation": -0.5235987755982988,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "depthZ": 0,
+        "blockers": [
+          {
+            "id": "minus",
+            "xMin": -8.013768405169847,
+            "xMax": -4.350999629903724,
+            "bottomY": 0,
+            "topY": 4
+          },
+          {
+            "id": "plus",
+            "xMin": 4.350999629903724,
+            "xMax": 8.013768405169847,
+            "bottomY": 0,
+            "topY": 4
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "sideView: the strip is the player's own depth; a raised base is kept",
+      "op": "sideView",
+      "input": {
+        "mode": "fighting",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": -3.5
+        },
+        "radiusM": 0.3,
+        "solids": [
+          {
+            "id": "stage",
+            "at": {
+              "x": 2,
+              "y": 0.2,
+              "z": -3
+            },
+            "halfWidthM": 1.5,
+            "halfDepthM": 1,
+            "rotation": 0,
+            "heightM": 0.6
+          },
+          {
+            "id": "crate",
+            "at": {
+              "x": -2,
+              "y": 0,
+              "z": 0
+            },
+            "halfWidthM": 0.5,
+            "halfDepthM": 0.5,
+            "rotation": 0,
+            "heightM": 1
+          }
+        ]
+      },
+      "expected": {
+        "depthZ": -3.5,
+        "blockers": [
+          {
+            "id": "stage",
+            "xMin": 0.5,
+            "xMax": 3.5,
+            "bottomY": 0.2,
+            "topY": 0.8
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "sideView: several blockers sorted along x; an unreadable one is counted",
+      "op": "sideView",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": 0.42,
+        "solids": [
+          {
+            "id": "b",
+            "at": {
+              "x": 8,
+              "y": 0,
+              "z": 0
+            },
+            "halfWidthM": 1,
+            "halfDepthM": 1,
+            "rotation": 0,
+            "heightM": 3
+          },
+          {
+            "id": "a",
+            "at": {
+              "x": -8,
+              "y": 0,
+              "z": 0
+            },
+            "halfWidthM": 1,
+            "halfDepthM": 1,
+            "rotation": 0,
+            "heightM": 3
+          },
+          {
+            "id": "c",
+            "at": {
+              "x": 8,
+              "y": 0,
+              "z": 0
+            },
+            "halfWidthM": 1.5,
+            "halfDepthM": 1,
+            "rotation": 0,
+            "heightM": 2
+          },
+          {
+            "id": "flat",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "halfWidthM": 1,
+            "halfDepthM": 0,
+            "rotation": 0,
+            "heightM": 1
+          }
+        ]
+      },
+      "expected": {
+        "depthZ": 0,
+        "blockers": [
+          {
+            "id": "a",
+            "xMin": -9,
+            "xMax": -7,
+            "bottomY": 0,
+            "topY": 3
+          },
+          {
+            "id": "c",
+            "xMin": 6.5,
+            "xMax": 9.5,
+            "bottomY": 0,
+            "topY": 2
+          },
+          {
+            "id": "b",
+            "xMin": 7,
+            "xMax": 9,
+            "bottomY": 0,
+            "topY": 3
+          }
+        ],
+        "unreadable": 1
+      }
+    },
+    {
+      "name": "sideView: an isometric view has no strip",
+      "op": "sideView",
+      "input": {
+        "mode": "isometric",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": 0.42,
+        "solids": [
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "error": "not-a-side-view"
+      }
+    },
+    {
+      "name": "sideView: a negative radius is refused",
+      "op": "sideView",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": -1,
+        "solids": [
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "error": "invalid-radius"
+      }
+    },
+    {
+      "name": "buildingSolid: a two-storey building is 8 m tall over its stated footprint",
+      "note": "Babylon's BuildingCollisionSystem: floors × FLOOR_HEIGHT 4 m.",
+      "op": "buildingSolid",
+      "input": {
+        "building": {
+          "id": "b1",
+          "position": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "rotation": 0.3,
+          "spec": {
+            "buildingRole": "smithy",
+            "floors": 2,
+            "width": 10,
+            "depth": 6,
+            "hasChimney": true,
+            "hasBalcony": false
+          }
+        }
+      },
+      "expected": {
+        "solid": {
+          "id": "b1",
+          "at": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "halfWidthM": 5,
+          "halfDepthM": 3,
+          "rotation": 0.3,
+          "heightM": 8
+        }
+      }
+    },
+    {
+      "name": "buildingSolid: no storey count is one storey",
+      "op": "buildingSolid",
+      "input": {
+        "building": {
+          "id": "b1",
+          "position": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "rotation": 0.3,
+          "spec": {
+            "width": 8,
+            "depth": 8
+          }
+        }
+      },
+      "expected": {
+        "solid": {
+          "id": "b1",
+          "at": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "halfWidthM": 4,
+          "halfDepthM": 4,
+          "rotation": 0.3,
+          "heightM": 4
+        }
+      }
+    },
+    {
+      "name": "buildingSolid: zero storeys is one storey",
+      "op": "buildingSolid",
+      "input": {
+        "building": {
+          "id": "b1",
+          "position": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "rotation": 0.3,
+          "spec": {
+            "width": 8,
+            "depth": 8,
+            "floors": 0
+          }
+        }
+      },
+      "expected": {
+        "solid": {
+          "id": "b1",
+          "at": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "halfWidthM": 4,
+          "halfDepthM": 4,
+          "rotation": 0.3,
+          "heightM": 4
+        }
+      }
+    },
+    {
+      "name": "buildingSolid: 2.7 storeys is two",
+      "op": "buildingSolid",
+      "input": {
+        "building": {
+          "id": "b1",
+          "position": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "rotation": 0.3,
+          "spec": {
+            "width": 8,
+            "depth": 8,
+            "floors": 2.7
+          }
+        }
+      },
+      "expected": {
+        "solid": {
+          "id": "b1",
+          "at": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "halfWidthM": 4,
+          "halfDepthM": 4,
+          "rotation": 0.3,
+          "heightM": 8
+        }
+      }
+    },
+    {
+      "name": "buildingSolid: no width states no footprint (null, not a guess)",
+      "op": "buildingSolid",
+      "input": {
+        "building": {
+          "id": "b1",
+          "position": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "rotation": 0.3,
+          "spec": {
+            "depth": 6,
+            "floors": 1
+          }
+        }
+      },
+      "expected": {
+        "solid": null
+      }
+    },
+    {
+      "name": "buildingSolid: a zero depth states no footprint",
+      "op": "buildingSolid",
+      "input": {
+        "building": {
+          "id": "b1",
+          "position": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "rotation": 0.3,
+          "spec": {
+            "width": 6,
+            "depth": 0,
+            "floors": 1
+          }
+        }
+      },
+      "expected": {
+        "solid": null
+      }
+    },
+    {
+      "name": "buildingSolid: no spec states no footprint",
+      "op": "buildingSolid",
+      "input": {
+        "building": {
+          "id": "b1",
+          "position": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "rotation": 0.3,
+          "spec": null
+        }
+      },
+      "expected": {
+        "solid": null
+      }
+    },
+    {
+      "name": "buildingSolid: an unreadable rotation is no solid",
+      "op": "buildingSolid",
+      "input": {
+        "building": {
+          "id": "b1",
+          "position": {
+            "x": 12.5,
+            "y": 0.25,
+            "z": -4
+          },
+          "rotation": "north",
+          "spec": {
+            "width": 6,
+            "depth": 6
+          }
+        }
+      },
+      "expected": {
+        "solid": null
+      }
+    },
+    {
+      "name": "move: isometric at its opening view, forward is +Z (screen-up)",
+      "op": "move",
+      "input": {
+        "mode": "isometric",
+        "move": {
+          "forward": 1,
+          "right": 0
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "world",
+        "plane": "free",
+        "viewYawDeg": 0,
+        "velocity": {
+          "x": 0,
+          "y": 0,
+          "z": 4.5
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: isometric at its opening view, right is +X (screen-right, the player's right facing +Z)",
+      "note": "Unreal's m5: in the IR's left-handed frame +X is the player's right facing +Z. A level that mirrors the IR keeps the player's right (screen-right), the image of −X there.",
+      "op": "move",
+      "input": {
+        "mode": "isometric",
+        "move": {
+          "forward": 0,
+          "right": 1
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "world",
+        "plane": "free",
+        "viewYawDeg": 0,
+        "velocity": {
+          "x": 4.5,
+          "y": 0,
+          "z": 0
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: isometric orbited to yaw 90, forward is still +Z (the world frame does not turn)",
+      "op": "move",
+      "input": {
+        "mode": "isometric",
+        "move": {
+          "forward": 1,
+          "right": 0
+        },
+        "viewYawDeg": 90,
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "world",
+        "plane": "free",
+        "viewYawDeg": 90,
+        "velocity": {
+          "x": 0,
+          "y": 0,
+          "z": 4.5
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: isometric diagonal is clamped to one walk",
+      "op": "move",
+      "input": {
+        "mode": "isometric",
+        "move": {
+          "forward": 1,
+          "right": 1
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "world",
+        "plane": "free",
+        "viewYawDeg": 0,
+        "velocity": {
+          "x": 3.181980515339464,
+          "y": 0,
+          "z": 3.181980515339464
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: isometric back and left",
+      "op": "move",
+      "input": {
+        "mode": "isometric",
+        "move": {
+          "forward": -1,
+          "right": -1
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "world",
+        "plane": "free",
+        "viewYawDeg": 0,
+        "velocity": {
+          "x": -3.181980515339464,
+          "y": 0,
+          "z": -3.181980515339464
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: top-down, half a stick forward is half a walk",
+      "op": "move",
+      "input": {
+        "mode": "top_down",
+        "move": {
+          "forward": 0.5,
+          "right": 0
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "world",
+        "plane": "free",
+        "viewYawDeg": 0,
+        "velocity": {
+          "x": 0,
+          "y": 0,
+          "z": 2.25
+        },
+        "speedMps": 2.25
+      }
+    },
+    {
+      "name": "move: run is twice the walk (Unreal's 4.5 m/s walk runs at 9 m/s)",
+      "note": "Unreal runs at 4.5 × 7.5/4.2 = 8.04 m/s today (Godot's ratio); core's run is Babylon's, twice the walk.",
+      "op": "move",
+      "input": {
+        "mode": "isometric",
+        "move": {
+          "forward": 1,
+          "right": 0
+        },
+        "walkMps": 4.5,
+        "running": true
+      },
+      "expected": {
+        "frame": "world",
+        "plane": "free",
+        "viewYawDeg": 0,
+        "velocity": {
+          "x": 0,
+          "y": 0,
+          "z": 9
+        },
+        "speedMps": 9
+      }
+    },
+    {
+      "name": "move: run on Babylon's own walk is its own run (2.5 → 5 m/s)",
+      "op": "move",
+      "input": {
+        "mode": "third_person",
+        "move": {
+          "forward": 1,
+          "right": 0
+        },
+        "viewYawDeg": 0,
+        "walkMps": 2.5,
+        "running": true
+      },
+      "expected": {
+        "frame": "view",
+        "plane": "free",
+        "viewYawDeg": 0,
+        "velocity": {
+          "x": 0,
+          "y": 0,
+          "z": 5
+        },
+        "speedMps": 5
+      }
+    },
+    {
+      "name": "move: side view, right moves the player screen-right (−X under yaw 180)",
+      "op": "move",
+      "input": {
+        "mode": "side_scroll",
+        "move": {
+          "forward": 0,
+          "right": 1
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "view",
+        "plane": "xy",
+        "viewYawDeg": 180,
+        "velocity": {
+          "x": -4.5,
+          "y": 0,
+          "z": 0
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: side view, forward moves nothing (the depth is dropped)",
+      "op": "move",
+      "input": {
+        "mode": "side_scroll",
+        "move": {
+          "forward": 1,
+          "right": 0
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "view",
+        "plane": "xy",
+        "viewYawDeg": 180,
+        "velocity": {
+          "x": 5.51091059616309e-16,
+          "y": 0,
+          "z": 0
+        },
+        "speedMps": 5.51091059616309e-16
+      }
+    },
+    {
+      "name": "move: side view, a diagonal keeps only its x part",
+      "note": "Babylon's avatar walks its facing (45° off) at the walk and loses z: 0.707 of the speed along x.",
+      "op": "move",
+      "input": {
+        "mode": "side_scroll",
+        "move": {
+          "forward": 1,
+          "right": 1
+        },
+        "walkMps": 4.5,
+        "running": true
+      },
+      "expected": {
+        "frame": "view",
+        "plane": "xy",
+        "viewYawDeg": 180,
+        "velocity": {
+          "x": -6.363961030678926,
+          "y": 0,
+          "z": 0
+        },
+        "speedMps": 6.363961030678926
+      }
+    },
+    {
+      "name": "move: side view, a given yaw is ignored (the yaw is fixed)",
+      "op": "move",
+      "input": {
+        "mode": "side_scroll",
+        "move": {
+          "forward": 0,
+          "right": 1
+        },
+        "viewYawDeg": 0,
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "view",
+        "plane": "xy",
+        "viewYawDeg": 180,
+        "velocity": {
+          "x": -4.5,
+          "y": 0,
+          "z": 0
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: fighting, left moves +X",
+      "op": "move",
+      "input": {
+        "mode": "fighting",
+        "move": {
+          "forward": 0,
+          "right": -1
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "view",
+        "plane": "xy",
+        "viewYawDeg": 180,
+        "velocity": {
+          "x": 4.5,
+          "y": 0,
+          "z": 0
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: third person at yaw 90, forward is +X and right is −Z",
+      "op": "move",
+      "input": {
+        "mode": "third_person",
+        "move": {
+          "forward": 1,
+          "right": 1
+        },
+        "viewYawDeg": 90,
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "view",
+        "plane": "free",
+        "viewYawDeg": 90,
+        "velocity": {
+          "x": 3.181980515339464,
+          "y": 0,
+          "z": -3.181980515339464
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: first person at yaw 180, forward is −Z",
+      "op": "move",
+      "input": {
+        "mode": "first_person",
+        "move": {
+          "forward": 1,
+          "right": 0
+        },
+        "viewYawDeg": 180,
+        "walkMps": 4.5
+      },
+      "expected": {
+        "frame": "view",
+        "plane": "free",
+        "viewYawDeg": 180,
+        "velocity": {
+          "x": 5.51091059616309e-16,
+          "y": 0,
+          "z": -4.5
+        },
+        "speedMps": 4.5
+      }
+    },
+    {
+      "name": "move: third person with no view yaw is refused",
+      "op": "move",
+      "input": {
+        "mode": "third_person",
+        "move": {
+          "forward": 1,
+          "right": 0
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "error": "missing-view-yaw"
+      }
+    },
+    {
+      "name": "move: no input stands still",
+      "op": "move",
+      "input": {
+        "mode": "isometric",
+        "move": {
+          "forward": 0,
+          "right": 0
+        },
+        "walkMps": 4.5,
+        "running": true
+      },
+      "expected": {
+        "frame": "world",
+        "plane": "free",
+        "viewYawDeg": 0,
+        "velocity": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "speedMps": 0
+      }
+    },
+    {
+      "name": "move: an unreadable input is refused",
+      "op": "move",
+      "input": {
+        "mode": "isometric",
+        "move": {
+          "forward": "up",
+          "right": 0
+        },
+        "walkMps": 4.5
+      },
+      "expected": {
+        "error": "invalid-move"
+      }
+    },
+    {
+      "name": "move: a walk of 0 is refused",
+      "op": "move",
+      "input": {
+        "mode": "isometric",
+        "move": {
+          "forward": 1,
+          "right": 0
+        },
+        "walkMps": 0
+      },
+      "expected": {
+        "error": "invalid-walk"
+      }
+    },
+    {
+      "name": "slope: 0° (level)",
+      "op": "slope",
+      "input": {
+        "slopeDeg": 0
+      },
+      "expected": {
+        "response": "walk"
+      }
+    },
+    {
+      "name": "slope: 15° (the stand limit itself is walked)",
+      "op": "slope",
+      "input": {
+        "slopeDeg": 15
+      },
+      "expected": {
+        "response": "walk"
+      }
+    },
+    {
+      "name": "slope: 15.0001° (just past the stand limit slides when idle)",
+      "op": "slope",
+      "input": {
+        "slopeDeg": 15.0001
+      },
+      "expected": {
+        "response": "slide"
+      }
+    },
+    {
+      "name": "slope: 44.765° (Unreal's default walkable floor: a slide here)",
+      "op": "slope",
+      "input": {
+        "slopeDeg": 44.765
+      },
+      "expected": {
+        "response": "slide"
+      }
+    },
+    {
+      "name": "slope: 50° (Unreal's villagers' and Godot's limit: a slide here)",
+      "op": "slope",
+      "input": {
+        "slopeDeg": 50
+      },
+      "expected": {
+        "response": "slide"
+      }
+    },
+    {
+      "name": "slope: 74.999° (just under the climb limit)",
+      "op": "slope",
+      "input": {
+        "slopeDeg": 74.999
+      },
+      "expected": {
+        "response": "slide"
+      }
+    },
+    {
+      "name": "slope: 75° (the climb limit itself is not gone up)",
+      "op": "slope",
+      "input": {
+        "slopeDeg": 75
+      },
+      "expected": {
+        "response": "blocked"
+      }
+    },
+    {
+      "name": "slope: 90° (a wall)",
+      "op": "slope",
+      "input": {
+        "slopeDeg": 90
+      },
+      "expected": {
+        "response": "blocked"
+      }
+    },
+    {
+      "name": "slope: a negative angle is unreadable",
+      "op": "slope",
+      "input": {
+        "slopeDeg": -1
+      },
+      "expected": {
+        "response": null
+      }
+    },
+    {
+      "name": "slope: past vertical is unreadable",
+      "op": "slope",
+      "input": {
+        "slopeDeg": 91
+      },
+      "expected": {
+        "response": null
+      }
+    },
+    {
+      "name": "slope: a word is unreadable",
+      "op": "slope",
+      "input": {
+        "slopeDeg": "steep"
+      },
+      "expected": {
+        "response": null
+      }
+    },
+    {
+      "name": "slopeAtRest: 0° (level: stood on)",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": 0
+      },
+      "expected": {
+        "atRest": "stand"
+      }
+    },
+    {
+      "name": "slopeAtRest: 15° (the stand limit itself is stood on)",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": 15
+      },
+      "expected": {
+        "atRest": "stand"
+      }
+    },
+    {
+      "name": "slopeAtRest: 15.0001° (just past the stand limit slides back)",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": 15.0001
+      },
+      "expected": {
+        "atRest": "slideBack"
+      }
+    },
+    {
+      "name": "slopeAtRest: 50° (a slide slope slides back)",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": 50
+      },
+      "expected": {
+        "atRest": "slideBack"
+      }
+    },
+    {
+      "name": "slopeAtRest: 74.999° (just under the climb limit slides back)",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": 74.999
+      },
+      "expected": {
+        "atRest": "slideBack"
+      }
+    },
+    {
+      "name": "slopeAtRest: 75° (the climb limit itself slides back, though it is not gone up)",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": 75
+      },
+      "expected": {
+        "atRest": "slideBack"
+      }
+    },
+    {
+      "name": "slopeAtRest: 80° (an 80° face is not stood on: it slides back)",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": 80
+      },
+      "expected": {
+        "atRest": "slideBack"
+      }
+    },
+    {
+      "name": "slopeAtRest: 90° (a wall slides back)",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": 90
+      },
+      "expected": {
+        "atRest": "slideBack"
+      }
+    },
+    {
+      "name": "slopeAtRest: a negative angle is unreadable",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": -1
+      },
+      "expected": {
+        "atRest": null
+      }
+    },
+    {
+      "name": "slopeAtRest: past vertical is unreadable",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": 91
+      },
+      "expected": {
+        "atRest": null
+      }
+    },
+    {
+      "name": "slopeAtRest: a word is unreadable",
+      "op": "slopeAtRest",
+      "input": {
+        "slopeDeg": "steep"
+      },
+      "expected": {
+        "atRest": null
+      }
+    },
+    {
+      "name": "step: 0 m (level)",
+      "op": "step",
+      "input": {
+        "riseM": 0
+      },
+      "expected": {
+        "response": "none"
+      }
+    },
+    {
+      "name": "step: -0.3 m (a drop is no step)",
+      "op": "step",
+      "input": {
+        "riseM": -0.3
+      },
+      "expected": {
+        "response": "none"
+      }
+    },
+    {
+      "name": "step: 0.2 m (a kerb)",
+      "op": "step",
+      "input": {
+        "riseM": 0.2
+      },
+      "expected": {
+        "response": "step"
+      }
+    },
+    {
+      "name": "step: 0.45 m (Unreal's 45 cm step)",
+      "op": "step",
+      "input": {
+        "riseM": 0.45
+      },
+      "expected": {
+        "response": "step"
+      }
+    },
+    {
+      "name": "step: 0.75 m (the step limit itself)",
+      "op": "step",
+      "input": {
+        "riseM": 0.75
+      },
+      "expected": {
+        "response": "step"
+      }
+    },
+    {
+      "name": "step: 0.7501 m (just over the step limit)",
+      "op": "step",
+      "input": {
+        "riseM": 0.7501
+      },
+      "expected": {
+        "response": "blocked"
+      }
+    },
+    {
+      "name": "step: 1 m (the 1 m well)",
+      "op": "step",
+      "input": {
+        "riseM": 1
+      },
+      "expected": {
+        "response": "blocked"
+      }
+    },
+    {
+      "name": "step: no rise stated is unreadable",
+      "op": "step",
+      "input": {
+        "riseM": null
+      },
+      "expected": {
+        "response": null
+      }
+    }
+  ]
+}

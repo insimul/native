@@ -61,7 +61,7 @@
       "A climb or a swim is charged to the shared stamina meter; never keep a second traversal meter.",
       "Fast travel advances the world clock in the plan's steps, in order, before the arrival: a schedule inside the journey runs.",
       "Ground seating keeps no state in a save: a load seats every body at once.",
-      "Slope limit and step-up are the character controller's (U87(8)); they are not core parameters."
+      "Slope limit and step-up are not this pack's parameters: they are core's movement contract (PLAYER_GROUND in src/camera/movement-contract.ts, U94(4), U95(1)), which the character controller applies."
     ],
     "doNot": [
       "Stream positions or per-frame movement into core: report the arrival only.",

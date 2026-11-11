@@ -7,7 +7,7 @@
       "authoredIn": "core",
       "ruling": "U27 (B9 village composition)",
       "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
-      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "ir": "Brightwater export of 2026-10-17 (brightwater-ir-20261017.json; its sha256 below)",
       "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
       "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
     },
@@ -15,9 +15,9 @@
       "authoredIn": "core",
       "ruling": "U38 (L3 lot-sizing: village lots grow at their source)",
       "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
-      "ir": "$LOOPS_HOME/features/state/lot-sizing/round-1/ir/brightwater-ir-lot-sizing.json (pipelines feat/lot-sizing, exported 2026-10-24)",
+      "ir": "Brightwater export, pipelines feat/lot-sizing 37a2db1 (L3 lot-sizing round 1, brightwater-ir-lot-sizing.json, exported 2026-10-24)",
       "irSha256": "06f7101bccde8f4ca130c1dfb34b7084a4f7fc7fe809994f0c171b7fcbad3c72",
-      "inputsFrom": "$LOOPS_HOME/features/state/lot-sizing/round-1/g5-yards.ts: the IR's lots (+256, the corpus plan frame); outlines as the IR's spec boxes, or the B8 pack houses through core's fitBuildingToLot (conformance/layout/building-fit.json's Brightwater inputs, lot and node moved to the IR's)"
+      "inputsFrom": "L3 lot-sizing round 1's g5-yards.ts: the IR's lots (+256, the corpus plan frame); outlines as the IR's spec boxes, or the B8 pack houses through core's fitBuildingToLot (conformance/layout/building-fit.json's Brightwater inputs, lot and node moved to the IR's)"
     }
   ],
   "tolerance": 0.000001,

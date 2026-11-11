@@ -355,6 +355,30 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   board is the case's `board`, else `{ host, name }` from `host` and its
   `settlement`. The P8 play test's `PickProp` must skip the board's sign (it
   opens the board).
+- **Camera movement (Unreal's P7 binding, after PL.native-camera-movement;
+  U95(5)).** Core's movement contract (PL.movement-contract 89dd9ed and
+  PL.movement-followups 431c95b, values confirmed by U95(1)) answers the P7
+  cell's round-2 m4, m5 and m6 through the `camera.movement.*` rows (`README.md`,
+  "The camera movement rows"), so the cell binds them instead of a second interim
+  copy of the rule. Read at unreal main `b3da381` (read only):
+
+  | Unreal today | Row (and what the binding sends or reads) |
+  |---|---|
+  | `kRunOverWalk = 7.5f / 4.2f` (`Private/InsimulPlayerCamera.cpp:79`, applied at `:930`) | `camera.movement.contract` → `camera-movement.gait.runOverWalk` (2): the run is twice the walk, 804 → 900 cm/s on the 450 cm/s walk; `camera.movement.move { …, running: true }` answers the velocity |
+  | the player's `UCharacterMovementComponent` defaults (walkable floor 44.765°, `MaxStepHeight` 45 cm); the villagers' `SetWalkableFloorAngle(50.f)` (`Private/InsimulAICharacter.cpp:271`) is theirs and stays | `…contract` → `ground` (`standMaxDeg` 15, `climbMaxDeg` 75, `stepUpM` 0.75): `SetWalkableFloorAngle(75)`, `MaxStepHeight` 75 cm, and a slide back while there is no move input on any floor steeper than 15° (`camera.movement.slopeAtRest`, every slope above 15° including the blocked ones); `camera.movement.slope` / `.step` answer an angle or a rise |
+  | nothing hides what stands between the overhead lens and the player (m4: every `-side` run "hidden behind Denham's Smithy") | `camera.movement.occluders { mode, feet, view: { yawDeg, pitchDeg, distanceM }, solids, exclude: [player, partner] }` each frame → `hidden`: the ids not to draw this frame (draw each again once it is no longer listed); `rule` `pull-in` for the third-person arm (its sweep stays) and `none` for first person. The solids are `camera.movement.buildingSolid { building }` per `BuildingIR` (or the engine's own drawn bounds, as `{ id, at, halfWidthM, halfDepthM, rotation, heightM }`) |
+  | the move input's mapping in the isometric and top-down views (m5) | `camera.movement.move { mode, move: { forward, right }, viewYawDeg, walkMps }` → `velocity` in the IR's frame: world frame for isometric/top-down (orbiting the lens never changes it), view frame for the others; a follow mode without a view yaw is `missing-view-yaw` |
+  | what blocks the platformer's line in the side view (m4) | `camera.movement.sideView { mode, feet, radiusM: <capsule radius in m>, solids }` → `blockers` (a diagnostic: the engine's collision already blocks them) |
+
+  **Frames**: Unreal's level mirrors the IR (`X = x`, `Y = z`), so a point is
+  Unreal `(X, Y, Z)` ÷ 100 as core's `(x, z, y)` (`feet` and every solid's `at`),
+  an Unreal yaw φ (from +X toward +Y) is the IR's ψ = 90° − φ, and a `velocity`
+  comes back as core's `(x, y, z)` m/s → Unreal `(X, Y, Z)` = `(x, z, y)` × 100.
+  The contract's `frame.mirroredLevel` keeps the player's right at the opening
+  view, which Unreal already plays. Re-vendor `conformance/camera/movement.json`
+  from core at this library's pin and drive each case as `tests/props_corpus.cpp`
+  does: the case's `input` is the row's args, and every case is driven again with
+  its `solids` and `exclude` reversed.
 - **Save slots: the disk can change under the session since the 72c658c pin**
   (core's PL.disk-changed-step). When the save files change outside the game,
   send the new listing as `saves.slots.apply` op `disk_changed { slots }` (the

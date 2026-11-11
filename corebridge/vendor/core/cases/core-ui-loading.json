@@ -3,7 +3,7 @@
  "description": "core's loading-screen phase matrix through ui.loading.*",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "72c658c31469216c2e858014b03a7c293aa86def",
+  "coreCommit": "431c95b0cfb209a64f69dbad8eb79556e3c375b0",
   "files": {
    "conformance/ui/loading-phases.json": "b40cf57fb466ecdcdf40014627b0a80e8411b0e0a2f4a367d9d4cd7f0dc4fada"
   }

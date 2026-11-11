@@ -789,11 +789,13 @@ set_tests_properties(props_corpus_negative PROPERTIES
 # binding that flipped its forward would read it), a sequence placement off by
 # more than the tolerance, and a `bad-spot` refusal expected where core settles.
 # It passes only when the runner reports each of them and the run as failed, in
-# that order.
+# that order. No two wildcards stand side by side in the regex (PL.native-camera-movement,
+# from pl-native-interact-target's m3): `[^\n]*.*` makes CMake's matcher backtrack for
+# minutes on a red run, so each `[^\n]*` is followed by a literal from that line's report.
 add_test(NAME props_pickup_placement_corpus_negative COMMAND insimulcore_props_corpus
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/pickup-placement-wrong.json)
 set_tests_properties(props_pickup_placement_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "numerics: the file states \"[^\"]*float32[^\"]*\", not double precision.*contract.frames.unreal: .*contract.constants.spacingM: 2.5 != 3.*expected WRONGLY a clearance with ok false [^\n]*ok: boolean differs.*expected WRONGLY with the building's axis mirrored [^\n]*.*expected WRONGLY the second pick-up 0.01 m further out [^\n]*placements.*expected WRONGLY bad-spot for a settled spot [^\n]*.*op ring of area props-pickup-placement: no case of it was driven.*props_corpus: FAIL")
+  PASS_REGULAR_EXPRESSION "numerics: the file states \"[^\"]*float32[^\"]*\", not double precision.*contract.frames.unreal: .*contract.constants.spacingM: 2.5 != 3.*expected WRONGLY a clearance with ok false [^\n]*ok: boolean differs.*expected WRONGLY with the building's axis mirrored [^\n]*at.x: 0.2576.*expected WRONGLY the second pick-up 0.01 m further out [^\n]*placements.*expected WRONGLY bad-spot for a settled spot [^\n]*unexpected key 'at'.*op ring of area props-pickup-placement: no case of it was driven.*props_corpus: FAIL")
 
 # Its negative control (tests/props-negative/interactables-wrong.json): a wrong
 # range in the contract, a `noun` op with no case, and five wrong cases, each the
@@ -809,6 +811,30 @@ add_test(NAME props_interactables_corpus_negative COMMAND insimulcore_props_corp
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/interactables-wrong.json)
 set_tests_properties(props_interactables_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "contract.rangesM.talk: 3 != 3.5.*expected WRONGLY the board's host sign read as a sign.*expected WRONGLY a fence offered.*expected WRONGLY the nearer barrel examined before the pick-up.*expected WRONGLY the last listed prop on a tie.*expected WRONGLY a second full stop.*expected WRONGLY nothing in reach where the host's own ranges reach the crate.*expected WRONGLY no result for a lone prop.*op noun of area props-interactables: no case of it was driven.*props_corpus: FAIL")
+
+# PL.native-camera-movement (U95(5)): core's movement contract (PL.movement-contract,
+# core 89dd9ed, and PL.movement-followups, 431c95b: what each camera mode's lens
+# hides, what blocks a side view's strip, a building's solid from the IR, how the
+# move input maps per mode, the run, and the slope and step limits) through the
+# camera.movement.* rows, by the same runner: every case driven (the case's input
+# as the row's args), every case driven again with its solids and exclude reversed
+# (the file's order rule, as core's runner checks it), the contract's data tables
+# held to camera.movement.contract. Unreal's P7 cell binds these rows.
+add_test(NAME camera_movement_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/camera/movement.json)
+# Its negative control (tests/props-negative/movement-wrong.json, made from the
+# vendored file): Unreal's 45 cm step in the contract, a slopeAtRest op with no
+# case, and six wrong cases, each the answer an engine keeping one of its interim
+# rules would give (the P7 cell's round-2 m4, m5 and m6, and the follow-ups): the
+# Smithy drawn in the side view (no occlusion), a third-person sight line read at
+# yaw 0 where no view yaw was given (core's answer before PL.movement-followups),
+# the isometric right mirrored onto the IR's -X, Unreal's 7.5/4.2 run, a 50 degree
+# slope walked (Unreal's villagers' floor) and a 0.75 m rise refused (Unreal's
+# 45 cm step). It passes only when the runner reports each of them and the run as
+# failed, in that order. No two wildcards stand side by side in the regex.
+add_test(NAME camera_movement_corpus_negative COMMAND insimulcore_props_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/movement-wrong.json)
+set_tests_properties(camera_movement_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract.ground.stepUpM: 0.45 != 0.75.*expected WRONGLY the Smithy drawn in the side view [^\n]*hidden: length 0 != 1.*expected WRONGLY a third-person sight line read at yaw 0 [^\n]*unexpected key .error.*expected WRONGLY the isometric right mirrored [^\n]*velocity.x: -4.5 != 4.5.*expected WRONGLY Unreal.s 7.5/4.2 run [^\n]*velocity.z: 8.03.*expected WRONGLY a 50 degree slope walked [^\n]*response: .walk. != .slide.*expected WRONGLY a 0.75 m rise refused [^\n]*response: .blocked. != .step.*op slopeAtRest of area camera-movement: no case of it was driven.*props_corpus: FAIL")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

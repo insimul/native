@@ -81,6 +81,27 @@ import {
 } from '@insimul/core/weather/weather';
 import { weatherClimateFacts, weatherDelta } from '@insimul/core/weather/weather-facts';
 
+// ── camera movement (PL.native-camera-movement, U95(5); core's PL.movement-contract
+// and PL.movement-followups) ──────────────────────────────────────────────────
+// Core's movement contract: what a lens hides, what blocks a side view's strip, a
+// building's solid from the IR, how the move input maps per mode, the run, and the
+// slope and step limits. The contract module only, never `camera/movement-corpus`,
+// whose comparator import would bring core's save-file code into the bundle
+// (vendor-core-bundle.mjs UNBUNDLED_CORE_MODULES refuses that).
+import {
+	BUILDING_STOREY_M,
+	PLAYER_GAIT,
+	PLAYER_GROUND,
+	buildingSolidOf,
+	movementModeTable,
+	playerMove,
+	sideViewBlockers,
+	sightOccluders,
+	slopeAtRest,
+	slopeResponse,
+	stepResponse,
+} from '@insimul/core/camera/movement-contract';
+
 // ── genre and module activation ───────────────────────────────────────────────
 import { CAMERA_MODES, DEFAULT_GENRE_ID, GENRE_IDS, getAllGenres } from '@insimul/core/game-genres/registry';
 import { RECIPE_GENRE_BINDINGS, RECIPE_IDS } from '@insimul/core/game-genres/recipes';
@@ -830,6 +851,57 @@ function interactInputOf(method, args) {
 	const ranges = optObject(method, args.ranges, 'ranges') ?? {};
 	for (const [k, v] of Object.entries(ranges)) needNumber(method, v, `ranges.${k}`);
 	return [args, ranges];
+}
+
+// ── camera movement (PL.native-camera-movement) ───────────────────────────────
+
+/**
+ * The data tables of core's `conformance/camera/movement.json` `contract`, built
+ * from core's exported constants exactly as core's emitter
+ * (`scripts/emit-camera-movement-corpus.ts`) builds them, keyed by the file's
+ * `area`: `modes` (each mode's occlusion rule and opening view yaw), `storeyM`,
+ * `gait` and `ground` (each with core's own `source` line). The prose keys
+ * (`occlusion`, `solid`, `sideView`, `frame`, `slope`, `slopeAtRest`, `step`,
+ * `order`) are rules written out, not data, and are not here.
+ */
+function movementContract() {
+	return plain({
+		'camera-movement': {
+			modes: movementModeTable(),
+			storeyM: BUILDING_STOREY_M,
+			gait: PLAYER_GAIT,
+			ground: PLAYER_GROUND,
+		},
+	});
+}
+
+/**
+ * The movement rows check only the JSON types core's TypeScript declares and core
+ * does not read itself: `mode` one of core's `CAMERA_MODES` (core indexes its
+ * tables by it; anything else throws inside core), `feet` a point of three finite
+ * numbers (`MovementVec3`; core builds the pivot from it unread), `view` an object
+ * when present (absent or null is `{}`, as core's runner passes it), `solids` and
+ * `exclude` arrays when present (absent or null is `[]`; a string would be walked
+ * by character), each `exclude` entry a string, and `running` a boolean when
+ * present. Everything else goes to core AS IS, because core reads it and its
+ * corpus pins the reading: a solid that is not a readable box (counted in
+ * `unreadable`), a view yaw that is not a number (the opening yaw, else
+ * `missing-view-yaw`), a radius (`invalid-radius`), a move or a walk
+ * (`invalid-move`, `invalid-walk`), a building (no solid), a slope or a rise that
+ * is not a number (null).
+ */
+function movementModeOf(method, value) {
+	return oneOf(method, value, CAMERA_MODES, 'mode');
+}
+
+function movementFeetOf(method, value) {
+	const feet = needObject(method, value, 'feet');
+	for (const k of ['x', 'y', 'z']) needNumber(method, feet[k], `feet.${k}`);
+	return feet;
+}
+
+function movementSolidsOf(method, value) {
+	return optArrayValue(method, value, 'solids') ?? [];
 }
 
 /** A stated prop (`entities.props[]`) and the board it may host: `{ prop, board? }`. */
@@ -2571,6 +2643,99 @@ const METHODS = {
 
 	/** `genre.recipes` → `{ ids, bindings }` — core's recipe → genre bindings. */
 	'genre.recipes': () => ({ ids: [...RECIPE_IDS], bindings: plain(RECIPE_GENRE_BINDINGS) }),
+
+	// ── camera movement (P7; PL.native-camera-movement, U95(5)) ─────────────────
+	// One row per op of core's `conformance/camera/movement.json`, each ONE core
+	// function of `camera/movement-contract`: the args are a case's `input` and the
+	// answer is in its `expected` shape. Core's metres in the IR's world frame
+	// (left-handed, +Y up, yaw from +Z toward +X); nothing is converted or
+	// mirrored here, the engine's import maps it. Core's refusals (`missing-view-yaw`,
+	// `not-a-side-view`, `invalid-radius`, `invalid-move`, `invalid-walk`) are
+	// VALUES `{ error }`; only a field of the wrong JSON type is an ERROR coded
+	// `[invalid-input]` (`movementModeOf`, `movementFeetOf`).
+
+	/** `camera.movement.contract` → `{ 'camera-movement': { modes, storeyM, gait, ground } }`. */
+	'camera.movement.contract': () => movementContract(),
+
+	/**
+	 * `camera.movement.occluders { mode, feet, view?, solids?, exclude? }` → core's
+	 * `sightOccluders`: `{ rule, pivot, lens, hidden: [{ id, atM }], unreadable }` —
+	 * what the mode's lens hides this frame (`hide`: every solid on the sight line
+	 * from the pivot to the lens, nearest first; `pull-in` and `none` hide
+	 * nothing), or `{ error: 'missing-view-yaw' }` for a follow mode given no view
+	 * yaw. `exclude` names solids never hidden (the player, the conversation partner).
+	 */
+	'camera.movement.occluders': (args) => {
+		const m = 'camera.movement.occluders';
+		const input = coded('invalid-input', () => {
+			const exclude = optArrayValue(m, args.exclude, 'exclude') ?? [];
+			exclude.forEach((id, i) => needString(m, id, `exclude[${i}]`));
+			return {
+				mode: movementModeOf(m, args.mode),
+				feet: movementFeetOf(m, args.feet),
+				view: optObject(m, args.view, 'view') ?? {},
+				solids: movementSolidsOf(m, args.solids),
+				exclude,
+			};
+		});
+		return plain(sightOccluders(input));
+	},
+
+	/**
+	 * `camera.movement.sideView { mode, feet, radiusM, solids? }` → core's
+	 * `sideViewBlockers`: `{ depthZ, blockers: [{ id, xMin, xMax, bottomY, topY }],
+	 * unreadable }` — the solids across the player's strip in a side view (plane
+	 * `xy`), or `{ error: 'not-a-side-view' | 'invalid-radius' }`.
+	 */
+	'camera.movement.sideView': (args) => {
+		const m = 'camera.movement.sideView';
+		const input = coded('invalid-input', () => ({
+			mode: movementModeOf(m, args.mode),
+			feet: movementFeetOf(m, args.feet),
+			radiusM: args.radiusM,
+			solids: movementSolidsOf(m, args.solids),
+		}));
+		return plain(sideViewBlockers(input));
+	},
+
+	/**
+	 * `camera.movement.buildingSolid { building }` → `{ solid }` — core's
+	 * `buildingSolidOf`: a `BuildingIR`'s solid (its stated footprint about its
+	 * position, turned by its rotation, `max(1, floor(floors)) × storeyM` tall), or
+	 * null when the footprint, position or rotation is not stated (core never
+	 * guesses a size). The building goes to core as is.
+	 */
+	'camera.movement.buildingSolid': (args) => ({ solid: plain(buildingSolidOf(args.building)) }),
+
+	/**
+	 * `camera.movement.move { mode, move: { forward, right }, viewYawDeg?, walkMps,
+	 * running? }` → core's `playerMove`: `{ frame, plane, viewYawDeg, velocity,
+	 * speedMps }` — the input clamped to length 1, turned into the mode's frame
+	 * (`world`: forward +Z, right +X, whatever the view; `view`: along the view's
+	 * yaw), the plane's component dropped, scaled by the walk and, running, by
+	 * `gait.runOverWalk`; or `{ error: 'invalid-move' | 'invalid-walk' |
+	 * 'missing-view-yaw' }`.
+	 */
+	'camera.movement.move': (args) => {
+		const m = 'camera.movement.move';
+		const input = coded('invalid-input', () => ({
+			mode: movementModeOf(m, args.mode),
+			move: args.move,
+			viewYawDeg: args.viewYawDeg ?? null,
+			walkMps: args.walkMps,
+			running: optBoolean(m, args.running, 'running') === true,
+		}));
+		return plain(playerMove(input));
+	},
+
+	/** `camera.movement.slope { slopeDeg }` → `{ response }` — core's `slopeResponse` (`walk`, `slide`, `blocked`; null unreadable). */
+	'camera.movement.slope': (args) => ({ response: slopeResponse(args.slopeDeg) }),
+
+	/** `camera.movement.slopeAtRest { slopeDeg }` → `{ atRest }` — core's `slopeAtRest` (`stand`, `slideBack`; null unreadable). */
+	'camera.movement.slopeAtRest': (args) => ({ atRest: slopeAtRest(args.slopeDeg) }),
+
+	/** `camera.movement.step { riseM }` → `{ response }` — core's `stepResponse` (`none`, `step`, `blocked`; null unreadable). */
+	'camera.movement.step': (args) => ({ response: stepResponse(args.riseM) }),
 
 	// ── the genre HUD and the world rules panel (P9a) ──
 	// Each row is one of core's corpus runners and nothing else: the args are

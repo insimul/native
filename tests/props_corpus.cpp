@@ -1,5 +1,6 @@
 // props_corpus.cpp — core's P6 corpora, driven through libinsimulcore's
-// `props.*` and `inventory.*` rows.
+// `props.*` and `inventory.*` rows, and core's movement contract corpus through
+// its `camera.movement.*` rows.
 //
 // PL.native-props-rows (rulings U89(2) and U36). Core's P6 logic (P6.core,
 // src/props/{containers,documents,doors,notice-board}.ts, src/ui/inventory-model.ts
@@ -21,6 +22,12 @@
 //                                noun, meanings, host, interact, target
 //                                (PL.native-interact-target, U94(3): core's
 //                                PL.examine-props, src/props/interactables.ts)
+//   camera/movement.json         area camera-movement
+//                                occluders, sideView, buildingSolid, move,
+//                                slope, slopeAtRest, step
+//                                (PL.native-camera-movement, U95(5): core's
+//                                PL.movement-contract and PL.movement-followups,
+//                                src/camera/movement-contract.ts)
 //
 // Nothing here re-writes a case or computes an answer: every answer comes out of
 // a row. How each op is driven (core's runner, src/props/props-corpus.ts, is the
@@ -82,9 +89,19 @@
 //     `props.interactables.target`; with `stands`, once per stand with the
 //     stand's fields over the input's and its `at` → `{board, stands: [{at,
 //     ...answer}]}`.
+//   camera-movement occluders/sideView/buildingSolid/move/slope/slopeAtRest/step:
+//   the case's `input` is the row's args AS IS (`camera.movement.<op>`), in core's
+//   metres in the IR's world frame, and the row's answer is compared whole (a
+//   refusal `{error}` is the value core answers). The file's `order` rule
+//   ("answers do not depend on the order of solids or exclude") is driven as
+//   core's runner drives it (`checkMovementCase`): every case is run a second time
+//   with `solids` and `exclude` reversed (`reversed_lists`, self-tested), and that
+//   answer must equal `expected` too. Its contract tables are held to
+//   `camera.movement.contract`, not `props.contract`.
 //
-// Each file's `contract` tables (the data ones) are held to `props.contract`'s
-// answer for its area: every table the row states must equal the file's. The run
+// Each file's `contract` tables (the data ones) are held to its area's contract
+// row (`props.contract`, or the area's own) for its area: every table the row
+// states must equal the file's. The run
 // FAILS on a case whose op is not one of its area's, on an op of the area that no
 // case drives, on a row missing from the method table, on a session left open,
 // on a file of an unknown area, and when its comparator cannot fail (a self-test
@@ -307,6 +324,7 @@ std::string compare(const JsonValue &expected, const JsonValue &actual, double t
 JsonValuePtr projected_article(const JsonValue &a, std::string &why);
 JsonValuePtr meaning_counts(const std::vector<JsonValuePtr> &meanings, std::string &why);
 JsonValuePtr spread(const JsonValue &base, const JsonValue &over);
+JsonValuePtr reversed_lists(const JsonValue &input, bool &changed);
 
 // A `{ <key>: { value, source } }` table as `{ <key>: value }` (the `source` line is
 // prose); nullptr with `why` when it is not an object or an entry states no value.
@@ -424,6 +442,23 @@ bool self_test() {
 			ok = false;
 		}
 	}
+	// The movement order projection: `solids` and `exclude` reversed, every other key kept as is.
+	{
+		bool changed = false;
+		auto in = parse("{\"mode\":\"side_scroll\",\"solids\":[{\"id\":\"a\"},{\"id\":\"b\"}],\"exclude\":[\"p\",\"q\"],\"feet\":[1,2]}");
+		auto got = in ? reversed_lists(*in, changed) : nullptr;
+		auto want = parse("{\"mode\":\"side_scroll\",\"solids\":[{\"id\":\"b\"},{\"id\":\"a\"}],\"exclude\":[\"q\",\"p\"],\"feet\":[1,2]}");
+		if (!got || !changed || compare(*want, *got, 0.0, "$") != "") {
+			std::printf("  [FAIL] order self-test: solids [a, b] and exclude [p, q] should reverse, and nothing else\n");
+			ok = false;
+		}
+		bool none = true;
+		auto plain_in = parse("{\"slopeDeg\":15}");
+		if (!plain_in || !reversed_lists(*plain_in, none) || none) {
+			std::printf("  [FAIL] order self-test: an input with no list should report nothing reversed\n");
+			ok = false;
+		}
+	}
 	for (const Probe &p : probes) {
 		auto e = parse(p.expected);
 		auto a = parse(p.actual);
@@ -447,6 +482,10 @@ struct Area {
 	std::vector<std::string> valued_tables = {};
 	// The file must state its top-level `numerics`, naming double precision.
 	bool numerics = false;
+	// The row whose answer holds the area's contract tables, keyed by the area.
+	const char *contract_row = "props.contract";
+	// Every case is driven again with `solids` and `exclude` reversed (the file's `order` rule).
+	bool reverse_lists = false;
 };
 
 const std::vector<Area> &areas() {
@@ -488,6 +527,16 @@ const std::vector<Area> &areas() {
 	      "props.interactables.interact", "props.interactables.target", "props.contract"},
 	     {"propActions", "actions", "actionTier", "lookTier", "notOffered", "notOfferedReasons", "signArchetypes",
 	      "rangesM", "doorPromptRadiusM", "refusals", "deviations"}},
+	    {"camera-movement",
+	     {"occluders", "sideView", "buildingSolid", "move", "slope", "slopeAtRest", "step"},
+	     {"camera.movement.occluders", "camera.movement.sideView", "camera.movement.buildingSolid",
+	      "camera.movement.move", "camera.movement.slope", "camera.movement.slopeAtRest", "camera.movement.step",
+	      "camera.movement.contract"},
+	     {"modes", "storeyM", "gait", "ground"},
+	     {},
+	     false,
+	     "camera.movement.contract",
+	     true},
 	};
 	return all;
 }
@@ -779,6 +828,24 @@ bool drive_interactables(Caller &c, const std::string &op, const JsonValue &inpu
 }
 
 // Drive one case. False with `why` when it cannot be driven or a call failed.
+// core's runner's order check (movement-corpus.ts, reversedMovementInput): the input
+// with its `solids` and `exclude` arrays reversed, every other key as it stands;
+// `changed` says whether there was a list to reverse.
+JsonValuePtr reversed_lists(const JsonValue &input, bool &changed) {
+	changed = false;
+	std::vector<std::pair<std::string, JsonValuePtr>> items;
+	for (const auto &kv : input.object_items) {
+		if ((kv.first == "solids" || kv.first == "exclude") && kv.second->is_array()) {
+			std::vector<JsonValuePtr> rev(kv.second->array_items.rbegin(), kv.second->array_items.rend());
+			changed = changed || rev.size() > 1;
+			items.emplace_back(kv.first, make_array(std::move(rev)));
+		} else {
+			items.emplace_back(kv.first, kv.second);
+		}
+	}
+	return make_object(std::move(items));
+}
+
 bool drive(Caller &c, const std::string &area, const std::string &op, const JsonValue &input, JsonValuePtr &out,
            std::string &why) {
 	if (area == "props-containers") {
@@ -866,6 +933,12 @@ bool drive(Caller &c, const std::string &area, const std::string &op, const Json
 		return true;
 	}
 	if (area == "props-interactables") return drive_interactables(c, op, input, out, why);
+	if (area == "camera-movement") {
+		auto r = c.call("camera.movement." + op, json_of(input));
+		if (!r) return why = c.error, false;
+		out = r;
+		return true;
+	}
 	why = "area " + area + " is not one this runner drives";
 	return false;
 }
@@ -898,7 +971,9 @@ int main(int argc, char **argv) {
 			for (const auto &x : list->array_items) table.insert(x->as_string());
 		}
 	}
-	JsonValuePtr contract_tables = c.call("props.contract", "{}");
+	// Each contract row's answer, asked once.
+	std::map<std::string, JsonValuePtr> contract_answers;
+	std::map<std::string, std::string> contract_errors;
 
 	const auto t0 = std::chrono::steady_clock::now();
 	for (int f = 1; f < argc; f++) {
@@ -915,7 +990,7 @@ int main(int argc, char **argv) {
 		const std::string area_name = doc.get_string("area");
 		const Area *area = area_named(area_name);
 		if (!area) {
-			std::printf("  [FAIL] %s — area '%s' is not one of the P6 corpora\n", file.c_str(), area_name.c_str());
+			std::printf("  [FAIL] %s — area '%s' is not one this runner drives\n", file.c_str(), area_name.c_str());
 			failed++;
 			continue;
 		}
@@ -949,19 +1024,25 @@ int main(int argc, char **argv) {
 			}
 		}
 
-		// The contract tables: every table props.contract states for the area is the file's.
+		// The contract tables: every table the area's contract row states for it is the file's.
 		{
+			const std::string row = area->contract_row;
+			if (!contract_answers.count(row)) {
+				contract_answers[row] = c.call(row, "{}");
+				contract_errors[row] = contract_answers[row] ? std::string() : c.error;
+			}
+			const JsonValuePtr &contract_tables = contract_answers[row];
 			const JsonValue *mine = contract_tables ? contract_tables->find(area_name) : nullptr;
 			const JsonValue *theirs = doc.find("contract");
 			if (!mine || !mine->is_object() || mine->object_items.empty()) {
-				std::printf("  [FAIL] contract: props.contract states no table for %s%s%s\n", area_name.c_str(),
-				            contract_tables ? "" : ": ", contract_tables ? "" : c.error.c_str());
+				std::printf("  [FAIL] contract: %s states no table for %s%s%s\n", row.c_str(), area_name.c_str(),
+				            contract_tables ? "" : ": ", contract_tables ? "" : contract_errors[row].c_str());
 				failed++;
 			} else {
 				int bad = 0;
 				for (const std::string &t : area->tables) {
 					if (!mine->find(t)) {
-						std::printf("  [FAIL] contract.%s: props.contract states no such table for %s\n", t.c_str(), area_name.c_str());
+						std::printf("  [FAIL] contract.%s: %s states no such table for %s\n", t.c_str(), row.c_str(), area_name.c_str());
 						bad++;
 					}
 				}
@@ -988,12 +1069,12 @@ int main(int argc, char **argv) {
 					}
 				}
 				failed += bad;
-				std::printf("  contract: %zu table(s) %s\n", mine->object_items.size(), bad ? "DIFFER" : "are props.contract's");
+				std::printf("  contract: %zu table(s) %s %s's\n", mine->object_items.size(), bad ? "DIFFER from" : "are", row.c_str());
 			}
 		}
 
 		std::map<std::string, int> driven;
-		int file_undriven = 0;
+		int file_undriven = 0, reversed_runs = 0;
 		for (const auto &cp : case_list->array_items) {
 			const JsonValue &cs = *cp;
 			const std::string name = cs.get_string("name");
@@ -1028,6 +1109,25 @@ int main(int argc, char **argv) {
 				failed++;
 				continue;
 			}
+			if (area->reverse_lists) {
+				bool changed = false;
+				JsonValuePtr reversed = reversed_lists(*input, changed);
+				if (changed) {
+					JsonValuePtr again;
+					if (!drive(c, area_name, op, *reversed, again, why)) {
+						std::printf("  [FAIL] %s — with solids and exclude reversed, not driven: %s\n", name.c_str(), why.c_str());
+						failed++;
+						continue;
+					}
+					const std::string rdiff = compare(*expected, *again, tol, "$");
+					if (!rdiff.empty()) {
+						std::printf("  [FAIL] %s — with solids and exclude reversed: %s\n", name.c_str(), rdiff.c_str());
+						failed++;
+						continue;
+					}
+					reversed_runs++;
+				}
+			}
 			driven[op]++;
 			total_driven++;
 		}
@@ -1041,6 +1141,9 @@ int main(int argc, char **argv) {
 		}
 		std::printf("  %s: %zu case(s), driven %s; %d undriven\n", area_name.c_str(), case_list->size(), by_op.c_str(),
 		            file_undriven);
+		if (area->reverse_lists) {
+			std::printf("  order: %d case(s) driven again with solids and exclude reversed, the same answer\n", reversed_runs);
+		}
 	}
 
 	// No session left open.

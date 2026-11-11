@@ -6,7 +6,8 @@
   "sources": [
     "core game-engine/logic/ContainerManager.ts (toState defaults, isFull, canUnlock, unlock, shouldRespawn, getContainersAtLocation), now delegating shouldRespawn to src/props/containers.ts.",
     "core ContainerIR (ir-types.ts): buildingId, location interior | outdoor.",
-    "pipelines origin/main 9b6a897: pipelines/game-export/ir-generator.ts generateContainerPlacements (every container location interior) and interior: null on every building; Godot merge finding M2-4 (219 Aldermoor containers inside solid houses)."
+    "pipelines origin/main 9b6a897: pipelines/game-export/ir-generator.ts generateContainerPlacements (every container location interior, its position a world-frame point inside the building's footprint); Godot merge finding M2-4 (219 Aldermoor containers inside solid houses).",
+    "pipelines origin/main 5328ed2: pipelines/generators/interior-generator.ts states an interior only on the building a content-keyed rule picks (a settlement's eating house, when any exported text is found at a cafe or restaurant) and interior: null on every other, so every other building's interior containers stay unreachable (no_interior)."
   ],
   "contract": {
     "defaultCapacity": 10,

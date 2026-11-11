@@ -190,6 +190,14 @@ game; **meta** = about the bridge itself.
 | `genre.camera` | `{ value }` → `{ mode }` | `game-genres/resolution` `normalizeCameraMode` | P7 |
 | `genre.resolveGame` | `{ recipe?, world? }` → core's `GameGenreResolution` (refusals are errors with a code) | `game-genres/resolution` `resolveGameGenre` | P7/P9 |
 | `genre.recipes` | `{}` → `{ ids, bindings }` | `game-genres/recipes` | P9 |
+| `camera.movement.contract` | `{}` → `{ 'camera-movement': { modes, storeyM, gait, ground } }` — the data tables of core's `conformance/camera/movement.json` `contract` | `camera/movement-contract` `movementModeTable`, `BUILDING_STOREY_M`, `PLAYER_GAIT`, `PLAYER_GROUND` | P7 movement (PL.native-camera-movement, U95(5); core's PL.movement-contract, U94(4)) |
+| `camera.movement.occluders` | `{ mode, feet, view?, solids?, exclude? }` → `{ rule, pivot, lens, hidden: [{ id, atM }], unreadable }`, or the refusal value `{ error: missing-view-yaw }` | `camera/movement-contract` `sightOccluders` | P7 movement |
+| `camera.movement.sideView` | `{ mode, feet, radiusM, solids? }` → `{ depthZ, blockers: [{ id, xMin, xMax, bottomY, topY }], unreadable }`, or the refusal values `{ error: not-a-side-view }` and `{ error: invalid-radius }` | `camera/movement-contract` `sideViewBlockers` | P7 movement |
+| `camera.movement.buildingSolid` | `{ building }` → `{ solid }` (null: no footprint stated) | `camera/movement-contract` `buildingSolidOf` | P7 movement |
+| `camera.movement.move` | `{ mode, move: { forward, right }, viewYawDeg?, walkMps, running? }` → `{ frame, plane, viewYawDeg, velocity, speedMps }`, or the refusal values `{ error }`: `invalid-move`, `invalid-walk`, `missing-view-yaw` | `camera/movement-contract` `playerMove` | P7 movement |
+| `camera.movement.slope` | `{ slopeDeg }` → `{ response }`: `walk`, `slide`, `blocked`, or null (unreadable) | `camera/movement-contract` `slopeResponse` | P7 movement |
+| `camera.movement.slopeAtRest` | `{ slopeDeg }` → `{ atRest }`: `stand`, `slideBack`, or null (unreadable) | `camera/movement-contract` `slopeAtRest` | P7 movement |
+| `camera.movement.step` | `{ riseM }` → `{ response }`: `none`, `step`, `blocked`, or null (unreadable) | `camera/movement-contract` `stepResponse` | P7 movement |
 | `ui.genreHud` | `{ op: config, view, genre_view, config_of or view_of, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`; `config_of` / `view_of` take a game's own settings, `{ genreConfig }` or `{ recipe, world? }`, plus `state?` for `view_of`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }` (`unresolved_recipe` also carries `reason`); an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`, `genreHudConfigOf`; `game-genres/resolution` `resolveGameGenre` for a recipe) | P9a.native (U84); `config_of` / `view_of` PL.native-genre-hud-config (U92(2)) |
 | `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
@@ -613,7 +621,8 @@ case's `input` as the row's args; `read`, `board` and `inventory` open the
 session and apply ONE op per step; a door `session` is the host's side of a door
 as core's runner keeps it (`prompt` and `step` with the player's `inside`); and
 `generate` projects the row's full articles to the fields the corpus records.
-Each file's data tables are held to `props.contract`. 128 cases, none undriven.
+Each file's data tables are held to `props.contract`. 129 cases at 431c95b (core's
+PL.core-props-docs added a turned-tavern door `session` case; 128 at ac229a7), none undriven.
 `props_corpus_negative` must see one wrong case per file reported
 (`tests/props-negative/`). The hand cases in `tests/cases/bridge-props.json` pin
 the rows' own contract (refusal values, an unknown action as core's, a refused
@@ -770,8 +779,10 @@ which answers it as its corpus pins: a position that is not a finite point (`at`
 pick-up (skipped), an archetype or text that is not a non-empty string (no
 archetype: not offered; no text: blank).
 
-**The evidence** is core's `conformance/props/interactables.json` (27 cases over
-`noun` 1, `meanings` 4, `host` 5, `interact` 2, `target` 15; Brightwater's 78
+**The evidence** is core's `conformance/props/interactables.json` (33 cases at
+431c95b over `noun` 1, `meanings` 4, `host` 5, `interact` 4, `target` 19, after core's
+PL.interactables-cases added four `target` cases whose answer depends on the stated
+`ranges` and two `interact` cases with a lone `prop`; 27 at 72c658c; Brightwater's 78
 stated props among them), copied byte for byte with the other props corpora
 (`PROPS_CORPUS_FILES`) and driven by the same runner, `tests/props_corpus.cpp`, as
 the ctest `props_interactables_corpus`, 0 undriven. The rows take ONE prop or one
@@ -795,6 +806,92 @@ shapes, the refusal values and the errors.
 the bundle went from 1,611,435 bytes (the pin, the repointed P8 imports and the
 `disk_changed` op) to 1,628,183 (+16,748). The 27 cases take about 12 ms under
 QuickJS.
+
+### The camera movement rows: what the lens hides, the move, slopes and steps (PL.native-camera-movement)
+
+Core's movement contract (PL.movement-contract, core 89dd9ed, and
+PL.movement-followups, 431c95b; rulings U94(4), U95(1) and U95(5)) answers the four
+questions Unreal's P7 cell left with core's owner (its round-2 m4, m5 and m6):
+what a camera mode does about a solid between the player and the lens, what the
+world (isometric) frame means for the move input, the run speed, and the slope and
+step limits. `src/camera/movement-contract.ts` states them as data in, decision
+out, in core's metres in the IR's world frame (left-handed, +Y up, a yaw from +Z
+toward +X); the rows (ruling U95(5)) call it and decide nothing, so Unreal's P7
+cell binds them as its P6 cell binds `props.*` instead of keeping an interim copy:
+
+- **`camera.movement.occluders`** — what the mode's lens hides this frame
+  (`sightOccluders`): the four overhead rigs (`isometric`, `side_scroll`,
+  `top_down`, `fighting`) `hide` every solid the sight line from the pivot (the
+  feet plus the mode's `pivotHeightM`) to the lens touches, nearest first, and
+  never one named in `exclude` (the player, the conversation partner);
+  `third_person` pulls the lens in (`pull-in`, its own sweep) and `first_person`
+  has no line (`none`): neither hides anything. The answer carries the `pivot` and
+  `lens` it read. A follow mode given no view yaw is the refusal VALUE
+  `missing-view-yaw` (never yaw 0; PL.movement-followups).
+- **`camera.movement.sideView`** — what blocks the player on a side view's strip
+  (`sideViewBlockers`; plane `xy`): every solid whose footprint comes within the
+  body's `radiusM` of the player's own depth line, as the stretch `xMin`–`xMax` it
+  blocks and its `bottomY`/`topY` (passed over its top only); `not-a-side-view`
+  and `invalid-radius` are values.
+- **`camera.movement.buildingSolid`** — a `BuildingIR`'s solid (`buildingSolidOf`):
+  its stated footprint about its position, turned by its rotation,
+  `max(1, floor(floors)) × storeyM` (4 m) tall; null when the footprint, position or
+  rotation is not stated (core never guesses a size; a host that knows its drawn
+  bounds states its own solids).
+- **`camera.movement.move`** — where the move input takes the player (`playerMove`):
+  clamped to length 1, turned into the mode's frame (`world` for isometric and
+  top-down: forward +Z and right +X whatever the view's yaw, so orbiting never
+  changes the mapping; `view` for the others, along the view's yaw), the plane's
+  component dropped (a side view keeps only x), scaled by the engine's own walk
+  and, `running`, by `gait.runOverWalk` (2). `invalid-move`, `invalid-walk` and
+  `missing-view-yaw` are values. An engine whose level mirrors the IR (Unreal's
+  `X = x`, `Y = z`) maps the answer through its import; the row converts nothing.
+- **`camera.movement.slope`**, **`.slopeAtRest`**, **`.step`** — the ground table
+  (`slopeResponse`, `slopeAtRest`, `stepResponse`): moving, a slope at or below
+  15° is walked, below 75° walked up slowed (`slide`), at or above 75° `blocked`;
+  at rest every slope above 15° slides the player back (`slideBack`), the blocked
+  ones too; a rise up to 0.75 m is stepped, a higher one `blocked`, none or a drop
+  `none`. Anything unreadable is null.
+- **`camera.movement.contract`** — the corpus's data tables from core's constants:
+  `modes` (each mode's occlusion rule and opening view yaw: the follow modes open
+  on the player's facing, isometric and top-down at 0, the side and fighting views
+  at their fixed 180), `storeyM`, `gait` and `ground` (with core's own source
+  lines). The prose keys stay in the corpus.
+
+What stays the engine's: its physics moving the body, the boom's sweep, drawing
+and hiding meshes, the walk speed, and mapping the IR's frame onto its level.
+
+**Errors** (`[invalid-input]`) are only a field of the wrong JSON type core's types
+declare and core does not read itself: a `mode` that is not one of core's
+`CAMERA_MODES`, `feet` that is not a point of three finite numbers, a `view` that is
+not an object, `solids` or `exclude` that is not an array, an `exclude` entry that
+is not a string, a `running` that is not a boolean. Absent `solids`/`exclude` and a
+null `view` read as empty, as core's runner passes them. Everything else goes to
+core, which answers it as its corpus pins: an unreadable solid (counted in
+`unreadable`), a view yaw, radius, move, walk, building, slope or rise that is not
+a number.
+
+**The evidence** is core's `conformance/camera/movement.json` (87 cases over
+`occluders` 21, `sideView` 9, `buildingSolid` 8, `move` 19, `slope` 11,
+`slopeAtRest` 11, `step` 8), copied byte for byte as its own set
+(`CAMERA_CORPUS_FILES`) and driven by `tests/props_corpus.cpp` as the ctest
+`camera_movement_corpus`, 0 undriven. The case's `input` is the row's args as it
+stands; every case with more than one solid or exclusion is driven a second time
+with `solids` and `exclude` reversed (the file's `order` rule, as core's
+`checkMovementCase` checks it; 13 cases), and the data tables are held to
+`camera.movement.contract`. `camera_movement_corpus_negative`
+(`tests/props-negative/movement-wrong.json`) must see Unreal's 45 cm step in the
+contract, an op with no case, and six answers an engine keeping one of its interim
+rules would give — the Smithy drawn in the side view, a third-person sight line
+read at yaw 0, the isometric right mirrored onto the IR's −X, Unreal's 7.5/4.2 run,
+a 50° slope walked and a 0.75 m rise refused — each reported. The hand cases in
+`tests/cases/bridge-camera.json` pin the answer shapes, the refusal values and the
+errors.
+
+**Cost.** Two core modules (`camera/movement-contract` and the `camera/camera-modes`
+table it reads; 160 → 162 at the 431c95b pin): the bundle went from 1,628,178
+bytes (the pin alone) to 1,652,390 (+24,212). The 87 cases, with their 13 reversed
+runs, take about 5 ms under QuickJS.
 
 ### The title, tutorial and onboarding rows (PL.native-title-rows)
 
@@ -973,9 +1070,10 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `corebridge_radiant`, `corebridge_radiant_none` | the radiant corpus through core's real radiant engine on the native Prolog engine |
 | `core_vendor` | every vendored file matches its recorded sha256 and the pin |
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (132 of 147 cases at 72c658c; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
-| `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (128 cases, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
+| `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (129 cases at 431c95b, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
-| `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (27 cases, 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give and two runner controls (a case's `ranges`, a lone `prop`) seen as wrong |
+| `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (33 cases at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give and two runner controls (a case's `ranges`, a lone `prop`) seen as wrong |
+| `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (87 cases, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's

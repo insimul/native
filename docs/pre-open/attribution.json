@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-pl-native-interact-target",
-    "gitHead": "79ff7af8c73e15b7228b9d43745873aa523ccdf6"
+    "root": "native-pl-native-camera-movement",
+    "gitHead": "9ede5194d885565c89cdcd7fd0f007e2de6005ca"
   },
   "coverage": {
-    "trackedFiles": 416,
+    "trackedFiles": 419,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
@@ -124,7 +124,7 @@
       "spdx": "Apache-2.0",
       "package": null,
       "pinnedVersion": null,
-      "pinnedCommit": "72c658c31469216c2e858014b03a7c293aa86def",
+      "pinnedCommit": "431c95b0cfb209a64f69dbad8eb79556e3c375b0",
       "pinSource": "corebridge/vendor/core/VENDORED.json#coreCommit",
       "vendoredPath": "corebridge/vendor/core",
       "derivedWork": []

@@ -1,0 +1,127 @@
+{
+  "area": "camera",
+  "description": "Hand-written: the camera.movement.* rows' own contract (PL.native-camera-movement, U95(5); core's movement contract, PL.movement-contract and PL.movement-followups) — the contract row's tables, each row's answer shape, core's refusals as VALUES ({ error }), the readings core makes itself (an unreadable solid counted, a view yaw or radius or move or walk that is not a number, a building with no footprint, a slope or rise that is not a number) going to core, absent lists and a null view read as empty, and the rows' own refusals as errors coded [invalid-input]. Core's own corpus (conformance/camera/movement.json, 87 cases) is driven whole through these rows by the camera_movement_corpus ctest (tests/props_corpus.cpp), not transcribed here.",
+  "cases": [
+    {
+      "name": "camera.movement.contract: the movement corpus's data tables, from core's constants",
+      "steps": [
+        {
+          "call": "camera.movement.contract",
+          "expect": {
+            "camera-movement": {
+              "modes": [
+                { "mode": "first_person", "occlusion": "none", "openingViewYaw": "player" },
+                { "mode": "third_person", "occlusion": "pull-in", "openingViewYaw": "player" },
+                { "mode": "isometric", "occlusion": "hide", "openingViewYaw": 0 },
+                { "mode": "side_scroll", "occlusion": "hide", "openingViewYaw": 180 },
+                { "mode": "top_down", "occlusion": "hide", "openingViewYaw": 0 },
+                { "mode": "fighting", "occlusion": "hide", "openingViewYaw": 180 }
+              ],
+              "storeyM": 4,
+              "gait": { "runOverWalk": 2, "source": { "$type": "string" } },
+              "ground": { "standMaxDeg": 15, "climbMaxDeg": 75, "stepUpM": 0.75, "source": { "$type": "string" } }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "camera.movement: occluders, sideView, buildingSolid, move, slope, slopeAtRest and step; a refusal is a value; what core reads itself goes to core",
+      "steps": [
+        {
+          "call": "camera.movement.occluders",
+          "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 }, "solids": [{ "id": "smithy", "at": { "x": 0, "y": 0, "z": 8 }, "halfWidthM": 5, "halfDepthM": 3, "rotation": 0, "heightM": 4 }] },
+          "expect": { "rule": "hide", "pivot": { "x": 0, "y": 1.6, "z": 0 }, "lens": { "x": { "$approx": 0 }, "y": 1.6, "z": 15 }, "hidden": [{ "id": "smithy", "atM": 5 }], "unreadable": 0 }
+        },
+        {
+          "call": "camera.movement.occluders",
+          "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 }, "view": null, "exclude": ["smithy"], "solids": [{ "id": "smithy", "at": { "x": 0, "y": 0, "z": 8 }, "halfWidthM": 5, "halfDepthM": 3, "rotation": 0, "heightM": 4 }, null, { "id": "flat", "at": { "x": 0, "y": 0, "z": 8 }, "halfWidthM": 0, "halfDepthM": 3, "rotation": 0, "heightM": 4 }] },
+          "expect": { "$subset": { "rule": "hide", "hidden": [], "unreadable": 2 } }
+        },
+        {
+          "call": "camera.movement.occluders",
+          "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 } },
+          "expect": { "$subset": { "rule": "hide", "hidden": [], "unreadable": 0 } }
+        },
+        {
+          "call": "camera.movement.occluders",
+          "args": { "mode": "third_person", "feet": { "x": 0, "y": 0, "z": 0 }, "view": { "yawDeg": "behind" }, "solids": [] },
+          "expect": { "error": "missing-view-yaw" }
+        },
+        {
+          "call": "camera.movement.occluders",
+          "args": { "mode": "first_person", "feet": { "x": 0, "y": 0, "z": 0 }, "view": { "yawDeg": 0 } },
+          "expect": { "rule": "none", "pivot": { "x": 0, "y": 1.7, "z": 0 }, "lens": { "x": 0, "y": 1.7, "z": 0 }, "hidden": [], "unreadable": 0 }
+        },
+        {
+          "call": "camera.movement.sideView",
+          "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 }, "radiusM": 0.42, "solids": [{ "id": "well", "at": { "x": -6, "y": 0, "z": 0.3 }, "halfWidthM": 1, "halfDepthM": 1, "rotation": 0, "heightM": 1 }, { "id": "smithy", "at": { "x": 0, "y": 0, "z": 8 }, "halfWidthM": 5, "halfDepthM": 3, "rotation": 0, "heightM": 4 }] },
+          "expect": { "depthZ": 0, "blockers": [{ "id": "well", "xMin": -7, "xMax": -5, "bottomY": 0, "topY": 1 }], "unreadable": 0 }
+        },
+        {
+          "call": "camera.movement.sideView",
+          "args": { "mode": "isometric", "feet": { "x": 0, "y": 0, "z": 0 }, "radiusM": 0.42, "solids": [] },
+          "expect": { "error": "not-a-side-view" }
+        },
+        {
+          "call": "camera.movement.sideView",
+          "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 }, "radiusM": "wide" },
+          "expect": { "error": "invalid-radius" }
+        },
+        {
+          "call": "camera.movement.buildingSolid",
+          "args": { "building": { "id": "b1", "position": { "x": 12.5, "y": 0.25, "z": -4 }, "rotation": 0.3, "spec": { "floors": 2, "width": 10, "depth": 6 } } },
+          "expect": { "solid": { "id": "b1", "at": { "x": 12.5, "y": 0.25, "z": -4 }, "halfWidthM": 5, "halfDepthM": 3, "rotation": 0.3, "heightM": 8 } }
+        },
+        {
+          "call": "camera.movement.buildingSolid",
+          "args": { "building": { "id": "b1", "position": { "x": 12.5, "y": 0.25, "z": -4 }, "rotation": "north", "spec": { "width": 6, "depth": 6 } } },
+          "expect": { "solid": null }
+        },
+        { "call": "camera.movement.buildingSolid", "args": {}, "expect": { "solid": null } },
+        {
+          "call": "camera.movement.move",
+          "args": { "mode": "isometric", "move": { "forward": 1, "right": 0 }, "viewYawDeg": 90, "walkMps": 4.5, "running": true },
+          "expect": { "frame": "world", "plane": "free", "viewYawDeg": 90, "velocity": { "x": 0, "y": 0, "z": 9 }, "speedMps": 9 }
+        },
+        {
+          "call": "camera.movement.move",
+          "args": { "mode": "side_scroll", "move": { "forward": 0, "right": 1 }, "walkMps": 4.5, "running": null },
+          "expect": { "frame": "view", "plane": "xy", "viewYawDeg": 180, "velocity": { "x": -4.5, "y": 0, "z": 0 }, "speedMps": 4.5 }
+        },
+        { "call": "camera.movement.move", "args": { "mode": "third_person", "move": { "forward": 1, "right": 0 }, "walkMps": 4.5 }, "expect": { "error": "missing-view-yaw" } },
+        { "call": "camera.movement.move", "args": { "mode": "isometric", "move": { "forward": "up", "right": 0 }, "walkMps": 4.5 }, "expect": { "error": "invalid-move" } },
+        { "call": "camera.movement.move", "args": { "mode": "isometric", "move": null, "walkMps": 4.5 }, "expect": { "error": "invalid-move" } },
+        { "call": "camera.movement.move", "args": { "mode": "isometric", "move": { "forward": 1, "right": 0 }, "walkMps": "fast" }, "expect": { "error": "invalid-walk" } },
+        { "call": "camera.movement.slope", "args": { "slopeDeg": 15 }, "expect": { "response": "walk" } },
+        { "call": "camera.movement.slope", "args": { "slopeDeg": 75 }, "expect": { "response": "blocked" } },
+        { "call": "camera.movement.slope", "args": { "slopeDeg": "steep" }, "expect": { "response": null } },
+        { "call": "camera.movement.slope", "args": {}, "expect": { "response": null } },
+        { "call": "camera.movement.slopeAtRest", "args": { "slopeDeg": 80 }, "expect": { "atRest": "slideBack" } },
+        { "call": "camera.movement.slopeAtRest", "args": { "slopeDeg": 15 }, "expect": { "atRest": "stand" } },
+        { "call": "camera.movement.slopeAtRest", "args": { "slopeDeg": -1 }, "expect": { "atRest": null } },
+        { "call": "camera.movement.step", "args": { "riseM": 0.75 }, "expect": { "response": "step" } },
+        { "call": "camera.movement.step", "args": { "riseM": 0.7501 }, "expect": { "response": "blocked" } },
+        { "call": "camera.movement.step", "args": { "riseM": null }, "expect": { "response": null } }
+      ]
+    },
+    {
+      "name": "camera.movement: the rows refuse a field of the wrong JSON type as [invalid-input]",
+      "steps": [
+        { "call": "camera.movement.occluders", "args": { "mode": "orbit", "feet": { "x": 0, "y": 0, "z": 0 } }, "expectError": "[invalid-input] insimulcore: camera.movement.occluders: `mode` must be one of first_person, third_person, isometric, side_scroll, top_down, fighting (got \"orbit\")" },
+        { "call": "camera.movement.occluders", "args": { "mode": "side_scroll" }, "expectError": "[invalid-input] insimulcore: camera.movement.occluders: `feet` must be a JSON object" },
+        { "call": "camera.movement.occluders", "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": "0" } }, "expectError": "`feet.z` must be a finite number" },
+        { "call": "camera.movement.occluders", "args": { "mode": "side_scroll", "feet": { "x": 0, "z": 0 } }, "expectError": "`feet.y` must be a finite number" },
+        { "call": "camera.movement.occluders", "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 }, "view": [] }, "expectError": "`view` must be a JSON object" },
+        { "call": "camera.movement.occluders", "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 }, "solids": {} }, "expectError": "`solids` must be an array" },
+        { "call": "camera.movement.occluders", "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 }, "exclude": "player" }, "expectError": "`exclude` must be an array" },
+        { "call": "camera.movement.occluders", "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 }, "exclude": ["player", 7] }, "expectError": "[invalid-input] insimulcore: camera.movement.occluders: `exclude[1]` must be a string" },
+        { "call": "camera.movement.sideView", "args": { "feet": { "x": 0, "y": 0, "z": 0 }, "radiusM": 0.42 }, "expectError": "[invalid-input] insimulcore: camera.movement.sideView: `mode` must be one of" },
+        { "call": "camera.movement.sideView", "args": { "mode": "side_scroll", "feet": [0, 0, 0], "radiusM": 0.42 }, "expectError": "`feet` must be a JSON object" },
+        { "call": "camera.movement.sideView", "args": { "mode": "side_scroll", "feet": { "x": 0, "y": 0, "z": 0 }, "radiusM": 0.42, "solids": "well" }, "expectError": "`solids` must be an array" },
+        { "call": "camera.movement.move", "args": { "mode": "SIDE_SCROLL", "move": { "forward": 1, "right": 0 }, "walkMps": 4.5 }, "expectError": "[invalid-input] insimulcore: camera.movement.move: `mode` must be one of" },
+        { "call": "camera.movement.move", "args": { "mode": "isometric", "move": { "forward": 1, "right": 0 }, "walkMps": 4.5, "running": "yes" }, "expectError": "[invalid-input] insimulcore: camera.movement.move: `running` must be a boolean" }
+      ]
+    }
+  ]
+}

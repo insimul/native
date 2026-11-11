@@ -7,7 +7,7 @@
       "authoredIn": "core",
       "ruling": "U27 (B9 village composition)",
       "world": "Brightwater Vale (6abb84ae358820954abf1ea2)",
-      "ir": "$LOOPS_HOME/unreal/state/world/brightwater-ir-20261017.json",
+      "ir": "Brightwater export of 2026-10-17 (brightwater-ir-20261017.json; its sha256 below)",
       "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
       "fixturesFrom": "conformance/layout/ground-plan.json (copied byte for byte; the corpus test guards the copy)"
     }

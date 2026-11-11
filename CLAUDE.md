@@ -441,7 +441,14 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` 72c658c (2026-11-10,
+  and pin disagree. The pin today is core `main` 431c95b (2026-11-10,
+  PL.native-camera-movement: every core item the Unreal-first queue landed after
+  72c658c — PL.movement-contract's movement contract and its corpus, which the
+  `camera.movement.*` rows run, with PL.movement-followups' `missing-view-yaw`
+  sight line and `slopeAtRest`; PL.ground-from-ir; PL.corpus-provenance-scrub,
+  after which no vendored corpus names a private repository path;
+  PL.interactables-cases' six cases and PL.core-props-docs' turned-tavern door
+  case). Before that, 72c658c (2026-11-10,
   PL.native-interact-target: every core item the Unreal-first queue landed after
   7376894 — PL.examine-props' interact rule and its corpus, which the
   `props.interactables.*` rows run; PL.disk-changed-step's `disk_changed` step,
@@ -472,7 +479,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (the saves-slots, props and pick-up corpus ctests match `corpus`), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (the saves-slots, props, pick-up and camera movement corpus ctests match `corpus`), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -584,6 +591,25 @@
   corpus's lists: the rows are what a binding calls. Core's metres on `(x, z)`,
   nothing converted. Refusals (`bad_position`, `not_offered`) are values; a
   position that is not a finite point goes to core (the corpus pins `x: "here"`).
+- **The camera movement rows (PL.native-camera-movement, U95(5)) run core's
+  `conformance/camera/movement.json` UNCHANGED**, copied as their own set
+  (`CAMERA_CORPUS_FILES`; P7.core's `modes.json` beside it is not copied, no row
+  runs it) and driven by the same runner as `camera_movement_corpus` (+
+  `camera_movement_corpus_negative`). `camera.movement.{occluders, sideView,
+  buildingSolid, move, slope, slopeAtRest, step}` are stateless, one core
+  function of `camera/movement-contract` each (`sightOccluders`,
+  `sideViewBlockers`, `buildingSolidOf`, `playerMove`, `slopeResponse`,
+  `slopeAtRest`, `stepResponse`), taking a case's `input` as their args; the
+  runner drives every case a second time with `solids` and `exclude` reversed
+  (the file's `order` rule, as core's `checkMovementCase` does; self-tested), and
+  holds the data tables (`modes`, `storeyM`, `gait`, `ground`) to
+  `camera.movement.contract` — an Area's `contract_row`, not `props.contract`.
+  Import the contract module only, never `camera/movement-corpus` (its comparator
+  is the save-file code `UNBUNDLED_CORE_MODULES` refuses). Core's metres in the
+  IR's left-handed world frame, nothing converted or mirrored (Unreal's import
+  maps it). Refusals (`missing-view-yaw`, `not-a-side-view`, `invalid-radius`,
+  `invalid-move`, `invalid-walk`) are values; only `mode`, `feet`, `view`,
+  `solids`, `exclude` and `running` are type-checked.
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain
@@ -593,7 +619,7 @@
   its real path. `npmModules` is compared by `--check --core`; NOTICE has its
   stanza.
 - **macOS realpath trap**: esbuild reports paths it resolves itself through
-  symlinks (`/var` → `/private/var`), so the extracted root, `node_modules` and
+  symlinks (macOS's `/var` → its real path), so the extracted root, `node_modules` and
   `js/` are all `realpathSync`'d before any label is matched by prefix. Without it
   only the modules resolved by the plugin got canonical labels and the bundle
   embedded a temp path — non-reproducible.

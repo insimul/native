@@ -3,7 +3,7 @@
  "description": "core's recipe → game resolution corpus through genre.resolveGame; a refusal is an error carrying core's code",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "72c658c31469216c2e858014b03a7c293aa86def",
+  "coreCommit": "431c95b0cfb209a64f69dbad8eb79556e3c375b0",
   "files": {
    "conformance/genres/recipes.json": "77e941f23d461b67d417b4f45952c8114f6d242d9fd544e29463f1f85602be09"
   }
