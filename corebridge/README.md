@@ -1126,7 +1126,7 @@ field see the new key.
 a type; 165 → 166). The pin alone takes the bundle from 1,659,828 bytes to
 1,663,154 (+3,326: the restore and `saveProgress` code in `TutorialQuestSystem` and
 `OnboardingManager`, and the registry entry). The rows take it to 1,669,036
-(+5,882), for +9,208 in all. The 23 cases take about 5 ms under QuickJS.
+(+5,882), for +9,208 in all; `libinsimulcore.dylib` (Release) goes from 5,068,152 bytes to 5,084,664. The 23 cases take about 13 ms under QuickJS.
 
 ### What the feature phases asked for and core does not have yet
 
