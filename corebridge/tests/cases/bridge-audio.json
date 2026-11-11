@@ -1,0 +1,1491 @@
+{
+  "area": "audio",
+  "description": "Hand-written: the audio.ground.* rows' own contract (PL.native-ground-row, U97(3); core's ground reading, PL.ground-from-ir, U94(5)) — the contract row's data, each row's answer shape, what core reads itself going to core unchecked (an absent world or a world that is not an object, an absent or non-finite position, an absent or unknown gait), the open ground a default and never a refusal, and an archetype read by its ancestor for the step. Core's own corpus (conformance/audio/ground.json, 48 cases) is driven whole through these rows by the audio_ground_corpus ctest (tests/props_corpus.cpp), not transcribed here.",
+  "cases": [
+    {
+      "name": "audio.ground.contract: the ground corpus's data, from core's constants",
+      "steps": [
+        {
+          "call": "audio.ground.contract",
+          "expect": {
+            "audio-ground": {
+              "ground": {
+                "tiers": [
+                  "road",
+                  "closed",
+                  "open"
+                ],
+                "kindDefaults": {
+                  "plaza": "terrain.texture.sidewalk",
+                  "footpath": "terrain.texture.path"
+                },
+                "kindFallback": "terrain.texture.path"
+              },
+              "defaultFootstepSurface": "stone"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "audio.ground: placeAt, groundSurfaceAt and footstepAt over one world; the open ground is a default; no position is no reading",
+      "steps": [
+        {
+          "call": "audio.ground.placeAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 20,
+              "z": 20
+            }
+          },
+          "expect": {
+            "reading": {
+              "place": "settlement",
+              "settlementId": "settlement.vale",
+              "settlementName": "Vale"
+            }
+          }
+        },
+        {
+          "call": "audio.ground.placeAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 30,
+              "y": 99,
+              "z": 0
+            }
+          },
+          "expect": {
+            "reading": {
+              "place": "settlement",
+              "settlementId": "settlement.vale",
+              "settlementName": "Vale"
+            }
+          }
+        },
+        {
+          "call": "audio.ground.placeAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 50,
+              "z": 0
+            }
+          },
+          "expect": {
+            "reading": {
+              "place": "wilderness",
+              "settlementId": null,
+              "settlementName": null
+            }
+          }
+        },
+        {
+          "call": "audio.ground.placeAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          },
+          "expect": {
+            "reading": null
+          }
+        },
+        {
+          "call": "audio.ground.placeAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 1
+            }
+          },
+          "expect": {
+            "reading": null
+          }
+        },
+        {
+          "call": "audio.ground.placeAt",
+          "args": {
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          "expect": {
+            "reading": {
+              "place": "wilderness",
+              "settlementId": null,
+              "settlementName": null
+            }
+          }
+        },
+        {
+          "call": "audio.ground.groundSurfaceAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 0,
+              "z": 1
+            }
+          },
+          "expect": {
+            "reading": {
+              "surface": "terrain.texture.road.cobbles",
+              "tier": "road",
+              "shapeId": "road.a.b"
+            }
+          }
+        },
+        {
+          "call": "audio.ground.groundSurfaceAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 5,
+              "z": 5
+            }
+          },
+          "expect": {
+            "reading": {
+              "surface": "terrain.texture.sidewalk",
+              "tier": "closed",
+              "shapeId": "surface.square"
+            }
+          }
+        },
+        {
+          "call": "audio.ground.groundSurfaceAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 50,
+              "z": 1
+            }
+          },
+          "expect": {
+            "reading": {
+              "surface": "terrain.texture.path",
+              "tier": "open",
+              "shapeId": "surface.path"
+            }
+          }
+        },
+        {
+          "call": "audio.ground.groundSurfaceAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 25,
+              "z": 0
+            }
+          },
+          "expect": {
+            "reading": {
+              "surface": "terrain.texture.ground",
+              "tier": "ground",
+              "shapeId": null
+            }
+          }
+        },
+        {
+          "call": "audio.ground.groundSurfaceAt",
+          "args": {
+            "world": "no world",
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          "expect": {
+            "reading": {
+              "surface": "terrain.texture.ground",
+              "tier": "ground",
+              "shapeId": null
+            }
+          }
+        },
+        {
+          "call": "audio.ground.groundSurfaceAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": "here"
+          },
+          "expect": {
+            "reading": null
+          }
+        },
+        {
+          "call": "audio.ground.footstepAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 0,
+              "z": 1
+            },
+            "gait": "walk"
+          },
+          "expect": {
+            "cue": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "walk",
+              "volume": 0.8,
+              "intervalSec": 0.4,
+              "source": "table"
+            }
+          }
+        },
+        {
+          "call": "audio.ground.footstepAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 25,
+              "z": 0
+            },
+            "gait": "crouch"
+          },
+          "expect": {
+            "cue": {
+              "key": "terrain.footstep.grass",
+              "surface": "grass",
+              "gait": "crouch",
+              "volume": 0.4,
+              "intervalSec": 0.6,
+              "source": "table"
+            }
+          }
+        },
+        {
+          "call": "audio.ground.footstepAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "gait": "run"
+          },
+          "expect": {
+            "cue": {
+              "key": "terrain.footstep.stone",
+              "surface": "stone",
+              "gait": "run",
+              "volume": 1,
+              "intervalSec": 0.28,
+              "source": "default"
+            }
+          }
+        },
+        {
+          "call": "audio.ground.footstepAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 0,
+              "z": 1
+            }
+          },
+          "expect": {
+            "cue": null
+          }
+        },
+        {
+          "call": "audio.ground.footstepAt",
+          "args": {
+            "world": {
+              "geography": {
+                "settlements": [
+                  {
+                    "id": "settlement.vale",
+                    "name": "Vale",
+                    "position": {
+                      "x": 0,
+                      "y": 0,
+                      "z": 0
+                    },
+                    "radius": 30
+                  }
+                ],
+                "groundSurfaces": [
+                  {
+                    "id": "surface.square",
+                    "kind": "plaza",
+                    "closed": true,
+                    "points": [
+                      {
+                        "x": -10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": -10
+                      },
+                      {
+                        "x": 10,
+                        "z": 10
+                      },
+                      {
+                        "x": -10,
+                        "z": 10
+                      }
+                    ]
+                  },
+                  {
+                    "id": "surface.path",
+                    "kind": "footpath",
+                    "archetype": "terrain.texture.path",
+                    "closed": false,
+                    "width": 2,
+                    "points": [
+                      {
+                        "x": 40,
+                        "z": 0
+                      },
+                      {
+                        "x": 60,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              },
+              "entities": {
+                "roads": [
+                  {
+                    "fromId": "a",
+                    "toId": "b",
+                    "width": 4,
+                    "archetype": "terrain.texture.road.cobbles",
+                    "waypoints": [
+                      {
+                        "x": -10,
+                        "y": 0,
+                        "z": 0
+                      },
+                      {
+                        "x": 10,
+                        "y": 0,
+                        "z": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "at": {
+              "x": 0,
+              "z": 1
+            },
+            "gait": "sprint"
+          },
+          "expect": {
+            "cue": null
+          }
+        }
+      ]
+    }
+  ]
+}

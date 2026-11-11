@@ -3,7 +3,7 @@
  "description": "core's journal / tracker / offer matrix through ui.journal.*",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "431c95b0cfb209a64f69dbad8eb79556e3c375b0",
+  "coreCommit": "6667999673fa705abfb320c606143225b0c5457c",
   "files": {
    "conformance/ui/quest-journal-cases.json": "b8ebd5b9bddd11c1bcf5cf274a1e7922737b0a3bdc923ece3f820af0efbfc467"
   }

@@ -444,10 +444,28 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
-      "specifier": "@insimul/core/camera/movement-contract",
+      "specifier": "@insimul/core/camera/movement-rules",
       "classification": "keep",
-      "reason": "A BUNDLE INPUT of the camera.movement.* rows (PL.native-camera-movement, rulings U95(5) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
-      "reviewedBy": "features-pl-native-camera-movement (Features Gauntlet PL.native-camera-movement)",
+      "reason": "A BUNDLE INPUT of the camera.movement.* rows (PL.native-camera-movement, rulings U95(5) and U36; repointed from camera/movement-contract by PL.native-ground-row, U97(1)/(3), after core's PL.movement-prose-split moved the prose tables no row reads out of the rules), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-ground-row (Features Gauntlet PL.native-ground-row)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/audio/ground-from-ir",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the audio.ground.* rows (PL.native-ground-row, rulings U97(3), U94(5) and U36), exactly as the props.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-ground-row (Features Gauntlet PL.native-ground-row)",
+      "reviewedAt": "2026-11-10"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/audio/footsteps",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the audio.ground.contract row (PL.native-ground-row, rulings U97(3) and U36): core's DEFAULT_FOOTSTEP_SURFACE, which the ground corpus's contract states; resolved like the specifiers above and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-ground-row (Features Gauntlet PL.native-ground-row)",
       "reviewedAt": "2026-11-10"
     },
     {

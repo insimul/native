@@ -379,6 +379,35 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   from core at this library's pin and drive each case as `tests/props_corpus.cpp`
   does: the case's `input` is the row's args, and every case is driven again with
   its `solids` and `exclude` reversed.
+- **The place and the ground underfoot (Unreal's `P5.unreal.ground-from-ir`,
+  after PL.native-ground-row; U97(3)).** Core states how a host reads, from the
+  World IR, where its listener is and what is under the foot (PL.ground-from-ir
+  91a180d, U94(5)), through the `audio.ground.*` rows (`README.md`, "The ground
+  reading rows"), so the P5 cell binds them in place of its interim
+  `Portable/InsimulAudioPlace` reading. Read at unreal main `b3da381` (read only):
+
+  | Unreal today | Row (and what the binding sends or reads) |
+  |---|---|
+  | `audioplace::PlaceAt` (`Portable/InsimulAudioPlace.cpp:150`, called at `Private/InsimulAudioDirector.cpp:215`): the FIRST listed settlement whose circle holds the point | `audio.ground.placeAt { world, at }` → `reading`: the NEAREST centre, then the smaller id; `settlementId`/`settlementName` name it; null when `at` is not a finite point (keep the last place) |
+  | `audioplace::GroundSurfaceAt` (`:129`, called at `InsimulAudioDirector.cpp:222`): the first listed shape within a tier | `audio.ground.groundSurfaceAt { world, at }` → `reading.surface` (hand it to core's footstep rule as `surface`), `tier`, `shapeId`: the nearest shape within a tier, then the smaller id |
+  | a ground surface with no archetype reads `terrain.texture.sidewalk` whatever its kind (`:37`) | by its kind: plaza → `terrain.texture.sidewalk`, footpath or any other → `terrain.texture.path` (`audio.ground.contract` → `audio-ground.ground.kindDefaults` / `kindFallback`) |
+  | a road's id is always `road.<fromId>.<toId>` (`:36`) | a road's stated `id`, else `road.<fromId>.<toId>` |
+  | a road or open surface of width 0, or a shape with a non-finite point, is read | not read (the corpus pins each) |
+  | — | `audio.ground.footstepAt { world, at, gait }` → `cue`: the reading handed to `footstepCue` in one call, for a host that wants the step itself |
+
+  **What the binding sends**: `world` in the IR's own paths —
+  `geography.settlements[]` (`id`, `name`, `position`, `radius`),
+  `geography.groundSurfaces[]` (`id`, `kind`, `archetype`, `points`, `closed`,
+  `width`) and `entities.roads[]` (`fromId`, `toId`, `id`, `waypoints`, `width`,
+  `archetype`) — not the director's flattened `{ groundSurfaces, roads,
+  settlements }` document, and `at` as IR metres `{ x, z }`: Unreal `(X, Y)` ÷ 100,
+  less the director's measured level offset, as core's `(x, z)`. Nothing comes
+  back to convert: a reading is names and ids. `indoor` stays the host's own (it
+  knows when its listener is inside an interior). Re-vendor
+  `conformance/audio/ground.json` from core at this library's pin and drive each
+  case as `tests/props_corpus.cpp` does: the case's `input` is the row's args, and
+  every case is driven again with the world's `settlements`, `groundSurfaces` and
+  `roads` reversed.
 - **Save slots: the disk can change under the session since the 72c658c pin**
   (core's PL.disk-changed-step). When the save files change outside the game,
   send the new listing as `saves.slots.apply` op `disk_changed { slots }` (the

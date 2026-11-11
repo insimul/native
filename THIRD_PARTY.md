@@ -123,7 +123,10 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `431c95b`, core `main` (2026-11-10,
+  what to quote in a bug report about core behaviour. Today: `6667999`, core `main` (2026-11-10,
+  PL.native-ground-row: PL.movement-prose-split's `camera/movement-rules`, which the `camera.movement.*` rows now import
+  so the bundle leaves core's movement prose out, and PL.core-doc-fixes; the `audio.ground.*` rows run PL.ground-from-ir's
+  reading, already in at 431c95b). Before that, `431c95b`, core `main` (2026-11-10,
   PL.native-camera-movement: PL.movement-contract's movement contract that the `camera.movement.*` rows run,
   with PL.movement-followups; PL.ground-from-ir; PL.corpus-provenance-scrub, after which no vendored corpus
   names a private repository path; PL.interactables-cases and PL.core-props-docs). Before that, `72c658c`,

@@ -1,6 +1,7 @@
 // props_corpus.cpp — core's P6 corpora, driven through libinsimulcore's
-// `props.*` and `inventory.*` rows, and core's movement contract corpus through
-// its `camera.movement.*` rows.
+// `props.*` and `inventory.*` rows, core's movement contract corpus through
+// its `camera.movement.*` rows, and core's ground reading corpus through its
+// `audio.ground.*` rows.
 //
 // PL.native-props-rows (rulings U89(2) and U36). Core's P6 logic (P6.core,
 // src/props/{containers,documents,doors,notice-board}.ts, src/ui/inventory-model.ts
@@ -27,7 +28,11 @@
 //                                slope, slopeAtRest, step
 //                                (PL.native-camera-movement, U95(5): core's
 //                                PL.movement-contract and PL.movement-followups,
-//                                src/camera/movement-contract.ts)
+//                                src/camera/movement-rules.ts)
+//   audio/ground.json            area audio-ground
+//                                placeAt, groundSurfaceAt, footstepAt
+//                                (PL.native-ground-row, U97(3): core's
+//                                PL.ground-from-ir, src/audio/ground-from-ir.ts)
 //
 // Nothing here re-writes a case or computes an answer: every answer comes out of
 // a row. How each op is driven (core's runner, src/props/props-corpus.ts, is the
@@ -98,6 +103,20 @@
 //   with `solids` and `exclude` reversed (`reversed_lists`, self-tested), and that
 //   answer must equal `expected` too. Its contract tables are held to
 //   `camera.movement.contract`, not `props.contract`.
+//   audio-ground placeAt/groundSurfaceAt/footstepAt: the case's `input` is the
+//   row's args AS IS (`audio.ground.<op>`: `world`, the IR's own paths, and `at`
+//   in IR metres on `{x, z}`; `gait` for a footstep), and the row's answer
+//   (`{reading}`, `{cue}`) is compared whole. The file's order rule ("answers must
+//   not depend on the order the IR lists things in") is driven as core's runner
+//   drives it (`checkGroundCase`, `reversedGroundInput`): every case is run a
+//   second time with the world's `geography.settlements`,
+//   `geography.groundSurfaces` and `entities.roads` reversed (`reversed_world`,
+//   self-tested), and that answer must equal `expected` too. Its contract mixes
+//   data and prose inside one table (`ground`): `audio.ground.contract` states
+//   `ground`'s data keys only (`tiers`, `kindDefaults`, `kindFallback`), and that
+//   table is held to the file's on the keys the row states (`keyed_tables`; a key
+//   the row states that the file does not is still a difference), plus
+//   `defaultFootstepSurface` whole.
 //
 // Each file's `contract` tables (the data ones) are held to its area's contract
 // row (`props.contract`, or the area's own) for its area: every table the row
@@ -325,6 +344,19 @@ JsonValuePtr projected_article(const JsonValue &a, std::string &why);
 JsonValuePtr meaning_counts(const std::vector<JsonValuePtr> &meanings, std::string &why);
 JsonValuePtr spread(const JsonValue &base, const JsonValue &over);
 JsonValuePtr reversed_lists(const JsonValue &input, bool &changed);
+JsonValuePtr reversed_world(const JsonValue &input, bool &changed);
+
+// `table`'s entries for exactly `keys`' keys (a key `table` lacks stays absent, so the
+// comparison reports it); `table` itself when it is not an object.
+JsonValuePtr projected_keys(const JsonValue &table, const JsonValue &keys) {
+	if (!table.is_object() || !keys.is_object()) return copy_of(table);
+	std::vector<std::pair<std::string, JsonValuePtr>> items;
+	for (const auto &kv : keys.object_items) {
+		const JsonValue *v = table.find(kv.first);
+		if (v) items.emplace_back(kv.first, copy_of(*v));
+	}
+	return make_object(std::move(items));
+}
 
 // A `{ <key>: { value, source } }` table as `{ <key>: value }` (the `source` line is
 // prose); nullptr with `why` when it is not an object or an entry states no value.
@@ -459,6 +491,43 @@ bool self_test() {
 			ok = false;
 		}
 	}
+	// The ground order projection: the world's settlements, groundSurfaces and roads reversed, nothing else.
+	{
+		bool changed = false;
+		auto in = parse("{\"at\":{\"x\":1,\"z\":2},\"world\":{\"geography\":{\"settlements\":[1,2],\"groundSurfaces\":[3,4,5],"
+		                "\"other\":[6,7]},\"entities\":{\"roads\":[8,9],\"solids\":[10,11]},\"meta\":[12,13]},\"solids\":[14,15]}");
+		auto got = in ? reversed_world(*in, changed) : nullptr;
+		auto want = parse("{\"at\":{\"x\":1,\"z\":2},\"world\":{\"geography\":{\"settlements\":[2,1],\"groundSurfaces\":[5,4,3],"
+		                  "\"other\":[6,7]},\"entities\":{\"roads\":[9,8],\"solids\":[10,11]},\"meta\":[12,13]},\"solids\":[14,15]}");
+		if (!got || !changed || compare(*want, *got, 0.0, "$") != "") {
+			std::printf("  [FAIL] ground order self-test: settlements, groundSurfaces and roads should reverse, and nothing else\n");
+			ok = false;
+		}
+		struct Still {
+			const char *json;
+		} stills[] = {{"{\"world\":7,\"at\":null}"}, {"{\"world\":{\"geography\":{\"settlements\":[1]},\"entities\":{\"roads\":[]}}}"},
+		              {"{\"world\":{\"geography\":[1,2],\"entities\":{\"roads\":\"ab\"}}}"}};
+		for (const Still &st : stills) {
+			bool none = true;
+			auto v = parse(st.json);
+			auto r = v ? reversed_world(*v, none) : nullptr;
+			if (!r || none || compare(*v, *r, 0.0, "$") != "") {
+				std::printf("  [FAIL] ground order self-test: %s has no list of two to reverse and should come back as it is\n", st.json);
+				ok = false;
+			}
+		}
+	}
+	// The keyed-table projection: only the keys the row states, a missing one left absent.
+	{
+		auto table = parse("{\"tiers\":[\"road\"],\"road\":\"prose\",\"kindFallback\":\"p\"}");
+		auto keys = parse("{\"tiers\":0,\"kindFallback\":0,\"kindDefaults\":0}");
+		auto got = table && keys ? projected_keys(*table, *keys) : nullptr;
+		auto want = parse("{\"tiers\":[\"road\"],\"kindFallback\":\"p\"}");
+		if (!got || compare(*want, *got, 0.0, "$") != "") {
+			std::printf("  [FAIL] keyed-table self-test: {tiers, road, kindFallback} on the keys {tiers, kindFallback, kindDefaults} should be {tiers, kindFallback}\n");
+			ok = false;
+		}
+	}
 	for (const Probe &p : probes) {
 		auto e = parse(p.expected);
 		auto a = parse(p.actual);
@@ -473,6 +542,8 @@ bool self_test() {
 
 // ── the areas: their ops and the rows each op is driven through ───────────────
 
+enum class Order { None, SolidsExclude, WorldLists };
+
 struct Area {
 	const char *name;
 	std::vector<std::string> ops;     // core's PROPS_CORPUS_OPS for the area
@@ -484,8 +555,12 @@ struct Area {
 	bool numerics = false;
 	// The row whose answer holds the area's contract tables, keyed by the area.
 	const char *contract_row = "props.contract";
-	// Every case is driven again with `solids` and `exclude` reversed (the file's `order` rule).
-	bool reverse_lists = false;
+	// The file's order rule: every case is driven again with its lists reversed —
+	// `solids` and `exclude` (camera-movement), or the world's settlements,
+	// groundSurfaces and roads (audio-ground).
+	Order order = Order::None;
+	// Tables that mix data and prose: held to the file's on the keys the row states.
+	std::vector<std::string> keyed_tables = {};
 };
 
 const std::vector<Area> &areas() {
@@ -536,9 +611,23 @@ const std::vector<Area> &areas() {
 	     {},
 	     false,
 	     "camera.movement.contract",
-	     true},
+	     Order::SolidsExclude},
+	    {"audio-ground",
+	     {"placeAt", "groundSurfaceAt", "footstepAt"},
+	     {"audio.ground.placeAt", "audio.ground.groundSurfaceAt", "audio.ground.footstepAt", "audio.ground.contract"},
+	     {"ground", "defaultFootstepSurface"},
+	     {},
+	     false,
+	     "audio.ground.contract",
+	     Order::WorldLists,
+	     {"ground"}},
 	};
 	return all;
+}
+
+// What an order rule reverses, as the run reports it.
+const char *order_lists(Order o) {
+	return o == Order::WorldLists ? "the world's settlements, groundSurfaces and roads" : "solids and exclude";
 }
 
 const Area *area_named(const std::string &name) {
@@ -846,6 +935,45 @@ JsonValuePtr reversed_lists(const JsonValue &input, bool &changed) {
 	return make_object(std::move(items));
 }
 
+// core's ground runner's order check (ground-corpus.ts, reversedGroundInput): the
+// input with its world's `geography.settlements`, `geography.groundSurfaces` and
+// `entities.roads` reversed, every other key as it stands (a world, holder or list
+// of another JSON type is left alone, as core's is); `changed` says whether a list
+// of two or more was reversed.
+JsonValuePtr reversed_world(const JsonValue &input, bool &changed) {
+	changed = false;
+	const JsonValue *world = input.find("world");
+	if (!input.is_object() || !world || !world->is_object()) return copy_of(input);
+	auto flip = [&](const JsonValue &holder, std::initializer_list<const char *> keys) {
+		std::vector<std::pair<std::string, JsonValuePtr>> items;
+		for (const auto &kv : holder.object_items) {
+			bool listed = false;
+			for (const char *k : keys) listed = listed || kv.first == k;
+			if (listed && kv.second->is_array()) {
+				std::vector<JsonValuePtr> rev(kv.second->array_items.rbegin(), kv.second->array_items.rend());
+				changed = changed || rev.size() > 1;
+				items.emplace_back(kv.first, make_array(std::move(rev)));
+			} else {
+				items.emplace_back(kv.first, kv.second);
+			}
+		}
+		return make_object(std::move(items));
+	};
+	std::vector<std::pair<std::string, JsonValuePtr>> w;
+	for (const auto &kv : world->object_items) {
+		if (kv.first == "geography" && kv.second->is_object()) {
+			w.emplace_back(kv.first, flip(*kv.second, {"settlements", "groundSurfaces"}));
+		} else if (kv.first == "entities" && kv.second->is_object()) {
+			w.emplace_back(kv.first, flip(*kv.second, {"roads"}));
+		} else {
+			w.emplace_back(kv.first, kv.second);
+		}
+	}
+	std::vector<std::pair<std::string, JsonValuePtr>> items;
+	for (const auto &kv : input.object_items) items.emplace_back(kv.first, kv.first == "world" ? make_object(std::move(w)) : kv.second);
+	return make_object(std::move(items));
+}
+
 bool drive(Caller &c, const std::string &area, const std::string &op, const JsonValue &input, JsonValuePtr &out,
            std::string &why) {
 	if (area == "props-containers") {
@@ -935,6 +1063,12 @@ bool drive(Caller &c, const std::string &area, const std::string &op, const Json
 	if (area == "props-interactables") return drive_interactables(c, op, input, out, why);
 	if (area == "camera-movement") {
 		auto r = c.call("camera.movement." + op, json_of(input));
+		if (!r) return why = c.error, false;
+		out = r;
+		return true;
+	}
+	if (area == "audio-ground") {
+		auto r = c.call("audio.ground." + op, json_of(input));
 		if (!r) return why = c.error, false;
 		out = r;
 		return true;
@@ -1051,7 +1185,12 @@ int main(int argc, char **argv) {
 					JsonValuePtr projected;
 					bool valued = false;
 					for (const std::string &v : area->valued_tables) valued = valued || v == kv.first;
-					if (t && valued) {
+					bool keyed = false;
+					for (const std::string &k : area->keyed_tables) keyed = keyed || k == kv.first;
+					if (t && keyed) {
+						projected = projected_keys(*t, *kv.second);
+						t = projected.get();
+					} else if (t && valued) {
 						std::string why;
 						projected = projected_values(*t, why);
 						if (!projected) {
@@ -1109,19 +1248,20 @@ int main(int argc, char **argv) {
 				failed++;
 				continue;
 			}
-			if (area->reverse_lists) {
+			if (area->order != Order::None) {
 				bool changed = false;
-				JsonValuePtr reversed = reversed_lists(*input, changed);
+				JsonValuePtr reversed =
+				    area->order == Order::WorldLists ? reversed_world(*input, changed) : reversed_lists(*input, changed);
 				if (changed) {
 					JsonValuePtr again;
 					if (!drive(c, area_name, op, *reversed, again, why)) {
-						std::printf("  [FAIL] %s — with solids and exclude reversed, not driven: %s\n", name.c_str(), why.c_str());
+						std::printf("  [FAIL] %s — with %s reversed, not driven: %s\n", name.c_str(), order_lists(area->order), why.c_str());
 						failed++;
 						continue;
 					}
 					const std::string rdiff = compare(*expected, *again, tol, "$");
 					if (!rdiff.empty()) {
-						std::printf("  [FAIL] %s — with solids and exclude reversed: %s\n", name.c_str(), rdiff.c_str());
+						std::printf("  [FAIL] %s — with %s reversed: %s\n", name.c_str(), order_lists(area->order), rdiff.c_str());
 						failed++;
 						continue;
 					}
@@ -1141,8 +1281,8 @@ int main(int argc, char **argv) {
 		}
 		std::printf("  %s: %zu case(s), driven %s; %d undriven\n", area_name.c_str(), case_list->size(), by_op.c_str(),
 		            file_undriven);
-		if (area->reverse_lists) {
-			std::printf("  order: %d case(s) driven again with solids and exclude reversed, the same answer\n", reversed_runs);
+		if (area->order != Order::None) {
+			std::printf("  order: %d case(s) driven again with %s reversed, the same answer\n", reversed_runs, order_lists(area->order));
 		}
 	}
 

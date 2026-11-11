@@ -15,12 +15,12 @@
     }
     /** @param {string} input @returns {Uint8Array} */
     encode(input = "") {
-      const str4 = String(input);
+      const str5 = String(input);
       const bytes = [];
-      for (let i = 0; i < str4.length; i++) {
-        let code = str4.charCodeAt(i);
+      for (let i = 0; i < str5.length; i++) {
+        let code = str5.charCodeAt(i);
         if (code >= 55296 && code <= 56319) {
-          const next = i + 1 < str4.length ? str4.charCodeAt(i + 1) : 0;
+          const next = i + 1 < str5.length ? str5.charCodeAt(i + 1) : 0;
           if (next >= 56320 && next <= 57343) {
             code = 65536 + (code - 55296 << 10) + (next - 56320);
             i++;
@@ -3472,9 +3472,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     eventTypeIndex = /* @__PURE__ */ new Map();
     objectiveTypeIndex = /* @__PURE__ */ new Map();
     for (const mapping of mappings) {
-      const list = eventTypeIndex.get(mapping.eventType) || [];
-      list.push(mapping);
-      eventTypeIndex.set(mapping.eventType, list);
+      const list2 = eventTypeIndex.get(mapping.eventType) || [];
+      list2.push(mapping);
+      eventTypeIndex.set(mapping.eventType, list2);
       if (!objectiveTypeIndex.has(mapping.objectiveType)) {
         objectiveTypeIndex.set(mapping.objectiveType, mapping);
       }
@@ -7143,7 +7143,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "followLagPerSecond"
   ]);
 
-  // @insimul/core/src/camera/movement-contract.ts
+  // @insimul/core/src/camera/movement-rules.ts
   var BABYLON2 = "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering";
   var CAMERA_OCCLUSION = Object.freeze({
     first_person: "none",
@@ -7152,14 +7152,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     side_scroll: "hide",
     top_down: "hide",
     fighting: "hide"
-  });
-  var CAMERA_OCCLUSION_RULES = Object.freeze({
-    sightLine: "the segment from the pivot (the feet plus the mode's pivotHeightM) to the lens (the pivot, back along the view by distanceM, then the offset)",
-    hide: "every solid the sight line touches is not drawn while it touches it and is drawn again once it does not; the player and the conversation partner are never hidden; listed nearest the pivot first (ties by id)",
-    pullIn: "the boom's own sweep (CAMERA_MODE_PARAMETERS.third_person.collision): the lens comes in front of the solid, never nearer than collision.minDistanceM; nothing is hidden",
-    none: "the eye sits at the pivot: there is no sight line to clear",
-    viewYaw: "the sight line is read at the mode's fixed yaw, else the view yaw given, else the mode's opening yaw; a mode that opens on the player's facing (first_person, third_person) given no view yaw is refused (error missing-view-yaw), as the move is",
-    source: `${BABYLON2}/BabylonGame.ts:10836-10837 (setCameraElasticity(true), makeObstructionInvisible(true), for every mode), :16405-16410 (the conversation partner is excluded); CharacterController.ts _handleObstruction. Unreal's follow arm keeps its sweep (pull-in), which the table already carries`
   });
   var BUILDING_STOREY_M = 4;
   var isNum = (v) => typeof v === "number" && Number.isFinite(v);
@@ -7315,15 +7307,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const open = CAMERA_OPENING_VIEW_YAW[mode];
     return typeof open === "number" ? open : null;
   }
-  var MOVEMENT_FRAME_MEANING = Object.freeze({
-    axes: "the IR's world frame: metres, left-handed, +Y up; forward is +Z, right is +X, which is the player's right while facing +Z (one statement in a left-handed frame)",
-    world: "the move input is read in the world frame whatever the view's yaw: forward moves along +Z and right along +X. Orbiting the lens (the look input, yaw orbit) never changes how the input maps. At the opening view (yaw 0) forward is screen-up and right is screen-right",
-    view: "the move input is read in the view's frame: forward along the view's yaw (sin \u03C8, 0, cos \u03C8), right along (cos \u03C8, 0, \u2212sin \u03C8). Under a fixed yaw of 180\xB0 right is \u2212X, which is screen-right",
-    isometric: "isometric: a perspective lens (not orthographic), pitch \u221245\xB0 at rest within [\u221260\xB0, \u221230\xB0], 25 m from a pivot 1.6 m above the feet (zoom 15\u201350 m), the yaw orbiting under the look input and opening at 0; the player moves on x and z (plane free: y is gravity and the jump), in the world frame",
-    input: "the input (forward, right) is clamped to length 1 first (a stick past its rim, or two keys, is length 1), turned into the frame, then the plane drops its component (xy: z; xz: y); so a diagonal in a side view keeps only its x part, as Babylon's avatar walks its facing and loses the z",
-    mirroredLevel: "an engine whose level mirrors the IR (Unreal's X = x, Y = z) keeps the player's right: right moves the player screen-right at the opening view, which is the image of the IR's \u2212X in that level; it maps the answers here through its import",
-    source: `${BABYLON2}/BabylonGame.ts:10763 (spawn alpha \u2212\u03C0/2: view yaw 0); CameraManager.ts CAMERA_CONFIGS (controllerMode, movementPlane); CharacterController.ts setMode ("the camera direction has no bearing on avatar movement") and the movementPlane zeroing; core camera-modes.ts movement`
-  });
   var PLAYER_GAIT = Object.freeze({
     runOverWalk: 2,
     source: `${BABYLON2}/BabylonGame.ts:10771-10772 (setWalkSpeed(2.5), setRunSpeed(5): run is twice the walk)`
@@ -7377,6 +7360,366 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   function movementModeTable() {
     return CAMERA_MODES.map((mode) => ({ mode, occlusion: CAMERA_OCCLUSION[mode], openingViewYaw: CAMERA_OPENING_VIEW_YAW[mode] }));
+  }
+
+  // @insimul/core/src/geometry/plan-geometry.ts
+  function planSub(a, b) {
+    return [a[0] - b[0], a[1] - b[1]];
+  }
+  function planDot(a, b) {
+    return a[0] * b[0] + a[1] * b[1];
+  }
+  function planCross(a, b) {
+    return a[0] * b[1] - a[1] * b[0];
+  }
+  function isConvexOutline(p) {
+    if (p.length < 3) return false;
+    let sign = 0;
+    for (let i = 0; i < p.length; i += 1) {
+      const a = p[i];
+      const b = p[(i + 1) % p.length];
+      const c = p[(i + 2) % p.length];
+      const z = planCross(planSub(b, a), planSub(c, b));
+      if (Math.abs(z) < 1e-12) continue;
+      const s = z > 0 ? 1 : -1;
+      if (sign === 0) sign = s;
+      else if (s !== sign) return false;
+    }
+    return sign !== 0;
+  }
+  function satDepth(a, b) {
+    let best = Infinity;
+    for (const q of [a, b]) {
+      for (let i = 0; i < q.length; i += 1) {
+        const e = planSub(q[(i + 1) % q.length], q[i]);
+        const l = Math.sqrt(e[0] * e[0] + e[1] * e[1]);
+        if (l < 1e-12) continue;
+        const n = [-e[1] / l, e[0] / l];
+        let aMin = Infinity;
+        let aMax = -Infinity;
+        let bMin = Infinity;
+        let bMax = -Infinity;
+        for (const v of a) {
+          const d = planDot(v, n);
+          aMin = Math.min(aMin, d);
+          aMax = Math.max(aMax, d);
+        }
+        for (const v of b) {
+          const d = planDot(v, n);
+          bMin = Math.min(bMin, d);
+          bMax = Math.max(bMax, d);
+        }
+        const overlap = Math.min(aMax, bMax) - Math.max(aMin, bMin);
+        if (overlap <= 0) return 0;
+        best = Math.min(best, overlap);
+      }
+    }
+    return best === Infinity ? 0 : best;
+  }
+  function planSeparation(a, b) {
+    let best = -Infinity;
+    let axis = [1, 0];
+    for (const q of [a, b]) {
+      for (let i = 0; i < q.length; i += 1) {
+        const e = planSub(q[(i + 1) % q.length], q[i]);
+        const l = Math.sqrt(e[0] * e[0] + e[1] * e[1]);
+        if (l < 1e-12) continue;
+        const n = [-e[1] / l, e[0] / l];
+        let aMin = Infinity;
+        let aMax = -Infinity;
+        let bMin = Infinity;
+        let bMax = -Infinity;
+        for (const v of a) {
+          const d = planDot(v, n);
+          aMin = Math.min(aMin, d);
+          aMax = Math.max(aMax, d);
+        }
+        for (const v of b) {
+          const d = planDot(v, n);
+          bMin = Math.min(bMin, d);
+          bMax = Math.max(bMax, d);
+        }
+        const forward = bMin - aMax;
+        const back = aMin - bMax;
+        const gap = Math.max(forward, back);
+        if (gap > best + 1e-12) {
+          best = gap;
+          axis = forward >= back ? n : [-n[0], -n[1]];
+        }
+      }
+    }
+    return { gap: best === -Infinity ? 0 : best, axis };
+  }
+  function pointInOutline(p, q) {
+    let inside = false;
+    for (let i = 0, j = q.length - 1; i < q.length; j = i, i += 1) {
+      if (q[i][1] > p[1] !== q[j][1] > p[1] && p[0] < (q[j][0] - q[i][0]) * (p[1] - q[i][1]) / (q[j][1] - q[i][1]) + q[i][0]) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  }
+  function pointSegmentDistance(p, a, b) {
+    const ab = planSub(b, a);
+    const l2 = planDot(ab, ab);
+    let t = l2 > 0 ? planDot(planSub(p, a), ab) / l2 : 0;
+    t = Math.max(0, Math.min(1, t));
+    const cx = a[0] + t * ab[0] - p[0];
+    const cz = a[1] + t * ab[1] - p[1];
+    return Math.sqrt(cx * cx + cz * cz);
+  }
+  function nearestOnSegment(p, a, b) {
+    const dx = b[0] - a[0];
+    const dz = b[1] - a[1];
+    const l2 = dx * dx + dz * dz;
+    const t = l2 > 0 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / l2)) : 0;
+    return [a[0] + dx * t, a[1] + dz * t];
+  }
+  function segmentsCross(a, b, c, d) {
+    const d1 = planCross(planSub(b, a), planSub(c, a));
+    const d2 = planCross(planSub(b, a), planSub(d, a));
+    const d3 = planCross(planSub(d, c), planSub(a, c));
+    const d4 = planCross(planSub(d, c), planSub(b, c));
+    return d1 > 0 !== d2 > 0 && d3 > 0 !== d4 > 0;
+  }
+  function segmentOutlineDistance(a, b, q) {
+    if (pointInOutline(a, q) || pointInOutline(b, q)) return 0;
+    let best = Infinity;
+    for (let i = 0; i < q.length; i += 1) {
+      const c = q[i];
+      const d = q[(i + 1) % q.length];
+      if (segmentsCross(a, b, c, d)) return 0;
+      best = Math.min(
+        best,
+        pointSegmentDistance(c, a, b),
+        pointSegmentDistance(d, a, b),
+        pointSegmentDistance(a, c, d),
+        pointSegmentDistance(b, c, d)
+      );
+    }
+    return best;
+  }
+  function triangulateOutline(outline) {
+    const out = [];
+    let p = [...outline];
+    let area = 0;
+    for (let i = 0; i < p.length; i += 1) area += planCross(p[i], p[(i + 1) % p.length]);
+    if (area < 0) p = p.reverse();
+    let guard = 0;
+    while (p.length > 3 && guard < 1e4) {
+      guard += 1;
+      let cut = false;
+      for (let i = 0; i < p.length; i += 1) {
+        const ia = (i + p.length - 1) % p.length;
+        const ic = (i + 1) % p.length;
+        const a = p[ia];
+        const b = p[i];
+        const c = p[ic];
+        if (planCross(planSub(b, a), planSub(c, b)) <= 1e-12) continue;
+        let empty = true;
+        for (let j = 0; j < p.length && empty; j += 1) {
+          if (j === ia || j === i || j === ic) continue;
+          const q = p[j];
+          const d1 = planCross(planSub(b, a), planSub(q, a));
+          const d2 = planCross(planSub(c, b), planSub(q, b));
+          const d3 = planCross(planSub(a, c), planSub(q, c));
+          if (d1 > 0 && d2 > 0 && d3 > 0) empty = false;
+        }
+        if (!empty) continue;
+        out.push([a, b, c]);
+        p.splice(i, 1);
+        cut = true;
+        break;
+      }
+      if (!cut) break;
+    }
+    if (p.length >= 3) out.push(p);
+    return out;
+  }
+  function outlineDepth(footprint, outline) {
+    if (isConvexOutline(outline)) return satDepth(footprint, outline);
+    let deepest = 0;
+    for (const t of triangulateOutline(outline)) deepest = Math.max(deepest, satDepth(footprint, t));
+    return deepest;
+  }
+  function quantizeMillimetre(m) {
+    const scaled2 = m * 1e3;
+    const q = (scaled2 < 0 ? -Math.round(-scaled2) : Math.round(scaled2)) / 1e3;
+    return q === 0 ? 0 : q;
+  }
+  function roundHalfAway(v) {
+    return v < 0 ? -Math.round(-v) : Math.round(v);
+  }
+
+  // @insimul/core/src/audio/audio-keys.ts
+  var AMBIENCE_KEY_PREFIX = "terrain.ambience";
+  var AMBIENCE_VOICES = Object.freeze(["birds", "wind", "murmur"]);
+  var FOOTSTEP_KEY_PREFIX = "terrain.footstep";
+  var FOOTSTEP_SURFACES = Object.freeze(["stone", "grass", "wood", "snow", "carpet"]);
+  function ambienceKey(voice) {
+    return `${AMBIENCE_KEY_PREFIX}.${voice}`;
+  }
+  function footstepKey(surface) {
+    return `${FOOTSTEP_KEY_PREFIX}.${surface}`;
+  }
+  var AUDIO_KEYS = Object.freeze(
+    [...AMBIENCE_VOICES.map(ambienceKey), ...FOOTSTEP_SURFACES.map(footstepKey)].sort()
+  );
+
+  // @insimul/core/src/audio/footsteps.ts
+  var GAIT_FOOTSTEPS = Object.freeze({
+    walk: Object.freeze({ intervalSec: 0.4, volume: 0.8 }),
+    run: Object.freeze({ intervalSec: 0.28, volume: 1 }),
+    crouch: Object.freeze({ intervalSec: 0.6, volume: 0.4 })
+  });
+  var SURFACE_FOOTSTEPS = Object.freeze({
+    // Ground surfaces (`geography.groundSurfaces[].archetype`, the terrain textures a pack binds).
+    "terrain.texture.road": "stone",
+    "terrain.texture.sidewalk": "stone",
+    "terrain.texture.gravel": "stone",
+    "terrain.texture.path": "grass",
+    "terrain.texture.dirt": "grass",
+    "terrain.texture.grass": "grass",
+    "terrain.texture.ground": "grass",
+    "terrain.texture.water": null,
+    "terrain.water": null,
+    // A floor or a material a host states by name: atelier's own five.
+    stone: "stone",
+    grass: "grass",
+    wood: "wood",
+    snow: "snow",
+    carpet: "carpet"
+  });
+  var DEFAULT_FOOTSTEP_SURFACE = "stone";
+  function isFootstepGait(intent) {
+    return typeof intent === "string" && Object.prototype.hasOwnProperty.call(GAIT_FOOTSTEPS, intent);
+  }
+  function footstepSurfaceOf(surface) {
+    let s = typeof surface === "string" ? surface : "";
+    while (s.length > 0) {
+      if (Object.prototype.hasOwnProperty.call(SURFACE_FOOTSTEPS, s)) return { surface: SURFACE_FOOTSTEPS[s], source: "table" };
+      const dot = s.lastIndexOf(".");
+      s = dot < 0 ? "" : s.slice(0, dot);
+    }
+    return { surface: DEFAULT_FOOTSTEP_SURFACE, source: "default" };
+  }
+  function footstepCue(input) {
+    if (!isFootstepGait(input.gait)) return null;
+    const { surface, source } = footstepSurfaceOf(input.surface);
+    if (surface === null) return null;
+    const g = GAIT_FOOTSTEPS[input.gait];
+    return Object.freeze({ key: footstepKey(surface), surface, gait: input.gait, volume: g.volume, intervalSec: g.intervalSec, source });
+  }
+  var INITIAL_FOOTSTEP_STATE = Object.freeze({ elapsedSec: 0, nextFoot: "left" });
+
+  // @insimul/core/src/audio/ground-from-ir.ts
+  var OPEN_GROUND_SURFACE = "terrain.texture.ground";
+  var ROAD_SURFACE_DEFAULT = "terrain.texture.road";
+  var GROUND_SURFACE_KIND_DEFAULTS = Object.freeze({
+    plaza: "terrain.texture.sidewalk",
+    footpath: "terrain.texture.path"
+  });
+  var GROUND_SURFACE_KIND_FALLBACK = "terrain.texture.path";
+  var GROUND_TIERS = Object.freeze(["road", "closed", "open"]);
+  var isObj2 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var finite = (v) => typeof v === "number" && Number.isFinite(v);
+  var str = (v) => typeof v === "string" && v.length > 0 ? v : null;
+  var list = (o, key) => {
+    const v = isObj2(o) ? o[key] : void 0;
+    return Array.isArray(v) ? v : [];
+  };
+  function pointOf(at) {
+    if (!isObj2(at) || !finite(at.x) || !finite(at.z)) return null;
+    return { x: at.x, z: at.z };
+  }
+  function pointsOf(v) {
+    if (!Array.isArray(v)) return null;
+    const out = [];
+    for (const p of v) {
+      const q = pointOf(p);
+      if (q === null) return null;
+      out.push(q);
+    }
+    return out;
+  }
+  var planOf = (pts) => pts.map((p) => [p.x, p.z]);
+  function irPolylineDistance(pts, x, z) {
+    const ring = planOf(pts);
+    const at = [x, z];
+    let best = Infinity;
+    for (let i = 0; i + 1 < ring.length; i++) best = Math.min(best, pointSegmentDistance(at, ring[i], ring[i + 1]));
+    return best;
+  }
+  function irInsideOutline(pts, x, z) {
+    return pointInOutline([x, z], planOf(pts));
+  }
+  function shapesOf(world2) {
+    const out = [];
+    const entities = isObj2(world2) ? world2.entities : void 0;
+    const geography = isObj2(world2) ? world2.geography : void 0;
+    for (const r of list(entities, "roads")) {
+      if (!isObj2(r)) continue;
+      const points3 = pointsOf(r.waypoints);
+      if (points3 === null || points3.length < 2 || !finite(r.width) || !(r.width > 0)) continue;
+      const id = str(r.id) ?? `road.${str(r.fromId) ?? "?"}.${str(r.toId) ?? "?"}`;
+      out.push({ tier: "road", id, surface: str(r.archetype) ?? ROAD_SURFACE_DEFAULT, points: points3, width: r.width });
+    }
+    for (const s of list(geography, "groundSurfaces")) {
+      if (!isObj2(s)) continue;
+      const points3 = pointsOf(s.points);
+      const closed = s.closed === true;
+      if (points3 === null || points3.length < 2) continue;
+      if (!closed && (!finite(s.width) || !(s.width > 0))) continue;
+      const kind = str(s.kind) ?? "";
+      const surface = str(s.archetype) ?? (Object.prototype.hasOwnProperty.call(GROUND_SURFACE_KIND_DEFAULTS, kind) ? GROUND_SURFACE_KIND_DEFAULTS[kind] : GROUND_SURFACE_KIND_FALLBACK);
+      out.push({ tier: closed ? "closed" : "open", id: str(s.id) ?? "", surface, points: points3, width: closed ? 0 : s.width });
+    }
+    return out;
+  }
+  var nearer = (a, b) => a.d < b.d || a.d === b.d && a.id < b.id;
+  function groundSurfaceAt(world2, at) {
+    const p = pointOf(at);
+    if (p === null) return null;
+    const shapes = shapesOf(world2);
+    for (const tier of GROUND_TIERS) {
+      let best = null;
+      for (const s of shapes) {
+        if (s.tier !== tier) continue;
+        let d;
+        if (tier === "closed") {
+          if (!irInsideOutline(s.points, p.x, p.z)) continue;
+          d = 0;
+        } else {
+          d = irPolylineDistance(s.points, p.x, p.z);
+          if (!(d <= s.width / 2)) continue;
+        }
+        const c = { d, id: s.id, shape: s };
+        if (best === null || nearer(c, best)) best = c;
+      }
+      if (best !== null) return Object.freeze({ surface: best.shape.surface, tier, shapeId: best.shape.id });
+    }
+    return Object.freeze({ surface: OPEN_GROUND_SURFACE, tier: "ground", shapeId: null });
+  }
+  function placeAt(world2, at) {
+    const p = pointOf(at);
+    if (p === null) return null;
+    const geography = isObj2(world2) ? world2.geography : void 0;
+    let best = null;
+    for (const s of list(geography, "settlements")) {
+      if (!isObj2(s)) continue;
+      const c = pointOf(s.position);
+      if (c === null || !finite(s.radius) || !(s.radius > 0)) continue;
+      const d = Math.hypot(p.x - c.x, p.z - c.z);
+      if (!(d <= s.radius)) continue;
+      const id = str(s.id) ?? "";
+      const cand = { d, id, name: str(s.name) ?? id };
+      if (best === null || nearer(cand, best)) best = cand;
+    }
+    return best === null ? Object.freeze({ place: "wilderness", settlementId: null, settlementName: null }) : Object.freeze({ place: "settlement", settlementId: best.id, settlementName: best.name });
+  }
+  function footstepAt(world2, at, gait) {
+    const ground = groundSurfaceAt(world2, at);
+    return footstepCue({ surface: ground === null ? null : ground.surface, gait });
   }
 
   // @insimul/core/src/game-genres/recipes.ts
@@ -13161,12 +13504,12 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     return typeof id === "string" && MECHANIC_IDS.has(id);
   }
   function resolveWorldActivation(genreId, enabledModules) {
-    const list = Array.isArray(enabledModules) ? enabledModules : [];
+    const list2 = Array.isArray(enabledModules) ? enabledModules : [];
     const unknownModules = [
-      ...new Set(list.filter((id) => !isMechanicModuleId(id) && id !== NO_MECHANIC_MODULES).map((id) => String(id)))
+      ...new Set(list2.filter((id) => !isMechanicModuleId(id) && id !== NO_MECHANIC_MODULES).map((id) => String(id)))
     ];
-    const selected = list.filter(isMechanicModuleId);
-    if (selected.length > 0 || list.includes(NO_MECHANIC_MODULES)) {
+    const selected = list2.filter(isMechanicModuleId);
+    if (selected.length > 0 || list2.includes(NO_MECHANIC_MODULES)) {
       return Object.freeze({ ...resolveModuleSet(genreId, selected), source: "enabledModules", unknownModules: Object.freeze(unknownModules) });
     }
     return Object.freeze({ ...resolveActiveModules(genreId), source: "genre", unknownModules: Object.freeze(unknownModules) });
@@ -14342,8 +14685,8 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
   function roundHalfUp(value) {
     return Math.floor(value + 0.5);
   }
-  function has(list, value) {
-    return value !== void 0 && list !== void 0 && list.includes(value);
+  function has(list2, value) {
+    return value !== void 0 && list2 !== void 0 && list2.includes(value);
   }
   function refusal2(input, outcome, reason, spent = 0) {
     return {
@@ -16944,25 +17287,25 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
   var eventToActionsIndex = /* @__PURE__ */ new Map();
   for (const entry of ACTION_MATRIX) {
     for (const eventType of entry.eventTypes) {
-      const list = eventToActionsIndex.get(eventType) || [];
-      list.push(entry);
-      eventToActionsIndex.set(eventType, list);
+      const list2 = eventToActionsIndex.get(eventType) || [];
+      list2.push(entry);
+      eventToActionsIndex.set(eventType, list2);
     }
   }
   var objectiveToActionsIndex = /* @__PURE__ */ new Map();
   for (const entry of ACTION_MATRIX) {
     for (const objType of entry.objectiveTypes) {
-      const list = objectiveToActionsIndex.get(objType) || [];
-      list.push(entry);
-      objectiveToActionsIndex.set(objType, list);
+      const list2 = objectiveToActionsIndex.get(objType) || [];
+      list2.push(entry);
+      objectiveToActionsIndex.set(objType, list2);
     }
   }
   var childrenIndex = /* @__PURE__ */ new Map();
   for (const entry of ACTION_MATRIX) {
     if (entry.parentAction) {
-      const list = childrenIndex.get(entry.parentAction) || [];
-      list.push(entry);
-      childrenIndex.set(entry.parentAction, list);
+      const list2 = childrenIndex.get(entry.parentAction) || [];
+      list2.push(entry);
+      childrenIndex.set(entry.parentAction, list2);
     }
   }
 
@@ -24333,7 +24676,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   var DEFAULT_CHARS_PER_PAGE = 800;
   var DOCUMENT_REFUSALS = ["missing_field", "unknown_kind", "bad_pages", "bad_chars_per_page"];
   var isText = (v) => typeof v === "string";
-  var str = (v) => isText(v) ? v : "";
+  var str2 = (v) => isText(v) ? v : "";
   function paginateText(text4, charsPerPage = DEFAULT_CHARS_PER_PAGE) {
     if (!Number.isInteger(charsPerPage) || charsPerPage < 1) charsPerPage = DEFAULT_CHARS_PER_PAGE;
     const pages = [];
@@ -24371,7 +24714,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       const options = Array.isArray(r.options) ? r.options.filter(isText) : [];
       const correctIndex = typeof r.correctIndex === "number" ? r.correctIndex : -1;
       if (!isText(r.question) || !Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= options.length) continue;
-      out.push({ question: r.question, questionTranslation: str(r.questionTranslation), options, correctIndex });
+      out.push({ question: r.question, questionTranslation: str2(r.questionTranslation), options, correctIndex });
     }
     return out;
   }
@@ -24382,7 +24725,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       if (!v || typeof v !== "object") continue;
       const r = v;
       if (!isText(r.word) || r.word === "") continue;
-      out.push({ word: r.word, translation: isText(r.translation) ? r.translation : str(r.meaning) });
+      out.push({ word: r.word, translation: isText(r.translation) ? r.translation : str2(r.meaning) });
     }
     return out;
   }
@@ -24408,7 +24751,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     const authored = Array.isArray(input.pages) ? input.pages : [];
     const sign = kind === "sign";
     const body2 = isText(input.body) ? input.body : isText(input.text) ? input.text : "";
-    const pages = authored.length > 0 ? authored.map((p) => ({ content: p.content, contentTranslation: str(p.contentTranslation) })) : paginateText(body2, chars).map((content) => ({ content, contentTranslation: "" }));
+    const pages = authored.length > 0 ? authored.map((p) => ({ content: p.content, contentTranslation: str2(p.contentTranslation) })) : paginateText(body2, chars).map((content) => ({ content, contentTranslation: "" }));
     const translation = authored.length > 0 ? "" : isText(input.bodyTranslation) ? input.bodyTranslation : "";
     if (authored.length === 0 && pages.length === 1) pages[0] = { content: pages[0].content, contentTranslation: translation };
     const cefr = cefrOf(input);
@@ -24420,7 +24763,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         id: input.id,
         kind,
         title: input.title,
-        titleTranslation: str(input.titleTranslation),
+        titleTranslation: str2(input.titleTranslation),
         pages,
         pagesFrom: authored.length > 0 ? "authored" : "paginated",
         translation: authored.length === 0 && pages.length > 1 ? translation : "",
@@ -25514,8 +25857,8 @@ player_meets_cefr(Player, RequiredLevel) :-
       why: "a refusal is a decision an engine can act on"
     }
   ]);
-  var finite = (v) => typeof v === "number" && Number.isFinite(v);
-  var finitePoint = (p) => !!p && finite(p.x) && finite(p.z);
+  var finite2 = (v) => typeof v === "number" && Number.isFinite(v);
+  var finitePoint = (p) => !!p && finite2(p.x) && finite2(p.z);
   function unitAxis(axis) {
     if (!finitePoint(axis)) return { x: 1, z: 0 };
     const l = Math.hypot(axis.x, axis.z);
@@ -25532,7 +25875,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function areaShape(a) {
     if (finitePoint(a.half)) return { c: a.at, radius: -1, ax: unitAxis(a.axis), half: { x: Math.abs(a.half.x), z: Math.abs(a.half.z) } };
-    return { c: a.at, radius: finite(a.radius) ? Math.max(0, a.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+    return { c: a.at, radius: finite2(a.radius) ? Math.max(0, a.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
   }
   var DEFAULT_RADIUS = {
     door: PICKUP_DOOR_RADIUS_M,
@@ -25546,16 +25889,16 @@ player_meets_cefr(Player, RequiredLevel) :-
     if (!finitePoint(o.at)) return null;
     const circle2 = DEFAULT_RADIUS[o.kind];
     if (circle2 !== void 0) {
-      return { c: o.at, radius: finite(o.radius) ? Math.max(0, o.radius) : circle2, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+      return { c: o.at, radius: finite2(o.radius) ? Math.max(0, o.radius) : circle2, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
     }
     const half = finitePoint(o.half) ? { x: Math.abs(o.half.x), z: Math.abs(o.half.z) } : null;
     if (half && half.x > PICKUP_GROUND_PIECE_HALF_M && half.z > PICKUP_GROUND_PIECE_HALF_M) return null;
-    const banded = finite(o.yMin) && finite(o.yMax);
+    const banded = finite2(o.yMin) && finite2(o.yMax);
     if (o.kind === "plant" && banded) {
       const height = o.yMax - o.yMin;
       if (height < PICKUP_GROUND_COVER_M) return null;
       if (height > PICKUP_TREE_HEIGHT_M) {
-        const h = half ?? (finite(o.radius) ? { x: Math.abs(o.radius), z: Math.abs(o.radius) } : { x: 0, z: 0 });
+        const h = half ?? (finite2(o.radius) ? { x: Math.abs(o.radius), z: Math.abs(o.radius) } : { x: 0, z: 0 });
         const pivot = finitePoint(o.pivot) ? o.pivot : o.at;
         if (!bandHolds(o, groundY)) return null;
         return { c: pivot, radius: pickupTrunkRadius(h.x, h.z), ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
@@ -25563,7 +25906,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     }
     if (banded && !bandHolds(o, groundY)) return null;
     if (half) return { c: o.at, radius: -1, ax: unitAxis(o.axis), half };
-    return { c: o.at, radius: finite(o.radius) ? Math.max(0, o.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
+    return { c: o.at, radius: finite2(o.radius) ? Math.max(0, o.radius) : 0, ax: { x: 1, z: 0 }, half: { x: 0, z: 0 } };
   }
   function bandHolds(o, groundY) {
     return !(o.yMin > groundY + PICKUP_STAND_HIGH_M || o.yMax < groundY + PICKUP_STAND_LOW_M);
@@ -25572,18 +25915,18 @@ player_meets_cefr(Player, RequiredLevel) :-
     const out = { ...PICKUP_CLEARANCE_M };
     for (const k of PICKUP_CLEARANCE_KINDS) {
       const v = world2.clearance?.[k];
-      if (finite(v)) out[k] = v;
+      if (finite2(v)) out[k] = v;
     }
     return out;
   }
   function searchOf(world2) {
     const s = { ...PICKUP_SEARCH };
     const given = world2.search ?? {};
-    if (finite(given.ringStepM) && given.ringStepM > 0) s.ringStepM = given.ringStepM;
-    if (finite(given.radiusM) && given.radiusM >= 0) s.radiusM = given.radiusM;
-    if (finite(given.arcM) && given.arcM > 0) s.arcM = given.arcM;
-    if (finite(given.minPoints) && given.minPoints >= 1) s.minPoints = Math.floor(given.minPoints);
-    if (finite(given.maxPoints) && given.maxPoints >= 1) s.maxPoints = Math.floor(given.maxPoints);
+    if (finite2(given.ringStepM) && given.ringStepM > 0) s.ringStepM = given.ringStepM;
+    if (finite2(given.radiusM) && given.radiusM >= 0) s.radiusM = given.radiusM;
+    if (finite2(given.arcM) && given.arcM > 0) s.arcM = given.arcM;
+    if (finite2(given.minPoints) && given.minPoints >= 1) s.minPoints = Math.floor(given.minPoints);
+    if (finite2(given.maxPoints) && given.maxPoints >= 1) s.maxPoints = Math.floor(given.maxPoints);
     if (s.maxPoints < s.minPoints) s.maxPoints = s.minPoints;
     return s;
   }
@@ -25615,7 +25958,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     });
     const roads = [];
     (world2.roads ?? []).forEach((r, index) => {
-      const w = finite(r?.width) ? r.width : PICKUP_ROAD_DEFAULT_WIDTH_M;
+      const w = finite2(r?.width) ? r.width : PICKUP_ROAD_DEFAULT_WIDTH_M;
       let prev = null;
       for (const q of r?.waypoints ?? []) {
         if (!finitePoint(q)) {
@@ -25637,7 +25980,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function groundOf(input) {
     const groundY = input.groundY ?? 0;
-    return finitePoint(input.spot) && finite(groundY) ? groundY : null;
+    return finitePoint(input.spot) && finite2(groundY) ? groundY : null;
   }
   function clearanceAt(p, prep, settled) {
     let best = PICKUP_NOTHING_NEAR_M;
@@ -25903,8 +26246,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     const dist = (p) => Math.hypot(p.x - at.x, p.z - at.z);
     const actions = [];
     const looks = [];
-    const offer = (list, t, range) => {
-      if (t.distance !== null && t.distance <= range) list.push(t);
+    const offer = (list2, t, range) => {
+      if (t.distance !== null && t.distance <= range) list2.push(t);
     };
     const v = input.villager;
     if (v && nonEmpty(v.id) && finitePoint2(v.position)) {
@@ -25930,9 +26273,9 @@ player_meets_cefr(Player, RequiredLevel) :-
       const d = doorPrompt(input.buildings, { position: { x: at.x, y: at.y ?? 0, z: at.z } });
       if (d && d.action === "enter" && d.distance !== null) actions.push({ action: "enter", kind: "door", id: d.building, prompt: `Enter ${d.label}`, distance: d.distance });
     }
-    const nearest = (list) => {
+    const nearest = (list2) => {
       let best = null;
-      for (const c of list) if (best === null || c.distance < best.distance) best = c;
+      for (const c of list2) if (best === null || c.distance < best.distance) best = c;
       return best === null ? null : { ...best, distance: round2(best.distance) };
     };
     return { ok: true, target: nearest(actions) ?? nearest(looks) };
@@ -30523,9 +30866,9 @@ player_meets_cefr(Player, RequiredLevel) :-
     };
     const gatedBy = /* @__PURE__ */ new Map();
     const addGate = (feature, id) => {
-      const list = gatedBy.get(feature) ?? [];
-      if (!list.includes(id)) list.push(id);
-      gatedBy.set(feature, list);
+      const list2 = gatedBy.get(feature) ?? [];
+      if (!list2.includes(id)) list2.push(id);
+      gatedBy.set(feature, list2);
     };
     for (const m of catalog.manifests) if (m.core.genreFeature !== void 0) addGate(m.core.genreFeature, m.id);
     for (const id of Object.keys(presetDoc.gate)) {
@@ -30755,7 +31098,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     refusals.push(...pass.refusals);
     notes.push(...pass.notes);
     const modulesOf = (id) => manifests.get(id)?.core.modules ?? [];
-    const runningModules = (list) => new Set(list.filter((p) => p.active).flatMap((p) => modulesOf(p.id)));
+    const runningModules = (list2) => new Set(list2.filter((p) => p.active).flatMap((p) => modulesOf(p.id)));
     const now = runningModules(packs);
     const before = Object.keys(game).length === 0 ? now : runningModules(resolveComposition({ recipe: request.recipe, world: request.world }, catalog).packs);
     const moduleIds = [...base.activation.modules.filter((mod) => now.has(mod) || !before.has(mod)), ...[...now].filter((mod) => !before.has(mod))];
@@ -30848,22 +31191,22 @@ player_meets_cefr(Player, RequiredLevel) :-
   function isRecord(v) {
     return typeof v === "object" && v !== null && !Array.isArray(v);
   }
-  function finite2(v, fallback) {
+  function finite3(v, fallback) {
     return typeof v === "number" && Number.isFinite(v) ? v : fallback;
   }
   function vec3(v, fallback) {
     if (!isRecord(v)) return { ...fallback };
     return {
-      x: finite2(v.x, fallback.x),
-      y: finite2(v.y, fallback.y),
-      z: finite2(v.z, fallback.z)
+      x: finite3(v.x, fallback.x),
+      y: finite3(v.y, fallback.y),
+      z: finite3(v.z, fallback.z)
     };
   }
   function readConvention(raw) {
     if (!isRecord(raw)) return { ...CORE_CONVENTION };
     const up = raw.up === "z" || raw.up === "y" ? raw.up : CORE_CONVENTION.up;
     const handedness = raw.handedness === "left" || raw.handedness === "right" ? raw.handedness : CORE_CONVENTION.handedness;
-    const units = finite2(raw.unitsPerMetre, CORE_CONVENTION.unitsPerMetre);
+    const units = finite3(raw.unitsPerMetre, CORE_CONVENTION.unitsPerMetre);
     return {
       up,
       handedness,
@@ -30892,7 +31235,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       name,
       kind: typeof rec.kind === "string" ? rec.kind : "",
       position: vec3(rec.position, { x: 0, y: 0, z: 0 }),
-      yaw: finite2(rec.yaw, 0),
+      yaw: finite3(rec.yaw, 0),
       node: typeof rec.node === "string" ? rec.node : ""
     };
   }
@@ -30908,7 +31251,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       measured: true,
       footprint: readFootprint(transform?.footprint, declared.up),
       offset: vec3(transform?.offset, { x: 0, y: 0, z: 0 }),
-      yaw: finite2(transform?.yaw, 0),
+      yaw: finite3(transform?.yaw, 0),
       scale: readScale(transform?.scale),
       sockets: Object.keys(hasSockets ? sockets : {}).sort().map((name) => readSocket(name, sockets[name]))
     };
@@ -31090,195 +31433,6 @@ player_meets_cefr(Player, RequiredLevel) :-
       aligned,
       required: required2
     };
-  }
-
-  // @insimul/core/src/geometry/plan-geometry.ts
-  function planSub(a, b) {
-    return [a[0] - b[0], a[1] - b[1]];
-  }
-  function planDot(a, b) {
-    return a[0] * b[0] + a[1] * b[1];
-  }
-  function planCross(a, b) {
-    return a[0] * b[1] - a[1] * b[0];
-  }
-  function isConvexOutline(p) {
-    if (p.length < 3) return false;
-    let sign = 0;
-    for (let i = 0; i < p.length; i += 1) {
-      const a = p[i];
-      const b = p[(i + 1) % p.length];
-      const c = p[(i + 2) % p.length];
-      const z = planCross(planSub(b, a), planSub(c, b));
-      if (Math.abs(z) < 1e-12) continue;
-      const s = z > 0 ? 1 : -1;
-      if (sign === 0) sign = s;
-      else if (s !== sign) return false;
-    }
-    return sign !== 0;
-  }
-  function satDepth(a, b) {
-    let best = Infinity;
-    for (const q of [a, b]) {
-      for (let i = 0; i < q.length; i += 1) {
-        const e = planSub(q[(i + 1) % q.length], q[i]);
-        const l = Math.sqrt(e[0] * e[0] + e[1] * e[1]);
-        if (l < 1e-12) continue;
-        const n = [-e[1] / l, e[0] / l];
-        let aMin = Infinity;
-        let aMax = -Infinity;
-        let bMin = Infinity;
-        let bMax = -Infinity;
-        for (const v of a) {
-          const d = planDot(v, n);
-          aMin = Math.min(aMin, d);
-          aMax = Math.max(aMax, d);
-        }
-        for (const v of b) {
-          const d = planDot(v, n);
-          bMin = Math.min(bMin, d);
-          bMax = Math.max(bMax, d);
-        }
-        const overlap = Math.min(aMax, bMax) - Math.max(aMin, bMin);
-        if (overlap <= 0) return 0;
-        best = Math.min(best, overlap);
-      }
-    }
-    return best === Infinity ? 0 : best;
-  }
-  function planSeparation(a, b) {
-    let best = -Infinity;
-    let axis = [1, 0];
-    for (const q of [a, b]) {
-      for (let i = 0; i < q.length; i += 1) {
-        const e = planSub(q[(i + 1) % q.length], q[i]);
-        const l = Math.sqrt(e[0] * e[0] + e[1] * e[1]);
-        if (l < 1e-12) continue;
-        const n = [-e[1] / l, e[0] / l];
-        let aMin = Infinity;
-        let aMax = -Infinity;
-        let bMin = Infinity;
-        let bMax = -Infinity;
-        for (const v of a) {
-          const d = planDot(v, n);
-          aMin = Math.min(aMin, d);
-          aMax = Math.max(aMax, d);
-        }
-        for (const v of b) {
-          const d = planDot(v, n);
-          bMin = Math.min(bMin, d);
-          bMax = Math.max(bMax, d);
-        }
-        const forward = bMin - aMax;
-        const back = aMin - bMax;
-        const gap = Math.max(forward, back);
-        if (gap > best + 1e-12) {
-          best = gap;
-          axis = forward >= back ? n : [-n[0], -n[1]];
-        }
-      }
-    }
-    return { gap: best === -Infinity ? 0 : best, axis };
-  }
-  function pointInOutline(p, q) {
-    let inside = false;
-    for (let i = 0, j = q.length - 1; i < q.length; j = i, i += 1) {
-      if (q[i][1] > p[1] !== q[j][1] > p[1] && p[0] < (q[j][0] - q[i][0]) * (p[1] - q[i][1]) / (q[j][1] - q[i][1]) + q[i][0]) {
-        inside = !inside;
-      }
-    }
-    return inside;
-  }
-  function pointSegmentDistance(p, a, b) {
-    const ab = planSub(b, a);
-    const l2 = planDot(ab, ab);
-    let t = l2 > 0 ? planDot(planSub(p, a), ab) / l2 : 0;
-    t = Math.max(0, Math.min(1, t));
-    const cx = a[0] + t * ab[0] - p[0];
-    const cz = a[1] + t * ab[1] - p[1];
-    return Math.sqrt(cx * cx + cz * cz);
-  }
-  function nearestOnSegment(p, a, b) {
-    const dx = b[0] - a[0];
-    const dz = b[1] - a[1];
-    const l2 = dx * dx + dz * dz;
-    const t = l2 > 0 ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / l2)) : 0;
-    return [a[0] + dx * t, a[1] + dz * t];
-  }
-  function segmentsCross(a, b, c, d) {
-    const d1 = planCross(planSub(b, a), planSub(c, a));
-    const d2 = planCross(planSub(b, a), planSub(d, a));
-    const d3 = planCross(planSub(d, c), planSub(a, c));
-    const d4 = planCross(planSub(d, c), planSub(b, c));
-    return d1 > 0 !== d2 > 0 && d3 > 0 !== d4 > 0;
-  }
-  function segmentOutlineDistance(a, b, q) {
-    if (pointInOutline(a, q) || pointInOutline(b, q)) return 0;
-    let best = Infinity;
-    for (let i = 0; i < q.length; i += 1) {
-      const c = q[i];
-      const d = q[(i + 1) % q.length];
-      if (segmentsCross(a, b, c, d)) return 0;
-      best = Math.min(
-        best,
-        pointSegmentDistance(c, a, b),
-        pointSegmentDistance(d, a, b),
-        pointSegmentDistance(a, c, d),
-        pointSegmentDistance(b, c, d)
-      );
-    }
-    return best;
-  }
-  function triangulateOutline(outline) {
-    const out = [];
-    let p = [...outline];
-    let area = 0;
-    for (let i = 0; i < p.length; i += 1) area += planCross(p[i], p[(i + 1) % p.length]);
-    if (area < 0) p = p.reverse();
-    let guard = 0;
-    while (p.length > 3 && guard < 1e4) {
-      guard += 1;
-      let cut = false;
-      for (let i = 0; i < p.length; i += 1) {
-        const ia = (i + p.length - 1) % p.length;
-        const ic = (i + 1) % p.length;
-        const a = p[ia];
-        const b = p[i];
-        const c = p[ic];
-        if (planCross(planSub(b, a), planSub(c, b)) <= 1e-12) continue;
-        let empty = true;
-        for (let j = 0; j < p.length && empty; j += 1) {
-          if (j === ia || j === i || j === ic) continue;
-          const q = p[j];
-          const d1 = planCross(planSub(b, a), planSub(q, a));
-          const d2 = planCross(planSub(c, b), planSub(q, b));
-          const d3 = planCross(planSub(a, c), planSub(q, c));
-          if (d1 > 0 && d2 > 0 && d3 > 0) empty = false;
-        }
-        if (!empty) continue;
-        out.push([a, b, c]);
-        p.splice(i, 1);
-        cut = true;
-        break;
-      }
-      if (!cut) break;
-    }
-    if (p.length >= 3) out.push(p);
-    return out;
-  }
-  function outlineDepth(footprint, outline) {
-    if (isConvexOutline(outline)) return satDepth(footprint, outline);
-    let deepest = 0;
-    for (const t of triangulateOutline(outline)) deepest = Math.max(deepest, satDepth(footprint, t));
-    return deepest;
-  }
-  function quantizeMillimetre(m) {
-    const scaled2 = m * 1e3;
-    const q = (scaled2 < 0 ? -Math.round(-scaled2) : Math.round(scaled2)) / 1e3;
-    return q === 0 ? 0 : q;
-  }
-  function roundHalfAway(v) {
-    return v < 0 ? -Math.round(-v) : Math.round(v);
   }
 
   // @insimul/core/src/editor/layout/building-fit.ts
@@ -32893,7 +33047,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     const v = o[k];
     return typeof v === "number" ? v : d;
   }
-  function str2(o, k, d = "") {
+  function str3(o, k, d = "") {
     const v = o[k];
     return typeof v === "string" ? v : d;
   }
@@ -32927,11 +33081,11 @@ player_meets_cefr(Player, RequiredLevel) :-
   var DOOR_SOURCES = ["none", "binding_socket", "mesh_socket", "component", "binding_yaw"];
   function door(v) {
     const o = obj(v, "a door");
-    const source = str2(o, "source", "none");
+    const source = str3(o, "source", "none");
     if (!DOOR_SOURCES.includes(source)) bad(`unknown door source '${source}'`);
     return {
       source,
-      name: str2(o, "name"),
+      name: str3(o, "name"),
       hasPosition: bool(o, "hasPosition"),
       position: present(o, "position") ? vec2(o.position) : { x: 0, y: 0, z: 0 },
       yaw: numOr(o, "yaw", 0),
@@ -32941,13 +33095,13 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function candidate(v) {
     const o = obj(v, "a door candidate");
-    return { component: str2(o, "component"), mesh: str2(o, "mesh"), owner: str2(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
+    return { component: str3(o, "component"), mesh: str3(o, "mesh"), owner: str3(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
   }
   function policy(v) {
     const o = obj(v, "a fit policy");
     const d = defaultFitPolicy();
     const p = {
-      mode: str2(o, "mode", "lot") === "none" ? "none" : "lot",
+      mode: str3(o, "mode", "lot") === "none" ? "none" : "lot",
       scaleMin: numOr(o, "scaleMin", d.scaleMin),
       scaleMax: numOr(o, "scaleMax", d.scaleMax),
       doorClearance: numOr(o, "doorClearance", d.doorClearance),
@@ -32962,8 +33116,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     const g = obj(o.geometry, "geometry");
     const b = present(o, "bounds") ? obj(o.bounds, "bounds") : null;
     return {
-      entityId: str2(o, "entityId"),
-      lotId: str2(o, "lotId"),
+      entityId: str3(o, "entityId"),
+      lotId: str3(o, "lotId"),
       lot: present(o, "lot") ? readFitLot(o.lot) : null,
       lotCentre: present(o, "lotCentre") ? point(o.lotCentre) : null,
       node: vec2(o.node),
@@ -32981,9 +33135,9 @@ player_meets_cefr(Player, RequiredLevel) :-
   function obstacle(v) {
     const o = obj(v, "an obstacle");
     return {
-      entityId: str2(o, "entityId"),
-      kind: str2(o, "kind"),
-      lotId: str2(o, "lotId"),
+      entityId: str3(o, "entityId"),
+      kind: str3(o, "kind"),
+      lotId: str3(o, "lotId"),
       points: points(o.points),
       halfWidth: numOr(o, "halfWidth", 0),
       closed: bool(o, "closed")
@@ -32995,8 +33149,8 @@ player_meets_cefr(Player, RequiredLevel) :-
   function body(v) {
     const o = obj(v, "a body");
     return {
-      entityId: str2(o, "entityId"),
-      lotId: str2(o, "lotId"),
+      entityId: str3(o, "entityId"),
+      lotId: str3(o, "lotId"),
       outline: points(o.outline),
       mass: num3(o, "mass"),
       maxShift: num3(o, "maxShift"),
@@ -33016,10 +33170,10 @@ player_meets_cefr(Player, RequiredLevel) :-
       y = p[1];
     }
     return {
-      kind: str2(o, "kind"),
-      entityId: str2(o, "entityId"),
-      archetype: str2(o, "archetype"),
-      lotId: str2(o, "lotId"),
+      kind: str3(o, "kind"),
+      entityId: str3(o, "entityId"),
+      archetype: str3(o, "archetype"),
+      lotId: str3(o, "lotId"),
       path: present(o, "path") ? points(o.path) : [],
       width: numOr(o, "width", 0),
       closed: bool(o, "closed"),
@@ -33033,12 +33187,12 @@ player_meets_cefr(Player, RequiredLevel) :-
     const o = obj(v, "a plan");
     const strips = present(o, "strips") ? arr(o.strips, "strips").map((x) => {
       const s = obj(x, "a strip");
-      const surface = str2(s, "surface");
+      const surface = str3(s, "surface");
       if (surface !== "road" && surface !== "plaza" && surface !== "path") bad("a strip's surface is road, plaza or path");
       return {
-        entityId: str2(s, "entityId"),
+        entityId: str3(s, "entityId"),
         surface,
-        lotId: str2(s, "lotId"),
+        lotId: str3(s, "lotId"),
         points: points(s.points),
         halfWidth: numOr(s, "halfWidth", 0),
         closed: bool(s, "closed")
@@ -33047,8 +33201,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     const lots = present(o, "lots") ? arr(o.lots, "lots").map((x) => {
       const l = obj(x, "a lot");
       return {
-        entityId: str2(l, "entityId"),
-        lotId: str2(l, "lotId"),
+        entityId: str3(l, "entityId"),
+        lotId: str3(l, "lotId"),
         cx: num3(l, "cx"),
         cz: num3(l, "cz"),
         halfAcross: num3(l, "halfAcross"),
@@ -33063,7 +33217,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     return arr(v, "obstacles").map((x) => {
       const o = obj(x, "a ground obstacle");
       return {
-        entityId: str2(o, "entityId"),
+        entityId: str3(o, "entityId"),
         building: bool(o, "building"),
         cx: num3(o, "cx"),
         cz: num3(o, "cz"),
@@ -33077,7 +33231,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function choices(v) {
     return arr(v, "authored").map((x) => {
       const o = obj(x, "a layer choice");
-      return { surface: str2(o, "surface"), layer: str2(o, "layer"), strength: numOr(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
+      return { surface: str3(o, "surface"), layer: str3(o, "layer"), strength: numOr(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
     });
   }
   var v3 = (v) => ({ x: v.x, y: v.y, z: v.z });
@@ -33178,7 +33332,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     switch (op) {
       // ── building-fit ──
       case "isDoorPartName":
-        return isDoorPartName({ component: str2(i, "component"), mesh: str2(i, "mesh"), owner: str2(i, "owner") });
+        return isDoorPartName({ component: str3(i, "component"), mesh: str3(i, "mesh"), owner: str3(i, "owner") });
       case "faceYawOf":
         return faceYawOf(vec2(i.point), vec2(i.min), vec2(i.max));
       case "chooseDoorPart":
@@ -33192,7 +33346,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj(x, "a footprint");
           const corners = points(o.corners);
           if (corners.length !== 4) bad("a footprint has four corners");
-          return { entityId: str2(o, "entityId"), lotId: str2(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
+          return { entityId: str3(o, "entityId"), lotId: str3(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
         });
         return findFitOverlaps(buildings, obstacles(i.obstacles)).map((o) => ({ entityId: o.entityId, with: o.with, withKind: o.withKind, depth: o.depth }));
       }
@@ -33202,7 +33356,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return { gap: s.gap, axis: [s.axis[0], s.axis[1]] };
       }
       case "settleBodies": {
-        const rule2 = str2(i, "rule");
+        const rule2 = str3(i, "rule");
         if (rule2 !== "neighbour" && rule2 !== "clearance") bad(`unknown settle rule '${rule2}'`);
         return movesJson(settleBodies(
           arr(i.bodies, "bodies").map(body),
@@ -33214,19 +33368,19 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "settleFittedBuildings":
         return movesJson(settleFittedBuildings(arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a fitted footprint");
-          return { entityId: str2(o, "entityId"), lotId: str2(o, "lotId"), corners: points(o.corners), neighbourGap: num3(o, "neighbourGap") };
+          return { entityId: str3(o, "entityId"), lotId: str3(o, "lotId"), corners: points(o.corners), neighbourGap: num3(o, "neighbourGap") };
         }), obstacles(i.obstacles)));
       case "settleClearance": {
         const items = arr(i.items, "items").map((x) => {
           const o = obj(x, "a clearance item");
-          const kind = str2(o, "kind");
+          const kind = str3(o, "kind");
           const item = {
-            entityId: str2(o, "entityId"),
+            entityId: str3(o, "entityId"),
             kind: kind === "building" ? "building" : kind === "plant" ? "plant" : "prop",
             outline: points(o.outline)
           };
           item.area = numOr(o, "area", 0);
-          item.archetype = str2(o, "archetype");
+          item.archetype = str3(o, "archetype");
           item.height = numOr(o, "height", 0);
           item.longestPlan = numOr(o, "longestPlan", 0);
           item.crownRadius = numOr(o, "crownRadius", 1);
@@ -33255,7 +33409,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "layoutConstants":
         return { pairingNeighbourGap: PAIRING_NEIGHBOUR_GAP_M, crownRadius: CROWN_RADIUS_M };
       case "markerClearance":
-        return markerClearanceM(str2(i, "archetype"), num3(i, "height"), num3(i, "longestPlan"));
+        return markerClearanceM(str3(i, "archetype"), num3(i, "height"), num3(i, "longestPlan"));
       case "plantWallClearance":
         return plantWallClearanceM(num3(i, "crownRadius"));
       case "settleBuildingMaxShift":
@@ -33291,8 +33445,8 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj(x, "a settled building");
           const d = present(o, "door") ? obj(o.door, "a door") : null;
           return {
-            entityId: str2(o, "entityId"),
-            lotId: str2(o, "lotId"),
+            entityId: str3(o, "entityId"),
+            lotId: str3(o, "lotId"),
             shiftX: numOr(o, "shiftX", 0),
             shiftZ: numOr(o, "shiftZ", 0),
             door: d === null ? null : { x: num3(d, "x"), z: num3(d, "z"), faceX: num3(d, "faceX"), faceZ: num3(d, "faceZ") }
@@ -33312,7 +33466,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "lanternsAtPathMouths": {
         const mouths = arr(i.mouths, "mouths").map((x) => {
           const o = obj(x, "a mouth");
-          return { pathId: str2(o, "pathId"), x: num3(o, "x"), z: num3(o, "z"), dirX: num3(o, "dirX"), dirZ: num3(o, "dirZ"), halfWidth: num3(o, "halfWidth") };
+          return { pathId: str3(o, "pathId"), x: num3(o, "x"), z: num3(o, "z"), dirX: num3(o, "dirX"), dirZ: num3(o, "dirZ"), halfWidth: num3(o, "halfWidth") };
         });
         return lanternsAtPathMouths(mouths, points(i.lanterns)).map((l) => ({ ...l }));
       }
@@ -33358,7 +33512,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return arr(i.rows, "rows").map((x) => {
           const q = arr(x, "a row");
           const r = lookNeighbours(
-            str2(i, "layerId"),
+            str3(i, "layerId"),
             { x: q[0], z: q[1], yaw: q[2] },
             { density: num3(look, "density"), clumping: num3(look, "clumping"), clumpCell: num3(look, "clumpCell"), jitter: num3(look, "jitter") },
             t === null ? null : { sizeX: num3(t, "sizeX"), sizeZ: num3(t, "sizeZ") },
@@ -34077,11 +34231,11 @@ player_meets_cefr(Player, RequiredLevel) :-
       if (!cells.has(key)) cells.set(key, { ix, iz, list: [] });
       cells.get(key).list.push(m);
     }
-    for (const { ix, iz, list } of cells.values()) {
-      if (list.length < 2) continue;
-      const cx = list.reduce((a, m) => a + m.x, 0) / list.length + (cellHash01(ix, iz, salt) - 0.5) * 0.5 * cell;
-      const cz = list.reduce((a, m) => a + m.z, 0) / list.length + (cellHash01(ix, iz, salt ^ 1515870810) - 0.5) * 0.5 * cell;
-      for (const m of list) {
+    for (const { ix, iz, list: list2 } of cells.values()) {
+      if (list2.length < 2) continue;
+      const cx = list2.reduce((a, m) => a + m.x, 0) / list2.length + (cellHash01(ix, iz, salt) - 0.5) * 0.5 * cell;
+      const cz = list2.reduce((a, m) => a + m.z, 0) / list2.length + (cellHash01(ix, iz, salt ^ 1515870810) - 0.5) * 0.5 * cell;
+      for (const m of list2) {
         const x = m.x + pull * (cx - m.x);
         const z = m.z + pull * (cz - m.z);
         out.set(m.k, ok(x, z) ? { x, z, blocked: false } : { x: m.x, z: m.z, blocked: true });
@@ -34630,9 +34784,9 @@ player_meets_cefr(Player, RequiredLevel) :-
     const pts = [...points3].map((p) => [p[0], p[1]]).sort((a, b) => a[0] - b[0] || a[1] - b[1]);
     if (pts.length < 3) return pts;
     const cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
-    const half = (list) => {
+    const half = (list2) => {
       const h = [];
-      for (const p of list) {
+      for (const p of list2) {
         while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], p) <= COMPOSITION_SLACK) h.pop();
         h.push(p);
       }
@@ -35203,7 +35357,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     if (typeof v !== "number") bad2(`'${k}' is not a number`);
     return v;
   }
-  function str3(o, k) {
+  function str4(o, k) {
     const v = o[k];
     if (typeof v !== "string") bad2(`'${k}' is not a string`);
     return v;
@@ -35228,10 +35382,10 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function stripOf(v) {
     const s = obj2(v, "a strip");
-    const surface = str3(s, "surface");
+    const surface = str4(s, "surface");
     if (surface !== "road" && surface !== "plaza" && surface !== "path") bad2(`unknown strip surface '${surface}'`);
     return {
-      entityId: str3(s, "entityId"),
+      entityId: str4(s, "entityId"),
       surface,
       lotId: typeof s.lotId === "string" ? s.lotId : "",
       points: points2(s.points, "a strip's points"),
@@ -35242,7 +35396,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function lotOf(v) {
     const l = obj2(v, "a lot");
     return {
-      entityId: str3(l, "entityId"),
+      entityId: str4(l, "entityId"),
       lotId: typeof l.lotId === "string" ? l.lotId : "",
       cx: num4(l, "cx"),
       cz: num4(l, "cz"),
@@ -35280,7 +35434,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function doorsOf(v) {
     return arr2(v ?? [], "doors").map((d) => {
       const o = obj2(d, "a door");
-      return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
+      return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
     });
   }
   function groupingInput(i) {
@@ -35293,7 +35447,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function propsOf(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
+      return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
     });
   }
   function plannedOn(i) {
@@ -35307,7 +35461,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function spotsOf(v, what) {
     return arr2(v ?? [], what).map((p) => {
       const o = obj2(p, what);
-      return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z") };
+      return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z") };
     });
   }
   var postsOf = (v) => spotsOf(v, "posts");
@@ -35316,38 +35470,38 @@ player_meets_cefr(Player, RequiredLevel) :-
   function foliageOf(v) {
     return arr2(v ?? [], "foliage").map((p) => {
       const o = obj2(p, "a foliage prop");
-      return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), x: num4(o, "x"), z: num4(o, "z") };
+      return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), x: num4(o, "x"), z: num4(o, "z") };
     });
   }
   function villagersOf(v) {
     return arr2(v ?? [], "villagers").map((p) => {
       const o = obj2(p, "a villager");
-      return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), target: typeof o.target === "string" ? o.target : null };
+      return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), target: typeof o.target === "string" ? o.target : null };
     });
   }
   function outlinedBuildings(v) {
     return arr2(v ?? [], "buildings").map((b) => {
       const o = obj2(b, "a building");
-      return { entityId: str3(o, "entityId"), outline: points2(o.outline, "a building's outline") };
+      return { entityId: str4(o, "entityId"), outline: points2(o.outline, "a building's outline") };
     });
   }
   function reachProps(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
+      return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
     });
   }
   function seatsOf(v) {
     return arr2(v ?? [], "seats").map((s) => {
       const o = obj2(s, "a seat");
-      return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading"), length: num4(o, "length") };
+      return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading"), length: num4(o, "length") };
     });
   }
   function compositionHouseModels(v) {
     return arr2(v ?? [], "models").map((m) => {
       const o = obj2(m, "a model");
       if (o.entry !== void 0) {
-        const model = houseModelOf(str3(o, "id"), obj2(o.entry, "a model's entry"));
+        const model = houseModelOf(str4(o, "id"), obj2(o.entry, "a model's entry"));
         if (model === null) bad2(`model ${JSON.stringify(o.id)}: its entry states no measured footprint`);
         return model;
       }
@@ -35355,7 +35509,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         if (typeof s !== "string" || !HOUSE_SIDES.includes(s)) bad2(`unknown house side ${JSON.stringify(s)}`);
         return s;
       });
-      return { id: str3(o, "id"), width: num4(o, "width"), depth: num4(o, "depth"), blank };
+      return { id: str4(o, "id"), width: num4(o, "width"), depth: num4(o, "depth"), blank };
     });
   }
   function runCompositionOp(op, input, rules = DEFAULT_COMPOSITION_RULES) {
@@ -35395,7 +35549,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "auditGroundEdges":
         return json4(auditGroundEdges(arr2(i.samples, "samples").map((s) => point2(s, "an [s, w] sample")), r));
       case "coverageAudit": {
-        const source = str3(i, "source");
+        const source = str4(i, "source");
         if (source !== "transition" && source !== "paint") bad2(`unknown coverage source '${source}'`);
         const profile = coverageProfile(
           compositionPlan(i.plan),
@@ -35427,7 +35581,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "composeYards": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
+          return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
         });
         return json4(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
       }
@@ -35436,7 +35590,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         if (i.buildings === void 0 || i.props === void 0) bad2("a lanternsOnRoutes input states its 'buildings' and 'props' (empty means none)");
         const lines2 = arr2(i.lines ?? [], "lines").map((q) => {
           const o = obj2(q, "a line");
-          return { entityId: str3(o, "entityId"), points: points2(o.points, "a line's points") };
+          return { entityId: str4(o, "entityId"), points: points2(o.points, "a line's points") };
         });
         return json4(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
       }
@@ -35452,7 +35606,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "assignHouseModels": {
         const houses = arr2(i.houses ?? [], "houses").map((h) => {
           const o = obj2(h, "a house");
-          return { entityId: str3(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
+          return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
         });
         return json4(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: compositionHouseModels(i.models) }, r));
       }
@@ -35465,7 +35619,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "composeVillage": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str3(o, "entityId"), archetype: str3(o, "archetype"), outline: points2(o.outline, "an outline") };
+          return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), outline: points2(o.outline, "an outline") };
         });
         return json4(
           composeVillage(
@@ -35706,9 +35860,9 @@ player_meets_cefr(Player, RequiredLevel) :-
     return value === void 0 || value === null ? void 0 : needString(method, value, name);
   }
   function optStrings(method, value, name) {
-    const list = optArrayValue(method, value, name);
-    if (list !== void 0) list.forEach((v, i) => needString(method, v, `${name}[${i}]`));
-    return list;
+    const list2 = optArrayValue(method, value, name);
+    if (list2 !== void 0) list2.forEach((v, i) => needString(method, v, `${name}[${i}]`));
+    return list2;
   }
   function sessionClockOf(method, value) {
     if (value === void 0 || value === null) return { manual: false, at: 0 };
@@ -35887,6 +36041,18 @@ player_meets_cefr(Player, RequiredLevel) :-
       }
     });
   }
+  function groundContract() {
+    return plain({
+      "audio-ground": {
+        ground: {
+          tiers: [...GROUND_TIERS],
+          kindDefaults: { ...GROUND_SURFACE_KIND_DEFAULTS },
+          kindFallback: GROUND_SURFACE_KIND_FALLBACK
+        },
+        defaultFootstepSurface: DEFAULT_FOOTSTEP_SURFACE
+      }
+    });
+  }
   function movementModeOf(method, value) {
     return oneOf(method, value, CAMERA_MODES, "mode");
   }
@@ -35996,8 +36162,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     const input = { notices: optArrayValue(method, args.notices, "notices") ?? [] };
     if (args.fluency !== void 0 && args.fluency !== null) input.fluency = needNumber(method, args.fluency, "fluency");
     for (const key of ["read", "answered"]) {
-      const list = optArrayValue(method, args[key], key);
-      if (list !== void 0) input[key] = list.map((id, i) => needString(method, id, `${key}[${i}]`));
+      const list2 = optArrayValue(method, args[key], key);
+      if (list2 !== void 0) input[key] = list2.map((id, i) => needString(method, id, `${key}[${i}]`));
     }
     const status = optObject(method, args.questStatus, "questStatus");
     if (status !== void 0) {
@@ -37422,7 +37588,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     "genre.recipes": () => ({ ids: [...RECIPE_IDS], bindings: plain(RECIPE_GENRE_BINDINGS) }),
     // ── camera movement (P7; PL.native-camera-movement, U95(5)) ─────────────────
     // One row per op of core's `conformance/camera/movement.json`, each ONE core
-    // function of `camera/movement-contract`: the args are a case's `input` and the
+    // function of `camera/movement-rules`: the args are a case's `input` and the
     // answer is in its `expected` shape. Core's metres in the IR's world frame
     // (left-handed, +Y up, yaw from +Z toward +X); nothing is converted or
     // mirrored here, the engine's import maps it. Core's refusals (`missing-view-yaw`,
@@ -37504,6 +37670,48 @@ player_meets_cefr(Player, RequiredLevel) :-
     "camera.movement.slopeAtRest": (args) => ({ atRest: slopeAtRest(args.slopeDeg) }),
     /** `camera.movement.step { riseM }` → `{ response }` — core's `stepResponse` (`none`, `step`, `blocked`; null unreadable). */
     "camera.movement.step": (args) => ({ response: stepResponse(args.riseM) }),
+    // ── the place and the ground underfoot (P5; PL.native-ground-row, U97(3)) ───
+    // One row per op of core's `conformance/audio/ground.json`, each ONE core
+    // function of `audio/ground-from-ir`: the args are a case's `input` and the
+    // answer is in its `expected` shape. The host reads both facts from the World
+    // IR it holds and hands them to core's audio rules; core's rules never read the
+    // IR for them. `world` is the IR (or any object holding its
+    // `geography.settlements`, `geography.groundSurfaces` and `entities.roads`) and
+    // `at` a point in IR metres on the ground plane `{x, z}` (`y` is never read);
+    // nothing is converted or mirrored here, the engine maps its own frame in.
+    // Nothing is type-checked: core reads every input itself and its corpus pins
+    // the reading (a world that is not an object has no ground stated and no
+    // settlement; an `at` that is not a finite point has no reading, null). The
+    // open ground `terrain.texture.ground` is a DEFAULT, never a refusal.
+    /** `audio.ground.contract` → `{ 'audio-ground': { ground: { tiers, kindDefaults, kindFallback }, defaultFootstepSurface } }`. */
+    "audio.ground.contract": () => groundContract(),
+    /**
+     * `audio.ground.placeAt { world, at }` → `{ reading }` — core's `placeAt`:
+     * `{ place: 'settlement', settlementId, settlementName }` inside a
+     * `geography.settlements[]` circle (distance ≤ radius; overlaps: the nearest
+     * centre, then the smaller id), else `{ place: 'wilderness', settlementId:
+     * null, settlementName: null }`; null when `at` is not a position. `indoor` is
+     * never read from the IR: the host knows when its listener is inside.
+     */
+    "audio.ground.placeAt": (args) => ({ reading: plain(placeAt(args.world, args.at ?? null)) }),
+    /**
+     * `audio.ground.groundSurfaceAt { world, at }` → `{ reading }` — core's
+     * `groundSurfaceAt`: `{ surface, tier, shapeId }`, read from a road
+     * (`entities.roads[]`), then a closed, then an open
+     * `geography.groundSurfaces[]` surface, within a tier the nearest then the
+     * smaller id; where none covers the point, the open ground `{ surface:
+     * 'terrain.texture.ground', tier: 'ground', shapeId: null }`; null when `at` is
+     * not a position. `surface` is what the host hands `footstepCue`.
+     */
+    "audio.ground.groundSurfaceAt": (args) => ({ reading: plain(groundSurfaceAt(args.world, args.at ?? null)) }),
+    /**
+     * `audio.ground.footstepAt { world, at, gait }` → `{ cue }` — core's
+     * `footstepAt`: the ground reading handed to `footstepCue` (`{ key, surface,
+     * gait, volume, intervalSec, source }`), or null where no step sounds (`idle`,
+     * a surface that makes none). With no position the step is the default
+     * surface's (`source: 'default'`).
+     */
+    "audio.ground.footstepAt": (args) => ({ cue: plain(footstepAt(args.world, args.at ?? null, args.gait ?? null)) }),
     // ── the genre HUD and the world rules panel (P9a) ──
     // Each row is one of core's corpus runners and nothing else: the args are
     // `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and

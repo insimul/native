@@ -190,14 +190,18 @@ game; **meta** = about the bridge itself.
 | `genre.camera` | `{ value }` → `{ mode }` | `game-genres/resolution` `normalizeCameraMode` | P7 |
 | `genre.resolveGame` | `{ recipe?, world? }` → core's `GameGenreResolution` (refusals are errors with a code) | `game-genres/resolution` `resolveGameGenre` | P7/P9 |
 | `genre.recipes` | `{}` → `{ ids, bindings }` | `game-genres/recipes` | P9 |
-| `camera.movement.contract` | `{}` → `{ 'camera-movement': { modes, storeyM, gait, ground } }` — the data tables of core's `conformance/camera/movement.json` `contract` | `camera/movement-contract` `movementModeTable`, `BUILDING_STOREY_M`, `PLAYER_GAIT`, `PLAYER_GROUND` | P7 movement (PL.native-camera-movement, U95(5); core's PL.movement-contract, U94(4)) |
-| `camera.movement.occluders` | `{ mode, feet, view?, solids?, exclude? }` → `{ rule, pivot, lens, hidden: [{ id, atM }], unreadable }`, or the refusal value `{ error: missing-view-yaw }` | `camera/movement-contract` `sightOccluders` | P7 movement |
-| `camera.movement.sideView` | `{ mode, feet, radiusM, solids? }` → `{ depthZ, blockers: [{ id, xMin, xMax, bottomY, topY }], unreadable }`, or the refusal values `{ error: not-a-side-view }` and `{ error: invalid-radius }` | `camera/movement-contract` `sideViewBlockers` | P7 movement |
-| `camera.movement.buildingSolid` | `{ building }` → `{ solid }` (null: no footprint stated) | `camera/movement-contract` `buildingSolidOf` | P7 movement |
-| `camera.movement.move` | `{ mode, move: { forward, right }, viewYawDeg?, walkMps, running? }` → `{ frame, plane, viewYawDeg, velocity, speedMps }`, or the refusal values `{ error }`: `invalid-move`, `invalid-walk`, `missing-view-yaw` | `camera/movement-contract` `playerMove` | P7 movement |
-| `camera.movement.slope` | `{ slopeDeg }` → `{ response }`: `walk`, `slide`, `blocked`, or null (unreadable) | `camera/movement-contract` `slopeResponse` | P7 movement |
-| `camera.movement.slopeAtRest` | `{ slopeDeg }` → `{ atRest }`: `stand`, `slideBack`, or null (unreadable) | `camera/movement-contract` `slopeAtRest` | P7 movement |
-| `camera.movement.step` | `{ riseM }` → `{ response }`: `none`, `step`, `blocked`, or null (unreadable) | `camera/movement-contract` `stepResponse` | P7 movement |
+| `camera.movement.contract` | `{}` → `{ 'camera-movement': { modes, storeyM, gait, ground } }` — the data tables of core's `conformance/camera/movement.json` `contract` | `camera/movement-rules` `movementModeTable`, `BUILDING_STOREY_M`, `PLAYER_GAIT`, `PLAYER_GROUND` | P7 movement (PL.native-camera-movement, U95(5); core's PL.movement-contract, U94(4)) |
+| `camera.movement.occluders` | `{ mode, feet, view?, solids?, exclude? }` → `{ rule, pivot, lens, hidden: [{ id, atM }], unreadable }`, or the refusal value `{ error: missing-view-yaw }` | `camera/movement-rules` `sightOccluders` | P7 movement |
+| `camera.movement.sideView` | `{ mode, feet, radiusM, solids? }` → `{ depthZ, blockers: [{ id, xMin, xMax, bottomY, topY }], unreadable }`, or the refusal values `{ error: not-a-side-view }` and `{ error: invalid-radius }` | `camera/movement-rules` `sideViewBlockers` | P7 movement |
+| `camera.movement.buildingSolid` | `{ building }` → `{ solid }` (null: no footprint stated) | `camera/movement-rules` `buildingSolidOf` | P7 movement |
+| `camera.movement.move` | `{ mode, move: { forward, right }, viewYawDeg?, walkMps, running? }` → `{ frame, plane, viewYawDeg, velocity, speedMps }`, or the refusal values `{ error }`: `invalid-move`, `invalid-walk`, `missing-view-yaw` | `camera/movement-rules` `playerMove` | P7 movement |
+| `camera.movement.slope` | `{ slopeDeg }` → `{ response }`: `walk`, `slide`, `blocked`, or null (unreadable) | `camera/movement-rules` `slopeResponse` | P7 movement |
+| `camera.movement.slopeAtRest` | `{ slopeDeg }` → `{ atRest }`: `stand`, `slideBack`, or null (unreadable) | `camera/movement-rules` `slopeAtRest` | P7 movement |
+| `camera.movement.step` | `{ riseM }` → `{ response }`: `none`, `step`, `blocked`, or null (unreadable) | `camera/movement-rules` `stepResponse` | P7 movement |
+| `audio.ground.contract` | `{}` → `{ 'audio-ground': { ground: { tiers, kindDefaults, kindFallback }, defaultFootstepSurface } }` — the data of core's `conformance/audio/ground.json` `contract` | `audio/ground-from-ir` `GROUND_TIERS`, `GROUND_SURFACE_KIND_DEFAULTS`, `GROUND_SURFACE_KIND_FALLBACK`; `audio/footsteps` `DEFAULT_FOOTSTEP_SURFACE` | P5 ground (PL.native-ground-row, U97(3); core's PL.ground-from-ir, U94(5)) |
+| `audio.ground.placeAt` | `{ world, at }` → `{ reading }`: `{ place: settlement, settlementId, settlementName }`, `{ place: wilderness, settlementId: null, settlementName: null }`, or null (no position) | `audio/ground-from-ir` `placeAt` | P5 ground |
+| `audio.ground.groundSurfaceAt` | `{ world, at }` → `{ reading }`: `{ surface, tier, shapeId }` (tier `road`, `closed`, `open`, or `ground`: the open ground `terrain.texture.ground`, a default), or null (no position) | `audio/ground-from-ir` `groundSurfaceAt` | P5 ground |
+| `audio.ground.footstepAt` | `{ world, at, gait }` → `{ cue }`: `{ key, surface, gait, volume, intervalSec, source }`, or null (no step) | `audio/ground-from-ir` `footstepAt` | P5 ground |
 | `ui.genreHud` | `{ op: config, view, genre_view, config_of or view_of, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`; `config_of` / `view_of` take a game's own settings, `{ genreConfig }` or `{ recipe, world? }`, plus `state?` for `view_of`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }` (`unresolved_recipe` also carries `reason`); an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`, `genreHudConfigOf`; `game-genres/resolution` `resolveGameGenre` for a recipe) | P9a.native (U84); `config_of` / `view_of` PL.native-genre-hud-config (U92(2)) |
 | `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
@@ -815,7 +819,9 @@ questions Unreal's P7 cell left with core's owner (its round-2 m4, m5 and m6):
 what a camera mode does about a solid between the player and the lens, what the
 world (isometric) frame means for the move input, the run speed, and the slope and
 step limits. `src/camera/movement-contract.ts` states them as data in, decision
-out, in core's metres in the IR's world frame (left-handed, +Y up, a yaw from +Z
+out (since core's PL.movement-prose-split, the rules are `src/camera/movement-rules.ts`,
+which the rows import, and the prose tables no row reads `movement-prose.ts`; the
+contract module re-exports both), in core's metres in the IR's world frame (left-handed, +Y up, a yaw from +Z
 toward +X); the rows (ruling U95(5)) call it and decide nothing, so Unreal's P7
 cell binds them as its P6 cell binds `props.*` instead of keeping an interim copy:
 
@@ -891,7 +897,76 @@ errors.
 **Cost.** Two core modules (`camera/movement-contract` and the `camera/camera-modes`
 table it reads; 160 → 162 at the 431c95b pin): the bundle went from 1,628,178
 bytes (the pin alone) to 1,652,390 (+24,212). The 87 cases, with their 13 reversed
-runs, take about 5 ms under QuickJS.
+runs, take about 5 ms under QuickJS. At the 6667999 pin (PL.native-ground-row) the
+rows import `camera/movement-rules` instead, which leaves core's prose tables out:
+1,652,390 → 1,649,195 (−3,195) before the ground rows. Importing
+`camera/movement-contract` again would bring them back; the vendor tool refuses that
+(`UNBUNDLED_CORE_MODULES`).
+
+### The ground reading rows: where the listener is and what is under the foot (PL.native-ground-row)
+
+Core's audio rules take two facts as inputs and never look them up: **where the
+listener is** (`settlement`, `wilderness` or `indoor`; the ambient and music rules)
+and **what is under the foot** (a surface archetype; `footstepCue`). Reading them is
+the host's job, from the World IR it already holds, and core states exactly how
+(PL.ground-from-ir, core 91a180d; ruling U94(5)) so that every engine reads them the
+same way. The rows (ruling U97(3)) call core's reading and decide nothing, so
+Unreal's `P5.unreal.ground-from-ir` cell binds them in place of its interim
+`Portable/InsimulAudioPlace` reading:
+
+- **`audio.ground.placeAt { world, at }`** → `{ reading }` (`placeAt`): `settlement`
+  inside a `geography.settlements[]` circle (plan distance ≤ `radius`; overlapping
+  circles: the nearest centre, then the smaller id), with its `settlementId` and
+  `settlementName` (its `name`, else its id); else `wilderness`. `indoor` is never
+  read from the IR: the host knows when its listener is inside.
+- **`audio.ground.groundSurfaceAt { world, at }`** → `{ reading }`
+  (`groundSurfaceAt`): `{ surface, tier, shapeId }` from a road (`entities.roads[]`,
+  within half its width of its waypoints; its `archetype`, else
+  `terrain.texture.road`; its `id`, else `road.<fromId>.<toId>`), then a closed
+  ground surface (inside its polygon, even-odd), then an open one (within half its
+  width); a surface with no archetype is read by its kind (plaza → sidewalk, any
+  other → path). Within a tier the nearest shape wins, then the smaller id. Where
+  none covers the point, the open ground `terrain.texture.ground` (tier `ground`,
+  `shapeId` null) — a default, never a refusal.
+- **`audio.ground.footstepAt { world, at, gait }`** → `{ cue }` (`footstepAt`): the
+  ground reading handed to `footstepCue` — `{ key, surface, gait, volume,
+  intervalSec, source }`, or null where no step sounds (`idle`, an unknown gait, a
+  surface that makes none). With no position the step is the default surface's
+  (`stone`, `source: default`).
+- **`audio.ground.contract`** — the corpus contract's data from core's constants:
+  `ground.tiers`, `ground.kindDefaults`, `ground.kindFallback` and
+  `defaultFootstepSurface`. The file's other `ground` keys and its other keys are
+  rules written out, and stay in the corpus.
+
+Points are IR metres on the ground plane `{x, z}`; `y` is never read. The rows
+convert nothing: the engine maps its listener's position into the IR's frame first
+(Unreal: centimetres and `(X, Y)` to metres and `(x, z)`, less the director's level
+offset). **Nothing is an error**: core reads every input itself and its corpus pins
+the reading — a world that is absent or not an object states no ground and no
+settlement, and an `at` that is absent or not a finite point has no reading (null).
+
+**The evidence** is core's `conformance/audio/ground.json` (48 cases over `placeAt`
+13, `groundSurfaceAt` 27, `footstepAt` 8), copied byte for byte as its own set
+(`AUDIO_CORPUS_FILES`; `cues.json` beside it is not copied) and driven by
+`tests/props_corpus.cpp` as the ctest `audio_ground_corpus`, 0 undriven. Every case
+whose world lists two or more settlements, ground surfaces or roads is driven a
+second time with those lists reversed (the file's order rule, as core's
+`checkGroundCase` drives it; 31 cases), and the contract's data is held to
+`audio.ground.contract` on the keys the row states. `audio_ground_corpus_negative`
+(`tests/props-negative/ground-wrong.json`) must see Unreal's sidewalk for a footpath
+in the contract, an op with no case, and six answers an engine keeping one of its
+interim readings would give — a non-finite position read as the wilderness, the open
+ground refused, a stated road id ignored, a footpath with no archetype read as
+sidewalk, the first listed road taken on a tie, and a road of width 0 read — each
+reported. The hand cases in `tests/cases/bridge-audio.json` pin the answer shapes and
+the inputs core reads itself.
+
+**Cost.** Three core modules (`audio/ground-from-ir`, `audio/footsteps` and the
+`audio/audio-keys` it reads; `geometry/plan-geometry` was already in): at the 6667999
+pin the bundle goes from 1,649,195 bytes (the pin and the movement repoint alone) to
+1,659,828 (+10,633: core's three modules 7,253, the rows and their comments the
+rest). Against the 431c95b pin's 1,652,390 that is +7,438. The 48 cases, with their
+31 reversed runs, take about 5 ms under QuickJS.
 
 ### The title, tutorial and onboarding rows (PL.native-title-rows)
 
@@ -1073,6 +1148,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (129 cases at 431c95b, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
 | `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (33 cases at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give and two runner controls (a case's `ranges`, a lone `prop`) seen as wrong |
+| `audio_ground_corpus`, `audio_ground_corpus_negative` | core's ground reading corpus driven whole through the `audio.ground.*` rows (48 cases, 0 undriven; every case whose world lists two or more settlements, ground surfaces or roads driven again with them reversed; its contract's data held to `audio.ground.contract`), and Unreal's sidewalk for a footpath in the contract, an undriven op and six answers an engine keeping one of its interim readings would give seen as wrong |
 | `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (87 cases, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 

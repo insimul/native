@@ -1,0 +1,2793 @@
+{
+  "area": "audio-ground",
+  "description": "NEGATIVE CONTROL for audio_ground_corpus_negative (PL.native-ground-row), made from core's conformance/audio/ground.json at 6667999: the contract's ground.kindDefaults.footpath set to Unreal's sidewalk, every footstepAt case removed (an op of the area no case drives), and six cases given the answer an engine keeping one of its interim readings would give (each named 'expected WRONGLY'). Every other case is core's, unchanged, and must still pass. The runner must report each and fail the run.",
+  "version": 1,
+  "sources": [
+    "core conformance/audio/ground.json at 6667999 (PL.ground-from-ir 91a180d), changed as the description says; the interim readings are the four core's sources line names plus the road id (pl-ground-from-ir m1)"
+  ],
+  "tolerance": 1e-09,
+  "contract": {
+    "host": "The host reads both facts from the World IR it holds and hands them to core's rules (ambientCues / AmbientSoundSystem / MusicInput take the place; footstepCue / stepFootsteps take the surface). Core's rules never read the IR for them.",
+    "frame": "IR world frame, metres, ground plane {x, z}; y (up) is never read. The host converts its listener position into this frame first (its own axes, units and level offset).",
+    "noPosition": "a point whose x or z is not a finite number has no reading (null); the host then hands footstepCue no surface, which steps as the default surface",
+    "place": {
+      "field": "geography.settlements[]: position {x, y, z} (the centre) and radius (metres)",
+      "rule": "settlement when the plan distance to a centre is <= its radius; else wilderness. A settlement with no finite position or no positive finite radius is no circle. Overlaps: the nearest centre, then the smaller id. settlementName is name, else id.",
+      "indoor": "never read from the IR: the host says when its listener is inside an interior"
+    },
+    "ground": {
+      "tiers": [
+        "road",
+        "closed",
+        "open"
+      ],
+      "road": "entities.roads[]: within width/2 of the waypoints polyline (<=); surface archetype, else terrain.texture.road; id id, else road.<fromId>.<toId>",
+      "closed": "geography.groundSurfaces[] with closed true: inside the polygon its points enclose (even-odd)",
+      "open": "geography.groundSurfaces[] with closed not true: within width/2 of its points polyline (<=)",
+      "kindDefaults": {
+        "plaza": "terrain.texture.sidewalk",
+        "footpath": "terrain.texture.sidewalk"
+      },
+      "kindFallback": "terrain.texture.path",
+      "within": "within a tier the nearest shape wins (polyline distance; a closed surface is 0), then the smaller id",
+      "notRead": "a shape with any point that is not finite, or fewer than two points (a closed surface of two encloses nothing); a road or open surface whose width is not a positive finite number; settlements[].internalRoads and streetNetwork",
+      "noGround": "where no road or ground surface covers the point, including a world whose IR states none (or no geography, no entities, or is not an object): terrain.texture.ground, tier ground, shapeId null. A default, never a refusal; it steps as grass."
+    },
+    "defaultFootstepSurface": "stone",
+    "later": "sprint and crouch gaits: no host body reaches them yet (Village has walk only); a later feature, not this contract"
+  },
+  "cases": [
+    {
+      "name": "placeAt: 30 m from the centre of a 31 m circle is the settlement",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 208.9,
+          "z": 172.4
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "settlement",
+          "settlementId": "settlement.vale",
+          "settlementName": "Vale"
+        }
+      }
+    },
+    {
+      "name": "placeAt: 32 m from it is the wilderness",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 210.9,
+          "z": 172.4
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "wilderness",
+          "settlementId": null,
+          "settlementName": null
+        }
+      }
+    },
+    {
+      "name": "placeAt: exactly on the radius is the settlement (distance <= radius)",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.ring",
+                "name": "Ring",
+                "position": {
+                  "x": 100,
+                  "y": 0,
+                  "z": 100
+                },
+                "radius": 30
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 130,
+          "z": 100
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "settlement",
+          "settlementId": "settlement.ring",
+          "settlementName": "Ring"
+        }
+      }
+    },
+    {
+      "name": "placeAt: the height is never read (y 50 over the square is still the settlement)",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 180,
+          "y": 50,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "settlement",
+          "settlementId": "settlement.vale",
+          "settlementName": "Vale"
+        }
+      }
+    },
+    {
+      "name": "placeAt: overlapping circles: the nearest centre wins, whatever the IR's order",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.b",
+                "name": "B",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "radius": 50
+              },
+              {
+                "id": "settlement.a",
+                "name": "A",
+                "position": {
+                  "x": 20,
+                  "y": 0,
+                  "z": 0
+                },
+                "radius": 50
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 5,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "settlement",
+          "settlementId": "settlement.b",
+          "settlementName": "B"
+        }
+      }
+    },
+    {
+      "name": "placeAt: overlapping circles at an equal distance: the smaller id wins",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.b",
+                "name": "B",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "radius": 50
+              },
+              {
+                "id": "settlement.a",
+                "name": "A",
+                "position": {
+                  "x": 20,
+                  "y": 0,
+                  "z": 0
+                },
+                "radius": 50
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 10,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "settlement",
+          "settlementId": "settlement.a",
+          "settlementName": "A"
+        }
+      }
+    },
+    {
+      "name": "placeAt: a settlement with no name answers its id as the name",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.nameless",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "radius": 10
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 1,
+          "z": 1
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "settlement",
+          "settlementId": "settlement.nameless",
+          "settlementName": "settlement.nameless"
+        }
+      }
+    },
+    {
+      "name": "placeAt: a settlement with radius 0, a negative radius or no position is no circle",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.zero",
+                "name": "Zero",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "radius": 0
+              },
+              {
+                "id": "settlement.neg",
+                "name": "Neg",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0
+                },
+                "radius": -5
+              },
+              {
+                "id": "settlement.nowhere",
+                "name": "Nowhere",
+                "radius": 100
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "wilderness",
+          "settlementId": null,
+          "settlementName": null
+        }
+      }
+    },
+    {
+      "name": "placeAt: a world with no settlements is the wilderness everywhere",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": []
+          }
+        },
+        "at": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "wilderness",
+          "settlementId": null,
+          "settlementName": null
+        }
+      }
+    },
+    {
+      "name": "placeAt: a world with no geography is the wilderness everywhere",
+      "op": "placeAt",
+      "input": {
+        "world": {},
+        "at": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "wilderness",
+          "settlementId": null,
+          "settlementName": null
+        }
+      }
+    },
+    {
+      "name": "placeAt: a world that is not an object is the wilderness everywhere (never refused)",
+      "op": "placeAt",
+      "input": {
+        "world": null,
+        "at": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "wilderness",
+          "settlementId": null,
+          "settlementName": null
+        }
+      }
+    },
+    {
+      "name": "expected WRONGLY the wilderness for a position that is not finite",
+      "note": "A reading that does not check its position answers some place for NaN. Core answers no reading (null), and the host keeps its last place or passes none.",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": "n/a",
+          "z": 172.4
+        }
+      },
+      "expected": {
+        "reading": {
+          "place": "wilderness",
+          "settlementId": null,
+          "settlementName": null
+        }
+      }
+    },
+    {
+      "name": "placeAt: no position at all has no reading (null)",
+      "op": "placeAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": null
+      },
+      "expected": {
+        "reading": null
+      }
+    },
+    {
+      "name": "groundSurfaceAt: 1 m off the lane's centre line (half width 2.5 m) is the road, over the square it borders",
+      "note": "Roads are read before ground surfaces: the ground paint lays roads over plazas and footpaths.",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 171,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.road",
+          "tier": "road",
+          "shapeId": "road.a.b"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: exactly half the width off the road is the road (<=)",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 172.5,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.road",
+          "tier": "road",
+          "shapeId": "road.a.b"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: 2.5 m off the road the other side, outside the square, is the road",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 167.5,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.road",
+          "tier": "road",
+          "shapeId": "road.a.b"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: 3 m off the road, outside the square, is the open ground",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 167,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.ground",
+          "tier": "ground",
+          "shapeId": null
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: the middle of the square is the plaza",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 180,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.sidewalk",
+          "tier": "closed",
+          "shapeId": "surface.settlement.vale.null.plaza"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: just outside the square is the open ground",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 195,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.ground",
+          "tier": "ground",
+          "shapeId": null
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: 1.1 m off the footpath (half width 1.2 m) is the path",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 151.1,
+          "z": 140
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.path",
+          "tier": "open",
+          "shapeId": "surface.settlement.vale.lot.1.footpath"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: 1.3 m off it is the open ground",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 151.3,
+          "z": 140
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.ground",
+          "tier": "ground",
+          "shapeId": null
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: past the footpath's end, within its half width of the end point, is the path",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 150,
+          "z": 151
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.path",
+          "tier": "open",
+          "shapeId": "surface.settlement.vale.lot.1.footpath"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: the height is never read (y 40 over the square is still the plaza)",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 180,
+          "y": 40,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.sidewalk",
+          "tier": "closed",
+          "shapeId": "surface.settlement.vale.null.plaza"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: far from every shape is the open ground",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 100,
+          "z": 100
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.ground",
+          "tier": "ground",
+          "shapeId": null
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: NO GROUND STATED: a world with no ground surfaces and no roads is the open ground everywhere",
+      "note": "The default, never a refusal: the biome's own ground, terrain.texture.ground, with no shape.",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ]
+          },
+          "entities": {
+            "roads": []
+          }
+        },
+        "at": {
+          "x": 180,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.ground",
+          "tier": "ground",
+          "shapeId": null
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: NO GROUND STATED: a world with no geography and no entities is the open ground",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {},
+        "at": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.ground",
+          "tier": "ground",
+          "shapeId": null
+        }
+      }
+    },
+    {
+      "name": "expected WRONGLY no reading where the world states no ground",
+      "note": "A host that refuses a footstep for want of a stated surface. Core's open ground terrain.texture.ground is a default, never a refusal.",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": [
+          1,
+          2
+        ],
+        "at": {
+          "x": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": null
+      }
+    },
+    {
+      "name": "groundSurfaceAt: a settlement's internalRoads are not read",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31,
+                "internalRoads": [
+                  {
+                    "fromId": "c",
+                    "toId": "d",
+                    "width": 5,
+                    "waypoints": [
+                      {
+                        "x": 170,
+                        "y": 0,
+                        "z": 160
+                      },
+                      {
+                        "x": 170,
+                        "y": 0,
+                        "z": 180
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": []
+          }
+        },
+        "at": {
+          "x": 170,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.ground",
+          "tier": "ground",
+          "shapeId": null
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: a road states its archetype: that is its surface",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null,
+                "archetype": "terrain.texture.road.cobbles"
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 170,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.road.cobbles",
+          "tier": "road",
+          "shapeId": "road.a.b"
+        }
+      }
+    },
+    {
+      "name": "expected WRONGLY a stated road id ignored for road.<fromId>.<toId>",
+      "note": "Unreal's ReadShapes always builds road.<fromId>.<toId> (pl-ground-from-ir m1). Core answers a road's stated id.",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null,
+                "id": "road.map.lane-7",
+                "sourceFeatureId": "lane-7"
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 170,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.road",
+          "tier": "road",
+          "shapeId": "road.a.b"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: a plaza with no archetype is sidewalk",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 180,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.sidewalk",
+          "tier": "closed",
+          "shapeId": "surface.settlement.vale.null.plaza"
+        }
+      }
+    },
+    {
+      "name": "expected WRONGLY a footpath with no archetype read as sidewalk",
+      "note": "Unreal's interim reading answers sidewalk for every ground surface with no archetype. Core reads it by its kind: a footpath is path.",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 150,
+          "z": 140
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.sidewalk",
+          "tier": "open",
+          "shapeId": "surface.settlement.vale.lot.1.footpath"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: a ground surface of an unknown kind with no archetype is path",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "track",
+                "archetype": null,
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 150,
+          "z": 140
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.path",
+          "tier": "open",
+          "shapeId": "surface.settlement.vale.lot.1.footpath"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: two roads: the nearer centre line wins, whatever the IR's order",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "entities": {
+            "roads": [
+              {
+                "fromId": "z1",
+                "toId": "z2",
+                "id": "road.map.zeta",
+                "width": 8,
+                "waypoints": [
+                  {
+                    "x": 0,
+                    "y": 0,
+                    "z": -10
+                  },
+                  {
+                    "x": 0,
+                    "y": 0,
+                    "z": 10
+                  }
+                ],
+                "archetype": "terrain.texture.road"
+              },
+              {
+                "fromId": "a1",
+                "toId": "a2",
+                "id": "road.map.alpha",
+                "width": 8,
+                "waypoints": [
+                  {
+                    "x": 3,
+                    "y": 0,
+                    "z": -10
+                  },
+                  {
+                    "x": 3,
+                    "y": 0,
+                    "z": 10
+                  }
+                ],
+                "archetype": "terrain.texture.gravel"
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 1,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.road",
+          "tier": "road",
+          "shapeId": "road.map.zeta"
+        }
+      }
+    },
+    {
+      "name": "expected WRONGLY the first listed road on a tie",
+      "note": "Unreal's interim reading takes the first shape listed within a tier. Core takes the nearest, then the smaller id, so the answer does not depend on the IR's order.",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "entities": {
+            "roads": [
+              {
+                "fromId": "z1",
+                "toId": "z2",
+                "id": "road.map.zeta",
+                "width": 8,
+                "waypoints": [
+                  {
+                    "x": 0,
+                    "y": 0,
+                    "z": -10
+                  },
+                  {
+                    "x": 0,
+                    "y": 0,
+                    "z": 10
+                  }
+                ],
+                "archetype": "terrain.texture.road"
+              },
+              {
+                "fromId": "a1",
+                "toId": "a2",
+                "id": "road.map.alpha",
+                "width": 8,
+                "waypoints": [
+                  {
+                    "x": 3,
+                    "y": 0,
+                    "z": -10
+                  },
+                  {
+                    "x": 3,
+                    "y": 0,
+                    "z": 10
+                  }
+                ],
+                "archetype": "terrain.texture.gravel"
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 1.5,
+          "z": 0
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.road",
+          "tier": "road",
+          "shapeId": "road.map.zeta"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: two closed surfaces over one point: the smaller id wins",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.map.square-2",
+                "kind": "plaza",
+                "archetype": "terrain.texture.gravel",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 175,
+                    "z": 165
+                  },
+                  {
+                    "x": 185,
+                    "z": 165
+                  },
+                  {
+                    "x": 185,
+                    "z": 175
+                  },
+                  {
+                    "x": 175,
+                    "z": 175
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 180,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.gravel",
+          "tier": "closed",
+          "shapeId": "surface.map.square-2"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: a closed surface is read before an open one over the same point",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 140,
+                    "z": 135
+                  },
+                  {
+                    "x": 160,
+                    "z": 135
+                  },
+                  {
+                    "x": 160,
+                    "z": 145
+                  },
+                  {
+                    "x": 140,
+                    "z": 145
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 150,
+          "z": 140
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.sidewalk",
+          "tier": "closed",
+          "shapeId": "surface.settlement.vale.null.plaza"
+        }
+      }
+    },
+    {
+      "name": "expected WRONGLY the road of width 0 read under a point on its centre line",
+      "note": "A reading that does not refuse a width of 0 finds the point on the road's centre line within width/2 = 0. Core does not read a road or open surface whose width is not a positive finite number.",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "groundSurfaces": [
+              {
+                "id": "surface.zero",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              },
+              {
+                "id": "surface.bad",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 140,
+                    "z": 120
+                  },
+                  {
+                    "x": "n/a",
+                    "z": 120
+                  },
+                  {
+                    "x": 180,
+                    "z": 160
+                  },
+                  {
+                    "x": 140,
+                    "z": 160
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 0,
+                "waypoints": [
+                  {
+                    "x": 150,
+                    "y": 0,
+                    "z": 130
+                  },
+                  {
+                    "x": 150,
+                    "y": 0,
+                    "z": 150
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 150,
+          "z": 140
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.road",
+          "tier": "road",
+          "shapeId": "road.a.b"
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: a closed surface of two points encloses nothing",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 180,
+          "z": 170
+        }
+      },
+      "expected": {
+        "reading": {
+          "surface": "terrain.texture.ground",
+          "tier": "ground",
+          "shapeId": null
+        }
+      }
+    },
+    {
+      "name": "groundSurfaceAt: a position that is not finite has no reading (null)",
+      "op": "groundSurfaceAt",
+      "input": {
+        "world": {
+          "geography": {
+            "settlements": [
+              {
+                "id": "settlement.vale",
+                "name": "Vale",
+                "position": {
+                  "x": 178.9,
+                  "y": 0,
+                  "z": 172.4
+                },
+                "radius": 31
+              }
+            ],
+            "groundSurfaces": [
+              {
+                "id": "surface.settlement.vale.null.plaza",
+                "kind": "plaza",
+                "archetype": "terrain.texture.sidewalk",
+                "settlementId": "settlement.vale",
+                "lotId": null,
+                "closed": true,
+                "width": 0,
+                "points": [
+                  {
+                    "x": 170,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 160
+                  },
+                  {
+                    "x": 190,
+                    "z": 180
+                  },
+                  {
+                    "x": 170,
+                    "z": 180
+                  }
+                ]
+              },
+              {
+                "id": "surface.settlement.vale.lot.1.footpath",
+                "kind": "footpath",
+                "archetype": "terrain.texture.path",
+                "settlementId": "settlement.vale",
+                "lotId": "lot.1",
+                "closed": false,
+                "width": 2.4,
+                "points": [
+                  {
+                    "x": 150,
+                    "z": 150
+                  },
+                  {
+                    "x": 150,
+                    "z": 130
+                  }
+                ]
+              }
+            ]
+          },
+          "entities": {
+            "roads": [
+              {
+                "fromId": "a",
+                "toId": "b",
+                "width": 5,
+                "waypoints": [
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 160
+                  },
+                  {
+                    "x": 170,
+                    "y": 0,
+                    "z": 180
+                  }
+                ],
+                "materialKey": null
+              }
+            ]
+          }
+        },
+        "at": {
+          "x": 171,
+          "z": null
+        }
+      },
+      "expected": {
+        "reading": null
+      }
+    }
+  ]
+}

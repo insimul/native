@@ -58,7 +58,9 @@
 // the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows. Core's
 // movement contract corpus is copied the same way (PL.native-camera-movement,
 // U95(5)): `conformance/camera/movement.json`; tests/props_corpus.cpp drives it
-// through the `camera.movement.*` rows.
+// through the `camera.movement.*` rows. So is core's ground reading corpus
+// (PL.native-ground-row, U97(3)): `conformance/audio/ground.json`, driven by the
+// same runner through the `audio.ground.*` rows.
 //
 // TWO MODES:
 //
@@ -181,6 +183,13 @@ const TITLE_CORPUS_FILES = ['conformance/quests/tutorial.json', 'conformance/ui/
 // found in vendor/core/conformance/camera/ is a stray the next write removes.
 const CAMERA_CORPUS_FILES = ['conformance/camera/movement.json'];
 
+// core's ground reading corpus (PL.native-ground-row, U97(3); core's
+// PL.ground-from-ir, U94(5)), copied verbatim the same way. Only `ground.json` of
+// `conformance/audio/`: P5.core's audio cue corpus (`cues.json`) beside it has no
+// rows here, so it is not copied; any other file found in
+// vendor/core/conformance/audio/ is a stray the next write removes.
+const AUDIO_CORPUS_FILES = ['conformance/audio/ground.json'];
+
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
 // village-state comparator and the save-file game state behind it. No row needs them;
 // they came in only through a corpus RUNNER module's comparator import (the P8 rows
@@ -189,11 +198,28 @@ const CAMERA_CORPUS_FILES = ['conformance/camera/movement.json'];
 // write that would record one refuses, and `--check` (the core_vendor ctest) fails on
 // a VENDORED.json that records one, naming it: the import to repoint is the one that
 // reaches it.
-const UNBUNDLED_CORE_MODULES = ['src/save-file-game-state-corpus.ts', 'src/save-file-game-state.ts'];
+//
+// Core's movement prose (PL.native-ground-row, U97(1)/(3); core's PL.movement-prose-split):
+// `camera/movement-prose` holds the frozen prose tables CAMERA_OCCLUSION_RULES and
+// MOVEMENT_FRAME_MEANING, which no row reads (~3 KB of bundle). Core keeps it out of
+// `camera/movement-rules`, the module the camera.movement.* rows import; importing
+// `camera/movement-contract` (which re-exports both) would bring it back, and nothing
+// in core can see native do that (its pl-movement-prose-split m1 and m4). Refused the
+// same way, with its own remedy.
+const UNBUNDLED_CORE_MODULES = ['src/save-file-game-state-corpus.ts', 'src/save-file-game-state.ts', 'src/camera/movement-prose.ts'];
+const UNBUNDLED_REMEDY = {
+  'src/camera/movement-prose.ts': 'a row imports camera/movement-contract (it re-exports the prose); import camera/movement-rules instead',
+};
+const UNBUNDLED_REMEDY_DEFAULT = 'a row imports a core corpus runner (its comparator); import the *-corpus-host module instead';
 
 /** The recorded core modules that UNBUNDLED_CORE_MODULES forbids. */
 function unbundledIn(coreModules) {
   return (coreModules ?? []).filter((m) => UNBUNDLED_CORE_MODULES.includes(m));
+}
+
+/** Each forbidden module with the import to repoint, for a failure message. */
+function unbundledReport(modules) {
+  return modules.map((m) => `${m} (${UNBUNDLED_REMEDY[m] ?? UNBUNDLED_REMEDY_DEFAULT})`).join('; ');
 }
 
 // The adapter JS that is BUNDLED IN — inputs, not outputs, and hashed for the
@@ -393,8 +419,18 @@ function titleFilesAtPin(src) {
  * there is seen, hashed and removed by the next write, as the save-slots set does.
  */
 function cameraFilesOnDisk() {
+  return ownDirFilesOnDisk(CAMERA_CORPUS_FILES);
+}
+
+/** The vendored audio corpus files on disk: the camera set's rule (no other set copies into `conformance/audio/`). */
+function audioFilesOnDisk() {
+  return ownDirFilesOnDisk(AUDIO_CORPUS_FILES);
+}
+
+/** Every file under the directories of `files`, which no other set copies into, sorted. */
+function ownDirFilesOnDisk(files) {
   const out = [];
-  for (const dir of new Set(CAMERA_CORPUS_FILES.map((rel) => path.dirname(rel)))) {
+  for (const dir of new Set(files.map((rel) => path.dirname(rel)))) {
     for (const f of jsonFilesUnder(path.join(OUT_DIR, dir))) out.push(`vendor/core/${dir}/${f}`);
   }
   return out.sort();
@@ -403,6 +439,11 @@ function cameraFilesOnDisk() {
 /** core's movement contract corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
 function cameraFilesAtPin(src) {
   return filesAtPin(src, CAMERA_CORPUS_FILES, 'the camera.movement rows');
+}
+
+/** core's ground reading corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
+function audioFilesAtPin(src) {
+  return filesAtPin(src, AUDIO_CORPUS_FILES, 'the audio.ground rows');
 }
 
 /** core's save-slots corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
@@ -703,7 +744,7 @@ async function write(coreDir) {
     fs.mkdirSync(OUT_DIR, { recursive: true });
     const { coreModules, npmModules } = await bundle(src, BUNDLE_JS);
     if (unbundledIn(coreModules).length) {
-      fail(`the bundle reaches ${unbundledIn(coreModules).join(', ')} — a row imports a core corpus runner (its comparator); import the *-corpus-host module instead`);
+      fail(`the bundle reaches ${unbundledReport(unbundledIn(coreModules))}`);
     }
     const cases = await emitCases(src, pin);
     // vendor/core/cases/ is wholly generated: replace its *.json set exactly, so
@@ -770,6 +811,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The audio corpus: the same exact-set replacement (only the listed files).
+    const audio = audioFilesAtPin(src);
+    for (const rel of audioFilesOnDisk()) if (!(rel in audio)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(audio)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -791,6 +840,7 @@ async function write(coreDir) {
       propsCorpus: PROPS_CORPUS_FILES,
       titleCorpus: TITLE_CORPUS_FILES,
       cameraCorpus: CAMERA_CORPUS_FILES,
+      audioCorpus: AUDIO_CORPUS_FILES,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -808,6 +858,7 @@ async function write(coreDir) {
       ...propsFilesOnDisk(),
       ...titleFilesOnDisk(),
       ...cameraFilesOnDisk(),
+      ...audioFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -823,6 +874,7 @@ async function write(coreDir) {
     console.log(`  P6 props and inventory corpus files (${Object.keys(props).length}), copied unchanged`);
     console.log(`  P8 title-flow and tutorial corpus files (${Object.keys(title).length}), copied unchanged`);
     console.log(`  camera movement corpus files (${Object.keys(camera).length}), copied unchanged`);
+    console.log(`  audio ground reading corpus files (${Object.keys(audio).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -845,7 +897,7 @@ async function check(coreDir) {
     fail(`VENDORED.json records esbuild ${manifest.esbuild} but core-pin.json pins ${pin.esbuild}`);
   }
   if (unbundledIn(manifest.coreModules).length) {
-    fail(`VENDORED.json records ${unbundledIn(manifest.coreModules).join(', ')} in the bundle — a row imports a core corpus runner (its comparator); import the *-corpus-host module instead`);
+    fail(`VENDORED.json records in the bundle ${unbundledReport(unbundledIn(manifest.coreModules))}`);
   }
   const actual = sha256(js);
   if (actual !== manifest.bundleSha256) {
@@ -887,6 +939,10 @@ async function check(coreDir) {
   for (const rel of CAMERA_CORPUS_FILES) {
     if (!cameraFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the camera movement corpus gate would run nothing`);
   }
+  const audioFiles = audioFilesOnDisk();
+  for (const rel of AUDIO_CORPUS_FILES) {
+    if (!audioFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the audio ground corpus gate would run nothing`);
+  }
   // conformance/ui/ is shared by the P9a, P6 and P8 sets: a file belongs to exactly one.
   const claimedTwice = propsFiles.filter((rel) => p9aFiles.includes(rel));
   if (claimedTwice.length) fail(`${claimedTwice.join(', ')} is listed as both a P9a and a P6 corpus file`);
@@ -902,6 +958,7 @@ async function check(coreDir) {
     ...propsFiles,
     ...titleFiles,
     ...cameraFiles,
+    ...audioFiles,
     ...ADAPTER_MODULES,
     ...TOOL_INPUTS,
   ];
@@ -946,8 +1003,8 @@ async function check(coreDir) {
     `vendor-core-bundle: ${expectedList.length} file(s) match their recorded sha256 ` +
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
-      `${savesFiles.length} save-slots, ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial ` +
-      `and ${cameraFiles.length} camera movement corpus file(s), core ${manifest.coreCommit}, ` +
+      `${savesFiles.length} save-slots, ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
+      `${cameraFiles.length} camera movement and ${audioFiles.length} audio ground corpus file(s), core ${manifest.coreCommit}, ` +
       `esbuild ${manifest.esbuild})`,
   );
 
@@ -1047,12 +1104,23 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const audio = audioFilesAtPin(src);
+      const wantAudio = Object.keys(audio).sort();
+      if (JSON.stringify(wantAudio) !== JSON.stringify(audioFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s audio ground corpus is ${wantAudio.join(', ')} but vendor/core/ holds ${audioFiles.join(', ')}`);
+      }
+      for (const rel of wantAudio) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(audio[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       console.log(
         `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
           `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s), all ` +
           `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save-slots corpus file(s), all ` +
           `${wantProps.length} P6 props/inventory corpus file(s), all ${wantTitle.length} P8 title/tutorial ` +
-          `corpus file(s) and all ${wantCamera.length} camera movement corpus file(s) byte for byte`,
+          `corpus file(s), all ${wantCamera.length} camera movement corpus file(s) and all ${wantAudio.length} audio ground ` +
+          `corpus file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });

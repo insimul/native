@@ -9,6 +9,10 @@
      "call": "core.methods",
      "expect": {
       "methods": [
+       "audio.ground.contract",
+       "audio.ground.footstepAt",
+       "audio.ground.groundSurfaceAt",
+       "audio.ground.placeAt",
        "camera.movement.buildingSolid",
        "camera.movement.contract",
        "camera.movement.move",
@@ -191,7 +195,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 157}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 161}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -237,7 +241,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 157}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 161}}}}
    ]
   },
   {

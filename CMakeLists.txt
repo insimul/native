@@ -843,6 +843,35 @@ add_test(NAME camera_movement_corpus_negative COMMAND insimulcore_props_corpus
 set_tests_properties(camera_movement_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "contract.ground.stepUpM: 0.45 != 0.75.*expected WRONGLY the Smithy drawn in the side view [^\n]*hidden: length 0 != 1.*expected WRONGLY a third-person sight line read at yaw 0 [^\n]*unexpected key .error.*expected WRONGLY the isometric right mirrored [^\n]*velocity.x: -4.5 != 4.5.*expected WRONGLY Unreal.s 7.5/4.2 run [^\n]*velocity.z: 8.03.*expected WRONGLY a 50 degree slope walked [^\n]*response: .walk. != .slide.*expected WRONGLY a 0.75 m rise refused [^\n]*response: .blocked. != .step.*op slopeAtRest of area camera-movement: no case of it was driven.*props_corpus: FAIL")
 
+# PL.native-ground-row (U97(3)): core's ground reading (PL.ground-from-ir, core
+# 91a180d, U94(5): where the host's listener is, settlement or wilderness, and what
+# is under the foot, read from the World IR's settlements, roads and ground
+# surfaces, and the step that makes) through the audio.ground.* rows, by the same
+# runner: every case driven (the case's input as the row's args), every case
+# driven again with its world's settlements, groundSurfaces and roads reversed
+# (the file's order rule, as core's runner checks it), the contract's data keys
+# held to audio.ground.contract. Unreal's P5.unreal.ground-from-ir cell binds
+# these rows in place of its interim Portable/InsimulAudioPlace reading. As
+# camera_movement_corpus's, the regex demands the order run and 0 undriven, and
+# holds no ';'.
+add_test(NAME audio_ground_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/audio/ground.json)
+set_tests_properties(audio_ground_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract: 2 table[(]s[)] are audio.ground.contract's\n.*audio-ground: [0-9]+ case[(]s[)], driven placeAt [0-9]+, groundSurfaceAt [0-9]+, footstepAt [0-9]+. 0 undriven\n  order: [1-9][0-9]* case[(]s[)] driven again with the world's settlements, groundSurfaces and roads reversed, the same answer\n.*props_corpus: PASS")
+# Its negative control (tests/props-negative/ground-wrong.json, made from the
+# vendored file): Unreal's sidewalk for a footpath with no archetype in the
+# contract, a footstepAt op with no case, and six wrong cases, each the answer an
+# engine keeping one of its interim readings would give (core's sources line names
+# four, pl-ground-from-ir's m1 the fifth): a non-finite position read as the
+# wilderness, the open ground refused, a stated road id ignored for
+# road.<fromId>.<toId>, a footpath with no archetype read as sidewalk, the first
+# listed road taken on a tie, and a road of width 0 read. It passes only when the
+# runner reports each of them and the run as failed, in that order. No two
+# wildcards stand side by side in the regex.
+add_test(NAME audio_ground_corpus_negative COMMAND insimulcore_props_corpus
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/ground-wrong.json)
+set_tests_properties(audio_ground_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract.ground.kindDefaults.footpath: .terrain.texture.sidewalk. != .terrain.texture.path.*expected WRONGLY the wilderness for a position that is not finite [^\n]*reading: expected a object, got a null.*expected WRONGLY no reading where the world states no ground [^\n]*reading: expected a null, got a object.*expected WRONGLY a stated road id ignored [^\n]*shapeId: .road.a.b. != .road.map.lane-7.*expected WRONGLY a footpath with no archetype read as sidewalk [^\n]*surface: .terrain.texture.sidewalk. != .terrain.texture.path.*expected WRONGLY the first listed road on a tie [^\n]*surface: .terrain.texture.road. != .terrain.texture.gravel.*expected WRONGLY the road of width 0 read [^\n]*surface: .terrain.texture.road. != .terrain.texture.ground.*op footstepAt of area audio-ground: no case of it was driven.*props_corpus: FAIL")
+
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
 # (TutorialQuestSystem) and the onboarding flow on it (OnboardingManager) — as

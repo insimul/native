@@ -441,7 +441,12 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` 431c95b (2026-11-10,
+  and pin disagree. The pin today is core `main` 6667999 (2026-11-10,
+  PL.native-ground-row: PL.movement-prose-split's split of core's movement
+  contract, after which the `camera.movement.*` rows import
+  `camera/movement-rules` and the bundle leaves the prose tables out, and
+  PL.core-doc-fixes; the `audio.ground.*` rows run PL.ground-from-ir's reading,
+  in since 431c95b). Before that, 431c95b (2026-11-10,
   PL.native-camera-movement: every core item the Unreal-first queue landed after
   72c658c — PL.movement-contract's movement contract and its corpus, which the
   `camera.movement.*` rows run, with PL.movement-followups' `missing-view-yaw`
@@ -479,7 +484,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (the saves-slots, props, pick-up and camera movement corpus ctests match `corpus`), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, camera movement and audio ground ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -599,7 +604,11 @@
   buildingSolid, move, slope, slopeAtRest, step}` are stateless, one core
   function of `camera/movement-contract` each (`sightOccluders`,
   `sideViewBlockers`, `buildingSolidOf`, `playerMove`, `slopeResponse`,
-  `slopeAtRest`, `stepResponse`), taking a case's `input` as their args; the
+  `slopeAtRest`, `stepResponse`; since PL.native-ground-row imported from
+  `camera/movement-rules`, which core's PL.movement-prose-split keeps free of the
+  prose tables no row reads — importing `camera/movement-contract`, which
+  re-exports `camera/movement-prose`, is refused by the vendor tool
+  (`UNBUNDLED_CORE_MODULES`, with its own remedy)), taking a case's `input` as their args; the
   runner drives every case a second time with `solids` and `exclude` reversed
   (the file's `order` rule, as core's `checkMovementCase` does; self-tested), and
   holds the data tables (`modes`, `storeyM`, `gait`, `ground`) to
@@ -610,6 +619,27 @@
   maps it). Refusals (`missing-view-yaw`, `not-a-side-view`, `invalid-radius`,
   `invalid-move`, `invalid-walk`) are values; only `mode`, `feet`, `view`,
   `solids`, `exclude` and `running` are type-checked.
+- **The ground reading rows (PL.native-ground-row, U97(3)) run core's
+  `conformance/audio/ground.json` UNCHANGED**, copied as their own set
+  (`AUDIO_CORPUS_FILES`; P5.core's `cues.json` beside it is not copied, no row
+  runs it) and driven by the same runner as `audio_ground_corpus` (+
+  `audio_ground_corpus_negative`). `audio.ground.{placeAt, groundSurfaceAt,
+  footstepAt}` are stateless, one core function of `audio/ground-from-ir` each,
+  taking a case's `input` (`world`, `at`, `gait`) as their args and checking
+  NOTHING: core reads every input itself and its corpus pins the reading (a world
+  that is not an object has no ground and no settlement; an `at` that is not a
+  finite point has no reading, null). The open ground `terrain.texture.ground` is a
+  default, never a refusal. The runner drives every case a second time with the
+  world's `geography.settlements`, `geography.groundSurfaces` and `entities.roads`
+  reversed (`reversed_world`, the file's order rule as core's `checkGroundCase`
+  drives it; self-tested), and holds `audio.ground.contract` to the file's
+  contract: the file's `ground` table mixes data and prose, so the row states its
+  data keys only (`tiers`, `kindDefaults`, `kindFallback`) and the runner compares
+  on the row's keys (`keyed_tables`), plus `defaultFootstepSurface` whole. Import
+  `audio/ground-from-ir` and `audio/footsteps` only, never `audio/ground-corpus`
+  (its comparator is the save-file code). IR metres on `{x, z}`, nothing converted
+  (Unreal's `Portable/InsimulAudioPlace` maps centimetres and its level offset in,
+  then binds these rows in place of its interim reading).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

@@ -85,8 +85,10 @@ import { weatherClimateFacts, weatherDelta } from '@insimul/core/weather/weather
 // and PL.movement-followups) ──────────────────────────────────────────────────
 // Core's movement contract: what a lens hides, what blocks a side view's strip, a
 // building's solid from the IR, how the move input maps per mode, the run, and the
-// slope and step limits. The contract module only, never `camera/movement-corpus`,
-// whose comparator import would bring core's save-file code into the bundle
+// slope and step limits. The rules module only (core's PL.movement-prose-split):
+// `camera/movement-contract` re-exports it with `camera/movement-prose`, the frozen
+// prose tables no row reads (~3 KB of bundle), and `camera/movement-corpus`'s
+// comparator import would bring core's save-file code into the bundle
 // (vendor-core-bundle.mjs UNBUNDLED_CORE_MODULES refuses that).
 import {
 	BUILDING_STOREY_M,
@@ -100,7 +102,24 @@ import {
 	slopeAtRest,
 	slopeResponse,
 	stepResponse,
-} from '@insimul/core/camera/movement-contract';
+} from '@insimul/core/camera/movement-rules';
+
+// ── the place and the ground underfoot read from the World IR (PL.native-ground-row,
+// U97(3); core's PL.ground-from-ir, U94(5)) ─────────────────────────────────────
+// Core states how a host reads, from the IR it holds, where its listener is
+// (`placeAt`) and what is under the foot (`groundSurfaceAt`), and the step that
+// makes (`footstepAt`). The reading module and the footstep table's default only,
+// never `audio/ground-corpus`, whose comparator import is the save-file code
+// UNBUNDLED_CORE_MODULES refuses.
+import {
+	GROUND_SURFACE_KIND_DEFAULTS,
+	GROUND_SURFACE_KIND_FALLBACK,
+	GROUND_TIERS,
+	footstepAt,
+	groundSurfaceAt,
+	placeAt,
+} from '@insimul/core/audio/ground-from-ir';
+import { DEFAULT_FOOTSTEP_SURFACE } from '@insimul/core/audio/footsteps';
 
 // ── genre and module activation ───────────────────────────────────────────────
 import { CAMERA_MODES, DEFAULT_GENRE_ID, GENRE_IDS, getAllGenres } from '@insimul/core/game-genres/registry';
@@ -871,6 +890,35 @@ function movementContract() {
 			storeyM: BUILDING_STOREY_M,
 			gait: PLAYER_GAIT,
 			ground: PLAYER_GROUND,
+		},
+	});
+}
+
+// ── the ground reading (PL.native-ground-row) ─────────────────────────────────
+
+/**
+ * The data tables of core's `conformance/audio/ground.json` `contract`, built from
+ * core's exported constants exactly as core's emitter
+ * (`scripts/emit-audio-ground-corpus.ts`) builds them, keyed by the file's `area`:
+ * `ground.tiers` (the order the shapes are read in), `ground.kindDefaults` and
+ * `ground.kindFallback` (a ground surface's surface when it states no archetype),
+ * and `defaultFootstepSurface` (the step with no position). `ground` holds only
+ * those three of the file's `ground` keys: the rest (`road`, `closed`, `open`,
+ * `within`, `notRead`, `noGround`) and the file's other keys (`host`, `frame`,
+ * `noPosition`, `place`, `later`) are rules written out, not data, and are not
+ * here (tests/props_corpus.cpp holds `ground` to the file's on the keys stated
+ * here). A binding needs no other value: every surface a reading names comes back
+ * in its answer.
+ */
+function groundContract() {
+	return plain({
+		'audio-ground': {
+			ground: {
+				tiers: [...GROUND_TIERS],
+				kindDefaults: { ...GROUND_SURFACE_KIND_DEFAULTS },
+				kindFallback: GROUND_SURFACE_KIND_FALLBACK,
+			},
+			defaultFootstepSurface: DEFAULT_FOOTSTEP_SURFACE,
 		},
 	});
 }
@@ -2646,7 +2694,7 @@ const METHODS = {
 
 	// ── camera movement (P7; PL.native-camera-movement, U95(5)) ─────────────────
 	// One row per op of core's `conformance/camera/movement.json`, each ONE core
-	// function of `camera/movement-contract`: the args are a case's `input` and the
+	// function of `camera/movement-rules`: the args are a case's `input` and the
 	// answer is in its `expected` shape. Core's metres in the IR's world frame
 	// (left-handed, +Y up, yaw from +Z toward +X); nothing is converted or
 	// mirrored here, the engine's import maps it. Core's refusals (`missing-view-yaw`,
@@ -2736,6 +2784,53 @@ const METHODS = {
 
 	/** `camera.movement.step { riseM }` → `{ response }` — core's `stepResponse` (`none`, `step`, `blocked`; null unreadable). */
 	'camera.movement.step': (args) => ({ response: stepResponse(args.riseM) }),
+
+	// ── the place and the ground underfoot (P5; PL.native-ground-row, U97(3)) ───
+	// One row per op of core's `conformance/audio/ground.json`, each ONE core
+	// function of `audio/ground-from-ir`: the args are a case's `input` and the
+	// answer is in its `expected` shape. The host reads both facts from the World
+	// IR it holds and hands them to core's audio rules; core's rules never read the
+	// IR for them. `world` is the IR (or any object holding its
+	// `geography.settlements`, `geography.groundSurfaces` and `entities.roads`) and
+	// `at` a point in IR metres on the ground plane `{x, z}` (`y` is never read);
+	// nothing is converted or mirrored here, the engine maps its own frame in.
+	// Nothing is type-checked: core reads every input itself and its corpus pins
+	// the reading (a world that is not an object has no ground stated and no
+	// settlement; an `at` that is not a finite point has no reading, null). The
+	// open ground `terrain.texture.ground` is a DEFAULT, never a refusal.
+
+	/** `audio.ground.contract` → `{ 'audio-ground': { ground: { tiers, kindDefaults, kindFallback }, defaultFootstepSurface } }`. */
+	'audio.ground.contract': () => groundContract(),
+
+	/**
+	 * `audio.ground.placeAt { world, at }` → `{ reading }` — core's `placeAt`:
+	 * `{ place: 'settlement', settlementId, settlementName }` inside a
+	 * `geography.settlements[]` circle (distance ≤ radius; overlaps: the nearest
+	 * centre, then the smaller id), else `{ place: 'wilderness', settlementId:
+	 * null, settlementName: null }`; null when `at` is not a position. `indoor` is
+	 * never read from the IR: the host knows when its listener is inside.
+	 */
+	'audio.ground.placeAt': (args) => ({ reading: plain(placeAt(args.world, args.at ?? null)) }),
+
+	/**
+	 * `audio.ground.groundSurfaceAt { world, at }` → `{ reading }` — core's
+	 * `groundSurfaceAt`: `{ surface, tier, shapeId }`, read from a road
+	 * (`entities.roads[]`), then a closed, then an open
+	 * `geography.groundSurfaces[]` surface, within a tier the nearest then the
+	 * smaller id; where none covers the point, the open ground `{ surface:
+	 * 'terrain.texture.ground', tier: 'ground', shapeId: null }`; null when `at` is
+	 * not a position. `surface` is what the host hands `footstepCue`.
+	 */
+	'audio.ground.groundSurfaceAt': (args) => ({ reading: plain(groundSurfaceAt(args.world, args.at ?? null)) }),
+
+	/**
+	 * `audio.ground.footstepAt { world, at, gait }` → `{ cue }` — core's
+	 * `footstepAt`: the ground reading handed to `footstepCue` (`{ key, surface,
+	 * gait, volume, intervalSec, source }`), or null where no step sounds (`idle`,
+	 * a surface that makes none). With no position the step is the default
+	 * surface's (`source: 'default'`).
+	 */
+	'audio.ground.footstepAt': (args) => ({ cue: plain(footstepAt(args.world, args.at ?? null, args.gait ?? null)) }),
 
 	// ── the genre HUD and the world rules panel (P9a) ──
 	// Each row is one of core's corpus runners and nothing else: the args are
