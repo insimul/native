@@ -13,6 +13,24 @@
        "audio.ground.footstepAt",
        "audio.ground.groundSurfaceAt",
        "audio.ground.placeAt",
+       "build.checkProgress",
+       "build.checkResult",
+       "build.compareCodeUnits",
+       "build.contract",
+       "build.findSecrets",
+       "build.foldMacos",
+       "build.foldWindows",
+       "build.insideDir",
+       "build.insideDirFolded",
+       "build.isPrimaryArtefact",
+       "build.isSecretKey",
+       "build.looksLikeSecret",
+       "build.pathProblem",
+       "build.plan",
+       "build.progressLine",
+       "build.resolvePlatform",
+       "build.resultLine",
+       "build.size",
        "camera.movement.buildingSolid",
        "camera.movement.contract",
        "camera.movement.move",
@@ -274,7 +292,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 240}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 258}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -320,7 +338,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 240}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 258}}}}
    ]
   },
   {

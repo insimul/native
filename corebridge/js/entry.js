@@ -224,6 +224,62 @@ import {
 import { canonicalLent, lendMode, personalLender, returnMode, vehicleLender } from '@insimul/core/traversal/mode-lending';
 import { TRAVERSAL_EXTENSION_KEY, readTraversalBlock, traversalBlockOf, traversalSaveBlock } from '@insimul/core/traversal/traversal-save';
 
+// ── headless builds (P10; PL.native-headless-build, U106(1), U107) ────────────
+// Core's headless build contract (P10.core: src/build/headless-build.ts, doc
+// docs/headless-build.md): a build request's refusals or plan, the result and
+// progress checkers with E6's summaries, the size and line formats, the credential
+// scan (with the stand-in a credential key takes in a field path and the words a
+// hidden detail is replaced by) and the two case folds the out-dir rules compare
+// under. Never `build/headless-build-corpus`, core's corpus runner (it carries the
+// village-state comparator, which the bundle leaves out): tests/build_corpus.cpp
+// drives conformance/build/headless.json through these rows as that runner drives
+// core, expanding its `<<secret:NAME>>` markers itself.
+import {
+	BUILD_ARTEFACT_KINDS,
+	BUILD_CONFIGURATIONS,
+	BUILD_CROSS_DESKTOP_ENGINES,
+	BUILD_DEFAULT_TIMEOUT_SECONDS,
+	BUILD_ENGINE_PLATFORMS,
+	BUILD_ENGINE_RESERVED_DIRS,
+	BUILD_FAILURE_STEPS,
+	BUILD_HIDDEN_DETAIL,
+	BUILD_HOST_OSES,
+	BUILD_MAX_TIMEOUT_SECONDS,
+	BUILD_NOTE_CODES,
+	BUILD_PLATFORMS,
+	BUILD_PLATFORM_LABELS,
+	BUILD_PLATFORM_TITLES,
+	BUILD_PRIMARY_ARTEFACT,
+	BUILD_PROGRESS_ISSUE_CODES,
+	BUILD_PROGRESS_SCHEMA,
+	BUILD_REFUSAL_CODES,
+	BUILD_REQUEST_PLATFORMS,
+	BUILD_REQUEST_SCHEMA,
+	BUILD_RESULT_ISSUE_CODES,
+	BUILD_RESULT_SCHEMA,
+	BUILD_SECRET_KEY_STAND_IN,
+	BUILD_STATUSES,
+	BUILD_STEPS,
+	buildProgressLine,
+	buildResultLine,
+	checkBuildProgress,
+	checkBuildResult,
+	compareCodeUnits,
+	findSecrets,
+	foldPathCaseMacos,
+	foldPathCaseWindows,
+	formatBuildSize,
+	isInsideDir,
+	isInsideDirFolded,
+	isPrimaryArtefactFor,
+	isSecretKey,
+	looksLikeSecret,
+	planBuild,
+	projectPathProblem,
+	resolveBuildPlatform,
+} from '@insimul/core/build/headless-build';
+import { SYSTEM_PACKS_LOCK_SCHEMA } from '@insimul/core/system-packs/schema';
+
 // ── genre and module activation ───────────────────────────────────────────────
 import { CAMERA_MODES, DEFAULT_GENRE_ID, GENRE_IDS, getAllGenres } from '@insimul/core/game-genres/registry';
 import { RECIPE_GENRE_BINDINGS, RECIPE_IDS } from '@insimul/core/game-genres/recipes';
@@ -1238,6 +1294,58 @@ function seatStateArg(method, value) {
 /** The ground-seat tuning core reads from the pack's `params` (absent is core's default). */
 function groundSeatTuningOf(args) {
 	return groundSeatTuning(args.params ?? {});
+}
+
+// ── headless builds (PL.native-headless-build) ────────────────────────────────
+// A request, a result and progress events go to core AS SENT, whatever they hold:
+// reading them is core's job, and a wrong shape is one of core's VALUES
+// (`invalid-request`, `result-invalid`, `progress-invalid`), never a row error. The
+// rows' own checks, coded `[invalid-input]`, are on what core's functions read
+// unchecked: the plan context's members (as `BuildPlanContext` types them; `lock` is
+// any JSON, `null` included, because core parses it), the strings the scan and the
+// path rules take, and the parts of a parsed result or event the line functions read.
+
+/**
+ * The `BuildPlanContext` a plan or a result check is given. Absent (or `null`, JSON's
+ * absent) is core's `{}`: nothing verified, so the plan notes `lock-unverified` and
+ * `inputs-unverified`.
+ */
+function buildContextArg(method, value) {
+	if (value === undefined || value === null) return {};
+	needObject(method, value, 'context');
+	if (value.files !== undefined) needObject(method, value.files, 'context.files');
+	if (value.predicateSchemaHash !== undefined) needString(method, value.predicateSchemaHash, 'context.predicateSchemaHash');
+	return value;
+}
+
+/**
+ * A result as `buildResultLine` reads it (a result core's schema accepts): its
+ * `status` and resolved `target.platform`, each refusal's and the error's `detail`,
+ * and each artefact's `kind` and `bytes`.
+ */
+function buildResultLineArg(method, value) {
+	needObject(method, value, 'result');
+	oneOf(method, value.status, BUILD_STATUSES, 'result.status');
+	needObject(method, value.target, 'result.target');
+	oneOf(method, value.target.platform, BUILD_PLATFORMS, 'result.target.platform');
+	objectList(method, value.refusals, 'result.refusals').forEach((r, i) => needString(method, r.detail, `result.refusals[${i}].detail`));
+	if (value.error !== undefined && value.error !== null) {
+		needObject(method, value.error, 'result.error');
+		needString(method, value.error.detail, 'result.error.detail');
+	}
+	objectList(method, value.artefacts, 'result.artefacts').forEach((a, i) => {
+		needString(method, a.kind, `result.artefacts[${i}].kind`);
+		needNumber(method, a.bytes, `result.artefacts[${i}].bytes`);
+	});
+	return value;
+}
+
+/** An event as `buildProgressLine` reads it: a step of core's `BUILD_STEPS` and a fraction (a number, or `null`). */
+function buildProgressLineArg(method, value) {
+	needObject(method, value, 'event');
+	oneOf(method, value.step, BUILD_STEPS, 'event.step');
+	if (value.fraction !== null) needNumber(method, value.fraction, 'event.fraction');
+	return value;
 }
 
 // ── traversal: the stateful layers (PL.native-traversal-rows slice 2) ─────────
@@ -4275,6 +4383,203 @@ const METHODS = {
 		}
 		const results = await applyOps(m, s, args, recorded);
 		return { results, view: traversalSessionView(s) };
+	},
+
+	// ── headless builds (P10; PL.native-headless-build, U106(1), U107) ──
+	// One row per function of core's `build/headless-build` (P10.core), plus the
+	// contract's tables. The three checkers answer core's whole answer, details
+	// included (creator sentences, which core's corpus does not pin: it pins codes
+	// and fields); a refusal or an issue is a VALUE. tests/build_corpus.cpp drives
+	// conformance/build/headless.json through `build.plan`, `.checkResult`,
+	// `.checkProgress` and `.size`, holds `build.contract` to the file's contract, and
+	// asks the fold rows about every path the plan cases put inside or outside the
+	// build folder. Unreal's `Portable/InsimulHeadlessBuild` is the interim copy these
+	// rows retire (P10.unreal.retire-headless-build-copy).
+
+	/**
+	 * `build.contract {}` → core's tables, as conformance/build/headless.json's
+	 * `contract` states them (less the corpus's own `secretFixtures` and `rules`, and
+	 * `schemas.jsonSchemas`, which names core's files): the schema ids (`lock` is
+	 * `insimul.packs-lock/1`), platforms, steps, artefact kinds, each platform's
+	 * primary artefact, statuses, refusal, note, issue and progress-issue codes in
+	 * their order, failure steps, each engine's reserved folders, the timeouts, and
+	 * `secretKeyStandIn` / `hiddenDetail` (`BUILD_SECRET_KEY_STAND_IN`,
+	 * `BUILD_HIDDEN_DETAIL`).
+	 */
+	'build.contract': () =>
+		plain({
+			schemas: { request: BUILD_REQUEST_SCHEMA, result: BUILD_RESULT_SCHEMA, progress: BUILD_PROGRESS_SCHEMA, lock: SYSTEM_PACKS_LOCK_SCHEMA },
+			hostOses: BUILD_HOST_OSES,
+			requestPlatforms: BUILD_REQUEST_PLATFORMS,
+			configurations: BUILD_CONFIGURATIONS,
+			enginePlatforms: BUILD_ENGINE_PLATFORMS,
+			crossDesktopEngines: BUILD_CROSS_DESKTOP_ENGINES,
+			engineReservedDirs: BUILD_ENGINE_RESERVED_DIRS,
+			platformLabels: BUILD_PLATFORM_LABELS,
+			platformTitles: BUILD_PLATFORM_TITLES,
+			hiddenDetail: BUILD_HIDDEN_DETAIL,
+			secretKeyStandIn: BUILD_SECRET_KEY_STAND_IN,
+			steps: BUILD_STEPS,
+			artefactKinds: BUILD_ARTEFACT_KINDS,
+			primaryArtefact: BUILD_PRIMARY_ARTEFACT,
+			statuses: BUILD_STATUSES,
+			refusalCodes: BUILD_REFUSAL_CODES,
+			noteCodes: BUILD_NOTE_CODES,
+			failureSteps: BUILD_FAILURE_STEPS,
+			issueCodes: BUILD_RESULT_ISSUE_CODES,
+			progressIssueCodes: BUILD_PROGRESS_ISSUE_CODES,
+			defaultTimeoutSeconds: BUILD_DEFAULT_TIMEOUT_SECONDS,
+			maxTimeoutSeconds: BUILD_MAX_TIMEOUT_SECONDS,
+		}),
+
+	/**
+	 * `build.plan { request, context? }` → core's `planBuild`: `{ ok, refusals: [{
+	 * code, field, detail }], notes: [{ code, field, detail }], plan }`. The request is
+	 * any JSON, sent as is (credentials first, in the raw request; then the shape; then
+	 * paths, case-folded out-dir rules, target, recipe, packs, and what the context
+	 * verifies), refusals and notes in core's order (codes, then fields by UTF-16 code
+	 * unit). `context { lock?, files?, predicateSchemaHash? }`: absent, nothing is
+	 * verified.
+	 */
+	'build.plan': (args) => {
+		const context = coded('invalid-input', () => buildContextArg('build.plan', args.context));
+		return plain(planBuild(args.request, context));
+	},
+
+	/**
+	 * `build.checkResult { request, result, context? }` → core's `checkBuildResult`:
+	 * `{ ok, issues: [{ code, field, detail }], summary }`, the summary E6's Build row
+	 * (`{ status, platform, primary, bytes, open, line }`; null when the result cannot
+	 * be read). The request is re-planned with the same context; result paths compare
+	 * as spelt; a credential in the error's or a refusal's detail hides the engine's
+	 * words from the line (`hiddenDetail`).
+	 */
+	'build.checkResult': (args) => {
+		const context = coded('invalid-input', () => buildContextArg('build.checkResult', args.context));
+		return plain(checkBuildResult(args.request, args.result, context));
+	},
+
+	/**
+	 * `build.checkProgress { request, events }` → core's `checkBuildProgress`: `{ ok,
+	 * issues: [{ code, field, detail }], summary }`, the summary E6's Busy state from
+	 * the last event (`{ step, stepNumber, steps, fraction, canStop, line }`; null with
+	 * no event or an unreadable one).
+	 */
+	'build.checkProgress': (args) => plain(checkBuildProgress(args.request, args.events)),
+
+	/** `build.size { bytes }` → `{ text }` — core's `formatBuildSize` ("812 bytes", "9.9 kB", "18 MB"; a negative size is "unknown size"). */
+	'build.size': (args) => {
+		coded('invalid-input', () => needNumber('build.size', args.bytes, 'bytes'));
+		return { text: formatBuildSize(args.bytes) };
+	},
+
+	/**
+	 * `build.resultLine { result, hideDetails? }` → `{ line }` — core's
+	 * `buildResultLine`: "Web build ready · 18 MB", "The web build failed: {detail}",
+	 * "The web build did not start: {first refusal}", "The web build was stopped.";
+	 * with `hideDetails`, the engine's words are `hiddenDetail`.
+	 */
+	'build.resultLine': (args) => {
+		const m = 'build.resultLine';
+		const [result, hide] = coded('invalid-input', () => [
+			buildResultLineArg(m, args.result),
+			optionalArg(args.hideDetails, (v) => {
+				if (typeof v !== 'boolean') throw refuse(m, '`hideDetails` must be a boolean');
+				return v;
+			}),
+		]);
+		return { line: buildResultLine(result, hide ?? false) };
+	},
+
+	/** `build.progressLine { event }` → `{ line }` — core's `buildProgressLine`: "Building… 40%" (a half rounds up) or "Building… 3 of 7". */
+	'build.progressLine': (args) => {
+		const event = coded('invalid-input', () => buildProgressLineArg('build.progressLine', args.event));
+		return { line: buildProgressLine(event) };
+	},
+
+	/** `build.isSecretKey { key }` → `{ secret }` — core's `isSecretKey`: the key, lower-cased (JavaScript's `toLowerCase`) without `_` and `-`, ends in a credential's name. */
+	'build.isSecretKey': (args) => {
+		coded('invalid-input', () => needString('build.isSecretKey', args.key, 'key'));
+		return { secret: isSecretKey(args.key) };
+	},
+
+	/** `build.looksLikeSecret { value }` → `{ secret }` — core's `looksLikeSecret`: a JWT, a database URL, a URL with a password, a Bearer token, a model or cloud key shape, a private key. */
+	'build.looksLikeSecret': (args) => {
+		coded('invalid-input', () => needString('build.looksLikeSecret', args.value, 'value'));
+		return { secret: looksLikeSecret(args.value) };
+	},
+
+	/**
+	 * `build.findSecrets { value }` → `{ fields }` — core's `findSecrets`: every dotted
+	 * field path carrying a credential, sorted by UTF-16 code unit, a key that is
+	 * itself one named `secretKeyStandIn`. `value` is any JSON, and must be sent.
+	 */
+	'build.findSecrets': (args) => {
+		coded('invalid-input', () => {
+			if (args.value === undefined) throw refuse('build.findSecrets', '`value` must be sent (any JSON)');
+		});
+		return { fields: findSecrets(args.value) };
+	},
+
+	/** `build.pathProblem { path }` → `{ problem }` — core's `projectPathProblem`: `absolute`, `parent`, `backslash`, `empty-segment`, or null inside the project. */
+	'build.pathProblem': (args) => {
+		coded('invalid-input', () => needString('build.pathProblem', args.path, 'path'));
+		return { problem: projectPathProblem(args.path) };
+	},
+
+	/** `build.foldMacos { path }` → `{ folded }` — core's `foldPathCaseMacos`: NFD, each code point's full lower, upper, lower case, then NFC (APFS). */
+	'build.foldMacos': (args) => {
+		coded('invalid-input', () => needString('build.foldMacos', args.path, 'path'));
+		return { folded: foldPathCaseMacos(args.path) };
+	},
+
+	/** `build.foldWindows { path }` → `{ folded }` — core's `foldPathCaseWindows`: each code point's full lower, upper, lower case, no normalisation (NTFS). */
+	'build.foldWindows': (args) => {
+		coded('invalid-input', () => needString('build.foldWindows', args.path, 'path'));
+		return { folded: foldPathCaseWindows(args.path) };
+	},
+
+	/** `build.insideDir { path, dir }` → `{ inside }` — core's `isInsideDir`, as spelt: equal, or the folder and a `/` (how a result's paths are held to `outDir`). */
+	'build.insideDir': (args) => {
+		const m = 'build.insideDir';
+		coded('invalid-input', () => [needString(m, args.path, 'path'), needString(m, args.dir, 'dir')]);
+		return { inside: isInsideDir(args.path, args.dir) };
+	},
+
+	/** `build.insideDirFolded { path, dir }` → `{ inside }` — core's `isInsideDirFolded`: inside under the macOS fold OR the Windows fold (the plan's out-dir rules). */
+	'build.insideDirFolded': (args) => {
+		const m = 'build.insideDirFolded';
+		coded('invalid-input', () => [needString(m, args.path, 'path'), needString(m, args.dir, 'dir')]);
+		return { inside: isInsideDirFolded(args.path, args.dir) };
+	},
+
+	/** `build.compareCodeUnits { a, b }` → `{ order }` (-1, 0, 1) — core's `compareCodeUnits`: UTF-16 code-unit order, the order refusals, notes and issues take by field. */
+	'build.compareCodeUnits': (args) => {
+		const m = 'build.compareCodeUnits';
+		coded('invalid-input', () => [needString(m, args.a, 'a'), needString(m, args.b, 'b')]);
+		return { order: compareCodeUnits(args.a, args.b) };
+	},
+
+	/** `build.resolvePlatform { platform, host }` → `{ platform }` — core's `resolveBuildPlatform`: `host` is the host's OS. */
+	'build.resolvePlatform': (args) => {
+		const m = 'build.resolvePlatform';
+		coded('invalid-input', () => [
+			oneOf(m, args.platform, BUILD_REQUEST_PLATFORMS, 'platform'),
+			oneOf(m, args.host, BUILD_HOST_OSES, 'host'),
+		]);
+		return { platform: resolveBuildPlatform(args.platform, args.host) };
+	},
+
+	/** `build.isPrimaryArtefact { platform, artefact: { path, kind } }` → `{ primary }` — core's `isPrimaryArtefactFor`: the platform's kind and file name (web `index.html`, macOS `*.app`, Windows `*.exe`). */
+	'build.isPrimaryArtefact': (args) => {
+		const m = 'build.isPrimaryArtefact';
+		coded('invalid-input', () => {
+			oneOf(m, args.platform, BUILD_PLATFORMS, 'platform');
+			needObject(m, args.artefact, 'artefact');
+			needString(m, args.artefact.path, 'artefact.path');
+			needString(m, args.artefact.kind, 'artefact.kind');
+		});
+		return { primary: isPrimaryArtefactFor(args.platform, args.artefact) };
 	},
 
 	// ── the genre HUD and the world rules panel (P9a) ──

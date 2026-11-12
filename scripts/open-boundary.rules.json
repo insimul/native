@@ -866,6 +866,24 @@
     },
     {
       "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/build/headless-build",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the build.* rows (core's headless build contract, P10.core: planBuild, checkBuildResult, checkBuildProgress, the size and line formats, the credential scan and the two case folds) (PL.native-headless-build, rulings U106(1), U107 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-headless-build (Features Gauntlet PL.native-headless-build)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/system-packs/schema",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the build.contract row, for one constant: SYSTEM_PACKS_LOCK_SCHEMA, the packs.lock.json schema id the headless build corpus's contract names (PL.native-headless-build, rulings U106(1), U107 and U36). The module was already in the bundle through the composer (packs.compose) and core's headless-build module; this import adds no module. Resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-headless-build (Features Gauntlet PL.native-headless-build)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
       "path": "tests/open_boundary_selftest.mjs",
       "specifier": "${CLOSED_BACKEND}",
       "classification": "keep",

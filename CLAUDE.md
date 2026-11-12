@@ -505,7 +505,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival and traversal ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal and headless build ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -736,6 +736,24 @@
   records them, as core's runner does. Unreal's `Portable/InsimulTraversal` is the
   interim copy both slices retire (`P9e.unreal.retire-traversal-copy`;
   `corebridge/ENGINE_BINDINGS.md` maps every function of it to its row).
+- **The headless build rows (PL.native-headless-build, U106(1), U107) run core's
+  P10 corpus UNCHANGED**, `conformance/build/headless.json` copied as its own set
+  (`BUILD_CORPUS_FROM`) to `vendor/core/conformance/headless-build/headless.json`:
+  the one set vendored under another folder than core's, because every `build/`
+  rule here (`.gitignore`; history-scan's and open-boundary's `build-output-tree`,
+  which reads every REF, so one branch's finding turns every branch's scan red)
+  would read core's folder as build output. Driven by its own runner, `tests/build_corpus.cpp`, as `build_corpus` (+
+  `build_corpus_negative`). One row per function of core's `build/headless-build`,
+  named `build.<fn>` (`build.plan`, `.checkResult`, `.checkProgress`, `.size`,
+  `.resultLine`, `.progressLine`, the credential scan, the path rules and both case
+  folds) plus `build.contract`. The checkers answer core's whole answer, details
+  included; a request, result or event list core cannot read is core's VALUE, never
+  a row error. The corpus's credentials are `<<secret:NAME>>` markers the RUNNER
+  expands from the file's own fixtures (never a literal credential in a committed
+  file: hand cases use shapes core's scan names and no history-scan rule does). Never
+  import `build/headless-build-corpus` (core's runner: it drags in the village-state
+  comparator). Unreal's `Portable/InsimulHeadlessBuild` is the interim copy these
+  rows retire (`P10.unreal.retire-headless-build-copy`).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

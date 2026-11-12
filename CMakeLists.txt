@@ -944,6 +944,39 @@ add_test(NAME traversal_corpus_negative COMMAND insimulcore_traversal_corpus --n
 set_tests_properties(traversal_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*traversal_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*traversal_corpus --negative: PASS")
 
+# build_corpus (PL.native-headless-build, rulings U106(1), U107 and U36): core's
+# P10 headless build contract (P10.core: src/build/headless-build.ts) as
+# libinsimulcore's `build.*` rows, held to core's own corpus
+# conformance/build/headless.json, COPIED byte for byte into
+# corebridge/vendor/core/conformance/headless-build/ at the pin (vendor-core-bundle.mjs
+# BUILD_CORPUS_FROM: one folder over from core's build/, which every build/ rule here
+# reads as build output; hashed, and byte-compared under --check --core).
+# tests/build_corpus.cpp expands the file's credential markers as core's runner does
+# and drives EVERY case through build.plan, .checkResult, .checkProgress or .size,
+# holds build.contract to the file's contract, checks that no answer repeats a
+# credential in a detail or a line, and asks the fold rows about every out-dir refusal
+# and every accepted plan. Unreal's Portable/InsimulHeadlessBuild is the interim copy
+# these rows retire (P10.unreal.retire-headless-build-copy). The regex demands every
+# op driven, 0 undriven, the contract line, hidden credentials, a case only the macOS
+# fold catches and one only the Windows fold catches, and PASS.
+add_executable(insimulcore_build_corpus tests/build_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_build_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_build_corpus PRIVATE insimulcore)
+set(INSIMUL_BUILD_CORPUS ${INSIMUL_PROPS_CORPUS}/headless-build/headless.json)
+add_test(NAME build_corpus COMMAND insimulcore_build_corpus ${INSIMUL_BUILD_CORPUS})
+set_tests_properties(build_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "contract: build.contract states the file's [1-9][0-9]* table[(]s[)][^\n]*\n.*headless-build: [0-9]+ case[(]s[)], driven plan [1-9][0-9]*, checkResult [1-9][0-9]*, checkProgress [1-9][0-9]*, size [1-9][0-9]*. 0 undriven\n.*credentials: [1-9][0-9]* case[(]s[)] carry one, none repeated in a detail or a line, [1-9][0-9]* line[(]s[)] hidden\n.*folds: holds-inputs [0-9]+ [(]macOS only [1-9][0-9]*, Windows only [1-9][0-9]*, both [0-9]+[)], reserved [1-9][0-9]* [(][^)]*[)], [1-9][0-9]* accepted plan[(]s[)] clear of both\n.*build_corpus: PASS")
+# Its negative pass, as Unreal's headless_build_corpus_negative: every case's
+# expectation perturbed (its last leaf) must be refused, and the purposeful
+# perturbations too — a credential not caught, a credential shown (as an expectation
+# and planted in an answer), a path escaping the build folder (by the fold that
+# catches it: at least one macOS-only and one Windows-only), an artefact outside it
+# and a path outside the project. PASS only when every case was refused and none
+# accepted.
+add_test(NAME build_corpus_negative COMMAND insimulcore_build_corpus --negative ${INSIMUL_BUILD_CORPUS})
+set_tests_properties(build_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*targeted: credential not caught [1-9][0-9]*/[0-9]+, credential shown [1-9][0-9]*/[0-9]+, credential shown [(]planted[)] [1-9][0-9]*/[0-9]+, escape under a fold [1-9][0-9]*/[0-9]+, artefact outside outDir [1-9][0-9]*/[0-9]+, path outside project [1-9][0-9]*/[0-9]+ refused\n.*escapes refused by fold: macOS only [1-9][0-9]*, Windows only [1-9][0-9]*, both [0-9]+\n.*build_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*build_corpus --negative: PASS")
+
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
 # (TutorialQuestSystem) and the onboarding flow on it (OnboardingManager) — as

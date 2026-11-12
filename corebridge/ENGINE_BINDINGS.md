@@ -534,6 +534,43 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   Re-vendor all seven `conformance/traversal/*.json` from core at this library's pin
   and drive each case as `tests/traversal_corpus.cpp` does (its header lists the
   mapping row by row and op by op).
+- **The headless build contract (Unreal's `P10.unreal.retire-headless-build-copy`,
+  after PL.native-headless-build; U106(1), U107).** Core's P10 contract is the
+  `build.*` rows (`README.md`, "The headless build rows"). The retirement row binds
+  them in place of the interim copy `Portable/InsimulHeadlessBuild.{h,cpp}` (159 +
+  2,506 = 2,665 lines, plus the generated `InsimulHeadlessBuildUnicode.generated.inl`,
+  1,057 lines, and its generator `tools/headless-build/gen-unicode-tables.mjs`;
+  accepted under U36 by U106(1)). Read at unreal main `8ce6165` (read only):
+
+  | Unreal's interim copy (`insimul::headless`) | Row |
+  |---|---|
+  | `PlanBuild` (with `ContextOf`, `FPlanContext`, `FPlanResult`, `FFinding`, `RecipeIds`, the packs-lock schema and zod's field rules inside it) | `build.plan { request, context? }` → `{ ok, refusals, notes, plan }`, each refusal and note `{ code, field, detail }` in core's order |
+  | `CheckBuildResult` (with `FCheckResult`; the Build row's `line`, `bytes`, `open` and `primary` inside it) | `build.checkResult { request, result, context? }` → `{ ok, issues, summary }` |
+  | `CheckBuildProgress` | `build.checkProgress { request, events }` → `{ ok, issues, summary }` |
+  | `FormatBuildSize` | `build.size { bytes }` → `{ text }` |
+  | the Build row's line (`PlatformLabel`, `PlatformTitle` and the hidden-detail words inside it) | `build.resultLine { result, hideDetails? }` → `{ line }` |
+  | `BuildProgressLine` | `build.progressLine { event: { step, fraction } }` → `{ line }` |
+  | `IsSecretKey`, `LooksLikeSecret`, `FindSecrets`, `SecretKeyStandIn` | `build.isSecretKey { key }`, `build.looksLikeSecret { value }`, `build.findSecrets { value }`; the stand-in is `build.contract`'s `secretKeyStandIn` |
+  | `FoldPathCaseMacos`, `FoldPathCaseWindows` (with `NormalizeNfd`, `NormalizeNfc`, `UnicodeVersion` and the generated tables) | `build.foldMacos { path }`, `build.foldWindows { path }` → `{ folded }` |
+  | `ProjectPathProblem`, `IsInsideDir`, `IsInsideDirFolded`, `CompareCodeUnits` | `build.pathProblem { path }`, `build.insideDir { path, dir }`, `build.insideDirFolded { path, dir }`, `build.compareCodeUnits { a, b }` |
+  | the resolved platform and the primary-artefact rule (inside `PlanBuild` and `CheckBuildResult`) | `build.resolvePlatform { platform, host }`, `build.isPrimaryArtefact { platform, artefact }` |
+  | `Steps`, `RefusalCodes`, `NoteCodes`, `ResultIssueCodes`, `ProgressIssueCodes`, `EngineReservedDirs`, `FailureStep`, `RequestSchema`, `ResultSchema`, `ProgressSchema`, `LockSchema`, `DefaultTimeoutSeconds`, `MaxTimeoutSeconds` | `build.contract {}` (also `hiddenDetail`, core's `BUILD_HIDDEN_DETAIL`) |
+  | `RunBuildOp`, `ExpandSecretFixtures` | none: a corpus runner's, as `tests/build_corpus.cpp` does both; Unreal's `headless_build_corpus` runner keeps them, over the rows |
+  | `DecodeUtf8`, `EncodeUtf8`, `JNull`…`JPush`, `FindingsJson` | none (JSON and UTF-8 handling inside the rows) |
+  | `RedactCredentialAssignment`, `StepOfPackagingLine` | none: engine-side, they stay Unreal's (the build log's `NAME=value` lines; the UAT banner → core step map). `RedactCredentialAssignment` calls `build.isSecretKey` and `build.looksLikeSecret` in place of the copy's |
+
+  **What changes for the binding**: the plan, the checks and the lines come from the
+  rows, so the copy's Unicode tables (measured from node 20.20.2's, Unicode 17.0)
+  give way to the library's QuickJS tables (Unicode 16.0); `corebridge_cases_parity`
+  holds QuickJS's folds to V8's on the hand cases' vectors, and `build_corpus` runs
+  every fold case of core's corpus through QuickJS. Measured against the copy's own
+  `fold-vectors.json` (1,593 strings): the rows agree on all but 9 (6 macOS-fold, 3
+  Windows-fold), every one a string holding a Unicode 17.0 addition (the case pairs
+  U+A7CE, U+A7D2, U+A7D4, U+16EA0–U+16EB8, and new combining marks). Core names no
+  Unicode version, so that suite's `headless_build_fold` either skips those strings
+  or waits on a ruling. Re-vendor `conformance/build/headless.json` from core at this
+  library's pin and drive each case as `tests/build_corpus.cpp` does: expand the
+  markers from the file's own `secretFixtures`, then one row per case.
 - **Save slots: the disk can change under the session since the 72c658c pin**
   (core's PL.disk-changed-step). When the save files change outside the game,
   send the new listing as `saves.slots.apply` op `disk_changed { slots }` (the

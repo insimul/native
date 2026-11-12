@@ -19,6 +19,7 @@
     "src/audio/audio-keys.ts",
     "src/audio/footsteps.ts",
     "src/audio/ground-from-ir.ts",
+    "src/build/headless-build.ts",
     "src/business/business-predicates.ts",
     "src/camera/camera-modes.ts",
     "src/camera/movement-rules.ts",
@@ -249,11 +250,14 @@
     "conformance/traversal/session.json",
     "conformance/traversal/vehicles.json"
   ],
-  "bundleBytes": 1847883,
-  "bundleSha256": "695fb48ff95c19db6208a426647606c520809e09658c1ad1b9cd42d3021609fd",
+  "buildCorpus": {
+    "conformance/headless-build/headless.json": "conformance/build/headless.json"
+  },
+  "bundleBytes": 1892892,
+  "bundleSha256": "f845ef62b65143c6f404f3d9b93ff50a5ca30af18048cd57b9e5a3c03820260a",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "695fb48ff95c19db6208a426647606c520809e09658c1ad1b9cd42d3021609fd",
-    "vendor/core/insimul_core_bundle.c": "4694c78289bbb52fd327528ff02af70299b7d40a2c4ae2a397759da1c1a20cc2",
+    "vendor/core/insimul-core-bundle.js": "f845ef62b65143c6f404f3d9b93ff50a5ca30af18048cd57b9e5a3c03820260a",
+    "vendor/core/insimul_core_bundle.c": "0ada88fc07de95a0b8fdc8efd86c5ad874fdbf65cf5f350913bd3e4eba7d6774",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genres-recipes.json": "c092190e983d0a503d5ffcb2ad7bf120ebcbd1cd278931084cd1858d5342f1f1",
     "vendor/core/cases/core-genres-registry.json": "e1f019de52f14b89d18acbd33aeb4d176f27961d93dcad83bfec734a6444ddd2",
@@ -335,13 +339,14 @@
     "vendor/core/conformance/traversal/save.json": "b2ba139b9522758e2672e7791ab014eded202780e46c05692ab23920fc7ec98e",
     "vendor/core/conformance/traversal/session.json": "2d21fc5014b15c4927f5805bef831ee2bfef32b602a95090ee82fec4cb7a57d2",
     "vendor/core/conformance/traversal/vehicles.json": "1b03a951b6249a089ba2f09e6109cadbcdd79eb030b8871f114369bc04940b92",
-    "js/entry.js": "6a73721e767d0f98dd65492d214493d57b4bdc4ec3dffdab4fe4d65f5a85d3f2",
+    "vendor/core/conformance/headless-build/headless.json": "8d206e42c3efdaea41c373e89daa804b85a6879eea33456818cd9a3e07fed5b9",
+    "js/entry.js": "64df0410b9a484ee712e706d3d2ef9cd0defdd18011381d483f8b95264045ea6",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a9c0626d616322c6072bdd95b841ccb0fc86249a35758ee9dd782a306dca71d2",
     "js/host-sessions.js": "d9fe6e0ceb8a763ced1929ddfe727687b5f56d16bb2d84936da94d2b8a14031b",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
     "tools/emit-bridge-cases.mjs": "36e161b76830134d7c18a622a0a2e22b6871be9c436169ef4bb1cb3da3ffc49c",
-    "core-pin.json": "2f789de052b1cc3b423ecc85a24d5bbc62afa4116b12790e7aec70eb8ae4b73b"
+    "core-pin.json": "162a793617191453145fecaade7d08aeaff0a2fd53ba4f69c19376e65864aa65"
   }
 }

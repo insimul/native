@@ -1,0 +1,3464 @@
+{
+  "area": "build",
+  "description": "Hand-written: the build.* rows’ own contract (PL.native-headless-build, U106(1), U107; core’s headless build contract, P10.core) — each row’s answer shape over core’s functions, the details core’s corpus does not pin (refusal, note and issue sentences, which the rows answer whole), the plan’s refusals sent back as a refused result’s, the line, size, credential-scan, fold, containment, order, platform and primary-artefact rows no corpus case calls directly (including keys that lower-case through a non-ASCII letter, which core’s corpus does not state), and the rows’ own refusals as errors coded [invalid-input]. Every expectation here was computed by core’s own functions at the pin, not by these rows. Core’s own corpus (conformance/build/headless.json, 233 cases) is driven whole through these rows by the build_corpus ctest (tests/build_corpus.cpp), not transcribed here.",
+  "cases": [
+    {
+      "name": "build.plan answers core’s whole answer (details included); the plan’s refusals, bound and sent as a refused result’s, are what build.checkResult accepts",
+      "steps": [
+        {
+          "call": "build.plan",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "refusals": [],
+            "notes": [
+              {
+                "code": "lock-unverified",
+                "field": "packs.lock",
+                "detail": "The systems file was not read, so the systems were not checked against it."
+              },
+              {
+                "code": "inputs-unverified",
+                "field": null,
+                "detail": "The input files were not read, so their contents were not checked against the request."
+              }
+            ],
+            "plan": {
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "platform": "web",
+              "configuration": "development",
+              "outDir": "exports/web",
+              "clean": true,
+              "timeoutSeconds": 600,
+              "recipe": {
+                "id": "hand-recipe",
+                "bound": false
+              },
+              "packs": [
+                "inventory",
+                "saves"
+              ],
+              "inputs": [
+                {
+                  "role": "world",
+                  "path": "worlds_ir/hand.json",
+                  "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                {
+                  "role": "recipe",
+                  "path": "recipes/hand.json",
+                  "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                },
+                {
+                  "role": "lock",
+                  "path": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                }
+              ],
+              "steps": [
+                "validate",
+                "import-world",
+                "compose-packs",
+                "build-scene",
+                "compile",
+                "package",
+                "verify"
+              ],
+              "primary": {
+                "kind": "web-entry",
+                "basename": "index.html",
+                "extension": null,
+                "open": "browser"
+              }
+            }
+          }
+        },
+        {
+          "call": "build.plan",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "context": null
+          },
+          "expect": {
+            "ok": true,
+            "refusals": [],
+            "notes": [
+              {
+                "code": "lock-unverified",
+                "field": "packs.lock",
+                "detail": "The systems file was not read, so the systems were not checked against it."
+              },
+              {
+                "code": "inputs-unverified",
+                "field": null,
+                "detail": "The input files were not read, so their contents were not checked against the request."
+              }
+            ],
+            "plan": {
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "platform": "web",
+              "configuration": "development",
+              "outDir": "exports/web",
+              "clean": true,
+              "timeoutSeconds": 600,
+              "recipe": {
+                "id": "hand-recipe",
+                "bound": false
+              },
+              "packs": [
+                "inventory",
+                "saves"
+              ],
+              "inputs": [
+                {
+                  "role": "world",
+                  "path": "worlds_ir/hand.json",
+                  "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                {
+                  "role": "recipe",
+                  "path": "recipes/hand.json",
+                  "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                },
+                {
+                  "role": "lock",
+                  "path": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                }
+              ],
+              "steps": [
+                "validate",
+                "import-world",
+                "compose-packs",
+                "build-scene",
+                "compile",
+                "package",
+                "verify"
+              ],
+              "primary": {
+                "kind": "web-entry",
+                "basename": "index.html",
+                "extension": null,
+                "open": "browser"
+              }
+            }
+          }
+        },
+        {
+          "call": "build.plan",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "context": {
+              "lock": {
+                "schema": "insimul.packs-lock/1",
+                "core": {
+                  "commit": "6cd4b4e"
+                },
+                "plugin": {
+                  "engine": "godot",
+                  "version": "0.1.0"
+                },
+                "packs": {
+                  "saves": {
+                    "version": "1.0.0",
+                    "variants": [
+                      "default"
+                    ],
+                    "files": [],
+                    "core": {
+                      "state": "upstream"
+                    }
+                  },
+                  "inventory": {
+                    "version": "1.0.0",
+                    "variants": [
+                      "default"
+                    ],
+                    "files": [],
+                    "core": {
+                      "state": "forked"
+                    }
+                  }
+                }
+              },
+              "files": {
+                "worlds_ir/hand.json": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipes/hand.json": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "packs.lock.json": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "refusals": [],
+            "notes": [
+              {
+                "code": "core-forked",
+                "field": "packs.enabled.1",
+                "detail": "A system runs your own copy of Insimul's rules, not the shared ones."
+              }
+            ],
+            "plan": {
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "platform": "web",
+              "configuration": "development",
+              "outDir": "exports/web",
+              "clean": true,
+              "timeoutSeconds": 600,
+              "recipe": {
+                "id": "hand-recipe",
+                "bound": false
+              },
+              "packs": [
+                "inventory",
+                "saves"
+              ],
+              "inputs": [
+                {
+                  "role": "world",
+                  "path": "worlds_ir/hand.json",
+                  "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                },
+                {
+                  "role": "recipe",
+                  "path": "recipes/hand.json",
+                  "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+                },
+                {
+                  "role": "lock",
+                  "path": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                }
+              ],
+              "steps": [
+                "validate",
+                "import-world",
+                "compose-packs",
+                "build-scene",
+                "compile",
+                "package",
+                "verify"
+              ],
+              "primary": {
+                "kind": "web-entry",
+                "basename": "index.html",
+                "extension": null,
+                "open": "browser"
+              }
+            }
+          }
+        },
+        {
+          "call": "build.plan",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "beos"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            }
+          },
+          "expect": {
+            "ok": false,
+            "refusals": [
+              {
+                "code": "invalid-request",
+                "field": "host.os",
+                "detail": "The build request is not one Insimul can read: Invalid enum value. Expected 'macos' | 'windows' | 'linux', received 'beos'."
+              }
+            ],
+            "notes": [],
+            "plan": null
+          }
+        },
+        {
+          "call": "build.plan",
+          "args": {},
+          "expect": {
+            "ok": false,
+            "refusals": [
+              {
+                "code": "invalid-request",
+                "field": null,
+                "detail": "The build request is not one Insimul can read: Required."
+              }
+            ],
+            "notes": [],
+            "plan": null
+          }
+        },
+        {
+          "call": "build.plan",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-unreal-web",
+              "engine": "unreal",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "Exports/web/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": null,
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "saves"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            }
+          },
+          "expect": {
+            "ok": false,
+            "refusals": [
+              {
+                "code": "out-dir-holds-inputs",
+                "field": "world.file",
+                "detail": "The build folder holds a file the build reads. Choose a build folder of its own."
+              },
+              {
+                "code": "target-unsupported",
+                "field": "target.platform",
+                "detail": "Unreal can't build for the web."
+              },
+              {
+                "code": "duplicate-pack",
+                "field": "packs.enabled.1",
+                "detail": "A system is listed twice. List each system once."
+              }
+            ],
+            "notes": [
+              {
+                "code": "lock-unverified",
+                "field": "packs.lock",
+                "detail": "The systems file was not read, so the systems were not checked against it."
+              },
+              {
+                "code": "inputs-unverified",
+                "field": null,
+                "detail": "The input files were not read, so their contents were not checked against the request."
+              }
+            ],
+            "plan": null
+          },
+          "bind": "refused"
+        },
+        {
+          "call": "build.checkResult",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-unreal-web",
+              "engine": "unreal",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "Exports/web/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": null,
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "saves"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-unreal-web",
+              "engine": "unreal",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "refused",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": null,
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": {
+                "$ref": "refused.refusals"
+              },
+              "artefacts": [],
+              "logs": [],
+              "durationMs": 0
+            }
+          },
+          "expect": {
+            "ok": true,
+            "issues": [],
+            "summary": {
+              "status": "refused",
+              "platform": "web",
+              "primary": null,
+              "bytes": 0,
+              "open": null,
+              "line": "The web build did not start: The build folder holds a file the build reads. Choose a build folder of its own."
+            }
+          }
+        },
+        {
+          "call": "build.checkResult",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-unreal-web",
+              "engine": "unreal",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "Exports/web/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": null,
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "saves"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-unreal-web",
+              "engine": "unreal",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "refused",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": null,
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [
+                {
+                  "code": "target-unsupported",
+                  "field": "target.platform",
+                  "detail": "Unreal can't build for the web."
+                },
+                {
+                  "code": "duplicate-pack",
+                  "field": "packs.enabled.1",
+                  "detail": "A system is listed twice. List each system once."
+                }
+              ],
+              "artefacts": [],
+              "logs": [],
+              "durationMs": 0
+            }
+          },
+          "expect": {
+            "ok": false,
+            "issues": [
+              {
+                "code": "refusals-differ",
+                "field": "refusals",
+                "detail": "The engine's refusals are not Insimul's for this request."
+              }
+            ],
+            "summary": {
+              "status": "refused",
+              "platform": "web",
+              "primary": null,
+              "bytes": 0,
+              "open": null,
+              "line": "The web build did not start: Unreal can't build for the web."
+            }
+          }
+        },
+        {
+          "call": "build.checkResult",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "succeeded",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [
+                {
+                  "path": "exports/web/index.html",
+                  "kind": "web-entry",
+                  "bytes": 5000,
+                  "primary": true
+                },
+                {
+                  "path": "exports/web/hand.pck",
+                  "kind": "data",
+                  "bytes": 999000
+                },
+                {
+                  "path": "exports/web/build.log",
+                  "kind": "log",
+                  "bytes": 70000
+                }
+              ],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            },
+            "context": {
+              "lock": {
+                "schema": "insimul.packs-lock/1",
+                "core": {
+                  "commit": "6cd4b4e"
+                },
+                "plugin": {
+                  "engine": "godot",
+                  "version": "0.1.0"
+                },
+                "packs": {
+                  "saves": {
+                    "version": "1.0.0",
+                    "variants": [
+                      "default"
+                    ],
+                    "files": [],
+                    "core": {
+                      "state": "upstream"
+                    }
+                  },
+                  "inventory": {
+                    "version": "1.0.0",
+                    "variants": [
+                      "default"
+                    ],
+                    "files": [],
+                    "core": {
+                      "state": "forked"
+                    }
+                  }
+                }
+              },
+              "files": {
+                "worlds_ir/hand.json": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipes/hand.json": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "packs.lock.json": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "issues": [],
+            "summary": {
+              "status": "succeeded",
+              "platform": "web",
+              "primary": "exports/web/index.html",
+              "bytes": 1004000,
+              "open": "browser",
+              "line": "Web build ready · 1 MB"
+            }
+          }
+        },
+        {
+          "call": "build.checkResult",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "succeeded",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [
+                {
+                  "path": "exports/web/index.html",
+                  "kind": "web-entry",
+                  "bytes": 5000,
+                  "primary": true
+                },
+                {
+                  "path": "exports/web/hand.pck",
+                  "kind": "data",
+                  "bytes": 999000
+                },
+                {
+                  "path": "exports/web/build.log",
+                  "kind": "log",
+                  "bytes": 70000
+                },
+                {
+                  "path": "exports/web/hand.pck",
+                  "kind": "data",
+                  "bytes": 1
+                },
+                {
+                  "path": "Exports/web/x",
+                  "kind": "data",
+                  "bytes": 1
+                }
+              ],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "verify",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            },
+            "context": {
+              "lock": {
+                "schema": "insimul.packs-lock/1",
+                "core": {
+                  "commit": "6cd4b4e"
+                },
+                "plugin": {
+                  "engine": "godot",
+                  "version": "0.1.0"
+                },
+                "packs": {
+                  "saves": {
+                    "version": "1.0.0",
+                    "variants": [
+                      "default"
+                    ],
+                    "files": [],
+                    "core": {
+                      "state": "upstream"
+                    }
+                  },
+                  "inventory": {
+                    "version": "1.0.0",
+                    "variants": [
+                      "default"
+                    ],
+                    "files": [],
+                    "core": {
+                      "state": "forked"
+                    }
+                  }
+                }
+              },
+              "files": {
+                "worlds_ir/hand.json": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                "recipes/hand.json": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "packs.lock.json": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              }
+            }
+          },
+          "expect": {
+            "ok": false,
+            "issues": [
+              {
+                "code": "built-refused-request",
+                "field": null,
+                "detail": "The engine started a build Insimul refuses."
+              },
+              {
+                "code": "artefact-outside-out-dir",
+                "field": "artefacts.4.path",
+                "detail": "A file the build lists is outside its build folder."
+              },
+              {
+                "code": "duplicate-artefact",
+                "field": "artefacts.3.path",
+                "detail": "A file is listed twice."
+              },
+              {
+                "code": "log-out-of-order",
+                "field": "logs.2.seq",
+                "detail": "The build log is out of order."
+              }
+            ],
+            "summary": {
+              "status": "succeeded",
+              "platform": "web",
+              "primary": "exports/web/index.html",
+              "bytes": 1004002,
+              "open": "browser",
+              "line": "Web build ready · 1 MB"
+            }
+          }
+        },
+        {
+          "call": "build.checkResult",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "result": {
+              "status": "succeeded"
+            }
+          },
+          "expect": {
+            "ok": false,
+            "issues": [
+              {
+                "code": "result-invalid",
+                "field": "artefacts",
+                "detail": "The build result is not one Insimul can read: Required."
+              },
+              {
+                "code": "result-invalid",
+                "field": "durationMs",
+                "detail": "The build result is not one Insimul can read: Required."
+              },
+              {
+                "code": "result-invalid",
+                "field": "engine",
+                "detail": "The build result is not one Insimul can read: Required."
+              },
+              {
+                "code": "result-invalid",
+                "field": "inputs",
+                "detail": "The build result is not one Insimul can read: Required."
+              },
+              {
+                "code": "result-invalid",
+                "field": "logs",
+                "detail": "The build result is not one Insimul can read: Required."
+              },
+              {
+                "code": "result-invalid",
+                "field": "refusals",
+                "detail": "The build result is not one Insimul can read: Required."
+              },
+              {
+                "code": "result-invalid",
+                "field": "requestId",
+                "detail": "The build result is not one Insimul can read: Required."
+              },
+              {
+                "code": "result-invalid",
+                "field": "schema",
+                "detail": "The build result is not one Insimul can read: Invalid literal value, expected \"insimul.build-result/1\"."
+              },
+              {
+                "code": "result-invalid",
+                "field": "target",
+                "detail": "The build result is not one Insimul can read: Required."
+              }
+            ],
+            "summary": null
+          }
+        },
+        {
+          "call": "build.checkProgress",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "events": [
+              {
+                "schema": "insimul.build-progress/1",
+                "requestId": "hand-godot-web",
+                "seq": 0,
+                "step": "validate",
+                "fraction": 0,
+                "canStop": true,
+                "elapsedMs": 0
+              },
+              {
+                "schema": "insimul.build-progress/1",
+                "requestId": "hand-godot-web",
+                "seq": 1,
+                "step": "compile",
+                "fraction": null,
+                "canStop": false,
+                "elapsedMs": 900
+              },
+              {
+                "schema": "insimul.build-progress/1",
+                "requestId": "hand-godot-web",
+                "seq": 2,
+                "step": "package",
+                "fraction": 0.405,
+                "canStop": true,
+                "elapsedMs": 1800
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "issues": [],
+            "summary": {
+              "step": "package",
+              "stepNumber": 6,
+              "steps": 7,
+              "fraction": 0.405,
+              "canStop": true,
+              "line": "Building… 41%"
+            }
+          }
+        },
+        {
+          "call": "build.checkProgress",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "events": [
+              {
+                "schema": "insimul.build-progress/1",
+                "requestId": "hand-godot-web",
+                "seq": 0,
+                "step": "validate",
+                "fraction": 0,
+                "canStop": true,
+                "elapsedMs": 0
+              },
+              {
+                "schema": "insimul.build-progress/1",
+                "requestId": "hand-godot-web",
+                "seq": 0,
+                "step": "package",
+                "fraction": 0.4,
+                "canStop": true,
+                "elapsedMs": 1800
+              },
+              {
+                "schema": "insimul.build-progress/1",
+                "requestId": "hand-godot-web",
+                "seq": 3,
+                "step": "import-world",
+                "fraction": null,
+                "canStop": false,
+                "elapsedMs": 900
+              }
+            ]
+          },
+          "expect": {
+            "ok": false,
+            "issues": [
+              {
+                "code": "progress-out-of-order",
+                "field": "1.seq",
+                "detail": "The build progress is out of order."
+              },
+              {
+                "code": "step-went-back",
+                "field": "2.step",
+                "detail": "The build went back to an earlier step."
+              }
+            ],
+            "summary": {
+              "step": "import-world",
+              "stepNumber": 2,
+              "steps": 7,
+              "fraction": null,
+              "canStop": false,
+              "line": "Building… 2 of 7"
+            }
+          }
+        },
+        {
+          "call": "build.checkProgress",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "events": []
+          },
+          "expect": {
+            "ok": true,
+            "issues": [],
+            "summary": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "build.resultLine, build.progressLine and build.size: E6’s Build row and Busy lines as core words them",
+      "steps": [
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "succeeded",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [
+                {
+                  "path": "exports/web/index.html",
+                  "kind": "web-entry",
+                  "bytes": 5000,
+                  "primary": true
+                },
+                {
+                  "path": "exports/web/hand.pck",
+                  "kind": "data",
+                  "bytes": 999000
+                },
+                {
+                  "path": "exports/web/build.log",
+                  "kind": "log",
+                  "bytes": 70000
+                }
+              ],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            }
+          },
+          "expect": {
+            "line": "Web build ready · 1 MB"
+          }
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "failed",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000,
+              "error": {
+                "code": "compile-failed",
+                "step": "compile",
+                "detail": "GDScript did not compile."
+              }
+            }
+          },
+          "expect": {
+            "line": "The web build failed: GDScript did not compile."
+          }
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "failed",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000,
+              "error": {
+                "code": "compile-failed",
+                "step": "compile",
+                "detail": "GDScript did not compile."
+              }
+            },
+            "hideDetails": true
+          },
+          "expect": {
+            "line": "The web build failed: the engine's message held a password or token, so it is not shown."
+          }
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-unreal-web",
+              "engine": "unreal",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "refused",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": null,
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [
+                {
+                  "code": "out-dir-holds-inputs",
+                  "field": "world.file",
+                  "detail": "The build folder holds a file the build reads. Choose a build folder of its own."
+                },
+                {
+                  "code": "target-unsupported",
+                  "field": "target.platform",
+                  "detail": "Unreal can't build for the web."
+                },
+                {
+                  "code": "duplicate-pack",
+                  "field": "packs.enabled.1",
+                  "detail": "A system is listed twice. List each system once."
+                }
+              ],
+              "artefacts": [],
+              "logs": [],
+              "durationMs": 0
+            }
+          },
+          "expect": {
+            "line": "The web build did not start: The build folder holds a file the build reads. Choose a build folder of its own."
+          }
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-unreal-web",
+              "engine": "unreal",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "refused",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": null,
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [],
+              "logs": [],
+              "durationMs": 0
+            }
+          },
+          "expect": {
+            "line": "The web build did not start: the request was refused."
+          }
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "failed",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000,
+              "error": null
+            }
+          },
+          "expect": {
+            "line": "The web build failed: the engine stopped without saying why."
+          }
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "cancelled",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            },
+            "hideDetails": false
+          },
+          "expect": {
+            "line": "The web build was stopped."
+          }
+        },
+        {
+          "call": "build.progressLine",
+          "args": {
+            "event": {
+              "schema": "insimul.build-progress/1",
+              "requestId": "hand-godot-web",
+              "seq": 2,
+              "step": "package",
+              "fraction": 0.405,
+              "canStop": true,
+              "elapsedMs": 1800
+            }
+          },
+          "expect": {
+            "line": "Building… 41%"
+          }
+        },
+        {
+          "call": "build.progressLine",
+          "args": {
+            "event": {
+              "step": "verify",
+              "fraction": 0.005
+            }
+          },
+          "expect": {
+            "line": "Building… 1%"
+          }
+        },
+        {
+          "call": "build.progressLine",
+          "args": {
+            "event": {
+              "step": "compile",
+              "fraction": null
+            }
+          },
+          "expect": {
+            "line": "Building… 5 of 7"
+          }
+        },
+        {
+          "call": "build.size",
+          "args": {
+            "bytes": 999960
+          },
+          "expect": {
+            "text": "1 MB"
+          }
+        },
+        {
+          "call": "build.size",
+          "args": {
+            "bytes": 1
+          },
+          "expect": {
+            "text": "1 byte"
+          }
+        },
+        {
+          "call": "build.size",
+          "args": {
+            "bytes": -5
+          },
+          "expect": {
+            "text": "unknown size"
+          }
+        },
+        {
+          "call": "build.size",
+          "args": {
+            "bytes": 1207382596
+          },
+          "expect": {
+            "text": "1.2 GB"
+          }
+        }
+      ]
+    },
+    {
+      "name": "build.isSecretKey, build.looksLikeSecret, build.findSecrets: core’s credential scan, including keys that lower-case through a non-ASCII letter (core’s toLowerCase)",
+      "steps": [
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "apiKey"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "API_KEY"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "client_secret"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "x-auth-token"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "tokens"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "tokenizer"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "TOKEN"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "APİKEY"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "PAſSWORD"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "sessionId"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "DATABASE_URL"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "mongoUri"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.looksLikeSecret",
+          "args": {
+            "value": "postgres://db.example.invalid/hand"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.looksLikeSecret",
+          "args": {
+            "value": "https://hand:pass@example.invalid/api"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.looksLikeSecret",
+          "args": {
+            "value": "Bearer handhandhandhand0000"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.looksLikeSecret",
+          "args": {
+            "value": "Bearer short"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.looksLikeSecret",
+          "args": {
+            "value": "https://example.invalid/api"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.looksLikeSecret",
+          "args": {
+            "value": "just words"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.findSecrets",
+          "args": {
+            "value": {
+              "token": "abc",
+              "empty_token": "",
+              "nested": [
+                {
+                  "apiKey": 5
+                },
+                {
+                  "note": "postgres://db.example.invalid/hand"
+                }
+              ],
+              "Bearer handhandhandhand0000": 1,
+              "Token": "x",
+              "client_secret": "y",
+              "clientSecret": "z"
+            }
+          },
+          "expect": {
+            "fields": [
+              "<credential>",
+              "Token",
+              "clientSecret",
+              "client_secret",
+              "nested.0.apiKey",
+              "nested.1.note",
+              "token"
+            ]
+          }
+        },
+        {
+          "call": "build.findSecrets",
+          "args": {
+            "value": null
+          },
+          "expect": {
+            "fields": []
+          }
+        },
+        {
+          "call": "build.findSecrets",
+          "args": {
+            "value": [
+              "postgres://db.example.invalid/hand",
+              "fine"
+            ]
+          },
+          "expect": {
+            "fields": [
+              "0"
+            ]
+          }
+        },
+        {
+          "call": "build.contract",
+          "expect": {
+            "schemas": {
+              "request": "insimul.build-request/1",
+              "result": "insimul.build-result/1",
+              "progress": "insimul.build-progress/1",
+              "lock": "insimul.packs-lock/1"
+            },
+            "hostOses": [
+              "macos",
+              "windows",
+              "linux"
+            ],
+            "requestPlatforms": [
+              "web",
+              "macos",
+              "windows",
+              "linux",
+              "host"
+            ],
+            "configurations": [
+              "development",
+              "shipping"
+            ],
+            "enginePlatforms": {
+              "unreal": [
+                "macos",
+                "windows",
+                "linux"
+              ],
+              "unity": [
+                "web",
+                "macos",
+                "windows",
+                "linux"
+              ],
+              "godot": [
+                "web",
+                "macos",
+                "windows",
+                "linux"
+              ],
+              "babylon": [
+                "web"
+              ]
+            },
+            "crossDesktopEngines": [
+              "unity",
+              "godot"
+            ],
+            "engineReservedDirs": {
+              "unreal": [
+                "Binaries",
+                "Config",
+                "Content",
+                "Intermediate",
+                "Plugins",
+                "Source"
+              ],
+              "unity": [
+                "Assets",
+                "Library",
+                "Packages",
+                "ProjectSettings",
+                "UserSettings"
+              ],
+              "godot": [
+                ".godot",
+                "addons"
+              ],
+              "babylon": [
+                "node_modules",
+                "public",
+                "src"
+              ]
+            },
+            "platformLabels": {
+              "web": "web",
+              "macos": "macOS",
+              "windows": "Windows",
+              "linux": "Linux"
+            },
+            "platformTitles": {
+              "web": "Web",
+              "macos": "macOS",
+              "windows": "Windows",
+              "linux": "Linux"
+            },
+            "hiddenDetail": "the engine's message held a password or token, so it is not shown.",
+            "secretKeyStandIn": "<credential>",
+            "steps": [
+              "validate",
+              "import-world",
+              "compose-packs",
+              "build-scene",
+              "compile",
+              "package",
+              "verify"
+            ],
+            "artefactKinds": [
+              "web-entry",
+              "web-asset",
+              "app-bundle",
+              "executable",
+              "library",
+              "data",
+              "symbols",
+              "log",
+              "manifest"
+            ],
+            "primaryArtefact": {
+              "web": {
+                "kind": "web-entry",
+                "basename": "index.html",
+                "extension": null,
+                "open": "browser"
+              },
+              "macos": {
+                "kind": "app-bundle",
+                "basename": null,
+                "extension": ".app",
+                "open": "launch"
+              },
+              "windows": {
+                "kind": "executable",
+                "basename": null,
+                "extension": ".exe",
+                "open": "launch"
+              },
+              "linux": {
+                "kind": "executable",
+                "basename": null,
+                "extension": null,
+                "open": "launch"
+              }
+            },
+            "statuses": [
+              "succeeded",
+              "failed",
+              "refused",
+              "cancelled"
+            ],
+            "refusalCodes": [
+              "secret-in-request",
+              "invalid-request",
+              "path-outside-project",
+              "out-dir-holds-inputs",
+              "out-dir-reserved",
+              "target-unsupported",
+              "target-not-on-host",
+              "unknown-recipe",
+              "duplicate-pack",
+              "lock-invalid",
+              "lock-engine-mismatch",
+              "pack-not-locked",
+              "input-missing",
+              "input-changed",
+              "predicate-schema-mismatch"
+            ],
+            "noteCodes": [
+              "lock-unverified",
+              "inputs-unverified",
+              "lock-pending-merge",
+              "core-forked"
+            ],
+            "failureSteps": {
+              "tool-missing": "validate",
+              "import-failed": "import-world",
+              "compose-failed": "compose-packs",
+              "scene-failed": "build-scene",
+              "compile-failed": "compile",
+              "package-failed": "package",
+              "verify-failed": "verify",
+              "timeout": "any",
+              "engine-crashed": "any",
+              "disk-full": "any"
+            },
+            "issueCodes": [
+              "secret-in-result",
+              "result-invalid",
+              "request-mismatch",
+              "inputs-mismatch",
+              "status-inconsistent",
+              "refusals-differ",
+              "built-refused-request",
+              "unknown-failure",
+              "failure-step-mismatch",
+              "artefact-outside-out-dir",
+              "duplicate-artefact",
+              "missing-primary-artefact",
+              "extra-primary-artefact",
+              "primary-artefact-wrong-kind",
+              "log-out-of-order",
+              "failure-without-error-log"
+            ],
+            "progressIssueCodes": [
+              "secret-in-progress",
+              "progress-invalid",
+              "request-mismatch",
+              "progress-out-of-order",
+              "step-went-back",
+              "fraction-went-back"
+            ],
+            "defaultTimeoutSeconds": 3600,
+            "maxTimeoutSeconds": 86400
+          }
+        }
+      ]
+    },
+    {
+      "name": "build.pathProblem, the two folds and the containment rows: core’s path rules (the macOS fold normalises, the Windows fold does not; a result’s paths compare as spelt)",
+      "steps": [
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": "ok/path.json"
+          },
+          "expect": {
+            "problem": null
+          }
+        },
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": "/abs"
+          },
+          "expect": {
+            "problem": "absolute"
+          }
+        },
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": "~/home"
+          },
+          "expect": {
+            "problem": "absolute"
+          }
+        },
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": "C:/x"
+          },
+          "expect": {
+            "problem": "absolute"
+          }
+        },
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": "a\\b"
+          },
+          "expect": {
+            "problem": "backslash"
+          }
+        },
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": "a/../b"
+          },
+          "expect": {
+            "problem": "parent"
+          }
+        },
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": "a//b"
+          },
+          "expect": {
+            "problem": "empty-segment"
+          }
+        },
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": "./a"
+          },
+          "expect": {
+            "problem": "empty-segment"
+          }
+        },
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": ""
+          },
+          "expect": {
+            "problem": "empty-segment"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "Straße"
+          },
+          "expect": {
+            "folded": "strasse"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "Straße"
+          },
+          "expect": {
+            "folded": "strasse"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "STRAẞE"
+          },
+          "expect": {
+            "folded": "strasse"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "STRAẞE"
+          },
+          "expect": {
+            "folded": "strasse"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "ﬁles"
+          },
+          "expect": {
+            "folded": "files"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "ﬁles"
+          },
+          "expect": {
+            "folded": "files"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "ŉa"
+          },
+          "expect": {
+            "folded": "ʼna"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "ŉa"
+          },
+          "expect": {
+            "folded": "ʼna"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "İstanbul"
+          },
+          "expect": {
+            "folded": "i̇stanbul"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "İstanbul"
+          },
+          "expect": {
+            "folded": "i̇stanbul"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "ΚΟΣ"
+          },
+          "expect": {
+            "folded": "κοσ"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "ΚΟΣ"
+          },
+          "expect": {
+            "folded": "κοσ"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "κος"
+          },
+          "expect": {
+            "folded": "κοσ"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "κος"
+          },
+          "expect": {
+            "folded": "κοσ"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "ᾳ̌"
+          },
+          "expect": {
+            "folded": "α̌ι"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "ᾳ̌"
+          },
+          "expect": {
+            "folded": "αι̌"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "̇ͅ"
+          },
+          "expect": {
+            "folded": "̇ι"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "̇ͅ"
+          },
+          "expect": {
+            "folded": "ι̇"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "KaK"
+          },
+          "expect": {
+            "folded": "kak"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "KaK"
+          },
+          "expect": {
+            "folded": "kak"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "ıi"
+          },
+          "expect": {
+            "folded": "ii"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "ıi"
+          },
+          "expect": {
+            "folded": "ii"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "É"
+          },
+          "expect": {
+            "folded": "é"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "É"
+          },
+          "expect": {
+            "folded": "é"
+          }
+        },
+        {
+          "call": "build.insideDir",
+          "args": {
+            "path": "Builds/hand.json",
+            "dir": "builds"
+          },
+          "expect": {
+            "inside": false
+          }
+        },
+        {
+          "call": "build.insideDirFolded",
+          "args": {
+            "path": "Builds/hand.json",
+            "dir": "builds"
+          },
+          "expect": {
+            "inside": true
+          }
+        },
+        {
+          "call": "build.insideDir",
+          "args": {
+            "path": "strasse/x",
+            "dir": "Straße"
+          },
+          "expect": {
+            "inside": false
+          }
+        },
+        {
+          "call": "build.insideDirFolded",
+          "args": {
+            "path": "strasse/x",
+            "dir": "Straße"
+          },
+          "expect": {
+            "inside": true
+          }
+        },
+        {
+          "call": "build.insideDir",
+          "args": {
+            "path": "İstanbul/x",
+            "dir": "istanbul"
+          },
+          "expect": {
+            "inside": false
+          }
+        },
+        {
+          "call": "build.insideDirFolded",
+          "args": {
+            "path": "İstanbul/x",
+            "dir": "istanbul"
+          },
+          "expect": {
+            "inside": false
+          }
+        },
+        {
+          "call": "build.insideDir",
+          "args": {
+            "path": "i̇stanbul/x",
+            "dir": "İstanbul"
+          },
+          "expect": {
+            "inside": false
+          }
+        },
+        {
+          "call": "build.insideDirFolded",
+          "args": {
+            "path": "i̇stanbul/x",
+            "dir": "İstanbul"
+          },
+          "expect": {
+            "inside": true
+          }
+        },
+        {
+          "call": "build.insideDir",
+          "args": {
+            "path": "ᾳ̌/x",
+            "dir": "α̌ι"
+          },
+          "expect": {
+            "inside": false
+          }
+        },
+        {
+          "call": "build.insideDirFolded",
+          "args": {
+            "path": "ᾳ̌/x",
+            "dir": "α̌ι"
+          },
+          "expect": {
+            "inside": true
+          }
+        },
+        {
+          "call": "build.insideDir",
+          "args": {
+            "path": "̇ͅ/x",
+            "dir": "ι̇"
+          },
+          "expect": {
+            "inside": false
+          }
+        },
+        {
+          "call": "build.insideDirFolded",
+          "args": {
+            "path": "̇ͅ/x",
+            "dir": "ι̇"
+          },
+          "expect": {
+            "inside": true
+          }
+        },
+        {
+          "call": "build.insideDir",
+          "args": {
+            "path": "buildsx/a",
+            "dir": "builds"
+          },
+          "expect": {
+            "inside": false
+          }
+        },
+        {
+          "call": "build.insideDirFolded",
+          "args": {
+            "path": "buildsx/a",
+            "dir": "builds"
+          },
+          "expect": {
+            "inside": false
+          }
+        },
+        {
+          "call": "build.insideDir",
+          "args": {
+            "path": "builds",
+            "dir": "builds"
+          },
+          "expect": {
+            "inside": true
+          }
+        },
+        {
+          "call": "build.insideDirFolded",
+          "args": {
+            "path": "builds",
+            "dir": "builds"
+          },
+          "expect": {
+            "inside": true
+          }
+        },
+        {
+          "call": "build.compareCodeUnits",
+          "args": {
+            "a": "Token",
+            "b": "apiKey"
+          },
+          "expect": {
+            "order": -1
+          }
+        },
+        {
+          "call": "build.compareCodeUnits",
+          "args": {
+            "a": "clientSecret",
+            "b": "client_secret"
+          },
+          "expect": {
+            "order": -1
+          }
+        },
+        {
+          "call": "build.compareCodeUnits",
+          "args": {
+            "a": "😀",
+            "b": "ｚ"
+          },
+          "expect": {
+            "order": -1
+          }
+        },
+        {
+          "call": "build.compareCodeUnits",
+          "args": {
+            "a": "a",
+            "b": "a"
+          },
+          "expect": {
+            "order": 0
+          }
+        },
+        {
+          "call": "build.compareCodeUnits",
+          "args": {
+            "a": "packs.enabled.10",
+            "b": "packs.enabled.2"
+          },
+          "expect": {
+            "order": -1
+          }
+        },
+        {
+          "call": "build.compareCodeUnits",
+          "args": {
+            "a": "b",
+            "b": "a"
+          },
+          "expect": {
+            "order": 1
+          }
+        },
+        {
+          "call": "build.resolvePlatform",
+          "args": {
+            "platform": "host",
+            "host": "windows"
+          },
+          "expect": {
+            "platform": "windows"
+          }
+        },
+        {
+          "call": "build.resolvePlatform",
+          "args": {
+            "platform": "host",
+            "host": "macos"
+          },
+          "expect": {
+            "platform": "macos"
+          }
+        },
+        {
+          "call": "build.resolvePlatform",
+          "args": {
+            "platform": "web",
+            "host": "linux"
+          },
+          "expect": {
+            "platform": "web"
+          }
+        },
+        {
+          "call": "build.resolvePlatform",
+          "args": {
+            "platform": "linux",
+            "host": "macos"
+          },
+          "expect": {
+            "platform": "linux"
+          }
+        },
+        {
+          "call": "build.isPrimaryArtefact",
+          "args": {
+            "platform": "web",
+            "artefact": {
+              "path": "out/index.html",
+              "kind": "web-entry"
+            }
+          },
+          "expect": {
+            "primary": true
+          }
+        },
+        {
+          "call": "build.isPrimaryArtefact",
+          "args": {
+            "platform": "web",
+            "artefact": {
+              "path": "out/main.html",
+              "kind": "web-entry"
+            }
+          },
+          "expect": {
+            "primary": false
+          }
+        },
+        {
+          "call": "build.isPrimaryArtefact",
+          "args": {
+            "platform": "macos",
+            "artefact": {
+              "path": "out/Hand.app",
+              "kind": "app-bundle"
+            }
+          },
+          "expect": {
+            "primary": true
+          }
+        },
+        {
+          "call": "build.isPrimaryArtefact",
+          "args": {
+            "platform": "macos",
+            "artefact": {
+              "path": "out/.app",
+              "kind": "app-bundle"
+            }
+          },
+          "expect": {
+            "primary": false
+          }
+        },
+        {
+          "call": "build.isPrimaryArtefact",
+          "args": {
+            "platform": "windows",
+            "artefact": {
+              "path": "out/Hand.exe",
+              "kind": "executable"
+            }
+          },
+          "expect": {
+            "primary": true
+          }
+        },
+        {
+          "call": "build.isPrimaryArtefact",
+          "args": {
+            "platform": "linux",
+            "artefact": {
+              "path": "out/hand",
+              "kind": "executable"
+            }
+          },
+          "expect": {
+            "primary": true
+          }
+        },
+        {
+          "call": "build.isPrimaryArtefact",
+          "args": {
+            "platform": "linux",
+            "artefact": {
+              "path": "out/hand",
+              "kind": "data"
+            }
+          },
+          "expect": {
+            "primary": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "build.*: the rows’ own refusals are errors coded [invalid-input]; a request, result or events core cannot read are core’s VALUES, not errors",
+      "steps": [
+        {
+          "call": "build.plan",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "context": []
+          },
+          "expectError": "`context` must be a JSON object"
+        },
+        {
+          "call": "build.plan",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "context": {
+              "files": [
+                "worlds_ir/hand.json"
+              ]
+            }
+          },
+          "expectError": "`context.files` must be a JSON object"
+        },
+        {
+          "call": "build.checkResult",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "succeeded",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [
+                {
+                  "path": "exports/web/index.html",
+                  "kind": "web-entry",
+                  "bytes": 5000,
+                  "primary": true
+                },
+                {
+                  "path": "exports/web/hand.pck",
+                  "kind": "data",
+                  "bytes": 999000
+                },
+                {
+                  "path": "exports/web/build.log",
+                  "kind": "log",
+                  "bytes": 70000
+                }
+              ],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            },
+            "context": {
+              "predicateSchemaHash": 5
+            }
+          },
+          "expectError": "`context.predicateSchemaHash` must be a string"
+        },
+        {
+          "call": "build.checkResult",
+          "args": {
+            "request": {
+              "schema": "insimul.build-request/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "host": {
+                "os": "linux"
+              },
+              "world": {
+                "id": "hand-world",
+                "file": "worlds_ir/hand.json",
+                "sha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              },
+              "recipe": {
+                "id": "hand-recipe",
+                "file": "recipes/hand.json",
+                "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+              },
+              "packs": {
+                "lock": {
+                  "file": "packs.lock.json",
+                  "sha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "enabled": [
+                  "saves",
+                  "inventory"
+                ]
+              },
+              "target": {
+                "platform": "web",
+                "configuration": "development",
+                "outDir": "exports/web"
+              },
+              "options": {
+                "clean": true,
+                "timeoutSeconds": 600
+              }
+            },
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "succeeded",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [
+                {
+                  "path": "exports/web/index.html",
+                  "kind": "web-entry",
+                  "bytes": 5000,
+                  "primary": true
+                },
+                {
+                  "path": "exports/web/hand.pck",
+                  "kind": "data",
+                  "bytes": 999000
+                },
+                {
+                  "path": "exports/web/build.log",
+                  "kind": "log",
+                  "bytes": 70000
+                }
+              ],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            },
+            "context": "none"
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "build.size",
+          "args": {
+            "bytes": "5"
+          },
+          "expectError": "`bytes` must be a finite number"
+        },
+        {
+          "call": "build.size",
+          "args": {},
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "done",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [
+                {
+                  "path": "exports/web/index.html",
+                  "kind": "web-entry",
+                  "bytes": 5000,
+                  "primary": true
+                },
+                {
+                  "path": "exports/web/hand.pck",
+                  "kind": "data",
+                  "bytes": 999000
+                },
+                {
+                  "path": "exports/web/build.log",
+                  "kind": "log",
+                  "bytes": 70000
+                }
+              ],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            }
+          },
+          "expectError": "`result.status` must be one of"
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "host"
+              },
+              "status": "succeeded",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [
+                {
+                  "path": "exports/web/index.html",
+                  "kind": "web-entry",
+                  "bytes": 5000,
+                  "primary": true
+                },
+                {
+                  "path": "exports/web/hand.pck",
+                  "kind": "data",
+                  "bytes": 999000
+                },
+                {
+                  "path": "exports/web/build.log",
+                  "kind": "log",
+                  "bytes": 70000
+                }
+              ],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            }
+          },
+          "expectError": "`result.target.platform` must be one of"
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "succeeded",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [
+                {
+                  "kind": "data",
+                  "bytes": "1"
+                }
+              ],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            }
+          },
+          "expectError": "`result.artefacts[0].bytes` must be a finite number"
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "failed",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000,
+              "error": {
+                "code": "x"
+              }
+            }
+          },
+          "expectError": "`result.error.detail` must be a string"
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-unreal-web",
+              "engine": "unreal",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "refused",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": null,
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [
+                {
+                  "code": "x"
+                }
+              ],
+              "artefacts": [],
+              "logs": [],
+              "durationMs": 0
+            }
+          },
+          "expectError": "`result.refusals[0].detail` must be a string"
+        },
+        {
+          "call": "build.resultLine",
+          "args": {
+            "result": {
+              "schema": "insimul.build-result/1",
+              "requestId": "hand-godot-web",
+              "engine": "godot",
+              "target": {
+                "platform": "web",
+                "configuration": "development"
+              },
+              "status": "succeeded",
+              "inputs": {
+                "world": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                "recipe": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+                "lock": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+              },
+              "refusals": [],
+              "artefacts": [
+                {
+                  "path": "exports/web/index.html",
+                  "kind": "web-entry",
+                  "bytes": 5000,
+                  "primary": true
+                },
+                {
+                  "path": "exports/web/hand.pck",
+                  "kind": "data",
+                  "bytes": 999000
+                },
+                {
+                  "path": "exports/web/build.log",
+                  "kind": "log",
+                  "bytes": 70000
+                }
+              ],
+              "logs": [
+                {
+                  "seq": 1,
+                  "level": "info",
+                  "step": "validate",
+                  "message": "ok"
+                },
+                {
+                  "seq": 2,
+                  "level": "info",
+                  "step": "package",
+                  "message": "ok"
+                }
+              ],
+              "durationMs": 41000
+            },
+            "hideDetails": "yes"
+          },
+          "expectError": "`hideDetails` must be a boolean"
+        },
+        {
+          "call": "build.progressLine",
+          "args": {
+            "event": {
+              "step": "compile"
+            }
+          },
+          "expectError": "`event.fraction` must be a finite number"
+        },
+        {
+          "call": "build.progressLine",
+          "args": {
+            "event": {
+              "step": "link",
+              "fraction": 0.5
+            }
+          },
+          "expectError": "`event.step` must be one of"
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": 5
+          },
+          "expectError": "`key` must be a string"
+        },
+        {
+          "call": "build.looksLikeSecret",
+          "args": {},
+          "expectError": "`value` must be a string"
+        },
+        {
+          "call": "build.findSecrets",
+          "args": {},
+          "expectError": "`value` must be sent"
+        },
+        {
+          "call": "build.pathProblem",
+          "args": {
+            "path": null
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {},
+          "expectError": "`path` must be a string"
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": [
+              "a"
+            ]
+          },
+          "expectError": "`path` must be a string"
+        },
+        {
+          "call": "build.insideDir",
+          "args": {
+            "path": "a"
+          },
+          "expectError": "`dir` must be a string"
+        },
+        {
+          "call": "build.insideDirFolded",
+          "args": {
+            "dir": "a"
+          },
+          "expectError": "`path` must be a string"
+        },
+        {
+          "call": "build.compareCodeUnits",
+          "args": {
+            "a": "x",
+            "b": 1
+          },
+          "expectError": "`b` must be a string"
+        },
+        {
+          "call": "build.resolvePlatform",
+          "args": {
+            "platform": "host",
+            "host": "beos"
+          },
+          "expectError": "`host` must be one of"
+        },
+        {
+          "call": "build.resolvePlatform",
+          "args": {
+            "platform": "ps5",
+            "host": "linux"
+          },
+          "expectError": "`platform` must be one of"
+        },
+        {
+          "call": "build.isPrimaryArtefact",
+          "args": {
+            "platform": "host",
+            "artefact": {
+              "path": "a",
+              "kind": "b"
+            }
+          },
+          "expectError": "`platform` must be one of"
+        },
+        {
+          "call": "build.isPrimaryArtefact",
+          "args": {
+            "platform": "web",
+            "artefact": {
+              "path": "a"
+            }
+          },
+          "expectError": "`artefact.kind` must be a string"
+        }
+      ]
+    }
+  ]
+}

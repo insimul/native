@@ -278,6 +278,24 @@ game; **meta** = about the bridge itself.
 | `traversal.save.read` | `{ block? }` → `{ ok: true, value }` or `{ ok: false, keys }` | `traversal/traversal-save` `readTraversalBlock` | P9e traversal layers |
 | `traversal.session.create` | `{ links?, tuning?, vehicles?, fastTravel?, seed?, stamina?, probe?, locomotion?, personal? }` → `{ session, view }` (view: the four layers' state) | `game-engine/logic/TraversalPlanner`, `VehicleRegistry`, `FastTravelDirector`, `StaminaPool`, `GameEventBus` (wired as core's doc §1) | P9e traversal layers (a session) |
 | `traversal.session.apply` | `{ session, ops }` → `{ results, view }` (each op one core call under a named key, plus `events`, `orders`, `clock`; ops in "The traversal layers") | the same three layers, `traversal/personal-vehicles`, `traversal/traversal-save` | P9e traversal layers (a session) |
+| `build.contract` | `{}` → core's tables, as `conformance/build/headless.json`'s `contract` states them (less `secretFixtures`, `rules`, `schemas.jsonSchemas`): schema ids, platforms, steps, artefact kinds, primary artefacts, statuses, refusal / note / issue / progress-issue codes in order, failure steps, reserved folders, timeouts, `secretKeyStandIn`, `hiddenDetail` | `build/headless-build` constants, `system-packs/schema` `SYSTEM_PACKS_LOCK_SCHEMA` | P10 headless build |
+| `build.plan` | `{ request, context?: { lock?, files?, predicateSchemaHash? } }` → `{ ok, refusals: [{ code, field, detail }], notes: [{ code, field, detail }], plan }` | `build/headless-build` `planBuild` | P10 headless build |
+| `build.checkResult` | `{ request, result, context? }` → `{ ok, issues: [{ code, field, detail }], summary: { status, platform, primary, bytes, open, line } \| null }` | `build/headless-build` `checkBuildResult` | P10 headless build |
+| `build.checkProgress` | `{ request, events }` → `{ ok, issues: [{ code, field, detail }], summary: { step, stepNumber, steps, fraction, canStop, line } \| null }` | `build/headless-build` `checkBuildProgress` | P10 headless build |
+| `build.size` | `{ bytes }` → `{ text }` | `build/headless-build` `formatBuildSize` | P10 headless build |
+| `build.resultLine` | `{ result, hideDetails? }` → `{ line }` | `build/headless-build` `buildResultLine` | P10 headless build |
+| `build.progressLine` | `{ event: { step, fraction } }` → `{ line }` | `build/headless-build` `buildProgressLine` | P10 headless build |
+| `build.isSecretKey` | `{ key }` → `{ secret }` | `build/headless-build` `isSecretKey` | P10 headless build |
+| `build.looksLikeSecret` | `{ value }` → `{ secret }` | `build/headless-build` `looksLikeSecret` | P10 headless build |
+| `build.findSecrets` | `{ value }` (any JSON) → `{ fields }` (dotted, code-unit sorted; a credential key as `<credential>`) | `build/headless-build` `findSecrets` | P10 headless build |
+| `build.pathProblem` | `{ path }` → `{ problem }` (`absolute`, `parent`, `backslash`, `empty-segment` or null) | `build/headless-build` `projectPathProblem` | P10 headless build |
+| `build.foldMacos` | `{ path }` → `{ folded }` | `build/headless-build` `foldPathCaseMacos` | P10 headless build |
+| `build.foldWindows` | `{ path }` → `{ folded }` | `build/headless-build` `foldPathCaseWindows` | P10 headless build |
+| `build.insideDir` | `{ path, dir }` → `{ inside }` (as spelt) | `build/headless-build` `isInsideDir` | P10 headless build |
+| `build.insideDirFolded` | `{ path, dir }` → `{ inside }` (under either fold) | `build/headless-build` `isInsideDirFolded` | P10 headless build |
+| `build.compareCodeUnits` | `{ a, b }` → `{ order }` (-1, 0, 1) | `build/headless-build` `compareCodeUnits` | P10 headless build |
+| `build.resolvePlatform` | `{ platform, host }` → `{ platform }` | `build/headless-build` `resolveBuildPlatform` | P10 headless build |
+| `build.isPrimaryArtefact` | `{ platform, artefact: { path, kind } }` → `{ primary }` | `build/headless-build` `isPrimaryArtefactFor` | P10 headless build |
 | `ui.genreHud` | `{ op: config, view, genre_view, config_of or view_of, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`; `config_of` / `view_of` take a game's own settings, `{ genreConfig }` or `{ recipe, world? }`, plus `state?` for `view_of`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }` (`unresolved_recipe` also carries `reason`); an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`, `genreHudConfigOf`; `game-genres/resolution` `resolveGameGenre` for a recipe) | P9a.native (U84); `config_of` / `view_of` PL.native-genre-hud-config (U92(2)) |
 | `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
@@ -1499,6 +1517,83 @@ with no hosts, and the `[invalid-input]` errors.
 177 → 181 modules). The bundle goes from 1,773,586 bytes to 1,847,883 (+74,297).
 The 129 cases take about 40 ms under QuickJS.
 
+### The headless build rows: plan, result, progress, credentials, folds (PL.native-headless-build)
+
+Core's P10 headless build contract (P10.core: `src/build/headless-build.ts`,
+`docs/headless-build.md`; the schemas `insimul.build-request/1`,
+`insimul.build-result/1`, `insimul.build-progress/1`) is a set of rows (U106(1),
+U107), so an engine binds core's build contract instead of keeping a copy of it
+(Unreal's interim `Portable/InsimulHeadlessBuild`, which
+`P10.unreal.retire-headless-build-copy` retires). Core holds no engine build code,
+and neither do these rows: they say what a build is asked for and what it answers.
+
+The rows are named `build.<fn>`, one core function each, plus the contract's tables:
+
+- **The three checkers answer core's whole answer**, details included.
+  `build.plan { request, context? }` is `planBuild`: `{ ok, refusals, notes, plan }`,
+  each refusal and note `{ code, field, detail }`, in core's order (the code lists'
+  order, then the field by UTF-16 code unit). `build.checkResult { request, result,
+  context? }` is `checkBuildResult` (`{ ok, issues, summary }`, the summary E6's Build
+  row: `status`, `platform`, `primary`, `bytes`, `open`, `line`), and
+  `build.checkProgress { request, events }` is `checkBuildProgress` (the summary E6's
+  Busy state from the last event). A refusal or an issue is a VALUE. Core's corpus
+  pins codes and fields; the details are creator sentences, and a hand case pins
+  them as core words them.
+- **What a request, a result or the events hold goes to core as sent**: a wrong
+  shape is core's `invalid-request`, `result-invalid` or `progress-invalid`, never a
+  row error. The rows' own checks (`[invalid-input]`) are on the plan context
+  (`files` an object, `predicateSchemaHash` a string; `lock` any JSON, `null`
+  included, because core parses it; an absent or `null` context is core's `{}`, so
+  the plan notes `lock-unverified` and `inputs-unverified`), the strings the scan and
+  path rows take, and the parts of a parsed result or event the line rows read.
+- **The lines and the size**: `build.resultLine { result, hideDetails? }` (core's
+  `buildResultLine`; with `hideDetails` the engine's words are `hiddenDetail`),
+  `build.progressLine { event }` ("Building… 41%", a half rounding up, or
+  "Building… 3 of 7") and `build.size { bytes }` ("999 kB", "1 MB").
+- **The credential scan**: `build.isSecretKey`, `build.looksLikeSecret` and
+  `build.findSecrets` (dotted fields, code-unit sorted, a key that is itself a
+  credential named `<credential>`, `secretKeyStandIn`). A credential key is matched
+  after JavaScript's `toLowerCase`, as core's code does; core's corpus states no key
+  that lower-cases through a non-ASCII letter (the Kelvin sign, `İ`, `ſ`), so the
+  rows answer what core's function answers and a hand case pins it on both legs.
+  Unreal's engine-side `RedactCredentialAssignment` (a build log's `NAME=value`
+  lines) stays Unreal's and calls these.
+- **The path rules**: `build.pathProblem`, the two case folds `build.foldMacos`
+  (NFD, each code point's full lower, upper, lower case, then NFC) and
+  `build.foldWindows` (the same without normalising), `build.insideDir` (as spelt:
+  how a result's paths are held to `outDir`) and `build.insideDirFolded` (under
+  either fold: the plan's `out-dir-holds-inputs` and `out-dir-reserved`), with
+  `build.compareCodeUnits`, `build.resolvePlatform` and `build.isPrimaryArtefact`.
+  The folds run in QuickJS with QuickJS's Unicode tables; `corebridge_cases_parity`
+  holds them to V8's on the hand cases' fold vectors, and the corpus's fold cases run
+  through `build.plan` in QuickJS. QuickJS 2025-04-26's tables are Unicode 16.0's:
+  measured over every code point against Node 26 (Unicode 17.0), both folds differ on
+  28 code points, all case pairs Unicode 17.0 added (U+A7CE, U+A7D2, U+A7D4,
+  U+16EA0–U+16EB8), and the macOS fold also on strings holding marks 17.0 added (their
+  combining classes). Core names no Unicode version and its corpus holds none of these,
+  so the rows answer what this engine's tables say.
+- **`build.contract`** answers the tables `conformance/build/headless.json`'s
+  `contract` states, less the corpus's own `secretFixtures` and `rules` and
+  `schemas.jsonSchemas` (core's file names).
+
+Core's corpus `conformance/build/headless.json` (233 cases at 6cd4b4e) is copied
+byte for byte as its own set (`BUILD_CORPUS_FROM`) to
+`vendor/core/conformance/headless-build/headless.json`, one folder over from core's
+(`build/` is a folder name `.gitignore` and the `build-output-tree` scan rule read as
+build output; the bytes are core's, and `--check --core` compares them with core's
+`conformance/build/headless.json`), and driven by `tests/build_corpus.cpp` (ctest `build_corpus`): every
+`<<secret:NAME>>` marker expanded from the file's own `secretFixtures` (core's
+`expandSecretFixtures`), every case through `build.plan`, `.checkResult`,
+`.checkProgress` or `.size` and cut to core's runner's shape; `build.contract` held to
+the file's contract; no credential repeated in a detail or a line; and every out-dir
+refusal a plan case expects asked of the fold rows (which fold catches it: the corpus
+has two cases only the macOS fold catches and one only the Windows fold catches), and
+every accepted plan's inputs clear of its build folder under them.
+`build_corpus_negative` perturbs every case's expectation and, on purpose, a
+credential not caught, a credential shown (as an expectation, and planted in an
+answer the leak check must catch), a path escaping the build folder (by fold), an
+artefact outside it and a path outside the project; all must be refused.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
@@ -1593,6 +1688,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 | `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |
 | `traversal_corpus`, `traversal_corpus_negative` | core's seven P9e corpora (the kernels' `affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`, and the layers' `session.json`, `mounts.json`, `save.json`; 129 cases at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step, a session case one `traversal.session` with one apply per step, a mounts run one personal row per step; each systems file's catalog, ops and steps held to core's and every step driven), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does |
+| `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's
