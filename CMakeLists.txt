@@ -905,38 +905,44 @@ add_test(NAME survival_corpus_negative COMMAND insimulcore_survival_corpus --neg
 set_tests_properties(survival_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*survival_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*survival_corpus --negative: PASS")
 
-# traversal_corpus (PL.native-traversal-rows slice 1, rulings U106(1), U107 and
-# U36): core's P9e kernels (P9e.core: src/traversal/traversal.ts and its graph
-# facts, vehicles.ts and vehicle-facts.ts, fast-travel.ts and fast-travel-facts.ts,
-# src/ground-seating/ground-seat.ts) as libinsimulcore's `traversal.*` rows, held to
-# core's own corpora: conformance/traversal/{affordances,vehicles,fast-travel,
-# ground-seating}.json, COPIED byte for byte into
+# traversal_corpus (PL.native-traversal-rows, rulings U106(1), U107 and U36):
+# core's P9e traversal (P9e.core) as libinsimulcore's `traversal.*` rows, held to
+# core's own seven corpora, COPIED byte for byte into
 # corebridge/vendor/core/conformance/traversal/ at the pin
 # (vendor-core-bundle.mjs TRAVERSAL_CORPUS_FILES; hashed, and byte-compared under
-# --check --core). tests/traversal_corpus.cpp drives EVERY case through the rows:
-# the three kernel files compose each case's record from one row per core function,
-# as core's corpus test composes it from core's functions, and drive it again with
-# its lists reversed (core's order guard); ground-seating sends each case's input to
-# its op's row, a settle one row per step. Slice 2 (session.json, mounts.json,
-# save.json: the stateful layers) adds its files here. Unreal's
-# Portable/InsimulTraversal is the interim copy these rows and slice 2's retire
-# (P9e.unreal.retire-traversal-copy). The regex demands each file's driven line with
-# every part driven and 0 undriven, in file order, and holds no ';' outside it.
+# --check --core). Slice 1, the stateless kernels (src/traversal/traversal.ts and
+# its graph facts, vehicles.ts and vehicle-facts.ts, fast-travel.ts and
+# fast-travel-facts.ts, src/ground-seating/ground-seat.ts): affordances.json,
+# vehicles.json and fast-travel.json compose each case's record from one row per
+# core function, as core's corpus test composes it from core's functions, and drive
+# it again with its lists reversed (core's order guard); ground-seating.json sends
+# each case's input to its op's row, a settle one row per step. Slice 2, the
+# stateful layers: session.json runs each case in one traversal.session (core's
+# TraversalPlanner, VehicleRegistry and FastTravelDirector wired together with a
+# StaminaPool and the personal vehicles), each step composed from the session's ops;
+# mounts.json through the traversal.personal.* rows (src/traversal/personal-vehicles.ts);
+# save.json through traversal.save.* (src/traversal/traversal-save.ts) and a
+# session's load. Unreal's Portable/InsimulTraversal is the interim copy these rows
+# retire (P9e.unreal.retire-traversal-copy). The regex demands each file's driven
+# line with every part driven and 0 undriven, in file order, and holds no ';'
+# outside it; the runner also fails a header step no case drives.
 add_executable(insimulcore_traversal_corpus tests/traversal_corpus.cpp tests/radiant/json_value.cpp)
 target_include_directories(insimulcore_traversal_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 target_link_libraries(insimulcore_traversal_corpus PRIVATE insimulcore)
 set(INSIMUL_TRAVERSAL_CORPORA ${INSIMUL_PROPS_CORPUS}/traversal/affordances.json ${INSIMUL_PROPS_CORPUS}/traversal/vehicles.json
-  ${INSIMUL_PROPS_CORPUS}/traversal/fast-travel.json ${INSIMUL_PROPS_CORPUS}/traversal/ground-seating.json)
+  ${INSIMUL_PROPS_CORPUS}/traversal/fast-travel.json ${INSIMUL_PROPS_CORPUS}/traversal/ground-seating.json
+  ${INSIMUL_PROPS_CORPUS}/traversal/session.json ${INSIMUL_PROPS_CORPUS}/traversal/mounts.json
+  ${INSIMUL_PROPS_CORPUS}/traversal/save.json)
 add_test(NAME traversal_corpus COMMAND insimulcore_traversal_corpus ${INSIMUL_TRAVERSAL_CORPORA})
 set_tests_properties(traversal_corpus PROPERTIES
-  PASS_REGULAR_EXPRESSION "traversal-affordances: [0-9]+ case[(]s[)], driven resolve [1-9][0-9]*, best [1-9][0-9]*, route [1-9][0-9]*, graphFacts [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal-vehicles: [0-9]+ case[(]s[)], driven resolve [1-9][0-9]*, apply [1-9][0-9]*, actions [1-9][0-9]*, seats [1-9][0-9]*, modeFact [1-9][0-9]*, stateFacts [1-9][0-9]*, stateDelta [1-9][0-9]*, anothers [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal-fast-travel: [0-9]+ case[(]s[)], driven route [1-9][0-9]*, plan [1-9][0-9]*, ceiling [1-9][0-9]*, hours [1-9][0-9]*, arrival [1-9][0-9]*, discovery [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal/ground-seating: [0-9]+ case[(]s[)], driven tuning [1-9][0-9]*, footprint [1-9][0-9]*, ground [1-9][0-9]*, target [1-9][0-9]*, stand [1-9][0-9]*, moved [1-9][0-9]*, settle [1-9][0-9]*. 0 undriven\n.*traversal_corpus: PASS")
+  PASS_REGULAR_EXPRESSION "traversal-affordances: [0-9]+ case[(]s[)], driven resolve [1-9][0-9]*, best [1-9][0-9]*, route [1-9][0-9]*, graphFacts [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal-vehicles: [0-9]+ case[(]s[)], driven resolve [1-9][0-9]*, apply [1-9][0-9]*, actions [1-9][0-9]*, seats [1-9][0-9]*, modeFact [1-9][0-9]*, stateFacts [1-9][0-9]*, stateDelta [1-9][0-9]*, anothers [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal-fast-travel: [0-9]+ case[(]s[)], driven route [1-9][0-9]*, plan [1-9][0-9]*, ceiling [1-9][0-9]*, hours [1-9][0-9]*, arrival [1-9][0-9]*, discovery [1-9][0-9]*, order [1-9][0-9]*. 0 undriven\n.*traversal/ground-seating: [0-9]+ case[(]s[)], driven tuning [1-9][0-9]*, footprint [1-9][0-9]*, ground [1-9][0-9]*, target [1-9][0-9]*, stand [1-9][0-9]*, moved [1-9][0-9]*, settle [1-9][0-9]*. 0 undriven\n.*traversal/session: [0-9]+ case[(]s[)], driven run [1-9][0-9]*. 0 undriven\n.*traversal/mounts: [0-9]+ case[(]s[)], driven tuning [1-9][0-9]*, pace [1-9][0-9]*, modes [1-9][0-9]*, run [1-9][0-9]*. 0 undriven\n.*traversal/save: [0-9]+ case[(]s[)], driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*traversal_corpus: PASS")
 # Its negative pass, as Unreal's traversal_corpus_negative: every case's expectation
 # perturbed (its last leaf) must be refused, each file's count and the total stated;
 # the runner prints PASS only when every case of every file was refused (refused ==
 # cases, none accepted, no case undriven).
 add_test(NAME traversal_corpus_negative COMMAND insimulcore_traversal_corpus --negative ${INSIMUL_TRAVERSAL_CORPORA})
 set_tests_properties(traversal_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*traversal_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*traversal_corpus --negative: PASS")
+  PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*traversal_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*traversal_corpus --negative: PASS")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

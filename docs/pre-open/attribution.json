@@ -2,10 +2,10 @@
   "tool": "scripts/check-attribution.mjs",
   "repository": {
     "root": "native-pl-native-traversal-rows-kernels",
-    "gitHead": "1905e2fff8b704d11920fcc684b5ef0d8c38f57f"
+    "gitHead": "b6c558be7d1a435bcc00946fbd63f177922a97d8"
   },
   "coverage": {
-    "trackedFiles": 441,
+    "trackedFiles": 445,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,

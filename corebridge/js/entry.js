@@ -197,6 +197,33 @@ import {
 	unseat,
 } from '@insimul/core/ground-seating/ground-seat';
 
+// ── traversal: the stateful layers (P9e; PL.native-traversal-rows slice 2, U106(1)) ──
+// Core's three decision layers wired as core's doc (docs/traversal-systems.md §1, §8)
+// wires them — a `TraversalPlanner` over the shared `StaminaPool`, a `VehicleRegistry`
+// whose driver it follows on `traversal_completed`, a `FastTravelDirector` over the
+// same planner with a clock — plus the personal vehicles (`personal-vehicles`), the
+// lent-mode record (`mode-lending`) and the save block (`traversal-save`). Never
+// `traversal/systems-corpus`, core's corpus runner: tests/traversal_corpus.cpp drives
+// session.json, mounts.json and save.json through these rows as that runner drives core.
+import { TraversalPlanner } from '@insimul/core/game-engine/logic/TraversalPlanner';
+import { VehicleRegistry } from '@insimul/core/game-engine/logic/VehicleRegistry';
+import { FastTravelDirector } from '@insimul/core/game-engine/logic/FastTravelDirector';
+import { MOVEMENT_STANCES, MOVEMENT_URGENCIES } from '@insimul/core/game-engine/host-contracts';
+import {
+	cyclePersonalVehicle,
+	dismountPersonalVehicle,
+	initialPersonalVehicles,
+	mountPersonalVehicle,
+	personalPace,
+	personalVehicleLabel,
+	personalVehicleModes,
+	personalVehicleSaveRows,
+	personalVehiclesFromSave,
+	personalVehicleTuning,
+} from '@insimul/core/traversal/personal-vehicles';
+import { canonicalLent, lendMode, personalLender, returnMode, vehicleLender } from '@insimul/core/traversal/mode-lending';
+import { TRAVERSAL_EXTENSION_KEY, readTraversalBlock, traversalBlockOf, traversalSaveBlock } from '@insimul/core/traversal/traversal-save';
+
 // ── genre and module activation ───────────────────────────────────────────────
 import { CAMERA_MODES, DEFAULT_GENRE_ID, GENRE_IDS, getAllGenres } from '@insimul/core/game-genres/registry';
 import { RECIPE_GENRE_BINDINGS, RECIPE_IDS } from '@insimul/core/game-genres/recipes';
@@ -1211,6 +1238,149 @@ function seatStateArg(method, value) {
 /** The ground-seat tuning core reads from the pack's `params` (absent is core's default). */
 function groundSeatTuningOf(args) {
 	return groundSeatTuning(args.params ?? {});
+}
+
+// ── traversal: the stateful layers (PL.native-traversal-rows slice 2) ─────────
+// The same check rule as slice 1's: `[invalid-input]` on what core iterates,
+// spreads or reads members of unread, and on the enumerations its types declare.
+
+/** A lent-mode record `{ <mode>: [<lender>, …] }`: core spreads each lender list into a Set. */
+function lentArg(method, value, name) {
+	needObject(method, value, name);
+	for (const [mode, lenders] of Object.entries(value)) stringList(method, lenders, `${name}.${mode}`);
+	return value;
+}
+
+/** A `string | null` core's types declare (a personal vehicle kind; absent is null). */
+function kindOrNull(method, value, name) {
+	if (value === undefined || value === null) return null;
+	return needString(method, value, name);
+}
+
+/**
+ * The pack's personal-vehicle `params` (`PersonalVehicleParams`), absent `{}`: core
+ * iterates `kinds` and `cycle` and reads `onFoot`'s members.
+ */
+function personalParamsArg(method, value, name) {
+	if (value === undefined || value === null) return {};
+	needObject(method, value, name);
+	optionalArg(value.kinds, (v) => needArray(method, v, `${name}.kinds`));
+	optionalArg(value.cycle, (v) => needArray(method, v, `${name}.cycle`));
+	optionalArg(value.onFoot, (v) => needObject(method, v, `${name}.onFoot`));
+	return value;
+}
+
+/** The personal-vehicle tuning a row plays with: core's `personalVehicleTuning` over `args.params`. */
+function personalTuningOf(method, args) {
+	return personalVehicleTuning(coded('invalid-input', () => personalParamsArg(method, args.params, 'params')));
+}
+
+/** A `PersonalVehicleState` `{ riding: { <actor>: <kind> } }` (what the last personal row answered). */
+function personalStateArg(method, value) {
+	needObject(method, value, 'state');
+	needObject(method, value.riding, 'state.riding');
+	return value;
+}
+
+/** A saved `riding` map `{ <actor>: <kind> }` (absent: nobody riding). */
+function ridingArg(method, value, name) {
+	return optionalArg(value, (v) => needObject(method, v, name));
+}
+
+/**
+ * The parts `traversalSaveBlock` copies, each one a layer's `serialize()` (or null):
+ * core maps `planner.actors` and `.blocked`, spreads each actor's `modes` and reads
+ * its `lent`, maps `vehicles.vehicles` and spreads each one's `occupants`, spreads
+ * `fastTravel.discovered`; `riding` is the save rows `{ <actor>: <kind> }`.
+ */
+function traversalSavePartsOf(method, args) {
+	return coded('invalid-input', () => {
+		const planner = optionalArg(args.planner, (p) => {
+			needObject(method, p, 'planner');
+			objectList(method, p.actors, 'planner.actors').forEach((a, i) => {
+				stringList(method, a.modes, `planner.actors[${i}].modes`);
+				optionalArg(a.lent, (l) => lentArg(method, l, `planner.actors[${i}].lent`));
+			});
+			objectList(method, p.blocked, 'planner.blocked');
+			return p;
+		});
+		const vehicles = optionalArg(args.vehicles, (v) => {
+			needObject(method, v, 'vehicles');
+			objectList(method, v.vehicles, 'vehicles.vehicles').forEach((row, i) => needArray(method, row.occupants, `vehicles.vehicles[${i}].occupants`));
+			return v;
+		});
+		const fastTravel = optionalArg(args.fastTravel, (f) => {
+			needObject(method, f, 'fastTravel');
+			needArray(method, f.discovered, 'fastTravel.discovered');
+			return f;
+		});
+		const riding = ridingArg(method, args.riding, 'riding');
+		return { planner: planner ?? null, vehicles: vehicles ?? null, fastTravel: fastTravel ?? null, riding: riding === undefined ? null : { riding } };
+	});
+}
+
+/**
+ * A traversal session's view: what each layer remembers, as a save carries it —
+ * core's `TraversalPlanner.serialize()`, `VehicleRegistry.serialize()`,
+ * `FastTravelDirector.serialize()` and `personalVehicleSaveRows()` of who rides what.
+ */
+function traversalSessionView(s) {
+	return plain({
+		planner: s.planner.serialize(),
+		vehicles: s.registry.serialize(),
+		fastTravel: s.director.serialize(),
+		riding: personalVehicleSaveRows(s.riding),
+	});
+}
+
+/** A scripted probe's answers `{ <link id>: passable }` (a link not listed is unanswered, so passable). */
+function probeTableArg(method, value, name) {
+	needObject(method, value, name);
+	for (const [link, passable] of Object.entries(value)) {
+		if (typeof passable !== 'boolean') throw refuse(method, `\`${name}.${link}\` must be a boolean`);
+	}
+	return value;
+}
+
+/** A scripted locomotion host's `stuck` `{ <destination>: <where the host leaves the actor> }`. */
+function stuckTableArg(method, value, name) {
+	needObject(method, value, name);
+	for (const [to, at] of Object.entries(value)) needString(method, at, `${name}.${to}`);
+	return value;
+}
+
+const hasOwn = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+
+/**
+ * One personal-vehicle verb inside a traversal session, wired as core's doc §8 says a
+ * host wires it: the rider's registry vehicle (`VehicleRegistry.vehicleOf`) is the
+ * request's `inVehicle`; a performed verb hands `personalVehicleModes(…)` of the
+ * planner's modes and lent record to `TraversalPlanner.setModes(actor, modes, lent)`.
+ * Answers `{ result, delta }`: core's `PersonalVehicleResult` without `state` (the
+ * session holds it; the view's `riding`), and the planner's delta (null when refused).
+ */
+async function personalSessionVerb(s, verb, op) {
+	const m = 'traversal.session.apply';
+	const actor = op.actor;
+	const request = { actor, inVehicle: s.registry.vehicleOf(actor) ?? null };
+	const before = hasOwn(s.riding.riding, actor) ? s.riding.riding[actor] : null;
+	let r;
+	if (verb === 'mount') {
+		const kind = coded('invalid-input', () => needString(m, op.kind, 'kind'));
+		r = mountPersonalVehicle(s.riding, { ...request, kind }, s.ptuning);
+	} else if (verb === 'dismount') {
+		r = dismountPersonalVehicle(s.riding, request, s.ptuning);
+	} else {
+		r = cyclePersonalVehicle(s.riding, request, s.ptuning);
+	}
+	s.riding = r.state;
+	let delta = null;
+	if (r.ok) {
+		const held = personalVehicleModes({ modes: s.planner.modesOf(actor), lent: s.planner.lentOf(actor) }, before, r.kind, s.ptuning);
+		delta = await s.planner.setModes(actor, held.modes, held.lent);
+	}
+	const { state: _state, ...result } = r;
+	return { result, delta };
 }
 
 /**
@@ -3744,6 +3914,368 @@ const METHODS = {
 
 	/** `traversal.groundSeating.unseat {}` → `{ state }` — core's `unseat`: whenever nothing carries the body (switched off, or standing with its agent off). */
 	'traversal.groundSeating.unseat': () => ({ state: plain(unseat()) }),
+
+	// ── traversal: the stateful layers (P9e; PL.native-traversal-rows slice 2, U106(1)) ──
+	// The personal vehicles and the lent-mode record are pure functions, one row each
+	// (`traversal.personal.*`, `traversal.lending.*`); the save block is two
+	// (`traversal.save.*`). The three decision layers are ONE session,
+	// `traversal.session.*`, because core wires them together (doc §1): the planner
+	// spends the shared meter and names the driven vehicle in its orders, the registry
+	// lends a driver its mode through the planner and follows the driver on
+	// `traversal_completed`, the director plans over the planner's graph and moves the
+	// traveller through it. tests/traversal_corpus.cpp drives conformance/traversal/
+	// mounts.json through the personal rows, save.json through the save rows and a
+	// session's `load`, and session.json through the session.
+
+	/** `traversal.personal.tuning { params? }` → `{ tuning }` — core's `personalVehicleTuning`: the kinds merged by id over Babylon's bicycle and horse, the cycle, on-foot rates and mounted strafe/back, in thousandths. */
+	'traversal.personal.tuning': (args) => ({ tuning: plain(personalTuningOf('traversal.personal.tuning', args)) }),
+
+	/** `traversal.personal.pace { kind, params? }` → `{ pace }` — core's `personalPace`: the controller's factors for a rider on `kind` (null, or a kind the world does not author: on foot). */
+	'traversal.personal.pace': (args) => {
+		const m = 'traversal.personal.pace';
+		const kind = coded('invalid-input', () => kindOrNull(m, args.kind, 'kind'));
+		return { pace: plain(personalPace(kind, personalTuningOf(m, args))) };
+	},
+
+	/** `traversal.personal.label { kind, params? }` → `{ label }` — core's `personalVehicleLabel`: what a HUD shows (null: "On Foot"). */
+	'traversal.personal.label': (args) => {
+		const m = 'traversal.personal.label';
+		const kind = coded('invalid-input', () => kindOrNull(m, args.kind, 'kind'));
+		return { label: personalVehicleLabel(kind, personalTuningOf(m, args)) };
+	},
+
+	/**
+	 * `traversal.personal.modes { modes, lent?, from, to, params? }` → `{ modes, lent }` —
+	 * core's `personalVehicleModes`: `from` (a kind, or null on foot) gives back the mode
+	 * it lent and `to` lends its own under `personal:<kind>`; what a host hands
+	 * `setModes(actor, modes, lent)`.
+	 */
+	'traversal.personal.modes': (args) => {
+		const m = 'traversal.personal.modes';
+		const [modes, lent, from, to] = coded('invalid-input', () => [
+			stringList(m, args.modes, 'modes'),
+			optionalArg(args.lent, (v) => lentArg(m, v, 'lent')) ?? {},
+			kindOrNull(m, args.from, 'from'),
+			kindOrNull(m, args.to, 'to'),
+		]);
+		return plain(personalVehicleModes({ modes, lent }, from, to, personalTuningOf(m, args)));
+	},
+
+	/** `traversal.personal.initial {}` → `{ state }` — core's `initialPersonalVehicles`: nobody riding. */
+	'traversal.personal.initial': () => ({ state: plain(initialPersonalVehicles()) }),
+
+	/**
+	 * `traversal.personal.mount { state, actor, kind, inVehicle?, params? }` → core's
+	 * `mountPersonalVehicle`: `{ ok, refusal?, detail?, state, kind, pace, label, events }`
+	 * (refusals `unknown_kind`, `in_vehicle` — `inVehicle` is the registry vehicle the
+	 * rider is aboard, null for none — and `redundant`; `vehicle_mounted` names the rider).
+	 */
+	'traversal.personal.mount': (args) => {
+		const m = 'traversal.personal.mount';
+		const [state, kind, inVehicle] = coded('invalid-input', () => [
+			personalStateArg(m, args.state),
+			needString(m, args.kind, 'kind'),
+			kindOrNull(m, args.inVehicle, 'inVehicle'),
+		]);
+		return plain(mountPersonalVehicle(state, { actor: args.actor, kind, inVehicle }, personalTuningOf(m, args)));
+	},
+
+	/** `traversal.personal.dismount { state, actor, inVehicle?, params? }` → core's `dismountPersonalVehicle` (`not_riding` on foot; never refused for being aboard). */
+	'traversal.personal.dismount': (args) => {
+		const m = 'traversal.personal.dismount';
+		const [state, inVehicle] = coded('invalid-input', () => [personalStateArg(m, args.state), kindOrNull(m, args.inVehicle, 'inVehicle')]);
+		return plain(dismountPersonalVehicle(state, { actor: args.actor, inVehicle }, personalTuningOf(m, args)));
+	},
+
+	/** `traversal.personal.cycle { state, actor, inVehicle?, params? }` → core's `cyclePersonalVehicle`: the B key, on foot → each kind of the cycle → on foot. */
+	'traversal.personal.cycle': (args) => {
+		const m = 'traversal.personal.cycle';
+		const [state, inVehicle] = coded('invalid-input', () => [personalStateArg(m, args.state), kindOrNull(m, args.inVehicle, 'inVehicle')]);
+		return plain(cyclePersonalVehicle(state, { actor: args.actor, inVehicle }, personalTuningOf(m, args)));
+	},
+
+	/** `traversal.personal.saveRows { state }` → `{ riding }` — core's `personalVehicleSaveRows`: every rider → kind, canonical order. */
+	'traversal.personal.saveRows': (args) => ({
+		riding: plain(personalVehicleSaveRows(coded('invalid-input', () => personalStateArg('traversal.personal.saveRows', args.state)))),
+	}),
+
+	/** `traversal.personal.fromSave { riding?, params? }` → `{ state, dropped }` — core's `personalVehiclesFromSave`: a kind the world no longer authors puts that rider on foot (named in `dropped`, ascending). */
+	'traversal.personal.fromSave': (args) => {
+		const m = 'traversal.personal.fromSave';
+		const riding = coded('invalid-input', () => ridingArg(m, args.riding, 'riding'));
+		return plain(personalVehiclesFromSave(riding, personalTuningOf(m, args)));
+	},
+
+	/** `traversal.lending.lend { modes, lent?, mode, lender }` → `{ modes, lent }` — core's `lendMode`: a mode held of the actor's own records nothing; otherwise held, and `lender` recorded. */
+	'traversal.lending.lend': (args) => {
+		const m = 'traversal.lending.lend';
+		const [modes, lent] = coded('invalid-input', () => [stringList(m, args.modes, 'modes'), optionalArg(args.lent, (v) => lentArg(m, v, 'lent'))]);
+		return plain(lendMode({ modes, lent }, args.mode, args.lender));
+	},
+
+	/** `traversal.lending.giveBack { modes, lent?, mode, lender }` → `{ modes, lent }` — core's `returnMode`: only a recorded lender gives back, and the mode goes only when nobody else still lends it. */
+	'traversal.lending.giveBack': (args) => {
+		const m = 'traversal.lending.giveBack';
+		const [modes, lent] = coded('invalid-input', () => [stringList(m, args.modes, 'modes'), optionalArg(args.lent, (v) => lentArg(m, v, 'lent'))]);
+		return plain(returnMode({ modes, lent }, args.mode, args.lender));
+	},
+
+	/** `traversal.lending.canonical { lent?, modes }` → `{ lent }` — core's `canonicalLent`: keys sorted, lenders sorted and deduplicated, empty lists and unheld modes dropped. */
+	'traversal.lending.canonical': (args) => {
+		const m = 'traversal.lending.canonical';
+		const [modes, lent] = coded('invalid-input', () => [stringList(m, args.modes, 'modes'), optionalArg(args.lent, (v) => lentArg(m, v, 'lent'))]);
+		return { lent: plain(canonicalLent(lent, modes)) };
+	},
+
+	/** `traversal.lending.vehicleLender { vehicle }` → `{ lender }` — core's `vehicleLender`: `vehicle:<id>`. */
+	'traversal.lending.vehicleLender': (args) => ({ lender: vehicleLender(args.vehicle) }),
+
+	/** `traversal.lending.personalLender { kind }` → `{ lender }` — core's `personalLender`: `personal:<kind>`. */
+	'traversal.lending.personalLender': (args) => ({ lender: personalLender(args.kind) }),
+
+	/**
+	 * `traversal.save.block { planner?, vehicles?, fastTravel?, riding? }` → `{ key, block }`
+	 * — the block a save stores at `currentState.extensions[key]` (`key` is core's
+	 * `TRAVERSAL_EXTENSION_KEY`): core's `traversalSaveBlock` of each layer's
+	 * `serialize()` (absent or null: that layer is not run) and the save rows of who
+	 * rides what, written as `traversalBlockOf` writes it (only its members, each row
+	 * only its keys).
+	 */
+	'traversal.save.block': (args) => ({
+		key: TRAVERSAL_EXTENSION_KEY,
+		block: plain(traversalBlockOf(traversalSaveBlock(traversalSavePartsOf('traversal.save.block', args)))),
+	}),
+
+	/**
+	 * `traversal.save.read { block? }` → core's `readTraversalBlock`: `{ ok: true, value }`
+	 * (absent or null: `value` null, no traversal) or the VALUE `{ ok: false, keys }`
+	 * naming every unreadable member in ascending order. Any JSON is an answer.
+	 */
+	'traversal.save.read': (args) => plain(readTraversalBlock(args.block)),
+
+	/**
+	 * `traversal.session.create { links?, tuning?, vehicles?, fastTravel?, seed?, stamina?,
+	 * probe?, locomotion?, personal? }` → `{ session, view }` — one playthrough's
+	 * traversal, wired as core's doc §1 wires it, with no KB (every permission granted,
+	 * every authored requirement unmet: the layers' own no-KB rule):
+	 *  - `links` and `tuning` are the planner's graph and numbers as core resolves them
+	 *    (`traversal.affordances.links` / `.tuning` read them out of a World IR);
+	 *    `vehicles` the IR's vehicles (core's `vehiclesFromIR`); `fastTravel` the IR's
+	 *    fast-travel block (core's `fastTravelTuningFromIR`); `personal` the pack's
+	 *    personal-vehicle params (core's `personalVehicleTuning`); `seed` the
+	 *    playthrough seed fast travel draws from. Absent: core's defaults.
+	 *  - `stamina { actors? }`: the planner spends the shared `StaminaPool`, each actor
+	 *    registered as given; absent, movement costs nothing (core's degradation).
+	 *  - `probe { <link id>: passable }`: the host's geometry answers, by link id; a
+	 *    link not listed is unanswered, so passable (core's rule). Absent: no probe.
+	 *  - `locomotion { stuck? }`: the host is told every movement core orders (each op's
+	 *    `orders`) and reports it arrived, except an order to a destination in `stuck`,
+	 *    which leaves the actor where `stuck` says (`{ arrived: false, location, reason:
+	 *    'stuck' }`, the corpus host's report). Absent: no locomotion host, every order
+	 *    reads as arrived and none is recorded (core's degradation).
+	 *  - the world clock records the hours a journey passes (each op's `clock`), and the
+	 *    bus every event core raises (each op's `events`).
+	 * Probe and locomotion are callbacks core calls mid-decision, which cannot cross
+	 * this ABI, so the host states its answers as data (and restates them with the
+	 * `host` op); a host whose actor ends up elsewhere later says so with `arrive`.
+	 */
+	'traversal.session.create': (args) => {
+		const m = 'traversal.session.create';
+		const input = coded('invalid-input', () => ({
+			links: optionalArg(args.links, (v) => objectList(m, v, 'links')),
+			tuning: optionalArg(args.tuning, (v) => traversalTuningArg(m, v, 'tuning')),
+			vehicles: optionalArg(args.vehicles, (v) => objectList(m, v, 'vehicles')) ?? [],
+			fastTravel: optionalArg(args.fastTravel, (v) => needObject(m, v, 'fastTravel')) ?? null,
+			seed: optionalArg(args.seed, (v) => (typeof v === 'number' ? needNumber(m, v, 'seed') : needString(m, v, 'seed'))),
+			stamina: optionalArg(args.stamina, (v) => {
+				needObject(m, v, 'stamina');
+				return optionalArg(v.actors, (a) => objectList(m, a, 'stamina.actors')) ?? [];
+			}),
+			probe: optionalArg(args.probe, (v) => probeTableArg(m, v, 'probe')),
+			locomotion: optionalArg(args.locomotion, (v) => {
+				needObject(m, v, 'locomotion');
+				return optionalArg(v.stuck, (st) => stuckTableArg(m, st, 'locomotion.stuck')) ?? {};
+			}),
+			personal: personalParamsArg(m, args.personal, 'personal'),
+		}));
+		// The arrays and `hosts` are shared by reference with the session's copy (openSession spreads `s`).
+		const s = { events: [], orders: [], clock: [], hosts: { probe: input.probe ?? null, stuck: input.locomotion ?? null } };
+		const bus = new GameEventBus();
+		bus.onAny((event) => void s.events.push(plain(event)));
+		const pool = new StaminaPool();
+		for (const actor of input.stamina ?? []) pool.register(actor);
+		const probe =
+			s.hosts.probe === null
+				? undefined
+				: { query: (q) => (hasOwn(s.hosts.probe, q.link) ? { passable: s.hosts.probe[q.link] } : null) };
+		const locomotion =
+			s.hosts.stuck === null
+				? undefined
+				: {
+						travel: (order) => {
+							s.orders.push(plain(order));
+							const stuck = s.hosts.stuck;
+							return hasOwn(stuck, order.to) ? { arrived: false, location: stuck[order.to], reason: 'stuck' } : { arrived: true };
+						},
+					};
+		const planner = new TraversalPlanner({
+			links: input.links,
+			tuning: input.tuning,
+			eventBus: bus,
+			...(input.stamina !== undefined ? { stamina: pool } : {}),
+			...(probe ? { probe } : {}),
+			...(locomotion ? { locomotion } : {}),
+		});
+		const registry = new VehicleRegistry({ vehicles: vehiclesFromIR(input.vehicles), traversal: planner, eventBus: bus });
+		planner.setVehicleSource(registry);
+		const director = new FastTravelDirector({
+			traversal: planner,
+			clock: { advanceHours: (hours) => void s.clock.push(hours) },
+			tuning: fastTravelTuningFromIR(input.fastTravel),
+			...(input.seed !== undefined ? { seed: input.seed } : {}),
+			eventBus: bus,
+			...(locomotion ? { locomotion } : {}),
+		});
+		Object.assign(s, { planner, registry, director, pool, ptuning: personalVehicleTuning(input.personal), riding: initialPersonalVehicles() });
+		return { session: openSession('traversal', s), view: traversalSessionView(s) };
+	},
+
+	/**
+	 * `traversal.session.apply { session, ops }` → `{ results, view }`. Each op is ONE
+	 * call into core and answers it under a named key, plus what the hosts recorded
+	 * while it ran: `events` (the bus), `orders` (the locomotion host; carry them out)
+	 * and `clock` (the hours to pass, in order). Refusals are values.
+	 *  - planner: `register { actor, location, modes? }`, `setModes { actor, modes, lent? }`,
+	 *    `lendMode` / `returnMode { actor, mode, lender }`, `arrive { actor, location }`,
+	 *    `block` / `unblock { from, to }` → `{ delta }`; `isBlocked { from, to }` →
+	 *    `{ blocked }`; `affordances { actor }` → `{ affordances }`; `route { actor, to }`
+	 *    → `{ route }` (null: none); `canTraverse { actor, to }` → `{ decision }`;
+	 *    `traverse { actor, to, intent? }` → `{ report }` (`intent { urgency?, stance? }`,
+	 *    core's `MOVEMENT_URGENCIES` / `MOVEMENT_STANCES`); `locationOf { actor }` →
+	 *    `{ location }` (null: never registered); `modesOf` → `{ modes }`; `lentOf` →
+	 *    `{ lent }`.
+	 *  - registry: `board` / `drive` / `disembark { actor, vehicle }` → `{ report }`;
+	 *    `canDo { actor, vehicle, verb }` → `{ decision }`; `vehicleOf` / `drivenBy
+	 *    { actor }` → `{ vehicle }` (null: none); `stateOf { vehicle }` → `{ state }`;
+	 *    `roster` → `{ vehicles }`.
+	 *  - director: `discover { location }` → `{ delta }`; `discoveries` → `{ discovered }`;
+	 *    `destinations { actor }` → `{ destinations }`; `canFastTravel { actor, to }` →
+	 *    `{ decision }`; `fastTravel { actor, to }` → `{ report }`.
+	 *  - the shared meter: `meter { actor }` → `{ meter }` (core's `StaminaPool.get`, null
+	 *    for an actor it does not hold).
+	 *  - personal vehicles: `mount { actor, kind }`, `dismount { actor }`, `cycle { actor }`
+	 *    → `{ result, delta }` (`personalSessionVerb`, core's doc §8 wiring).
+	 *  - save: `save` → `{ key, block }` (the four layers' block, as `traversal.save.block`
+	 *    writes it); `load { block? }` → `{ ok: true, dropped }` after core's
+	 *    `readTraversalBlock` hands each member to its layer's `restore()` and `riding` to
+	 *    `personalVehiclesFromSave`, or the VALUE `{ ok: false, keys }` with nothing
+	 *    changed (an absent or null block reads as no traversal: nothing restored, and
+	 *    nobody riding).
+	 *  - `host { probe?, stuck? }` → `{}`: replace the scripted geometry answers or the
+	 *    `stuck` table (only for a session created with a probe / a locomotion host).
+	 * The view is the four layers' state (`traversalSessionView`). Every op settles the
+	 * registry's follow (core's `settle()`) before it answers.
+	 */
+	'traversal.session.apply': async (args) => {
+		const m = 'traversal.session.apply';
+		const s = session(m, args, 'traversal');
+		s.events.length = 0;
+		s.orders.length = 0;
+		s.clock.length = 0;
+		const ops = {
+			register: async ({ planner }, op) => {
+				const modes = coded('invalid-input', () => optionalArg(op.modes, (v) => stringList(m, v, 'modes')));
+				return { delta: await planner.register({ id: op.actor, location: op.location, ...(modes !== undefined ? { modes } : {}) }) };
+			},
+			setModes: async ({ planner }, op) => {
+				const [modes, lent] = coded('invalid-input', () => [stringList(m, op.modes, 'modes'), optionalArg(op.lent, (v) => lentArg(m, v, 'lent'))]);
+				return { delta: await planner.setModes(op.actor, modes, lent) };
+			},
+			lendMode: async ({ planner }, op) => ({ delta: await planner.lendMode(op.actor, op.mode, op.lender) }),
+			returnMode: async ({ planner }, op) => ({ delta: await planner.returnMode(op.actor, op.mode, op.lender) }),
+			arrive: async ({ planner }, op) => ({ delta: await planner.arrive(op.actor, op.location) }),
+			block: async ({ planner }, op) => ({ delta: await planner.block(op.from, op.to) }),
+			unblock: async ({ planner }, op) => ({ delta: await planner.unblock(op.from, op.to) }),
+			isBlocked: ({ planner }, op) => ({ blocked: planner.isBlocked(op.from, op.to) }),
+			affordances: async ({ planner }, op) => ({ affordances: await planner.affordances(op.actor) }),
+			route: ({ planner }, op) => ({ route: planner.route(op.actor, op.to) ?? null }),
+			canTraverse: async ({ planner }, op) => ({ decision: await planner.canTraverse(op.actor, op.to) }),
+			traverse: async ({ planner }, op) => {
+				const intent = coded('invalid-input', () =>
+					optionalArg(op.intent, (v) => {
+						needObject(m, v, 'intent');
+						optionalArg(v.urgency, (u) => oneOf(m, u, MOVEMENT_URGENCIES, 'intent.urgency'));
+						optionalArg(v.stance, (u) => oneOf(m, u, MOVEMENT_STANCES, 'intent.stance'));
+						return v;
+					}),
+				);
+				return { report: await planner.traverse(op.actor, op.to, intent) };
+			},
+			locationOf: ({ planner }, op) => ({ location: planner.locationOf(op.actor) ?? null }),
+			modesOf: ({ planner }, op) => ({ modes: planner.modesOf(op.actor) }),
+			lentOf: ({ planner }, op) => ({ lent: planner.lentOf(op.actor) }),
+			board: async ({ registry }, op) => ({ report: await registry.board(op.actor, op.vehicle) }),
+			drive: async ({ registry }, op) => ({ report: await registry.drive(op.actor, op.vehicle) }),
+			disembark: async ({ registry }, op) => ({ report: await registry.disembark(op.actor, op.vehicle) }),
+			canDo: async ({ registry }, op) => {
+				const verb = coded('invalid-input', () => oneOf(m, op.verb, VEHICLE_VERBS, 'verb'));
+				return { decision: await registry.canDo(op.actor, op.vehicle, verb) };
+			},
+			vehicleOf: ({ registry }, op) => ({ vehicle: registry.vehicleOf(op.actor) ?? null }),
+			drivenBy: ({ registry }, op) => ({ vehicle: registry.drivenBy(op.actor) ?? null }),
+			stateOf: ({ registry }, op) => ({ state: registry.stateOf(op.vehicle) ?? null }),
+			roster: ({ registry }) => ({ vehicles: registry.roster() }),
+			discover: async ({ director }, op) => ({ delta: await director.discover(op.location) }),
+			discoveries: ({ director }) => ({ discovered: director.discoveries() }),
+			destinations: async ({ director }, op) => ({ destinations: await director.destinations(op.actor) }),
+			canFastTravel: async ({ director }, op) => ({ decision: await director.canFastTravel(op.actor, op.to) }),
+			fastTravel: async ({ director }, op) => ({ report: await director.fastTravel(op.actor, op.to) }),
+			meter: ({ pool }, op) => ({ meter: pool.get(op.actor) ?? null }),
+			mount: (st, op) => personalSessionVerb(st, 'mount', op),
+			dismount: (st, op) => personalSessionVerb(st, 'dismount', op),
+			cycle: (st, op) => personalSessionVerb(st, 'cycle', op),
+			save: (st) => ({
+				key: TRAVERSAL_EXTENSION_KEY,
+				block: traversalBlockOf(
+					traversalSaveBlock({ planner: st.planner.serialize(), vehicles: st.registry.serialize(), fastTravel: st.director.serialize(), riding: st.riding }),
+				),
+			}),
+			load: (st, op) => {
+				const read = readTraversalBlock(op.block);
+				if (!read.ok) return { ok: false, keys: read.keys };
+				const b = read.value;
+				if (b?.planner) st.planner.restore(b.planner);
+				if (b?.vehicles) st.registry.restore(b.vehicles);
+				if (b?.fastTravel) st.director.restore(b.fastTravel);
+				const back = personalVehiclesFromSave(b?.riding ?? {}, st.ptuning);
+				st.riding = back.state;
+				return { ok: true, dropped: back.dropped };
+			},
+			host: (st, op) => {
+				const [probe, stuck] = coded('invalid-input', () => {
+					const p = optionalArg(op.probe, (v) => probeTableArg(m, v, 'probe'));
+					const k = optionalArg(op.stuck, (v) => stuckTableArg(m, v, 'stuck'));
+					if (p !== undefined && st.hosts.probe === null) throw refuse(m, '`probe`: the session was created with no probe');
+					if (k !== undefined && st.hosts.stuck === null) throw refuse(m, '`stuck`: the session was created with no locomotion host');
+					return [p, k];
+				});
+				if (probe !== undefined) st.hosts.probe = probe;
+				if (stuck !== undefined) st.hosts.stuck = stuck;
+				return {};
+			},
+		};
+		const recorded = {};
+		for (const [name, fn] of Object.entries(ops)) {
+			recorded[name] = async (st, op) => {
+				const answer = await fn(st, op);
+				await st.registry.settle();
+				// A copy now: a later op in the batch must not move an earlier answer (the meter is live).
+				return plain({ ...answer, events: st.events.splice(0), orders: st.orders.splice(0), clock: st.clock.splice(0) });
+			};
+		}
+		const results = await applyOps(m, s, args, recorded);
+		return { results, view: traversalSessionView(s) };
+	},
 
 	// ── the genre HUD and the world rules panel (P9a) ──
 	// Each row is one of core's corpus runners and nothing else: the args are

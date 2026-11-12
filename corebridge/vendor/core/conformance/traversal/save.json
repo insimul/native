@@ -1,0 +1,961 @@
+{
+  "area": "traversal",
+  "file": "traversal/save",
+  "description": "The traversal save block (src/traversal/traversal-save.ts; extensions.traversal): the block a save writes, what a reader accepts or refuses (every unreadable member named in ascending order), and what the decision layers hold after a load.",
+  "catalog": [
+    "traversal-planner",
+    "traversal-vehicles",
+    "traversal-fast-travel"
+  ],
+  "ops": [
+    "block",
+    "read",
+    "restore"
+  ],
+  "steps": {},
+  "runner": "src/traversal/systems-corpus.ts (runTraversalSystemsOp). Compare exactly, object key sets included; an unknown op or step is an error.",
+  "regenerate": "npm run traversal-systems-corpus; npm run traversal-systems-corpus:check fails on any difference.",
+  "cases": [
+    {
+      "name": "block: the four layers’ state, as a save writes it",
+      "op": "block",
+      "input": {
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "far_bank",
+              "modes": [
+                "boat",
+                "walk"
+              ]
+            }
+          ],
+          "blocked": [
+            {
+              "from": "far_bank",
+              "to": "ridge"
+            }
+          ]
+        },
+        "vehicles": {
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": []
+            },
+            {
+              "id": "skiff",
+              "location": "far_bank",
+              "owner": "ferryman",
+              "occupants": [
+                "wren"
+              ],
+              "driver": "wren"
+            }
+          ]
+        },
+        "fastTravel": {
+          "discovered": [
+            "far_bank",
+            "ridge"
+          ],
+          "journeys": 2
+        },
+        "riding": {
+          "wren": "horse",
+          "ash": "bicycle"
+        }
+      },
+      "expected": {
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "far_bank",
+              "modes": [
+                "boat",
+                "walk"
+              ]
+            }
+          ],
+          "blocked": [
+            {
+              "from": "far_bank",
+              "to": "ridge"
+            }
+          ]
+        },
+        "vehicles": {
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": []
+            },
+            {
+              "id": "skiff",
+              "location": "far_bank",
+              "occupants": [
+                "wren"
+              ],
+              "owner": "ferryman",
+              "driver": "wren"
+            }
+          ]
+        },
+        "fastTravel": {
+          "discovered": [
+            "far_bank",
+            "ridge"
+          ],
+          "journeys": 2
+        },
+        "riding": {
+          "ash": "bicycle",
+          "wren": "horse"
+        }
+      }
+    },
+    {
+      "name": "block: a game that runs only the planner writes the others empty",
+      "op": "block",
+      "input": {
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "far_bank",
+              "modes": [
+                "boat",
+                "walk"
+              ]
+            }
+          ],
+          "blocked": [
+            {
+              "from": "far_bank",
+              "to": "ridge"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "far_bank",
+              "modes": [
+                "boat",
+                "walk"
+              ]
+            }
+          ],
+          "blocked": [
+            {
+              "from": "far_bank",
+              "to": "ridge"
+            }
+          ]
+        },
+        "vehicles": null,
+        "fastTravel": null,
+        "riding": {}
+      }
+    },
+    {
+      "name": "block: rows keep only their keys",
+      "op": "block",
+      "note": "Anything authored or per-frame (a position, a speed, the hours of a journey) never rides.",
+      "input": {
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "ford_path",
+              "modes": [
+                "walk"
+              ],
+              "position": [
+                1,
+                2,
+                3
+              ]
+            }
+          ],
+          "blocked": [
+            {
+              "from": "a",
+              "to": "b",
+              "since": 4
+            }
+          ]
+        },
+        "vehicles": {
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [],
+              "speed": 9
+            }
+          ]
+        },
+        "fastTravel": {
+          "discovered": [],
+          "journeys": 0,
+          "hours": 30
+        }
+      },
+      "expected": {
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "ford_path",
+              "modes": [
+                "walk"
+              ]
+            }
+          ],
+          "blocked": [
+            {
+              "from": "a",
+              "to": "b"
+            }
+          ]
+        },
+        "vehicles": {
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": []
+            }
+          ]
+        },
+        "fastTravel": {
+          "discovered": [],
+          "journeys": 0
+        },
+        "riding": {}
+      }
+    },
+    {
+      "name": "read: absent and null are no traversal",
+      "op": "read",
+      "input": {
+        "block": null
+      },
+      "expected": {
+        "ok": true,
+        "value": null
+      }
+    },
+    {
+      "name": "read: a block that is not an object is unreadable as a whole",
+      "op": "read",
+      "input": {
+        "block": [
+          "wren"
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "keys": []
+      }
+    },
+    {
+      "name": "read: missing members read as empty, a missing modes as walk, a missing journeys as 0",
+      "op": "read",
+      "input": {
+        "block": {
+          "planner": {
+            "actors": [
+              {
+                "id": "wren",
+                "location": "ford_path"
+              }
+            ]
+          },
+          "fastTravel": {},
+          "extra": 1
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "planner": {
+            "actors": [
+              {
+                "id": "wren",
+                "location": "ford_path",
+                "modes": [
+                  "walk"
+                ]
+              }
+            ],
+            "blocked": []
+          },
+          "vehicles": null,
+          "fastTravel": {
+            "discovered": [],
+            "journeys": 0
+          },
+          "riding": {}
+        }
+      }
+    },
+    {
+      "name": "read: every unreadable member is named, in ascending order",
+      "op": "read",
+      "note": "A driver who is not aboard is unreadable (VehicleRegistry never writes one); a fractional journey count is unreadable (the next journey's stream ordinal must be whole).",
+      "input": {
+        "block": {
+          "planner": {
+            "actors": [
+              {
+                "id": "wren",
+                "location": 3
+              },
+              {
+                "id": "ash",
+                "location": "ford_path",
+                "modes": "walk"
+              }
+            ],
+            "blocked": [
+              {
+                "from": "a"
+              }
+            ]
+          },
+          "vehicles": {
+            "vehicles": [
+              {
+                "id": "skiff",
+                "location": "far_bank",
+                "occupants": [
+                  "ash"
+                ],
+                "driver": "wren"
+              },
+              "cart"
+            ]
+          },
+          "fastTravel": {
+            "discovered": [
+              "ridge",
+              4
+            ],
+            "journeys": 1.5
+          },
+          "riding": {
+            "wren": 7
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "fastTravel.discovered",
+          "fastTravel.journeys",
+          "planner.actors[0]",
+          "planner.actors[1]",
+          "planner.blocked[0]",
+          "riding.wren",
+          "vehicles.vehicles[0]",
+          "vehicles.vehicles[1]"
+        ]
+      }
+    },
+    {
+      "name": "read: a stored riding of null is unreadable; only an absent riding reads as nobody riding",
+      "op": "read",
+      "note": "Unlike planner, vehicles and fastTravel, which a game that does not run them writes as null, the writer always writes riding as an object.",
+      "input": {
+        "block": {
+          "riding": null
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "riding"
+        ]
+      }
+    },
+    {
+      "name": "read: members of the wrong kind",
+      "op": "read",
+      "input": {
+        "block": {
+          "planner": [],
+          "vehicles": "none",
+          "fastTravel": 3,
+          "riding": []
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "fastTravel",
+          "planner",
+          "riding",
+          "vehicles"
+        ]
+      }
+    },
+    {
+      "name": "read: lists of the wrong kind",
+      "op": "read",
+      "input": {
+        "block": {
+          "planner": {
+            "actors": {},
+            "blocked": "x"
+          },
+          "vehicles": {
+            "vehicles": {}
+          },
+          "fastTravel": {
+            "journeys": -1
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "fastTravel.journeys",
+          "planner.actors",
+          "planner.blocked",
+          "vehicles.vehicles"
+        ]
+      }
+    },
+    {
+      "name": "restore: each layer’s restore() then serialize() gives the block back",
+      "op": "restore",
+      "input": {
+        "block": {
+          "planner": {
+            "actors": [
+              {
+                "id": "wren",
+                "location": "far_bank",
+                "modes": [
+                  "boat",
+                  "walk"
+                ]
+              }
+            ],
+            "blocked": [
+              {
+                "from": "far_bank",
+                "to": "ridge"
+              }
+            ]
+          },
+          "vehicles": {
+            "vehicles": [
+              {
+                "id": "cart",
+                "location": "ford_path",
+                "occupants": []
+              },
+              {
+                "id": "skiff",
+                "location": "far_bank",
+                "owner": "ferryman",
+                "occupants": [
+                  "wren"
+                ],
+                "driver": "wren"
+              }
+            ]
+          },
+          "fastTravel": {
+            "discovered": [
+              "far_bank",
+              "ridge"
+            ],
+            "journeys": 2
+          },
+          "riding": {
+            "wren": "horse"
+          }
+        },
+        "vehicles": [
+          {
+            "id": "skiff",
+            "name": "The ferryman’s skiff",
+            "mode": "boat",
+            "owner": "ferryman",
+            "location": "riverside_camp",
+            "seats": 2
+          },
+          {
+            "id": "cart",
+            "name": "A hay cart",
+            "mode": "ride",
+            "location": "ford_path",
+            "seats": 2
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "far_bank",
+              "modes": [
+                "boat",
+                "walk"
+              ]
+            }
+          ],
+          "blocked": [
+            {
+              "from": "far_bank",
+              "to": "ridge"
+            }
+          ]
+        },
+        "vehicles": {
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": []
+            },
+            {
+              "id": "skiff",
+              "location": "far_bank",
+              "owner": "ferryman",
+              "occupants": [
+                "wren"
+              ],
+              "driver": "wren"
+            }
+          ]
+        },
+        "fastTravel": {
+          "discovered": [
+            "far_bank",
+            "ridge"
+          ],
+          "journeys": 2
+        },
+        "riding": {
+          "wren": "horse"
+        },
+        "dropped": []
+      }
+    },
+    {
+      "name": "restore: a vehicle or a personal kind the world no longer authors is dropped",
+      "op": "restore",
+      "note": "The authored roster is the world: a save may not resurrect content (VehicleRegistry.restore). The cart keeps its saved place.",
+      "input": {
+        "block": {
+          "vehicles": {
+            "vehicles": [
+              {
+                "id": "raft",
+                "location": "far_bank",
+                "occupants": []
+              },
+              {
+                "id": "cart",
+                "location": "meadow",
+                "occupants": []
+              }
+            ]
+          },
+          "riding": {
+            "wren": "dragon",
+            "ash": "bicycle"
+          }
+        },
+        "vehicles": [
+          {
+            "id": "skiff",
+            "name": "The ferryman’s skiff",
+            "mode": "boat",
+            "owner": "ferryman",
+            "location": "riverside_camp",
+            "seats": 2
+          },
+          {
+            "id": "cart",
+            "name": "A hay cart",
+            "mode": "ride",
+            "location": "ford_path",
+            "seats": 2
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "planner": {
+          "actors": [],
+          "blocked": []
+        },
+        "vehicles": {
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "meadow",
+              "occupants": []
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": []
+            }
+          ]
+        },
+        "fastTravel": {
+          "discovered": [],
+          "journeys": 0
+        },
+        "riding": {
+          "ash": "bicycle"
+        },
+        "dropped": [
+          "wren"
+        ]
+      }
+    },
+    {
+      "name": "restore: an unreadable block restores nothing",
+      "op": "restore",
+      "input": {
+        "block": {
+          "fastTravel": {
+            "discovered": "ridge"
+          }
+        },
+        "vehicles": [
+          {
+            "id": "skiff",
+            "name": "The ferryman’s skiff",
+            "mode": "boat",
+            "owner": "ferryman",
+            "location": "riverside_camp",
+            "seats": 2
+          },
+          {
+            "id": "cart",
+            "name": "A hay cart",
+            "mode": "ride",
+            "location": "ford_path",
+            "seats": 2
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "fastTravel.discovered"
+        ]
+      }
+    },
+    {
+      "name": "block: a lent mode rides on its planner row, keys and lenders sorted, deduplicated, and an empty or unheld one dropped",
+      "op": "block",
+      "note": "PL.vehicle-events (U90(5)): lent, the modes a vehicle lent and by whom, is kept so a load gives back exactly what the actor held on its own. Written only when it names a mode the row holds.",
+      "input": {
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "ford_path",
+              "modes": [
+                "walk",
+                "ride",
+                "boat"
+              ],
+              "lent": {
+                "ride": [
+                  "vehicle:cart",
+                  "personal:horse",
+                  "vehicle:cart"
+                ],
+                "boat": [
+                  "vehicle:skiff"
+                ]
+              }
+            },
+            {
+              "id": "ash",
+              "location": "ford_path",
+              "modes": [
+                "walk"
+              ],
+              "lent": {}
+            },
+            {
+              "id": "rook",
+              "location": "ford_path",
+              "modes": [
+                "walk"
+              ],
+              "lent": {
+                "ride": [
+                  "personal:horse"
+                ]
+              }
+            }
+          ],
+          "blocked": []
+        }
+      },
+      "expected": {
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "ford_path",
+              "modes": [
+                "walk",
+                "ride",
+                "boat"
+              ],
+              "lent": {
+                "boat": [
+                  "vehicle:skiff"
+                ],
+                "ride": [
+                  "personal:horse",
+                  "vehicle:cart"
+                ]
+              }
+            },
+            {
+              "id": "ash",
+              "location": "ford_path",
+              "modes": [
+                "walk"
+              ]
+            },
+            {
+              "id": "rook",
+              "location": "ford_path",
+              "modes": [
+                "walk"
+              ]
+            }
+          ],
+          "blocked": []
+        },
+        "vehicles": null,
+        "fastTravel": null,
+        "riding": {}
+      }
+    },
+    {
+      "name": "read: a lent mode the row does not hold, one with no lender, or a lent that is not a map makes the row unreadable",
+      "op": "read",
+      "note": "wren holds no ride; ash gives ride no lender; rook's lent is a list; bram names a lender that is not a string; ivy's lent is a number. bec's row is readable.",
+      "input": {
+        "block": {
+          "planner": {
+            "actors": [
+              {
+                "id": "wren",
+                "location": "ford_path",
+                "modes": [
+                  "walk"
+                ],
+                "lent": {
+                  "ride": [
+                    "personal:horse"
+                  ]
+                }
+              },
+              {
+                "id": "ash",
+                "location": "ford_path",
+                "modes": [
+                  "ride",
+                  "walk"
+                ],
+                "lent": {
+                  "ride": []
+                }
+              },
+              {
+                "id": "rook",
+                "location": "ford_path",
+                "modes": [
+                  "walk"
+                ],
+                "lent": [
+                  "ride"
+                ]
+              },
+              {
+                "id": "bram",
+                "location": "ford_path",
+                "modes": [
+                  "ride",
+                  "walk"
+                ],
+                "lent": {
+                  "ride": [
+                    "personal:horse",
+                    3
+                  ]
+                }
+              },
+              {
+                "id": "bec",
+                "location": "ford_path",
+                "modes": [
+                  "ride",
+                  "walk"
+                ],
+                "lent": {
+                  "ride": [
+                    "personal:horse"
+                  ]
+                }
+              },
+              {
+                "id": "ivy",
+                "location": "ford_path",
+                "modes": [
+                  "walk"
+                ],
+                "lent": 7
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "planner.actors[0]",
+          "planner.actors[1]",
+          "planner.actors[2]",
+          "planner.actors[3]",
+          "planner.actors[5]"
+        ]
+      }
+    },
+    {
+      "name": "restore: which modes were lent comes back through the planner",
+      "op": "restore",
+      "input": {
+        "block": {
+          "planner": {
+            "actors": [
+              {
+                "id": "wren",
+                "location": "ford_path",
+                "modes": [
+                  "ride",
+                  "walk"
+                ],
+                "lent": {
+                  "ride": [
+                    "personal:horse",
+                    "vehicle:cart"
+                  ]
+                }
+              }
+            ],
+            "blocked": []
+          },
+          "vehicles": {
+            "vehicles": [
+              {
+                "id": "cart",
+                "location": "ford_path",
+                "occupants": [
+                  "wren"
+                ],
+                "driver": "wren"
+              }
+            ]
+          },
+          "riding": {
+            "wren": "horse"
+          }
+        },
+        "vehicles": [
+          {
+            "id": "skiff",
+            "name": "The ferryman’s skiff",
+            "mode": "boat",
+            "owner": "ferryman",
+            "location": "riverside_camp",
+            "seats": 2
+          },
+          {
+            "id": "cart",
+            "name": "A hay cart",
+            "mode": "ride",
+            "location": "ford_path",
+            "seats": 2
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "planner": {
+          "actors": [
+            {
+              "id": "wren",
+              "location": "ford_path",
+              "modes": [
+                "ride",
+                "walk"
+              ],
+              "lent": {
+                "ride": [
+                  "personal:horse",
+                  "vehicle:cart"
+                ]
+              }
+            }
+          ],
+          "blocked": []
+        },
+        "vehicles": {
+          "vehicles": [
+            {
+              "id": "cart",
+              "location": "ford_path",
+              "occupants": [
+                "wren"
+              ],
+              "driver": "wren"
+            },
+            {
+              "id": "skiff",
+              "location": "riverside_camp",
+              "owner": "ferryman",
+              "occupants": []
+            }
+          ]
+        },
+        "fastTravel": {
+          "discovered": [],
+          "journeys": 0
+        },
+        "riding": {
+          "wren": "horse"
+        },
+        "dropped": []
+      }
+    }
+  ]
+}

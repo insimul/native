@@ -1,0 +1,1361 @@
+{
+  "area": "traversal",
+  "file": "traversal/mounts",
+  "description": "The personal vehicle cycle (Babylon's VehicleSystem; src/traversal/personal-vehicles.ts): tuning (kinds merged by id), the pace factors in thousandths, the modes a kind lends and gives back (op modes: input.lent and the answer's lent are the modes a vehicle lent, mode → lenders, src/traversal/mode-lending.ts; a mode held of its own is never taken back, U90(5)), and the mount/dismount/cycle verbs with their refusal ladder (unknown_kind, in_vehicle, redundant, not_riding) and catalogued events, which name the rider as actorId (U90(4)).",
+  "catalog": [
+    "traversal-vehicles"
+  ],
+  "ops": [
+    "tuning",
+    "pace",
+    "modes",
+    "run"
+  ],
+  "steps": {
+    "run": [
+      "mount",
+      "dismount",
+      "cycle",
+      "save",
+      "load"
+    ]
+  },
+  "runner": "src/traversal/systems-corpus.ts (runTraversalSystemsOp). Compare exactly, object key sets included; an unknown op or step is an error.",
+  "regenerate": "npm run traversal-systems-corpus; npm run traversal-systems-corpus:check fails on any difference.",
+  "cases": [
+    {
+      "name": "tuning: Babylon’s bicycle and horse and the on-foot rates",
+      "op": "tuning",
+      "note": "VEHICLE_CONFIGS as thousandths: bicycle walk 2.0, run 1.8, turn 1.2; horse 3.0, 2.5, 0.8. The horse lends `ride`; the bicycle lends nothing. On foot strafe 0.8 and back 0.6; mounted strafe 0.8 and back 0.5 of the mounted walk.",
+      "input": {},
+      "expected": {
+        "kinds": {
+          "bicycle": {
+            "id": "bicycle",
+            "label": "Bicycle",
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1200,
+            "mode": null
+          },
+          "horse": {
+            "id": "horse",
+            "label": "Horse",
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "mode": "ride"
+          }
+        },
+        "cycle": [
+          "bicycle",
+          "horse"
+        ],
+        "onFoot": {
+          "walk": 1000,
+          "run": 1000,
+          "turn": 1000,
+          "strafe": 800,
+          "back": 600
+        },
+        "mountedStrafePermille": 800,
+        "mountedBackPermille": 500
+      }
+    },
+    {
+      "name": "tuning: an authored kind merges over its default by id and a new kind needs every number",
+      "op": "tuning",
+      "note": "The horse keeps its run (−1 is not a number of thousandths); the pony has no run or turn and is dropped, so the cycle drops it too; the cycle keeps its first camel only; the bicycle now lends `cycle` and its turn is floored.",
+      "input": {
+        "params": {
+          "kinds": [
+            {
+              "id": "horse",
+              "walk": 3500,
+              "run": -1
+            },
+            {
+              "id": "camel",
+              "label": "Camel",
+              "walk": 2200,
+              "run": 2000,
+              "turn": 600,
+              "mode": "ride"
+            },
+            {
+              "id": "pony",
+              "label": "Pony",
+              "walk": 2400
+            },
+            {
+              "id": "",
+              "label": "Nothing",
+              "walk": 1,
+              "run": 1,
+              "turn": 1
+            },
+            {
+              "id": "bicycle",
+              "mode": "cycle",
+              "turn": 1250.7
+            }
+          ],
+          "cycle": [
+            "camel",
+            "horse",
+            "pony",
+            "camel",
+            "bicycle"
+          ],
+          "onFoot": {
+            "back": 700,
+            "strafe": -3
+          },
+          "mountedBackPermille": 400
+        }
+      },
+      "expected": {
+        "kinds": {
+          "bicycle": {
+            "id": "bicycle",
+            "label": "Bicycle",
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1250,
+            "mode": "cycle"
+          },
+          "camel": {
+            "id": "camel",
+            "label": "Camel",
+            "walk": 2200,
+            "run": 2000,
+            "turn": 600,
+            "mode": "ride"
+          },
+          "horse": {
+            "id": "horse",
+            "label": "Horse",
+            "walk": 3500,
+            "run": 2500,
+            "turn": 800,
+            "mode": "ride"
+          }
+        },
+        "cycle": [
+          "camel",
+          "horse",
+          "bicycle"
+        ],
+        "onFoot": {
+          "walk": 1000,
+          "run": 1000,
+          "turn": 1000,
+          "strafe": 800,
+          "back": 700
+        },
+        "mountedStrafePermille": 800,
+        "mountedBackPermille": 400
+      }
+    },
+    {
+      "name": "tuning: a new kind with every number but no label is dropped",
+      "op": "tuning",
+      "note": "A HUD needs a name for every kind (docs/traversal-systems.md §2): a new kind with no label, or an empty one, is dropped, not shown under its id, and the cycle drops it too.",
+      "input": {
+        "params": {
+          "kinds": [
+            {
+              "id": "mule",
+              "walk": 2001,
+              "run": 1500,
+              "turn": 900
+            },
+            {
+              "id": "ox",
+              "label": "",
+              "walk": 1200,
+              "run": 1100,
+              "turn": 500
+            }
+          ],
+          "cycle": [
+            "mule",
+            "ox",
+            "horse"
+          ]
+        }
+      },
+      "expected": {
+        "kinds": {
+          "bicycle": {
+            "id": "bicycle",
+            "label": "Bicycle",
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1200,
+            "mode": null
+          },
+          "horse": {
+            "id": "horse",
+            "label": "Horse",
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "mode": "ride"
+          }
+        },
+        "cycle": [
+          "horse"
+        ],
+        "onFoot": {
+          "walk": 1000,
+          "run": 1000,
+          "turn": 1000,
+          "strafe": 800,
+          "back": 600
+        },
+        "mountedStrafePermille": 800,
+        "mountedBackPermille": 500
+      }
+    },
+    {
+      "name": "pace: on foot",
+      "op": "pace",
+      "input": {
+        "kind": null
+      },
+      "expected": {
+        "pace": {
+          "walk": 1000,
+          "run": 1000,
+          "turn": 1000,
+          "strafe": 800,
+          "back": 600
+        },
+        "label": "On Foot"
+      }
+    },
+    {
+      "name": "pace: the bicycle (strafe 0.8 and back 0.5 of the mounted walk)",
+      "op": "pace",
+      "input": {
+        "kind": "bicycle"
+      },
+      "expected": {
+        "pace": {
+          "walk": 2000,
+          "run": 1800,
+          "turn": 1200,
+          "strafe": 1600,
+          "back": 1000
+        },
+        "label": "Bicycle"
+      }
+    },
+    {
+      "name": "pace: the horse",
+      "op": "pace",
+      "input": {
+        "kind": "horse"
+      },
+      "expected": {
+        "pace": {
+          "walk": 3000,
+          "run": 2500,
+          "turn": 800,
+          "strafe": 2400,
+          "back": 1500
+        },
+        "label": "Horse"
+      }
+    },
+    {
+      "name": "pace: a kind the world does not author is on foot",
+      "op": "pace",
+      "input": {
+        "kind": "dragon"
+      },
+      "expected": {
+        "pace": {
+          "walk": 1000,
+          "run": 1000,
+          "turn": 1000,
+          "strafe": 800,
+          "back": 600
+        },
+        "label": "On Foot"
+      }
+    },
+    {
+      "name": "pace: mounted strafe and back are floored, never rounded",
+      "op": "pace",
+      "note": "floor(walk × permille / 1000): strafe 2001 × 800 / 1000 = 1600.8 is 1600, back 2001 × 500 / 1000 = 1000.5 is 1000.",
+      "input": {
+        "kind": "mule",
+        "params": {
+          "kinds": [
+            {
+              "id": "mule",
+              "label": "Mule",
+              "walk": 2001,
+              "run": 1500,
+              "turn": 900
+            }
+          ]
+        }
+      },
+      "expected": {
+        "pace": {
+          "walk": 2001,
+          "run": 1500,
+          "turn": 900,
+          "strafe": 1600,
+          "back": 1000
+        },
+        "label": "Mule"
+      }
+    },
+    {
+      "name": "modes: the horse lends ride",
+      "op": "modes",
+      "input": {
+        "modes": [
+          "walk"
+        ],
+        "from": null,
+        "to": "horse"
+      },
+      "expected": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "lent": {
+          "ride": [
+            "personal:horse"
+          ]
+        }
+      }
+    },
+    {
+      "name": "modes: horse to bicycle takes ride away",
+      "op": "modes",
+      "input": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "lent": {
+          "ride": [
+            "personal:horse"
+          ]
+        },
+        "from": "horse",
+        "to": "bicycle"
+      },
+      "expected": {
+        "modes": [
+          "walk"
+        ],
+        "lent": {}
+      }
+    },
+    {
+      "name": "modes: the bicycle lends nothing",
+      "op": "modes",
+      "input": {
+        "modes": [
+          "walk",
+          "swim"
+        ],
+        "from": null,
+        "to": "bicycle"
+      },
+      "expected": {
+        "modes": [
+          "swim",
+          "walk"
+        ],
+        "lent": {}
+      }
+    },
+    {
+      "name": "modes: getting off a horse takes back the ride it lent",
+      "op": "modes",
+      "note": "PL.vehicle-events (U90(5)): `lent` says which modes a vehicle lent and by whom (mode-lending.ts). The horse lent ride, nobody else lends it, so it goes.",
+      "input": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "lent": {
+          "ride": [
+            "personal:horse"
+          ]
+        },
+        "from": "horse",
+        "to": null
+      },
+      "expected": {
+        "modes": [
+          "walk"
+        ],
+        "lent": {}
+      }
+    },
+    {
+      "name": "modes: a rider who held ride of its own keeps it off the horse",
+      "op": "modes",
+      "note": "PL.vehicle-events (U90(5)) replaces P9e's case \"getting off a horse takes ride away even from a rider who held it (the registry's rule)\", same input: with nothing lent, ride is the rider's own, and VehicleRegistry now follows the same rule for the reins.",
+      "input": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "from": "horse",
+        "to": null
+      },
+      "expected": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "lent": {}
+      }
+    },
+    {
+      "name": "modes: getting on a horse while holding ride of one's own lends nothing",
+      "op": "modes",
+      "input": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "from": null,
+        "to": "horse"
+      },
+      "expected": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "lent": {}
+      }
+    },
+    {
+      "name": "modes: the cart's reins still lend ride after the horse is gone",
+      "op": "modes",
+      "note": "Two lenders of one mode: the horse leaves the list and ride stays, lent by vehicle:cart alone.",
+      "input": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "lent": {
+          "ride": [
+            "vehicle:cart",
+            "personal:horse"
+          ]
+        },
+        "from": "horse",
+        "to": null
+      },
+      "expected": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "lent": {
+          "ride": [
+            "vehicle:cart"
+          ]
+        }
+      }
+    },
+    {
+      "name": "modes: horse to a mule that also lends ride passes the loan on",
+      "op": "modes",
+      "input": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "lent": {
+          "ride": [
+            "personal:horse"
+          ]
+        },
+        "from": "horse",
+        "to": "mule",
+        "params": {
+          "kinds": [
+            {
+              "id": "mule",
+              "label": "Mule",
+              "walk": 1500,
+              "run": 1400,
+              "turn": 900,
+              "mode": "ride"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "modes": [
+          "ride",
+          "walk"
+        ],
+        "lent": {
+          "ride": [
+            "personal:mule"
+          ]
+        }
+      }
+    },
+    {
+      "name": "modes: a lent mode the rider no longer holds is forgotten, and nothing comes back",
+      "op": "modes",
+      "input": {
+        "modes": [
+          "walk"
+        ],
+        "lent": {
+          "ride": [
+            "personal:horse"
+          ],
+          "climb": [
+            "vehicle:ladder"
+          ]
+        },
+        "from": "horse",
+        "to": null
+      },
+      "expected": {
+        "modes": [
+          "walk"
+        ],
+        "lent": {}
+      }
+    },
+    {
+      "name": "run: the B key cycles on foot, bicycle, horse, on foot",
+      "op": "run",
+      "note": "Switching straight from the bicycle to the horse raises only vehicle_mounted (horse): Babylon's mount() drops the old mesh without a dismount event.",
+      "input": {
+        "steps": [
+          {
+            "do": "cycle",
+            "actor": "player"
+          },
+          {
+            "do": "cycle",
+            "actor": "player"
+          },
+          {
+            "do": "cycle",
+            "actor": "player"
+          },
+          {
+            "do": "cycle",
+            "actor": "player"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": "bicycle",
+          "pace": {
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1200,
+            "strafe": 1600,
+            "back": 1000
+          },
+          "label": "Bicycle",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "player",
+              "vehicleType": "bicycle"
+            }
+          ],
+          "riding": {
+            "player": "bicycle"
+          }
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "player",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {
+            "player": "horse"
+          }
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [
+            {
+              "type": "vehicle_dismounted",
+              "actorId": "player",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {}
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": "bicycle",
+          "pace": {
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1200,
+            "strafe": 1600,
+            "back": 1000
+          },
+          "label": "Bicycle",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "player",
+              "vehicleType": "bicycle"
+            }
+          ],
+          "riding": {
+            "player": "bicycle"
+          }
+        }
+      ]
+    },
+    {
+      "name": "run: the refusal ladder, first rung first",
+      "op": "run",
+      "note": "unknown_kind before in_vehicle; in_vehicle before redundant; getting off is never refused for being aboard; not_riding on foot.",
+      "input": {
+        "steps": [
+          {
+            "do": "mount",
+            "actor": "player",
+            "kind": "dragon",
+            "inVehicle": "skiff"
+          },
+          {
+            "do": "mount",
+            "actor": "player",
+            "kind": "horse",
+            "inVehicle": "skiff"
+          },
+          {
+            "do": "mount",
+            "actor": "player",
+            "kind": "horse"
+          },
+          {
+            "do": "mount",
+            "actor": "player",
+            "kind": "horse",
+            "inVehicle": "skiff"
+          },
+          {
+            "do": "mount",
+            "actor": "player",
+            "kind": "horse"
+          },
+          {
+            "do": "dismount",
+            "actor": "player",
+            "inVehicle": "skiff"
+          },
+          {
+            "do": "dismount",
+            "actor": "player"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "mount",
+          "ok": false,
+          "refusal": "unknown_kind",
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [],
+          "riding": {}
+        },
+        {
+          "do": "mount",
+          "ok": false,
+          "refusal": "in_vehicle",
+          "detail": "skiff",
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [],
+          "riding": {}
+        },
+        {
+          "do": "mount",
+          "ok": true,
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "player",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {
+            "player": "horse"
+          }
+        },
+        {
+          "do": "mount",
+          "ok": false,
+          "refusal": "in_vehicle",
+          "detail": "skiff",
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "events": [],
+          "riding": {
+            "player": "horse"
+          }
+        },
+        {
+          "do": "mount",
+          "ok": false,
+          "refusal": "redundant",
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "events": [],
+          "riding": {
+            "player": "horse"
+          }
+        },
+        {
+          "do": "dismount",
+          "ok": true,
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [
+            {
+              "type": "vehicle_dismounted",
+              "actorId": "player",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {}
+        },
+        {
+          "do": "dismount",
+          "ok": false,
+          "refusal": "not_riding",
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [],
+          "riding": {}
+        }
+      ]
+    },
+    {
+      "name": "run: an empty cycle on foot is not_riding, and a kind mounted directly cycles to on foot",
+      "op": "run",
+      "input": {
+        "params": {
+          "kinds": [
+            {
+              "id": "camel",
+              "label": "Camel",
+              "walk": 2200,
+              "run": 2000,
+              "turn": 600
+            }
+          ],
+          "cycle": []
+        },
+        "steps": [
+          {
+            "do": "cycle",
+            "actor": "player"
+          },
+          {
+            "do": "mount",
+            "actor": "player",
+            "kind": "camel"
+          },
+          {
+            "do": "cycle",
+            "actor": "player"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "cycle",
+          "ok": false,
+          "refusal": "not_riding",
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [],
+          "riding": {}
+        },
+        {
+          "do": "mount",
+          "ok": true,
+          "kind": "camel",
+          "pace": {
+            "walk": 2200,
+            "run": 2000,
+            "turn": 600,
+            "strafe": 1760,
+            "back": 1100
+          },
+          "label": "Camel",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "player",
+              "vehicleType": "camel"
+            }
+          ],
+          "riding": {
+            "player": "camel"
+          }
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [
+            {
+              "type": "vehicle_dismounted",
+              "actorId": "player",
+              "vehicleType": "camel"
+            }
+          ],
+          "riding": {}
+        }
+      ]
+    },
+    {
+      "name": "run: a rider on a kind outside a non-empty cycle steps to on foot, not to the first kind",
+      "op": "run",
+      "note": "Babylon's cycle: indexOf(camel) is -1, so the next slot is 0, on foot; the press after that is the bicycle.",
+      "input": {
+        "params": {
+          "kinds": [
+            {
+              "id": "camel",
+              "label": "Camel",
+              "walk": 2200,
+              "run": 2000,
+              "turn": 600
+            }
+          ]
+        },
+        "steps": [
+          {
+            "do": "mount",
+            "actor": "player",
+            "kind": "camel"
+          },
+          {
+            "do": "cycle",
+            "actor": "player"
+          },
+          {
+            "do": "cycle",
+            "actor": "player"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "mount",
+          "ok": true,
+          "kind": "camel",
+          "pace": {
+            "walk": 2200,
+            "run": 2000,
+            "turn": 600,
+            "strafe": 1760,
+            "back": 1100
+          },
+          "label": "Camel",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "player",
+              "vehicleType": "camel"
+            }
+          ],
+          "riding": {
+            "player": "camel"
+          }
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [
+            {
+              "type": "vehicle_dismounted",
+              "actorId": "player",
+              "vehicleType": "camel"
+            }
+          ],
+          "riding": {}
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": "bicycle",
+          "pace": {
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1200,
+            "strafe": 1600,
+            "back": 1000
+          },
+          "label": "Bicycle",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "player",
+              "vehicleType": "bicycle"
+            }
+          ],
+          "riding": {
+            "player": "bicycle"
+          }
+        }
+      ]
+    },
+    {
+      "name": "run: riders are keyed separately and a save keeps each one",
+      "op": "run",
+      "note": "A kind the world no longer authors puts that rider on foot on load (dropped), rather than on a vehicle with no factors.",
+      "input": {
+        "steps": [
+          {
+            "do": "mount",
+            "actor": "wren",
+            "kind": "horse"
+          },
+          {
+            "do": "cycle",
+            "actor": "ash"
+          },
+          {
+            "do": "save"
+          },
+          {
+            "do": "dismount",
+            "actor": "wren"
+          },
+          {
+            "do": "load",
+            "riding": {
+              "wren": "horse",
+              "ash": "bicycle",
+              "rook": "dragon"
+            }
+          },
+          {
+            "do": "cycle",
+            "actor": "wren"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "mount",
+          "ok": true,
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "wren",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {
+            "wren": "horse"
+          }
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": "bicycle",
+          "pace": {
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1200,
+            "strafe": 1600,
+            "back": 1000
+          },
+          "label": "Bicycle",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "ash",
+              "vehicleType": "bicycle"
+            }
+          ],
+          "riding": {
+            "ash": "bicycle",
+            "wren": "horse"
+          }
+        },
+        {
+          "do": "save",
+          "riding": {
+            "ash": "bicycle",
+            "wren": "horse"
+          }
+        },
+        {
+          "do": "dismount",
+          "ok": true,
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [
+            {
+              "type": "vehicle_dismounted",
+              "actorId": "wren",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {
+            "ash": "bicycle"
+          }
+        },
+        {
+          "do": "load",
+          "riding": {
+            "ash": "bicycle",
+            "wren": "horse"
+          },
+          "dropped": [
+            "rook"
+          ]
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [
+            {
+              "type": "vehicle_dismounted",
+              "actorId": "wren",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {
+            "ash": "bicycle"
+          }
+        }
+      ]
+    },
+    {
+      "name": "run: a load names every dropped rider in ascending order, whatever order the save lists them in",
+      "op": "run",
+      "note": "The save lists rook, wren, ash, bram; dropped is ash, bram, rook (compareIds), so an engine whose map iterates in another order still answers the same.",
+      "input": {
+        "steps": [
+          {
+            "do": "load",
+            "riding": {
+              "rook": "dragon",
+              "wren": "horse",
+              "ash": "griffin",
+              "bram": "wyvern"
+            }
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "load",
+          "riding": {
+            "wren": "horse"
+          },
+          "dropped": [
+            "ash",
+            "bram",
+            "rook"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "run: every mount event names its rider, so a villager's horse is told apart from the player's",
+      "op": "run",
+      "note": "PL.vehicle-events (U90(4)): vehicle_mounted / vehicle_dismounted carry actorId, the rider. The catalogue's field is optional and absent means the player, so a host that raises the events for the player alone stays valid; core names the rider every time, the player included.",
+      "input": {
+        "steps": [
+          {
+            "do": "mount",
+            "actor": "player",
+            "kind": "horse"
+          },
+          {
+            "do": "mount",
+            "actor": "npc_ada",
+            "kind": "bicycle"
+          },
+          {
+            "do": "cycle",
+            "actor": "npc_ada"
+          },
+          {
+            "do": "dismount",
+            "actor": "player"
+          },
+          {
+            "do": "dismount",
+            "actor": "npc_ada"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "mount",
+          "ok": true,
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "player",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {
+            "player": "horse"
+          }
+        },
+        {
+          "do": "mount",
+          "ok": true,
+          "kind": "bicycle",
+          "pace": {
+            "walk": 2000,
+            "run": 1800,
+            "turn": 1200,
+            "strafe": 1600,
+            "back": 1000
+          },
+          "label": "Bicycle",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "npc_ada",
+              "vehicleType": "bicycle"
+            }
+          ],
+          "riding": {
+            "npc_ada": "bicycle",
+            "player": "horse"
+          }
+        },
+        {
+          "do": "cycle",
+          "ok": true,
+          "kind": "horse",
+          "pace": {
+            "walk": 3000,
+            "run": 2500,
+            "turn": 800,
+            "strafe": 2400,
+            "back": 1500
+          },
+          "label": "Horse",
+          "events": [
+            {
+              "type": "vehicle_mounted",
+              "actorId": "npc_ada",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {
+            "npc_ada": "horse",
+            "player": "horse"
+          }
+        },
+        {
+          "do": "dismount",
+          "ok": true,
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [
+            {
+              "type": "vehicle_dismounted",
+              "actorId": "player",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {
+            "npc_ada": "horse"
+          }
+        },
+        {
+          "do": "dismount",
+          "ok": true,
+          "kind": null,
+          "pace": {
+            "walk": 1000,
+            "run": 1000,
+            "turn": 1000,
+            "strafe": 800,
+            "back": 600
+          },
+          "label": "On Foot",
+          "events": [
+            {
+              "type": "vehicle_dismounted",
+              "actorId": "npc_ada",
+              "vehicleType": "horse"
+            }
+          ],
+          "riding": {}
+        }
+      ]
+    }
+  ]
+}

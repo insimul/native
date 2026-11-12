@@ -704,8 +704,7 @@
 - **The traversal kernel rows (PL.native-traversal-rows slice 1, U106(1)) run
   core's P9e kernel corpora UNCHANGED**,
   `conformance/traversal/{affordances,vehicles,fast-travel,ground-seating}.json`
-  copied as their own set (`TRAVERSAL_CORPUS_FILES`; slice 2 adds `session.json`,
-  `mounts.json` and `save.json` with the stateful rows) and driven by their own
+  copied as their own set (`TRAVERSAL_CORPUS_FILES`, with slice 2's three) and driven by their own
   runner, `tests/traversal_corpus.cpp`, as `traversal_corpus` (+
   `traversal_corpus_negative`, every case perturbed and refused). One row per core
   function of `traversal/traversal` (+ `traversalGraphFacts`), `traversal/vehicles`
@@ -720,10 +719,23 @@
   its `expected`; the settle rows (`initial`, `retarget`, `offsetAt`, `unseat`) are
   STATELESS over the `state` the last answer carried. Tunings are core's RESOLVED
   tunings, read from the IR by the `*.tuning`, `.links` and `.fromIR` rows. Never
-  import `traversal/systems-corpus` (core's runner). Unreal's
-  `Portable/InsimulTraversal` is the interim copy these rows and slice 2's retire
-  (`P9e.unreal.retire-traversal-copy`; `corebridge/ENGINE_BINDINGS.md` maps every
-  function of it and lists what slice 2 owes).
+  import `traversal/systems-corpus` (core's runner).
+- **The traversal layers (PL.native-traversal-rows slice 2, U106(1)) run core's
+  `conformance/traversal/{session,mounts,save}.json` UNCHANGED** in the same set and
+  runner. Core's `TraversalPlanner`, `VehicleRegistry` and `FastTravelDirector` are
+  ONE session (`traversal.session.create` / `.apply`), wired as core's
+  `docs/traversal-systems.md` §1 and §8 wire them (the shared `StaminaPool`, the
+  registry's follow and lent reins, the personal verbs' `personalVehicleModes`
+  handed to `setModes`); each op is one core call answered under a named key plus
+  what the hosts recorded (`events`, `orders`, `clock`), and the view is the four
+  layers' state. The probe and the locomotion host are DATA the binding states
+  (`probe`, `locomotion.stuck`, op `host`), because core's callbacks cannot cross
+  the ABI. The pure parts are one row per function: `traversal.personal.*`,
+  `traversal.lending.*`, `traversal.save.*`. A session case is driven as one session
+  with one apply per step; the runner keeps the recordings pending until a step
+  records them, as core's runner does. Unreal's `Portable/InsimulTraversal` is the
+  interim copy both slices retire (`P9e.unreal.retire-traversal-copy`;
+  `corebridge/ENGINE_BINDINGS.md` maps every function of it to its row).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

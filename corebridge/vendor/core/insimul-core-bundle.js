@@ -15,12 +15,12 @@
     }
     /** @param {string} input @returns {Uint8Array} */
     encode(input = "") {
-      const str5 = String(input);
+      const str6 = String(input);
       const bytes = [];
-      for (let i = 0; i < str5.length; i++) {
-        let code = str5.charCodeAt(i);
+      for (let i = 0; i < str6.length; i++) {
+        let code = str6.charCodeAt(i);
         if (code >= 55296 && code <= 56319) {
-          const next = i + 1 < str5.length ? str5.charCodeAt(i + 1) : 0;
+          const next = i + 1 < str6.length ? str6.charCodeAt(i + 1) : 0;
           if (next >= 56320 && next <= 57343) {
             code = 65536 + (code - 55296 << 10) + (next - 56320);
             i++;
@@ -194,8 +194,8 @@
         );
       }
       try {
-        const result = await fn(s, op);
-        results.push(result === void 0 ? null : result);
+        const result2 = await fn(s, op);
+        results.push(result2 === void 0 ? null : result2);
       } catch (err) {
         const msg = err && err.message ? err.message : String(err);
         const wrapped = new Error(`insimulcore: ${method}: ops[${i}] (${name}) failed: ${msg}`);
@@ -211,8 +211,8 @@
     const results = [];
     for (let i = 0; i < ops.length; i++) {
       try {
-        const result = await step(s, ops[i]);
-        results.push(result === void 0 ? null : result);
+        const result2 = await step(s, ops[i]);
+        results.push(result2 === void 0 ? null : result2);
       } catch (err) {
         const name = ops[i] && typeof ops[i] === "object" ? ops[i].op : void 0;
         const msg = err && err.message ? err.message : String(err);
@@ -371,10 +371,10 @@
         }
       } else {
         const factText = clause.replace(/\.\s*$/, "").trim();
-        const result = parseTerm(factText);
-        if (result && result.type === "fact") {
-          result.fact.line = startLine;
-          facts.push(result.fact);
+        const result2 = parseTerm(factText);
+        if (result2 && result2.type === "fact") {
+          result2.fact.line = startLine;
+          facts.push(result2.fact);
         } else if (factText) {
           errors.push({ line: startLine, message: "Failed to parse fact", text: factText.substring(0, 80) });
         }
@@ -745,7 +745,7 @@
   function fillTitle(title, bindings) {
     return title.replace(
       /\{(\w+)\}/g,
-      (whole3, slot) => slot in bindings ? String(bindings[slot]) : whole3
+      (whole4, slot) => slot in bindings ? String(bindings[slot]) : whole4
     );
   }
   function evalAmount(arg, tpl, bindMap) {
@@ -2123,9 +2123,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       if (functor === "talk_to" && count > 1) {
         desc = `Talk to ${target} (at least ${count} turns)`;
       }
-      const result = { type: singleArgGoals[functor], description: desc, target, requiredCount: count, required: count };
-      if (functor === "talk_to") result.npcId = target;
-      return result;
+      const result2 = { type: singleArgGoals[functor], description: desc, target, requiredCount: count, required: count };
+      if (functor === "talk_to") result2.npcId = target;
+      return result2;
     }
     if (functor === "deliver" && args.length >= 2) {
       return { type: "deliver_item", description: `Deliver ${args[0]} to ${args[1]}`, target: args[1], item: args[0], requiredCount: 1, required: 1 };
@@ -2166,16 +2166,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     };
     if (countGoals[functor] && args.length >= 1 && /^\d+(\.\d+)?$/.test(args[0])) {
       const count = functor === "build_friendship" ? parseFloat(args[0]) : parseInt(args[0]);
-      const result = { type: functor, description: formatCountDescription(countGoals[functor], count), requiredCount: count, required: count };
+      const result2 = { type: functor, description: formatCountDescription(countGoals[functor], count), requiredCount: count, required: count };
       if (functor === "observe_activity" && args.length >= 2) {
-        result.observeDurationRequired = parseInt(args[1]) || 5;
+        result2.observeDurationRequired = parseInt(args[1]) || 5;
       }
       if (functor === "build_friendship") {
-        result.requiredStrength = count;
-        result.requiredCount = 1;
-        result.required = 1;
+        result2.requiredStrength = count;
+        result2.requiredCount = 1;
+        result2.required = 1;
       }
-      return result;
+      return result2;
     }
     if (functor === "learn_words" && args.length === 1 && args[0].startsWith("[")) {
       const words = args[0].slice(1, -1).split(",").map((w) => w.trim().replace(/'/g, ""));
@@ -2186,7 +2186,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const minWordCount = args.length >= 4 ? parseInt(args[3]) || void 0 : void 0;
       const phaseType = args[0];
       const desc = buildExplicitDescription(phaseType, count, minWordCount);
-      const result = {
+      const result2 = {
         type: phaseType,
         description: desc,
         assessmentPhaseId: phaseType,
@@ -2194,8 +2194,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         requiredCount: count,
         required: count
       };
-      if (minWordCount) result.minWordCount = minWordCount;
-      return result;
+      if (minWordCount) result2.minWordCount = minWordCount;
+      return result2;
     }
     if (functor === "objective" && args.length >= 1) {
       let desc = args[0];
@@ -3616,8 +3616,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function summaryTitle(index, s) {
     return slotSummaryLine(s) || `Slot ${index + 1}`;
   }
-  function view(result) {
-    const { index, outcome, summary } = result;
+  function view(result2) {
+    const { index, outcome, summary } = result2;
     if (outcome === "empty") {
       return { index, status: "empty", title: "Empty Slot", message: "", canLoad: false, canSave: true };
     }
@@ -5002,7 +5002,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       });
     }
     trackNavigationWaypoint(questId) {
-      let result = null;
+      let result2 = null;
       this.forEachObjective(questId, "navigate_language", (quest, obj3) => {
         obj3.waypointsReached = (obj3.waypointsReached || 0) + 1;
         obj3.stepsCompleted = obj3.waypointsReached;
@@ -5010,12 +5010,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         const nextIdx = obj3.waypointsReached;
         if (nextIdx >= (obj3.stepsRequired || waypoints.length)) {
           this.completeObjective(quest.id, obj3.id);
-          result = { nextWaypointIndex: nextIdx, completed: true, objective: obj3 };
+          result2 = { nextWaypointIndex: nextIdx, completed: true, objective: obj3 };
         } else {
-          result = { nextWaypointIndex: nextIdx, completed: false, objective: obj3 };
+          result2 = { nextWaypointIndex: nextIdx, completed: false, objective: obj3 };
         }
       });
-      return result;
+      return result2;
     }
     trackPronunciationAttempt(passed, questId, score, phrase, options) {
       const pronunciationTypes = ["pronunciation_check", "listen_and_repeat", "speak_phrase"];
@@ -5516,7 +5516,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * Returns a map of questId → array of { id, ...progressFields }.
      */
     serializeObjectiveStates() {
-      const result = {};
+      const result2 = {};
       for (const quest of this.quests) {
         if (!quest.objectives?.length) continue;
         const objectiveStates = [];
@@ -5535,10 +5535,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           }
         }
         if (objectiveStates.length > 0) {
-          result[quest.id] = objectiveStates;
+          result2[quest.id] = objectiveStates;
         }
       }
-      return result;
+      return result2;
     }
     /**
      * Restore objective progress from previously serialized state.
@@ -7158,9 +7158,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return host.weather;
   }
   async function one(engine, goal, variable) {
-    const result = await engine.query(goal, 1);
-    if (!result.success || result.bindings.length === 0) return null;
-    const value = result.bindings[0][variable];
+    const result2 = await engine.query(goal, 1);
+    if (!result2.success || result2.bindings.length === 0) return null;
+    const value = result2.bindings[0][variable];
     return typeof value === "string" || typeof value === "number" ? value : null;
   }
   function text(value) {
@@ -9045,10 +9045,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
      * rather than a stamina-specific predicate.
      */
     async loadCostsFromKb(engine) {
-      const result = await engine.query("action(Id, _, _, Cost)", MAX_ACTION_SOLUTIONS);
-      if (!result.success) return 0;
+      const result2 = await engine.query("action(Id, _, _, Cost)", MAX_ACTION_SOLUTIONS);
+      if (!result2.success) return 0;
       let loaded = 0;
-      for (const binding2 of result.bindings) {
+      for (const binding2 of result2.bindings) {
         const id = typeof binding2["Id"] === "string" ? binding2["Id"] : null;
         const cost = typeof binding2["Cost"] === "number" ? binding2["Cost"] : Number(binding2["Cost"]);
         if (id === null || !Number.isFinite(cost)) continue;
@@ -9597,6 +9597,18 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       driver
     };
   }
+  function vehiclePassengers(state) {
+    return [...state.occupants].sort(compareIds);
+  }
+  function initialVehicleState(vehicle) {
+    return {
+      id: vehicle.id,
+      location: vehicle.location,
+      owner: vehicle.owner,
+      occupants: [],
+      driver: void 0
+    };
+  }
   function isAnothersVehicle(state, actor) {
     return state.owner !== void 0 && state.owner !== actor;
   }
@@ -9857,6 +9869,3719 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   function unseat() {
     return initialSeat();
+  }
+
+  // @insimul/core/src/identity/worlds.ts
+  var PLAYTHROUGH_SEPARATOR = "#save-";
+  var ENCODED_SEPARATOR = sanitizeLocalId(`a${PLAYTHROUGH_SEPARATOR}b`).slice(1, -1);
+  function playthroughWorldId(worldMongoId, saveId) {
+    if (!saveId) throw new Error("playthroughWorldId: empty save id");
+    return {
+      kind: "world",
+      namespace: INSIMUL_NAMESPACE,
+      localId: sanitizeLocalId(`${worldMongoId}${PLAYTHROUGH_SEPARATOR}${saveId}`)
+    };
+  }
+  function worldFacts(decl) {
+    const world2 = formatIdTerm(decl.world);
+    const facts = [`world_declared(${world2}).`];
+    if (decl.role) facts.push(`world_role(${world2}, ${decl.role}).`);
+    if (decl.parent) facts.push(`world_parent(${world2}, ${formatIdTerm(decl.parent)}).`);
+    if (decl.inheritsIdentity) facts.push(`world_inherits_identity(${world2}).`);
+    return facts;
+  }
+  var WORLD_CONTEXT_FUNCTOR = "@world";
+  function worldContextTerm(world2) {
+    return `${prologAtom(WORLD_CONTEXT_FUNCTOR)}(${formatIdTerm(world2)})`;
+  }
+
+  // @insimul/core/src/game-engine/host-contracts.ts
+  var MOVEMENT_URGENCIES = Object.freeze([
+    "idle",
+    "ordinary",
+    "hurried",
+    "urgent"
+  ]);
+  var MOVEMENT_STANCES = Object.freeze(["standing", "crouching", "prone"]);
+  var ANIMATION_INTENTS = Object.freeze([
+    "idle",
+    "walk",
+    "run",
+    "crouch",
+    "swim",
+    "climb",
+    "jump",
+    "ride",
+    "carry",
+    "sit",
+    "sleep",
+    "eat",
+    "work",
+    "handle",
+    "read",
+    "talk",
+    "listen",
+    "wave",
+    "gesture",
+    "strike",
+    "guard",
+    "cast",
+    "stagger",
+    "collapse"
+  ]);
+  var INFERENCE_REQUEST_KINDS = Object.freeze(["proposal", "utterance"]);
+  var MODEL_RESIDENCIES = Object.freeze(["resident", "on-demand", "absent"]);
+  var INFERENCE_STATUSES = Object.freeze([
+    "pending",
+    "ready",
+    "failed",
+    "unknown"
+  ]);
+  var NULL_HOST_ADAPTER = Object.freeze({});
+
+  // @insimul/core/src/game-engine/action-matrix.ts
+  var ACTION_MATRIX = [
+    // ═══════════════════════════════════════════════════════════════════════════
+    // MOVEMENT
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ─── Parent: move ──────────────────────────────────────────────────────
+    {
+      actionId: "move",
+      animation: "walk",
+      displayName: "Move",
+      category: "movement",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "walk",
+      animation: "walk",
+      displayName: "Walk",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "jog",
+      animation: "run",
+      displayName: "Jog",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "sprint",
+      animation: "run",
+      displayName: "Sprint",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "swim",
+      animation: "swim",
+      displayName: "Swim",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "swim_idle",
+      animation: "swim",
+      displayName: "Tread Water",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "walk_carry",
+      animation: "carry",
+      displayName: "Walk While Carrying",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "walk_formal",
+      animation: "walk",
+      displayName: "Walk Formally",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "drive",
+      animation: "ride",
+      displayName: "Drive",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "crouch_walk",
+      animation: "crouch",
+      displayName: "Crouch Walk",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "crouch_idle",
+      animation: "crouch",
+      displayName: "Crouch",
+      category: "movement",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Parent: jump ──────────────────────────────────────────────────────
+    {
+      actionId: "jump",
+      animation: "jump",
+      displayName: "Jump",
+      category: "movement",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "ninja_jump",
+      animation: "jump",
+      displayName: "Ninja Jump",
+      category: "movement",
+      parentAction: "jump",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "roll",
+      animation: "jump",
+      displayName: "Roll",
+      category: "movement",
+      parentAction: "jump",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "slide",
+      animation: "jump",
+      displayName: "Slide",
+      category: "movement",
+      parentAction: "jump",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "climb",
+      animation: "climb",
+      displayName: "Climb",
+      category: "movement",
+      parentAction: "jump",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // COMBAT
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ─── Parent: attack_enemy ──────────────────────────────────────────────
+    {
+      actionId: "attack_enemy",
+      animation: "strike",
+      displayName: "Attack Enemy",
+      category: "combat",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["combat_action", "enemy_defeated"],
+      objectiveTypes: ["defeat_enemies"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sword_attack",
+      animation: "strike",
+      displayName: "Sword Attack",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sword_combo",
+      animation: "strike",
+      displayName: "Sword Combo",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sword_dash",
+      animation: "strike",
+      displayName: "Sword Dash",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sword_idle",
+      animation: "guard",
+      displayName: "Sword Ready",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "punch",
+      animation: "strike",
+      displayName: "Punch",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "punch_heavy",
+      animation: "strike",
+      displayName: "Heavy Punch",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "melee_hook",
+      animation: "strike",
+      displayName: "Hook Punch",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "shield_bash",
+      animation: "strike",
+      displayName: "Shield Bash",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "shield_dash",
+      animation: "strike",
+      displayName: "Shield Dash",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "pistol_shoot",
+      animation: "strike",
+      displayName: "Shoot Pistol",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "pistol_aim",
+      animation: "guard",
+      displayName: "Aim Pistol",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "pistol_reload",
+      animation: "handle",
+      displayName: "Reload Pistol",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "throw_projectile",
+      animation: "strike",
+      displayName: "Throw Projectile",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "zombie_attack",
+      animation: "strike",
+      displayName: "Zombie Attack",
+      category: "combat",
+      parentAction: "attack_enemy",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    // ─── Parent: defend ────────────────────────────────────────────────────
+    {
+      actionId: "defend",
+      animation: "guard",
+      displayName: "Defend",
+      category: "combat",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "shield_block",
+      animation: "guard",
+      displayName: "Shield Block",
+      category: "combat",
+      parentAction: "defend",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "sword_block",
+      animation: "guard",
+      displayName: "Sword Block",
+      category: "combat",
+      parentAction: "defend",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Parent: cast_spell ────────────────────────────────────────────────
+    {
+      actionId: "cast_spell",
+      animation: "cast",
+      displayName: "Cast Spell",
+      category: "combat",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "spell_channel",
+      animation: "cast",
+      displayName: "Channel Spell",
+      category: "combat",
+      parentAction: "cast_spell",
+      interactionMode: "animation",
+      eventTypes: ["combat_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Parent: react ─────────────────────────────────────────────────────
+    {
+      actionId: "react",
+      animation: "stagger",
+      displayName: "React",
+      category: "combat",
+      parentAction: null,
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "die",
+      animation: "collapse",
+      displayName: "Die",
+      category: "combat",
+      parentAction: "react",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "hit_head",
+      animation: "stagger",
+      displayName: "Hit Head",
+      category: "combat",
+      parentAction: "react",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "hit_reaction",
+      animation: "stagger",
+      displayName: "Hit Reaction",
+      category: "combat",
+      parentAction: "react",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "knockback",
+      animation: "stagger",
+      displayName: "Knockback",
+      category: "combat",
+      parentAction: "react",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Creature actions (zombie_idle, zombie_walk share parents above) ──
+    {
+      actionId: "zombie_idle",
+      animation: "idle",
+      displayName: "Zombie Idle",
+      category: "combat",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "zombie_walk",
+      animation: "walk",
+      displayName: "Zombie Walk",
+      category: "combat",
+      parentAction: "move",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SOCIAL
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ─── Parent: talk_to_npc ───────────────────────────────────────────────
+    {
+      actionId: "talk_to_npc",
+      animation: "talk",
+      displayName: "Talk to NPC",
+      category: "social",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["npc_talked"],
+      objectiveTypes: ["talk_to_npc", "complete_conversation", "conversation_initiation"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "talk",
+      animation: "talk",
+      displayName: "Talk",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "animation",
+      eventTypes: ["npc_talked"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sit_talk",
+      animation: "sit",
+      displayName: "Sit and Talk",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "animation",
+      eventTypes: ["npc_talked"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "phone_call",
+      animation: "talk",
+      displayName: "Phone Call",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "animation",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "greet",
+      animation: "wave",
+      displayName: "Greet",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["npc_greeting", "conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "compliment_npc",
+      animation: "talk",
+      displayName: "Compliment",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: ["build_friendship", "gain_reputation"],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "insult_npc",
+      animation: "talk",
+      displayName: "Insult",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "threaten",
+      animation: "talk",
+      displayName: "Threaten",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "flirt",
+      animation: "talk",
+      displayName: "Flirt",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "romance_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "persuade",
+      animation: "talk",
+      displayName: "Persuade",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "bribe",
+      animation: "talk",
+      displayName: "Bribe",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "gossip",
+      animation: "talk",
+      displayName: "Gossip",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "confess",
+      animation: "talk",
+      displayName: "Confess",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "apologize",
+      animation: "talk",
+      displayName: "Apologize",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "comfort",
+      animation: "talk",
+      displayName: "Comfort",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: ["build_friendship"],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "argue",
+      animation: "talk",
+      displayName: "Argue",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "npc_relationship_changed"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "joke",
+      animation: "talk",
+      displayName: "Tell Joke",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "share_story",
+      animation: "talk",
+      displayName: "Share Story",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "ask_about",
+      animation: "talk",
+      displayName: "Ask About",
+      category: "social",
+      parentAction: "talk_to_npc",
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: [],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    // ─── Parent: express ───────────────────────────────────────────────────
+    {
+      actionId: "express",
+      animation: "talk",
+      displayName: "Express",
+      category: "social",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "call_out",
+      animation: "talk",
+      displayName: "Call Out",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "dance",
+      animation: "gesture",
+      displayName: "Dance",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "fold_arms",
+      animation: "gesture",
+      displayName: "Fold Arms",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "nod_yes",
+      animation: "gesture",
+      displayName: "Nod Yes",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "shake_head_no",
+      animation: "gesture",
+      displayName: "Shake Head No",
+      category: "social",
+      parentAction: "express",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Parent: idle ──────────────────────────────────────────────────────
+    {
+      actionId: "idle",
+      animation: "idle",
+      displayName: "Idle",
+      category: "social",
+      parentAction: null,
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "sit_down",
+      animation: "sit",
+      displayName: "Sit Down",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: ["furniture_sat"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "sit_idle",
+      animation: "sit",
+      displayName: "Sit Idle",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "stand_up",
+      animation: "idle",
+      displayName: "Stand Up",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: ["furniture_stood"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "get_up",
+      animation: "idle",
+      displayName: "Get Up",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    {
+      actionId: "lean_railing",
+      animation: "sit",
+      displayName: "Lean on Railing",
+      category: "social",
+      parentAction: "idle",
+      interactionMode: "animation",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: false
+    },
+    // ─── Social standalone ─────────────────────────────────────────────────
+    {
+      actionId: "give_gift",
+      animation: "handle",
+      displayName: "Give Gift",
+      category: "social",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["gift_given"],
+      objectiveTypes: ["give_gift", "deliver_item"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "pray",
+      animation: "gesture",
+      displayName: "Pray",
+      category: "social",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "escort_npc",
+      animation: "walk",
+      displayName: "Escort NPC",
+      category: "social",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["escort_started", "escort_completed"],
+      objectiveTypes: ["escort_npc"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "request_quest",
+      animation: "talk",
+      displayName: "Request Quest",
+      category: "social",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["quest_accepted"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "steal",
+      animation: "handle",
+      displayName: "Steal",
+      category: "social",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["item_collected"],
+      objectiveTypes: ["collect_item"],
+      status: "partial",
+      priority: "low",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "eavesdrop",
+      animation: "listen",
+      displayName: "Eavesdrop",
+      category: "social",
+      parentAction: null,
+      interactionMode: "observational",
+      eventTypes: ["conversation_overheard", "vocabulary_overheard"],
+      objectiveTypes: ["observe_activity"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // COMMERCE
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "trade",
+      animation: "handle",
+      displayName: "Trade",
+      category: "commerce",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["item_purchased"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "buy_item",
+      animation: "handle",
+      displayName: "Buy Item",
+      category: "commerce",
+      parentAction: "trade",
+      interactionMode: "physical",
+      eventTypes: ["item_purchased"],
+      objectiveTypes: ["collect_item"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "sell_item",
+      animation: "handle",
+      displayName: "Sell Item",
+      category: "commerce",
+      parentAction: "trade",
+      interactionMode: "physical",
+      eventTypes: ["item_purchased"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // RESOURCE
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ─── Parent: gather ────────────────────────────────────────────────────
+    {
+      actionId: "gather",
+      animation: "work",
+      displayName: "Gather",
+      category: "resource",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "chop_tree",
+      animation: "work",
+      displayName: "Chop Tree",
+      category: "resource",
+      parentAction: "gather",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "mine_rock",
+      animation: "work",
+      displayName: "Mine Rock",
+      category: "resource",
+      parentAction: "gather",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "fish",
+      animation: "work",
+      displayName: "Fish",
+      category: "resource",
+      parentAction: "gather",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "gather_herb",
+      animation: "work",
+      displayName: "Gather Herb",
+      category: "resource",
+      parentAction: "gather",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action", "collect_item"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    // ─── Parent: farm ──────────────────────────────────────────────────────
+    {
+      actionId: "farm",
+      animation: "work",
+      displayName: "Farm",
+      category: "resource",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "farm_plant",
+      animation: "work",
+      displayName: "Plant Crops",
+      category: "resource",
+      parentAction: "farm",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      priority: "high",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "farm_water",
+      animation: "work",
+      displayName: "Water Crops",
+      category: "resource",
+      parentAction: "farm",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      priority: "high",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "farm_harvest",
+      animation: "work",
+      displayName: "Harvest Crops",
+      category: "resource",
+      parentAction: "farm",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed", "item_collected"],
+      objectiveTypes: ["physical_action", "collect_item"],
+      status: "implemented",
+      priority: "high",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ─── Parent: craft_item ────────────────────────────────────────────────
+    {
+      actionId: "craft_item",
+      animation: "work",
+      displayName: "Craft Item",
+      category: "resource",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["item_crafted"],
+      objectiveTypes: ["craft_item"],
+      status: "partial",
+      priority: "high",
+      requiresTarget: false
+    },
+    {
+      actionId: "cook",
+      animation: "work",
+      displayName: "Cook",
+      category: "resource",
+      parentAction: "craft_item",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed", "item_crafted"],
+      objectiveTypes: ["craft_item", "physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "fix_repair",
+      animation: "work",
+      displayName: "Repair",
+      category: "resource",
+      parentAction: "craft_item",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ─── Parent: work ──────────────────────────────────────────────────────
+    {
+      actionId: "work",
+      animation: "work",
+      displayName: "Work",
+      category: "resource",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["furniture_worked"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "building"
+    },
+    {
+      actionId: "paint",
+      animation: "work",
+      displayName: "Paint",
+      category: "resource",
+      parentAction: "work",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "sweep",
+      animation: "work",
+      displayName: "Sweep",
+      category: "resource",
+      parentAction: "work",
+      interactionMode: "physical",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: ["physical_action"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "push_object",
+      animation: "carry",
+      displayName: "Push Object",
+      category: "resource",
+      parentAction: "work",
+      interactionMode: "animation",
+      eventTypes: ["physical_action_completed"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // ITEMS
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "use_item",
+      animation: "handle",
+      displayName: "Use Item",
+      category: "items",
+      parentAction: null,
+      interactionMode: "inventory",
+      eventTypes: ["item_used"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "consume",
+      animation: "eat",
+      displayName: "Consume",
+      category: "items",
+      parentAction: "use_item",
+      interactionMode: "inventory",
+      eventTypes: ["item_used"],
+      objectiveTypes: ["collect_item"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "equip_item",
+      animation: "handle",
+      displayName: "Equip Item",
+      category: "items",
+      parentAction: "use_item",
+      interactionMode: "inventory",
+      eventTypes: ["item_equipped"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "hold_lantern",
+      animation: "carry",
+      displayName: "Hold Lantern",
+      category: "items",
+      parentAction: "use_item",
+      interactionMode: "animation",
+      eventTypes: ["item_used"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "hold_torch",
+      animation: "carry",
+      displayName: "Hold Torch",
+      category: "items",
+      parentAction: "use_item",
+      interactionMode: "animation",
+      eventTypes: ["item_used"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "drop_item",
+      animation: "handle",
+      displayName: "Drop Item",
+      category: "items",
+      parentAction: null,
+      interactionMode: "inventory",
+      eventTypes: ["item_dropped"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "collect_item",
+      animation: "handle",
+      displayName: "Collect Item",
+      category: "items",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["item_collected"],
+      objectiveTypes: ["collect_item", "collect_text"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    {
+      actionId: "pick_up",
+      animation: "handle",
+      displayName: "Pick Up",
+      category: "items",
+      parentAction: "collect_item",
+      interactionMode: "animation",
+      eventTypes: ["item_collected"],
+      objectiveTypes: [],
+      status: "animation-only",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // EXPLORATION
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "travel_to_location",
+      animation: "walk",
+      displayName: "Travel to Location",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["location_visited", "location_discovered"],
+      objectiveTypes: ["visit_location", "discover_location"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "location"
+    },
+    {
+      actionId: "enter_building",
+      animation: "walk",
+      displayName: "Enter Building",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["location_visited"],
+      objectiveTypes: ["visit_location"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "building"
+    },
+    {
+      actionId: "open_container",
+      animation: "handle",
+      displayName: "Open Container",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["container_opened"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "container"
+    },
+    {
+      actionId: "investigate",
+      animation: "handle",
+      displayName: "Investigate",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["investigation_completed", "clue_discovered"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "observe_activity",
+      animation: "listen",
+      displayName: "Observe Activity",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "observational",
+      eventTypes: ["activity_observed"],
+      objectiveTypes: ["observe_activity"],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "take_photo",
+      animation: "handle",
+      displayName: "Take Photo",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["photo_taken"],
+      objectiveTypes: ["photograph_subject", "photograph_activity"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "mount_vehicle",
+      animation: "ride",
+      displayName: "Mount Vehicle",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["vehicle_mounted"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "solve_puzzle",
+      animation: "handle",
+      displayName: "Solve Puzzle",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["puzzle_solved"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "interact",
+      animation: "handle",
+      displayName: "Interact",
+      category: "exploration",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: [],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LANGUAGE
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "read_sign",
+      animation: "read",
+      displayName: "Read Sign",
+      category: "language",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["sign_read"],
+      objectiveTypes: ["read_sign"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "examine_object",
+      animation: "read",
+      displayName: "Examine Object",
+      category: "language",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["object_examined"],
+      objectiveTypes: ["examine_object", "collect_vocabulary"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "point_and_name",
+      animation: "gesture",
+      displayName: "Point and Name",
+      category: "language",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["object_named"],
+      objectiveTypes: ["point_and_name", "identify_object"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "object"
+    },
+    {
+      actionId: "ask_for_directions",
+      animation: "talk",
+      displayName: "Ask for Directions",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: ["ask_for_directions", "navigate_language", "follow_directions"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "introduce_self",
+      animation: "wave",
+      displayName: "Introduce Yourself",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: ["introduce_self"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "order_food",
+      animation: "talk",
+      displayName: "Order Food",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "food_ordered"],
+      objectiveTypes: ["order_food"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "haggle_price",
+      animation: "talk",
+      displayName: "Haggle Price",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "price_haggled"],
+      objectiveTypes: ["haggle_price"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "describe_scene",
+      animation: "talk",
+      displayName: "Describe Scene",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action"],
+      objectiveTypes: ["describe_scene"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "listen_and_repeat",
+      animation: "talk",
+      displayName: "Listen and Repeat",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["utterance_evaluated"],
+      objectiveTypes: ["listen_and_repeat", "pronunciation_check"],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "write_response",
+      animation: "read",
+      displayName: "Write Response",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["writing_submitted"],
+      objectiveTypes: ["write_response", "translation_challenge"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "answer_question",
+      animation: "talk",
+      displayName: "Answer Question",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "questions_answered"],
+      objectiveTypes: ["comprehension_quiz", "listening_comprehension"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "teach_vocabulary",
+      animation: "talk",
+      displayName: "Teach Vocabulary",
+      category: "language",
+      parentAction: null,
+      interactionMode: "conversational",
+      eventTypes: ["conversational_action", "vocabulary_used"],
+      objectiveTypes: ["teach_vocabulary", "teach_phrase"],
+      status: "partial",
+      priority: "medium",
+      requiresTarget: true,
+      targetType: "npc"
+    },
+    {
+      actionId: "learn_word",
+      animation: "listen",
+      displayName: "Learn Word",
+      category: "language",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["vocabulary_used"],
+      objectiveTypes: ["collect_vocabulary"],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "read_book",
+      animation: "read",
+      displayName: "Read Book",
+      category: "language",
+      parentAction: null,
+      interactionMode: "physical",
+      eventTypes: ["reading_completed", "text_collected"],
+      objectiveTypes: ["read_text", "find_text"],
+      status: "implemented",
+      requiresTarget: true,
+      targetType: "item"
+    },
+    // ═══════════════════════════════════════════════════════════════════════════
+    // SURVIVAL
+    // ═══════════════════════════════════════════════════════════════════════════
+    {
+      actionId: "rest",
+      animation: "sit",
+      displayName: "Rest",
+      category: "survival",
+      parentAction: null,
+      interactionMode: "automatic",
+      eventTypes: ["furniture_sat"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "sleep",
+      animation: "sleep",
+      displayName: "Sleep",
+      category: "survival",
+      parentAction: "rest",
+      interactionMode: "automatic",
+      eventTypes: ["furniture_slept"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    },
+    {
+      actionId: "sit",
+      animation: "sit",
+      displayName: "Sit",
+      category: "survival",
+      parentAction: "rest",
+      interactionMode: "automatic",
+      eventTypes: ["furniture_sat"],
+      objectiveTypes: [],
+      status: "implemented",
+      requiresTarget: false
+    }
+  ];
+  var actionIndex = /* @__PURE__ */ new Map();
+  for (const entry of ACTION_MATRIX) {
+    actionIndex.set(entry.actionId, entry);
+  }
+  var eventToActionsIndex = /* @__PURE__ */ new Map();
+  for (const entry of ACTION_MATRIX) {
+    for (const eventType of entry.eventTypes) {
+      const list2 = eventToActionsIndex.get(eventType) || [];
+      list2.push(entry);
+      eventToActionsIndex.set(eventType, list2);
+    }
+  }
+  var objectiveToActionsIndex = /* @__PURE__ */ new Map();
+  for (const entry of ACTION_MATRIX) {
+    for (const objType of entry.objectiveTypes) {
+      const list2 = objectiveToActionsIndex.get(objType) || [];
+      list2.push(entry);
+      objectiveToActionsIndex.set(objType, list2);
+    }
+  }
+  var childrenIndex = /* @__PURE__ */ new Map();
+  for (const entry of ACTION_MATRIX) {
+    if (entry.parentAction) {
+      const list2 = childrenIndex.get(entry.parentAction) || [];
+      list2.push(entry);
+      childrenIndex.set(entry.parentAction, list2);
+    }
+  }
+
+  // @insimul/core/src/ai/action-selection.ts
+  var NO_TARGET = "none";
+  function agentRefKey(agent) {
+    return typeof agent === "string" ? agent : formatCurie(agent);
+  }
+  var DEFAULT_UTILITY_WEIGHTS = Object.freeze({
+    appeal: 1,
+    targetAppeal: 0.3,
+    cost: 0.1,
+    bias: 0.5,
+    jitter: 0.05,
+    costScale: 100,
+    windedCost: 2,
+    exhaustedCost: 5
+  });
+
+  // @insimul/core/src/ai/rule-enforcement.ts
+  var UNCLASSIFIED_NORM = "unclassified";
+  function actFacts(acts) {
+    return acts.map(
+      (act) => `act(${prologAtom(act.event)}, ${prologAtom(agentRefKey(act.actor))}, ${prologAtom(act.action)}, ${prologAtom(act.target ?? NO_TARGET)}).`
+    ).sort(compareIds);
+  }
+  var MAX_ENFORCEMENT_SOLUTIONS = 256;
+  async function checkAction(engine, input) {
+    const agent = agentRefKey(input.agent);
+    const target = input.target ?? NO_TARGET;
+    const gate = await engine.query("current_predicate(forbidden_by/4)", 1);
+    if (gate.success && gate.bindings.length === 0) {
+      return { agent, action: input.action, target, permitted: true, breached: [] };
+    }
+    const breached = await breachedNorms(
+      engine,
+      `forbidden_by(${prologAtom(agent)}, ${prologAtom(input.action)}, ${prologAtom(target)}, Rule)`
+    );
+    return { agent, action: input.action, target, permitted: breached.length === 0, breached };
+  }
+  async function enforceActs(engine, input) {
+    const world2 = worldContextTerm(input.playthrough);
+    const violations = [];
+    const consequenceFacts = [];
+    for (const event of input.events) {
+      const eventAtom = prologAtom(event);
+      for (const breach of await breachesOf(engine, eventAtom)) {
+        const ruleAtom = prologAtom(breach.rule);
+        const actorAtom = prologAtom(breach.actor);
+        const witnesses = await witnessesOf(engine, eventAtom, ruleAtom);
+        const truths = await truthsOf(engine, eventAtom, ruleAtom, breach.actor);
+        const reputation = await reputationOf(engine, eventAtom, ruleAtom);
+        violations.push({
+          event,
+          rule: breach.rule,
+          kind: await normKind(engine, ruleAtom),
+          actor: breach.actor,
+          action: breach.action,
+          target: breach.target,
+          witnesses,
+          truths,
+          reputation
+        });
+        for (const witness of witnesses) {
+          consequenceFacts.push(
+            `violation_record(${eventAtom}, ${ruleAtom}, ${actorAtom}, ${prologAtom(witness)}).`
+          );
+        }
+        for (const truth of truths) {
+          consequenceFacts.push(
+            `claim(${prologAtom(truth.subject)}, ${prologAtom(truth.predicate)}, ${prologAtom(truth.object)}, ${world2}).`
+          );
+        }
+        for (const effect of reputation) {
+          consequenceFacts.push(
+            `reputation_change(${actorAtom}, ${prologAtom(effect.faction)}, ${effect.delta}).`
+          );
+        }
+      }
+    }
+    violations.sort((a, b) => compareIds(a.event, b.event) || compareIds(a.rule, b.rule));
+    consequenceFacts.sort(compareIds);
+    return { tick: input.tick, violations, consequenceFacts };
+  }
+  async function solve(engine, goal) {
+    const result2 = await engine.query(goal, MAX_ENFORCEMENT_SOLUTIONS);
+    if (!result2.success) {
+      throw new Error(`rule enforcement: "${goal}" raised: ${result2.error ?? "unknown error"}`);
+    }
+    return result2.bindings;
+  }
+  async function breachesOf(engine, eventAtom) {
+    const byKey = /* @__PURE__ */ new Map();
+    for (const binding2 of await solve(
+      engine,
+      `violation_of(${eventAtom}, Rule, Actor, Act, T)`
+    )) {
+      const rule2 = text2(binding2["Rule"]);
+      const actor = text2(binding2["Actor"]);
+      const action = text2(binding2["Act"]);
+      const target = text2(binding2["T"]);
+      if (rule2 === null || actor === null || action === null || target === null) continue;
+      byKey.set(streamKey([rule2, actor, action, target]), { rule: rule2, actor, action, target });
+    }
+    return Array.from(byKey.values()).sort(
+      (a, b) => compareIds(a.rule, b.rule) || compareIds(a.actor, b.actor)
+    );
+  }
+  async function breachedNorms(engine, goal) {
+    const rules = /* @__PURE__ */ new Set();
+    for (const binding2 of await solve(engine, goal)) {
+      const rule2 = text2(binding2["Rule"]);
+      if (rule2 !== null) rules.add(rule2);
+    }
+    const norms = [];
+    for (const rule2 of Array.from(rules).sort(compareIds)) {
+      norms.push({ rule: rule2, kind: await normKind(engine, prologAtom(rule2)) });
+    }
+    return norms;
+  }
+  async function normKind(engine, ruleAtom) {
+    let smallest = null;
+    for (const binding2 of await solve(engine, `norm_kind(${ruleAtom}, K)`)) {
+      const kind = text2(binding2["K"]);
+      if (kind === null) continue;
+      if (smallest === null || compareIds(kind, smallest) < 0) smallest = kind;
+    }
+    return smallest ?? UNCLASSIFIED_NORM;
+  }
+  async function witnessesOf(engine, eventAtom, ruleAtom) {
+    const witnesses = /* @__PURE__ */ new Set();
+    for (const binding2 of await solve(
+      engine,
+      `witnessed_violation(${eventAtom}, ${ruleAtom}, W)`
+    )) {
+      const witness = text2(binding2["W"]);
+      if (witness !== null) witnesses.add(witness);
+    }
+    return Array.from(witnesses).sort(compareIds);
+  }
+  async function truthsOf(engine, eventAtom, ruleAtom, actor) {
+    const byKey = /* @__PURE__ */ new Map();
+    for (const binding2 of await solve(
+      engine,
+      `enforced_truth(${eventAtom}, ${ruleAtom}, _, P, O)`
+    )) {
+      const predicate = text2(binding2["P"]);
+      const object = text2(binding2["O"]);
+      if (predicate === null || object === null) continue;
+      byKey.set(streamKey([predicate, object]), { subject: actor, predicate, object });
+    }
+    return Array.from(byKey.values()).sort(
+      (a, b) => compareIds(a.predicate, b.predicate) || compareIds(a.object, b.object)
+    );
+  }
+  async function reputationOf(engine, eventAtom, ruleAtom) {
+    const rows = /* @__PURE__ */ new Map();
+    for (const binding2 of await solve(
+      engine,
+      `enforced_reputation(${eventAtom}, ${ruleAtom}, _, F, D)`
+    )) {
+      const faction = text2(binding2["F"]);
+      const delta = num(binding2["D"]);
+      if (faction === null || delta === null) continue;
+      rows.set(streamKey([faction, String(delta)]), { faction, delta });
+    }
+    const byFaction = /* @__PURE__ */ new Map();
+    for (const row of rows.values()) {
+      byFaction.set(row.faction, (byFaction.get(row.faction) ?? 0) + row.delta);
+    }
+    return Array.from(byFaction.entries()).map(([faction, delta]) => ({ faction, delta })).sort((a, b) => compareIds(a.faction, b.faction));
+  }
+  function text2(value) {
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+    return null;
+  }
+  function num(value) {
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    if (typeof value === "string") {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+  }
+
+  // @insimul/core/src/traversal/mode-lending.ts
+  var vehicleLender = (vehicleId) => `vehicle:${vehicleId}`;
+  var personalLender = (kind) => `personal:${kind}`;
+  function canonicalLent(lent, modes) {
+    const out = {};
+    if (!lent) return out;
+    const held = new Set(modes);
+    for (const mode of Object.keys(lent).sort(compareIds)) {
+      if (!held.has(mode)) continue;
+      const lenders = [...new Set(lent[mode] ?? [])].sort(compareIds);
+      if (lenders.length > 0) out[mode] = lenders;
+    }
+    return out;
+  }
+  function lendMode(holding, mode, lender) {
+    const modes = [...holding.modes];
+    const lent = canonicalLent(holding.lent, modes);
+    const lenders = lent[mode];
+    if (lenders === void 0) {
+      if (modes.includes(mode)) return { modes, lent };
+      modes.push(mode);
+      return { modes, lent: canonicalLent({ ...lent, [mode]: [lender] }, modes) };
+    }
+    return { modes, lent: canonicalLent({ ...lent, [mode]: [...lenders, lender] }, modes) };
+  }
+  function returnMode(holding, mode, lender) {
+    const modes = [...holding.modes];
+    const lent = canonicalLent(holding.lent, modes);
+    const lenders = lent[mode];
+    if (lenders === void 0 || !lenders.includes(lender)) return { modes, lent };
+    const rest = lenders.filter((l) => l !== lender);
+    if (rest.length > 0) return { modes, lent: { ...lent, [mode]: rest } };
+    const next = { ...lent };
+    delete next[mode];
+    return { modes: modes.filter((m) => m !== mode), lent: next };
+  }
+
+  // @insimul/core/src/game-engine/logic/TraversalPlanner.ts
+  var TraversalPlanner = class {
+    constructor(config = {}) {
+      __publicField(this, "engine");
+      __publicField(this, "tuning");
+      __publicField(this, "stamina");
+      __publicField(this, "probe");
+      __publicField(this, "locomotion");
+      __publicField(this, "vehicles");
+      __publicField(this, "eventBus");
+      /** The world's authored graph. Authored data — never written to by gameplay. */
+      __publicField(this, "links", []);
+      __publicField(this, "actors", /* @__PURE__ */ new Map());
+      /** `traversal_blocked/2`, keyed by the directed edge. */
+      __publicField(this, "blocked", /* @__PURE__ */ new Map());
+      this.engine = config.engine;
+      this.tuning = config.tuning ?? { ...DEFAULT_TRAVERSAL_TUNING };
+      this.stamina = config.stamina;
+      this.probe = config.probe ?? config.host?.traversal;
+      this.locomotion = config.locomotion ?? config.host?.locomotion;
+      this.vehicles = config.vehicles;
+      this.eventBus = config.eventBus;
+      if (config.links) this.loadLinks(config.links);
+      if (config.state) this.restore(config.state);
+    }
+    setEventBus(bus) {
+      this.eventBus = bus;
+    }
+    /** Wire the vehicle module in after construction — see {@link DrivenVehicleSource}. */
+    setVehicleSource(vehicles) {
+      this.vehicles = vehicles;
+    }
+    /** Whether a host wired {@link ITraversalProbe}. False means geometric links are passable. */
+    hasTraversalProbe() {
+      return this.probe !== void 0;
+    }
+    /** Whether a host wired {@link ILocomotionHost}. False means every order arrives. */
+    hasLocomotionHost() {
+      return this.locomotion !== void 0;
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    // ── The graph ──────────────────────────────────────────────────────────
+    /** Replace the authored graph. Ids are settled here so nothing downstream re-derives them. */
+    loadLinks(links) {
+      this.links = links.map((link) => ({ ...link, id: traversalLinkId(link) }));
+    }
+    /** The authored graph, as this instance read it. */
+    getLinks() {
+      return this.links.map((link) => ({ ...link }));
+    }
+    /**
+     * Publish the world's authored graph into the KB as `traversal_link/3`,
+     * `traversal_cost/3` and `traversal_requires/3`.
+     *
+     * Authored data, asserted at load the way `StaminaPool.publishTuning` asserts
+     * `stamina_threshold/2` — so a rule that asks `can_traverse/3` walks the same
+     * graph core resolves over. Returns how many facts were written.
+     */
+    async publishGraph(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const fact of traversalGraphFacts(this.links, this.tuning)) {
+        await engine.assertFact(stripPeriod2(fact));
+        written += 1;
+      }
+      return written;
+    }
+    // ── Roster ─────────────────────────────────────────────────────────────
+    /**
+     * Add or replace an actor, and write their `movement_mode/2` facts.
+     *
+     * `location` is where they are. It is a location ATOM: a host that has a
+     * transform resolves it to the place that transform is in and hands over the
+     * name, which is the entire contract between this module and locomotion.
+     */
+    async register(registration) {
+      const before = this.actors.get(registration.id);
+      const modes = [...registration.modes ?? ["walk"]];
+      this.actors.set(registration.id, {
+        id: registration.id,
+        location: registration.location,
+        modes
+      });
+      const delta = mergeTraversalDeltas(
+        movementModeDelta(registration.id, before?.modes ?? [], modes),
+        arrivalDelta(registration.id, before?.location, registration.location)
+      );
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Forget an actor. Their facts are retracted; the graph is untouched. */
+    async unregister(actorId) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      this.actors.delete(actorId);
+      const delta = movementModeDelta(actorId, actor.modes, []);
+      delta.retract.push(atLocationFact(actorId, actor.location));
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Where this actor is, or `undefined` for one that was never registered. */
+    locationOf(actorId) {
+      return this.actors.get(actorId)?.location;
+    }
+    /** Every mode this actor is currently using. */
+    modesOf(actorId) {
+      return [...this.actors.get(actorId)?.modes ?? []];
+    }
+    /** Which of this actor's modes a vehicle lent, and by whom (`{}` when none, or for an unknown actor). */
+    lentOf(actorId) {
+      const actor = this.actors.get(actorId);
+      return actor ? canonicalLent(actor.lent, actor.modes) : {};
+    }
+    /**
+     * A vehicle lends this actor a mode (`traversal/mode-lending.ts`). A mode the actor already holds
+     * of its own stays its own and nothing is recorded; otherwise the mode is held and `lender` is
+     * recorded as lending it. The registry's reins use it.
+     */
+    async lendMode(actorId, mode, lender) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      const next = lendMode({ modes: actor.modes, lent: actor.lent }, mode, lender);
+      return this.applyHolding(actor, next.modes, next.lent);
+    }
+    /**
+     * A vehicle gives back the mode it lent. Only a recorded lender gives anything back, and the mode
+     * goes only when nobody else still lends it, so an actor who held it another way keeps it.
+     */
+    async returnMode(actorId, mode, lender) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      const next = returnMode({ modes: actor.modes, lent: actor.lent }, mode, lender);
+      return this.applyHolding(actor, next.modes, next.lent);
+    }
+    async applyHolding(actor, modes, lent) {
+      const delta = movementModeDelta(actor.id, actor.modes, modes);
+      actor.modes = [...modes];
+      const kept = canonicalLent(lent, actor.modes);
+      if (Object.keys(kept).length > 0) actor.lent = kept;
+      else delete actor.lent;
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /**
+     * Replace what modes an actor is using — they mounted, they got into the water,
+     * they put the boat back.
+     *
+     * Replaced rather than added to, because `movement_mode/2` says what an actor is
+     * DOING and a character who is both walking and swimming is two facts that
+     * cannot both be true.
+     */
+    async setModes(actorId, modes, lent) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      return this.applyHolding(actor, modes, lent ?? actor.lent);
+    }
+    /**
+     * Record that an actor is somewhere — the ONE thing a host tells core about
+     * where anybody is.
+     *
+     * Called when it becomes true, not on a frame. A host running a path follower at
+     * 60fps calls this once, on arrival, and a host that teleports a character for a
+     * cutscene calls it once too; core cannot tell the two apart and must not be
+     * able to.
+     */
+    async arrive(actorId, location) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptyTraversalDelta();
+      const delta = arrivalDelta(actorId, actor.location, location);
+      actor.location = location;
+      await this.writeDelta(delta);
+      return delta;
+    }
+    // ── Closures ───────────────────────────────────────────────────────────
+    /**
+     * Close a link — "the landslide closed the pass", as `traversal_blocked/2`.
+     *
+     * DIRECTED, exactly as the link is: closing `pass → valley` leaves
+     * `valley → pass` open, and a world that means both closes both.
+     */
+    async block(from, to) {
+      const key = edgeKey(from, to);
+      if (this.blocked.has(key)) return emptyTraversalDelta();
+      this.blocked.set(key, { from, to });
+      const delta = { retract: [], assert: [traversalBlockedFact(from, to)] };
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Reopen a link. Reopening one that was never closed writes nothing. */
+    async unblock(from, to) {
+      const key = edgeKey(from, to);
+      if (!this.blocked.has(key)) return emptyTraversalDelta();
+      this.blocked.delete(key);
+      const delta = { retract: [traversalBlockedFact(from, to)], assert: [] };
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Whether this directed edge is closed. */
+    isBlocked(from, to) {
+      return this.blocked.has(edgeKey(from, to));
+    }
+    // ── The decision ───────────────────────────────────────────────────────
+    /**
+     * Every way out of where this actor is, and whether each is open to them.
+     *
+     * The host is asked about the links a world marked `geometric` and about nothing
+     * else, once per call, on the decision path. Refused ways are kept rather than
+     * filtered: a UI wants to grey out the ford and say why.
+     *
+     * The two rules-layer gates are NOT applied here — an affordance's
+     * `conditional` flag says a requirement is outstanding, and `permissible/3` is
+     * asked when a movement is actually attempted. Asking the KB once per link per
+     * call would be a round trip per candidate on a path an interface polls.
+     */
+    async affordances(actorId) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return [];
+      return resolveAffordances({
+        actor: actorId,
+        from: actor.location,
+        links: this.links,
+        modes: actor.modes,
+        blocked: [...this.blocked.values()],
+        geometry: await this.askProbe(actor),
+        stamina: this.meterOf(actorId),
+        tuning: this.tuning
+      });
+    }
+    /**
+     * `reachable/3`: the cheapest route from where this actor is to `to`, over links
+     * they can currently use, or `undefined`.
+     *
+     * Pure and synchronous — it walks the authored graph and consults neither the
+     * host nor the KB, so a caller can plan over it freely. Whether each leg is
+     * permitted is settled leg by leg, as each is taken.
+     */
+    route(actorId, to) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return void 0;
+      return findRoute({
+        actor: actorId,
+        from: actor.location,
+        to,
+        links: this.links,
+        modes: actor.modes,
+        blocked: [...this.blocked.values()],
+        tuning: this.tuning
+      });
+    }
+    /**
+     * Decide whether this actor may move to an ADJACENT location, without moving
+     * them or spending anything.
+     *
+     * Every gate, in {@link TRAVERSAL_REFUSALS} order: what core knows first, then
+     * the requirement, then permissibility. This is what an NPC's utility layer asks
+     * before it commits and what a UI asks before it offers.
+     */
+    async canTraverse(actorId, to) {
+      const actor = this.actors.get(actorId);
+      if (!actor) {
+        return { actor: actorId, from: "", to, permitted: false, refusal: "unreachable", cost: 0, unmet: [] };
+      }
+      const affordances = await this.affordances(actorId);
+      const chosen = bestAffordance(affordances, to);
+      if (!chosen) {
+        const nearest = affordances.filter((a) => a.to === to).sort((a, b) => refusalRank(b.refusal) - refusalRank(a.refusal) || a.cost - b.cost)[0];
+        return {
+          actor: actorId,
+          from: actor.location,
+          to,
+          permitted: false,
+          refusal: nearest?.refusal ?? "unreachable",
+          affordance: nearest,
+          cost: nearest?.cost ?? 0,
+          unmet: []
+        };
+      }
+      const base = {
+        actor: actorId,
+        from: actor.location,
+        to,
+        affordance: chosen,
+        cost: chosen.cost
+      };
+      const unmet = await this.unmetRequirements(actorId, chosen);
+      if (unmet.length > 0) {
+        return { ...base, permitted: false, refusal: "requires", unmet };
+      }
+      const check = await this.checkPermission(actorId, chosen);
+      if (!check.permitted) {
+        return { ...base, permitted: false, refusal: "forbidden", check, unmet };
+      }
+      return { ...base, permitted: true, check, unmet };
+    }
+    /**
+     * Move this actor to an ADJACENT location, if every gate allows it.
+     *
+     * The order is the whole of the module's discipline, and each step is where it
+     * is for a reason:
+     *
+     *  1. **Decide** ({@link canTraverse}). Nothing has happened yet.
+     *  2. **Charge** the shared meter, with the link's authored cost. A spend that
+     *     cannot be afforded moves nothing and refuses the movement.
+     *  3. **Order** the host to carry it out ({@link ILocomotionHost}). Core has
+     *     already committed; this is not a request for permission.
+     *  4. **Record** where the actor ended up, from the atom the host reported.
+     *
+     * A host that reports `arrived: false` leaves the actor where they were (or
+     * wherever it says they ended up) and **the spend stands**: the climb was
+     * attempted and the effort was expended, which is the answer a simulation gives
+     * and a teleport does not.
+     *
+     * `intent` is US-2 of `125-npc-routines-and-locomotion` — how pressing the
+     * movement is and how the body is carried. It is forwarded onto the order and
+     * read by nothing here; see {@link TraversalIntent}.
+     */
+    async traverse(actorId, to, intent) {
+      const decision = await this.canTraverse(actorId, to);
+      const location = this.actors.get(actorId)?.location ?? decision.from;
+      if (!decision.permitted || !decision.affordance) {
+        return { ...decision, performed: false, location, facts: emptyTraversalDelta(), applied: false };
+      }
+      const affordance = decision.affordance;
+      const spend = await this.stamina?.spend(actorId, {
+        action: affordance.action,
+        cost: affordance.cost
+      });
+      if (spend && !spend.spend.affordable) {
+        return {
+          ...decision,
+          permitted: false,
+          refusal: "stamina",
+          performed: false,
+          spend,
+          location,
+          facts: emptyTraversalDelta(),
+          applied: false
+        };
+      }
+      const arrival = await this.orderLocomotion(actorId, affordance, intent);
+      const landed = arrival.arrived ? to : arrival.location ?? location;
+      const facts = arrivalDelta(actorId, location, landed);
+      const actor = this.actors.get(actorId);
+      if (actor) actor.location = landed;
+      const applied = await this.writeDelta(facts);
+      this.eventBus?.emit({
+        type: "traversal_completed",
+        actorId,
+        from: decision.from,
+        to,
+        mode: affordance.mode,
+        cost: affordance.cost,
+        arrived: arrival.arrived,
+        location: landed
+      });
+      return { ...decision, performed: true, spend, arrival, location: landed, facts, applied };
+    }
+    // ── The gates ──────────────────────────────────────────────────────────
+    /**
+     * The authored goals this link asks of this actor that the KB did not satisfy.
+     *
+     * Evaluated by the PACK's own `traversal_goal_met/2`, not by a second
+     * implementation here: the pack rebuilds the goal with the actor bound (`=..`),
+     * and reproducing that rebuild in TypeScript is how `has_item(Actor, rope, 1)`
+     * ends up satisfied by anyone at all holding a rope
+     * (`prolog/mechanics/traversal-predicates.ts`'s correction to §7).
+     *
+     * With no KB wired every goal is unmet — see the module header for why this gate
+     * fails closed and permissibility fails open.
+     */
+    async unmetRequirements(actorId, affordance) {
+      if (affordance.requires.length === 0) return [];
+      if (!this.engine) return [...affordance.requires];
+      const unmet = [];
+      for (const goal of affordance.requires) {
+        let met = false;
+        try {
+          met = await this.engine.queryOnce(`traversal_goal_met(${prologAtom(actorId)}, ${goal})`);
+        } catch {
+          met = false;
+        }
+        if (!met) unmet.push(goal);
+      }
+      return unmet;
+    }
+    /**
+     * `permissible/3`'s own input, forwarded with the movement spelled as the action
+     * it is.
+     *
+     * There is deliberately no traversal-private gate: climbing the temple wall is
+     * refused by whatever `forbids/4` refuses it with, which is the same clause that
+     * refuses a theft — and it is what lets 123's skill gates and a world's laws
+     * refuse a movement without traversal knowing they exist. With no KB wired every
+     * movement is permitted; core does not invent a prohibition it cannot read.
+     */
+    async checkPermission(actorId, affordance) {
+      const target = affordance.to || NO_TARGET;
+      if (!this.engine) {
+        return { agent: actorId, action: affordance.action, target, permitted: true, breached: [] };
+      }
+      return checkAction(this.engine, { agent: actorId, action: affordance.action, target });
+    }
+    /**
+     * Ask the host about every geometric link out of where this actor is.
+     *
+     * One query per geometric link per call, on the decision path. A probe that
+     * throws is read as "passable" — a host's geometry failing must not strand a
+     * character, which is the same direction `ITrajectoryProbe` degrades in.
+     */
+    async askProbe(actor) {
+      const geometry = {};
+      if (!this.probe) return geometry;
+      for (const link of this.links) {
+        if (!link.geometric || link.from !== actor.location) continue;
+        const id = traversalLinkId(link);
+        let reading = null;
+        try {
+          reading = await this.probe.query({
+            actor: actor.id,
+            from: link.from,
+            to: link.to,
+            mode: link.mode,
+            link: id
+          });
+        } catch {
+          reading = null;
+        }
+        geometry[id] = reading === null ? true : reading.passable;
+      }
+      return geometry;
+    }
+    /**
+     * Hand one order to the host, or take the documented fallback.
+     *
+     * With no locomotion host wired every order arrives: the world state moves and
+     * nothing is animated, which is exactly what a headless simulation wants. A host
+     * that throws is read the same way — core has already spent the meter and
+     * committed the decision, and leaving the actor in limbo because an animation
+     * driver raised is the worse failure.
+     */
+    async orderLocomotion(actorId, affordance, intent) {
+      if (!this.locomotion) return { arrived: true };
+      try {
+        const vehicle = this.vehicles?.drivenBy(actorId);
+        return await this.locomotion.travel({
+          actor: actorId,
+          from: affordance.from,
+          to: affordance.to,
+          mode: affordance.mode,
+          link: affordance.id,
+          cost: affordance.cost,
+          action: affordance.action,
+          // Every order carries a complete intent, so a host never has to guess at
+          // half of one — and four engines never guess differently.
+          urgency: intent?.urgency ?? "ordinary",
+          stance: intent?.stance ?? "standing",
+          ...vehicle === void 0 ? {} : { vehicle }
+        });
+      } catch {
+        return { arrived: true };
+      }
+    }
+    /** This actor's meter, for the pure resolver. `undefined` for an actor with none. */
+    meterOf(actorId) {
+      const actor = this.stamina?.get(actorId);
+      return actor === void 0 ? void 0 : { current: actor.current, max: actor.max };
+    }
+    // ── The KB ─────────────────────────────────────────────────────────────
+    /**
+     * Write one delta into the KB, retracting first.
+     *
+     * Retracting a fact the KB never carried is a no-op rather than a failure: a
+     * host with its own persistence, a restored save and an actor registered before
+     * the engine was wired all produce one, and none of them is an error.
+     */
+    async writeDelta(delta) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(stripPeriod2(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(stripPeriod2(fact));
+      }
+      return true;
+    }
+    /**
+     * Publish every registered actor's `movement_mode/2` and `at_location/2`.
+     *
+     * For a caller that wired the KB after the roster — a save restore, a host that
+     * builds its world before its engine. Returns how many facts were written.
+     */
+    async publishActors(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const actor of this.roster()) {
+        const delta = mergeTraversalDeltas(
+          movementModeDelta(actor.id, [], actor.modes),
+          arrivalDelta(actor.id, void 0, actor.location)
+        );
+        for (const fact of delta.assert) {
+          await engine.assertFact(stripPeriod2(fact));
+          written += 1;
+        }
+      }
+      return written;
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    /** Every actor this planner knows, in canonical order. */
+    roster() {
+      return [...this.actors.values()].map(({ lent, ...actor }) => ({
+        ...actor,
+        modes: [...actor.modes],
+        ...lent && Object.keys(lent).length > 0 ? { lent: canonicalLent(lent, actor.modes) } : {}
+      })).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+    }
+    /**
+     * The per-playthrough state, and only that: where everyone is, what they are
+     * doing, and which links this playthrough closed. The graph, the costs and the
+     * requirements are authored and are NOT here — a tuning number inside a save
+     * file is world-template data leaking into a playthrough
+     * (`docs/mechanic-predicates.md` §3).
+     */
+    serialize() {
+      return {
+        actors: this.roster(),
+        blocked: [...this.blocked.values()].sort(
+          (a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : a.to < b.to ? -1 : a.to > b.to ? 1 : 0
+        )
+      };
+    }
+    /**
+     * Restore a saved playthrough. Silent — no events, because loading a save is not
+     * somebody walking somewhere, and no KB writes, because restoring a save is what
+     * `publishActors` is for once the engine exists.
+     */
+    restore(state) {
+      this.actors = /* @__PURE__ */ new Map();
+      for (const actor of state.actors ?? []) {
+        const modes = [...actor.modes ?? ["walk"]];
+        const lent = canonicalLent(actor.lent, modes);
+        this.actors.set(actor.id, {
+          id: actor.id,
+          location: actor.location,
+          modes,
+          ...Object.keys(lent).length > 0 ? { lent } : {}
+        });
+      }
+      this.blocked = /* @__PURE__ */ new Map();
+      for (const edge of state.blocked ?? []) {
+        this.blocked.set(edgeKey(edge.from, edge.to), { from: edge.from, to: edge.to });
+      }
+    }
+  };
+  function stripPeriod2(clause) {
+    return clause.replace(/\.$/, "");
+  }
+  function refusalRank(refusal3) {
+    return refusal3 === void 0 ? TRAVERSAL_REFUSALS.length : TRAVERSAL_REFUSALS.indexOf(refusal3);
+  }
+
+  // @insimul/core/src/game-engine/logic/VehicleRegistry.ts
+  var VehicleRegistry = class {
+    constructor(config = {}) {
+      __publicField(this, "engine");
+      __publicField(this, "traversal");
+      __publicField(this, "eventBus");
+      __publicField(this, "unsubscribe");
+      /**
+       * The KB writes started by an event handler.
+       *
+       * `GameEventBus.emit` is synchronous and a KB write is not, so an arrival
+       * handled off the bus finishes after the emit returns. State moves immediately
+       * either way — {@link stateOf} is right the instant the event fires — and this
+       * is what a caller that needs the FACTS to have landed (a save, a query, a
+       * test) awaits through {@link settle}.
+       */
+      __publicField(this, "pending", Promise.resolve());
+      /** The world's authored vehicles. Authored data — never written to by gameplay. */
+      __publicField(this, "vehicles", /* @__PURE__ */ new Map());
+      /** Their per-playthrough state, keyed the same way. */
+      __publicField(this, "states", /* @__PURE__ */ new Map());
+      this.engine = config.engine;
+      this.traversal = config.traversal;
+      if (config.vehicles) this.loadVehicles(config.vehicles);
+      if (config.state) this.restore(config.state);
+      if (config.eventBus) this.setEventBus(config.eventBus);
+    }
+    /**
+     * Listen for arrivals, so a vehicle follows whoever is driving it.
+     *
+     * `traversal_completed` is raised once per traversal, on the decision path. The
+     * subscription is replaced rather than added to, so a caller that re-wires a bus
+     * does not move the cart twice.
+     */
+    setEventBus(bus) {
+      this.unsubscribe?.();
+      this.eventBus = bus;
+      this.unsubscribe = bus.on("traversal_completed", (event) => {
+        this.pending = this.pending.then(() => this.follow(event.actorId, event.location)).catch(() => void 0);
+      });
+    }
+    /** Resolve once every KB write started off the event bus has landed. */
+    async settle() {
+      await this.pending;
+    }
+    /** Stop listening. For a caller tearing a playthrough down. */
+    dispose() {
+      this.unsubscribe?.();
+      this.unsubscribe = void 0;
+      this.eventBus = void 0;
+    }
+    // ── The roster ─────────────────────────────────────────────────────────
+    /** Replace the authored vehicles, resetting every playthrough state to its start. */
+    loadVehicles(vehicles) {
+      this.vehicles = new Map(vehicles.map((vehicle) => [vehicle.id, { ...vehicle }]));
+      this.states = new Map(
+        vehicles.map((vehicle) => [vehicle.id, initialVehicleState(vehicle)])
+      );
+    }
+    /** Read the world's authored vehicles out of `WorldIR.traversal.vehicles`. */
+    loadFromIR(vehicles) {
+      this.loadVehicles(vehiclesFromIR(vehicles));
+    }
+    /** The authored vehicles, as this instance read them. */
+    getVehicles() {
+      return [...this.vehicles.values()].map((vehicle) => ({ ...vehicle }));
+    }
+    /** One vehicle's current state, or `undefined` for one this world has no such thing. */
+    stateOf(vehicleId) {
+      const state = this.states.get(vehicleId);
+      return state === void 0 ? void 0 : { ...state, occupants: [...state.occupants] };
+    }
+    /** The vehicle this actor is aboard, if any. At most one — you sit in one cart. */
+    vehicleOf(actorId) {
+      for (const state of this.roster()) {
+        if (state.occupants.includes(actorId)) return state.id;
+      }
+      return void 0;
+    }
+    /**
+     * What this actor is driving, if anything — what `TraversalPlanner` names in the
+     * order it hands the host, so the engine knows which entity to move. At most one:
+     * you hold one set of reins.
+     */
+    drivenBy(actorId) {
+      for (const state of this.roster()) {
+        if (state.driver === actorId) return state.id;
+      }
+      return void 0;
+    }
+    /** Whether this actor has the reins of this vehicle. */
+    isDriving(actorId, vehicleId) {
+      return this.states.get(vehicleId)?.driver === actorId;
+    }
+    /**
+     * Publish `vehicle_mode/2` — the authored half — into the KB.
+     *
+     * Asserted at load beside `traversal_link/3`, for the same reason: a rule that
+     * asks `can_board/2` must walk the same world core decides over. Returns how
+     * many facts were written.
+     */
+    async publishVehicles(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const vehicle of this.vehicles.values()) {
+        await engine.assertFact(stripPeriod3(vehicleModeFact(vehicle)));
+        written += 1;
+      }
+      return written;
+    }
+    /**
+     * Publish every vehicle's current state — where it is, whose it is, who is
+     * aboard.
+     *
+     * For a caller that wired the KB after the roster: a save restore, a host that
+     * builds its world before its engine. The mirror of
+     * `TraversalPlanner.publishActors`.
+     */
+    async publishStates(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const state of this.roster()) {
+        for (const fact of vehicleStateFacts(state)) {
+          await engine.assertFact(stripPeriod3(fact));
+          written += 1;
+        }
+      }
+      return written;
+    }
+    // ── Ownership ──────────────────────────────────────────────────────────
+    /** Who owns this vehicle now, or `undefined` for one nobody does. */
+    ownerOf(vehicleId) {
+      return this.states.get(vehicleId)?.owner;
+    }
+    /**
+     * Hand a vehicle to a new owner — sold, inherited, confiscated, won.
+     *
+     * A state transition and not a judgement: this module never decides that a
+     * transfer was legitimate, which is why a thief who keeps the cart does NOT
+     * become its owner by driving it. The theft stays visible for exactly as long as
+     * the owner does.
+     */
+    async setOwner(vehicleId, owner) {
+      const before = this.states.get(vehicleId);
+      if (!before) return emptyTraversalDelta();
+      const after = { ...before, owner };
+      const delta = vehicleStateDelta(before, after);
+      this.states.set(vehicleId, after);
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Whether taking this vehicle would be taking somebody else's. */
+    isAnothers(vehicleId, actorId) {
+      const state = this.states.get(vehicleId);
+      return state !== void 0 && isAnothersVehicle(state, actorId);
+    }
+    // ── The decision ───────────────────────────────────────────────────────
+    /**
+     * Decide whether this actor may board, drive or leave this vehicle, without
+     * changing anything.
+     *
+     * Every gate in {@link VEHICLE_REFUSALS} order: what core knows from its own
+     * state first, then permissibility. This is what an NPC's utility layer asks
+     * before it commits and what a UI asks before it offers.
+     */
+    async canDo(actorId, vehicleId, verb) {
+      const vehicle = this.vehicles.get(vehicleId);
+      const state = this.states.get(vehicleId);
+      if (!vehicle || !state) {
+        return {
+          actor: actorId,
+          vehicle: vehicleId,
+          verb,
+          action: verb,
+          permitted: false,
+          refusal: "unknown"
+        };
+      }
+      const resolution = resolveVehicleVerb({
+        vehicle,
+        state,
+        actor: actorId,
+        // Where the actor is comes from the module that owns knowing it. With no
+        // traversal wired core holds no location for anybody, so colocation is not
+        // asserted against a made-up one — a registry used on its own decides
+        // ownership, occupancy and the reins, and leaves "are they even here" to
+        // whoever knows.
+        at: this.traversal?.locationOf(actorId) ?? state.location,
+        verb
+      });
+      const base = {
+        actor: actorId,
+        vehicle: vehicleId,
+        verb,
+        action: resolution.action,
+        grants: resolution.grants
+      };
+      if (!resolution.available) {
+        return { ...base, permitted: false, refusal: resolution.refusal };
+      }
+      const check = await this.checkPermission(actorId, vehicleId, resolution);
+      if (!check.permitted) {
+        return { ...base, permitted: false, refusal: "forbidden", check };
+      }
+      return { ...base, permitted: true, check };
+    }
+    /** Get aboard. */
+    async board(actorId, vehicleId) {
+      return this.perform(actorId, vehicleId, "board");
+    }
+    /**
+     * Take the reins.
+     *
+     * On success the driver gains the vehicle's mode (`movement_mode(Actor, ride)`),
+     * which is the whole of what a vehicle does to traversal: the `ride` links of
+     * the authored graph become afforded, priced by the world's own multiplier out
+     * of the SHARED `energy/3` meter.
+     */
+    async drive(actorId, vehicleId) {
+      return this.perform(actorId, vehicleId, "drive");
+    }
+    /** Get off, handing back the reins if they were held. */
+    async disembark(actorId, vehicleId) {
+      return this.perform(actorId, vehicleId, "disembark");
+    }
+    /**
+     * Decide, apply, and tell the world — in that order, and with nothing between
+     * the decision and the state change that could refuse it a second time.
+     */
+    async perform(actorId, vehicleId, verb) {
+      const decision = await this.canDo(actorId, vehicleId, verb);
+      const before = this.states.get(vehicleId);
+      if (!decision.permitted || !before) {
+        return {
+          ...decision,
+          performed: false,
+          state: before ?? { id: vehicleId, location: "", occupants: [] },
+          facts: emptyTraversalDelta(),
+          applied: false
+        };
+      }
+      const after = applyVehicleVerb(before, actorId, verb, {
+        vehicle: vehicleId,
+        actor: actorId,
+        verb,
+        action: decision.action,
+        available: true,
+        grants: decision.grants
+      });
+      this.states.set(vehicleId, after);
+      const facts = mergeTraversalDeltas(
+        vehicleStateDelta(before, after),
+        await this.syncModes(actorId, before, after)
+      );
+      const applied = await this.writeDelta(facts);
+      this.eventBus?.emit({
+        type: "vehicle_state_changed",
+        actorId,
+        vehicleId,
+        verb,
+        driver: after.driver ?? null,
+        occupants: [...after.occupants],
+        location: after.location
+      });
+      if (verb === "board") this.eventBus?.emit({ type: "vehicle_mounted", vehicleType: vehicleId, actorId });
+      if (verb === "disembark") this.eventBus?.emit({ type: "vehicle_dismounted", vehicleType: vehicleId, actorId });
+      return { ...decision, performed: true, state: after, facts, applied };
+    }
+    // ── Where the vehicle is ───────────────────────────────────────────────
+    /**
+     * Move a vehicle and everyone aboard to where its driver arrived.
+     *
+     * Called from the `traversal_completed` event, once per traversal. An actor who
+     * is not driving anything moves nothing, which is what makes it safe to
+     * subscribe unconditionally.
+     */
+    async follow(actorId, location) {
+      let delta = emptyTraversalDelta();
+      for (const before of [...this.states.values()]) {
+        if (before.driver !== actorId || before.location === location) continue;
+        const after = { ...before, location };
+        this.states.set(before.id, after);
+        delta = mergeTraversalDeltas(delta, vehicleStateDelta(before, after));
+        for (const passenger of vehiclePassengers(after)) {
+          if (passenger === actorId) continue;
+          delta = mergeTraversalDeltas(delta, await this.arrivePassenger(passenger, location));
+        }
+      }
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /**
+     * A passenger is where the vehicle is.
+     *
+     * Routed through `TraversalPlanner.arrive` when one is wired, so `at_location/2`
+     * is written by the module that owns writing it, and the KB never carries two
+     * answers to where somebody is.
+     */
+    async arrivePassenger(actorId, location) {
+      if (!this.traversal) return emptyTraversalDelta();
+      await this.traversal.arrive(actorId, location);
+      return emptyTraversalDelta();
+    }
+    // ── The gates ──────────────────────────────────────────────────────────
+    /**
+     * `permissible/3`'s own input, with the verb spelled as the action it is.
+     *
+     * There is deliberately no vehicle-private theft check: taking the ferryman's
+     * skiff is refused by whatever `forbids/4` refuses it with, which is the same
+     * clause that refuses a theft — and it is what lets a world police its roads,
+     * or leave them common, with no code change anywhere. With no KB wired every
+     * verb is permitted; core does not invent a prohibition it cannot read.
+     */
+    async checkPermission(actorId, vehicleId, resolution) {
+      if (!this.engine) {
+        return {
+          agent: actorId,
+          action: resolution.action,
+          target: vehicleId,
+          permitted: true,
+          breached: []
+        };
+      }
+      return checkAction(this.engine, {
+        agent: actorId,
+        action: resolution.action,
+        target: vehicleId
+      });
+    }
+    /**
+     * Grant or withdraw the driver's movement mode.
+     *
+     * Taking the reins makes `movement_mode(Actor, boat)` true and getting off makes
+     * it false again. The vehicle lends one mode and takes back only what it lent
+     * (the planner's `lendMode`/`returnMode`, `traversal/mode-lending.ts`, U90(5)):
+     * a mode the actor had of their own — a swimmer who gets into a boat, a boatman
+     * who held `boat` before taking the skiff's reins — is untouched, and so is a
+     * mode another vehicle still lends (a horse lending `ride` under a cart's reins).
+     */
+    async syncModes(actorId, before, after) {
+      const mode = this.vehicles.get(after.id)?.mode;
+      if (!this.traversal || mode === void 0) return emptyTraversalDelta();
+      const took = before.driver !== actorId && after.driver === actorId;
+      const gave = before.driver === actorId && after.driver !== actorId;
+      if (!took && !gave) return emptyTraversalDelta();
+      if (took) await this.traversal.lendMode(actorId, mode, vehicleLender(after.id));
+      if (gave) await this.traversal.returnMode(actorId, mode, vehicleLender(after.id));
+      return emptyTraversalDelta();
+    }
+    // ── The KB ─────────────────────────────────────────────────────────────
+    /** Write one delta into the KB, retracting first. See `TraversalPlanner.writeDelta`. */
+    async writeDelta(delta) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(stripPeriod3(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(stripPeriod3(fact));
+      }
+      return true;
+    }
+    /** Ask the KB what it makes of a vehicle, for a caller that wants the rules' answer. */
+    async queryCanDrive(actorId, vehicleId) {
+      if (!this.engine) return false;
+      return this.engine.queryOnce(
+        `can_drive(${prologAtom(actorId)}, ${prologAtom(vehicleId)})`
+      );
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    /** Every vehicle's state, in canonical order. */
+    roster() {
+      return [...this.states.values()].map((state) => ({ ...state, occupants: [...state.occupants] })).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+    }
+    /**
+     * The per-playthrough state, and only that: where each vehicle is, whose it is
+     * now, and who is aboard. The mode, the seat count and the action atoms are
+     * AUTHORED and are not here — world-template data inside a save file is the leak
+     * `docs/mechanic-predicates.md` §3 forbids.
+     */
+    serialize() {
+      return { vehicles: this.roster() };
+    }
+    /**
+     * Restore a saved playthrough. Silent — no events and no KB writes, because
+     * loading a save is not somebody getting into a cart; `publishStates` is what
+     * makes it true in the KB once the engine exists.
+     */
+    restore(state) {
+      for (const saved of state.vehicles ?? []) {
+        const authored = this.vehicles.get(saved.id);
+        if (!authored) continue;
+        this.states.set(saved.id, {
+          id: saved.id,
+          location: saved.location,
+          owner: saved.owner,
+          occupants: [...saved.occupants ?? []],
+          driver: saved.driver
+        });
+      }
+    }
+    /** The action atoms a vehicle's verbs are gated as, for a UI that offers them. */
+    actionsOf(vehicleId) {
+      const vehicle = this.vehicles.get(vehicleId);
+      return vehicle === void 0 ? void 0 : vehicleActions(vehicle);
+    }
+  };
+  function stripPeriod3(clause) {
+    return clause.replace(/\.$/, "");
+  }
+
+  // @insimul/core/src/game-engine/logic/FastTravelDirector.ts
+  var FastTravelDirector = class {
+    constructor(config = {}) {
+      __publicField(this, "engine");
+      __publicField(this, "traversal");
+      __publicField(this, "tuning");
+      __publicField(this, "seed");
+      __publicField(this, "locomotion");
+      __publicField(this, "clock");
+      __publicField(this, "eventBus");
+      /** Every place this playthrough has found. */
+      __publicField(this, "discovered", /* @__PURE__ */ new Set());
+      /** How many journeys have been made. The next one's stream ordinal. */
+      __publicField(this, "journeys", 0);
+      this.engine = config.engine;
+      this.traversal = config.traversal;
+      this.tuning = config.tuning ?? { ...DEFAULT_FAST_TRAVEL_TUNING };
+      this.seed = config.seed ?? 0;
+      this.locomotion = config.locomotion ?? config.host?.locomotion;
+      this.clock = config.clock;
+      this.eventBus = config.eventBus;
+      if (config.state) this.restore(config.state);
+    }
+    setEventBus(bus) {
+      this.eventBus = bus;
+    }
+    /** Wire the world's clock in after construction. See {@link WorldClock}. */
+    setClock(clock) {
+      this.clock = clock;
+    }
+    /** Whether a clock is wired. False means a journey decides and passes no time. */
+    hasClock() {
+      return this.clock !== void 0;
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    /**
+     * The most world time one journey may pass, out of the two authored bounds. The
+     * documented answer to "can a long journey hang the game".
+     */
+    ceiling() {
+      return fastTravelCeiling(this.tuning);
+    }
+    // ── Discovery ──────────────────────────────────────────────────────────
+    /**
+     * Record that somewhere has been found — `location_discovered/1`.
+     *
+     * The predicate is `gameplay-predicates.ts`'s and `GameTruthSync` already
+     * asserts it when a player reaches a place, so this is the same fact rather than
+     * a travel-private copy of it: a location discovered through a rumour, a map or
+     * a quest is a location you may travel to, with nothing here knowing that
+     * rumours exist. Idempotent — a place is discovered once and never un-discovered.
+     */
+    async discover(location) {
+      const delta = discoveryDelta(location, this.discovered.has(location));
+      this.discovered.add(location);
+      await this.writeDelta(delta);
+      return delta;
+    }
+    /** Whether this playthrough has found somewhere, as core holds it. */
+    isDiscovered(location) {
+      return this.discovered.has(location);
+    }
+    /** Everywhere found so far, canonically sorted. */
+    discoveries() {
+      return [...this.discovered].sort(compareIds);
+    }
+    /**
+     * Whether the KB says this place is discovered, falling back to core's own set.
+     *
+     * The KB wins when it is wired, because `GameTruthSync`, a quest effect and an
+     * action effect all assert `location_discovered/1` without going through this
+     * module — and a gate that only trusted its own set would refuse a journey to
+     * somewhere the player demonstrably found. With no KB, the set is all there is,
+     * and a world that has discovered nothing may travel nowhere: discovery is a
+     * requirement and requirements fail closed.
+     */
+    async knowsOf(location) {
+      if (this.discovered.has(location)) return true;
+      if (!this.engine) return false;
+      try {
+        return await this.engine.queryOnce(`location_discovered(${prologAtom(location)})`);
+      } catch {
+        return false;
+      }
+    }
+    // ── The decision ───────────────────────────────────────────────────────
+    /**
+     * Every place this actor could fast travel to right now, canonically sorted.
+     *
+     * Discovery and reachability only — the two rungs core and the graph settle
+     * between them. Permissibility is NOT applied here, for `TraversalPlanner.
+     * affordances`' reason: a KB round trip per candidate on a path an interface
+     * polls is a cost a menu cannot pay, and the journey itself asks.
+     */
+    async destinations(actorId) {
+      const from = this.traversal?.locationOf(actorId);
+      if (from === void 0) return [];
+      const found = [];
+      for (const place of this.discoveries()) {
+        if (place === from) continue;
+        if (!await this.knowsOf(place)) continue;
+        if (this.traversal?.route(actorId, place) === void 0) continue;
+        found.push(place);
+      }
+      return found;
+    }
+    /**
+     * Decide whether this actor may fast travel there, without moving anybody or
+     * passing any time.
+     *
+     * Every gate in {@link FAST_TRAVEL_REFUSALS} order: what the authored graph
+     * settles first, then discovery, then the route's requirements, then
+     * permissibility. This is what a map screen asks before it offers a destination
+     * and what an NPC's utility layer asks before it commits.
+     */
+    async canFastTravel(actorId, to) {
+      const from = this.traversal?.locationOf(actorId);
+      if (from === void 0) {
+        return { actor: actorId, from: "", to, permitted: false, refusal: "unreachable", hours: 0, unmet: [] };
+      }
+      const base = { actor: actorId, from, to };
+      if (from === to) {
+        return { ...base, permitted: false, refusal: "same_place", hours: 0, unmet: [] };
+      }
+      const route = this.traversal?.route(actorId, to);
+      if (route === void 0) {
+        return { ...base, permitted: false, refusal: "unreachable", hours: 0, unmet: [] };
+      }
+      const plan2 = planFastTravel({
+        seed: this.seed,
+        actor: actorId,
+        from,
+        to,
+        journey: this.journeys,
+        route,
+        tuning: this.tuning
+      });
+      const planned = { ...base, plan: plan2, hours: plan2.hours };
+      if (!await this.knowsOf(to)) {
+        return { ...planned, permitted: false, refusal: "undiscovered", unmet: [] };
+      }
+      const unmet = await this.unmetRequirements(actorId, plan2.requires);
+      if (unmet.length > 0) {
+        return { ...planned, permitted: false, refusal: "requires", unmet };
+      }
+      const check = await this.checkPermission(actorId, to);
+      if (!check.permitted) {
+        return { ...planned, permitted: false, refusal: "forbidden", check, unmet };
+      }
+      return { ...planned, permitted: true, check, unmet };
+    }
+    /**
+     * Make the journey: pass the world time, then arrive.
+     *
+     * The order is the whole of the mechanic, and each step is where it is for a
+     * reason:
+     *
+     *  1. **Decide** ({@link canFastTravel}). Nothing has happened yet.
+     *  2. **Advance the world**, one bounded step at a time, so the systems that
+     *     hang off the clock run forward THROUGH the journey rather than being
+     *     handed a single jump at the end. Six-hour steps mean a shop that opens
+     *     halfway through a three-day trip is open when it should be.
+     *  3. **Order the host** to put the traveller down. One order, one arrival atom,
+     *     through the same `ILocomotionHost` a walk uses — there is no fast-travel
+     *     host interface, because a journey needs nothing from an engine that a
+     *     movement does not, and a travel-shaped hook is exactly where a transition
+     *     animation and a loading screen would arrive in core.
+     *  4. **Record** where they ended up.
+     *
+     * A host that reports `arrived: false` leaves the traveller where the host says
+     * they are — **and the elapsed time stands**, because it did: they set out, the
+     * days passed, and something turned them back. That is the answer a simulation
+     * gives, and it is the same rule under which `TraversalPlanner` does not refund
+     * a failed climb's stamina.
+     */
+    async fastTravel(actorId, to) {
+      const decision = await this.canFastTravel(actorId, to);
+      const here = this.traversal?.locationOf(actorId) ?? decision.from;
+      if (!decision.permitted || !decision.plan) {
+        return {
+          ...decision,
+          performed: false,
+          steps: [],
+          elapsed: 0,
+          capped: decision.plan?.capped ?? false,
+          ceiling: this.ceiling(),
+          location: here,
+          facts: emptyTraversalDelta(),
+          applied: false
+        };
+      }
+      const plan2 = decision.plan;
+      let elapsed = 0;
+      for (const step of plan2.steps) {
+        this.clock?.advanceHours(step.hours);
+        elapsed = step.elapsed;
+      }
+      this.journeys += 1;
+      const arrival = await this.orderLocomotion(actorId, plan2);
+      const landed = arrival.arrived ? to : arrival.location ?? here;
+      const discovery = discoveryDelta(landed, this.discovered.has(landed));
+      this.discovered.add(landed);
+      const own = this.traversal ? discovery : mergeTraversalDeltas(fastTravelArrivalDelta(actorId, here, landed), discovery);
+      if (this.traversal) await this.traversal.arrive(actorId, landed);
+      const facts = own;
+      const applied = await this.writeDelta(own);
+      this.eventBus?.emit({
+        type: "fast_travel_completed",
+        actorId,
+        from: decision.from,
+        to,
+        hours: elapsed,
+        steps: plan2.steps.length,
+        capped: plan2.capped,
+        arrived: arrival.arrived,
+        location: landed
+      });
+      return {
+        ...decision,
+        performed: true,
+        steps: plan2.steps,
+        elapsed,
+        capped: plan2.capped,
+        ceiling: plan2.ceiling,
+        arrival,
+        location: landed,
+        facts,
+        applied
+      };
+    }
+    // ── The gates ──────────────────────────────────────────────────────────
+    /**
+     * The authored goals the route asks of this traveller that the KB did not
+     * satisfy.
+     *
+     * Evaluated by the PACK's own `traversal_goal_met/2`, never by a second
+     * implementation here — the pack rebinds the goal to the caller's actor (`=..`),
+     * and reproducing that in TypeScript is how `has_item(Actor, rope, 1)` ends up
+     * satisfied by anyone at all holding a rope (§7's own correction). With no KB
+     * wired every goal is unmet: core does not invent a satisfied condition.
+     */
+    async unmetRequirements(actorId, goals) {
+      if (goals.length === 0) return [];
+      if (!this.engine) return [...goals];
+      const unmet = [];
+      for (const goal of goals) {
+        let met = false;
+        try {
+          met = await this.engine.queryOnce(`traversal_goal_met(${prologAtom(actorId)}, ${goal})`);
+        } catch {
+          met = false;
+        }
+        if (!met) unmet.push(goal);
+      }
+      return unmet;
+    }
+    /**
+     * `permissible/3`'s own input, with the journey spelled as the action it is.
+     *
+     * There is deliberately no travel-private gate: a closed border, a quarantine and
+     * 123's skill gates all refuse a journey through whatever `forbids/4` refuses it
+     * with — the same clause that refuses a theft. With no KB wired every journey is
+     * permitted; core does not invent a prohibition it cannot read.
+     */
+    async checkPermission(actorId, to) {
+      if (!this.engine) {
+        return { agent: actorId, action: this.tuning.action, target: to, permitted: true, breached: [] };
+      }
+      return checkAction(this.engine, { agent: actorId, action: this.tuning.action, target: to });
+    }
+    /**
+     * Ask the KB its own answer — `can_fast_travel/2`, the rule §7 drafted.
+     *
+     * For a caller (a quest condition, an authored rule, a debug overlay) that wants
+     * the RULES' verdict rather than this module's staged one. It answers the same
+     * two rungs core stages — discovered, elsewhere, reachable — and says nothing
+     * about permission or elapsed time, both of which are deliberately not facts.
+     */
+    async queryCanFastTravel(actorId, to) {
+      if (!this.engine) return false;
+      try {
+        return await this.engine.queryOnce(
+          `can_fast_travel(${prologAtom(actorId)}, ${prologAtom(to)})`
+        );
+      } catch {
+        return false;
+      }
+    }
+    /**
+     * Hand the arrival to the host, or take the documented fallback.
+     *
+     * With no locomotion host wired the traveller simply arrives: the world state
+     * moves and nothing is shown, which is what a headless simulation, a turn-based
+     * world and the conformance corpus want. A host that throws is read the same way
+     * — core has already passed three days of world time, and leaving the traveller
+     * at the origin because a presentation layer raised is the worse failure.
+     */
+    async orderLocomotion(actorId, plan2) {
+      if (!this.locomotion) return { arrived: true };
+      try {
+        return await this.locomotion.travel({
+          actor: actorId,
+          from: plan2.from,
+          to: plan2.to,
+          // Not a `traversal_link/3` mode: no link is used. A host that sees this
+          // atom knows to put the character down rather than to walk them there.
+          mode: this.tuning.mode,
+          link: `${plan2.from}>${plan2.to}:${this.tuning.mode}`,
+          // Nothing was taken out of the shared meter — a journey spends TIME, and a
+          // simulation that passed a day and a half AND emptied the meter has charged
+          // for the same trip twice.
+          cost: 0,
+          action: this.tuning.action,
+          // A journey is over by the time this arrives, so there is nothing left to
+          // be pressing about and nobody to carry a stance for the duration of: the
+          // host is putting a character down, not walking them anywhere. Both are
+          // the resting rungs of `MovementUrgency` and `MovementStance` (US-2 of
+          // `125-npc-routines-and-locomotion`) rather than absent, because every
+          // order that crosses the boundary carries a complete intent.
+          urgency: "idle",
+          stance: "standing"
+        });
+      } catch {
+        return { arrived: true };
+      }
+    }
+    // ── The KB ─────────────────────────────────────────────────────────────
+    /** Write one delta into the KB, retracting first. See `TraversalPlanner.writeDelta`. */
+    async writeDelta(delta) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(stripPeriod4(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(stripPeriod4(fact));
+      }
+      return true;
+    }
+    /**
+     * Publish every discovery into the KB.
+     *
+     * For a caller that wired the engine after the roster — a save restore, a host
+     * that builds its world before its KB. The mirror of
+     * `TraversalPlanner.publishActors`.
+     */
+    async publishDiscoveries(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const place of this.discoveries()) {
+        for (const fact of discoveryDelta(place, false).assert) {
+          await engine.assertFact(stripPeriod4(fact));
+          written += 1;
+        }
+      }
+      return written;
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    /**
+     * The per-playthrough state, and only that: what has been found, and how many
+     * journeys have been made. The hours, the ceiling and the step size are AUTHORED
+     * and are not here — a tuning number inside a save file is world-template data
+     * leaking into a playthrough (`docs/mechanic-predicates.md` §3).
+     *
+     * The journey counter rides along because it is the deterministic stream's
+     * ordinal: a save that dropped it would make the journey after a reload draw
+     * different numbers from the same one before it.
+     */
+    serialize() {
+      return { discovered: this.discoveries(), journeys: this.journeys };
+    }
+    /**
+     * Restore a saved playthrough. Silent — no events, because loading a save is not
+     * somebody making a journey, and no KB writes, because that is what
+     * {@link publishDiscoveries} is for once the engine exists.
+     */
+    restore(state) {
+      this.discovered = new Set(state.discovered ?? []);
+      const journeys = Math.floor(state.journeys ?? 0);
+      this.journeys = Number.isFinite(journeys) && journeys > 0 ? journeys : 0;
+    }
+  };
+  function stripPeriod4(clause) {
+    return clause.replace(/\.$/, "");
+  }
+
+  // @insimul/core/src/traversal/personal-vehicles.ts
+  var DEFAULT_PERSONAL_VEHICLE_TUNING = Object.freeze({
+    kinds: Object.freeze({
+      bicycle: Object.freeze({ id: "bicycle", label: "Bicycle", walk: 2e3, run: 1800, turn: 1200, mode: null }),
+      horse: Object.freeze({ id: "horse", label: "Horse", walk: 3e3, run: 2500, turn: 800, mode: "ride" })
+    }),
+    cycle: Object.freeze(["bicycle", "horse"]),
+    onFoot: Object.freeze({ walk: 1e3, run: 1e3, turn: 1e3, strafe: 800, back: 600 }),
+    mountedStrafePermille: 800,
+    mountedBackPermille: 500
+  });
+  var ON_FOOT_LABEL = "On Foot";
+  var whole3 = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0 ? Math.floor(v) : void 0;
+  function personalVehicleTuning(params = {}) {
+    const base = DEFAULT_PERSONAL_VEHICLE_TUNING;
+    const kinds = {};
+    for (const [id, k] of Object.entries(base.kinds)) kinds[id] = { ...k };
+    for (const row of params.kinds ?? []) {
+      if (!row || typeof row.id !== "string" || row.id === "") continue;
+      const prior = kinds[row.id];
+      const walk = whole3(row.walk) ?? prior?.walk;
+      const run = whole3(row.run) ?? prior?.run;
+      const turn2 = whole3(row.turn) ?? prior?.turn;
+      const label = typeof row.label === "string" && row.label !== "" ? row.label : prior?.label;
+      if (walk === void 0 || run === void 0 || turn2 === void 0 || label === void 0) continue;
+      const mode = row.mode === null ? null : typeof row.mode === "string" && row.mode !== "" ? row.mode : prior?.mode ?? null;
+      kinds[row.id] = { id: row.id, label, walk, run, turn: turn2, mode };
+    }
+    const sorted = {};
+    for (const id of Object.keys(kinds).sort(compareIds)) sorted[id] = kinds[id];
+    const cycle = [];
+    for (const id of params.cycle ?? base.cycle) {
+      if (typeof id === "string" && sorted[id] && !cycle.includes(id)) cycle.push(id);
+    }
+    const foot = params.onFoot ?? {};
+    const onFoot = {
+      walk: whole3(foot.walk) ?? base.onFoot.walk,
+      run: whole3(foot.run) ?? base.onFoot.run,
+      turn: whole3(foot.turn) ?? base.onFoot.turn,
+      strafe: whole3(foot.strafe) ?? base.onFoot.strafe,
+      back: whole3(foot.back) ?? base.onFoot.back
+    };
+    return {
+      kinds: sorted,
+      cycle,
+      onFoot,
+      mountedStrafePermille: whole3(params.mountedStrafePermille) ?? base.mountedStrafePermille,
+      mountedBackPermille: whole3(params.mountedBackPermille) ?? base.mountedBackPermille
+    };
+  }
+  function personalPace(kind, tuning) {
+    const k = kind === null ? void 0 : tuning.kinds[kind];
+    if (!k) return { ...tuning.onFoot };
+    return {
+      walk: k.walk,
+      run: k.run,
+      turn: k.turn,
+      strafe: Math.floor(k.walk * tuning.mountedStrafePermille / 1e3),
+      back: Math.floor(k.walk * tuning.mountedBackPermille / 1e3)
+    };
+  }
+  function personalVehicleLabel(kind, tuning) {
+    const k = kind === null ? void 0 : tuning.kinds[kind];
+    return k ? k.label : ON_FOOT_LABEL;
+  }
+  function personalVehicleModes(holding, from, to, tuning) {
+    let next = { modes: [...new Set(holding.modes)], lent: canonicalLent(holding.lent, holding.modes) };
+    if (from !== to) {
+      const lentBefore = from === null ? null : tuning.kinds[from]?.mode ?? null;
+      const lentAfter = to === null ? null : tuning.kinds[to]?.mode ?? null;
+      if (from !== null && lentBefore !== null) next = returnMode(next, lentBefore, personalLender(from));
+      if (to !== null && lentAfter !== null) next = lendMode(next, lentAfter, personalLender(to));
+    }
+    return { modes: [...next.modes].sort(compareIds), lent: next.lent };
+  }
+  function initialPersonalVehicles() {
+    return { riding: {} };
+  }
+  var PERSONAL_VEHICLE_REFUSALS = Object.freeze(["unknown_kind", "in_vehicle", "redundant", "not_riding"]);
+  function withRiding(state, actor, kind) {
+    const next = { ...state.riding };
+    if (kind === null) delete next[actor];
+    else next[actor] = kind;
+    const riding = {};
+    for (const id of Object.keys(next).sort(compareIds)) riding[id] = next[id];
+    return { riding };
+  }
+  function result(state, actor, tuning, events, refusal3, detail) {
+    const kind = state.riding[actor] ?? null;
+    return {
+      ok: refusal3 === void 0,
+      ...refusal3 !== void 0 ? { refusal: refusal3 } : {},
+      ...detail !== void 0 ? { detail } : {},
+      state,
+      kind,
+      pace: personalPace(kind, tuning),
+      label: personalVehicleLabel(kind, tuning),
+      events
+    };
+  }
+  function mountPersonalVehicle(state, request, tuning) {
+    const { actor, kind } = request;
+    if (!tuning.kinds[kind]) return result(state, actor, tuning, [], "unknown_kind");
+    if (typeof request.inVehicle === "string") return result(state, actor, tuning, [], "in_vehicle", request.inVehicle);
+    if (state.riding[actor] === kind) return result(state, actor, tuning, [], "redundant");
+    return result(withRiding(state, actor, kind), actor, tuning, [{ type: "vehicle_mounted", actorId: actor, vehicleType: kind }]);
+  }
+  function dismountPersonalVehicle(state, request, tuning) {
+    const prev = state.riding[request.actor];
+    if (prev === void 0) return result(state, request.actor, tuning, [], "not_riding");
+    return result(withRiding(state, request.actor, null), request.actor, tuning, [{ type: "vehicle_dismounted", actorId: request.actor, vehicleType: prev }]);
+  }
+  function cyclePersonalVehicle(state, request, tuning) {
+    const slots = [null, ...tuning.cycle];
+    const current = state.riding[request.actor] ?? null;
+    const next = slots[(slots.indexOf(current) + 1) % slots.length];
+    if (next === null) return dismountPersonalVehicle(state, request, tuning);
+    return mountPersonalVehicle(state, { ...request, kind: next }, tuning);
+  }
+  function personalVehicleSaveRows(state) {
+    const rows = {};
+    for (const id of Object.keys(state.riding).sort(compareIds)) rows[id] = state.riding[id];
+    return rows;
+  }
+  function personalVehiclesFromSave(rows, tuning) {
+    let state = initialPersonalVehicles();
+    const dropped2 = [];
+    for (const [actor, kind] of Object.entries(rows ?? {})) {
+      if (typeof kind === "string" && tuning.kinds[kind]) state = withRiding(state, actor, kind);
+      else dropped2.push(actor);
+    }
+    return { state, dropped: dropped2.sort(compareIds) };
+  }
+
+  // @insimul/core/src/traversal/traversal-save.ts
+  var TRAVERSAL_EXTENSION_KEY = "traversal";
+  var TRAVERSAL_BLOCK_MEMBERS = Object.freeze(["planner", "vehicles", "fastTravel", "riding"]);
+  var TRAVERSAL_ACTOR_KEYS = Object.freeze(["id", "location", "modes", "lent"]);
+  var EDGE_KEYS = ["from", "to"];
+  var TRAVERSAL_EDGE_KEYS = Object.freeze(EDGE_KEYS);
+  var TRAVERSAL_VEHICLE_KEYS = Object.freeze(["id", "location", "occupants", "owner", "driver"]);
+  var TRAVERSAL_FAST_TRAVEL_KEYS = Object.freeze(["discovered", "journeys"]);
+  function traversalSaveBlock(parts) {
+    return {
+      planner: parts.planner ? copyPlanner(parts.planner) : null,
+      vehicles: parts.vehicles ? copyVehicles(parts.vehicles) : null,
+      fastTravel: parts.fastTravel ? { discovered: [...parts.fastTravel.discovered], journeys: parts.fastTravel.journeys } : null,
+      riding: parts.riding ? personalVehicleSaveRows(parts.riding) : {}
+    };
+  }
+  var isObj4 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var str2 = (v) => typeof v === "string";
+  var strList = (v) => Array.isArray(v) && v.every(str2);
+  function copyActor(a) {
+    const lent = canonicalLent(a.lent, a.modes);
+    return { id: a.id, location: a.location, modes: [...a.modes], ...Object.keys(lent).length > 0 ? { lent } : {} };
+  }
+  function copyPlanner(p) {
+    return {
+      actors: p.actors.map(copyActor),
+      blocked: p.blocked.map((e) => ({ from: e.from, to: e.to }))
+    };
+  }
+  function copyVehicle(v) {
+    return {
+      id: v.id,
+      location: v.location,
+      occupants: [...v.occupants],
+      ...v.owner !== void 0 ? { owner: v.owner } : {},
+      ...v.driver !== void 0 ? { driver: v.driver } : {}
+    };
+  }
+  function copyVehicles(v) {
+    return { vehicles: v.vehicles.map(copyVehicle) };
+  }
+  function readTraversalBlock(v) {
+    if (v === void 0 || v === null) return { ok: true, value: null };
+    if (!isObj4(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const list2 = (owner, at, key, row) => {
+      const out = [];
+      const value = owner[key];
+      if (value === void 0) return out;
+      if (!Array.isArray(value)) {
+        bad3.push(`${at}.${key}`);
+        return out;
+      }
+      value.forEach((r, i) => {
+        const got = row(r);
+        if (got === null) bad3.push(`${at}.${key}[${i}]`);
+        else out.push(got);
+      });
+      return out;
+    };
+    const member = (key) => {
+      const value = v[key];
+      if (value === void 0 || value === null) return null;
+      if (!isObj4(value)) {
+        bad3.push(key);
+        return null;
+      }
+      return value;
+    };
+    let planner = null;
+    const p = member("planner");
+    if (p) {
+      const actors = list2(p, "planner", "actors", (r) => {
+        if (!isObj4(r) || !str2(r.id) || !str2(r.location)) return null;
+        if (r.modes !== void 0 && !strList(r.modes)) return null;
+        const modes = r.modes === void 0 ? ["walk"] : [...r.modes];
+        if (r.lent !== void 0) {
+          if (!isObj4(r.lent)) return null;
+          for (const [mode, lenders] of Object.entries(r.lent)) {
+            if (!strList(lenders) || lenders.length === 0 || !modes.includes(mode)) return null;
+          }
+        }
+        return copyActor({ id: r.id, location: r.location, modes, ...r.lent !== void 0 ? { lent: r.lent } : {} });
+      });
+      const blocked = list2(p, "planner", "blocked", (r) => isObj4(r) && str2(r.from) && str2(r.to) ? { from: r.from, to: r.to } : null);
+      planner = { actors, blocked };
+    }
+    let vehicles = null;
+    const vs = member("vehicles");
+    if (vs) {
+      const rows = list2(vs, "vehicles", "vehicles", (r) => {
+        if (!isObj4(r) || !str2(r.id) || !str2(r.location)) return null;
+        if (r.occupants !== void 0 && !strList(r.occupants)) return null;
+        if (r.owner !== void 0 && !str2(r.owner)) return null;
+        if (r.driver !== void 0 && !str2(r.driver)) return null;
+        const occupants = r.occupants === void 0 ? [] : [...r.occupants];
+        if (r.driver !== void 0 && !occupants.includes(r.driver)) return null;
+        return copyVehicle({ id: r.id, location: r.location, occupants, owner: r.owner, driver: r.driver });
+      });
+      vehicles = { vehicles: rows };
+    }
+    let fastTravel = null;
+    const f = member("fastTravel");
+    if (f) {
+      let discovered = [];
+      if (f.discovered !== void 0) {
+        if (strList(f.discovered)) discovered = [...f.discovered];
+        else bad3.push("fastTravel.discovered");
+      }
+      let journeys = 0;
+      if (f.journeys !== void 0) {
+        if (typeof f.journeys === "number" && Number.isInteger(f.journeys) && f.journeys >= 0) journeys = f.journeys;
+        else bad3.push("fastTravel.journeys");
+      }
+      fastTravel = { discovered, journeys };
+    }
+    const riding = {};
+    if (v.riding !== void 0 && !isObj4(v.riding)) bad3.push("riding");
+    else {
+      for (const [actor, kind] of Object.entries(v.riding ?? {})) {
+        if (str2(kind)) riding[actor] = kind;
+        else bad3.push(`riding.${actor}`);
+      }
+    }
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value: { planner, vehicles, fastTravel, riding } };
+  }
+  function traversalBlockOf(b) {
+    return {
+      planner: b.planner ? copyPlanner(b.planner) : null,
+      vehicles: b.vehicles ? copyVehicles(b.vehicles) : null,
+      fastTravel: b.fastTravel ? { discovered: [...b.fastTravel.discovered], journeys: b.fastTravel.journeys } : null,
+      riding: Object.fromEntries(Object.keys(b.riding).sort(compareIds).map((actor) => [actor, b.riding[actor]]))
+    };
   }
 
   // @insimul/core/src/game-genres/recipes.ts
@@ -15831,8 +19556,8 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     "minimal",
     "fighting"
   ]);
-  var num = (n, fallback) => typeof n === "number" && Number.isFinite(n) ? n : fallback;
-  var clamp012 = (n, fallback) => Math.max(0, Math.min(1, num(n, fallback)));
+  var num2 = (n, fallback) => typeof n === "number" && Number.isFinite(n) ? n : fallback;
+  var clamp012 = (n, fallback) => Math.max(0, Math.min(1, num2(n, fallback)));
   function formatClock(seconds) {
     const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
     const minutes = Math.floor(safe / 60);
@@ -15873,12 +19598,12 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         return rts(s);
       case "platformer":
         return [
-          { id: "lives", kind: "text", label: "Lives", text: `\u2764\uFE0F x ${num(s.lives, 0)}`, tone: "danger" },
+          { id: "lives", kind: "text", label: "Lives", text: `\u2764\uFE0F x ${num2(s.lives, 0)}`, tone: "danger" },
           {
             id: "collectibles",
             kind: "text",
             label: "Collected",
-            text: `\u2B50 ${num(s.collectibles?.current, 0)} / ${num(s.collectibles?.total, 0)}`,
+            text: `\u2B50 ${num2(s.collectibles?.current, 0)} / ${num2(s.collectibles?.total, 0)}`,
             tone: "quest"
           },
           timer(s)
@@ -15886,7 +19611,7 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       case "puzzle":
         return [
           timer(s),
-          { id: "moves", kind: "text", label: "Moves", text: `Moves: ${num(s.moves, 0)}`, tone: "text_secondary" },
+          { id: "moves", kind: "text", label: "Moves", text: `Moves: ${num2(s.moves, 0)}`, tone: "text_secondary" },
           { id: "hint", kind: "action", label: "Hint", text: "\u{1F4A1} Hint", tone: "accent" }
         ];
       case "action_rpg":
@@ -15899,26 +19624,26 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     }
   }
   function timer(s) {
-    return { id: "timer", kind: "text", label: "Time", text: `\u23F1\uFE0F ${formatClock(num(s.timerSeconds, 0))}`, tone: "text_primary" };
+    return { id: "timer", kind: "text", label: "Time", text: `\u23F1\uFE0F ${formatClock(num2(s.timerSeconds, 0))}`, tone: "text_primary" };
   }
   function fps(config, s) {
     const out = [{ id: "crosshair", kind: "reticle", text: "+", tone: "text_primary" }];
     if (config.showAmmoCounter !== false) {
-      const current = num(s.ammo?.current, 0);
-      const magazine = num(s.ammo?.magazine, 0);
+      const current = num2(s.ammo?.current, 0);
+      const magazine = num2(s.ammo?.magazine, 0);
       const reloading = s.ammo?.reloading === true;
       out.push({
         id: "ammo",
         kind: "text",
         label: "Ammo",
-        text: reloading ? "RELOADING..." : `${current} / ${num(s.ammo?.total, 0)}`,
+        text: reloading ? "RELOADING..." : `${current} / ${num2(s.ammo?.total, 0)}`,
         // Amber while reloading, red on the last quarter magazine.
         tone: reloading ? "warning" : current <= Math.floor(magazine * 0.25) ? "danger" : "text_primary"
       });
       out.push({ id: "weapon", kind: "text", label: "Weapon", text: s.weaponName ?? "", tone: "text_secondary" });
     }
     if (config.showCompass !== false) {
-      const heading = (num(s.heading, 0) % 360 + 360) % 360;
+      const heading = (num2(s.heading, 0) % 360 + 360) % 360;
       const shown = Math.round(heading) % 360;
       out.push({ id: "compass", kind: "text", label: "Compass", text: `Heading: ${shown}\xB0 ${compassCardinal(heading)}`, tone: "text_primary" });
     }
@@ -15966,10 +19691,10 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
         tone: fighterHealthTone(health)
       };
     });
-    const special = Math.max(0, Math.min(100, num(s.specialMeter, 0)));
-    const clock = num(s.fightTimer, 99);
+    const special = Math.max(0, Math.min(100, num2(s.specialMeter, 0)));
+    const clock = num2(s.fightTimer, 99);
     out.push(
-      { id: "round", kind: "text", label: "Round", text: `Round ${num(s.round, 1)}`, tone: "text_primary" },
+      { id: "round", kind: "text", label: "Round", text: `Round ${num2(s.round, 1)}`, tone: "text_primary" },
       {
         id: "fight_timer",
         kind: "text",
@@ -15980,9 +19705,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       { id: "special", kind: "meter", label: "Special", text: "", fraction: special / 100, tone: special >= 100 ? "accent_hover" : "accent" }
     );
     const combo = s.combo;
-    if (combo && num(combo.hits, 0) > 1) {
+    if (combo && num2(combo.hits, 0) > 1) {
       out.push({ id: "combo", kind: "text", label: "Combo", text: `${combo.hits} HIT COMBO!
-${num(combo.damage, 0)} DMG`, tone: "accent" });
+${num2(combo.damage, 0)} DMG`, tone: "accent" });
     }
     return out;
   }
@@ -16428,30 +20153,6 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       deepest = Math.max(deepest, 1 + nodeDepth(tree, parent, [...seen, nodeId]));
     }
     return deepest;
-  }
-
-  // @insimul/core/src/identity/worlds.ts
-  var PLAYTHROUGH_SEPARATOR = "#save-";
-  var ENCODED_SEPARATOR = sanitizeLocalId(`a${PLAYTHROUGH_SEPARATOR}b`).slice(1, -1);
-  function playthroughWorldId(worldMongoId, saveId) {
-    if (!saveId) throw new Error("playthroughWorldId: empty save id");
-    return {
-      kind: "world",
-      namespace: INSIMUL_NAMESPACE,
-      localId: sanitizeLocalId(`${worldMongoId}${PLAYTHROUGH_SEPARATOR}${saveId}`)
-    };
-  }
-  function worldFacts(decl) {
-    const world2 = formatIdTerm(decl.world);
-    const facts = [`world_declared(${world2}).`];
-    if (decl.role) facts.push(`world_role(${world2}, ${decl.role}).`);
-    if (decl.parent) facts.push(`world_parent(${world2}, ${formatIdTerm(decl.parent)}).`);
-    if (decl.inheritsIdentity) facts.push(`world_inherits_identity(${world2}).`);
-    return facts;
-  }
-  var WORLD_CONTEXT_FUNCTOR = "@world";
-  function worldContextTerm(world2) {
-    return `${prologAtom(WORLD_CONTEXT_FUNCTOR)}(${formatIdTerm(world2)})`;
   }
 
   // @insimul/core/src/combat/resolution.ts
@@ -17277,2015 +20978,6 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
     return serializeArg(id);
   }
 
-  // @insimul/core/src/game-engine/host-contracts.ts
-  var MOVEMENT_URGENCIES = Object.freeze([
-    "idle",
-    "ordinary",
-    "hurried",
-    "urgent"
-  ]);
-  var MOVEMENT_STANCES = Object.freeze(["standing", "crouching", "prone"]);
-  var ANIMATION_INTENTS = Object.freeze([
-    "idle",
-    "walk",
-    "run",
-    "crouch",
-    "swim",
-    "climb",
-    "jump",
-    "ride",
-    "carry",
-    "sit",
-    "sleep",
-    "eat",
-    "work",
-    "handle",
-    "read",
-    "talk",
-    "listen",
-    "wave",
-    "gesture",
-    "strike",
-    "guard",
-    "cast",
-    "stagger",
-    "collapse"
-  ]);
-  var INFERENCE_REQUEST_KINDS = Object.freeze(["proposal", "utterance"]);
-  var MODEL_RESIDENCIES = Object.freeze(["resident", "on-demand", "absent"]);
-  var INFERENCE_STATUSES = Object.freeze([
-    "pending",
-    "ready",
-    "failed",
-    "unknown"
-  ]);
-  var NULL_HOST_ADAPTER = Object.freeze({});
-
-  // @insimul/core/src/game-engine/action-matrix.ts
-  var ACTION_MATRIX = [
-    // ═══════════════════════════════════════════════════════════════════════════
-    // MOVEMENT
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ─── Parent: move ──────────────────────────────────────────────────────
-    {
-      actionId: "move",
-      animation: "walk",
-      displayName: "Move",
-      category: "movement",
-      parentAction: null,
-      interactionMode: "automatic",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "walk",
-      animation: "walk",
-      displayName: "Walk",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "jog",
-      animation: "run",
-      displayName: "Jog",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "sprint",
-      animation: "run",
-      displayName: "Sprint",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "swim",
-      animation: "swim",
-      displayName: "Swim",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "swim_idle",
-      animation: "swim",
-      displayName: "Tread Water",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "walk_carry",
-      animation: "carry",
-      displayName: "Walk While Carrying",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "walk_formal",
-      animation: "walk",
-      displayName: "Walk Formally",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "drive",
-      animation: "ride",
-      displayName: "Drive",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "crouch_walk",
-      animation: "crouch",
-      displayName: "Crouch Walk",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "crouch_idle",
-      animation: "crouch",
-      displayName: "Crouch",
-      category: "movement",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    // ─── Parent: jump ──────────────────────────────────────────────────────
-    {
-      actionId: "jump",
-      animation: "jump",
-      displayName: "Jump",
-      category: "movement",
-      parentAction: null,
-      interactionMode: "automatic",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "ninja_jump",
-      animation: "jump",
-      displayName: "Ninja Jump",
-      category: "movement",
-      parentAction: "jump",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "roll",
-      animation: "jump",
-      displayName: "Roll",
-      category: "movement",
-      parentAction: "jump",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "slide",
-      animation: "jump",
-      displayName: "Slide",
-      category: "movement",
-      parentAction: "jump",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "climb",
-      animation: "climb",
-      displayName: "Climb",
-      category: "movement",
-      parentAction: "jump",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    // ═══════════════════════════════════════════════════════════════════════════
-    // COMBAT
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ─── Parent: attack_enemy ──────────────────────────────────────────────
-    {
-      actionId: "attack_enemy",
-      animation: "strike",
-      displayName: "Attack Enemy",
-      category: "combat",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["combat_action", "enemy_defeated"],
-      objectiveTypes: ["defeat_enemies"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "sword_attack",
-      animation: "strike",
-      displayName: "Sword Attack",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "sword_combo",
-      animation: "strike",
-      displayName: "Sword Combo",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "sword_dash",
-      animation: "strike",
-      displayName: "Sword Dash",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "sword_idle",
-      animation: "guard",
-      displayName: "Sword Ready",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "punch",
-      animation: "strike",
-      displayName: "Punch",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "punch_heavy",
-      animation: "strike",
-      displayName: "Heavy Punch",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "melee_hook",
-      animation: "strike",
-      displayName: "Hook Punch",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "shield_bash",
-      animation: "strike",
-      displayName: "Shield Bash",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "shield_dash",
-      animation: "strike",
-      displayName: "Shield Dash",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "pistol_shoot",
-      animation: "strike",
-      displayName: "Shoot Pistol",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "pistol_aim",
-      animation: "guard",
-      displayName: "Aim Pistol",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "pistol_reload",
-      animation: "handle",
-      displayName: "Reload Pistol",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "throw_projectile",
-      animation: "strike",
-      displayName: "Throw Projectile",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "zombie_attack",
-      animation: "strike",
-      displayName: "Zombie Attack",
-      category: "combat",
-      parentAction: "attack_enemy",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    // ─── Parent: defend ────────────────────────────────────────────────────
-    {
-      actionId: "defend",
-      animation: "guard",
-      displayName: "Defend",
-      category: "combat",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "shield_block",
-      animation: "guard",
-      displayName: "Shield Block",
-      category: "combat",
-      parentAction: "defend",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "sword_block",
-      animation: "guard",
-      displayName: "Sword Block",
-      category: "combat",
-      parentAction: "defend",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    // ─── Parent: cast_spell ────────────────────────────────────────────────
-    {
-      actionId: "cast_spell",
-      animation: "cast",
-      displayName: "Cast Spell",
-      category: "combat",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "spell_channel",
-      animation: "cast",
-      displayName: "Channel Spell",
-      category: "combat",
-      parentAction: "cast_spell",
-      interactionMode: "animation",
-      eventTypes: ["combat_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    // ─── Parent: react ─────────────────────────────────────────────────────
-    {
-      actionId: "react",
-      animation: "stagger",
-      displayName: "React",
-      category: "combat",
-      parentAction: null,
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "die",
-      animation: "collapse",
-      displayName: "Die",
-      category: "combat",
-      parentAction: "react",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "hit_head",
-      animation: "stagger",
-      displayName: "Hit Head",
-      category: "combat",
-      parentAction: "react",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "hit_reaction",
-      animation: "stagger",
-      displayName: "Hit Reaction",
-      category: "combat",
-      parentAction: "react",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "knockback",
-      animation: "stagger",
-      displayName: "Knockback",
-      category: "combat",
-      parentAction: "react",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    // ─── Creature actions (zombie_idle, zombie_walk share parents above) ──
-    {
-      actionId: "zombie_idle",
-      animation: "idle",
-      displayName: "Zombie Idle",
-      category: "combat",
-      parentAction: "idle",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "zombie_walk",
-      animation: "walk",
-      displayName: "Zombie Walk",
-      category: "combat",
-      parentAction: "move",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    // ═══════════════════════════════════════════════════════════════════════════
-    // SOCIAL
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ─── Parent: talk_to_npc ───────────────────────────────────────────────
-    {
-      actionId: "talk_to_npc",
-      animation: "talk",
-      displayName: "Talk to NPC",
-      category: "social",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["npc_talked"],
-      objectiveTypes: ["talk_to_npc", "complete_conversation", "conversation_initiation"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "talk",
-      animation: "talk",
-      displayName: "Talk",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "animation",
-      eventTypes: ["npc_talked"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "sit_talk",
-      animation: "sit",
-      displayName: "Sit and Talk",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "animation",
-      eventTypes: ["npc_talked"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "phone_call",
-      animation: "talk",
-      displayName: "Phone Call",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "animation",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "greet",
-      animation: "wave",
-      displayName: "Greet",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["npc_greeting", "conversational_action"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "medium",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "compliment_npc",
-      animation: "talk",
-      displayName: "Compliment",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "npc_relationship_changed"],
-      objectiveTypes: ["build_friendship", "gain_reputation"],
-      status: "partial",
-      priority: "medium",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "insult_npc",
-      animation: "talk",
-      displayName: "Insult",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "npc_relationship_changed"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "threaten",
-      animation: "talk",
-      displayName: "Threaten",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "npc_relationship_changed"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "flirt",
-      animation: "talk",
-      displayName: "Flirt",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "romance_action"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "persuade",
-      animation: "talk",
-      displayName: "Persuade",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "medium",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "bribe",
-      animation: "talk",
-      displayName: "Bribe",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "gossip",
-      animation: "talk",
-      displayName: "Gossip",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "confess",
-      animation: "talk",
-      displayName: "Confess",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "apologize",
-      animation: "talk",
-      displayName: "Apologize",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "npc_relationship_changed"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "comfort",
-      animation: "talk",
-      displayName: "Comfort",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "npc_relationship_changed"],
-      objectiveTypes: ["build_friendship"],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "argue",
-      animation: "talk",
-      displayName: "Argue",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "npc_relationship_changed"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "joke",
-      animation: "talk",
-      displayName: "Tell Joke",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "share_story",
-      animation: "talk",
-      displayName: "Share Story",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "ask_about",
-      animation: "talk",
-      displayName: "Ask About",
-      category: "social",
-      parentAction: "talk_to_npc",
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: [],
-      status: "partial",
-      priority: "medium",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    // ─── Parent: express ───────────────────────────────────────────────────
-    {
-      actionId: "express",
-      animation: "talk",
-      displayName: "Express",
-      category: "social",
-      parentAction: null,
-      interactionMode: "automatic",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "call_out",
-      animation: "talk",
-      displayName: "Call Out",
-      category: "social",
-      parentAction: "express",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "dance",
-      animation: "gesture",
-      displayName: "Dance",
-      category: "social",
-      parentAction: "express",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "fold_arms",
-      animation: "gesture",
-      displayName: "Fold Arms",
-      category: "social",
-      parentAction: "express",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "nod_yes",
-      animation: "gesture",
-      displayName: "Nod Yes",
-      category: "social",
-      parentAction: "express",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "shake_head_no",
-      animation: "gesture",
-      displayName: "Shake Head No",
-      category: "social",
-      parentAction: "express",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    // ─── Parent: idle ──────────────────────────────────────────────────────
-    {
-      actionId: "idle",
-      animation: "idle",
-      displayName: "Idle",
-      category: "social",
-      parentAction: null,
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "sit_down",
-      animation: "sit",
-      displayName: "Sit Down",
-      category: "social",
-      parentAction: "idle",
-      interactionMode: "animation",
-      eventTypes: ["furniture_sat"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "sit_idle",
-      animation: "sit",
-      displayName: "Sit Idle",
-      category: "social",
-      parentAction: "idle",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "stand_up",
-      animation: "idle",
-      displayName: "Stand Up",
-      category: "social",
-      parentAction: "idle",
-      interactionMode: "animation",
-      eventTypes: ["furniture_stood"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "get_up",
-      animation: "idle",
-      displayName: "Get Up",
-      category: "social",
-      parentAction: "idle",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    {
-      actionId: "lean_railing",
-      animation: "sit",
-      displayName: "Lean on Railing",
-      category: "social",
-      parentAction: "idle",
-      interactionMode: "animation",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: false
-    },
-    // ─── Social standalone ─────────────────────────────────────────────────
-    {
-      actionId: "give_gift",
-      animation: "handle",
-      displayName: "Give Gift",
-      category: "social",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["gift_given"],
-      objectiveTypes: ["give_gift", "deliver_item"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "pray",
-      animation: "gesture",
-      displayName: "Pray",
-      category: "social",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "escort_npc",
-      animation: "walk",
-      displayName: "Escort NPC",
-      category: "social",
-      parentAction: null,
-      interactionMode: "automatic",
-      eventTypes: ["escort_started", "escort_completed"],
-      objectiveTypes: ["escort_npc"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "request_quest",
-      animation: "talk",
-      displayName: "Request Quest",
-      category: "social",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["quest_accepted"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "steal",
-      animation: "handle",
-      displayName: "Steal",
-      category: "social",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["item_collected"],
-      objectiveTypes: ["collect_item"],
-      status: "partial",
-      priority: "low",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "eavesdrop",
-      animation: "listen",
-      displayName: "Eavesdrop",
-      category: "social",
-      parentAction: null,
-      interactionMode: "observational",
-      eventTypes: ["conversation_overheard", "vocabulary_overheard"],
-      objectiveTypes: ["observe_activity"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    // ═══════════════════════════════════════════════════════════════════════════
-    // COMMERCE
-    // ═══════════════════════════════════════════════════════════════════════════
-    {
-      actionId: "trade",
-      animation: "handle",
-      displayName: "Trade",
-      category: "commerce",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["item_purchased"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "buy_item",
-      animation: "handle",
-      displayName: "Buy Item",
-      category: "commerce",
-      parentAction: "trade",
-      interactionMode: "physical",
-      eventTypes: ["item_purchased"],
-      objectiveTypes: ["collect_item"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "sell_item",
-      animation: "handle",
-      displayName: "Sell Item",
-      category: "commerce",
-      parentAction: "trade",
-      interactionMode: "physical",
-      eventTypes: ["item_purchased"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    // ═══════════════════════════════════════════════════════════════════════════
-    // RESOURCE
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ─── Parent: gather ────────────────────────────────────────────────────
-    {
-      actionId: "gather",
-      animation: "work",
-      displayName: "Gather",
-      category: "resource",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "chop_tree",
-      animation: "work",
-      displayName: "Chop Tree",
-      category: "resource",
-      parentAction: "gather",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "mine_rock",
-      animation: "work",
-      displayName: "Mine Rock",
-      category: "resource",
-      parentAction: "gather",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "fish",
-      animation: "work",
-      displayName: "Fish",
-      category: "resource",
-      parentAction: "gather",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "gather_herb",
-      animation: "work",
-      displayName: "Gather Herb",
-      category: "resource",
-      parentAction: "gather",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action", "collect_item"],
-      status: "implemented",
-      requiresTarget: false
-    },
-    // ─── Parent: farm ──────────────────────────────────────────────────────
-    {
-      actionId: "farm",
-      animation: "work",
-      displayName: "Farm",
-      category: "resource",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "farm_plant",
-      animation: "work",
-      displayName: "Plant Crops",
-      category: "resource",
-      parentAction: "farm",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      priority: "high",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "farm_water",
-      animation: "work",
-      displayName: "Water Crops",
-      category: "resource",
-      parentAction: "farm",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      priority: "high",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "farm_harvest",
-      animation: "work",
-      displayName: "Harvest Crops",
-      category: "resource",
-      parentAction: "farm",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed", "item_collected"],
-      objectiveTypes: ["physical_action", "collect_item"],
-      status: "implemented",
-      priority: "high",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    // ─── Parent: craft_item ────────────────────────────────────────────────
-    {
-      actionId: "craft_item",
-      animation: "work",
-      displayName: "Craft Item",
-      category: "resource",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["item_crafted"],
-      objectiveTypes: ["craft_item"],
-      status: "partial",
-      priority: "high",
-      requiresTarget: false
-    },
-    {
-      actionId: "cook",
-      animation: "work",
-      displayName: "Cook",
-      category: "resource",
-      parentAction: "craft_item",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed", "item_crafted"],
-      objectiveTypes: ["craft_item", "physical_action"],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "fix_repair",
-      animation: "work",
-      displayName: "Repair",
-      category: "resource",
-      parentAction: "craft_item",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    // ─── Parent: work ──────────────────────────────────────────────────────
-    {
-      actionId: "work",
-      animation: "work",
-      displayName: "Work",
-      category: "resource",
-      parentAction: null,
-      interactionMode: "automatic",
-      eventTypes: ["furniture_worked"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "building"
-    },
-    {
-      actionId: "paint",
-      animation: "work",
-      displayName: "Paint",
-      category: "resource",
-      parentAction: "work",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "sweep",
-      animation: "work",
-      displayName: "Sweep",
-      category: "resource",
-      parentAction: "work",
-      interactionMode: "physical",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: ["physical_action"],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "push_object",
-      animation: "carry",
-      displayName: "Push Object",
-      category: "resource",
-      parentAction: "work",
-      interactionMode: "animation",
-      eventTypes: ["physical_action_completed"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    // ═══════════════════════════════════════════════════════════════════════════
-    // ITEMS
-    // ═══════════════════════════════════════════════════════════════════════════
-    {
-      actionId: "use_item",
-      animation: "handle",
-      displayName: "Use Item",
-      category: "items",
-      parentAction: null,
-      interactionMode: "inventory",
-      eventTypes: ["item_used"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "item"
-    },
-    {
-      actionId: "consume",
-      animation: "eat",
-      displayName: "Consume",
-      category: "items",
-      parentAction: "use_item",
-      interactionMode: "inventory",
-      eventTypes: ["item_used"],
-      objectiveTypes: ["collect_item"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "item"
-    },
-    {
-      actionId: "equip_item",
-      animation: "handle",
-      displayName: "Equip Item",
-      category: "items",
-      parentAction: "use_item",
-      interactionMode: "inventory",
-      eventTypes: ["item_equipped"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "item"
-    },
-    {
-      actionId: "hold_lantern",
-      animation: "carry",
-      displayName: "Hold Lantern",
-      category: "items",
-      parentAction: "use_item",
-      interactionMode: "animation",
-      eventTypes: ["item_used"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "item"
-    },
-    {
-      actionId: "hold_torch",
-      animation: "carry",
-      displayName: "Hold Torch",
-      category: "items",
-      parentAction: "use_item",
-      interactionMode: "animation",
-      eventTypes: ["item_used"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "item"
-    },
-    {
-      actionId: "drop_item",
-      animation: "handle",
-      displayName: "Drop Item",
-      category: "items",
-      parentAction: null,
-      interactionMode: "inventory",
-      eventTypes: ["item_dropped"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "item"
-    },
-    {
-      actionId: "collect_item",
-      animation: "handle",
-      displayName: "Collect Item",
-      category: "items",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["item_collected"],
-      objectiveTypes: ["collect_item", "collect_text"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "item"
-    },
-    {
-      actionId: "pick_up",
-      animation: "handle",
-      displayName: "Pick Up",
-      category: "items",
-      parentAction: "collect_item",
-      interactionMode: "animation",
-      eventTypes: ["item_collected"],
-      objectiveTypes: [],
-      status: "animation-only",
-      requiresTarget: true,
-      targetType: "item"
-    },
-    // ═══════════════════════════════════════════════════════════════════════════
-    // EXPLORATION
-    // ═══════════════════════════════════════════════════════════════════════════
-    {
-      actionId: "travel_to_location",
-      animation: "walk",
-      displayName: "Travel to Location",
-      category: "exploration",
-      parentAction: null,
-      interactionMode: "automatic",
-      eventTypes: ["location_visited", "location_discovered"],
-      objectiveTypes: ["visit_location", "discover_location"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "location"
-    },
-    {
-      actionId: "enter_building",
-      animation: "walk",
-      displayName: "Enter Building",
-      category: "exploration",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["location_visited"],
-      objectiveTypes: ["visit_location"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "building"
-    },
-    {
-      actionId: "open_container",
-      animation: "handle",
-      displayName: "Open Container",
-      category: "exploration",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["container_opened"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "container"
-    },
-    {
-      actionId: "investigate",
-      animation: "handle",
-      displayName: "Investigate",
-      category: "exploration",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["investigation_completed", "clue_discovered"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "observe_activity",
-      animation: "listen",
-      displayName: "Observe Activity",
-      category: "exploration",
-      parentAction: null,
-      interactionMode: "observational",
-      eventTypes: ["activity_observed"],
-      objectiveTypes: ["observe_activity"],
-      status: "partial",
-      priority: "medium",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "take_photo",
-      animation: "handle",
-      displayName: "Take Photo",
-      category: "exploration",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["photo_taken"],
-      objectiveTypes: ["photograph_subject", "photograph_activity"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "mount_vehicle",
-      animation: "ride",
-      displayName: "Mount Vehicle",
-      category: "exploration",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["vehicle_mounted"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "solve_puzzle",
-      animation: "handle",
-      displayName: "Solve Puzzle",
-      category: "exploration",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["puzzle_solved"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "interact",
-      animation: "handle",
-      displayName: "Interact",
-      category: "exploration",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: [],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    // ═══════════════════════════════════════════════════════════════════════════
-    // LANGUAGE
-    // ═══════════════════════════════════════════════════════════════════════════
-    {
-      actionId: "read_sign",
-      animation: "read",
-      displayName: "Read Sign",
-      category: "language",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["sign_read"],
-      objectiveTypes: ["read_sign"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "examine_object",
-      animation: "read",
-      displayName: "Examine Object",
-      category: "language",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["object_examined"],
-      objectiveTypes: ["examine_object", "collect_vocabulary"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "point_and_name",
-      animation: "gesture",
-      displayName: "Point and Name",
-      category: "language",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["object_named"],
-      objectiveTypes: ["point_and_name", "identify_object"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "object"
-    },
-    {
-      actionId: "ask_for_directions",
-      animation: "talk",
-      displayName: "Ask for Directions",
-      category: "language",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: ["ask_for_directions", "navigate_language", "follow_directions"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "introduce_self",
-      animation: "wave",
-      displayName: "Introduce Yourself",
-      category: "language",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: ["introduce_self"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "order_food",
-      animation: "talk",
-      displayName: "Order Food",
-      category: "language",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "food_ordered"],
-      objectiveTypes: ["order_food"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "haggle_price",
-      animation: "talk",
-      displayName: "Haggle Price",
-      category: "language",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "price_haggled"],
-      objectiveTypes: ["haggle_price"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "describe_scene",
-      animation: "talk",
-      displayName: "Describe Scene",
-      category: "language",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action"],
-      objectiveTypes: ["describe_scene"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "listen_and_repeat",
-      animation: "talk",
-      displayName: "Listen and Repeat",
-      category: "language",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["utterance_evaluated"],
-      objectiveTypes: ["listen_and_repeat", "pronunciation_check"],
-      status: "partial",
-      priority: "medium",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "write_response",
-      animation: "read",
-      displayName: "Write Response",
-      category: "language",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["writing_submitted"],
-      objectiveTypes: ["write_response", "translation_challenge"],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "answer_question",
-      animation: "talk",
-      displayName: "Answer Question",
-      category: "language",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "questions_answered"],
-      objectiveTypes: ["comprehension_quiz", "listening_comprehension"],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "teach_vocabulary",
-      animation: "talk",
-      displayName: "Teach Vocabulary",
-      category: "language",
-      parentAction: null,
-      interactionMode: "conversational",
-      eventTypes: ["conversational_action", "vocabulary_used"],
-      objectiveTypes: ["teach_vocabulary", "teach_phrase"],
-      status: "partial",
-      priority: "medium",
-      requiresTarget: true,
-      targetType: "npc"
-    },
-    {
-      actionId: "learn_word",
-      animation: "listen",
-      displayName: "Learn Word",
-      category: "language",
-      parentAction: null,
-      interactionMode: "automatic",
-      eventTypes: ["vocabulary_used"],
-      objectiveTypes: ["collect_vocabulary"],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "read_book",
-      animation: "read",
-      displayName: "Read Book",
-      category: "language",
-      parentAction: null,
-      interactionMode: "physical",
-      eventTypes: ["reading_completed", "text_collected"],
-      objectiveTypes: ["read_text", "find_text"],
-      status: "implemented",
-      requiresTarget: true,
-      targetType: "item"
-    },
-    // ═══════════════════════════════════════════════════════════════════════════
-    // SURVIVAL
-    // ═══════════════════════════════════════════════════════════════════════════
-    {
-      actionId: "rest",
-      animation: "sit",
-      displayName: "Rest",
-      category: "survival",
-      parentAction: null,
-      interactionMode: "automatic",
-      eventTypes: ["furniture_sat"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "sleep",
-      animation: "sleep",
-      displayName: "Sleep",
-      category: "survival",
-      parentAction: "rest",
-      interactionMode: "automatic",
-      eventTypes: ["furniture_slept"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: false
-    },
-    {
-      actionId: "sit",
-      animation: "sit",
-      displayName: "Sit",
-      category: "survival",
-      parentAction: "rest",
-      interactionMode: "automatic",
-      eventTypes: ["furniture_sat"],
-      objectiveTypes: [],
-      status: "implemented",
-      requiresTarget: false
-    }
-  ];
-  var actionIndex = /* @__PURE__ */ new Map();
-  for (const entry of ACTION_MATRIX) {
-    actionIndex.set(entry.actionId, entry);
-  }
-  var eventToActionsIndex = /* @__PURE__ */ new Map();
-  for (const entry of ACTION_MATRIX) {
-    for (const eventType of entry.eventTypes) {
-      const list2 = eventToActionsIndex.get(eventType) || [];
-      list2.push(entry);
-      eventToActionsIndex.set(eventType, list2);
-    }
-  }
-  var objectiveToActionsIndex = /* @__PURE__ */ new Map();
-  for (const entry of ACTION_MATRIX) {
-    for (const objType of entry.objectiveTypes) {
-      const list2 = objectiveToActionsIndex.get(objType) || [];
-      list2.push(entry);
-      objectiveToActionsIndex.set(objType, list2);
-    }
-  }
-  var childrenIndex = /* @__PURE__ */ new Map();
-  for (const entry of ACTION_MATRIX) {
-    if (entry.parentAction) {
-      const list2 = childrenIndex.get(entry.parentAction) || [];
-      list2.push(entry);
-      childrenIndex.set(entry.parentAction, list2);
-    }
-  }
-
-  // @insimul/core/src/ai/action-selection.ts
-  var NO_TARGET = "none";
-  function agentRefKey(agent) {
-    return typeof agent === "string" ? agent : formatCurie(agent);
-  }
-  var DEFAULT_UTILITY_WEIGHTS = Object.freeze({
-    appeal: 1,
-    targetAppeal: 0.3,
-    cost: 0.1,
-    bias: 0.5,
-    jitter: 0.05,
-    costScale: 100,
-    windedCost: 2,
-    exhaustedCost: 5
-  });
-
-  // @insimul/core/src/ai/rule-enforcement.ts
-  var UNCLASSIFIED_NORM = "unclassified";
-  function actFacts(acts) {
-    return acts.map(
-      (act) => `act(${prologAtom(act.event)}, ${prologAtom(agentRefKey(act.actor))}, ${prologAtom(act.action)}, ${prologAtom(act.target ?? NO_TARGET)}).`
-    ).sort(compareIds);
-  }
-  var MAX_ENFORCEMENT_SOLUTIONS = 256;
-  async function checkAction(engine, input) {
-    const agent = agentRefKey(input.agent);
-    const target = input.target ?? NO_TARGET;
-    const gate = await engine.query("current_predicate(forbidden_by/4)", 1);
-    if (gate.success && gate.bindings.length === 0) {
-      return { agent, action: input.action, target, permitted: true, breached: [] };
-    }
-    const breached = await breachedNorms(
-      engine,
-      `forbidden_by(${prologAtom(agent)}, ${prologAtom(input.action)}, ${prologAtom(target)}, Rule)`
-    );
-    return { agent, action: input.action, target, permitted: breached.length === 0, breached };
-  }
-  async function enforceActs(engine, input) {
-    const world2 = worldContextTerm(input.playthrough);
-    const violations = [];
-    const consequenceFacts = [];
-    for (const event of input.events) {
-      const eventAtom = prologAtom(event);
-      for (const breach of await breachesOf(engine, eventAtom)) {
-        const ruleAtom = prologAtom(breach.rule);
-        const actorAtom = prologAtom(breach.actor);
-        const witnesses = await witnessesOf(engine, eventAtom, ruleAtom);
-        const truths = await truthsOf(engine, eventAtom, ruleAtom, breach.actor);
-        const reputation = await reputationOf(engine, eventAtom, ruleAtom);
-        violations.push({
-          event,
-          rule: breach.rule,
-          kind: await normKind(engine, ruleAtom),
-          actor: breach.actor,
-          action: breach.action,
-          target: breach.target,
-          witnesses,
-          truths,
-          reputation
-        });
-        for (const witness of witnesses) {
-          consequenceFacts.push(
-            `violation_record(${eventAtom}, ${ruleAtom}, ${actorAtom}, ${prologAtom(witness)}).`
-          );
-        }
-        for (const truth of truths) {
-          consequenceFacts.push(
-            `claim(${prologAtom(truth.subject)}, ${prologAtom(truth.predicate)}, ${prologAtom(truth.object)}, ${world2}).`
-          );
-        }
-        for (const effect of reputation) {
-          consequenceFacts.push(
-            `reputation_change(${actorAtom}, ${prologAtom(effect.faction)}, ${effect.delta}).`
-          );
-        }
-      }
-    }
-    violations.sort((a, b) => compareIds(a.event, b.event) || compareIds(a.rule, b.rule));
-    consequenceFacts.sort(compareIds);
-    return { tick: input.tick, violations, consequenceFacts };
-  }
-  async function solve(engine, goal) {
-    const result = await engine.query(goal, MAX_ENFORCEMENT_SOLUTIONS);
-    if (!result.success) {
-      throw new Error(`rule enforcement: "${goal}" raised: ${result.error ?? "unknown error"}`);
-    }
-    return result.bindings;
-  }
-  async function breachesOf(engine, eventAtom) {
-    const byKey = /* @__PURE__ */ new Map();
-    for (const binding2 of await solve(
-      engine,
-      `violation_of(${eventAtom}, Rule, Actor, Act, T)`
-    )) {
-      const rule2 = text2(binding2["Rule"]);
-      const actor = text2(binding2["Actor"]);
-      const action = text2(binding2["Act"]);
-      const target = text2(binding2["T"]);
-      if (rule2 === null || actor === null || action === null || target === null) continue;
-      byKey.set(streamKey([rule2, actor, action, target]), { rule: rule2, actor, action, target });
-    }
-    return Array.from(byKey.values()).sort(
-      (a, b) => compareIds(a.rule, b.rule) || compareIds(a.actor, b.actor)
-    );
-  }
-  async function breachedNorms(engine, goal) {
-    const rules = /* @__PURE__ */ new Set();
-    for (const binding2 of await solve(engine, goal)) {
-      const rule2 = text2(binding2["Rule"]);
-      if (rule2 !== null) rules.add(rule2);
-    }
-    const norms = [];
-    for (const rule2 of Array.from(rules).sort(compareIds)) {
-      norms.push({ rule: rule2, kind: await normKind(engine, prologAtom(rule2)) });
-    }
-    return norms;
-  }
-  async function normKind(engine, ruleAtom) {
-    let smallest = null;
-    for (const binding2 of await solve(engine, `norm_kind(${ruleAtom}, K)`)) {
-      const kind = text2(binding2["K"]);
-      if (kind === null) continue;
-      if (smallest === null || compareIds(kind, smallest) < 0) smallest = kind;
-    }
-    return smallest ?? UNCLASSIFIED_NORM;
-  }
-  async function witnessesOf(engine, eventAtom, ruleAtom) {
-    const witnesses = /* @__PURE__ */ new Set();
-    for (const binding2 of await solve(
-      engine,
-      `witnessed_violation(${eventAtom}, ${ruleAtom}, W)`
-    )) {
-      const witness = text2(binding2["W"]);
-      if (witness !== null) witnesses.add(witness);
-    }
-    return Array.from(witnesses).sort(compareIds);
-  }
-  async function truthsOf(engine, eventAtom, ruleAtom, actor) {
-    const byKey = /* @__PURE__ */ new Map();
-    for (const binding2 of await solve(
-      engine,
-      `enforced_truth(${eventAtom}, ${ruleAtom}, _, P, O)`
-    )) {
-      const predicate = text2(binding2["P"]);
-      const object = text2(binding2["O"]);
-      if (predicate === null || object === null) continue;
-      byKey.set(streamKey([predicate, object]), { subject: actor, predicate, object });
-    }
-    return Array.from(byKey.values()).sort(
-      (a, b) => compareIds(a.predicate, b.predicate) || compareIds(a.object, b.object)
-    );
-  }
-  async function reputationOf(engine, eventAtom, ruleAtom) {
-    const rows = /* @__PURE__ */ new Map();
-    for (const binding2 of await solve(
-      engine,
-      `enforced_reputation(${eventAtom}, ${ruleAtom}, _, F, D)`
-    )) {
-      const faction = text2(binding2["F"]);
-      const delta = num2(binding2["D"]);
-      if (faction === null || delta === null) continue;
-      rows.set(streamKey([faction, String(delta)]), { faction, delta });
-    }
-    const byFaction = /* @__PURE__ */ new Map();
-    for (const row of rows.values()) {
-      byFaction.set(row.faction, (byFaction.get(row.faction) ?? 0) + row.delta);
-    }
-    return Array.from(byFaction.entries()).map(([faction, delta]) => ({ faction, delta })).sort((a, b) => compareIds(a.faction, b.faction));
-  }
-  function text2(value) {
-    if (typeof value === "string") return value;
-    if (typeof value === "number") return String(value);
-    return null;
-  }
-  function num2(value) {
-    if (typeof value === "number") return Number.isFinite(value) ? value : null;
-    if (typeof value === "string") {
-      const parsed = Number(value);
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-    return null;
-  }
-
   // @insimul/core/src/identity/equivalence.ts
   function claimFact(subject, predicate, object, world2) {
     return claimTermFact(subject, predicate, formatIdTerm(object), world2);
@@ -20082,7 +21774,7 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       this.lastTick = request.tick;
       const pending = this.pendingActs;
       this.pendingActs = [];
-      const result = runDetection({
+      const result2 = runDetection({
         seed: this.seed,
         tick: request.tick,
         playthrough: this.playthrough,
@@ -20094,25 +21786,25 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
         tuning: this.tuning
       });
       this.memory = /* @__PURE__ */ new Map();
-      for (const memory of result.memory) this.memory.set(pairKey(memory.observer, memory.target), memory);
-      const facts = detectionPassFacts(result.updates);
+      for (const memory of result2.memory) this.memory.set(pairKey(memory.observer, memory.target), memory);
+      const facts = detectionPassFacts(result2.updates);
       facts.assert.push(
-        ...result.perception.beliefWorldFacts,
-        ...result.perception.perceptFacts,
-        ...result.perception.beliefFacts,
-        ...result.perception.perceivedFacts
+        ...result2.perception.beliefWorldFacts,
+        ...result2.perception.perceptFacts,
+        ...result2.perception.beliefFacts,
+        ...result2.perception.perceivedFacts
       );
       for (const entry of pending) facts.assert.push(entry.fact);
       const applied = await this.writeDelta(facts);
       const enforcement = await this.enforce(request.tick, pending.map((entry) => entry.act.event));
-      const transitions = result.updates.filter((update) => update.changed);
+      const transitions = result2.updates.filter((update) => update.changed);
       this.announce(transitions);
       return {
-        updates: result.updates,
+        updates: result2.updates,
         transitions,
         facts,
         applied,
-        perception: result.perception,
+        perception: result2.perception,
         acts: pending.map((entry) => entry.act),
         enforcement
       };
@@ -20129,15 +21821,15 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
      */
     async enforce(tick, events) {
       if (!this.engine || events.length === 0) return null;
-      const result = await enforceActs(this.engine, {
+      const result2 = await enforceActs(this.engine, {
         tick,
         events,
         playthrough: this.playthrough
       });
-      for (const fact of result.consequenceFacts) {
-        await this.engine.assertFact(stripPeriod2(fact));
+      for (const fact of result2.consequenceFacts) {
+        await this.engine.assertFact(stripPeriod5(fact));
       }
-      return result;
+      return result2;
     }
     // ── Stealth acts ───────────────────────────────────────────────────────
     /**
@@ -20404,7 +22096,7 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       if (!engine) return 0;
       let written = 0;
       for (const fact of detectionThresholdFacts(this.tuning)) {
-        await engine.assertFact(stripPeriod2(fact));
+        await engine.assertFact(stripPeriod5(fact));
         written += 1;
       }
       return written;
@@ -20422,12 +22114,12 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       if (delta.retract.length === 0 && delta.assert.length === 0) return false;
       for (const fact of delta.retract) {
         try {
-          await this.engine.retractFact(stripPeriod2(fact));
+          await this.engine.retractFact(stripPeriod5(fact));
         } catch {
         }
       }
       for (const fact of delta.assert) {
-        await this.engine.assertFact(stripPeriod2(fact));
+        await this.engine.assertFact(stripPeriod5(fact));
       }
       return true;
     }
@@ -20579,11 +22271,11 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
   function pairKey(observerCurie, targetCurie) {
     return `${observerCurie.length}:${observerCurie}${targetCurie.length}:${targetCurie}`;
   }
-  function stripPeriod2(clause) {
+  function stripPeriod5(clause) {
     return clause.replace(/\.$/, "");
   }
   function term3(fact) {
-    return stripPeriod2(serializedFactToProlog(fact));
+    return stripPeriod5(serializedFactToProlog(fact));
   }
 
   // @insimul/core/src/game-engine/logic/GameEventBus.ts
@@ -21224,7 +22916,7 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       if (!engine) return 0;
       const ordered = [...this.routines.values()].sort((a, b) => compareIds(a.id, b.id));
       const facts = routineGraphFacts(ordered, this.tuning);
-      for (const fact of facts) await engine.assertFact(stripPeriod3(fact));
+      for (const fact of facts) await engine.assertFact(stripPeriod6(fact));
       return facts.length;
     }
     // ── The roster ────────────────────────────────────────────────────────────
@@ -21401,12 +23093,12 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       if (delta.retract.length === 0 && delta.assert.length === 0) return false;
       for (const fact of delta.retract) {
         try {
-          await this.engine.retractFact(stripPeriod3(fact));
+          await this.engine.retractFact(stripPeriod6(fact));
         } catch {
         }
       }
       for (const fact of delta.assert) {
-        await this.engine.assertFact(stripPeriod3(fact));
+        await this.engine.assertFact(stripPeriod6(fact));
       }
       return true;
     }
@@ -21424,7 +23116,7 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
           facts.push(routineSuspendedFact(state.agent, state.suspension.reason));
         }
         for (const fact of facts) {
-          await engine.assertFact(stripPeriod3(fact));
+          await engine.assertFact(stripPeriod6(fact));
           written += 1;
         }
       }
@@ -21475,7 +23167,7 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
   function goalOf(block) {
     return { goal: block.goal, priority: block.priority };
   }
-  function stripPeriod3(clause) {
+  function stripPeriod6(clause) {
     return clause.replace(/\.$/, "");
   }
 
@@ -23105,7 +24797,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         ...skillDefinitionFacts([...this.skills.values()], this.tuning),
         ...skillTreeFacts(this.trees, this.tuning)
       ]) {
-        await engine.assertFact(stripPeriod4(fact));
+        await engine.assertFact(stripPeriod7(fact));
         written += 1;
       }
       return written;
@@ -23615,12 +25307,12 @@ player_meets_cefr(Player, RequiredLevel) :-
       if (delta.retract.length === 0 && delta.assert.length === 0) return false;
       for (const fact of delta.retract) {
         try {
-          await this.engine.retractFact(stripPeriod4(fact));
+          await this.engine.retractFact(stripPeriod7(fact));
         } catch {
         }
       }
       for (const fact of delta.assert) {
-        await this.engine.assertFact(stripPeriod4(fact));
+        await this.engine.assertFact(stripPeriod7(fact));
       }
       return true;
     }
@@ -23645,7 +25337,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           ...actor.unlocked.map((node) => skillUnlockDelta(actor.id, node))
         );
         for (const fact of delta.assert) {
-          await engine.assertFact(stripPeriod4(fact));
+          await engine.assertFact(stripPeriod7(fact));
           written += 1;
         }
       }
@@ -23693,7 +25385,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       }
     }
   };
-  function stripPeriod4(clause) {
+  function stripPeriod7(clause) {
     return clause.replace(/\.$/, "");
   }
   function union(before, after) {
@@ -23703,608 +25395,6 @@ player_meets_cefr(Player, RequiredLevel) :-
     const out = {};
     for (const key of Object.keys(record).sort(compareIds)) out[key] = record[key];
     return out;
-  }
-
-  // @insimul/core/src/traversal/mode-lending.ts
-  function canonicalLent(lent, modes) {
-    const out = {};
-    if (!lent) return out;
-    const held = new Set(modes);
-    for (const mode of Object.keys(lent).sort(compareIds)) {
-      if (!held.has(mode)) continue;
-      const lenders = [...new Set(lent[mode] ?? [])].sort(compareIds);
-      if (lenders.length > 0) out[mode] = lenders;
-    }
-    return out;
-  }
-  function lendMode(holding, mode, lender) {
-    const modes = [...holding.modes];
-    const lent = canonicalLent(holding.lent, modes);
-    const lenders = lent[mode];
-    if (lenders === void 0) {
-      if (modes.includes(mode)) return { modes, lent };
-      modes.push(mode);
-      return { modes, lent: canonicalLent({ ...lent, [mode]: [lender] }, modes) };
-    }
-    return { modes, lent: canonicalLent({ ...lent, [mode]: [...lenders, lender] }, modes) };
-  }
-  function returnMode(holding, mode, lender) {
-    const modes = [...holding.modes];
-    const lent = canonicalLent(holding.lent, modes);
-    const lenders = lent[mode];
-    if (lenders === void 0 || !lenders.includes(lender)) return { modes, lent };
-    const rest = lenders.filter((l) => l !== lender);
-    if (rest.length > 0) return { modes, lent: { ...lent, [mode]: rest } };
-    const next = { ...lent };
-    delete next[mode];
-    return { modes: modes.filter((m) => m !== mode), lent: next };
-  }
-
-  // @insimul/core/src/game-engine/logic/TraversalPlanner.ts
-  var TraversalPlanner = class {
-    constructor(config = {}) {
-      __publicField(this, "engine");
-      __publicField(this, "tuning");
-      __publicField(this, "stamina");
-      __publicField(this, "probe");
-      __publicField(this, "locomotion");
-      __publicField(this, "vehicles");
-      __publicField(this, "eventBus");
-      /** The world's authored graph. Authored data — never written to by gameplay. */
-      __publicField(this, "links", []);
-      __publicField(this, "actors", /* @__PURE__ */ new Map());
-      /** `traversal_blocked/2`, keyed by the directed edge. */
-      __publicField(this, "blocked", /* @__PURE__ */ new Map());
-      this.engine = config.engine;
-      this.tuning = config.tuning ?? { ...DEFAULT_TRAVERSAL_TUNING };
-      this.stamina = config.stamina;
-      this.probe = config.probe ?? config.host?.traversal;
-      this.locomotion = config.locomotion ?? config.host?.locomotion;
-      this.vehicles = config.vehicles;
-      this.eventBus = config.eventBus;
-      if (config.links) this.loadLinks(config.links);
-      if (config.state) this.restore(config.state);
-    }
-    setEventBus(bus) {
-      this.eventBus = bus;
-    }
-    /** Wire the vehicle module in after construction — see {@link DrivenVehicleSource}. */
-    setVehicleSource(vehicles) {
-      this.vehicles = vehicles;
-    }
-    /** Whether a host wired {@link ITraversalProbe}. False means geometric links are passable. */
-    hasTraversalProbe() {
-      return this.probe !== void 0;
-    }
-    /** Whether a host wired {@link ILocomotionHost}. False means every order arrives. */
-    hasLocomotionHost() {
-      return this.locomotion !== void 0;
-    }
-    /** The world's authored numbers, as this instance read them. */
-    getTuning() {
-      return { ...this.tuning };
-    }
-    // ── The graph ──────────────────────────────────────────────────────────
-    /** Replace the authored graph. Ids are settled here so nothing downstream re-derives them. */
-    loadLinks(links) {
-      this.links = links.map((link) => ({ ...link, id: traversalLinkId(link) }));
-    }
-    /** The authored graph, as this instance read it. */
-    getLinks() {
-      return this.links.map((link) => ({ ...link }));
-    }
-    /**
-     * Publish the world's authored graph into the KB as `traversal_link/3`,
-     * `traversal_cost/3` and `traversal_requires/3`.
-     *
-     * Authored data, asserted at load the way `StaminaPool.publishTuning` asserts
-     * `stamina_threshold/2` — so a rule that asks `can_traverse/3` walks the same
-     * graph core resolves over. Returns how many facts were written.
-     */
-    async publishGraph(engine = this.engine) {
-      if (!engine) return 0;
-      let written = 0;
-      for (const fact of traversalGraphFacts(this.links, this.tuning)) {
-        await engine.assertFact(stripPeriod5(fact));
-        written += 1;
-      }
-      return written;
-    }
-    // ── Roster ─────────────────────────────────────────────────────────────
-    /**
-     * Add or replace an actor, and write their `movement_mode/2` facts.
-     *
-     * `location` is where they are. It is a location ATOM: a host that has a
-     * transform resolves it to the place that transform is in and hands over the
-     * name, which is the entire contract between this module and locomotion.
-     */
-    async register(registration) {
-      const before = this.actors.get(registration.id);
-      const modes = [...registration.modes ?? ["walk"]];
-      this.actors.set(registration.id, {
-        id: registration.id,
-        location: registration.location,
-        modes
-      });
-      const delta = mergeTraversalDeltas(
-        movementModeDelta(registration.id, before?.modes ?? [], modes),
-        arrivalDelta(registration.id, before?.location, registration.location)
-      );
-      await this.writeDelta(delta);
-      return delta;
-    }
-    /** Forget an actor. Their facts are retracted; the graph is untouched. */
-    async unregister(actorId) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return emptyTraversalDelta();
-      this.actors.delete(actorId);
-      const delta = movementModeDelta(actorId, actor.modes, []);
-      delta.retract.push(atLocationFact(actorId, actor.location));
-      await this.writeDelta(delta);
-      return delta;
-    }
-    /** Where this actor is, or `undefined` for one that was never registered. */
-    locationOf(actorId) {
-      return this.actors.get(actorId)?.location;
-    }
-    /** Every mode this actor is currently using. */
-    modesOf(actorId) {
-      return [...this.actors.get(actorId)?.modes ?? []];
-    }
-    /** Which of this actor's modes a vehicle lent, and by whom (`{}` when none, or for an unknown actor). */
-    lentOf(actorId) {
-      const actor = this.actors.get(actorId);
-      return actor ? canonicalLent(actor.lent, actor.modes) : {};
-    }
-    /**
-     * A vehicle lends this actor a mode (`traversal/mode-lending.ts`). A mode the actor already holds
-     * of its own stays its own and nothing is recorded; otherwise the mode is held and `lender` is
-     * recorded as lending it. The registry's reins use it.
-     */
-    async lendMode(actorId, mode, lender) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return emptyTraversalDelta();
-      const next = lendMode({ modes: actor.modes, lent: actor.lent }, mode, lender);
-      return this.applyHolding(actor, next.modes, next.lent);
-    }
-    /**
-     * A vehicle gives back the mode it lent. Only a recorded lender gives anything back, and the mode
-     * goes only when nobody else still lends it, so an actor who held it another way keeps it.
-     */
-    async returnMode(actorId, mode, lender) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return emptyTraversalDelta();
-      const next = returnMode({ modes: actor.modes, lent: actor.lent }, mode, lender);
-      return this.applyHolding(actor, next.modes, next.lent);
-    }
-    async applyHolding(actor, modes, lent) {
-      const delta = movementModeDelta(actor.id, actor.modes, modes);
-      actor.modes = [...modes];
-      const kept = canonicalLent(lent, actor.modes);
-      if (Object.keys(kept).length > 0) actor.lent = kept;
-      else delete actor.lent;
-      await this.writeDelta(delta);
-      return delta;
-    }
-    /**
-     * Replace what modes an actor is using — they mounted, they got into the water,
-     * they put the boat back.
-     *
-     * Replaced rather than added to, because `movement_mode/2` says what an actor is
-     * DOING and a character who is both walking and swimming is two facts that
-     * cannot both be true.
-     */
-    async setModes(actorId, modes, lent) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return emptyTraversalDelta();
-      return this.applyHolding(actor, modes, lent ?? actor.lent);
-    }
-    /**
-     * Record that an actor is somewhere — the ONE thing a host tells core about
-     * where anybody is.
-     *
-     * Called when it becomes true, not on a frame. A host running a path follower at
-     * 60fps calls this once, on arrival, and a host that teleports a character for a
-     * cutscene calls it once too; core cannot tell the two apart and must not be
-     * able to.
-     */
-    async arrive(actorId, location) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return emptyTraversalDelta();
-      const delta = arrivalDelta(actorId, actor.location, location);
-      actor.location = location;
-      await this.writeDelta(delta);
-      return delta;
-    }
-    // ── Closures ───────────────────────────────────────────────────────────
-    /**
-     * Close a link — "the landslide closed the pass", as `traversal_blocked/2`.
-     *
-     * DIRECTED, exactly as the link is: closing `pass → valley` leaves
-     * `valley → pass` open, and a world that means both closes both.
-     */
-    async block(from, to) {
-      const key = edgeKey(from, to);
-      if (this.blocked.has(key)) return emptyTraversalDelta();
-      this.blocked.set(key, { from, to });
-      const delta = { retract: [], assert: [traversalBlockedFact(from, to)] };
-      await this.writeDelta(delta);
-      return delta;
-    }
-    /** Reopen a link. Reopening one that was never closed writes nothing. */
-    async unblock(from, to) {
-      const key = edgeKey(from, to);
-      if (!this.blocked.has(key)) return emptyTraversalDelta();
-      this.blocked.delete(key);
-      const delta = { retract: [traversalBlockedFact(from, to)], assert: [] };
-      await this.writeDelta(delta);
-      return delta;
-    }
-    /** Whether this directed edge is closed. */
-    isBlocked(from, to) {
-      return this.blocked.has(edgeKey(from, to));
-    }
-    // ── The decision ───────────────────────────────────────────────────────
-    /**
-     * Every way out of where this actor is, and whether each is open to them.
-     *
-     * The host is asked about the links a world marked `geometric` and about nothing
-     * else, once per call, on the decision path. Refused ways are kept rather than
-     * filtered: a UI wants to grey out the ford and say why.
-     *
-     * The two rules-layer gates are NOT applied here — an affordance's
-     * `conditional` flag says a requirement is outstanding, and `permissible/3` is
-     * asked when a movement is actually attempted. Asking the KB once per link per
-     * call would be a round trip per candidate on a path an interface polls.
-     */
-    async affordances(actorId) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return [];
-      return resolveAffordances({
-        actor: actorId,
-        from: actor.location,
-        links: this.links,
-        modes: actor.modes,
-        blocked: [...this.blocked.values()],
-        geometry: await this.askProbe(actor),
-        stamina: this.meterOf(actorId),
-        tuning: this.tuning
-      });
-    }
-    /**
-     * `reachable/3`: the cheapest route from where this actor is to `to`, over links
-     * they can currently use, or `undefined`.
-     *
-     * Pure and synchronous — it walks the authored graph and consults neither the
-     * host nor the KB, so a caller can plan over it freely. Whether each leg is
-     * permitted is settled leg by leg, as each is taken.
-     */
-    route(actorId, to) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return void 0;
-      return findRoute({
-        actor: actorId,
-        from: actor.location,
-        to,
-        links: this.links,
-        modes: actor.modes,
-        blocked: [...this.blocked.values()],
-        tuning: this.tuning
-      });
-    }
-    /**
-     * Decide whether this actor may move to an ADJACENT location, without moving
-     * them or spending anything.
-     *
-     * Every gate, in {@link TRAVERSAL_REFUSALS} order: what core knows first, then
-     * the requirement, then permissibility. This is what an NPC's utility layer asks
-     * before it commits and what a UI asks before it offers.
-     */
-    async canTraverse(actorId, to) {
-      const actor = this.actors.get(actorId);
-      if (!actor) {
-        return { actor: actorId, from: "", to, permitted: false, refusal: "unreachable", cost: 0, unmet: [] };
-      }
-      const affordances = await this.affordances(actorId);
-      const chosen = bestAffordance(affordances, to);
-      if (!chosen) {
-        const nearest = affordances.filter((a) => a.to === to).sort((a, b) => refusalRank(b.refusal) - refusalRank(a.refusal) || a.cost - b.cost)[0];
-        return {
-          actor: actorId,
-          from: actor.location,
-          to,
-          permitted: false,
-          refusal: nearest?.refusal ?? "unreachable",
-          affordance: nearest,
-          cost: nearest?.cost ?? 0,
-          unmet: []
-        };
-      }
-      const base = {
-        actor: actorId,
-        from: actor.location,
-        to,
-        affordance: chosen,
-        cost: chosen.cost
-      };
-      const unmet = await this.unmetRequirements(actorId, chosen);
-      if (unmet.length > 0) {
-        return { ...base, permitted: false, refusal: "requires", unmet };
-      }
-      const check = await this.checkPermission(actorId, chosen);
-      if (!check.permitted) {
-        return { ...base, permitted: false, refusal: "forbidden", check, unmet };
-      }
-      return { ...base, permitted: true, check, unmet };
-    }
-    /**
-     * Move this actor to an ADJACENT location, if every gate allows it.
-     *
-     * The order is the whole of the module's discipline, and each step is where it
-     * is for a reason:
-     *
-     *  1. **Decide** ({@link canTraverse}). Nothing has happened yet.
-     *  2. **Charge** the shared meter, with the link's authored cost. A spend that
-     *     cannot be afforded moves nothing and refuses the movement.
-     *  3. **Order** the host to carry it out ({@link ILocomotionHost}). Core has
-     *     already committed; this is not a request for permission.
-     *  4. **Record** where the actor ended up, from the atom the host reported.
-     *
-     * A host that reports `arrived: false` leaves the actor where they were (or
-     * wherever it says they ended up) and **the spend stands**: the climb was
-     * attempted and the effort was expended, which is the answer a simulation gives
-     * and a teleport does not.
-     *
-     * `intent` is US-2 of `125-npc-routines-and-locomotion` — how pressing the
-     * movement is and how the body is carried. It is forwarded onto the order and
-     * read by nothing here; see {@link TraversalIntent}.
-     */
-    async traverse(actorId, to, intent) {
-      const decision = await this.canTraverse(actorId, to);
-      const location = this.actors.get(actorId)?.location ?? decision.from;
-      if (!decision.permitted || !decision.affordance) {
-        return { ...decision, performed: false, location, facts: emptyTraversalDelta(), applied: false };
-      }
-      const affordance = decision.affordance;
-      const spend = await this.stamina?.spend(actorId, {
-        action: affordance.action,
-        cost: affordance.cost
-      });
-      if (spend && !spend.spend.affordable) {
-        return {
-          ...decision,
-          permitted: false,
-          refusal: "stamina",
-          performed: false,
-          spend,
-          location,
-          facts: emptyTraversalDelta(),
-          applied: false
-        };
-      }
-      const arrival = await this.orderLocomotion(actorId, affordance, intent);
-      const landed = arrival.arrived ? to : arrival.location ?? location;
-      const facts = arrivalDelta(actorId, location, landed);
-      const actor = this.actors.get(actorId);
-      if (actor) actor.location = landed;
-      const applied = await this.writeDelta(facts);
-      this.eventBus?.emit({
-        type: "traversal_completed",
-        actorId,
-        from: decision.from,
-        to,
-        mode: affordance.mode,
-        cost: affordance.cost,
-        arrived: arrival.arrived,
-        location: landed
-      });
-      return { ...decision, performed: true, spend, arrival, location: landed, facts, applied };
-    }
-    // ── The gates ──────────────────────────────────────────────────────────
-    /**
-     * The authored goals this link asks of this actor that the KB did not satisfy.
-     *
-     * Evaluated by the PACK's own `traversal_goal_met/2`, not by a second
-     * implementation here: the pack rebuilds the goal with the actor bound (`=..`),
-     * and reproducing that rebuild in TypeScript is how `has_item(Actor, rope, 1)`
-     * ends up satisfied by anyone at all holding a rope
-     * (`prolog/mechanics/traversal-predicates.ts`'s correction to §7).
-     *
-     * With no KB wired every goal is unmet — see the module header for why this gate
-     * fails closed and permissibility fails open.
-     */
-    async unmetRequirements(actorId, affordance) {
-      if (affordance.requires.length === 0) return [];
-      if (!this.engine) return [...affordance.requires];
-      const unmet = [];
-      for (const goal of affordance.requires) {
-        let met = false;
-        try {
-          met = await this.engine.queryOnce(`traversal_goal_met(${prologAtom(actorId)}, ${goal})`);
-        } catch {
-          met = false;
-        }
-        if (!met) unmet.push(goal);
-      }
-      return unmet;
-    }
-    /**
-     * `permissible/3`'s own input, forwarded with the movement spelled as the action
-     * it is.
-     *
-     * There is deliberately no traversal-private gate: climbing the temple wall is
-     * refused by whatever `forbids/4` refuses it with, which is the same clause that
-     * refuses a theft — and it is what lets 123's skill gates and a world's laws
-     * refuse a movement without traversal knowing they exist. With no KB wired every
-     * movement is permitted; core does not invent a prohibition it cannot read.
-     */
-    async checkPermission(actorId, affordance) {
-      const target = affordance.to || NO_TARGET;
-      if (!this.engine) {
-        return { agent: actorId, action: affordance.action, target, permitted: true, breached: [] };
-      }
-      return checkAction(this.engine, { agent: actorId, action: affordance.action, target });
-    }
-    /**
-     * Ask the host about every geometric link out of where this actor is.
-     *
-     * One query per geometric link per call, on the decision path. A probe that
-     * throws is read as "passable" — a host's geometry failing must not strand a
-     * character, which is the same direction `ITrajectoryProbe` degrades in.
-     */
-    async askProbe(actor) {
-      const geometry = {};
-      if (!this.probe) return geometry;
-      for (const link of this.links) {
-        if (!link.geometric || link.from !== actor.location) continue;
-        const id = traversalLinkId(link);
-        let reading = null;
-        try {
-          reading = await this.probe.query({
-            actor: actor.id,
-            from: link.from,
-            to: link.to,
-            mode: link.mode,
-            link: id
-          });
-        } catch {
-          reading = null;
-        }
-        geometry[id] = reading === null ? true : reading.passable;
-      }
-      return geometry;
-    }
-    /**
-     * Hand one order to the host, or take the documented fallback.
-     *
-     * With no locomotion host wired every order arrives: the world state moves and
-     * nothing is animated, which is exactly what a headless simulation wants. A host
-     * that throws is read the same way — core has already spent the meter and
-     * committed the decision, and leaving the actor in limbo because an animation
-     * driver raised is the worse failure.
-     */
-    async orderLocomotion(actorId, affordance, intent) {
-      if (!this.locomotion) return { arrived: true };
-      try {
-        const vehicle = this.vehicles?.drivenBy(actorId);
-        return await this.locomotion.travel({
-          actor: actorId,
-          from: affordance.from,
-          to: affordance.to,
-          mode: affordance.mode,
-          link: affordance.id,
-          cost: affordance.cost,
-          action: affordance.action,
-          // Every order carries a complete intent, so a host never has to guess at
-          // half of one — and four engines never guess differently.
-          urgency: intent?.urgency ?? "ordinary",
-          stance: intent?.stance ?? "standing",
-          ...vehicle === void 0 ? {} : { vehicle }
-        });
-      } catch {
-        return { arrived: true };
-      }
-    }
-    /** This actor's meter, for the pure resolver. `undefined` for an actor with none. */
-    meterOf(actorId) {
-      const actor = this.stamina?.get(actorId);
-      return actor === void 0 ? void 0 : { current: actor.current, max: actor.max };
-    }
-    // ── The KB ─────────────────────────────────────────────────────────────
-    /**
-     * Write one delta into the KB, retracting first.
-     *
-     * Retracting a fact the KB never carried is a no-op rather than a failure: a
-     * host with its own persistence, a restored save and an actor registered before
-     * the engine was wired all produce one, and none of them is an error.
-     */
-    async writeDelta(delta) {
-      if (!this.engine) return false;
-      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
-      for (const fact of delta.retract) {
-        try {
-          await this.engine.retractFact(stripPeriod5(fact));
-        } catch {
-        }
-      }
-      for (const fact of delta.assert) {
-        await this.engine.assertFact(stripPeriod5(fact));
-      }
-      return true;
-    }
-    /**
-     * Publish every registered actor's `movement_mode/2` and `at_location/2`.
-     *
-     * For a caller that wired the KB after the roster — a save restore, a host that
-     * builds its world before its engine. Returns how many facts were written.
-     */
-    async publishActors(engine = this.engine) {
-      if (!engine) return 0;
-      let written = 0;
-      for (const actor of this.roster()) {
-        const delta = mergeTraversalDeltas(
-          movementModeDelta(actor.id, [], actor.modes),
-          arrivalDelta(actor.id, void 0, actor.location)
-        );
-        for (const fact of delta.assert) {
-          await engine.assertFact(stripPeriod5(fact));
-          written += 1;
-        }
-      }
-      return written;
-    }
-    // ── Save/restore ───────────────────────────────────────────────────────
-    /** Every actor this planner knows, in canonical order. */
-    roster() {
-      return [...this.actors.values()].map(({ lent, ...actor }) => ({
-        ...actor,
-        modes: [...actor.modes],
-        ...lent && Object.keys(lent).length > 0 ? { lent: canonicalLent(lent, actor.modes) } : {}
-      })).sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
-    }
-    /**
-     * The per-playthrough state, and only that: where everyone is, what they are
-     * doing, and which links this playthrough closed. The graph, the costs and the
-     * requirements are authored and are NOT here — a tuning number inside a save
-     * file is world-template data leaking into a playthrough
-     * (`docs/mechanic-predicates.md` §3).
-     */
-    serialize() {
-      return {
-        actors: this.roster(),
-        blocked: [...this.blocked.values()].sort(
-          (a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : a.to < b.to ? -1 : a.to > b.to ? 1 : 0
-        )
-      };
-    }
-    /**
-     * Restore a saved playthrough. Silent — no events, because loading a save is not
-     * somebody walking somewhere, and no KB writes, because restoring a save is what
-     * `publishActors` is for once the engine exists.
-     */
-    restore(state) {
-      this.actors = /* @__PURE__ */ new Map();
-      for (const actor of state.actors ?? []) {
-        const modes = [...actor.modes ?? ["walk"]];
-        const lent = canonicalLent(actor.lent, modes);
-        this.actors.set(actor.id, {
-          id: actor.id,
-          location: actor.location,
-          modes,
-          ...Object.keys(lent).length > 0 ? { lent } : {}
-        });
-      }
-      this.blocked = /* @__PURE__ */ new Map();
-      for (const edge of state.blocked ?? []) {
-        this.blocked.set(edgeKey(edge.from, edge.to), { from: edge.from, to: edge.to });
-      }
-    }
-  };
-  function stripPeriod5(clause) {
-    return clause.replace(/\.$/, "");
-  }
-  function refusalRank(refusal3) {
-    return refusal3 === void 0 ? TRAVERSAL_REFUSALS.length : TRAVERSAL_REFUSALS.indexOf(refusal3);
   }
 
   // @insimul/core/src/game-engine/mechanic-runtime.ts
@@ -25193,11 +26283,11 @@ player_meets_cefr(Player, RequiredLevel) :-
     }
     // ── the host's answer ──
     /** The I/O the last effect asked for has finished. */
-    finished(result) {
+    finished(result2) {
       const p = this.pending;
       if (!p) return NO("nothing_pending");
       this.pending = null;
-      const ok = result?.ok === true;
+      const ok = result2?.ok === true;
       const showFor = p.kind !== "auto" || this.config.autosaveIndicator;
       if (p.op === "save") {
         this.sinceSaveSec = 0;
@@ -25205,8 +26295,8 @@ player_meets_cefr(Player, RequiredLevel) :-
           const prev = this.slots[p.slot];
           const { savedAt: _oldTime, ...carried } = (prev.outcome === "ok" ? prev.summary : void 0) ?? {};
           const summary = {
-            ...result.summary ?? carried,
-            ...typeof result.savedAt === "string" ? { savedAt: result.savedAt } : {}
+            ...result2.summary ?? carried,
+            ...typeof result2.savedAt === "string" ? { savedAt: result2.savedAt } : {}
           };
           this.slots[p.slot] = { index: p.slot, outcome: "ok", summary };
           this.active = p.slot;
@@ -25220,7 +26310,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           this.sinceSaveSec = 0;
           this.ind = showSaveIndicator("loaded", p.kind);
         } else {
-          const found = result?.outcome;
+          const found = result2?.outcome;
           if (found && found !== "ok" && found !== "empty" && found in SLOT_MESSAGES) {
             this.slots[p.slot] = { index: p.slot, outcome: found };
             this.ind = showSaveIndicator("load_failed", p.kind, SLOT_MESSAGES[found]);
@@ -25909,7 +26999,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   // @insimul/core/src/quests/tutorial-save.ts
   var TUTORIAL_EXTENSION_KEY = "tutorial";
   var TUTORIAL_BLOCK_MEMBERS = Object.freeze(["completed", "skipped", "current", "endedBySkip"]);
-  var isObj4 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var isObj5 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
   var isId = (v) => typeof v === "string" && v.length > 0;
   function readIds(v, name, bad3, taken = /* @__PURE__ */ new Set()) {
     if (v === void 0) return [];
@@ -25931,7 +27021,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function readTutorialBlock(b) {
     if (b === void 0 || b === null) return { ok: true, value: null };
-    if (!isObj4(b)) return { ok: false, keys: [] };
+    if (!isObj5(b)) return { ok: false, keys: [] };
     const bad3 = [];
     const completed = readIds(b.completed, "completed", bad3);
     const skipped = readIds(b.skipped, "skipped", bad3, new Set(completed ?? []));
@@ -26055,7 +27145,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   var DEFAULT_CHARS_PER_PAGE = 800;
   var DOCUMENT_REFUSALS = ["missing_field", "unknown_kind", "bad_pages", "bad_chars_per_page"];
   var isText = (v) => typeof v === "string";
-  var str2 = (v) => isText(v) ? v : "";
+  var str3 = (v) => isText(v) ? v : "";
   function paginateText(text4, charsPerPage = DEFAULT_CHARS_PER_PAGE) {
     if (!Number.isInteger(charsPerPage) || charsPerPage < 1) charsPerPage = DEFAULT_CHARS_PER_PAGE;
     const pages = [];
@@ -26093,7 +27183,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       const options = Array.isArray(r.options) ? r.options.filter(isText) : [];
       const correctIndex = typeof r.correctIndex === "number" ? r.correctIndex : -1;
       if (!isText(r.question) || !Number.isInteger(correctIndex) || correctIndex < 0 || correctIndex >= options.length) continue;
-      out.push({ question: r.question, questionTranslation: str2(r.questionTranslation), options, correctIndex });
+      out.push({ question: r.question, questionTranslation: str3(r.questionTranslation), options, correctIndex });
     }
     return out;
   }
@@ -26104,7 +27194,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       if (!v || typeof v !== "object") continue;
       const r = v;
       if (!isText(r.word) || r.word === "") continue;
-      out.push({ word: r.word, translation: isText(r.translation) ? r.translation : str2(r.meaning) });
+      out.push({ word: r.word, translation: isText(r.translation) ? r.translation : str3(r.meaning) });
     }
     return out;
   }
@@ -26130,7 +27220,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     const authored = Array.isArray(input.pages) ? input.pages : [];
     const sign = kind === "sign";
     const body2 = isText(input.body) ? input.body : isText(input.text) ? input.text : "";
-    const pages = authored.length > 0 ? authored.map((p) => ({ content: p.content, contentTranslation: str2(p.contentTranslation) })) : paginateText(body2, chars).map((content) => ({ content, contentTranslation: "" }));
+    const pages = authored.length > 0 ? authored.map((p) => ({ content: p.content, contentTranslation: str3(p.contentTranslation) })) : paginateText(body2, chars).map((content) => ({ content, contentTranslation: "" }));
     const translation = authored.length > 0 ? "" : isText(input.bodyTranslation) ? input.bodyTranslation : "";
     if (authored.length === 0 && pages.length === 1) pages[0] = { content: pages[0].content, contentTranslation: translation };
     const cefr = cefrOf(input);
@@ -26142,7 +27232,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         id: input.id,
         kind,
         title: input.title,
-        titleTranslation: str2(input.titleTranslation),
+        titleTranslation: str3(input.titleTranslation),
         pages,
         pagesFrom: authored.length > 0 ? "authored" : "paginated",
         translation: authored.length === 0 && pages.length > 1 ? translation : "",
@@ -28273,9 +29363,9 @@ player_meets_cefr(Player, RequiredLevel) :-
       return this._cachedPath;
     }
   };
-  var handleResult = (ctx, result) => {
-    if (isValid(result)) {
-      return { success: true, data: result.value };
+  var handleResult = (ctx, result2) => {
+    if (isValid(result2)) {
+      return { success: true, data: result2.value };
     } else {
       if (!ctx.common.issues.length) {
         throw new Error("Validation failed but no issues detected.");
@@ -28346,21 +29436,21 @@ player_meets_cefr(Player, RequiredLevel) :-
       };
     }
     _parseSync(input) {
-      const result = this._parse(input);
-      if (isAsync(result)) {
+      const result2 = this._parse(input);
+      if (isAsync(result2)) {
         throw new Error("Synchronous parse encountered promise.");
       }
-      return result;
+      return result2;
     }
     _parseAsync(input) {
-      const result = this._parse(input);
-      return Promise.resolve(result);
+      const result2 = this._parse(input);
+      return Promise.resolve(result2);
     }
     parse(data, params) {
-      const result = this.safeParse(data, params);
-      if (result.success)
-        return result.data;
-      throw result.error;
+      const result2 = this.safeParse(data, params);
+      if (result2.success)
+        return result2.data;
+      throw result2.error;
     }
     safeParse(data, params) {
       const ctx = {
@@ -28375,8 +29465,8 @@ player_meets_cefr(Player, RequiredLevel) :-
         data,
         parsedType: getParsedType(data)
       };
-      const result = this._parseSync({ data, path: ctx.path, parent: ctx });
-      return handleResult(ctx, result);
+      const result2 = this._parseSync({ data, path: ctx.path, parent: ctx });
+      return handleResult(ctx, result2);
     }
     "~validate"(data) {
       const ctx = {
@@ -28392,9 +29482,9 @@ player_meets_cefr(Player, RequiredLevel) :-
       };
       if (!this["~standard"].async) {
         try {
-          const result = this._parseSync({ data, path: [], parent: ctx });
-          return isValid(result) ? {
-            value: result.value
+          const result2 = this._parseSync({ data, path: [], parent: ctx });
+          return isValid(result2) ? {
+            value: result2.value
           } : {
             issues: ctx.common.issues
           };
@@ -28408,17 +29498,17 @@ player_meets_cefr(Player, RequiredLevel) :-
           };
         }
       }
-      return this._parseAsync({ data, path: [], parent: ctx }).then((result) => isValid(result) ? {
-        value: result.value
+      return this._parseAsync({ data, path: [], parent: ctx }).then((result2) => isValid(result2) ? {
+        value: result2.value
       } : {
         issues: ctx.common.issues
       });
     }
     async parseAsync(data, params) {
-      const result = await this.safeParseAsync(data, params);
-      if (result.success)
-        return result.data;
-      throw result.error;
+      const result2 = await this.safeParseAsync(data, params);
+      if (result2.success)
+        return result2.data;
+      throw result2.error;
     }
     async safeParseAsync(data, params) {
       const ctx = {
@@ -28434,8 +29524,8 @@ player_meets_cefr(Player, RequiredLevel) :-
         parsedType: getParsedType(data)
       };
       const maybeAsyncResult = this._parse({ data, path: ctx.path, parent: ctx });
-      const result = await (isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult));
-      return handleResult(ctx, result);
+      const result2 = await (isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult));
+      return handleResult(ctx, result2);
     }
     refine(check, message) {
       const getIssueProperties = (val) => {
@@ -28448,13 +29538,13 @@ player_meets_cefr(Player, RequiredLevel) :-
         }
       };
       return this._refinement((val, ctx) => {
-        const result = check(val);
+        const result2 = check(val);
         const setError = () => ctx.addIssue({
           code: ZodIssueCode.custom,
           ...getIssueProperties(val)
         });
-        if (typeof Promise !== "undefined" && result instanceof Promise) {
-          return result.then((data) => {
+        if (typeof Promise !== "undefined" && result2 instanceof Promise) {
+          return result2.then((data) => {
             if (!data) {
               setError();
               return false;
@@ -28463,7 +29553,7 @@ player_meets_cefr(Player, RequiredLevel) :-
             }
           });
         }
-        if (!result) {
+        if (!result2) {
           setError();
           return false;
         } else {
@@ -29958,14 +31048,14 @@ player_meets_cefr(Player, RequiredLevel) :-
       if (ctx.common.async) {
         return Promise.all([...ctx.data].map((item, i) => {
           return def.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
-        })).then((result2) => {
-          return ParseStatus.mergeArray(status, result2);
+        })).then((result3) => {
+          return ParseStatus.mergeArray(status, result3);
         });
       }
-      const result = [...ctx.data].map((item, i) => {
+      const result2 = [...ctx.data].map((item, i) => {
         return def.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
       });
-      return ParseStatus.mergeArray(status, result);
+      return ParseStatus.mergeArray(status, result2);
     }
     get element() {
       return this._def.type;
@@ -30371,18 +31461,18 @@ player_meets_cefr(Player, RequiredLevel) :-
       const { ctx } = this._processInputParams(input);
       const options = this._def.options;
       function handleResults(results) {
-        for (const result of results) {
-          if (result.result.status === "valid") {
-            return result.result;
+        for (const result2 of results) {
+          if (result2.result.status === "valid") {
+            return result2.result;
           }
         }
-        for (const result of results) {
-          if (result.result.status === "dirty") {
-            ctx.common.issues.push(...result.ctx.common.issues);
-            return result.result;
+        for (const result2 of results) {
+          if (result2.result.status === "dirty") {
+            ctx.common.issues.push(...result2.ctx.common.issues);
+            return result2.result;
           }
         }
-        const unionErrors = results.map((result) => new ZodError(result.ctx.common.issues));
+        const unionErrors = results.map((result2) => new ZodError(result2.ctx.common.issues));
         addIssueToContext(ctx, {
           code: ZodIssueCode.invalid_union,
           unionErrors
@@ -30420,15 +31510,15 @@ player_meets_cefr(Player, RequiredLevel) :-
             },
             parent: null
           };
-          const result = option._parseSync({
+          const result2 = option._parseSync({
             data: ctx.data,
             path: ctx.path,
             parent: childCtx
           });
-          if (result.status === "valid") {
-            return result;
-          } else if (result.status === "dirty" && !dirty) {
-            dirty = { result, ctx: childCtx };
+          if (result2.status === "valid") {
+            return result2;
+          } else if (result2.status === "dirty" && !dirty) {
+            dirty = { result: result2, ctx: childCtx };
           }
           if (childCtx.common.issues.length) {
             issues.push(childCtx.common.issues);
@@ -30973,9 +32063,9 @@ player_meets_cefr(Player, RequiredLevel) :-
             error.addIssue(makeArgsIssue(args, e));
             throw error;
           });
-          const result = await Reflect.apply(fn, this, parsedArgs);
-          const parsedReturns = await me._def.returns._def.type.parseAsync(result, params).catch((e) => {
-            error.addIssue(makeReturnsIssue(result, e));
+          const result2 = await Reflect.apply(fn, this, parsedArgs);
+          const parsedReturns = await me._def.returns._def.type.parseAsync(result2, params).catch((e) => {
+            error.addIssue(makeReturnsIssue(result2, e));
             throw error;
           });
           return parsedReturns;
@@ -30987,10 +32077,10 @@ player_meets_cefr(Player, RequiredLevel) :-
           if (!parsedArgs.success) {
             throw new ZodError([makeArgsIssue(args, parsedArgs.error)]);
           }
-          const result = Reflect.apply(fn, this, parsedArgs.data);
-          const parsedReturns = me._def.returns.safeParse(result, params);
+          const result2 = Reflect.apply(fn, this, parsedArgs.data);
+          const parsedReturns = me._def.returns.safeParse(result2, params);
           if (!parsedReturns.success) {
-            throw new ZodError([makeReturnsIssue(result, parsedReturns.error)]);
+            throw new ZodError([makeReturnsIssue(result2, parsedReturns.error)]);
           }
           return parsedReturns.data;
         });
@@ -31242,43 +32332,43 @@ player_meets_cefr(Player, RequiredLevel) :-
           return Promise.resolve(processed).then(async (processed2) => {
             if (status.value === "aborted")
               return INVALID;
-            const result = await this._def.schema._parseAsync({
+            const result2 = await this._def.schema._parseAsync({
               data: processed2,
               path: ctx.path,
               parent: ctx
             });
-            if (result.status === "aborted")
+            if (result2.status === "aborted")
               return INVALID;
-            if (result.status === "dirty")
-              return DIRTY(result.value);
+            if (result2.status === "dirty")
+              return DIRTY(result2.value);
             if (status.value === "dirty")
-              return DIRTY(result.value);
-            return result;
+              return DIRTY(result2.value);
+            return result2;
           });
         } else {
           if (status.value === "aborted")
             return INVALID;
-          const result = this._def.schema._parseSync({
+          const result2 = this._def.schema._parseSync({
             data: processed,
             path: ctx.path,
             parent: ctx
           });
-          if (result.status === "aborted")
+          if (result2.status === "aborted")
             return INVALID;
-          if (result.status === "dirty")
-            return DIRTY(result.value);
+          if (result2.status === "dirty")
+            return DIRTY(result2.value);
           if (status.value === "dirty")
-            return DIRTY(result.value);
-          return result;
+            return DIRTY(result2.value);
+          return result2;
         }
       }
       if (effect.type === "refinement") {
         const executeRefinement = (acc) => {
-          const result = effect.refinement(acc, checkCtx);
+          const result2 = effect.refinement(acc, checkCtx);
           if (ctx.common.async) {
-            return Promise.resolve(result);
+            return Promise.resolve(result2);
           }
-          if (result instanceof Promise) {
+          if (result2 instanceof Promise) {
             throw new Error("Async refinement encountered during synchronous parse operation. Use .parseAsync instead.");
           }
           return acc;
@@ -31316,18 +32406,18 @@ player_meets_cefr(Player, RequiredLevel) :-
           });
           if (!isValid(base))
             return INVALID;
-          const result = effect.transform(base.value, checkCtx);
-          if (result instanceof Promise) {
+          const result2 = effect.transform(base.value, checkCtx);
+          if (result2 instanceof Promise) {
             throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
           }
-          return { status: status.value, value: result };
+          return { status: status.value, value: result2 };
         } else {
           return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
             if (!isValid(base))
               return INVALID;
-            return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
+            return Promise.resolve(effect.transform(base.value, checkCtx)).then((result2) => ({
               status: status.value,
-              value: result
+              value: result2
             }));
           });
         }
@@ -31424,18 +32514,18 @@ player_meets_cefr(Player, RequiredLevel) :-
           issues: []
         }
       };
-      const result = this._def.innerType._parse({
+      const result2 = this._def.innerType._parse({
         data: newCtx.data,
         path: newCtx.path,
         parent: {
           ...newCtx
         }
       });
-      if (isAsync(result)) {
-        return result.then((result2) => {
+      if (isAsync(result2)) {
+        return result2.then((result3) => {
           return {
             status: "valid",
-            value: result2.status === "valid" ? result2.value : this._def.catchValue({
+            value: result3.status === "valid" ? result3.value : this._def.catchValue({
               get error() {
                 return new ZodError(newCtx.common.issues);
               },
@@ -31446,7 +32536,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       } else {
         return {
           status: "valid",
-          value: result.status === "valid" ? result.value : this._def.catchValue({
+          value: result2.status === "valid" ? result2.value : this._def.catchValue({
             get error() {
               return new ZodError(newCtx.common.issues);
             },
@@ -31560,14 +32650,14 @@ player_meets_cefr(Player, RequiredLevel) :-
   };
   var ZodReadonly = class extends ZodType {
     _parse(input) {
-      const result = this._def.innerType._parse(input);
+      const result2 = this._def.innerType._parse(input);
       const freeze = (data) => {
         if (isValid(data)) {
           data.value = Object.freeze(data.value);
         }
         return data;
       };
-      return isAsync(result) ? result.then((data) => freeze(data)) : freeze(result);
+      return isAsync(result2) ? result2.then((data) => freeze(data)) : freeze(result2);
     }
     unwrap() {
       return this._def.innerType;
@@ -34021,7 +35111,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       lots: plan2.lots.map((l) => ({ ...l })),
       terrain: plan2.terrain
     };
-    const result = { plan: out, lotsMoved: 0, pathsFromDoor: 0, pathsMoved: 0, events: [] };
+    const result2 = { plan: out, lotsMoved: 0, pathsFromDoor: 0, pathsMoved: 0, events: [] };
     for (const b of settled) {
       if (b.lotId === "") continue;
       const shifted = b.shiftX !== 0 || b.shiftZ !== 0;
@@ -34030,8 +35120,8 @@ player_meets_cefr(Player, RequiredLevel) :-
           if (l.lotId !== b.lotId) continue;
           l.cx += b.shiftX;
           l.cz += b.shiftZ;
-          result.lotsMoved += 1;
-          result.events.push({ kind: "yard-moved", lotId: b.lotId, entityId: b.entityId, shiftX: b.shiftX, shiftZ: b.shiftZ });
+          result2.lotsMoved += 1;
+          result2.events.push({ kind: "yard-moved", lotId: b.lotId, entityId: b.entityId, shiftX: b.shiftX, shiftZ: b.shiftZ });
         }
       }
       for (const s of out.strips) {
@@ -34073,18 +35163,18 @@ player_meets_cefr(Player, RequiredLevel) :-
             }
             s.points = [[sx, sz], [ex, ez]];
             fromDoor = true;
-            result.pathsFromDoor += 1;
-            result.events.push({ kind: "path-from-door", pathId: s.entityId, entityId: b.entityId, to, length: d + FOOTPATH_INTO_STREET_M });
+            result2.pathsFromDoor += 1;
+            result2.events.push({ kind: "path-from-door", pathId: s.entityId, entityId: b.entityId, to, length: d + FOOTPATH_INTO_STREET_M });
           }
         }
         if (!fromDoor && shifted) {
           s.points = s.points.map((p) => [p[0] + b.shiftX, p[1] + b.shiftZ]);
-          result.pathsMoved += 1;
-          result.events.push({ kind: "path-moved", pathId: s.entityId, entityId: b.entityId });
+          result2.pathsMoved += 1;
+          result2.events.push({ kind: "path-moved", pathId: s.entityId, entityId: b.entityId });
         }
       }
     }
-    return result;
+    return result2;
   }
   function pathMouths(plan2) {
     const out = [];
@@ -34239,10 +35329,10 @@ player_meets_cefr(Player, RequiredLevel) :-
   var LOOK_PI = Math.fround(Math.PI);
   function lookNeighbours(layerId, row, look, terrain, plan2, paving, obstacles2, radius) {
     const density = Math.max(0, look.density);
-    const whole3 = Math.floor(density);
-    const frac = density - whole3;
+    const whole4 = Math.floor(density);
+    const frac = density - whole4;
     const key = layerInstanceKey(layerId, row.x, row.z);
-    const evenCopies = whole3 + (lookHash01(key, 0) < frac ? 1 : 0);
+    const evenCopies = whole4 + (lookHash01(key, 0) < frac ? 1 : 0);
     let copies = evenCopies;
     if (look.clumping > 0 && density > 1) {
       const d = density * clumpWeight(row.x, row.z, look.clumping, look.clumpCell);
@@ -34552,7 +35642,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     const v = o[k];
     return typeof v === "number" ? v : d;
   }
-  function str3(o, k, d = "") {
+  function str4(o, k, d = "") {
     const v = o[k];
     return typeof v === "string" ? v : d;
   }
@@ -34594,11 +35684,11 @@ player_meets_cefr(Player, RequiredLevel) :-
   var DOOR_SOURCES = ["none", "binding_socket", "mesh_socket", "component", "binding_yaw"];
   function door(v) {
     const o = obj(v, "a door");
-    const source = str3(o, "source", "none");
+    const source = str4(o, "source", "none");
     if (!DOOR_SOURCES.includes(source)) bad(`unknown door source '${source}'`);
     return {
       source,
-      name: str3(o, "name"),
+      name: str4(o, "name"),
       hasPosition: bool(o, "hasPosition"),
       position: present(o, "position") ? vec2(o.position) : { x: 0, y: 0, z: 0 },
       yaw: numOr2(o, "yaw", 0),
@@ -34608,13 +35698,13 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function candidate(v) {
     const o = obj(v, "a door candidate");
-    return { component: str3(o, "component"), mesh: str3(o, "mesh"), owner: str3(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
+    return { component: str4(o, "component"), mesh: str4(o, "mesh"), owner: str4(o, "owner"), min: vec2(o.min), max: vec2(o.max) };
   }
   function policy(v) {
     const o = obj(v, "a fit policy");
     const d = defaultFitPolicy();
     const p = {
-      mode: str3(o, "mode", "lot") === "none" ? "none" : "lot",
+      mode: str4(o, "mode", "lot") === "none" ? "none" : "lot",
       scaleMin: numOr2(o, "scaleMin", d.scaleMin),
       scaleMax: numOr2(o, "scaleMax", d.scaleMax),
       doorClearance: numOr2(o, "doorClearance", d.doorClearance),
@@ -34629,8 +35719,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     const g = obj(o.geometry, "geometry");
     const b = present(o, "bounds") ? obj(o.bounds, "bounds") : null;
     return {
-      entityId: str3(o, "entityId"),
-      lotId: str3(o, "lotId"),
+      entityId: str4(o, "entityId"),
+      lotId: str4(o, "lotId"),
       lot: present(o, "lot") ? readFitLot(o.lot) : null,
       lotCentre: present(o, "lotCentre") ? point(o.lotCentre) : null,
       node: vec2(o.node),
@@ -34649,9 +35739,9 @@ player_meets_cefr(Player, RequiredLevel) :-
   function obstacle(v) {
     const o = obj(v, "an obstacle");
     return {
-      entityId: str3(o, "entityId"),
-      kind: str3(o, "kind"),
-      lotId: str3(o, "lotId"),
+      entityId: str4(o, "entityId"),
+      kind: str4(o, "kind"),
+      lotId: str4(o, "lotId"),
       points: points(o.points),
       halfWidth: numOr2(o, "halfWidth", 0),
       closed: bool(o, "closed")
@@ -34663,8 +35753,8 @@ player_meets_cefr(Player, RequiredLevel) :-
   function body(v) {
     const o = obj(v, "a body");
     return {
-      entityId: str3(o, "entityId"),
-      lotId: str3(o, "lotId"),
+      entityId: str4(o, "entityId"),
+      lotId: str4(o, "lotId"),
       outline: points(o.outline),
       mass: num3(o, "mass"),
       maxShift: num3(o, "maxShift"),
@@ -34684,10 +35774,10 @@ player_meets_cefr(Player, RequiredLevel) :-
       y = p[1];
     }
     return {
-      kind: str3(o, "kind"),
-      entityId: str3(o, "entityId"),
-      archetype: str3(o, "archetype"),
-      lotId: str3(o, "lotId"),
+      kind: str4(o, "kind"),
+      entityId: str4(o, "entityId"),
+      archetype: str4(o, "archetype"),
+      lotId: str4(o, "lotId"),
       path: present(o, "path") ? points(o.path) : [],
       width: numOr2(o, "width", 0),
       closed: bool(o, "closed"),
@@ -34701,12 +35791,12 @@ player_meets_cefr(Player, RequiredLevel) :-
     const o = obj(v, "a plan");
     const strips = present(o, "strips") ? arr(o.strips, "strips").map((x) => {
       const s = obj(x, "a strip");
-      const surface = str3(s, "surface");
+      const surface = str4(s, "surface");
       if (surface !== "road" && surface !== "plaza" && surface !== "path") bad("a strip's surface is road, plaza or path");
       return {
-        entityId: str3(s, "entityId"),
+        entityId: str4(s, "entityId"),
         surface,
-        lotId: str3(s, "lotId"),
+        lotId: str4(s, "lotId"),
         points: points(s.points),
         halfWidth: numOr2(s, "halfWidth", 0),
         closed: bool(s, "closed")
@@ -34715,8 +35805,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     const lots = present(o, "lots") ? arr(o.lots, "lots").map((x) => {
       const l = obj(x, "a lot");
       return {
-        entityId: str3(l, "entityId"),
-        lotId: str3(l, "lotId"),
+        entityId: str4(l, "entityId"),
+        lotId: str4(l, "lotId"),
         cx: num3(l, "cx"),
         cz: num3(l, "cz"),
         halfAcross: num3(l, "halfAcross"),
@@ -34731,7 +35821,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     return arr(v, "obstacles").map((x) => {
       const o = obj(x, "a ground obstacle");
       return {
-        entityId: str3(o, "entityId"),
+        entityId: str4(o, "entityId"),
         building: bool(o, "building"),
         cx: num3(o, "cx"),
         cz: num3(o, "cz"),
@@ -34745,7 +35835,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function choices(v) {
     return arr(v, "authored").map((x) => {
       const o = obj(x, "a layer choice");
-      return { surface: str3(o, "surface"), layer: str3(o, "layer"), strength: numOr2(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
+      return { surface: str4(o, "surface"), layer: str4(o, "layer"), strength: numOr2(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
     });
   }
   var v3 = (v) => ({ x: v.x, y: v.y, z: v.z });
@@ -34847,7 +35937,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     switch (op) {
       // ── building-fit ──
       case "isDoorPartName":
-        return isDoorPartName({ component: str3(i, "component"), mesh: str3(i, "mesh"), owner: str3(i, "owner") });
+        return isDoorPartName({ component: str4(i, "component"), mesh: str4(i, "mesh"), owner: str4(i, "owner") });
       case "faceYawOf":
         return faceYawOf(vec2(i.point), vec2(i.min), vec2(i.max));
       case "chooseDoorPart":
@@ -34872,7 +35962,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj(x, "a footprint");
           const corners = points(o.corners);
           if (corners.length !== 4) bad("a footprint has four corners");
-          return { entityId: str3(o, "entityId"), lotId: str3(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
+          return { entityId: str4(o, "entityId"), lotId: str4(o, "lotId"), corners: corners.map((c) => [c[0], c[1]]) };
         });
         return findFitOverlaps(buildings, obstacles(i.obstacles)).map((o) => ({ entityId: o.entityId, with: o.with, withKind: o.withKind, depth: o.depth }));
       }
@@ -34882,7 +35972,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return { gap: s.gap, axis: [s.axis[0], s.axis[1]] };
       }
       case "settleBodies": {
-        const rule2 = str3(i, "rule");
+        const rule2 = str4(i, "rule");
         if (rule2 !== "neighbour" && rule2 !== "clearance") bad(`unknown settle rule '${rule2}'`);
         return movesJson(settleBodies(
           arr(i.bodies, "bodies").map(body),
@@ -34894,14 +35984,14 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "settleFittedBuildings":
         return movesJson(settleFittedBuildings(arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a fitted footprint");
-          return { entityId: str3(o, "entityId"), lotId: str3(o, "lotId"), corners: points(o.corners), neighbourGap: num3(o, "neighbourGap") };
+          return { entityId: str4(o, "entityId"), lotId: str4(o, "lotId"), corners: points(o.corners), neighbourGap: num3(o, "neighbourGap") };
         }), obstacles(i.obstacles)));
       case "settleDoorFrontage": {
         const buildings = arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a fitted footprint");
           return {
-            entityId: str3(o, "entityId"),
-            lotId: str3(o, "lotId"),
+            entityId: str4(o, "entityId"),
+            lotId: str4(o, "lotId"),
             corners: points(o.corners),
             neighbourGap: num3(o, "neighbourGap"),
             door: present(o, "door") ? fittedDoor(o.door) : null
@@ -34923,14 +36013,14 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "settleClearance": {
         const items = arr(i.items, "items").map((x) => {
           const o = obj(x, "a clearance item");
-          const kind = str3(o, "kind");
+          const kind = str4(o, "kind");
           const item = {
-            entityId: str3(o, "entityId"),
+            entityId: str4(o, "entityId"),
             kind: kind === "building" ? "building" : kind === "plant" ? "plant" : "prop",
             outline: points(o.outline)
           };
           item.area = numOr2(o, "area", 0);
-          item.archetype = str3(o, "archetype");
+          item.archetype = str4(o, "archetype");
           item.height = numOr2(o, "height", 0);
           item.longestPlan = numOr2(o, "longestPlan", 0);
           item.crownRadius = numOr2(o, "crownRadius", 1);
@@ -34959,7 +36049,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "layoutConstants":
         return { pairingNeighbourGap: PAIRING_NEIGHBOUR_GAP_M, crownRadius: CROWN_RADIUS_M };
       case "markerClearance":
-        return markerClearanceM(str3(i, "archetype"), num3(i, "height"), num3(i, "longestPlan"));
+        return markerClearanceM(str4(i, "archetype"), num3(i, "height"), num3(i, "longestPlan"));
       case "plantWallClearance":
         return plantWallClearanceM(num3(i, "crownRadius"));
       case "settleBuildingMaxShift":
@@ -34995,8 +36085,8 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj(x, "a settled building");
           const d = present(o, "door") ? obj(o.door, "a door") : null;
           return {
-            entityId: str3(o, "entityId"),
-            lotId: str3(o, "lotId"),
+            entityId: str4(o, "entityId"),
+            lotId: str4(o, "lotId"),
             shiftX: numOr2(o, "shiftX", 0),
             shiftZ: numOr2(o, "shiftZ", 0),
             door: d === null ? null : { x: num3(d, "x"), z: num3(d, "z"), faceX: num3(d, "faceX"), faceZ: num3(d, "faceZ") }
@@ -35016,7 +36106,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "lanternsAtPathMouths": {
         const mouths = arr(i.mouths, "mouths").map((x) => {
           const o = obj(x, "a mouth");
-          return { pathId: str3(o, "pathId"), x: num3(o, "x"), z: num3(o, "z"), dirX: num3(o, "dirX"), dirZ: num3(o, "dirZ"), halfWidth: num3(o, "halfWidth") };
+          return { pathId: str4(o, "pathId"), x: num3(o, "x"), z: num3(o, "z"), dirX: num3(o, "dirX"), dirZ: num3(o, "dirZ"), halfWidth: num3(o, "halfWidth") };
         });
         return lanternsAtPathMouths(mouths, points(i.lanterns)).map((l) => ({ ...l }));
       }
@@ -35062,7 +36152,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         return arr(i.rows, "rows").map((x) => {
           const q = arr(x, "a row");
           const r = lookNeighbours(
-            str3(i, "layerId"),
+            str4(i, "layerId"),
             { x: q[0], z: q[1], yaw: q[2] },
             { density: num3(look, "density"), clumping: num3(look, "clumping"), clumpCell: num3(look, "clumpCell"), jitter: num3(look, "jitter") },
             t === null ? null : { sizeX: num3(t, "sizeX"), sizeZ: num3(t, "sizeZ") },
@@ -36910,7 +38000,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     if (typeof v !== "number") bad2(`'${k}' is not a number`);
     return v;
   }
-  function str4(o, k) {
+  function str5(o, k) {
     const v = o[k];
     if (typeof v !== "string") bad2(`'${k}' is not a string`);
     return v;
@@ -36935,10 +38025,10 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function stripOf(v) {
     const s = obj2(v, "a strip");
-    const surface = str4(s, "surface");
+    const surface = str5(s, "surface");
     if (surface !== "road" && surface !== "plaza" && surface !== "path") bad2(`unknown strip surface '${surface}'`);
     return {
-      entityId: str4(s, "entityId"),
+      entityId: str5(s, "entityId"),
       surface,
       lotId: typeof s.lotId === "string" ? s.lotId : "",
       points: points2(s.points, "a strip's points"),
@@ -36949,7 +38039,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function lotOf(v) {
     const l = obj2(v, "a lot");
     return {
-      entityId: str4(l, "entityId"),
+      entityId: str5(l, "entityId"),
       lotId: typeof l.lotId === "string" ? l.lotId : "",
       cx: num4(l, "cx"),
       cz: num4(l, "cz"),
@@ -36987,7 +38077,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function doorsOf(v) {
     return arr2(v ?? [], "doors").map((d) => {
       const o = obj2(d, "a door");
-      return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
+      return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
     });
   }
   function groupingInput(i) {
@@ -37000,7 +38090,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function propsOf(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
+      return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
     });
   }
   function plannedOn(i) {
@@ -37014,7 +38104,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function spotsOf(v, what) {
     return arr2(v ?? [], what).map((p) => {
       const o = obj2(p, what);
-      return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z") };
+      return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z") };
     });
   }
   var postsOf = (v) => spotsOf(v, "posts");
@@ -37023,38 +38113,38 @@ player_meets_cefr(Player, RequiredLevel) :-
   function foliageOf(v) {
     return arr2(v ?? [], "foliage").map((p) => {
       const o = obj2(p, "a foliage prop");
-      return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), x: num4(o, "x"), z: num4(o, "z") };
+      return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), x: num4(o, "x"), z: num4(o, "z") };
     });
   }
   function villagersOf(v) {
     return arr2(v ?? [], "villagers").map((p) => {
       const o = obj2(p, "a villager");
-      return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), target: typeof o.target === "string" ? o.target : null };
+      return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), target: typeof o.target === "string" ? o.target : null };
     });
   }
   function outlinedBuildings(v) {
     return arr2(v ?? [], "buildings").map((b) => {
       const o = obj2(b, "a building");
-      return { entityId: str4(o, "entityId"), outline: points2(o.outline, "a building's outline") };
+      return { entityId: str5(o, "entityId"), outline: points2(o.outline, "a building's outline") };
     });
   }
   function reachProps(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
+      return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
     });
   }
   function seatsOf(v) {
     return arr2(v ?? [], "seats").map((s) => {
       const o = obj2(s, "a seat");
-      return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading"), length: num4(o, "length") };
+      return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading"), length: num4(o, "length") };
     });
   }
   function compositionHouseModels(v) {
     return arr2(v ?? [], "models").map((m) => {
       const o = obj2(m, "a model");
       if (o.entry !== void 0) {
-        const model = houseModelOf(str4(o, "id"), obj2(o.entry, "a model's entry"));
+        const model = houseModelOf(str5(o, "id"), obj2(o.entry, "a model's entry"));
         if (model === null) bad2(`model ${JSON.stringify(o.id)}: its entry states no measured footprint`);
         return model;
       }
@@ -37062,7 +38152,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         if (typeof s !== "string" || !HOUSE_SIDES.includes(s)) bad2(`unknown house side ${JSON.stringify(s)}`);
         return s;
       });
-      return { id: str4(o, "id"), width: num4(o, "width"), depth: num4(o, "depth"), blank };
+      return { id: str5(o, "id"), width: num4(o, "width"), depth: num4(o, "depth"), blank };
     });
   }
   function runCompositionOp(op, input, rules = DEFAULT_COMPOSITION_RULES) {
@@ -37102,7 +38192,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "auditGroundEdges":
         return json4(auditGroundEdges(arr2(i.samples, "samples").map((s) => point2(s, "an [s, w] sample")), r));
       case "coverageAudit": {
-        const source = str4(i, "source");
+        const source = str5(i, "source");
         if (source !== "transition" && source !== "paint") bad2(`unknown coverage source '${source}'`);
         const profile = coverageProfile(
           compositionPlan(i.plan),
@@ -37134,7 +38224,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "composeYards": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
+          return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), outline: o.outline == null ? null : points2(o.outline, "an outline") };
         });
         return json4(composeYards({ lots: compositionPlan(i.plan).lots, buildings, doors: doorsOf(i.doors), posts: postsOf(i.posts) }, r));
       }
@@ -37143,7 +38233,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         if (i.buildings === void 0 || i.props === void 0) bad2("a lanternsOnRoutes input states its 'buildings' and 'props' (empty means none)");
         const lines2 = arr2(i.lines ?? [], "lines").map((q) => {
           const o = obj2(q, "a line");
-          return { entityId: str4(o, "entityId"), points: points2(o.points, "a line's points") };
+          return { entityId: str5(o, "entityId"), points: points2(o.points, "a line's points") };
         });
         return json4(lanternsOnRoutes({ plan: compositionPlan(i.plan), routes, lanterns: lanternsOf(i.lanterns), buildings: outlinedBuildings(i.buildings), props: reachProps(i.props), lines: lines2 }, r));
       }
@@ -37159,7 +38249,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "assignHouseModels": {
         const houses = arr2(i.houses ?? [], "houses").map((h) => {
           const o = obj2(h, "a house");
-          return { entityId: str4(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
+          return { entityId: str5(o, "entityId"), x: num4(o, "x"), z: num4(o, "z"), heading: num4(o, "heading") };
         });
         return json4(assignHouseModels({ lots: compositionPlan(i.plan ?? {}).lots, houses, models: compositionHouseModels(i.models) }, r));
       }
@@ -37172,7 +38262,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "composeVillage": {
         const buildings = arr2(i.buildings ?? [], "buildings").map((b) => {
           const o = obj2(b, "a building");
-          return { entityId: str4(o, "entityId"), archetype: str4(o, "archetype"), outline: points2(o.outline, "an outline") };
+          return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), outline: points2(o.outline, "an outline") };
         });
         return json4(
           composeVillage(
@@ -37348,12 +38438,12 @@ player_meets_cefr(Player, RequiredLevel) :-
       // (`busy`, `confirm_open`) is a VALUE and changes nothing.
       disk_changed: ({ model }, op) => plain(model.diskChanged(op.slots === void 0 || op.slots === null ? null : slotListOf(m, op.slots))),
       finished: ({ model }, op) => {
-        const { op: _name, ...result } = op;
-        if (typeof result.ok !== "boolean") throw refuse2(m, "`ok` must be a boolean");
-        optStringField(m, result, "savedAt");
-        optStringField(m, result, "outcome");
-        if (result.summary !== void 0 && result.summary !== null) needObject(m, result.summary, "summary");
-        return plain(model.finished(result));
+        const { op: _name, ...result2 } = op;
+        if (typeof result2.ok !== "boolean") throw refuse2(m, "`ok` must be a boolean");
+        optStringField(m, result2, "savedAt");
+        optStringField(m, result2, "outcome");
+        if (result2.summary !== void 0 && result2.summary !== null) needObject(m, result2.summary, "summary");
+        return plain(model.finished(result2));
       }
     };
   }
@@ -37730,6 +38820,103 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function groundSeatTuningOf(args) {
     return groundSeatTuning(args.params ?? {});
+  }
+  function lentArg(method, value, name) {
+    needObject(method, value, name);
+    for (const [mode, lenders] of Object.entries(value)) stringList(method, lenders, `${name}.${mode}`);
+    return value;
+  }
+  function kindOrNull(method, value, name) {
+    if (value === void 0 || value === null) return null;
+    return needString(method, value, name);
+  }
+  function personalParamsArg(method, value, name) {
+    if (value === void 0 || value === null) return {};
+    needObject(method, value, name);
+    optionalArg(value.kinds, (v) => needArray(method, v, `${name}.kinds`));
+    optionalArg(value.cycle, (v) => needArray(method, v, `${name}.cycle`));
+    optionalArg(value.onFoot, (v) => needObject(method, v, `${name}.onFoot`));
+    return value;
+  }
+  function personalTuningOf(method, args) {
+    return personalVehicleTuning(coded("invalid-input", () => personalParamsArg(method, args.params, "params")));
+  }
+  function personalStateArg(method, value) {
+    needObject(method, value, "state");
+    needObject(method, value.riding, "state.riding");
+    return value;
+  }
+  function ridingArg(method, value, name) {
+    return optionalArg(value, (v) => needObject(method, v, name));
+  }
+  function traversalSavePartsOf(method, args) {
+    return coded("invalid-input", () => {
+      const planner = optionalArg(args.planner, (p) => {
+        needObject(method, p, "planner");
+        objectList(method, p.actors, "planner.actors").forEach((a, i) => {
+          stringList(method, a.modes, `planner.actors[${i}].modes`);
+          optionalArg(a.lent, (l) => lentArg(method, l, `planner.actors[${i}].lent`));
+        });
+        objectList(method, p.blocked, "planner.blocked");
+        return p;
+      });
+      const vehicles = optionalArg(args.vehicles, (v) => {
+        needObject(method, v, "vehicles");
+        objectList(method, v.vehicles, "vehicles.vehicles").forEach((row, i) => needArray(method, row.occupants, `vehicles.vehicles[${i}].occupants`));
+        return v;
+      });
+      const fastTravel = optionalArg(args.fastTravel, (f) => {
+        needObject(method, f, "fastTravel");
+        needArray(method, f.discovered, "fastTravel.discovered");
+        return f;
+      });
+      const riding = ridingArg(method, args.riding, "riding");
+      return { planner: planner ?? null, vehicles: vehicles ?? null, fastTravel: fastTravel ?? null, riding: riding === void 0 ? null : { riding } };
+    });
+  }
+  function traversalSessionView(s) {
+    return plain({
+      planner: s.planner.serialize(),
+      vehicles: s.registry.serialize(),
+      fastTravel: s.director.serialize(),
+      riding: personalVehicleSaveRows(s.riding)
+    });
+  }
+  function probeTableArg(method, value, name) {
+    needObject(method, value, name);
+    for (const [link, passable] of Object.entries(value)) {
+      if (typeof passable !== "boolean") throw refuse2(method, `\`${name}.${link}\` must be a boolean`);
+    }
+    return value;
+  }
+  function stuckTableArg(method, value, name) {
+    needObject(method, value, name);
+    for (const [to, at] of Object.entries(value)) needString(method, at, `${name}.${to}`);
+    return value;
+  }
+  var hasOwn3 = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
+  async function personalSessionVerb(s, verb, op) {
+    const m = "traversal.session.apply";
+    const actor = op.actor;
+    const request = { actor, inVehicle: s.registry.vehicleOf(actor) ?? null };
+    const before = hasOwn3(s.riding.riding, actor) ? s.riding.riding[actor] : null;
+    let r;
+    if (verb === "mount") {
+      const kind = coded("invalid-input", () => needString(m, op.kind, "kind"));
+      r = mountPersonalVehicle(s.riding, { ...request, kind }, s.ptuning);
+    } else if (verb === "dismount") {
+      r = dismountPersonalVehicle(s.riding, request, s.ptuning);
+    } else {
+      r = cyclePersonalVehicle(s.riding, request, s.ptuning);
+    }
+    s.riding = r.state;
+    let delta = null;
+    if (r.ok) {
+      const held = personalVehicleModes({ modes: s.planner.modesOf(actor), lent: s.planner.lentOf(actor) }, before, r.kind, s.ptuning);
+      delta = await s.planner.setModes(actor, held.modes, held.lent);
+    }
+    const { state: _state, ...result2 } = r;
+    return { result: result2, delta };
   }
   function movementModeOf(method, value) {
     return oneOf(method, value, CAMERA_MODES, "mode");
@@ -38428,7 +39615,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     "ui.tutorial.apply": async (args) => {
       const m = "ui.tutorial.apply";
       const s = session(m, args, "ui.tutorial");
-      const done = (io, result) => ({ result: plain(result ?? null), events: plain(io.events.splice(0)) });
+      const done = (io, result2) => ({ result: plain(result2 ?? null), events: plain(io.events.splice(0)) });
       const results = await applyOps(m, s, args, {
         start: ({ model, io }) => done(io, model.start()?.id),
         event: ({ bus, io }, op) => {
@@ -38524,7 +39711,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     "ui.onboarding.apply": async (args) => {
       const m = "ui.onboarding.apply";
       const s = session(m, args, "ui.onboarding");
-      const done = (io, result) => ({ result: plain(result ?? null), calls: plain(io.calls.splice(0)), events: plain(io.events.splice(0)) });
+      const done = (io, result2) => ({ result: plain(result2 ?? null), calls: plain(io.calls.splice(0)), events: plain(io.events.splice(0)) });
       const results = await applyOps(m, s, args, {
         start: async ({ model, io }) => {
           await model.start({
@@ -39953,6 +41140,341 @@ player_meets_cefr(Player, RequiredLevel) :-
     },
     /** `traversal.groundSeating.unseat {}` → `{ state }` — core's `unseat`: whenever nothing carries the body (switched off, or standing with its agent off). */
     "traversal.groundSeating.unseat": () => ({ state: plain(unseat()) }),
+    // ── traversal: the stateful layers (P9e; PL.native-traversal-rows slice 2, U106(1)) ──
+    // The personal vehicles and the lent-mode record are pure functions, one row each
+    // (`traversal.personal.*`, `traversal.lending.*`); the save block is two
+    // (`traversal.save.*`). The three decision layers are ONE session,
+    // `traversal.session.*`, because core wires them together (doc §1): the planner
+    // spends the shared meter and names the driven vehicle in its orders, the registry
+    // lends a driver its mode through the planner and follows the driver on
+    // `traversal_completed`, the director plans over the planner's graph and moves the
+    // traveller through it. tests/traversal_corpus.cpp drives conformance/traversal/
+    // mounts.json through the personal rows, save.json through the save rows and a
+    // session's `load`, and session.json through the session.
+    /** `traversal.personal.tuning { params? }` → `{ tuning }` — core's `personalVehicleTuning`: the kinds merged by id over Babylon's bicycle and horse, the cycle, on-foot rates and mounted strafe/back, in thousandths. */
+    "traversal.personal.tuning": (args) => ({ tuning: plain(personalTuningOf("traversal.personal.tuning", args)) }),
+    /** `traversal.personal.pace { kind, params? }` → `{ pace }` — core's `personalPace`: the controller's factors for a rider on `kind` (null, or a kind the world does not author: on foot). */
+    "traversal.personal.pace": (args) => {
+      const m = "traversal.personal.pace";
+      const kind = coded("invalid-input", () => kindOrNull(m, args.kind, "kind"));
+      return { pace: plain(personalPace(kind, personalTuningOf(m, args))) };
+    },
+    /** `traversal.personal.label { kind, params? }` → `{ label }` — core's `personalVehicleLabel`: what a HUD shows (null: "On Foot"). */
+    "traversal.personal.label": (args) => {
+      const m = "traversal.personal.label";
+      const kind = coded("invalid-input", () => kindOrNull(m, args.kind, "kind"));
+      return { label: personalVehicleLabel(kind, personalTuningOf(m, args)) };
+    },
+    /**
+     * `traversal.personal.modes { modes, lent?, from, to, params? }` → `{ modes, lent }` —
+     * core's `personalVehicleModes`: `from` (a kind, or null on foot) gives back the mode
+     * it lent and `to` lends its own under `personal:<kind>`; what a host hands
+     * `setModes(actor, modes, lent)`.
+     */
+    "traversal.personal.modes": (args) => {
+      const m = "traversal.personal.modes";
+      const [modes, lent, from, to] = coded("invalid-input", () => [
+        stringList(m, args.modes, "modes"),
+        optionalArg(args.lent, (v) => lentArg(m, v, "lent")) ?? {},
+        kindOrNull(m, args.from, "from"),
+        kindOrNull(m, args.to, "to")
+      ]);
+      return plain(personalVehicleModes({ modes, lent }, from, to, personalTuningOf(m, args)));
+    },
+    /** `traversal.personal.initial {}` → `{ state }` — core's `initialPersonalVehicles`: nobody riding. */
+    "traversal.personal.initial": () => ({ state: plain(initialPersonalVehicles()) }),
+    /**
+     * `traversal.personal.mount { state, actor, kind, inVehicle?, params? }` → core's
+     * `mountPersonalVehicle`: `{ ok, refusal?, detail?, state, kind, pace, label, events }`
+     * (refusals `unknown_kind`, `in_vehicle` — `inVehicle` is the registry vehicle the
+     * rider is aboard, null for none — and `redundant`; `vehicle_mounted` names the rider).
+     */
+    "traversal.personal.mount": (args) => {
+      const m = "traversal.personal.mount";
+      const [state, kind, inVehicle] = coded("invalid-input", () => [
+        personalStateArg(m, args.state),
+        needString(m, args.kind, "kind"),
+        kindOrNull(m, args.inVehicle, "inVehicle")
+      ]);
+      return plain(mountPersonalVehicle(state, { actor: args.actor, kind, inVehicle }, personalTuningOf(m, args)));
+    },
+    /** `traversal.personal.dismount { state, actor, inVehicle?, params? }` → core's `dismountPersonalVehicle` (`not_riding` on foot; never refused for being aboard). */
+    "traversal.personal.dismount": (args) => {
+      const m = "traversal.personal.dismount";
+      const [state, inVehicle] = coded("invalid-input", () => [personalStateArg(m, args.state), kindOrNull(m, args.inVehicle, "inVehicle")]);
+      return plain(dismountPersonalVehicle(state, { actor: args.actor, inVehicle }, personalTuningOf(m, args)));
+    },
+    /** `traversal.personal.cycle { state, actor, inVehicle?, params? }` → core's `cyclePersonalVehicle`: the B key, on foot → each kind of the cycle → on foot. */
+    "traversal.personal.cycle": (args) => {
+      const m = "traversal.personal.cycle";
+      const [state, inVehicle] = coded("invalid-input", () => [personalStateArg(m, args.state), kindOrNull(m, args.inVehicle, "inVehicle")]);
+      return plain(cyclePersonalVehicle(state, { actor: args.actor, inVehicle }, personalTuningOf(m, args)));
+    },
+    /** `traversal.personal.saveRows { state }` → `{ riding }` — core's `personalVehicleSaveRows`: every rider → kind, canonical order. */
+    "traversal.personal.saveRows": (args) => ({
+      riding: plain(personalVehicleSaveRows(coded("invalid-input", () => personalStateArg("traversal.personal.saveRows", args.state))))
+    }),
+    /** `traversal.personal.fromSave { riding?, params? }` → `{ state, dropped }` — core's `personalVehiclesFromSave`: a kind the world no longer authors puts that rider on foot (named in `dropped`, ascending). */
+    "traversal.personal.fromSave": (args) => {
+      const m = "traversal.personal.fromSave";
+      const riding = coded("invalid-input", () => ridingArg(m, args.riding, "riding"));
+      return plain(personalVehiclesFromSave(riding, personalTuningOf(m, args)));
+    },
+    /** `traversal.lending.lend { modes, lent?, mode, lender }` → `{ modes, lent }` — core's `lendMode`: a mode held of the actor's own records nothing; otherwise held, and `lender` recorded. */
+    "traversal.lending.lend": (args) => {
+      const m = "traversal.lending.lend";
+      const [modes, lent] = coded("invalid-input", () => [stringList(m, args.modes, "modes"), optionalArg(args.lent, (v) => lentArg(m, v, "lent"))]);
+      return plain(lendMode({ modes, lent }, args.mode, args.lender));
+    },
+    /** `traversal.lending.giveBack { modes, lent?, mode, lender }` → `{ modes, lent }` — core's `returnMode`: only a recorded lender gives back, and the mode goes only when nobody else still lends it. */
+    "traversal.lending.giveBack": (args) => {
+      const m = "traversal.lending.giveBack";
+      const [modes, lent] = coded("invalid-input", () => [stringList(m, args.modes, "modes"), optionalArg(args.lent, (v) => lentArg(m, v, "lent"))]);
+      return plain(returnMode({ modes, lent }, args.mode, args.lender));
+    },
+    /** `traversal.lending.canonical { lent?, modes }` → `{ lent }` — core's `canonicalLent`: keys sorted, lenders sorted and deduplicated, empty lists and unheld modes dropped. */
+    "traversal.lending.canonical": (args) => {
+      const m = "traversal.lending.canonical";
+      const [modes, lent] = coded("invalid-input", () => [stringList(m, args.modes, "modes"), optionalArg(args.lent, (v) => lentArg(m, v, "lent"))]);
+      return { lent: plain(canonicalLent(lent, modes)) };
+    },
+    /** `traversal.lending.vehicleLender { vehicle }` → `{ lender }` — core's `vehicleLender`: `vehicle:<id>`. */
+    "traversal.lending.vehicleLender": (args) => ({ lender: vehicleLender(args.vehicle) }),
+    /** `traversal.lending.personalLender { kind }` → `{ lender }` — core's `personalLender`: `personal:<kind>`. */
+    "traversal.lending.personalLender": (args) => ({ lender: personalLender(args.kind) }),
+    /**
+     * `traversal.save.block { planner?, vehicles?, fastTravel?, riding? }` → `{ key, block }`
+     * — the block a save stores at `currentState.extensions[key]` (`key` is core's
+     * `TRAVERSAL_EXTENSION_KEY`): core's `traversalSaveBlock` of each layer's
+     * `serialize()` (absent or null: that layer is not run) and the save rows of who
+     * rides what, written as `traversalBlockOf` writes it (only its members, each row
+     * only its keys).
+     */
+    "traversal.save.block": (args) => ({
+      key: TRAVERSAL_EXTENSION_KEY,
+      block: plain(traversalBlockOf(traversalSaveBlock(traversalSavePartsOf("traversal.save.block", args))))
+    }),
+    /**
+     * `traversal.save.read { block? }` → core's `readTraversalBlock`: `{ ok: true, value }`
+     * (absent or null: `value` null, no traversal) or the VALUE `{ ok: false, keys }`
+     * naming every unreadable member in ascending order. Any JSON is an answer.
+     */
+    "traversal.save.read": (args) => plain(readTraversalBlock(args.block)),
+    /**
+     * `traversal.session.create { links?, tuning?, vehicles?, fastTravel?, seed?, stamina?,
+     * probe?, locomotion?, personal? }` → `{ session, view }` — one playthrough's
+     * traversal, wired as core's doc §1 wires it, with no KB (every permission granted,
+     * every authored requirement unmet: the layers' own no-KB rule):
+     *  - `links` and `tuning` are the planner's graph and numbers as core resolves them
+     *    (`traversal.affordances.links` / `.tuning` read them out of a World IR);
+     *    `vehicles` the IR's vehicles (core's `vehiclesFromIR`); `fastTravel` the IR's
+     *    fast-travel block (core's `fastTravelTuningFromIR`); `personal` the pack's
+     *    personal-vehicle params (core's `personalVehicleTuning`); `seed` the
+     *    playthrough seed fast travel draws from. Absent: core's defaults.
+     *  - `stamina { actors? }`: the planner spends the shared `StaminaPool`, each actor
+     *    registered as given; absent, movement costs nothing (core's degradation).
+     *  - `probe { <link id>: passable }`: the host's geometry answers, by link id; a
+     *    link not listed is unanswered, so passable (core's rule). Absent: no probe.
+     *  - `locomotion { stuck? }`: the host is told every movement core orders (each op's
+     *    `orders`) and reports it arrived, except an order to a destination in `stuck`,
+     *    which leaves the actor where `stuck` says (`{ arrived: false, location, reason:
+     *    'stuck' }`, the corpus host's report). Absent: no locomotion host, every order
+     *    reads as arrived and none is recorded (core's degradation).
+     *  - the world clock records the hours a journey passes (each op's `clock`), and the
+     *    bus every event core raises (each op's `events`).
+     * Probe and locomotion are callbacks core calls mid-decision, which cannot cross
+     * this ABI, so the host states its answers as data (and restates them with the
+     * `host` op); a host whose actor ends up elsewhere later says so with `arrive`.
+     */
+    "traversal.session.create": (args) => {
+      const m = "traversal.session.create";
+      const input = coded("invalid-input", () => ({
+        links: optionalArg(args.links, (v) => objectList(m, v, "links")),
+        tuning: optionalArg(args.tuning, (v) => traversalTuningArg(m, v, "tuning")),
+        vehicles: optionalArg(args.vehicles, (v) => objectList(m, v, "vehicles")) ?? [],
+        fastTravel: optionalArg(args.fastTravel, (v) => needObject(m, v, "fastTravel")) ?? null,
+        seed: optionalArg(args.seed, (v) => typeof v === "number" ? needNumber(m, v, "seed") : needString(m, v, "seed")),
+        stamina: optionalArg(args.stamina, (v) => {
+          needObject(m, v, "stamina");
+          return optionalArg(v.actors, (a) => objectList(m, a, "stamina.actors")) ?? [];
+        }),
+        probe: optionalArg(args.probe, (v) => probeTableArg(m, v, "probe")),
+        locomotion: optionalArg(args.locomotion, (v) => {
+          needObject(m, v, "locomotion");
+          return optionalArg(v.stuck, (st) => stuckTableArg(m, st, "locomotion.stuck")) ?? {};
+        }),
+        personal: personalParamsArg(m, args.personal, "personal")
+      }));
+      const s = { events: [], orders: [], clock: [], hosts: { probe: input.probe ?? null, stuck: input.locomotion ?? null } };
+      const bus = new GameEventBus();
+      bus.onAny((event) => void s.events.push(plain(event)));
+      const pool = new StaminaPool();
+      for (const actor of input.stamina ?? []) pool.register(actor);
+      const probe = s.hosts.probe === null ? void 0 : { query: (q) => hasOwn3(s.hosts.probe, q.link) ? { passable: s.hosts.probe[q.link] } : null };
+      const locomotion = s.hosts.stuck === null ? void 0 : {
+        travel: (order) => {
+          s.orders.push(plain(order));
+          const stuck = s.hosts.stuck;
+          return hasOwn3(stuck, order.to) ? { arrived: false, location: stuck[order.to], reason: "stuck" } : { arrived: true };
+        }
+      };
+      const planner = new TraversalPlanner({
+        links: input.links,
+        tuning: input.tuning,
+        eventBus: bus,
+        ...input.stamina !== void 0 ? { stamina: pool } : {},
+        ...probe ? { probe } : {},
+        ...locomotion ? { locomotion } : {}
+      });
+      const registry = new VehicleRegistry({ vehicles: vehiclesFromIR(input.vehicles), traversal: planner, eventBus: bus });
+      planner.setVehicleSource(registry);
+      const director = new FastTravelDirector({
+        traversal: planner,
+        clock: { advanceHours: (hours) => void s.clock.push(hours) },
+        tuning: fastTravelTuningFromIR(input.fastTravel),
+        ...input.seed !== void 0 ? { seed: input.seed } : {},
+        eventBus: bus,
+        ...locomotion ? { locomotion } : {}
+      });
+      Object.assign(s, { planner, registry, director, pool, ptuning: personalVehicleTuning(input.personal), riding: initialPersonalVehicles() });
+      return { session: openSession("traversal", s), view: traversalSessionView(s) };
+    },
+    /**
+     * `traversal.session.apply { session, ops }` → `{ results, view }`. Each op is ONE
+     * call into core and answers it under a named key, plus what the hosts recorded
+     * while it ran: `events` (the bus), `orders` (the locomotion host; carry them out)
+     * and `clock` (the hours to pass, in order). Refusals are values.
+     *  - planner: `register { actor, location, modes? }`, `setModes { actor, modes, lent? }`,
+     *    `lendMode` / `returnMode { actor, mode, lender }`, `arrive { actor, location }`,
+     *    `block` / `unblock { from, to }` → `{ delta }`; `isBlocked { from, to }` →
+     *    `{ blocked }`; `affordances { actor }` → `{ affordances }`; `route { actor, to }`
+     *    → `{ route }` (null: none); `canTraverse { actor, to }` → `{ decision }`;
+     *    `traverse { actor, to, intent? }` → `{ report }` (`intent { urgency?, stance? }`,
+     *    core's `MOVEMENT_URGENCIES` / `MOVEMENT_STANCES`); `locationOf { actor }` →
+     *    `{ location }` (null: never registered); `modesOf` → `{ modes }`; `lentOf` →
+     *    `{ lent }`.
+     *  - registry: `board` / `drive` / `disembark { actor, vehicle }` → `{ report }`;
+     *    `canDo { actor, vehicle, verb }` → `{ decision }`; `vehicleOf` / `drivenBy
+     *    { actor }` → `{ vehicle }` (null: none); `stateOf { vehicle }` → `{ state }`;
+     *    `roster` → `{ vehicles }`.
+     *  - director: `discover { location }` → `{ delta }`; `discoveries` → `{ discovered }`;
+     *    `destinations { actor }` → `{ destinations }`; `canFastTravel { actor, to }` →
+     *    `{ decision }`; `fastTravel { actor, to }` → `{ report }`.
+     *  - the shared meter: `meter { actor }` → `{ meter }` (core's `StaminaPool.get`, null
+     *    for an actor it does not hold).
+     *  - personal vehicles: `mount { actor, kind }`, `dismount { actor }`, `cycle { actor }`
+     *    → `{ result, delta }` (`personalSessionVerb`, core's doc §8 wiring).
+     *  - save: `save` → `{ key, block }` (the four layers' block, as `traversal.save.block`
+     *    writes it); `load { block? }` → `{ ok: true, dropped }` after core's
+     *    `readTraversalBlock` hands each member to its layer's `restore()` and `riding` to
+     *    `personalVehiclesFromSave`, or the VALUE `{ ok: false, keys }` with nothing
+     *    changed (an absent or null block reads as no traversal: nothing restored, and
+     *    nobody riding).
+     *  - `host { probe?, stuck? }` → `{}`: replace the scripted geometry answers or the
+     *    `stuck` table (only for a session created with a probe / a locomotion host).
+     * The view is the four layers' state (`traversalSessionView`). Every op settles the
+     * registry's follow (core's `settle()`) before it answers.
+     */
+    "traversal.session.apply": async (args) => {
+      const m = "traversal.session.apply";
+      const s = session(m, args, "traversal");
+      s.events.length = 0;
+      s.orders.length = 0;
+      s.clock.length = 0;
+      const ops = {
+        register: async ({ planner }, op) => {
+          const modes = coded("invalid-input", () => optionalArg(op.modes, (v) => stringList(m, v, "modes")));
+          return { delta: await planner.register({ id: op.actor, location: op.location, ...modes !== void 0 ? { modes } : {} }) };
+        },
+        setModes: async ({ planner }, op) => {
+          const [modes, lent] = coded("invalid-input", () => [stringList(m, op.modes, "modes"), optionalArg(op.lent, (v) => lentArg(m, v, "lent"))]);
+          return { delta: await planner.setModes(op.actor, modes, lent) };
+        },
+        lendMode: async ({ planner }, op) => ({ delta: await planner.lendMode(op.actor, op.mode, op.lender) }),
+        returnMode: async ({ planner }, op) => ({ delta: await planner.returnMode(op.actor, op.mode, op.lender) }),
+        arrive: async ({ planner }, op) => ({ delta: await planner.arrive(op.actor, op.location) }),
+        block: async ({ planner }, op) => ({ delta: await planner.block(op.from, op.to) }),
+        unblock: async ({ planner }, op) => ({ delta: await planner.unblock(op.from, op.to) }),
+        isBlocked: ({ planner }, op) => ({ blocked: planner.isBlocked(op.from, op.to) }),
+        affordances: async ({ planner }, op) => ({ affordances: await planner.affordances(op.actor) }),
+        route: ({ planner }, op) => ({ route: planner.route(op.actor, op.to) ?? null }),
+        canTraverse: async ({ planner }, op) => ({ decision: await planner.canTraverse(op.actor, op.to) }),
+        traverse: async ({ planner }, op) => {
+          const intent = coded(
+            "invalid-input",
+            () => optionalArg(op.intent, (v) => {
+              needObject(m, v, "intent");
+              optionalArg(v.urgency, (u) => oneOf(m, u, MOVEMENT_URGENCIES, "intent.urgency"));
+              optionalArg(v.stance, (u) => oneOf(m, u, MOVEMENT_STANCES, "intent.stance"));
+              return v;
+            })
+          );
+          return { report: await planner.traverse(op.actor, op.to, intent) };
+        },
+        locationOf: ({ planner }, op) => ({ location: planner.locationOf(op.actor) ?? null }),
+        modesOf: ({ planner }, op) => ({ modes: planner.modesOf(op.actor) }),
+        lentOf: ({ planner }, op) => ({ lent: planner.lentOf(op.actor) }),
+        board: async ({ registry }, op) => ({ report: await registry.board(op.actor, op.vehicle) }),
+        drive: async ({ registry }, op) => ({ report: await registry.drive(op.actor, op.vehicle) }),
+        disembark: async ({ registry }, op) => ({ report: await registry.disembark(op.actor, op.vehicle) }),
+        canDo: async ({ registry }, op) => {
+          const verb = coded("invalid-input", () => oneOf(m, op.verb, VEHICLE_VERBS, "verb"));
+          return { decision: await registry.canDo(op.actor, op.vehicle, verb) };
+        },
+        vehicleOf: ({ registry }, op) => ({ vehicle: registry.vehicleOf(op.actor) ?? null }),
+        drivenBy: ({ registry }, op) => ({ vehicle: registry.drivenBy(op.actor) ?? null }),
+        stateOf: ({ registry }, op) => ({ state: registry.stateOf(op.vehicle) ?? null }),
+        roster: ({ registry }) => ({ vehicles: registry.roster() }),
+        discover: async ({ director }, op) => ({ delta: await director.discover(op.location) }),
+        discoveries: ({ director }) => ({ discovered: director.discoveries() }),
+        destinations: async ({ director }, op) => ({ destinations: await director.destinations(op.actor) }),
+        canFastTravel: async ({ director }, op) => ({ decision: await director.canFastTravel(op.actor, op.to) }),
+        fastTravel: async ({ director }, op) => ({ report: await director.fastTravel(op.actor, op.to) }),
+        meter: ({ pool }, op) => ({ meter: pool.get(op.actor) ?? null }),
+        mount: (st, op) => personalSessionVerb(st, "mount", op),
+        dismount: (st, op) => personalSessionVerb(st, "dismount", op),
+        cycle: (st, op) => personalSessionVerb(st, "cycle", op),
+        save: (st) => ({
+          key: TRAVERSAL_EXTENSION_KEY,
+          block: traversalBlockOf(
+            traversalSaveBlock({ planner: st.planner.serialize(), vehicles: st.registry.serialize(), fastTravel: st.director.serialize(), riding: st.riding })
+          )
+        }),
+        load: (st, op) => {
+          const read = readTraversalBlock(op.block);
+          if (!read.ok) return { ok: false, keys: read.keys };
+          const b = read.value;
+          if (b?.planner) st.planner.restore(b.planner);
+          if (b?.vehicles) st.registry.restore(b.vehicles);
+          if (b?.fastTravel) st.director.restore(b.fastTravel);
+          const back = personalVehiclesFromSave(b?.riding ?? {}, st.ptuning);
+          st.riding = back.state;
+          return { ok: true, dropped: back.dropped };
+        },
+        host: (st, op) => {
+          const [probe, stuck] = coded("invalid-input", () => {
+            const p = optionalArg(op.probe, (v) => probeTableArg(m, v, "probe"));
+            const k = optionalArg(op.stuck, (v) => stuckTableArg(m, v, "stuck"));
+            if (p !== void 0 && st.hosts.probe === null) throw refuse2(m, "`probe`: the session was created with no probe");
+            if (k !== void 0 && st.hosts.stuck === null) throw refuse2(m, "`stuck`: the session was created with no locomotion host");
+            return [p, k];
+          });
+          if (probe !== void 0) st.hosts.probe = probe;
+          if (stuck !== void 0) st.hosts.stuck = stuck;
+          return {};
+        }
+      };
+      const recorded = {};
+      for (const [name, fn] of Object.entries(ops)) {
+        recorded[name] = async (st, op) => {
+          const answer2 = await fn(st, op);
+          await st.registry.settle();
+          return plain({ ...answer2, events: st.events.splice(0), orders: st.orders.splice(0), clock: st.clock.splice(0) });
+        };
+      }
+      const results = await applyOps(m, s, args, recorded);
+      return { results, view: traversalSessionView(s) };
+    },
     // ── the genre HUD and the world rules panel (P9a) ──
     // Each row is one of core's corpus runners and nothing else: the args are
     // `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and

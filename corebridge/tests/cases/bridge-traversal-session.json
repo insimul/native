@@ -1,0 +1,3784 @@
+{
+  "area": "traversal",
+  "description": "Hand-written: the traversal.* stateful rows’ own contract (PL.native-traversal-rows slice 2, U106(1); core’s P9e layers, P9e.core) — the personal-vehicle and lent-mode rows over core’s functions (the state one row answers is what the next is sent), the save block’s writer and reader, and one traversal.session: core’s TraversalPlanner, VehicleRegistry and FastTravelDirector wired together with a StaminaPool, scripted geometry and locomotion hosts, a recording clock and bus, every op it takes, the host op restating the scripted answers, a save loaded back, core’s degradations with no hosts, and the rows’ own refusals as errors coded [invalid-input]. Every expectation here was computed by core’s own functions and classes at the pin, not by these rows. Core’s own corpora (conformance/traversal/{session,mounts,save}.json, 62 cases) are driven whole through these rows by the traversal_corpus ctest (tests/traversal_corpus.cpp), not transcribed here.",
+  "cases": [
+    {
+      "name": "traversal.personal: each row is one of core’s personal-vehicle functions, the pack’s params read on every call; the state a verb answers is what the next verb is sent",
+      "steps": [
+        {
+          "call": "traversal.personal.tuning",
+          "args": {
+            "params": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "tuning": {
+              "kinds": {
+                "bicycle": {
+                  "id": "bicycle",
+                  "label": "Bicycle",
+                  "walk": 2000,
+                  "run": 1800,
+                  "turn": 1200,
+                  "mode": null
+                },
+                "horse": {
+                  "id": "horse",
+                  "label": "Horse",
+                  "walk": 2800,
+                  "run": 2500,
+                  "turn": 800,
+                  "mode": "ride"
+                },
+                "mule": {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                }
+              },
+              "cycle": [
+                "horse",
+                "mule"
+              ],
+              "onFoot": {
+                "walk": 1000,
+                "run": 1000,
+                "turn": 1000,
+                "strafe": 800,
+                "back": 700
+              },
+              "mountedStrafePermille": 800,
+              "mountedBackPermille": 500
+            }
+          }
+        },
+        {
+          "call": "traversal.personal.tuning",
+          "args": {},
+          "expect": {
+            "tuning": {
+              "kinds": {
+                "bicycle": {
+                  "id": "bicycle",
+                  "label": "Bicycle",
+                  "walk": 2000,
+                  "run": 1800,
+                  "turn": 1200,
+                  "mode": null
+                },
+                "horse": {
+                  "id": "horse",
+                  "label": "Horse",
+                  "walk": 3000,
+                  "run": 2500,
+                  "turn": 800,
+                  "mode": "ride"
+                }
+              },
+              "cycle": [
+                "bicycle",
+                "horse"
+              ],
+              "onFoot": {
+                "walk": 1000,
+                "run": 1000,
+                "turn": 1000,
+                "strafe": 800,
+                "back": 600
+              },
+              "mountedStrafePermille": 800,
+              "mountedBackPermille": 500
+            }
+          }
+        },
+        {
+          "call": "traversal.personal.pace",
+          "args": {
+            "kind": "mule",
+            "params": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "pace": {
+              "walk": 1500,
+              "run": 1200,
+              "turn": 900,
+              "strafe": 1200,
+              "back": 750
+            }
+          }
+        },
+        {
+          "call": "traversal.personal.pace",
+          "args": {},
+          "expect": {
+            "pace": {
+              "walk": 1000,
+              "run": 1000,
+              "turn": 1000,
+              "strafe": 800,
+              "back": 600
+            }
+          }
+        },
+        {
+          "call": "traversal.personal.label",
+          "args": {
+            "kind": "mule",
+            "params": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "label": "Mule"
+          }
+        },
+        {
+          "call": "traversal.personal.label",
+          "args": {
+            "kind": null
+          },
+          "expect": {
+            "label": "On Foot"
+          }
+        },
+        {
+          "call": "traversal.personal.modes",
+          "args": {
+            "modes": [
+              "walk",
+              "ride"
+            ],
+            "lent": {
+              "ride": [
+                "personal:horse"
+              ]
+            },
+            "from": "horse",
+            "to": "mule",
+            "params": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "modes": [
+              "ride",
+              "walk"
+            ],
+            "lent": {
+              "ride": [
+                "personal:mule"
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.personal.modes",
+          "args": {
+            "modes": [
+              "walk"
+            ],
+            "to": "horse"
+          },
+          "expect": {
+            "modes": [
+              "ride",
+              "walk"
+            ],
+            "lent": {
+              "ride": [
+                "personal:horse"
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.personal.initial",
+          "expect": {
+            "state": {
+              "riding": {}
+            }
+          },
+          "bind": "s0"
+        },
+        {
+          "call": "traversal.personal.mount",
+          "args": {
+            "state": {
+              "$ref": "s0.state"
+            },
+            "actor": "mira",
+            "kind": "mule",
+            "params": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "state": {
+              "riding": {
+                "mira": "mule"
+              }
+            },
+            "kind": "mule",
+            "pace": {
+              "walk": 1500,
+              "run": 1200,
+              "turn": 900,
+              "strafe": 1200,
+              "back": 750
+            },
+            "label": "Mule",
+            "events": [
+              {
+                "type": "vehicle_mounted",
+                "actorId": "mira",
+                "vehicleType": "mule"
+              }
+            ]
+          },
+          "bind": "s1"
+        },
+        {
+          "call": "traversal.personal.mount",
+          "args": {
+            "state": {
+              "$ref": "s1.state"
+            },
+            "actor": "mira",
+            "kind": "horse",
+            "inVehicle": "skiff",
+            "params": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "ok": false,
+            "refusal": "in_vehicle",
+            "detail": "skiff",
+            "state": {
+              "riding": {
+                "mira": "mule"
+              }
+            },
+            "kind": "mule",
+            "pace": {
+              "walk": 1500,
+              "run": 1200,
+              "turn": 900,
+              "strafe": 1200,
+              "back": 750
+            },
+            "label": "Mule",
+            "events": []
+          }
+        },
+        {
+          "call": "traversal.personal.cycle",
+          "args": {
+            "state": {
+              "$ref": "s1.state"
+            },
+            "actor": "mira",
+            "params": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "state": {
+              "riding": {}
+            },
+            "kind": null,
+            "pace": {
+              "walk": 1000,
+              "run": 1000,
+              "turn": 1000,
+              "strafe": 800,
+              "back": 700
+            },
+            "label": "On Foot",
+            "events": [
+              {
+                "type": "vehicle_dismounted",
+                "actorId": "mira",
+                "vehicleType": "mule"
+              }
+            ]
+          }
+        },
+        {
+          "call": "traversal.personal.dismount",
+          "args": {
+            "state": {
+              "$ref": "s1.state"
+            },
+            "actor": "mira",
+            "inVehicle": "skiff",
+            "params": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "state": {
+              "riding": {}
+            },
+            "kind": null,
+            "pace": {
+              "walk": 1000,
+              "run": 1000,
+              "turn": 1000,
+              "strafe": 800,
+              "back": 700
+            },
+            "label": "On Foot",
+            "events": [
+              {
+                "type": "vehicle_dismounted",
+                "actorId": "mira",
+                "vehicleType": "mule"
+              }
+            ]
+          }
+        },
+        {
+          "call": "traversal.personal.dismount",
+          "args": {
+            "state": {
+              "$ref": "s0.state"
+            },
+            "actor": "mira"
+          },
+          "expect": {
+            "ok": false,
+            "refusal": "not_riding",
+            "state": {
+              "riding": {}
+            },
+            "kind": null,
+            "pace": {
+              "walk": 1000,
+              "run": 1000,
+              "turn": 1000,
+              "strafe": 800,
+              "back": 600
+            },
+            "label": "On Foot",
+            "events": []
+          }
+        },
+        {
+          "call": "traversal.personal.saveRows",
+          "args": {
+            "state": {
+              "$ref": "s1.state"
+            }
+          },
+          "expect": {
+            "riding": {
+              "mira": "mule"
+            }
+          }
+        },
+        {
+          "call": "traversal.personal.fromSave",
+          "args": {
+            "riding": {
+              "tam": "camel",
+              "mira": "mule",
+              "ada": "bicycle"
+            },
+            "params": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "state": {
+              "riding": {
+                "ada": "bicycle",
+                "mira": "mule"
+              }
+            },
+            "dropped": [
+              "tam"
+            ]
+          }
+        },
+        {
+          "call": "traversal.personal.fromSave",
+          "args": {},
+          "expect": {
+            "state": {
+              "riding": {}
+            },
+            "dropped": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.personal: the rows’ own refusals are errors coded [invalid-input]",
+      "steps": [
+        {
+          "call": "traversal.personal.mount",
+          "args": {
+            "actor": "mira",
+            "kind": "horse"
+          },
+          "expectError": "`state` must be a JSON object"
+        },
+        {
+          "call": "traversal.personal.mount",
+          "args": {
+            "state": {
+              "riding": {}
+            },
+            "actor": "mira"
+          },
+          "expectError": "`kind` must be a string"
+        },
+        {
+          "call": "traversal.personal.cycle",
+          "args": {
+            "state": {
+              "riding": []
+            },
+            "actor": "mira"
+          },
+          "expectError": "`state.riding` must be a JSON object"
+        },
+        {
+          "call": "traversal.personal.dismount",
+          "args": {
+            "state": {
+              "riding": {}
+            },
+            "actor": "mira",
+            "inVehicle": 3
+          },
+          "expectError": "`inVehicle` must be a string"
+        },
+        {
+          "call": "traversal.personal.pace",
+          "args": {
+            "kind": 7
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "traversal.personal.tuning",
+          "args": {
+            "params": {
+              "kinds": {
+                "id": "mule"
+              }
+            }
+          },
+          "expectError": "`params.kinds` must be an array"
+        },
+        {
+          "call": "traversal.personal.modes",
+          "args": {
+            "modes": [
+              "walk"
+            ],
+            "lent": {
+              "ride": "personal:horse"
+            }
+          },
+          "expectError": "`lent.ride` must be an array"
+        },
+        {
+          "call": "traversal.personal.fromSave",
+          "args": {
+            "riding": [
+              "mira"
+            ]
+          },
+          "expectError": "`riding` must be a JSON object"
+        }
+      ]
+    },
+    {
+      "name": "traversal.lending: each row is one of core’s lent-mode functions; an actor’s own mode is never taken back",
+      "steps": [
+        {
+          "call": "traversal.lending.lend",
+          "args": {
+            "modes": [
+              "walk",
+              "ride"
+            ],
+            "lent": {
+              "ride": [
+                "vehicle:cart"
+              ]
+            },
+            "mode": "ride",
+            "lender": "personal:horse"
+          },
+          "expect": {
+            "modes": [
+              "walk",
+              "ride"
+            ],
+            "lent": {
+              "ride": [
+                "personal:horse",
+                "vehicle:cart"
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.lending.lend",
+          "args": {
+            "modes": [
+              "walk"
+            ],
+            "mode": "walk",
+            "lender": "vehicle:cart"
+          },
+          "expect": {
+            "modes": [
+              "walk"
+            ],
+            "lent": {}
+          }
+        },
+        {
+          "call": "traversal.lending.lend",
+          "args": {
+            "modes": [
+              "walk"
+            ],
+            "mode": "boat",
+            "lender": "vehicle:skiff"
+          },
+          "expect": {
+            "modes": [
+              "walk",
+              "boat"
+            ],
+            "lent": {
+              "boat": [
+                "vehicle:skiff"
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.lending.giveBack",
+          "args": {
+            "modes": [
+              "walk",
+              "ride"
+            ],
+            "lent": {
+              "ride": [
+                "vehicle:cart"
+              ]
+            },
+            "mode": "ride",
+            "lender": "vehicle:cart"
+          },
+          "expect": {
+            "modes": [
+              "walk"
+            ],
+            "lent": {}
+          }
+        },
+        {
+          "call": "traversal.lending.giveBack",
+          "args": {
+            "modes": [
+              "walk",
+              "ride"
+            ],
+            "lent": {
+              "ride": [
+                "vehicle:cart"
+              ]
+            },
+            "mode": "ride",
+            "lender": "personal:horse"
+          },
+          "expect": {
+            "modes": [
+              "walk",
+              "ride"
+            ],
+            "lent": {
+              "ride": [
+                "vehicle:cart"
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.lending.canonical",
+          "args": {
+            "modes": [
+              "walk",
+              "ride"
+            ],
+            "lent": {
+              "walk": [],
+              "swim": [
+                "x"
+              ],
+              "ride": [
+                "vehicle:cart",
+                "personal:horse",
+                "vehicle:cart"
+              ]
+            }
+          },
+          "expect": {
+            "lent": {
+              "ride": [
+                "personal:horse",
+                "vehicle:cart"
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.lending.canonical",
+          "args": {
+            "modes": [
+              "walk"
+            ]
+          },
+          "expect": {
+            "lent": {}
+          }
+        },
+        {
+          "call": "traversal.lending.vehicleLender",
+          "args": {
+            "vehicle": "skiff"
+          },
+          "expect": {
+            "lender": "vehicle:skiff"
+          }
+        },
+        {
+          "call": "traversal.lending.personalLender",
+          "args": {
+            "kind": "horse"
+          },
+          "expect": {
+            "lender": "personal:horse"
+          }
+        },
+        {
+          "call": "traversal.lending.lend",
+          "args": {
+            "modes": "walk",
+            "mode": "ride",
+            "lender": "x"
+          },
+          "expectError": "`modes` must be an array"
+        },
+        {
+          "call": "traversal.lending.giveBack",
+          "args": {
+            "modes": [
+              "walk"
+            ],
+            "lent": [],
+            "mode": "ride",
+            "lender": "x"
+          },
+          "expectError": "`lent` must be a JSON object"
+        },
+        {
+          "call": "traversal.lending.canonical",
+          "args": {
+            "modes": [
+              1
+            ]
+          },
+          "expectError": "[invalid-input]"
+        }
+      ]
+    },
+    {
+      "name": "traversal.save: the block a save stores (core’s writer, at core’s extension key) and core’s reader, whose refusals are values",
+      "steps": [
+        {
+          "call": "traversal.save.block",
+          "args": {
+            "planner": {
+              "actors": [
+                {
+                  "id": "mira",
+                  "location": "ford",
+                  "modes": [
+                    "walk",
+                    "boat"
+                  ],
+                  "lent": {
+                    "boat": [
+                      "vehicle:skiff",
+                      "vehicle:skiff"
+                    ]
+                  },
+                  "extra": 1
+                }
+              ],
+              "blocked": [
+                {
+                  "from": "camp",
+                  "to": "ford"
+                }
+              ]
+            },
+            "vehicles": {
+              "vehicles": [
+                {
+                  "id": "skiff",
+                  "location": "ford",
+                  "occupants": [
+                    "mira"
+                  ],
+                  "driver": "mira",
+                  "owner": "ferryman"
+                }
+              ]
+            },
+            "fastTravel": {
+              "discovered": [
+                "ford"
+              ],
+              "journeys": 1
+            },
+            "riding": {
+              "mira": "mule"
+            }
+          },
+          "expect": {
+            "key": "traversal",
+            "block": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "mira",
+                    "location": "ford",
+                    "modes": [
+                      "walk",
+                      "boat"
+                    ],
+                    "lent": {
+                      "boat": [
+                        "vehicle:skiff"
+                      ]
+                    }
+                  }
+                ],
+                "blocked": [
+                  {
+                    "from": "camp",
+                    "to": "ford"
+                  }
+                ]
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "ford",
+                    "occupants": [
+                      "mira"
+                    ],
+                    "owner": "ferryman",
+                    "driver": "mira"
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [
+                  "ford"
+                ],
+                "journeys": 1
+              },
+              "riding": {
+                "mira": "mule"
+              }
+            }
+          }
+        },
+        {
+          "call": "traversal.save.block",
+          "args": {
+            "planner": {
+              "actors": [
+                {
+                  "id": "mira",
+                  "location": "ford",
+                  "modes": [
+                    "walk",
+                    "boat"
+                  ],
+                  "lent": {
+                    "boat": [
+                      "vehicle:skiff",
+                      "vehicle:skiff"
+                    ]
+                  },
+                  "extra": 1
+                }
+              ],
+              "blocked": [
+                {
+                  "from": "camp",
+                  "to": "ford"
+                }
+              ]
+            }
+          },
+          "expect": {
+            "key": "traversal",
+            "block": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "mira",
+                    "location": "ford",
+                    "modes": [
+                      "walk",
+                      "boat"
+                    ],
+                    "lent": {
+                      "boat": [
+                        "vehicle:skiff"
+                      ]
+                    }
+                  }
+                ],
+                "blocked": [
+                  {
+                    "from": "camp",
+                    "to": "ford"
+                  }
+                ]
+              },
+              "vehicles": null,
+              "fastTravel": null,
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.save.block",
+          "args": {},
+          "expect": {
+            "key": "traversal",
+            "block": {
+              "planner": null,
+              "vehicles": null,
+              "fastTravel": null,
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.save.read",
+          "args": {
+            "block": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "mira",
+                    "location": "ford",
+                    "modes": [
+                      "walk",
+                      "boat"
+                    ],
+                    "lent": {
+                      "boat": [
+                        "vehicle:skiff"
+                      ]
+                    }
+                  }
+                ],
+                "blocked": [
+                  {
+                    "from": "camp",
+                    "to": "ford"
+                  }
+                ]
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "ford",
+                    "occupants": [
+                      "mira"
+                    ],
+                    "owner": "ferryman",
+                    "driver": "mira"
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [
+                  "ford"
+                ],
+                "journeys": 1
+              },
+              "riding": {
+                "mira": "mule"
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "mira",
+                    "location": "ford",
+                    "modes": [
+                      "walk",
+                      "boat"
+                    ],
+                    "lent": {
+                      "boat": [
+                        "vehicle:skiff"
+                      ]
+                    }
+                  }
+                ],
+                "blocked": [
+                  {
+                    "from": "camp",
+                    "to": "ford"
+                  }
+                ]
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "ford",
+                    "occupants": [
+                      "mira"
+                    ],
+                    "owner": "ferryman",
+                    "driver": "mira"
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [
+                  "ford"
+                ],
+                "journeys": 1
+              },
+              "riding": {
+                "mira": "mule"
+              }
+            }
+          }
+        },
+        {
+          "call": "traversal.save.read",
+          "args": {},
+          "expect": {
+            "ok": true,
+            "value": null
+          }
+        },
+        {
+          "call": "traversal.save.read",
+          "args": {
+            "block": {
+              "planner": 3,
+              "riding": {
+                "mira": 4
+              }
+            }
+          },
+          "expect": {
+            "ok": false,
+            "keys": [
+              "planner",
+              "riding.mira"
+            ]
+          }
+        },
+        {
+          "call": "traversal.save.read",
+          "args": {
+            "block": "x"
+          },
+          "expect": {
+            "ok": false,
+            "keys": []
+          }
+        },
+        {
+          "call": "traversal.save.block",
+          "args": {
+            "planner": {
+              "actors": [
+                {
+                  "id": "mira",
+                  "modes": "walk"
+                }
+              ],
+              "blocked": []
+            }
+          },
+          "expectError": "`planner.actors[0].modes` must be an array"
+        },
+        {
+          "call": "traversal.save.block",
+          "args": {
+            "vehicles": {
+              "vehicles": [
+                {
+                  "id": "skiff"
+                }
+              ]
+            }
+          },
+          "expectError": "`vehicles.vehicles[0].occupants` must be an array"
+        },
+        {
+          "call": "traversal.save.block",
+          "args": {
+            "fastTravel": {}
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "traversal.save.block",
+          "args": {
+            "riding": "mira"
+          },
+          "expectError": "`riding` must be a JSON object"
+        }
+      ]
+    },
+    {
+      "name": "traversal.session: core’s planner, registry and director wired as one session; each op one core call with what the hosts recorded, a save loaded back",
+      "steps": [
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "from": "ford",
+                "to": "camp",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 6
+              },
+              {
+                "from": "far_bank",
+                "to": "ford",
+                "mode": "boat",
+                "cost": 6
+              },
+              {
+                "from": "camp",
+                "to": "meadow",
+                "mode": "ride",
+                "cost": 10
+              },
+              {
+                "from": "far_bank",
+                "to": "tower",
+                "mode": "walk",
+                "cost": 2,
+                "requires": [
+                  "has_item(Actor, key, 1)"
+                ]
+              }
+            ],
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 2,
+                "swim": 2.5,
+                "jump": 2,
+                "ride": 0.5,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "row"
+              },
+              "defaultAction": "traverse"
+            },
+            "vehicles": [
+              {
+                "id": "skiff",
+                "name": "The skiff",
+                "mode": "boat",
+                "owner": "ferryman",
+                "location": "ford",
+                "seats": 2
+              }
+            ],
+            "fastTravel": {
+              "hoursPerCost": 3,
+              "minimumHours": 2,
+              "maxHours": 20,
+              "stepHours": 5,
+              "maxSteps": 3
+            },
+            "seed": "hand",
+            "stamina": {
+              "actors": [
+                {
+                  "id": "mira",
+                  "current": 30,
+                  "max": 60
+                }
+              ]
+            },
+            "probe": {
+              "camp>ridge:climb": true
+            },
+            "locomotion": {
+              "stuck": {}
+            },
+            "personal": {
+              "kinds": [
+                {
+                  "id": "mule",
+                  "label": "Mule",
+                  "walk": 1500,
+                  "run": 1200,
+                  "turn": 900,
+                  "mode": "ride"
+                },
+                {
+                  "id": "horse",
+                  "walk": 2800
+                }
+              ],
+              "cycle": [
+                "horse",
+                "mule",
+                "nope",
+                "horse"
+              ],
+              "onFoot": {
+                "back": 700
+              }
+            }
+          },
+          "expect": {
+            "session": 1,
+            "view": {
+              "planner": {
+                "actors": [],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "ford",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "register",
+                "actor": "mira",
+                "location": "camp",
+                "modes": [
+                  "walk",
+                  "climb"
+                ]
+              },
+              {
+                "op": "register",
+                "actor": "ferryman",
+                "location": "ford"
+              },
+              {
+                "op": "affordances",
+                "actor": "mira"
+              },
+              {
+                "op": "route",
+                "actor": "mira",
+                "to": "ridge"
+              },
+              {
+                "op": "route",
+                "actor": "mira",
+                "to": "nowhere"
+              },
+              {
+                "op": "canTraverse",
+                "actor": "mira",
+                "to": "ridge"
+              },
+              {
+                "op": "meter",
+                "actor": "mira"
+              },
+              {
+                "op": "traverse",
+                "actor": "mira",
+                "to": "ford",
+                "intent": {
+                  "urgency": "hurried",
+                  "stance": "crouching"
+                }
+              },
+              {
+                "op": "meter",
+                "actor": "mira"
+              },
+              {
+                "op": "meter",
+                "actor": "nobody"
+              },
+              {
+                "op": "locationOf",
+                "actor": "mira"
+              },
+              {
+                "op": "locationOf",
+                "actor": "nobody"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "movement_mode(mira, walk).",
+                    "movement_mode(mira, climb).",
+                    "at_location(mira, camp)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "movement_mode(ferryman, walk).",
+                    "at_location(ferryman, ford)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "affordances": [
+                  {
+                    "id": "camp>ford:walk",
+                    "from": "camp",
+                    "to": "ford",
+                    "mode": "walk",
+                    "action": "walk",
+                    "cost": 4,
+                    "available": true,
+                    "requires": [],
+                    "conditional": false
+                  },
+                  {
+                    "id": "camp>meadow:ride",
+                    "from": "camp",
+                    "to": "meadow",
+                    "mode": "ride",
+                    "action": "ride",
+                    "cost": 5,
+                    "available": false,
+                    "refusal": "mode",
+                    "requires": [],
+                    "conditional": false
+                  },
+                  {
+                    "id": "camp>ridge:climb",
+                    "from": "camp",
+                    "to": "ridge",
+                    "mode": "climb",
+                    "action": "climb",
+                    "cost": 6,
+                    "available": true,
+                    "requires": [],
+                    "conditional": false
+                  }
+                ],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "route": {
+                  "from": "camp",
+                  "to": "ridge",
+                  "steps": [
+                    {
+                      "id": "camp>ridge:climb",
+                      "from": "camp",
+                      "to": "ridge",
+                      "mode": "climb",
+                      "cost": 6,
+                      "requires": []
+                    }
+                  ],
+                  "cost": 6,
+                  "conditional": false
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "route": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "decision": {
+                  "actor": "mira",
+                  "from": "camp",
+                  "to": "ridge",
+                  "affordance": {
+                    "id": "camp>ridge:climb",
+                    "from": "camp",
+                    "to": "ridge",
+                    "mode": "climb",
+                    "action": "climb",
+                    "cost": 6,
+                    "available": true,
+                    "requires": [],
+                    "conditional": false
+                  },
+                  "cost": 6,
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "climb",
+                    "target": "ridge",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "unmet": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "meter": {
+                  "id": "mira",
+                  "max": 60,
+                  "current": 30
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "mira",
+                  "from": "camp",
+                  "to": "ford",
+                  "affordance": {
+                    "id": "camp>ford:walk",
+                    "from": "camp",
+                    "to": "ford",
+                    "mode": "walk",
+                    "action": "walk",
+                    "cost": 4,
+                    "available": true,
+                    "requires": [],
+                    "conditional": false
+                  },
+                  "cost": 4,
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "walk",
+                    "target": "ford",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "unmet": [],
+                  "performed": true,
+                  "spend": {
+                    "actorId": "mira",
+                    "action": "walk",
+                    "spend": {
+                      "affordable": true,
+                      "cost": 4,
+                      "before": 30,
+                      "after": 26,
+                      "max": 60,
+                      "spent": 4,
+                      "stateBefore": "fresh",
+                      "state": "fresh",
+                      "becameWinded": false,
+                      "becameExhausted": false
+                    },
+                    "facts": {
+                      "retract": [
+                        {
+                          "predicate": "energy",
+                          "args": [
+                            "mira",
+                            30,
+                            60
+                          ]
+                        }
+                      ],
+                      "assert": [
+                        {
+                          "predicate": "energy",
+                          "args": [
+                            "mira",
+                            26,
+                            60
+                          ]
+                        }
+                      ]
+                    },
+                    "applied": false
+                  },
+                  "arrival": {
+                    "arrived": true
+                  },
+                  "location": "ford",
+                  "facts": {
+                    "retract": [
+                      "at_location(mira, camp)."
+                    ],
+                    "assert": [
+                      "at_location(mira, ford)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "traversal_completed",
+                    "actorId": "mira",
+                    "from": "camp",
+                    "to": "ford",
+                    "mode": "walk",
+                    "cost": 4,
+                    "arrived": true,
+                    "location": "ford"
+                  }
+                ],
+                "orders": [
+                  {
+                    "actor": "mira",
+                    "from": "camp",
+                    "to": "ford",
+                    "mode": "walk",
+                    "link": "camp>ford:walk",
+                    "cost": 4,
+                    "action": "walk",
+                    "urgency": "hurried",
+                    "stance": "crouching"
+                  }
+                ],
+                "clock": []
+              },
+              {
+                "meter": {
+                  "id": "mira",
+                  "max": 60,
+                  "current": 26
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "meter": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "location": "ford",
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "location": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "ferryman",
+                    "location": "ford",
+                    "modes": [
+                      "walk"
+                    ]
+                  },
+                  {
+                    "id": "mira",
+                    "location": "ford",
+                    "modes": [
+                      "walk",
+                      "climb"
+                    ]
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "ford",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "board",
+                "actor": "mira",
+                "vehicle": "skiff"
+              },
+              {
+                "op": "drivenBy",
+                "actor": "mira"
+              },
+              {
+                "op": "drive",
+                "actor": "mira",
+                "vehicle": "skiff"
+              },
+              {
+                "op": "modesOf",
+                "actor": "mira"
+              },
+              {
+                "op": "lentOf",
+                "actor": "mira"
+              },
+              {
+                "op": "vehicleOf",
+                "actor": "mira"
+              },
+              {
+                "op": "drivenBy",
+                "actor": "mira"
+              },
+              {
+                "op": "drivenBy",
+                "actor": "ferryman"
+              },
+              {
+                "op": "canDo",
+                "actor": "ferryman",
+                "vehicle": "skiff",
+                "verb": "drive"
+              },
+              {
+                "op": "traverse",
+                "actor": "mira",
+                "to": "far_bank"
+              },
+              {
+                "op": "stateOf",
+                "vehicle": "skiff"
+              },
+              {
+                "op": "stateOf",
+                "vehicle": "raft"
+              },
+              {
+                "op": "mount",
+                "actor": "mira",
+                "kind": "horse"
+              },
+              {
+                "op": "disembark",
+                "actor": "mira",
+                "vehicle": "skiff"
+              },
+              {
+                "op": "roster"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "report": {
+                  "actor": "mira",
+                  "vehicle": "skiff",
+                  "verb": "board",
+                  "action": "board",
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "board",
+                    "target": "skiff",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "performed": true,
+                  "state": {
+                    "id": "skiff",
+                    "location": "ford",
+                    "owner": "ferryman",
+                    "occupants": [
+                      "mira"
+                    ]
+                  },
+                  "facts": {
+                    "retract": [],
+                    "assert": [
+                      "vehicle_occupant(skiff, mira)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "vehicle_state_changed",
+                    "actorId": "mira",
+                    "vehicleId": "skiff",
+                    "verb": "board",
+                    "driver": null,
+                    "occupants": [
+                      "mira"
+                    ],
+                    "location": "ford"
+                  },
+                  {
+                    "type": "vehicle_mounted",
+                    "vehicleType": "skiff",
+                    "actorId": "mira"
+                  }
+                ],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "vehicle": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "mira",
+                  "vehicle": "skiff",
+                  "verb": "drive",
+                  "action": "drive",
+                  "grants": "boat",
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "drive",
+                    "target": "skiff",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "performed": true,
+                  "state": {
+                    "id": "skiff",
+                    "location": "ford",
+                    "owner": "ferryman",
+                    "occupants": [
+                      "mira"
+                    ],
+                    "driver": "mira"
+                  },
+                  "facts": {
+                    "retract": [],
+                    "assert": [
+                      "vehicle_driver(skiff, mira)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "vehicle_state_changed",
+                    "actorId": "mira",
+                    "vehicleId": "skiff",
+                    "verb": "drive",
+                    "driver": "mira",
+                    "occupants": [
+                      "mira"
+                    ],
+                    "location": "ford"
+                  }
+                ],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "modes": [
+                  "walk",
+                  "climb",
+                  "boat"
+                ],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "lent": {
+                  "boat": [
+                    "vehicle:skiff"
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "vehicle": "skiff",
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "vehicle": "skiff",
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "vehicle": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "decision": {
+                  "actor": "ferryman",
+                  "vehicle": "skiff",
+                  "verb": "drive",
+                  "action": "drive",
+                  "grants": "boat",
+                  "permitted": false,
+                  "refusal": "not_aboard"
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "mira",
+                  "from": "ford",
+                  "to": "far_bank",
+                  "affordance": {
+                    "id": "ford>far_bank:boat",
+                    "from": "ford",
+                    "to": "far_bank",
+                    "mode": "boat",
+                    "action": "row",
+                    "cost": 1,
+                    "available": true,
+                    "requires": [],
+                    "conditional": false
+                  },
+                  "cost": 1,
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "row",
+                    "target": "far_bank",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "unmet": [],
+                  "performed": true,
+                  "spend": {
+                    "actorId": "mira",
+                    "action": "row",
+                    "spend": {
+                      "affordable": true,
+                      "cost": 1,
+                      "before": 26,
+                      "after": 25,
+                      "max": 60,
+                      "spent": 1,
+                      "stateBefore": "fresh",
+                      "state": "fresh",
+                      "becameWinded": false,
+                      "becameExhausted": false
+                    },
+                    "facts": {
+                      "retract": [
+                        {
+                          "predicate": "energy",
+                          "args": [
+                            "mira",
+                            26,
+                            60
+                          ]
+                        }
+                      ],
+                      "assert": [
+                        {
+                          "predicate": "energy",
+                          "args": [
+                            "mira",
+                            25,
+                            60
+                          ]
+                        }
+                      ]
+                    },
+                    "applied": false
+                  },
+                  "arrival": {
+                    "arrived": true
+                  },
+                  "location": "far_bank",
+                  "facts": {
+                    "retract": [
+                      "at_location(mira, ford)."
+                    ],
+                    "assert": [
+                      "at_location(mira, far_bank)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "traversal_completed",
+                    "actorId": "mira",
+                    "from": "ford",
+                    "to": "far_bank",
+                    "mode": "boat",
+                    "cost": 1,
+                    "arrived": true,
+                    "location": "far_bank"
+                  }
+                ],
+                "orders": [
+                  {
+                    "actor": "mira",
+                    "from": "ford",
+                    "to": "far_bank",
+                    "mode": "boat",
+                    "link": "ford>far_bank:boat",
+                    "cost": 1,
+                    "action": "row",
+                    "urgency": "ordinary",
+                    "stance": "standing",
+                    "vehicle": "skiff"
+                  }
+                ],
+                "clock": []
+              },
+              {
+                "state": {
+                  "id": "skiff",
+                  "location": "far_bank",
+                  "owner": "ferryman",
+                  "occupants": [
+                    "mira"
+                  ],
+                  "driver": "mira"
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "state": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "result": {
+                  "ok": false,
+                  "refusal": "in_vehicle",
+                  "detail": "skiff",
+                  "kind": null,
+                  "pace": {
+                    "walk": 1000,
+                    "run": 1000,
+                    "turn": 1000,
+                    "strafe": 800,
+                    "back": 700
+                  },
+                  "label": "On Foot",
+                  "events": []
+                },
+                "delta": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "mira",
+                  "vehicle": "skiff",
+                  "verb": "disembark",
+                  "action": "disembark",
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "disembark",
+                    "target": "skiff",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "performed": true,
+                  "state": {
+                    "id": "skiff",
+                    "location": "far_bank",
+                    "owner": "ferryman",
+                    "occupants": []
+                  },
+                  "facts": {
+                    "retract": [
+                      "vehicle_occupant(skiff, mira).",
+                      "vehicle_driver(skiff, mira)."
+                    ],
+                    "assert": []
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "vehicle_state_changed",
+                    "actorId": "mira",
+                    "vehicleId": "skiff",
+                    "verb": "disembark",
+                    "driver": null,
+                    "occupants": [],
+                    "location": "far_bank"
+                  },
+                  {
+                    "type": "vehicle_dismounted",
+                    "vehicleType": "skiff",
+                    "actorId": "mira"
+                  }
+                ],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "far_bank",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ],
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "ferryman",
+                    "location": "ford",
+                    "modes": [
+                      "walk"
+                    ]
+                  },
+                  {
+                    "id": "mira",
+                    "location": "far_bank",
+                    "modes": [
+                      "walk",
+                      "climb"
+                    ]
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "far_bank",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "arrive",
+                "actor": "mira",
+                "location": "camp"
+              },
+              {
+                "op": "mount",
+                "actor": "mira",
+                "kind": "horse"
+              },
+              {
+                "op": "canTraverse",
+                "actor": "mira",
+                "to": "meadow"
+              },
+              {
+                "op": "cycle",
+                "actor": "mira"
+              },
+              {
+                "op": "save"
+              },
+              {
+                "op": "dismount",
+                "actor": "mira"
+              },
+              {
+                "op": "setModes",
+                "actor": "mira",
+                "modes": [
+                  "walk",
+                  "climb",
+                  "swim"
+                ]
+              },
+              {
+                "op": "lendMode",
+                "actor": "mira",
+                "mode": "jump",
+                "lender": "test:rope"
+              },
+              {
+                "op": "lentOf",
+                "actor": "mira"
+              },
+              {
+                "op": "returnMode",
+                "actor": "mira",
+                "mode": "jump",
+                "lender": "test:rope"
+              },
+              {
+                "op": "block",
+                "from": "camp",
+                "to": "ford"
+              },
+              {
+                "op": "isBlocked",
+                "from": "camp",
+                "to": "ford"
+              },
+              {
+                "op": "unblock",
+                "from": "camp",
+                "to": "ford"
+              },
+              {
+                "op": "isBlocked",
+                "from": "camp",
+                "to": "ford"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "delta": {
+                  "retract": [
+                    "at_location(mira, far_bank)."
+                  ],
+                  "assert": [
+                    "at_location(mira, camp)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "result": {
+                  "ok": true,
+                  "kind": "horse",
+                  "pace": {
+                    "walk": 2800,
+                    "run": 2500,
+                    "turn": 800,
+                    "strafe": 2240,
+                    "back": 1400
+                  },
+                  "label": "Horse",
+                  "events": [
+                    {
+                      "type": "vehicle_mounted",
+                      "actorId": "mira",
+                      "vehicleType": "horse"
+                    }
+                  ]
+                },
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "movement_mode(mira, ride)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "decision": {
+                  "actor": "mira",
+                  "from": "camp",
+                  "to": "meadow",
+                  "affordance": {
+                    "id": "camp>meadow:ride",
+                    "from": "camp",
+                    "to": "meadow",
+                    "mode": "ride",
+                    "action": "ride",
+                    "cost": 5,
+                    "available": true,
+                    "requires": [],
+                    "conditional": false
+                  },
+                  "cost": 5,
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "ride",
+                    "target": "meadow",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "unmet": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "result": {
+                  "ok": true,
+                  "kind": "mule",
+                  "pace": {
+                    "walk": 1500,
+                    "run": 1200,
+                    "turn": 900,
+                    "strafe": 1200,
+                    "back": 750
+                  },
+                  "label": "Mule",
+                  "events": [
+                    {
+                      "type": "vehicle_mounted",
+                      "actorId": "mira",
+                      "vehicleType": "mule"
+                    }
+                  ]
+                },
+                "delta": {
+                  "retract": [],
+                  "assert": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "key": "traversal",
+                "block": {
+                  "planner": {
+                    "actors": [
+                      {
+                        "id": "ferryman",
+                        "location": "ford",
+                        "modes": [
+                          "walk"
+                        ]
+                      },
+                      {
+                        "id": "mira",
+                        "location": "camp",
+                        "modes": [
+                          "climb",
+                          "ride",
+                          "walk"
+                        ],
+                        "lent": {
+                          "ride": [
+                            "personal:mule"
+                          ]
+                        }
+                      }
+                    ],
+                    "blocked": []
+                  },
+                  "vehicles": {
+                    "vehicles": [
+                      {
+                        "id": "skiff",
+                        "location": "far_bank",
+                        "occupants": [],
+                        "owner": "ferryman"
+                      }
+                    ]
+                  },
+                  "fastTravel": {
+                    "discovered": [],
+                    "journeys": 0
+                  },
+                  "riding": {
+                    "mira": "mule"
+                  }
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "result": {
+                  "ok": true,
+                  "kind": null,
+                  "pace": {
+                    "walk": 1000,
+                    "run": 1000,
+                    "turn": 1000,
+                    "strafe": 800,
+                    "back": 700
+                  },
+                  "label": "On Foot",
+                  "events": [
+                    {
+                      "type": "vehicle_dismounted",
+                      "actorId": "mira",
+                      "vehicleType": "mule"
+                    }
+                  ]
+                },
+                "delta": {
+                  "retract": [
+                    "movement_mode(mira, ride)."
+                  ],
+                  "assert": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "movement_mode(mira, swim)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "movement_mode(mira, jump)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "lent": {
+                  "jump": [
+                    "test:rope"
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "delta": {
+                  "retract": [
+                    "movement_mode(mira, jump)."
+                  ],
+                  "assert": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "traversal_blocked(camp, ford)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "blocked": true,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "delta": {
+                  "retract": [
+                    "traversal_blocked(camp, ford)."
+                  ],
+                  "assert": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "blocked": false,
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "ferryman",
+                    "location": "ford",
+                    "modes": [
+                      "walk"
+                    ]
+                  },
+                  {
+                    "id": "mira",
+                    "location": "camp",
+                    "modes": [
+                      "walk",
+                      "climb",
+                      "swim"
+                    ]
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "far_bank",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "discover",
+                "location": "ford"
+              },
+              {
+                "op": "discover",
+                "location": "tower"
+              },
+              {
+                "op": "discoveries"
+              },
+              {
+                "op": "destinations",
+                "actor": "mira"
+              },
+              {
+                "op": "canFastTravel",
+                "actor": "mira",
+                "to": "tower"
+              },
+              {
+                "op": "fastTravel",
+                "actor": "mira",
+                "to": "ford"
+              },
+              {
+                "op": "host",
+                "probe": {
+                  "camp>ridge:climb": false
+                },
+                "stuck": {
+                  "ford": "camp"
+                }
+              },
+              {
+                "op": "arrive",
+                "actor": "mira",
+                "location": "camp"
+              },
+              {
+                "op": "traverse",
+                "actor": "mira",
+                "to": "ridge"
+              },
+              {
+                "op": "traverse",
+                "actor": "mira",
+                "to": "ford"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "location_discovered(ford)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "location_discovered(tower)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "discovered": [
+                  "ford",
+                  "tower"
+                ],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "destinations": [
+                  "ford"
+                ],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "decision": {
+                  "actor": "mira",
+                  "from": "camp",
+                  "to": "tower",
+                  "permitted": false,
+                  "refusal": "unreachable",
+                  "hours": 0,
+                  "unmet": []
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "mira",
+                  "from": "camp",
+                  "to": "ford",
+                  "plan": {
+                    "actor": "mira",
+                    "from": "camp",
+                    "to": "ford",
+                    "journey": 0,
+                    "route": {
+                      "from": "camp",
+                      "to": "ford",
+                      "steps": [
+                        {
+                          "id": "camp>ford:walk",
+                          "from": "camp",
+                          "to": "ford",
+                          "mode": "walk",
+                          "cost": 4,
+                          "requires": []
+                        }
+                      ],
+                      "cost": 4,
+                      "conditional": false
+                    },
+                    "cost": 4,
+                    "hours": 12,
+                    "ceiling": 15,
+                    "capped": false,
+                    "steps": [
+                      {
+                        "index": 0,
+                        "hours": 5,
+                        "elapsed": 5,
+                        "draw": 0.7074
+                      },
+                      {
+                        "index": 1,
+                        "hours": 5,
+                        "elapsed": 10,
+                        "draw": 0.1717
+                      },
+                      {
+                        "index": 2,
+                        "hours": 2,
+                        "elapsed": 12,
+                        "draw": 0.0553
+                      }
+                    ],
+                    "requires": []
+                  },
+                  "hours": 12,
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "fast_travel",
+                    "target": "ford",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "unmet": [],
+                  "performed": true,
+                  "steps": [
+                    {
+                      "index": 0,
+                      "hours": 5,
+                      "elapsed": 5,
+                      "draw": 0.7074
+                    },
+                    {
+                      "index": 1,
+                      "hours": 5,
+                      "elapsed": 10,
+                      "draw": 0.1717
+                    },
+                    {
+                      "index": 2,
+                      "hours": 2,
+                      "elapsed": 12,
+                      "draw": 0.0553
+                    }
+                  ],
+                  "elapsed": 12,
+                  "capped": false,
+                  "ceiling": 15,
+                  "arrival": {
+                    "arrived": true
+                  },
+                  "location": "ford",
+                  "facts": {
+                    "retract": [],
+                    "assert": []
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "fast_travel_completed",
+                    "actorId": "mira",
+                    "from": "camp",
+                    "to": "ford",
+                    "hours": 12,
+                    "steps": 3,
+                    "capped": false,
+                    "arrived": true,
+                    "location": "ford"
+                  }
+                ],
+                "orders": [
+                  {
+                    "actor": "mira",
+                    "from": "camp",
+                    "to": "ford",
+                    "mode": "fast_travel",
+                    "link": "camp>ford:fast_travel",
+                    "cost": 0,
+                    "action": "fast_travel",
+                    "urgency": "idle",
+                    "stance": "standing"
+                  }
+                ],
+                "clock": [
+                  5,
+                  5,
+                  2
+                ]
+              },
+              {
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "delta": {
+                  "retract": [
+                    "at_location(mira, ford)."
+                  ],
+                  "assert": [
+                    "at_location(mira, camp)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "mira",
+                  "from": "camp",
+                  "to": "ridge",
+                  "permitted": false,
+                  "refusal": "impassable",
+                  "affordance": {
+                    "id": "camp>ridge:climb",
+                    "from": "camp",
+                    "to": "ridge",
+                    "mode": "climb",
+                    "action": "climb",
+                    "cost": 6,
+                    "available": false,
+                    "refusal": "impassable",
+                    "requires": [],
+                    "conditional": false
+                  },
+                  "cost": 6,
+                  "unmet": [],
+                  "performed": false,
+                  "location": "camp",
+                  "facts": {
+                    "retract": [],
+                    "assert": []
+                  },
+                  "applied": false
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "mira",
+                  "from": "camp",
+                  "to": "ford",
+                  "affordance": {
+                    "id": "camp>ford:walk",
+                    "from": "camp",
+                    "to": "ford",
+                    "mode": "walk",
+                    "action": "walk",
+                    "cost": 4,
+                    "available": true,
+                    "requires": [],
+                    "conditional": false
+                  },
+                  "cost": 4,
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "walk",
+                    "target": "ford",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "unmet": [],
+                  "performed": true,
+                  "spend": {
+                    "actorId": "mira",
+                    "action": "walk",
+                    "spend": {
+                      "affordable": true,
+                      "cost": 4,
+                      "before": 25,
+                      "after": 21,
+                      "max": 60,
+                      "spent": 4,
+                      "stateBefore": "fresh",
+                      "state": "winded",
+                      "becameWinded": true,
+                      "becameExhausted": false
+                    },
+                    "facts": {
+                      "retract": [
+                        {
+                          "predicate": "energy",
+                          "args": [
+                            "mira",
+                            25,
+                            60
+                          ]
+                        }
+                      ],
+                      "assert": [
+                        {
+                          "predicate": "energy",
+                          "args": [
+                            "mira",
+                            21,
+                            60
+                          ]
+                        }
+                      ]
+                    },
+                    "applied": false
+                  },
+                  "arrival": {
+                    "arrived": false,
+                    "location": "camp",
+                    "reason": "stuck"
+                  },
+                  "location": "camp",
+                  "facts": {
+                    "retract": [],
+                    "assert": []
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "traversal_completed",
+                    "actorId": "mira",
+                    "from": "camp",
+                    "to": "ford",
+                    "mode": "walk",
+                    "cost": 4,
+                    "arrived": false,
+                    "location": "camp"
+                  }
+                ],
+                "orders": [
+                  {
+                    "actor": "mira",
+                    "from": "camp",
+                    "to": "ford",
+                    "mode": "walk",
+                    "link": "camp>ford:walk",
+                    "cost": 4,
+                    "action": "walk",
+                    "urgency": "ordinary",
+                    "stance": "standing"
+                  }
+                ],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "ferryman",
+                    "location": "ford",
+                    "modes": [
+                      "walk"
+                    ]
+                  },
+                  {
+                    "id": "mira",
+                    "location": "camp",
+                    "modes": [
+                      "walk",
+                      "climb",
+                      "swim"
+                    ]
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "far_bank",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [
+                  "ford",
+                  "tower"
+                ],
+                "journeys": 1
+              },
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "load",
+                "block": {
+                  "planner": {
+                    "actors": [
+                      {
+                        "id": "ferryman",
+                        "location": "ford",
+                        "modes": [
+                          "walk"
+                        ]
+                      },
+                      {
+                        "id": "mira",
+                        "location": "camp",
+                        "modes": [
+                          "climb",
+                          "ride",
+                          "walk"
+                        ],
+                        "lent": {
+                          "ride": [
+                            "personal:mule"
+                          ]
+                        }
+                      }
+                    ],
+                    "blocked": []
+                  },
+                  "vehicles": {
+                    "vehicles": [
+                      {
+                        "id": "skiff",
+                        "location": "far_bank",
+                        "occupants": [],
+                        "owner": "ferryman"
+                      }
+                    ]
+                  },
+                  "fastTravel": {
+                    "discovered": [],
+                    "journeys": 0
+                  },
+                  "riding": {
+                    "mira": "mule"
+                  }
+                }
+              },
+              {
+                "op": "load",
+                "block": {
+                  "planner": 3,
+                  "fastTravel": {
+                    "journeys": -1
+                  }
+                }
+              },
+              {
+                "op": "locationOf",
+                "actor": "mira"
+              },
+              {
+                "op": "save"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "dropped": [],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "ok": false,
+                "keys": [
+                  "fastTravel.journeys",
+                  "planner"
+                ],
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "location": "camp",
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "key": "traversal",
+                "block": {
+                  "planner": {
+                    "actors": [
+                      {
+                        "id": "ferryman",
+                        "location": "ford",
+                        "modes": [
+                          "walk"
+                        ]
+                      },
+                      {
+                        "id": "mira",
+                        "location": "camp",
+                        "modes": [
+                          "climb",
+                          "ride",
+                          "walk"
+                        ],
+                        "lent": {
+                          "ride": [
+                            "personal:mule"
+                          ]
+                        }
+                      }
+                    ],
+                    "blocked": []
+                  },
+                  "vehicles": {
+                    "vehicles": [
+                      {
+                        "id": "skiff",
+                        "location": "far_bank",
+                        "occupants": [],
+                        "owner": "ferryman"
+                      }
+                    ]
+                  },
+                  "fastTravel": {
+                    "discovered": [],
+                    "journeys": 0
+                  },
+                  "riding": {
+                    "mira": "mule"
+                  }
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "ferryman",
+                    "location": "ford",
+                    "modes": [
+                      "walk"
+                    ]
+                  },
+                  {
+                    "id": "mira",
+                    "location": "camp",
+                    "modes": [
+                      "climb",
+                      "ride",
+                      "walk"
+                    ],
+                    "lent": {
+                      "ride": [
+                        "personal:mule"
+                      ]
+                    }
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": [
+                  {
+                    "id": "skiff",
+                    "location": "far_bank",
+                    "owner": "ferryman",
+                    "occupants": []
+                  }
+                ]
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {
+                "mira": "mule"
+              }
+            }
+          }
+        },
+        {
+          "call": "session.list",
+          "expect": {
+            "sessions": [
+              {
+                "session": 1,
+                "kind": "traversal"
+              }
+            ]
+          }
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "disposed": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.session: no probe, no locomotion host, no meter, no seed — core’s own degradations; the view is the four layers’ state",
+      "steps": [
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "from": "ford",
+                "to": "camp",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 6
+              },
+              {
+                "from": "far_bank",
+                "to": "ford",
+                "mode": "boat",
+                "cost": 6
+              },
+              {
+                "from": "camp",
+                "to": "meadow",
+                "mode": "ride",
+                "cost": 10
+              },
+              {
+                "from": "far_bank",
+                "to": "tower",
+                "mode": "walk",
+                "cost": 2,
+                "requires": [
+                  "has_item(Actor, key, 1)"
+                ]
+              }
+            ],
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 2,
+                "swim": 2.5,
+                "jump": 2,
+                "ride": 0.5,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "row"
+              },
+              "defaultAction": "traverse"
+            }
+          },
+          "expect": {
+            "session": 1,
+            "view": {
+              "planner": {
+                "actors": [],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": []
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "register",
+                "actor": "mira",
+                "location": "camp"
+              },
+              {
+                "op": "setModes",
+                "actor": "mira",
+                "modes": [
+                  "walk",
+                  "climb"
+                ]
+              },
+              {
+                "op": "traverse",
+                "actor": "mira",
+                "to": "ridge"
+              },
+              {
+                "op": "meter",
+                "actor": "mira"
+              },
+              {
+                "op": "load"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "movement_mode(mira, walk).",
+                    "at_location(mira, camp)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "delta": {
+                  "retract": [],
+                  "assert": [
+                    "movement_mode(mira, climb)."
+                  ]
+                },
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "report": {
+                  "actor": "mira",
+                  "from": "camp",
+                  "to": "ridge",
+                  "affordance": {
+                    "id": "camp>ridge:climb",
+                    "from": "camp",
+                    "to": "ridge",
+                    "mode": "climb",
+                    "action": "climb",
+                    "cost": 6,
+                    "available": true,
+                    "requires": [],
+                    "conditional": false
+                  },
+                  "cost": 6,
+                  "permitted": true,
+                  "check": {
+                    "agent": "mira",
+                    "action": "climb",
+                    "target": "ridge",
+                    "permitted": true,
+                    "breached": []
+                  },
+                  "unmet": [],
+                  "performed": true,
+                  "arrival": {
+                    "arrived": true
+                  },
+                  "location": "ridge",
+                  "facts": {
+                    "retract": [
+                      "at_location(mira, camp)."
+                    ],
+                    "assert": [
+                      "at_location(mira, ridge)."
+                    ]
+                  },
+                  "applied": false
+                },
+                "events": [
+                  {
+                    "type": "traversal_completed",
+                    "actorId": "mira",
+                    "from": "camp",
+                    "to": "ridge",
+                    "mode": "climb",
+                    "cost": 6,
+                    "arrived": true,
+                    "location": "ridge"
+                  }
+                ],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "meter": null,
+                "events": [],
+                "orders": [],
+                "clock": []
+              },
+              {
+                "ok": true,
+                "dropped": [],
+                "events": [],
+                "orders": [],
+                "clock": []
+              }
+            ],
+            "view": {
+              "planner": {
+                "actors": [
+                  {
+                    "id": "mira",
+                    "location": "ridge",
+                    "modes": [
+                      "walk",
+                      "climb"
+                    ]
+                  }
+                ],
+                "blocked": []
+              },
+              "vehicles": {
+                "vehicles": []
+              },
+              "fastTravel": {
+                "discovered": [],
+                "journeys": 0
+              },
+              "riding": {}
+            }
+          }
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "disposed": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.session: the rows’ own refusals are errors coded [invalid-input]; an unknown op names the known ones",
+      "steps": [
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "links": {
+              "from": "a"
+            }
+          },
+          "expectError": "`links` must be an array"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "tuning": {
+              "defaultCost": 1
+            }
+          },
+          "expectError": "`tuning.modeCost` must be a JSON object"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "probe": {
+              "a>b:jump": "yes"
+            }
+          },
+          "expectError": "`probe.a>b:jump` must be a boolean"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "locomotion": {
+              "stuck": {
+                "ford": 3
+              }
+            }
+          },
+          "expectError": "`locomotion.stuck.ford` must be a string"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "stamina": {
+              "actors": [
+                3
+              ]
+            }
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "seed": true
+          },
+          "expectError": "`seed` must be a string"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "personal": {
+              "cycle": "horse"
+            }
+          },
+          "expectError": "`personal.cycle` must be an array"
+        },
+        {
+          "call": "traversal.session.create",
+          "args": {},
+          "expect": {
+            "$subset": {
+              "session": 1
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "fly",
+                "actor": "mira"
+              }
+            ]
+          },
+          "expectError": "no known op \"fly\""
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "traverse",
+                "actor": "mira",
+                "to": "ford",
+                "intent": {
+                  "urgency": "frantic"
+                }
+              }
+            ]
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "canDo",
+                "actor": "mira",
+                "vehicle": "skiff",
+                "verb": "steal"
+              }
+            ]
+          },
+          "expectError": "`verb` must be one of"
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "setModes",
+                "actor": "mira",
+                "modes": "walk"
+              }
+            ]
+          },
+          "expectError": "`modes` must be an array"
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "mount",
+                "actor": "mira"
+              }
+            ]
+          },
+          "expectError": "`kind` must be a string"
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "host",
+                "probe": {
+                  "a>b:jump": true
+                }
+              }
+            ]
+          },
+          "expectError": "the session was created with no probe"
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "host",
+                "stuck": {}
+              }
+            ]
+          },
+          "expectError": "the session was created with no locomotion host"
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 2,
+            "ops": []
+          },
+          "expectError": "no open session 2"
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "disposed": true
+          }
+        }
+      ]
+    }
+  ]
+}

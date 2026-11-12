@@ -204,16 +204,20 @@ const AUDIO_CORPUS_FILES = ['conformance/audio/ground.json'];
 // seen, hashed and removed by the next write.
 const SURVIVAL_CORPUS_FILES = ['conformance/survival/hud.json', 'conformance/survival/needs.json', 'conformance/survival/stamina.json'];
 
-// core's P9e traversal kernel corpora (PL.native-traversal-rows slice 1, U106(1); core's
-// P9e.core), copied verbatim the same way: the planner's affordances and routes, the
-// vehicle verbs, fast travel and ground seating, driven through the `traversal.*` rows
-// by tests/traversal_corpus.cpp. `conformance/traversal/` is this set's alone (slice 2
-// adds session.json, mounts.json and save.json with the stateful rows), so a file an
-// earlier pin left there is seen, hashed and removed by the next write.
+// core's P9e traversal corpora (PL.native-traversal-rows, U106(1); core's P9e.core),
+// copied verbatim the same way, all seven, driven through the `traversal.*` rows by
+// tests/traversal_corpus.cpp: slice 1's kernels (the planner's affordances and routes,
+// the vehicle verbs, fast travel and ground seating) and slice 2's stateful layers
+// (session.json: the planner, registry and director wired together; mounts.json: the
+// personal vehicles; save.json: the save block). `conformance/traversal/` is this set's
+// alone, so a file an earlier pin left there is seen, hashed and removed by the next write.
 const TRAVERSAL_CORPUS_FILES = [
   'conformance/traversal/affordances.json',
   'conformance/traversal/fast-travel.json',
   'conformance/traversal/ground-seating.json',
+  'conformance/traversal/mounts.json',
+  'conformance/traversal/save.json',
+  'conformance/traversal/session.json',
   'conformance/traversal/vehicles.json',
 ];
 
@@ -488,7 +492,7 @@ function traversalFilesOnDisk() {
   return ownDirFilesOnDisk(TRAVERSAL_CORPUS_FILES);
 }
 
-/** core's P9e traversal kernel corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
+/** core's P9e traversal corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
 function traversalFilesAtPin(src) {
   return filesAtPin(src, TRAVERSAL_CORPUS_FILES, 'the traversal.* rows');
 }
@@ -874,7 +878,7 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
-    // The traversal kernel corpora: the same exact-set replacement (only the listed files).
+    // The traversal corpora: the same exact-set replacement (only the listed files).
     const traversal = traversalFilesAtPin(src);
     for (const rel of traversalFilesOnDisk()) if (!(rel in traversal)) fs.rmSync(path.join(BRIDGE, rel));
     for (const [rel, bytes] of Object.entries(traversal)) {
@@ -943,7 +947,7 @@ async function write(coreDir) {
     console.log(`  camera movement corpus files (${Object.keys(camera).length}), copied unchanged`);
     console.log(`  audio ground reading corpus files (${Object.keys(audio).length}), copied unchanged`);
     console.log(`  survival corpus files (${Object.keys(survival).length}), copied unchanged`);
-    console.log(`  traversal kernel corpus files (${Object.keys(traversal).length}), copied unchanged`);
+    console.log(`  traversal corpus files (${Object.keys(traversal).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -1208,7 +1212,7 @@ async function check(coreDir) {
       const traversal = traversalFilesAtPin(src);
       const wantTraversal = Object.keys(traversal).sort();
       if (JSON.stringify(wantTraversal) !== JSON.stringify(traversalFiles)) {
-        fail(`DRIFT: core ${pin.coreCommit}'s traversal kernel corpora are ${wantTraversal.join(', ')} but vendor/core/ holds ${traversalFiles.join(', ')}`);
+        fail(`DRIFT: core ${pin.coreCommit}'s traversal corpora are ${wantTraversal.join(', ')} but vendor/core/ holds ${traversalFiles.join(', ')}`);
       }
       for (const rel of wantTraversal) {
         if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(traversal[rel])) {

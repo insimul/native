@@ -466,9 +466,9 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   `systems`, `clock` and `play` cases the copy has no function for.
 - **Traversal: the planner, vehicles, fast travel and ground seating (Unreal's
   `P9e.unreal.retire-traversal-copy`, after BOTH slices of PL.native-traversal-rows;
-  U106(1), U107).** Core's P9e kernels are the `traversal.*` rows (`README.md`, "The
-  traversal kernel rows"); the stateful layers are slice 2's rows, not yet here. The
-  retirement row binds both in place of the interim copy
+  U106(1), U107).** Core's P9e kernels are the `traversal.*` rows of slice 1
+  (`README.md`, "The traversal kernel rows") and its stateful layers those of slice 2
+  ("The traversal layers"). The retirement row binds both in place of the interim copy
   `Portable/InsimulTraversal.{h,cpp}` (3,238 lines: 725 + 2,513, accepted under U36
   by U106(1)). Read at the P9e cell's branch `a68b6d0` (read only; not yet on unreal
   main). **Slice 1 (this library, now):**
@@ -495,32 +495,45 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   | `FSeatState()`, `RetargetSeat`, `SeatOffsetAt`, `Unseat` | `traversal.groundSeating.initial`, `.retarget { state, wantMm, at }`, `.offsetAt { state, at }`, `.unseat` (stateless: the binding's `FSeatBook` keeps each body's `state` as the JSON the rows answer) |
   | `JNull` … `JPush`, `CompareIds`, `JsRound`, `PrologAtom` | none: JSON building and core's own id order, atom quoting and rounding run inside the rows |
 
-  **Left for slice 2** (the stateful rows, over core's `session.json`, `mounts.json`
-  and `save.json`): `FTraversalPlanner` (`Register`, `ModesOf`, `LentOf`,
-  `LendModeTo`, `ReturnModeFrom`, `SetModes`, `Arrive`, `Block`, `Unblock`,
-  `Affordances`, `Route`, `CanTraverse`, `Traverse`, `Roster`, `Serialize`,
-  `Restore`, with the planner's fact deltas `MovementModeFact`,
-  `TraversalBlockedFact`, `AtLocationFact`, `MovementModeDelta`, `ArrivalDelta`,
-  `Merge`), `FVehicleRegistry` (with `InitialVehicleState`, `VehicleStateFromJson`
-  and its `traversal_completed` follow), `FFastTravelDirector` (`Discover`,
-  `Destinations`, `CanFastTravel`, `FastTravel`, `Ceiling`, `Serialize`,
-  `Restore`), the `FStaminaPool` part the planner charges a climb to, the event bus
-  (`FTraversalBus`) and the host slots (`FProbe`, `FLocomotion`, `FClock`), mode
-  lending (`VehicleLender`, `PersonalLender`, `CanonicalLent`, `LendMode`,
-  `ReturnMode`), the personal vehicles (`PersonalVehicleTuning`, `PersonalPace`,
-  `PersonalVehicleLabel`, `PersonalVehicleModes`, `MountPersonal`,
-  `DismountPersonal`, `CyclePersonal`, `PersonalFromSave`, `RidingToJson`) and the
-  save block (`ReadTraversalBlock`, `FSavedTraversal::ToJson`,
-  `kTraversalExtensionKey`). Until slice 2 lands the retirement row cannot run; slice
-  1's rows can be bound one by one beside the copy, each held by its corpus.
+  **Slice 2 (this library, now):** the copy's three classes are ONE session, as core
+  wires them (doc §1): `traversal.session.create { links, tuning, vehicles, fastTravel,
+  seed, stamina, probe, locomotion, personal }` stands for the copy's constructors
+  and their wiring, and every method below is an op of `traversal.session.apply {
+  session, ops }`, whose answer carries what the hosts recorded while it ran
+  (`events`, `orders`, `clock`).
+
+  | Unreal's interim copy (`insimul::traversal`) | Row |
+  |---|---|
+  | `FTraversalPlanner(Links, Tuning)`, `FVehicleRegistry(Vehicles, Planner, Bus)`, `FFastTravelDirector(Planner, Tuning, Seed)`, `SetEventBus`, `LoadLinks`, `LoadVehicles` | `traversal.session.create` (`links`/`tuning` as the slice 1 readers answer them; `vehicles` and `fastTravel` the IR's blocks, read by core in the row); `session.dispose` on unload |
+  | `FTraversalPlanner::Register`, `SetModes`, `LendModeTo`, `ReturnModeFrom`, `Arrive`, `Block`, `Unblock` (with the planner's deltas `MovementModeFact`, `TraversalBlockedFact`, `AtLocationFact`, `MovementModeDelta`, `ArrivalDelta`, `Merge` inside them) | ops `register`, `setModes`, `lendMode`, `returnMode`, `arrive`, `block`, `unblock` → `{ delta }` |
+  | `IsBlocked`, `LocationOf`, `ModesOf`, `LentOf` | ops `isBlocked` → `{ blocked }`, `locationOf` → `{ location }` (null: never registered), `modesOf`, `lentOf` |
+  | `Affordances`, `Route`, `CanTraverse`, `Traverse(Id, To, Urgency, Stance)` (with `AskProbe`) | ops `affordances`, `route` (null: none), `canTraverse` → `{ decision }`, `traverse { actor, to, intent: { urgency, stance } }` → `{ report }` |
+  | `FVehicleRegistry::Perform` (board, drive, disembark), `CanDo`, and `Follow` on `traversal_completed` | ops `board`, `drive`, `disembark` → `{ report }`, `canDo { verb }` → `{ decision }`; the follow is core's, inside the session (each op settles it) |
+  | `VehicleOf`, `DrivenBy`, `StateOf`, `Roster`, `GetVehicles` (with `InitialVehicleState`, `VehicleStateFromJson`) | ops `vehicleOf`, `drivenBy` → `{ vehicle }` (null: none), `stateOf` → `{ state }`, `roster` → `{ vehicles }`; the authored roster is `traversal.vehicles.fromIR` (slice 1) |
+  | `FFastTravelDirector::Discover`, `Discoveries`, `Destinations`, `CanFastTravel`, `FastTravel`, `Ceiling` | ops `discover` → `{ delta }`, `discoveries`, `destinations`, `canFastTravel` → `{ decision }`, `fastTravel` → `{ report }`; the ceiling is `traversal.fastTravel.ceiling` over the tuning (slice 1) |
+  | `FStaminaPool` (`Register`, `Get`, `Spend` as the planner charges a link) | `stamina { actors }` at create (the planner spends core's `StaminaPool`); op `meter { actor }` → `{ meter }` |
+  | `FTraversalBus` (`On`, `OnAny`, `Emit`) | none: core's `GameEventBus` inside the session; every op answers the events it raised (`events`), which the binding raises on its own bus |
+  | `FProbe` | `probe { <link id>: passable }` at create, restated with op `host { probe }`: the binding asks its navigation for the geometric links out of the actor's place before it asks (a link not listed is passable, core's rule) |
+  | `FLocomotion` | `locomotion { stuck }` at create: every order core makes is answered in `orders` for the binding to carry out (arrived, unless `stuck` names the destination); when the body ends up elsewhere, op `arrive { actor, location }` tells core, once |
+  | `FClock` | none: the director's clock is recorded; each op answers the hours to pass in order (`clock`), which the binding hands its world clock |
+  | `Serialize`, `Restore` (all three classes), `FSavedTraversal::ToJson`, `ReadTraversalBlock`, `PersonalFromSave`, `kTraversalExtensionKey` | ops `save` → `{ key, block }` and `load { block }` → `{ ok, dropped }` or `{ ok: false, keys }`; the session's `view` is the four layers' state. Stateless: `traversal.save.block { planner, vehicles, fastTravel, riding }` → `{ key, block }`, `traversal.save.read { block }` |
+  | `MountPersonal`, `DismountPersonal`, `CyclePersonal` with `PersonalVehicleModes` handed to `SetModes` | ops `mount { actor, kind }`, `dismount`, `cycle` → `{ result, delta }` (core's doc §8 wiring: the rider's registry vehicle is `inVehicle`). Stateless: `traversal.personal.mount`, `.dismount`, `.cycle { state, actor, inVehicle, params }`, `.initial` |
+  | `PersonalVehicleTuning`, `PersonalPace`, `PersonalVehicleLabel`, `PersonalVehicleModes`, `RidingToJson` | `traversal.personal.tuning { params }`, `.pace { kind }`, `.label { kind }`, `.modes { modes, lent, from, to }`, `.saveRows { state }`; `.fromSave { riding }` |
+  | `VehicleLender`, `PersonalLender`, `CanonicalLent`, `LendMode`, `ReturnMode` (with `LentFromJson`, `LentToJson`) | `traversal.lending.vehicleLender { vehicle }`, `.personalLender { kind }`, `.canonical { lent, modes }`, `.lend`, `.giveBack { modes, lent, mode, lender }` (the session's planner uses core's own) |
+
+  Nothing of the copy is left without a row. The binding's `FSeatBook` stays the
+  binding's (bookkeeping over the settle rows), and so does carrying out an order.
 
   **What changes for the binding**: tunings are core's resolved tunings, read once
   from the IR through the four reader rows and sent back on each call; a seat's
-  state lives in the game as the JSON the settle rows answer. Units are core's
-  (location atoms; integer mm and ms for seating), nothing converted. Re-vendor
-  `conformance/traversal/{affordances,vehicles,fast-travel,ground-seating}.json`
-  from core at this library's pin and drive each case as `tests/traversal_corpus.cpp`
-  does (its header lists the mapping row by row).
+  state lives in the game as the JSON the settle rows answer; the planner, registry
+  and director live in one session per playthrough (dispose it on unload), and the
+  probe and the locomotion host are data the binding states, not callbacks core
+  calls (they cannot cross this ABI). Units are core's (location atoms; integer mm
+  and ms for seating; thousandths for the personal paces), nothing converted.
+  Re-vendor all seven `conformance/traversal/*.json` from core at this library's pin
+  and drive each case as `tests/traversal_corpus.cpp` does (its header lists the
+  mapping row by row and op by op).
 - **Save slots: the disk can change under the session since the 72c658c pin**
   (core's PL.disk-changed-step). When the save files change outside the game,
   send the new listing as `saves.slots.apply` op `disk_changed { slots }` (the

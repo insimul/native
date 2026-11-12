@@ -561,6 +561,69 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/TraversalPlanner",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the traversal.session.* rows (core's traversal decision layer: affordances, routes, traversals, modes and closures over the shared meter) (PL.native-traversal-rows slice 2, rulings U106(1) and U36), exactly as the slice 1 traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-traversal-rows-kernels (Features Gauntlet PL.native-traversal-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/VehicleRegistry",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the traversal.session.* rows (core's vehicle decision layer: board, drive, disembark, the reins' lent mode and the driver's follow) (PL.native-traversal-rows slice 2, rulings U106(1) and U36), exactly as the slice 1 traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-traversal-rows-kernels (Features Gauntlet PL.native-traversal-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/FastTravelDirector",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the traversal.session.* rows (core's fast-travel decision layer: discovery, destinations and journeys through the world clock) (PL.native-traversal-rows slice 2, rulings U106(1) and U36), exactly as the slice 1 traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-traversal-rows-kernels (Features Gauntlet PL.native-traversal-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/host-contracts",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the traversal.session.apply row's intent check (core's MOVEMENT_URGENCIES and MOVEMENT_STANCES, the movement intent vocabularies as data) (PL.native-traversal-rows slice 2, rulings U106(1) and U36), exactly as the slice 1 traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-traversal-rows-kernels (Features Gauntlet PL.native-traversal-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/traversal/personal-vehicles",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the traversal.personal.* rows and the session's mount, dismount and cycle (core's personal vehicles: kinds, pace, the cycle, the lent mode and the save rows) (PL.native-traversal-rows slice 2, rulings U106(1) and U36), exactly as the slice 1 traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-traversal-rows-kernels (Features Gauntlet PL.native-traversal-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/traversal/mode-lending",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the traversal.lending.* rows (core's lent-mode record: lend, give back, the canonical copy and the lender ids) (PL.native-traversal-rows slice 2, rulings U106(1) and U36), exactly as the slice 1 traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-traversal-rows-kernels (Features Gauntlet PL.native-traversal-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/traversal/traversal-save",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the traversal.save.* rows and the session's save and load (core's extensions.traversal save block: the writer, the reader and the extension key) (PL.native-traversal-rows slice 2, rulings U106(1) and U36), exactly as the slice 1 traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-traversal-rows-kernels (Features Gauntlet PL.native-traversal-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/stamina/stamina",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the survival.stamina.* rows (core's stamina meter: tuning, bands, spend, regen and the rest clock) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

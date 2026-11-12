@@ -195,6 +195,25 @@
        "traversal.groundSeating.target",
        "traversal.groundSeating.tuning",
        "traversal.groundSeating.unseat",
+       "traversal.lending.canonical",
+       "traversal.lending.giveBack",
+       "traversal.lending.lend",
+       "traversal.lending.personalLender",
+       "traversal.lending.vehicleLender",
+       "traversal.personal.cycle",
+       "traversal.personal.dismount",
+       "traversal.personal.fromSave",
+       "traversal.personal.initial",
+       "traversal.personal.label",
+       "traversal.personal.modes",
+       "traversal.personal.mount",
+       "traversal.personal.pace",
+       "traversal.personal.saveRows",
+       "traversal.personal.tuning",
+       "traversal.save.block",
+       "traversal.save.read",
+       "traversal.session.apply",
+       "traversal.session.create",
        "traversal.vehicles.actions",
        "traversal.vehicles.anothers",
        "traversal.vehicles.apply",
@@ -255,7 +274,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 221}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 240}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -301,7 +320,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 221}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 240}}}}
    ]
   },
   {
