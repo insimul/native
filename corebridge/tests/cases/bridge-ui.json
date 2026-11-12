@@ -35,7 +35,7 @@
     {
      "call": "ui.pause.create",
      "args": {"genre": "rpg"},
-     "expect": {"session": 1, "source": "genre", "enabledModules": ["knowledge-acquisition", "proficiency", "gamification", "skill-tree", "adaptive-difficulty", "world-lore", "conversation-analytics", "onboarding"], "view": {"$subset": {"open": false, "active": "", "visibleKeys": ["resume", "journal", "inventory", "map", "character", "vocabulary", "skills", "analytics", "settings", "save"]}}}
+     "expect": {"session": 1, "source": "genre", "enabledModules": ["knowledge-acquisition", "proficiency", "gamification", "skill-tree", "adaptive-difficulty", "conversation-analytics", "onboarding"], "view": {"$subset": {"open": false, "active": "", "visibleKeys": ["resume", "journal", "inventory", "map", "character", "vocabulary", "skills", "analytics", "settings", "save"]}}}
     },
     {"call": "ui.pause.apply", "args": {"session": 1, "ops": [{"op": "open", "tab": "skills"}, {"op": "setActive", "key": "assessment"}]}, "expect": {"results": [null, false], "view": {"$subset": {"open": true, "active": "skills"}}}}
    ]
@@ -43,16 +43,16 @@
   {
    "name": "pause menu from the platformer genre: no Character or Skills tab (track G's bundle)",
    "steps": [
-    {"call": "ui.pause.create", "args": {"genre": "platformer"}, "expect": {"$subset": {"source": "genre", "enabledModules": ["performance-scoring", "gamification", "adaptive-difficulty", "onboarding"], "view": {"$subset": {"visibleKeys": ["resume", "journal", "inventory", "map", "settings", "save"]}}}}}
+    {"call": "ui.pause.create", "args": {"genre": "platformer"}, "expect": {"$subset": {"source": "genre", "enabledModules": ["gamification", "adaptive-difficulty", "onboarding"], "view": {"$subset": {"visibleKeys": ["resume", "journal", "inventory", "map", "settings", "save"]}}}}}
    ]
   },
   {
-   "name": "pause menu: an unknown genre enables no module; no argument enables none either; explicit modules win over a genre",
+   "name": "pause menu: an unknown genre enables no module; no argument enables none either; explicit modules win over a genre, and a refused module (assessment, port-later; core's G.cat-flags) gates no tab though listed",
    "steps": [
     {"call": "ui.pause.create", "args": {"genre": "mystery"}, "expect": {"$subset": {"source": "genre", "enabledModules": [], "view": {"$subset": {"visibleKeys": ["resume", "journal", "inventory", "map", "settings", "save"]}}}}},
     {"call": "ui.pause.create", "expect": {"$subset": {"session": 2, "source": "none", "enabledModules": []}}},
-    {"call": "ui.pause.create", "args": {"genre": "rpg", "enabledModules": ["assessment"]}, "expect": {"$subset": {"source": "modules", "enabledModules": ["assessment"], "view": {"$subset": {"visibleKeys": ["resume", "journal", "inventory", "map", "assessment", "settings", "save"]}}}}},
-    {"call": "ui.pause.apply", "args": {"session": 3, "ops": [{"op": "toggle"}]}, "expect": {"results": [null], "view": {"open": true, "active": "resume", "visibleKeys": ["resume", "journal", "inventory", "map", "assessment", "settings", "save"], "visibleTabs": [{"key": "resume", "label": "Resume"}, {"key": "journal", "label": "Journal"}, {"key": "inventory", "label": "Inventory"}, {"key": "map", "label": "Map"}, {"key": "assessment", "label": "Assessment", "requires": "assessment"}, {"key": "settings", "label": "Settings"}, {"key": "save", "label": "Save / Load"}]}}}
+    {"call": "ui.pause.create", "args": {"genre": "rpg", "enabledModules": ["assessment"]}, "expect": {"$subset": {"source": "modules", "enabledModules": ["assessment"], "view": {"$subset": {"visibleKeys": ["resume", "journal", "inventory", "map", "settings", "save"]}}}}},
+    {"call": "ui.pause.apply", "args": {"session": 3, "ops": [{"op": "toggle"}]}, "expect": {"results": [null], "view": {"open": true, "active": "resume", "visibleKeys": ["resume", "journal", "inventory", "map", "settings", "save"], "visibleTabs": [{"key": "resume", "label": "Resume"}, {"key": "journal", "label": "Journal"}, {"key": "inventory", "label": "Inventory"}, {"key": "map", "label": "Map"}, {"key": "settings", "label": "Settings"}, {"key": "save", "label": "Save / Load"}]}}}
    ]
   },
   {

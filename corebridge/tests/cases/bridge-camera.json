@@ -1,6 +1,6 @@
 {
   "area": "camera",
-  "description": "Hand-written: the camera.movement.* rows' own contract (PL.native-camera-movement, U95(5); core's movement contract, PL.movement-contract and PL.movement-followups) — the contract row's tables, each row's answer shape, core's refusals as VALUES ({ error }), the readings core makes itself (an unreadable solid counted, a view yaw or radius or move or walk that is not a number, a building with no footprint, a slope or rise that is not a number) going to core, absent lists and a null view read as empty, and the rows' own refusals as errors coded [invalid-input]. Core's own corpus (conformance/camera/movement.json, 87 cases) is driven whole through these rows by the camera_movement_corpus ctest (tests/props_corpus.cpp), not transcribed here.",
+  "description": "Hand-written: the camera.movement.* rows' own contract (PL.native-camera-movement, U95(5); core's movement contract, PL.movement-contract and PL.movement-followups) — the contract row's tables, each row's answer shape, core's refusals as VALUES ({ error }), the readings core makes itself (an unreadable solid counted, a view yaw or radius or move or walk that is not a number, a building with no footprint, a slope or rise that is not a number) going to core, absent lists and a null view read as empty, and the rows' own refusals as errors coded [invalid-input]. Core's own corpus (conformance/camera/movement.json, 95 cases at core 6cd4b4e) is driven whole through these rows by the camera_movement_corpus ctest (tests/props_corpus.cpp), not transcribed here.",
   "cases": [
     {
       "name": "camera.movement.contract: the movement corpus's data tables, from core's constants",
@@ -17,6 +17,7 @@
                 { "mode": "top_down", "occlusion": "hide", "openingViewYaw": 0 },
                 { "mode": "fighting", "occlusion": "hide", "openingViewYaw": 180 }
               ],
+              "solidKinds": ["building", "prop"],
               "storeyM": 4,
               "gait": { "runOverWalk": 2, "source": { "$type": "string" } },
               "ground": { "standMaxDeg": 15, "climbMaxDeg": 75, "stepUpM": 0.75, "source": { "$type": "string" } }

@@ -1,0 +1,2053 @@
+{
+  "area": "survival-hud",
+  "catalog": "survival-needs",
+  "description": "The survival HUD bars (P9c.core; catalog survival-needs; src/survival/survival-hud.ts), Godot hud.gd's behaviour as data. Ops: view {survival?, params?, staminaConfig?, state?, hud?, stamina?: {current, max}, now, visible} -> {visible, bars: [{id, label, value, max, fraction, band, tone, flash}]}; run {survival?, params?, staminaConfig?, visible?, start, steps: needs.json's run steps plus stamina (current, max, at) -> {state (the pool's), band (the bar's held band), events} and view (at)}; systems {request: a packs.compose request} -> {needs, stamina, running, worldActivation} (needs: pack survival-needs active in the composition; stamina: its activation lists module stamina; running: that activation; worldActivation: modules.activate over the world's list, for contrast), or {ok: false, refusal: {code, field: request}} when the composer refuses. Hidden (showSurvivalBars false): no bars. Bars in tuning order, then stamina from the pool's meter (fresh ok, winded warning, exhausted critical), held with hysteresis: a worse band at once, a better one only once the meter less the world's recoveryRate reaches it (never worse than the held band); a drop raises need_warning (Stamina is getting low) or need_critical (Stamina critically low!), a climb only need_restored (Stamina restored) into fresh, a climb from exhausted to winded nothing; the first reading raises nothing. tone: ok success, warning warning, critical danger. flash: the bar's latest need_warning / need_critical / need_restored kind while at <= now < at + hudFlashMs, else null; damage and need_satisfied do not flash. Runner: src/survival/systems-corpus.ts. Every case {name, op, input, expected}; compare exactly, object key sets included; an unknown op or step is an error, never a skip. Regenerate with npm run survival-corpus; npm run survival-corpus:check fails on any difference. See docs/survival-systems.md.",
+  "version": 1,
+  "ops": [
+    "view",
+    "run",
+    "systems"
+  ],
+  "contract": {
+    "rules": {
+      "staminaHysteresis": "The stamina bar holds the band it last showed: it drops into a worse band at once and climbs out of a band only once the meter less one rest tick of recovery (the world's recoveryRate) is above that band's line, so one spend down and the next second's tick back cannot flap it (p9c-unreal m5). The margin is one tick because the flap is one tick: neither core nor the original engines had hysteresis.",
+      "staminaWording": "A drop into winded raises need_warning \"Stamina is getting low\", into exhausted need_critical \"Stamina critically low!\"; a climb raises only need_restored \"Stamina restored\", on reaching fresh. A climb from exhausted to winded raises nothing: the original game toasted only need_warning and need_critical and raised no warning on a climb, while Godot's need_warning there is what read wrongly.",
+      "systems": "What runs is the composer's activation (packs.compose), game-file choices included: survival-needs runs when the composition lists it active; stamina runs when the activation lists module stamina; the header lists that activation as running and every other module as off. modules.activate over the world's list is the same answer only when the game makes no choices, and is not read beside a composition (p9c-unreal m4; src/survival/survival-systems.ts)."
+    },
+    "openQuestions": [
+      "The hysteresis margin is pinned at one rest tick (recoveryRate points); whether a world should author its own margin is open (needs_ruling if wanted).",
+      "What a host with no composition (the composer refused, or a packaged build without the pack catalogue) lists in its header: P10's packaging question (p9c-unreal m3), not this rule. Neither survival system runs then."
+    ]
+  },
+  "cases": [
+    {
+      "name": "view: hidden unless the world opts in (showSurvivalBars): no bars",
+      "op": "view",
+      "input": {
+        "visible": false,
+        "now": 0,
+        "state": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 25,
+              "max": 100,
+              "band": "warning"
+            },
+            {
+              "id": "thirst",
+              "value": 10,
+              "max": 100,
+              "band": "critical"
+            },
+            {
+              "id": "temperature",
+              "value": 50,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "sleep",
+              "value": 100,
+              "max": 100,
+              "band": "ok"
+            }
+          ],
+          "modifiers": [],
+          "environmentTemperature": 50,
+          "lastTickAt": 0,
+          "enabled": true,
+          "damageOwed": 0
+        },
+        "stamina": {
+          "current": 30,
+          "max": 100
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "visible": false,
+          "bars": []
+        }
+      }
+    },
+    {
+      "name": "view: Godot's labels, fractions, tones by band; the stamina bar last, from the pool's meter and its winded band",
+      "op": "view",
+      "input": {
+        "visible": true,
+        "now": 0,
+        "state": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 25,
+              "max": 100,
+              "band": "warning"
+            },
+            {
+              "id": "thirst",
+              "value": 10,
+              "max": 100,
+              "band": "critical"
+            },
+            {
+              "id": "temperature",
+              "value": 50,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "sleep",
+              "value": 100,
+              "max": 100,
+              "band": "ok"
+            }
+          ],
+          "modifiers": [],
+          "environmentTemperature": 50,
+          "lastTickAt": 0,
+          "enabled": true,
+          "damageOwed": 0
+        },
+        "stamina": {
+          "current": 30,
+          "max": 100
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "visible": true,
+          "bars": [
+            {
+              "id": "hunger",
+              "label": "Hunger",
+              "value": 25,
+              "max": 100,
+              "fraction": 0.25,
+              "band": "warning",
+              "tone": "warning",
+              "flash": null
+            },
+            {
+              "id": "thirst",
+              "label": "Thirst",
+              "value": 10,
+              "max": 100,
+              "fraction": 0.1,
+              "band": "critical",
+              "tone": "danger",
+              "flash": null
+            },
+            {
+              "id": "temperature",
+              "label": "Temp",
+              "value": 50,
+              "max": 100,
+              "fraction": 0.5,
+              "band": "ok",
+              "tone": "success",
+              "flash": null
+            },
+            {
+              "id": "sleep",
+              "label": "Rest",
+              "value": 100,
+              "max": 100,
+              "fraction": 1,
+              "band": "ok",
+              "tone": "success",
+              "flash": null
+            },
+            {
+              "id": "stamina",
+              "label": "Stamina",
+              "value": 30,
+              "max": 100,
+              "fraction": 0.3,
+              "band": "warning",
+              "tone": "warning",
+              "flash": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view: authored stamina thresholds decide the stamina bar's band; a meter with no max reads 0 and ok",
+      "op": "view",
+      "input": {
+        "visible": true,
+        "now": 0,
+        "state": {
+          "needs": [],
+          "modifiers": [],
+          "environmentTemperature": 50,
+          "lastTickAt": 0,
+          "enabled": true,
+          "damageOwed": 0
+        },
+        "stamina": {
+          "current": 30,
+          "max": 100
+        },
+        "staminaConfig": {
+          "actionDriven": true,
+          "recoveryRate": 1,
+          "windedPercent": 20,
+          "exhaustedPercent": 10
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "visible": true,
+          "bars": [
+            {
+              "id": "stamina",
+              "label": "Stamina",
+              "value": 30,
+              "max": 100,
+              "fraction": 0.3,
+              "band": "ok",
+              "tone": "success",
+              "flash": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view: a fraction clamps into 0..1 when a reading lies outside [0, max]",
+      "op": "view",
+      "input": {
+        "visible": true,
+        "now": 0,
+        "state": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 150,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "thirst",
+              "value": -5,
+              "max": 100,
+              "band": "critical"
+            }
+          ],
+          "modifiers": [],
+          "environmentTemperature": 50,
+          "lastTickAt": 0,
+          "enabled": true,
+          "damageOwed": 0
+        },
+        "stamina": {
+          "current": 130,
+          "max": 100
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "visible": true,
+          "bars": [
+            {
+              "id": "hunger",
+              "label": "Hunger",
+              "value": 150,
+              "max": 100,
+              "fraction": 1,
+              "band": "ok",
+              "tone": "success",
+              "flash": null
+            },
+            {
+              "id": "thirst",
+              "label": "Thirst",
+              "value": -5,
+              "max": 100,
+              "fraction": 0,
+              "band": "critical",
+              "tone": "danger",
+              "flash": null
+            },
+            {
+              "id": "stamina",
+              "label": "Stamina",
+              "value": 130,
+              "max": 100,
+              "fraction": 1,
+              "band": "ok",
+              "tone": "success",
+              "flash": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view: a stamina meter with max 0",
+      "op": "view",
+      "input": {
+        "visible": true,
+        "now": 0,
+        "state": {
+          "needs": [],
+          "modifiers": [],
+          "environmentTemperature": 50,
+          "lastTickAt": 0,
+          "enabled": true,
+          "damageOwed": 0
+        },
+        "stamina": {
+          "current": 0,
+          "max": 0
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "visible": true,
+          "bars": [
+            {
+              "id": "stamina",
+              "label": "Stamina",
+              "value": 0,
+              "max": 0,
+              "fraction": 0,
+              "band": "ok",
+              "tone": "success",
+              "flash": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "view: a flash shows from its event until hudFlashMs after it, and not before it",
+      "op": "view",
+      "input": {
+        "visible": true,
+        "now": 2499,
+        "state": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 25,
+              "max": 100,
+              "band": "warning"
+            },
+            {
+              "id": "thirst",
+              "value": 10,
+              "max": 100,
+              "band": "critical"
+            },
+            {
+              "id": "temperature",
+              "value": 50,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "sleep",
+              "value": 100,
+              "max": 100,
+              "band": "ok"
+            }
+          ],
+          "modifiers": [],
+          "environmentTemperature": 50,
+          "lastTickAt": 0,
+          "enabled": true,
+          "damageOwed": 0
+        },
+        "hud": {
+          "flashes": {
+            "hunger": {
+              "kind": "warning",
+              "at": 1000
+            },
+            "thirst": {
+              "kind": "critical",
+              "at": 2500
+            },
+            "sleep": {
+              "kind": "restored",
+              "at": 999
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "visible": true,
+          "bars": [
+            {
+              "id": "hunger",
+              "label": "Hunger",
+              "value": 25,
+              "max": 100,
+              "fraction": 0.25,
+              "band": "warning",
+              "tone": "warning",
+              "flash": "warning"
+            },
+            {
+              "id": "thirst",
+              "label": "Thirst",
+              "value": 10,
+              "max": 100,
+              "fraction": 0.1,
+              "band": "critical",
+              "tone": "danger",
+              "flash": null
+            },
+            {
+              "id": "temperature",
+              "label": "Temp",
+              "value": 50,
+              "max": 100,
+              "fraction": 0.5,
+              "band": "ok",
+              "tone": "success",
+              "flash": null
+            },
+            {
+              "id": "sleep",
+              "label": "Rest",
+              "value": 100,
+              "max": 100,
+              "fraction": 1,
+              "band": "ok",
+              "tone": "success",
+              "flash": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: warning, critical, restored: the tone follows the band and each change flashes for hudFlashMs",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 31,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "view",
+            "at": 0
+          },
+          {
+            "do": "advance",
+            "at": 1000
+          },
+          {
+            "do": "view",
+            "at": 1000
+          },
+          {
+            "do": "view",
+            "at": 2499
+          },
+          {
+            "do": "view",
+            "at": 2500
+          },
+          {
+            "do": "advance",
+            "at": 16000
+          },
+          {
+            "do": "view",
+            "at": 16000
+          },
+          {
+            "do": "action",
+            "action": "eat",
+            "at": 16500
+          },
+          {
+            "do": "view",
+            "at": 17000
+          },
+          {
+            "do": "view",
+            "at": 18000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "view",
+              "at": 0,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 31,
+                  "max": 100,
+                  "fraction": 0.31,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": null
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 1000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "hunger",
+                  "value": 30,
+                  "message": "Hunger is getting low",
+                  "at": 1000
+                }
+              ],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 30,
+                  "max": 100,
+                  "band": "warning"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "view",
+              "at": 1000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 30,
+                  "max": 100,
+                  "fraction": 0.3,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": "warning"
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 2499,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 30,
+                  "max": 100,
+                  "fraction": 0.3,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": "warning"
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 2500,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 30,
+                  "max": 100,
+                  "fraction": 0.3,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": null
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 16000,
+              "ticks": 15,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "need_critical",
+                  "needType": "hunger",
+                  "value": 15,
+                  "message": "Hunger critically low!",
+                  "at": 16000
+                }
+              ],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 15,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "view",
+              "at": 16000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 15,
+                  "max": 100,
+                  "fraction": 0.15,
+                  "band": "critical",
+                  "tone": "danger",
+                  "flash": "critical"
+                }
+              ]
+            },
+            {
+              "do": "action",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "hunger",
+                  "value": 45,
+                  "message": "Hunger restored",
+                  "at": 16500
+                }
+              ],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 45,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 17000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 45,
+                  "max": 100,
+                  "fraction": 0.45,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": "restored"
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 18000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 45,
+                  "max": 100,
+                  "fraction": 0.45,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: stamina spent into winded and exhausted flashes the stamina bar; rest back out flashes restored",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": []
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "stamina",
+            "current": 100,
+            "max": 100,
+            "at": 0
+          },
+          {
+            "do": "stamina",
+            "current": 40,
+            "max": 100,
+            "at": 1000
+          },
+          {
+            "do": "view",
+            "at": 1000
+          },
+          {
+            "do": "stamina",
+            "current": 10,
+            "max": 100,
+            "at": 2000
+          },
+          {
+            "do": "view",
+            "at": 2000
+          },
+          {
+            "do": "stamina",
+            "current": 41,
+            "max": 100,
+            "at": 3000
+          },
+          {
+            "do": "view",
+            "at": 3100
+          },
+          {
+            "do": "stamina",
+            "current": 46,
+            "max": 100,
+            "at": 3200
+          },
+          {
+            "do": "view",
+            "at": 3300
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "warning",
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "stamina",
+                  "value": 40,
+                  "message": "Stamina is getting low",
+                  "at": 1000
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 1000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 40,
+                  "max": 100,
+                  "fraction": 0.4,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": "warning"
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "exhausted",
+              "band": "critical",
+              "events": [
+                {
+                  "type": "need_critical",
+                  "needType": "stamina",
+                  "value": 10,
+                  "message": "Stamina critically low!",
+                  "at": 2000
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 2000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 10,
+                  "max": 100,
+                  "fraction": 0.1,
+                  "band": "critical",
+                  "tone": "danger",
+                  "flash": "critical"
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "warning",
+              "events": []
+            },
+            {
+              "do": "view",
+              "at": 3100,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 41,
+                  "max": 100,
+                  "fraction": 0.41,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": "critical"
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "stamina",
+                  "value": 46,
+                  "message": "Stamina restored",
+                  "at": 3200
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 3300,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 46,
+                  "max": 100,
+                  "fraction": 0.46,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": "restored"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: a damage tick and a need_satisfied restore change no band, so neither flashes",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 0,
+              "decayRate": 1,
+              "warningThreshold": 0,
+              "criticalThreshold": -1,
+              "damageRate": 2
+            },
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 85,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 2000
+          },
+          {
+            "do": "action",
+            "action": "eat",
+            "amount": 10,
+            "at": 2000
+          },
+          {
+            "do": "view",
+            "at": 2000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 2000,
+              "ticks": 2,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "thirst",
+                  "value": 4,
+                  "message": "Taking damage from thirst deprivation!",
+                  "at": 1000
+                }
+              ],
+              "expired": [],
+              "hurt": 4,
+              "needs": [
+                {
+                  "id": "thirst",
+                  "value": 0,
+                  "max": 100,
+                  "band": "warning"
+                },
+                {
+                  "id": "hunger",
+                  "value": 83,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "action",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_satisfied",
+                  "needType": "hunger",
+                  "value": 93,
+                  "message": "Hunger satisfied",
+                  "at": 2000
+                }
+              ],
+              "needs": [
+                {
+                  "id": "thirst",
+                  "value": 0,
+                  "max": 100,
+                  "band": "warning"
+                },
+                {
+                  "id": "hunger",
+                  "value": 93,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 2000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "thirst",
+                  "label": "Thirst",
+                  "value": 0,
+                  "max": 100,
+                  "fraction": 0,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": null
+                },
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 93,
+                  "max": 100,
+                  "fraction": 0.93,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: a hidden HUD draws nothing and the needs still run",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 31,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "visible": false,
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 1000
+          },
+          {
+            "do": "view",
+            "at": 1000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 1000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "hunger",
+                  "value": 30,
+                  "message": "Hunger is getting low",
+                  "at": 1000
+                }
+              ],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 30,
+                  "max": 100,
+                  "band": "warning"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "view",
+              "at": 1000,
+              "visible": false,
+              "bars": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: stamina hysteresis: a jump across the exhausted line and the next second's rest tick back do not flap; the bar leaves exhausted only a whole rest tick (recoveryRate 5) above 15%, silently, and says restored at fresh",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": []
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "stamina",
+            "current": 100,
+            "max": 100,
+            "at": 0
+          },
+          {
+            "do": "stamina",
+            "current": 16,
+            "max": 100,
+            "at": 500
+          },
+          {
+            "do": "stamina",
+            "current": 13,
+            "max": 100,
+            "at": 800
+          },
+          {
+            "do": "stamina",
+            "current": 18,
+            "max": 100,
+            "at": 1000
+          },
+          {
+            "do": "view",
+            "at": 1000
+          },
+          {
+            "do": "stamina",
+            "current": 15,
+            "max": 100,
+            "at": 1300
+          },
+          {
+            "do": "stamina",
+            "current": 12,
+            "max": 100,
+            "at": 1600
+          },
+          {
+            "do": "stamina",
+            "current": 17,
+            "max": 100,
+            "at": 2000
+          },
+          {
+            "do": "stamina",
+            "current": 20,
+            "max": 100,
+            "at": 3000
+          },
+          {
+            "do": "stamina",
+            "current": 21,
+            "max": 100,
+            "at": 4000
+          },
+          {
+            "do": "view",
+            "at": 4000
+          },
+          {
+            "do": "stamina",
+            "current": 18,
+            "max": 100,
+            "at": 4300
+          },
+          {
+            "do": "stamina",
+            "current": 45,
+            "max": 100,
+            "at": 9000
+          },
+          {
+            "do": "stamina",
+            "current": 46,
+            "max": 100,
+            "at": 10000
+          },
+          {
+            "do": "view",
+            "at": 10000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "warning",
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "stamina",
+                  "value": 16,
+                  "message": "Stamina is getting low",
+                  "at": 500
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "exhausted",
+              "band": "critical",
+              "events": [
+                {
+                  "type": "need_critical",
+                  "needType": "stamina",
+                  "value": 13,
+                  "message": "Stamina critically low!",
+                  "at": 800
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "critical",
+              "events": []
+            },
+            {
+              "do": "view",
+              "at": 1000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 18,
+                  "max": 100,
+                  "fraction": 0.18,
+                  "band": "critical",
+                  "tone": "danger",
+                  "flash": "critical"
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "exhausted",
+              "band": "critical",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "exhausted",
+              "band": "critical",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "critical",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "critical",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "warning",
+              "events": []
+            },
+            {
+              "do": "view",
+              "at": 4000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 21,
+                  "max": 100,
+                  "fraction": 0.21,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": null
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "warning",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "warning",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "stamina",
+                  "value": 46,
+                  "message": "Stamina restored",
+                  "at": 10000
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 10000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 46,
+                  "max": 100,
+                  "fraction": 0.46,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": "restored"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: the winded line holds the same way: winded is left only above 40% plus one rest tick; a drop is shown at once",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": []
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "stamina",
+            "current": 100,
+            "max": 100,
+            "at": 0
+          },
+          {
+            "do": "stamina",
+            "current": 38,
+            "max": 100,
+            "at": 100
+          },
+          {
+            "do": "stamina",
+            "current": 43,
+            "max": 100,
+            "at": 1000
+          },
+          {
+            "do": "stamina",
+            "current": 40,
+            "max": 100,
+            "at": 1100
+          },
+          {
+            "do": "stamina",
+            "current": 45,
+            "max": 100,
+            "at": 2000
+          },
+          {
+            "do": "view",
+            "at": 2000
+          },
+          {
+            "do": "stamina",
+            "current": 46,
+            "max": 100,
+            "at": 3000
+          },
+          {
+            "do": "stamina",
+            "current": 42,
+            "max": 100,
+            "at": 3100
+          },
+          {
+            "do": "view",
+            "at": 3100
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "warning",
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "stamina",
+                  "value": 38,
+                  "message": "Stamina is getting low",
+                  "at": 100
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "warning",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "warning",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "warning",
+              "events": []
+            },
+            {
+              "do": "view",
+              "at": 2000,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 45,
+                  "max": 100,
+                  "fraction": 0.45,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": null
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "stamina",
+                  "value": 46,
+                  "message": "Stamina restored",
+                  "at": 3000
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": []
+            },
+            {
+              "do": "view",
+              "at": 3100,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 42,
+                  "max": 100,
+                  "fraction": 0.42,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": "restored"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: a climb out of exhausted straight past winded is one restored; a world recoveryRate of 0 leaves no margin",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": []
+        },
+        "staminaConfig": {
+          "actionDriven": true,
+          "recoveryRate": 0
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "stamina",
+            "current": 100,
+            "max": 100,
+            "at": 0
+          },
+          {
+            "do": "stamina",
+            "current": 15,
+            "max": 100,
+            "at": 100
+          },
+          {
+            "do": "stamina",
+            "current": 16,
+            "max": 100,
+            "at": 200
+          },
+          {
+            "do": "stamina",
+            "current": 41,
+            "max": 100,
+            "at": 300
+          },
+          {
+            "do": "stamina",
+            "current": 10,
+            "max": 100,
+            "at": 400
+          },
+          {
+            "do": "stamina",
+            "current": 60,
+            "max": 100,
+            "at": 500
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "exhausted",
+              "band": "critical",
+              "events": [
+                {
+                  "type": "need_critical",
+                  "needType": "stamina",
+                  "value": 15,
+                  "message": "Stamina critically low!",
+                  "at": 100
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "winded",
+              "band": "warning",
+              "events": []
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "stamina",
+                  "value": 41,
+                  "message": "Stamina restored",
+                  "at": 300
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "exhausted",
+              "band": "critical",
+              "events": [
+                {
+                  "type": "need_critical",
+                  "needType": "stamina",
+                  "value": 10,
+                  "message": "Stamina critically low!",
+                  "at": 400
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "stamina",
+                  "value": 60,
+                  "message": "Stamina restored",
+                  "at": 500
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: the first stamina reading raises no event and sets the held band; a bar with no max reads ok",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": []
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "stamina",
+            "current": 10,
+            "max": 100,
+            "at": 0
+          },
+          {
+            "do": "view",
+            "at": 0
+          },
+          {
+            "do": "stamina",
+            "current": 0,
+            "max": 0,
+            "at": 100
+          },
+          {
+            "do": "view",
+            "at": 100
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "stamina",
+              "state": "exhausted",
+              "band": "critical",
+              "events": []
+            },
+            {
+              "do": "view",
+              "at": 0,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 10,
+                  "max": 100,
+                  "fraction": 0.1,
+                  "band": "critical",
+                  "tone": "danger",
+                  "flash": null
+                }
+              ]
+            },
+            {
+              "do": "stamina",
+              "state": "fresh",
+              "band": "ok",
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "stamina",
+                  "value": 0,
+                  "message": "Stamina restored",
+                  "at": 100
+                }
+              ]
+            },
+            {
+              "do": "view",
+              "at": 100,
+              "visible": true,
+              "bars": [
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 0,
+                  "max": 0,
+                  "fraction": 0,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": "restored"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "systems: no game choices: the composer's activation is the world's own list (modules.activate); neither survival system runs",
+      "op": "systems",
+      "input": {
+        "request": {
+          "recipe": null,
+          "world": {
+            "meta": {
+              "genreConfig": {
+                "id": "rpg",
+                "features": {
+                  "inventory": true
+                }
+              },
+              "enabledModules": [
+                "perception",
+                "traversal",
+                "agentAi",
+                "routine",
+                "map",
+                "volition",
+                "weather",
+                "dialogue",
+                "combat",
+                "skill"
+              ]
+            }
+          },
+          "game": {},
+          "engine": {
+            "id": "unreal"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": false,
+          "stamina": false,
+          "running": [
+            "combat",
+            "perception",
+            "skill",
+            "traversal",
+            "agentAi",
+            "routine",
+            "map",
+            "volition",
+            "weather",
+            "dialogue"
+          ],
+          "worldActivation": [
+            "combat",
+            "perception",
+            "skill",
+            "traversal",
+            "agentAi",
+            "routine",
+            "map",
+            "volition",
+            "weather",
+            "dialogue"
+          ]
+        }
+      }
+    },
+    {
+      "name": "systems: a game file switching survival-needs on runs it and stamina (its dependency); the composer's activation gains stamina while the world's own list does not, so the header lists stamina as running (p9c-unreal m4)",
+      "op": "systems",
+      "input": {
+        "request": {
+          "recipe": null,
+          "world": {
+            "meta": {
+              "genreConfig": {
+                "id": "rpg",
+                "features": {
+                  "inventory": true
+                }
+              },
+              "enabledModules": [
+                "perception",
+                "traversal",
+                "agentAi",
+                "routine",
+                "map",
+                "volition",
+                "weather",
+                "dialogue",
+                "combat",
+                "skill"
+              ]
+            }
+          },
+          "game": {
+            "packs": {
+              "survival-needs": {
+                "enabled": true
+              }
+            }
+          },
+          "engine": {
+            "id": "unreal"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": true,
+          "stamina": true,
+          "running": [
+            "combat",
+            "perception",
+            "skill",
+            "traversal",
+            "equipment",
+            "stamina",
+            "agentAi",
+            "routine",
+            "map",
+            "volition",
+            "weather",
+            "dialogue"
+          ],
+          "worldActivation": [
+            "combat",
+            "perception",
+            "skill",
+            "traversal",
+            "agentAi",
+            "routine",
+            "map",
+            "volition",
+            "weather",
+            "dialogue"
+          ]
+        }
+      }
+    },
+    {
+      "name": "systems: the world's own list names stamina and the game makes no choice: stamina runs, survival-needs does not",
+      "op": "systems",
+      "input": {
+        "request": {
+          "recipe": null,
+          "world": {
+            "meta": {
+              "genreConfig": {
+                "id": "rpg",
+                "features": {
+                  "inventory": true
+                }
+              },
+              "enabledModules": [
+                "perception",
+                "traversal",
+                "agentAi",
+                "routine",
+                "map",
+                "volition",
+                "weather",
+                "dialogue",
+                "combat",
+                "skill",
+                "stamina"
+              ]
+            }
+          },
+          "game": {},
+          "engine": {
+            "id": "unreal"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": false,
+          "stamina": true,
+          "running": [
+            "combat",
+            "perception",
+            "skill",
+            "traversal",
+            "stamina",
+            "agentAi",
+            "routine",
+            "map",
+            "volition",
+            "weather",
+            "dialogue"
+          ],
+          "worldActivation": [
+            "combat",
+            "perception",
+            "skill",
+            "traversal",
+            "stamina",
+            "agentAi",
+            "routine",
+            "map",
+            "volition",
+            "weather",
+            "dialogue"
+          ]
+        }
+      }
+    },
+    {
+      "name": "systems: a game switching survival-needs on where inventory does not run: survival-needs is refused (requires-inactive) and does not run, while stamina, started as its dependency, does",
+      "op": "systems",
+      "input": {
+        "request": {
+          "recipe": null,
+          "world": {
+            "meta": {
+              "genreConfig": {
+                "id": "rpg",
+                "features": {
+                  "inventory": false
+                }
+              },
+              "enabledModules": [
+                "perception",
+                "traversal",
+                "agentAi",
+                "routine",
+                "map",
+                "volition",
+                "weather",
+                "dialogue",
+                "combat",
+                "skill"
+              ]
+            }
+          },
+          "game": {
+            "packs": {
+              "survival-needs": {
+                "enabled": true
+              }
+            }
+          },
+          "engine": {
+            "id": "unreal"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": false,
+          "stamina": true,
+          "running": [
+            "combat",
+            "perception",
+            "skill",
+            "traversal",
+            "stamina",
+            "agentAi",
+            "routine",
+            "map",
+            "volition",
+            "weather",
+            "dialogue"
+          ],
+          "worldActivation": [
+            "combat",
+            "perception",
+            "skill",
+            "traversal",
+            "agentAi",
+            "routine",
+            "map",
+            "volition",
+            "weather",
+            "dialogue"
+          ]
+        }
+      }
+    },
+    {
+      "name": "systems: a request the composer refuses has no composition, so nothing is read from it",
+      "op": "systems",
+      "input": {
+        "request": {
+          "recipe": "no-such-recipe",
+          "world": {
+            "meta": {
+              "genreConfig": {
+                "id": "rpg",
+                "features": {
+                  "inventory": true
+                }
+              },
+              "enabledModules": [
+                "perception",
+                "traversal",
+                "agentAi",
+                "routine",
+                "map",
+                "volition",
+                "weather",
+                "dialogue",
+                "combat",
+                "skill"
+              ]
+            }
+          },
+          "game": {},
+          "engine": {
+            "id": "unreal"
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unknown-recipe",
+          "field": "request"
+        }
+      }
+    }
+  ]
+}

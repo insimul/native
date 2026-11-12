@@ -2577,6 +2577,21 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       owner: "onboarding",
       describe: "The tutorial quest's and onboarding flow's progress in a playthrough (PL.tutorial-progress-save, U97(4); catalog onboarding-tutorial-quest, onboarding-flow). Shape: {completed: [objective id], skipped: [objective id], current: objective id | null, endedBySkip: boolean}, TutorialQuestSystem.saveProgress() / OnboardingManager.saveProgress() (src/game-engine/logic/), read back through readTutorialBlock() in src/quests/tutorial-save.ts and restored through TutorialQuestConfig.progress or the OnboardingManager's progress option. Written by src/save-file-game-state.ts from GameSaveState.tutorial. Not kept: anything authored or derived (the objectives, their text, keys and events), the quest id and the clock (times and durations count again from the restored start()). null (the default) is a save with no tutorial block, a new game's or one written before this key: the tutorial starts fresh.",
       defaultValue: null
+    },
+    puzzle: {
+      owner: "puzzle",
+      describe: "A puzzle run (P9j.core; catalog puzzle-rule-module): PuzzleDirector.serialize(), {actors: [{actor, clues: [text id], solved: [riddle id], attempts: [[riddle id, wrong answers >= 1]], opened: [lock id], taken: [item id]}]}, read by readPuzzleBlock() in src/puzzle/puzzle-save.ts and restored with PuzzleDirector.restore(). Not kept: the puzzle itself (authored in WorldIR.puzzle or generated from the world) and anything the KB derives. null (the default) is no run.",
+      defaultValue: null
+    },
+    platformer: {
+      owner: "platformer",
+      describe: "A platformer course's runs (P9j.core; catalog genre-platformer): PlatformerDirector.serialize(), {runners: [{runner, level: level id | null, location: place | '', runCost: whole, checkpoints: [n], cleared: [[level id, best stars 1..3]]}]}, read by readPlatformerBlock() in src/platformer/platformer-save.ts and restored with PlatformerDirector.restore(). Not kept: the course (authored or generated) and anything the KB derives. null (the default) is no run.",
+      defaultValue: null
+    },
+    strategy: {
+      owner: "strategy",
+      describe: "A strategy campaign under way (P9j.core; catalog genre-strategy): StrategyDirector.serialize(), {turn: whole, holders: [[business, faction]], stock: [[faction, resource, amount >= 1]], workers: [[worker, business]]}, read by readStrategyBlock() in src/strategy/strategy-save.ts and restored with StrategyDirector.restore(). Not kept: the campaign (generated from the world and WorldIR.strategy) and anything the KB derives. null (the default) is no campaign.",
+      defaultValue: null
     }
   };
   function defaultOrphanLogger(key, _value) {
@@ -2743,6 +2758,660 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
   };
 
+  // @insimul/core/src/ai/deterministic-stream.ts
+  function hashSeedString(text4) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < text4.length; i++) {
+      h ^= text4.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+  function mulberry322(seed) {
+    let a = seed >>> 0;
+    return function next() {
+      a = a + 1831565813 | 0;
+      let t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function streamKey(parts) {
+    return parts.map((part) => {
+      const text4 = String(part);
+      return `${text4.length}:${text4}`;
+    }).join("");
+  }
+  function derivedStream(...parts) {
+    return mulberry322(hashSeedString(streamKey(parts)));
+  }
+  function derivedValue(...parts) {
+    return derivedStream(...parts)();
+  }
+  var DETERMINISTIC_DECIMALS = 4;
+  function roundDeterministic(value, decimals = DETERMINISTIC_DECIMALS) {
+    const scale = 10 ** decimals;
+    return Math.round(value * scale) / scale;
+  }
+  function compareIds(a, b) {
+    return a === b ? 0 : a < b ? -1 : 1;
+  }
+  function clamp01(value) {
+    return value < 0 ? 0 : value > 1 ? 1 : value;
+  }
+
+  // @insimul/core/src/feature-modules/genre-bundles.ts
+  var ALL_MODULES = [
+    "knowledge-acquisition",
+    "proficiency",
+    "pattern-recognition",
+    "assessment",
+    "npc-exams",
+    "performance-scoring",
+    "voice",
+    "gamification",
+    "skill-tree",
+    "adaptive-difficulty",
+    "world-lore",
+    "conversation-analytics",
+    "onboarding"
+  ];
+  function compatibleExcluding(defaults) {
+    return ALL_MODULES.filter((m) => !defaults.includes(m));
+  }
+  var LANGUAGE_LEARNING_BUNDLE = {
+    id: "language-learning",
+    name: "Language Learning",
+    description: "Educational game focused on vocabulary, grammar, and conversational fluency",
+    defaultModules: [
+      "knowledge-acquisition",
+      "proficiency",
+      "pattern-recognition",
+      "performance-scoring",
+      "voice",
+      "gamification",
+      "skill-tree",
+      "adaptive-difficulty",
+      "world-lore",
+      "conversation-analytics",
+      "assessment",
+      "npc-exams",
+      "onboarding"
+    ],
+    compatibleModules: [],
+    // already includes all relevant modules
+    moduleConfigs: {
+      "proficiency": {
+        tierLabels: ["A1", "A2", "B1", "B2"],
+        dimensions: ["vocabulary", "grammar", "pronunciation", "listening", "communication"]
+      },
+      "knowledge-acquisition": {
+        entryLabel: "Vocabulary Word",
+        entryLabelPlural: "Vocabulary Words",
+        masteryLabels: ["New", "Learning", "Familiar", "Mastered"]
+      },
+      "adaptive-difficulty": {
+        tierLabels: ["Beginner", "Elementary", "Intermediate", "Advanced", "Near-native"]
+      },
+      "gamification": {
+        tierLabels: ["Beginner", "Elementary", "Intermediate", "Advanced", "Near-native"]
+      }
+    }
+  };
+  var RPG_BUNDLE = {
+    id: "rpg",
+    name: "Role-Playing Game",
+    description: "Character progression, quests, and story-driven gameplay",
+    defaultModules: [
+      "knowledge-acquisition",
+      "proficiency",
+      "gamification",
+      "skill-tree",
+      "adaptive-difficulty",
+      "world-lore",
+      "conversation-analytics",
+      "onboarding"
+    ],
+    compatibleModules: compatibleExcluding([
+      "knowledge-acquisition",
+      "proficiency",
+      "gamification",
+      "skill-tree",
+      "adaptive-difficulty",
+      "world-lore",
+      "conversation-analytics",
+      "onboarding"
+    ]),
+    moduleConfigs: {
+      "proficiency": {
+        tierLabels: ["Novice", "Apprentice", "Journeyman", "Expert", "Master"],
+        dimensions: ["melee", "ranged", "magic", "stealth", "diplomacy"]
+      },
+      "knowledge-acquisition": {
+        entryLabel: "Lore Entry",
+        entryLabelPlural: "Lore Entries",
+        masteryLabels: ["Unknown", "Discovered", "Studied", "Mastered"]
+      },
+      "adaptive-difficulty": {
+        tierLabels: ["Easy", "Normal", "Hard", "Veteran", "Legendary"]
+      }
+    }
+  };
+  var SURVIVAL_BUNDLE = {
+    id: "survival",
+    name: "Survival",
+    description: "Resource gathering, crafting, and surviving hostile environments",
+    defaultModules: [
+      "knowledge-acquisition",
+      "proficiency",
+      "gamification",
+      "adaptive-difficulty",
+      "world-lore",
+      "onboarding"
+    ],
+    compatibleModules: compatibleExcluding([
+      "knowledge-acquisition",
+      "proficiency",
+      "gamification",
+      "adaptive-difficulty",
+      "world-lore",
+      "onboarding"
+    ]),
+    moduleConfigs: {
+      "proficiency": {
+        tierLabels: ["Greenhorn", "Survivor", "Woodsman", "Ranger", "Wilderness Master"],
+        dimensions: ["foraging", "crafting", "navigation", "combat", "shelter"]
+      },
+      "knowledge-acquisition": {
+        entryLabel: "Discovery",
+        entryLabelPlural: "Discoveries",
+        masteryLabels: ["Unknown", "Discovered", "Practiced", "Mastered"]
+      },
+      "adaptive-difficulty": {
+        tierLabels: ["Peaceful", "Normal", "Hard", "Brutal", "Nightmare"]
+      }
+    }
+  };
+  var STRATEGY_BUNDLE = {
+    id: "strategy",
+    name: "Strategy",
+    description: "Tactical decision-making, resource management, and empire building",
+    defaultModules: [
+      "proficiency",
+      "gamification",
+      "adaptive-difficulty",
+      "world-lore",
+      "onboarding"
+    ],
+    compatibleModules: compatibleExcluding([
+      "proficiency",
+      "gamification",
+      "adaptive-difficulty",
+      "world-lore",
+      "onboarding"
+    ]),
+    moduleConfigs: {
+      "proficiency": {
+        tierLabels: ["Recruit", "Officer", "Commander", "General", "Overlord"],
+        dimensions: ["economics", "military", "diplomacy", "technology", "espionage"]
+      },
+      "adaptive-difficulty": {
+        tierLabels: ["Settler", "Chieftain", "Prince", "Emperor", "Deity"]
+      }
+    }
+  };
+  var PUZZLE_BUNDLE = {
+    id: "puzzle",
+    name: "Puzzle",
+    description: "Logic challenges and problem-solving",
+    defaultModules: [
+      "pattern-recognition",
+      "gamification",
+      "adaptive-difficulty",
+      "onboarding"
+    ],
+    compatibleModules: compatibleExcluding([
+      "pattern-recognition",
+      "gamification",
+      "adaptive-difficulty",
+      "onboarding"
+    ]),
+    moduleConfigs: {
+      "adaptive-difficulty": {
+        tierLabels: ["Casual", "Thinker", "Puzzler", "Genius", "Mastermind"]
+      }
+    }
+  };
+  var PLATFORMER_BUNDLE = {
+    id: "platformer",
+    name: "Platformer",
+    description: "Running, jumping and reaching places, level by level",
+    // A platformer is scored on runs and paced by its levels, so its feature
+    // modules are the scoring and pacing ones and nothing that needs a
+    // conversation or a lesson: `performance-scoring` (a run is scored), and
+    // `gamification`, `adaptive-difficulty` and `onboarding` as every game bundle
+    // carries them. No `proficiency` or `skill-tree`, so the pause menu shows no
+    // Character or Skills tab (`ui/pause-menu-model.ts`); the registry's
+    // `features.skills` stays as the registry has it, because module activation
+    // reads the bundle, not that flag.
+    defaultModules: [
+      "performance-scoring",
+      "gamification",
+      "adaptive-difficulty",
+      "onboarding"
+    ],
+    compatibleModules: compatibleExcluding([
+      "performance-scoring",
+      "gamification",
+      "adaptive-difficulty",
+      "onboarding"
+    ]),
+    moduleConfigs: {
+      "adaptive-difficulty": {
+        tierLabels: ["Stroll", "Hop", "Leap", "Sprint", "Daredevil"]
+      }
+    }
+  };
+  var ADVENTURE_BUNDLE = {
+    id: "adventure",
+    name: "Adventure",
+    description: "Exploration, narrative, and puzzle-solving",
+    defaultModules: [
+      "knowledge-acquisition",
+      "gamification",
+      "world-lore",
+      "conversation-analytics",
+      "onboarding"
+    ],
+    compatibleModules: compatibleExcluding([
+      "knowledge-acquisition",
+      "gamification",
+      "world-lore",
+      "conversation-analytics",
+      "onboarding"
+    ]),
+    moduleConfigs: {
+      "knowledge-acquisition": {
+        entryLabel: "Clue",
+        entryLabelPlural: "Clues",
+        masteryLabels: ["Unknown", "Found", "Examined", "Understood"]
+      }
+    }
+  };
+  var SIMULATION_BUNDLE = {
+    id: "simulation",
+    name: "Simulation",
+    description: "Realistic systems and life simulation",
+    defaultModules: [
+      "proficiency",
+      "gamification",
+      "world-lore",
+      "conversation-analytics",
+      "onboarding"
+    ],
+    compatibleModules: compatibleExcluding([
+      "proficiency",
+      "gamification",
+      "world-lore",
+      "conversation-analytics",
+      "onboarding"
+    ]),
+    moduleConfigs: {}
+  };
+  var EDUCATIONAL_BUNDLE = {
+    id: "educational",
+    name: "Educational",
+    description: "Learning experiences through gameplay",
+    defaultModules: [
+      "knowledge-acquisition",
+      "proficiency",
+      "pattern-recognition",
+      "assessment",
+      "gamification",
+      "skill-tree",
+      "adaptive-difficulty",
+      "onboarding"
+    ],
+    compatibleModules: compatibleExcluding([
+      "knowledge-acquisition",
+      "proficiency",
+      "pattern-recognition",
+      "assessment",
+      "gamification",
+      "skill-tree",
+      "adaptive-difficulty",
+      "onboarding"
+    ]),
+    moduleConfigs: {
+      "proficiency": {
+        tierLabels: ["Novice", "Beginner", "Intermediate", "Advanced", "Expert"]
+      },
+      "knowledge-acquisition": {
+        entryLabel: "Concept",
+        entryLabelPlural: "Concepts",
+        masteryLabels: ["New", "Learning", "Familiar", "Mastered"]
+      }
+    }
+  };
+  function gameBundle(id, name, description, defaultModules, moduleConfigs = {}) {
+    return { id, name, description, defaultModules, compatibleModules: compatibleExcluding(defaultModules), moduleConfigs };
+  }
+  var ACTION_BUNDLE = gameBundle(
+    "action",
+    "Action",
+    "Fast-paced combat and reflexes",
+    ["proficiency", "gamification", "skill-tree", "adaptive-difficulty", "onboarding"],
+    {
+      "proficiency": {
+        tierLabels: ["Rookie", "Fighter", "Veteran", "Elite", "Champion"],
+        dimensions: ["melee", "ranged", "agility", "defense"]
+      },
+      "adaptive-difficulty": {
+        tierLabels: ["Easy", "Normal", "Hard", "Brutal", "Nightmare"]
+      }
+    }
+  );
+  var FIGHTING_BUNDLE = gameBundle(
+    "fighting",
+    "Fighting",
+    "One-on-one combat with combos and special moves",
+    ["performance-scoring", "gamification", "adaptive-difficulty", "onboarding"],
+    {
+      "adaptive-difficulty": {
+        tierLabels: ["Easy", "Normal", "Hard", "Very Hard", "Arcade"]
+      }
+    }
+  );
+  var SHOOTER_BUNDLE = gameBundle(
+    "shooter",
+    "Shooter",
+    "Ranged combat and precision shooting",
+    ["proficiency", "performance-scoring", "gamification", "adaptive-difficulty", "onboarding"],
+    {
+      "proficiency": {
+        tierLabels: ["Recruit", "Marksman", "Sharpshooter", "Sniper", "Legend"],
+        dimensions: ["accuracy", "movement", "tactics"]
+      }
+    }
+  );
+  var SANDBOX_BUNDLE = gameBundle(
+    "sandbox",
+    "Sandbox",
+    "Open-world exploration and creativity",
+    ["proficiency", "gamification", "skill-tree", "world-lore", "onboarding"],
+    {
+      "proficiency": {
+        tierLabels: ["Novice", "Builder", "Crafter", "Artisan", "Master"],
+        dimensions: ["building", "crafting", "gathering", "survival"]
+      }
+    }
+  );
+  var CITY_BUILDING_BUNDLE = gameBundle(
+    "city-building",
+    "City Building",
+    "Urban planning and city management",
+    ["proficiency", "gamification", "adaptive-difficulty", "world-lore", "onboarding"],
+    {
+      "proficiency": {
+        tierLabels: ["Steward", "Planner", "Mayor", "Governor", "Founder"],
+        dimensions: ["economics", "infrastructure", "housing", "services"]
+      }
+    }
+  );
+  var ROGUELIKE_BUNDLE = gameBundle(
+    "roguelike",
+    "Roguelike",
+    "Procedural generation and permadeath",
+    ["proficiency", "gamification", "skill-tree", "adaptive-difficulty", "onboarding"],
+    {
+      "adaptive-difficulty": {
+        tierLabels: ["Easy", "Normal", "Hard", "Ascension", "Torment"]
+      }
+    }
+  );
+  var GENRE_BUNDLES = {
+    "language-learning": LANGUAGE_LEARNING_BUNDLE,
+    "rpg": RPG_BUNDLE,
+    "survival": SURVIVAL_BUNDLE,
+    "strategy": STRATEGY_BUNDLE,
+    "puzzle": PUZZLE_BUNDLE,
+    "platformer": PLATFORMER_BUNDLE,
+    "adventure": ADVENTURE_BUNDLE,
+    "simulation": SIMULATION_BUNDLE,
+    "educational": EDUCATIONAL_BUNDLE,
+    "action": ACTION_BUNDLE,
+    "fighting": FIGHTING_BUNDLE,
+    "shooter": SHOOTER_BUNDLE,
+    "sandbox": SANDBOX_BUNDLE,
+    "city-building": CITY_BUILDING_BUNDLE,
+    "roguelike": ROGUELIKE_BUNDLE
+  };
+  function getGenreBundle(genreId) {
+    return GENRE_BUNDLES[genreId];
+  }
+
+  // @insimul/core/src/progression/feature-modules.ts
+  var KNOWLEDGE_ACQUISITION_MODULE = Object.freeze({
+    id: "knowledge-acquisition",
+    name: "Knowledge Acquisition",
+    description: "Track discoverable knowledge entries with mastery progression and spaced repetition",
+    dependencies: [],
+    genreFeatureFlags: ["knowledgeAcquisition"],
+    questObjectiveTypes: ["apply_knowledge", "discover_knowledge", "master_knowledge"],
+    questRewardTypes: ["knowledge_entry"],
+    xpEventTypes: ["knowledge_new_entry", "knowledge_mastered"],
+    skillTreeConditionTypes: ["entries_learned", "entries_mastered"]
+  });
+  var PROFICIENCY_MODULE = Object.freeze({
+    id: "proficiency",
+    name: "Proficiency Tracking",
+    description: "Track player proficiency across configurable dimensions with tier progression",
+    dependencies: [],
+    genreFeatureFlags: ["proficiencyTracking"],
+    questObjectiveTypes: ["reach_proficiency", "improve_dimension"],
+    questRewardTypes: ["proficiency_gain"],
+    xpEventTypes: ["proficiency_tier_up", "dimension_improved"],
+    skillTreeConditionTypes: ["dimension_reached", "tier_reached"]
+  });
+  var PATTERN_RECOGNITION_MODULE = Object.freeze({
+    id: "pattern-recognition",
+    name: "Pattern Recognition",
+    description: "Track recurring patterns the player learns to recognize and apply",
+    dependencies: [],
+    genreFeatureFlags: ["patternRecognition"],
+    questObjectiveTypes: ["demonstrate_pattern", "master_pattern"],
+    questRewardTypes: [],
+    xpEventTypes: ["pattern_correct", "pattern_mastered"],
+    skillTreeConditionTypes: ["patterns_mastered"]
+  });
+  var GAMIFICATION_MODULE = Object.freeze({
+    id: "gamification",
+    name: "Gamification",
+    description: "XP, levels, achievements, and daily challenges",
+    dependencies: [],
+    genreFeatureFlags: ["experience"],
+    questObjectiveTypes: [],
+    questRewardTypes: ["experience"],
+    xpEventTypes: ["quest_complete", "location_discovered", "onboarding_step_complete", "onboarding_complete", "achievement_unlocked", "daily_challenge_complete"]
+  });
+  var ADAPTIVE_DIFFICULTY_MODULE = Object.freeze({
+    id: "adaptive-difficulty",
+    name: "Adaptive Difficulty",
+    description: "Dynamically adjust challenge level based on player proficiency",
+    dependencies: [],
+    genreFeatureFlags: ["adaptiveDifficulty"],
+    questObjectiveTypes: [],
+    questRewardTypes: [],
+    adaptiveDifficultyParams: { challengeIntensity: "number", hintFrequency: "number", assistanceLevel: "number" }
+  });
+  var CONVERSATION_ANALYTICS_MODULE = Object.freeze({
+    id: "conversation-analytics",
+    name: "Conversation Analytics",
+    description: "Track and analyze conversation metrics with genre-specific insights",
+    dependencies: [],
+    genreFeatureFlags: ["conversationAnalytics"],
+    questObjectiveTypes: ["conversation_quality", "conversation_count"],
+    questRewardTypes: [],
+    xpEventTypes: ["conversation_complete", "conversation_quality_bonus"],
+    skillTreeConditionTypes: ["conversations_completed"]
+  });
+  var FEATURE_MODULE_DEFINITIONS = Object.freeze([
+    KNOWLEDGE_ACQUISITION_MODULE,
+    PROFICIENCY_MODULE,
+    PATTERN_RECOGNITION_MODULE,
+    GAMIFICATION_MODULE,
+    ADAPTIVE_DIFFICULTY_MODULE,
+    CONVERSATION_ANALYTICS_MODULE
+  ]);
+  var FEATURE_MODULE_VERDICTS = Object.freeze([
+    { id: "knowledge-acquisition", verdict: "defined", servedBy: "src/language-learning (the language book, collection) and KnowledgeCollectionSystem", catalog: "progression-feature-modules" },
+    { id: "proficiency", verdict: "defined", servedBy: "src/progression/feature-modules.ts (proficiencyOf)", catalog: "progression-feature-modules" },
+    { id: "pattern-recognition", verdict: "defined", servedBy: "src/language-learning/progress.ts (grammar patterns)", catalog: "progression-feature-modules" },
+    { id: "assessment", verdict: "port-later", servedBy: "language-assessment (P9h, port-later)", catalog: "language-assessment-arrival-departure" },
+    { id: "npc-exams", verdict: "port-later", servedBy: "language-assessment (P9h, port-later)", catalog: "language-npc-exams" },
+    { id: "performance-scoring", verdict: "unimplemented", servedBy: "", catalog: "progression-performance-scoring-world-lore" },
+    { id: "voice", verdict: "served", servedBy: "src/conversation/history-voice.ts (voice input, the dialogue pack)", catalog: "dialogue-voice-input" },
+    { id: "gamification", verdict: "defined", servedBy: "src/progression/gamification.ts", catalog: "progression-xp-levels-achievements" },
+    { id: "skill-tree", verdict: "served", servedBy: "src/skills and SkillProgression (the skill mechanic module)", catalog: "progression-skill-trees" },
+    { id: "adaptive-difficulty", verdict: "defined", servedBy: "src/progression/feature-modules.ts (difficultyParams, adjustDifficulty)", catalog: "progression-feature-modules" },
+    { id: "world-lore", verdict: "unimplemented", servedBy: "", catalog: "progression-performance-scoring-world-lore" },
+    { id: "conversation-analytics", verdict: "defined", servedBy: "src/language-learning/adaptation.ts (the conversation difficulty monitor)", catalog: "progression-feature-modules" },
+    { id: "onboarding", verdict: "served", servedBy: "src/ui/title-flow.ts and the onboarding flow (P8)", catalog: "onboarding-flow" }
+  ]);
+  function featureModuleVerdict(id) {
+    return FEATURE_MODULE_VERDICTS.find((v) => v.id === id);
+  }
+  var FEATURE_MODULE_REFUSALS = Object.freeze(["unimplemented", "port_later", "unknown_module", "duplicate"]);
+  var PROFICIENCY_TIERS = Object.freeze([
+    { id: "tier-1", label: "Novice", color: "#e74c3c", minScore: 0 },
+    { id: "tier-2", label: "Apprentice", color: "#e67e22", minScore: 25 },
+    { id: "tier-3", label: "Journeyman", color: "#f1c40f", minScore: 50 },
+    { id: "tier-4", label: "Expert", color: "#27ae60", minScore: 75 },
+    { id: "tier-5", label: "Master", color: "#2ecc71", minScore: 90 }
+  ]);
+  var DIFFICULTY_TIERS = Object.freeze([
+    { id: "tier-1", label: "Easy", minScore: 0 },
+    { id: "tier-2", label: "Normal", minScore: 20 },
+    { id: "tier-3", label: "Hard", minScore: 40 },
+    { id: "tier-4", label: "Very Hard", minScore: 60 },
+    { id: "tier-5", label: "Expert", minScore: 80 }
+  ]);
+  var QUEST_DIFFICULTIES = Object.freeze(["beginner", "intermediate", "advanced"]);
+  var ADJUSTMENT_TUNING = Object.freeze({ minWindow: 3, window: 10, highScore: 850, lowScore: 400, lowObjective: 500, highAttemptsTenths: 25 });
+
+  // @insimul/core/src/game-genres/feature-readers.ts
+  var composerGate = (flag) => ({
+    file: "src/system-packs/composer.ts",
+    token: `'${flag}',`,
+    how: `the composer's FEATURE_FLAGS: a recipe that marks the same-named pack gate-decides gates it on features.${flag} (composer.ts gateOf)`
+  });
+  var packGate = (pack, flag) => ({
+    file: `packs/${pack}/pack.json`,
+    token: `"genreFeature": "${flag}"`,
+    how: `pack '${pack}' is gated on features.${flag} (core.genreFeature; the composer runs it only while the flag is on)`
+  });
+  var noPack = (flag, extra) => ({
+    live: false,
+    code: "no_reader",
+    reason: `no catalogue pack is named '${flag}', so the composer's FEATURE_FLAGS gate on it is unreachable; ${extra}; nothing reads features.${flag}`
+  });
+  var moduleOnly = (flag, module) => ({
+    live: false,
+    code: "no_reader",
+    reason: `the '${module}' feature module is switched by its id (bundle or enabledModules), and its definition only contributes this flag's name; nothing reads features.${flag}`
+  });
+  var GENRE_FEATURE_VERDICTS = Object.freeze({
+    inventory: { live: true, reader: packGate("inventory", "inventory") },
+    crafting: {
+      live: true,
+      reader: {
+        file: "src/system-packs/composer.ts",
+        token: "crafting: 'gate-decides'",
+        how: "the core presets leave the crafting pack to features.crafting (gate-decides)"
+      }
+    },
+    dialogue: { live: true, reader: composerGate("dialogue") },
+    combat: { live: true, reader: packGate("combat", "combat") },
+    building: noPack("building", "building placement is the 'construction' pack (port-later), which no flag gates"),
+    resources: noPack("resources", "a world's resources are WorldIR.resources, read by the 'gathering' pack, which no flag gates"),
+    permadeath: noPack("permadeath", "roguelike runs are the 'dungeon-runs' pack (genre-roguelike-runs, port-later), which no flag gates, and src/game-engine/logic/RunManager.ts never reads the flag"),
+    quests: { live: true, reader: composerGate("quests") },
+    experience: { live: true, reader: packGate("progression", "experience") },
+    skills: noPack("skills", "the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag"),
+    knowledgeAcquisition: moduleOnly("knowledgeAcquisition", "knowledge-acquisition"),
+    proficiencyTracking: moduleOnly("proficiencyTracking", "proficiency"),
+    patternRecognition: moduleOnly("patternRecognition", "pattern-recognition"),
+    assessment: {
+      live: false,
+      code: "port_later",
+      reason: "the assessment system (language-assessment, P9h) is approved for after parity; nothing reads features.assessment"
+    },
+    npcExams: {
+      live: false,
+      code: "port_later",
+      reason: "NPC exams (language-npc-exams, P9h) are approved for after parity; nothing reads features.npcExams"
+    },
+    performanceScoring: {
+      live: false,
+      code: "unimplemented",
+      reason: "no repository implements performance scoring (progression-performance-scoring-world-lore, core-only); nothing reads features.performanceScoring"
+    },
+    voiceInteraction: {
+      live: false,
+      code: "no_reader",
+      reason: "voice input is the 'voice' feature module (src/conversation/history-voice.ts); nothing reads features.voiceInteraction"
+    },
+    adaptiveDifficulty: moduleOnly("adaptiveDifficulty", "adaptive-difficulty"),
+    worldLore: {
+      live: false,
+      code: "unimplemented",
+      reason: "no repository implements world lore (progression-performance-scoring-world-lore, core-only); nothing reads features.worldLore"
+    },
+    conversationAnalytics: moduleOnly("conversationAnalytics", "conversation-analytics"),
+    onboarding: {
+      live: false,
+      code: "no_reader",
+      reason: "the onboarding flow is the 'onboarding' feature module (src/ui/title-flow.ts); nothing reads features.onboarding"
+    }
+  });
+  var REFUSED_GENRE_FEATURES = Object.freeze(
+    Object.entries(GENRE_FEATURE_VERDICTS).filter(([, v]) => !v.live).map(([k]) => k)
+  );
+  function genreFeatureRefusal(flag) {
+    if (!Object.prototype.hasOwnProperty.call(GENRE_FEATURE_VERDICTS, flag)) return null;
+    const v = GENRE_FEATURE_VERDICTS[flag];
+    return v.live ? null : { code: v.code, reason: v.reason };
+  }
+  var FEATURE_MODULE_READERS = Object.freeze({
+    "knowledge-acquisition": { file: "src/ui/pause-menu-model.ts", token: "requires: 'knowledge-acquisition'", how: "gates the Vocabulary tab; its definition contributes knowledge quests" },
+    proficiency: { file: "src/ui/pause-menu-model.ts", token: "requires: 'proficiency'", how: "gates the Character tab; its definition contributes proficiency quests" },
+    "pattern-recognition": { file: "src/quest-types/index.ts", token: "'pattern-recognition':", how: "adds the language-learning and puzzle quest types; its definition contributes pattern quests" },
+    assessment: null,
+    "npc-exams": null,
+    "performance-scoring": null,
+    voice: { file: "src/conversation/history-voice.ts", token: "KEY_PUSH_TO_TALK", how: "served: core's voice-input state machine (push-to-talk, hands-free)" },
+    gamification: { file: "src/progression/feature-modules.ts", token: "id: 'gamification'", how: "its definition contributes experience rewards and XP events (resolveFeatureModules)" },
+    "skill-tree": { file: "src/ui/pause-menu-model.ts", token: "requires: 'skill-tree'", how: "gates the Skills tab, served by src/skills" },
+    "adaptive-difficulty": { file: "src/progression/feature-modules.ts", token: "id: 'adaptive-difficulty'", how: "its definition contributes the difficulty parameters (difficultyParams, adjustDifficulty)" },
+    "world-lore": null,
+    "conversation-analytics": { file: "src/ui/pause-menu-model.ts", token: "requires: 'conversation-analytics'", how: "gates the Analytics tab; its definition contributes conversation quests" },
+    onboarding: { file: "src/ui/title-flow.ts", token: "onboarding", how: "served: the title flow starts the onboarding (P8)" }
+  });
+  function featureModuleRefusal(id) {
+    const v = featureModuleVerdict(id);
+    if (!v) return null;
+    if (v.verdict === "port-later") {
+      return { code: "port_later", reason: `'${id}' is approved for after parity (${v.servedBy}); nothing runs it yet` };
+    }
+    if (v.verdict === "unimplemented") {
+      return { code: "unimplemented", reason: `no repository implements '${id}' (${v.catalog}, core-only); nothing runs it` };
+    }
+    return null;
+  }
+  var REFUSED_FEATURE_MODULES = Object.freeze(
+    FEATURE_MODULE_VERDICTS.filter((v) => featureModuleRefusal(v.id) !== null).map((v) => v.id)
+  );
+
   // @insimul/core/src/ui/pause-menu-model.ts
   var DEFAULT_MENU_TABS = [
     { key: "resume", label: "Resume" },
@@ -2767,7 +3436,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       __publicField(this, "enabled");
       __publicField(this, "open", false);
       __publicField(this, "active", "");
-      this.enabled = new Set(enabledModules);
+      this.enabled = new Set([...enabledModules].filter((m) => featureModuleRefusal(m) === null));
       this.tabs = tabs.length > 0 ? tabs : DEFAULT_MENU_TABS;
     }
     /** True when every module a tab requires is enabled (ungated tabs always pass). */
@@ -2819,14 +3488,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   // @insimul/core/src/ui/quest-journal-model.ts
   var DEFAULT_MAX_TRACKED = 3;
   var QuestJournalModel = class {
-    constructor(maxTracked = DEFAULT_MAX_TRACKED) {
+    constructor(maxTracked = DEFAULT_MAX_TRACKED, options = {}) {
       /** Insertion-ordered quest list (order is stable + part of the contract). */
       __publicField(this, "order", []);
       __publicField(this, "byId", /* @__PURE__ */ new Map());
       __publicField(this, "tracked", []);
       __publicField(this, "filter", "all");
       __publicField(this, "maxTracked");
+      __publicField(this, "autoTrackNew");
       this.maxTracked = maxTracked > 0 ? maxTracked : DEFAULT_MAX_TRACKED;
+      this.autoTrackNew = options.autoTrackNew === true;
     }
     /** Replace the whole quest set (e.g. on load), preserving given order. */
     setQuests(entries) {
@@ -2847,11 +3518,15 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const e = this.byId.get(id);
       return e ? { ...e } : void 0;
     }
-    /** Accept an AVAILABLE quest (available -> active). No-op otherwise. */
+    /**
+     * Accept an AVAILABLE quest (available -> active). No-op otherwise. With `autoTrackNew` the
+     * quest is then tracked by {@link track}'s rule (not when the tracker is full).
+     */
     accept(id) {
       const e = this.byId.get(id);
       if (!e || e.status !== "available") return false;
       e.status = "active";
+      if (this.autoTrackNew) this.track(id);
       return true;
     }
     /** Decline an AVAILABLE quest (offer dismissed) — removes it entirely. */
@@ -5994,48 +6669,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return facts;
   }
 
-  // @insimul/core/src/ai/deterministic-stream.ts
-  function hashSeedString(text4) {
-    let h = 2166136261 >>> 0;
-    for (let i = 0; i < text4.length; i++) {
-      h ^= text4.charCodeAt(i);
-      h = Math.imul(h, 16777619);
-    }
-    return h >>> 0;
-  }
-  function mulberry322(seed) {
-    let a = seed >>> 0;
-    return function next() {
-      a = a + 1831565813 | 0;
-      let t = Math.imul(a ^ a >>> 15, 1 | a);
-      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-      return ((t ^ t >>> 14) >>> 0) / 4294967296;
-    };
-  }
-  function streamKey(parts) {
-    return parts.map((part) => {
-      const text4 = String(part);
-      return `${text4.length}:${text4}`;
-    }).join("");
-  }
-  function derivedStream(...parts) {
-    return mulberry322(hashSeedString(streamKey(parts)));
-  }
-  function derivedValue(...parts) {
-    return derivedStream(...parts)();
-  }
-  var DETERMINISTIC_DECIMALS = 4;
-  function roundDeterministic(value, decimals = DETERMINISTIC_DECIMALS) {
-    const scale = 10 ** decimals;
-    return Math.round(value * scale) / scale;
-  }
-  function compareIds(a, b) {
-    return a === b ? 0 : a < b ? -1 : 1;
-  }
-  function clamp01(value) {
-    return value < 0 ? 0 : value > 1 ? 1 : value;
-  }
-
   // @insimul/core/src/weather/weather.ts
   var DEFAULT_WEATHER_TUNING = Object.freeze({
     persistence: 60,
@@ -7158,6 +7791,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     top_down: "hide",
     fighting: "hide"
   });
+  var MOVEMENT_SOLID_KINDS = Object.freeze(["building", "prop"]);
   var BUILDING_STOREY_M = 4;
   var isNum = (v) => typeof v === "number" && Number.isFinite(v);
   var isObj = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -7179,7 +7813,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     });
   }
   function isMovementSolid(s) {
-    return isObj(s) && typeof s.id === "string" && isVec(s.at) && isNum(s.rotation) && isNum(s.halfWidthM) && s.halfWidthM > 0 && isNum(s.halfDepthM) && s.halfDepthM > 0 && isNum(s.heightM) && s.heightM > 0;
+    return isObj(s) && typeof s.id === "string" && isVec(s.at) && isNum(s.rotation) && isNum(s.halfWidthM) && s.halfWidthM > 0 && isNum(s.halfDepthM) && s.halfDepthM > 0 && isNum(s.heightM) && s.heightM > 0 && (s.kind === void 0 || MOVEMENT_SOLID_KINDS.includes(s.kind));
+  }
+  function lensHides(s) {
+    return s.kind !== "prop";
   }
   function localOf(s, p) {
     const c = Math.cos(s.rotation);
@@ -7248,7 +7885,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         unreadable += 1;
         return;
       }
-      if (rule2 !== "hide" || skip.has(s.id)) return;
+      if (rule2 !== "hide" || skip.has(s.id) || !lensHides(s)) return;
       const t = segmentEntry(s, pivot, lens);
       if (t !== null) hidden.push({ id: s.id, atM: t * length });
     });
@@ -7727,6 +8364,885 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     return footstepCue({ surface: ground === null ? null : ground.surface, gait });
   }
 
+  // @insimul/core/src/survival/needs.ts
+  var SURVIVAL_NEED_IDS = Object.freeze(["hunger", "thirst", "temperature", "sleep"]);
+  var DEFAULT_SURVIVAL_NEEDS = Object.freeze([
+    { id: "hunger", name: "Hunger", maxValue: 100, startValue: 80, decayRate: 0.15, warningThreshold: 30, criticalThreshold: 15, damageRate: 2 },
+    { id: "thirst", name: "Thirst", maxValue: 100, startValue: 90, decayRate: 0.25, warningThreshold: 30, criticalThreshold: 15, damageRate: 3 },
+    { id: "temperature", name: "Temperature", maxValue: 100, startValue: 50, decayRate: 0, warningThreshold: 20, criticalThreshold: 10, damageRate: 1.5 },
+    { id: "sleep", name: "Rest", maxValue: 100, startValue: 100, decayRate: 0.08, warningThreshold: 25, criticalThreshold: 10, damageRate: 0.5 }
+  ]);
+  var DEFAULT_RESTORE_ACTIONS = Object.freeze({
+    eat: { need: "hunger", amount: 30 },
+    drink: { need: "thirst", amount: 25 },
+    sleep: { need: "sleep", amount: 50 }
+  });
+  var DEFAULT_SURVIVAL_TUNING = Object.freeze({
+    needs: DEFAULT_SURVIVAL_NEEDS.map((n) => ({ ...n })),
+    tickMs: 1e3,
+    maxTicksPerAdvance: 86400,
+    damageEnabled: true,
+    globalDamageMultiplier: 1,
+    temperatureEnvironmentDriven: false,
+    comfortMin: 20,
+    comfortMax: 80,
+    criticalAtBothExtremes: true,
+    temperatureDriftPerSecond: 10,
+    satisfiedFraction: 0.9,
+    hudFlashMs: 1500,
+    restoreActions: { ...DEFAULT_RESTORE_ACTIONS },
+    modifierPresets: []
+  });
+  var NEUTRAL_ENVIRONMENT_TEMPERATURE = 50;
+  var isObj3 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var fin = (v) => typeof v === "number" && Number.isFinite(v);
+  var numOr = (v, d) => fin(v) ? v : d;
+  var boolOr = (v, d) => typeof v === "boolean" ? v : d;
+  var r4 = (v) => roundDeterministic(v);
+  var clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+  function isSurvivalNeedId(v) {
+    return typeof v === "string" && SURVIVAL_NEED_IDS.includes(v);
+  }
+  function needConfigFrom(row, id) {
+    const d = DEFAULT_SURVIVAL_NEEDS.find((n) => n.id === id);
+    const maxValue = fin(row.maxValue) && row.maxValue > 0 ? row.maxValue : d.maxValue;
+    return {
+      id,
+      name: typeof row.name === "string" && row.name !== "" ? row.name : d.name,
+      maxValue,
+      startValue: clamp(numOr(row.startValue, Math.min(d.startValue, maxValue)), 0, maxValue),
+      decayRate: numOr(row.decayRate, d.decayRate),
+      warningThreshold: numOr(row.warningThreshold, d.warningThreshold),
+      criticalThreshold: numOr(row.criticalThreshold, d.criticalThreshold),
+      damageRate: numOr(row.damageRate, d.damageRate)
+    };
+  }
+  function survivalTuningFromIR(ir, overrides) {
+    const d = DEFAULT_SURVIVAL_TUNING;
+    const src = isObj3(ir) ? ir : {};
+    let needs;
+    if (Array.isArray(src.needs)) {
+      needs = [];
+      for (const row of src.needs) {
+        if (!isObj3(row) || !isSurvivalNeedId(row.id)) continue;
+        if (needs.some((n) => n.id === row.id)) continue;
+        needs.push(needConfigFrom(row, row.id));
+      }
+    } else {
+      needs = d.needs.map((n) => ({ ...n }));
+    }
+    const dmg = isObj3(src.damageConfig) ? src.damageConfig : {};
+    const temp = isObj3(src.temperatureConfig) ? src.temperatureConfig : {};
+    const comfort = isObj3(temp.comfortZone) ? temp.comfortZone : {};
+    const presets = [];
+    for (const p of Array.isArray(src.modifierPresets) ? src.modifierPresets : []) {
+      if (!isObj3(p) || typeof p.id !== "string" || p.id === "" || presets.some((x) => x.id === p.id)) continue;
+      presets.push({
+        id: p.id,
+        needType: typeof p.needType === "string" ? p.needType : "",
+        rateMultiplier: numOr(p.rateMultiplier, 1),
+        duration: numOr(p.duration, 0),
+        source: typeof p.source === "string" ? p.source : ""
+      });
+    }
+    const t = {
+      needs,
+      tickMs: d.tickMs,
+      maxTicksPerAdvance: d.maxTicksPerAdvance,
+      damageEnabled: boolOr(dmg.enabled, d.damageEnabled),
+      globalDamageMultiplier: numOr(dmg.globalDamageMultiplier, d.globalDamageMultiplier),
+      temperatureEnvironmentDriven: boolOr(temp.environmentDriven, d.temperatureEnvironmentDriven),
+      comfortMin: numOr(comfort.min, d.comfortMin),
+      comfortMax: numOr(comfort.max, d.comfortMax),
+      criticalAtBothExtremes: boolOr(temp.criticalAtBothExtremes, d.criticalAtBothExtremes),
+      temperatureDriftPerSecond: d.temperatureDriftPerSecond,
+      satisfiedFraction: d.satisfiedFraction,
+      hudFlashMs: d.hudFlashMs,
+      restoreActions: { ...d.restoreActions },
+      modifierPresets: presets
+    };
+    const o = isObj3(overrides) ? overrides : {};
+    for (const key of ["tickMs", "maxTicksPerAdvance", "globalDamageMultiplier", "comfortMin", "comfortMax", "temperatureDriftPerSecond", "satisfiedFraction", "hudFlashMs"]) {
+      if (fin(o[key])) t[key] = o[key];
+    }
+    for (const key of ["damageEnabled", "temperatureEnvironmentDriven", "criticalAtBothExtremes"]) {
+      if (typeof o[key] === "boolean") t[key] = o[key];
+    }
+    t.tickMs = Math.max(1, Math.floor(t.tickMs));
+    t.maxTicksPerAdvance = Math.max(1, Math.floor(t.maxTicksPerAdvance));
+    return t;
+  }
+  var configOf = (t, id) => t.needs.find((n) => n.id === id);
+  function needBand(config, value, tuning) {
+    const both = config.id === "temperature" && tuning.criticalAtBothExtremes;
+    if (value <= config.criticalThreshold || both && value >= config.maxValue - config.criticalThreshold) return "critical";
+    if (value <= config.warningThreshold || both && value >= config.maxValue - config.warningThreshold) return "warning";
+    return "ok";
+  }
+  function initialSurvival(tuning, at) {
+    return {
+      needs: tuning.needs.map((c) => {
+        const value = r4(clamp(c.startValue, 0, c.maxValue));
+        return { id: c.id, value, max: c.maxValue, band: needBand(c, value, tuning) };
+      }),
+      modifiers: [],
+      environmentTemperature: NEUTRAL_ENVIRONMENT_TEMPERATURE,
+      lastTickAt: at,
+      enabled: true,
+      damageOwed: 0
+    };
+  }
+  function cloneState(s) {
+    return { ...s, needs: s.needs.map((n) => ({ ...n })), modifiers: s.modifiers.map((m) => ({ ...m })) };
+  }
+  function bandMessage(config, band, value) {
+    if (band === "ok") return `${config.name} restored`;
+    const high = config.id === "temperature" && value > config.maxValue / 2;
+    if (band === "critical") return `${config.name} critically ${high ? "high" : "low"}!`;
+    return `${config.name} is getting ${high ? "high" : "low"}`;
+  }
+  function rebanded(config, reading, tuning, at, events) {
+    const band = needBand(config, reading.value, tuning);
+    if (band === reading.band) return;
+    reading.band = band;
+    const type = band === "critical" ? "need_critical" : band === "warning" ? "need_warning" : "need_restored";
+    events.push({ type, needType: config.id, value: reading.value, message: bandMessage(config, band, reading.value), at });
+  }
+  function temperatureTarget(environment, config, tuning) {
+    const mid = config.maxValue / 2;
+    const env = clamp(environment, 0, 100);
+    if (env < tuning.comfortMin) return r4(tuning.comfortMin > 0 ? mid * (env / tuning.comfortMin) : 0);
+    if (env > tuning.comfortMax) {
+      const span = 100 - tuning.comfortMax;
+      return r4(span > 0 ? mid + (config.maxValue - mid) * ((env - tuning.comfortMax) / span) : config.maxValue);
+    }
+    return r4(mid);
+  }
+  function isDeprived(config, reading, tuning) {
+    if (config.id === "temperature" && (tuning.temperatureEnvironmentDriven || tuning.criticalAtBothExtremes)) return reading.band === "critical";
+    return reading.value <= 0;
+  }
+  function advanceSurvival(state, tuning, now) {
+    const s = cloneState(state);
+    const events = [];
+    const expired = [];
+    const due = fin(now) && now > s.lastTickAt ? Math.floor((now - s.lastTickAt) / tuning.tickMs) : 0;
+    const run = s.enabled ? Math.min(due, tuning.maxTicksPerAdvance) : 0;
+    const seconds = tuning.tickMs / 1e3;
+    const damageEvents = /* @__PURE__ */ new Map();
+    for (let i = 1; i <= run; i++) {
+      const at = s.lastTickAt + i * tuning.tickMs;
+      s.modifiers = s.modifiers.filter((m) => {
+        const gone = m.duration > 0 && at - m.startedAt >= m.duration;
+        if (gone) expired.push(m.id);
+        return !gone;
+      });
+      for (const reading of s.needs) {
+        const config = configOf(tuning, reading.id);
+        if (!config) continue;
+        if (config.id === "temperature" && tuning.temperatureEnvironmentDriven) {
+          const target = temperatureTarget(s.environmentTemperature, config, tuning);
+          const step = tuning.temperatureDriftPerSecond * seconds;
+          const gap = target - reading.value;
+          reading.value = r4(Math.abs(gap) <= step ? target : reading.value + Math.sign(gap) * step);
+        } else {
+          let rate = config.decayRate;
+          for (const m of s.modifiers) if (m.needType === config.id) rate *= m.rateMultiplier;
+          if (rate > 0) reading.value = r4(Math.max(0, reading.value - rate * seconds));
+        }
+        rebanded(config, reading, tuning, at, events);
+        if (tuning.damageEnabled && config.damageRate > 0 && isDeprived(config, reading, tuning)) {
+          const damage = r4(config.damageRate * tuning.globalDamageMultiplier * seconds);
+          if (damage > 0) {
+            s.damageOwed = r4(s.damageOwed + damage);
+            const seen = damageEvents.get(config.id);
+            if (seen) seen.value = r4(seen.value + damage);
+            else {
+              const e = {
+                type: "damage_from_need",
+                needType: config.id,
+                value: damage,
+                message: `Taking damage from ${config.name.toLowerCase()} deprivation!`,
+                at
+              };
+              damageEvents.set(config.id, e);
+              events.push(e);
+            }
+          }
+        }
+      }
+    }
+    s.lastTickAt += due * tuning.tickMs;
+    const hurt = Math.floor(s.damageOwed);
+    s.damageOwed = r4(s.damageOwed - hurt);
+    return { state: s, ticks: run, skipped: due - run, events, expired, hurt };
+  }
+  function setSurvivalEnabled(state, enabled) {
+    return { ...cloneState(state), enabled };
+  }
+  function restoreNeed(state, tuning, need, amount, at) {
+    const config = configOf(tuning, need);
+    const idx = state.needs.findIndex((n) => n.id === need);
+    if (!config || idx < 0) return { ok: false, reason: "need_not_tracked", state: cloneState(state) };
+    if (!fin(amount)) return { ok: false, reason: "bad_amount", state: cloneState(state) };
+    const s = cloneState(state);
+    const reading = s.needs[idx];
+    const events = [];
+    reading.value = r4(clamp(reading.value + amount, 0, reading.max));
+    rebanded(config, reading, tuning, at, events);
+    if (amount > 0 && reading.value >= reading.max * tuning.satisfiedFraction) {
+      events.push({ type: "need_satisfied", needType: config.id, value: reading.value, message: `${config.name} satisfied`, at });
+    }
+    return { ok: true, state: s, events };
+  }
+  function performSurvivalAction(state, tuning, action, at, amount) {
+    const row = Object.prototype.hasOwnProperty.call(tuning.restoreActions, action) ? tuning.restoreActions[action] : void 0;
+    if (!row) return { ok: false, reason: "unknown_action", state: cloneState(state) };
+    return restoreNeed(state, tuning, row.need, amount ?? row.amount, at);
+  }
+  function consumeForNeeds(state, tuning, effects, at) {
+    let s = cloneState(state);
+    const applied = [];
+    const events = [];
+    for (const reading of state.needs) {
+      const amount = effects[reading.id];
+      if (!fin(amount)) continue;
+      const r = restoreNeed(s, tuning, reading.id, amount, at);
+      if (!r.ok) continue;
+      s = r.state;
+      applied.push({ need: reading.id, amount });
+      events.push(...r.events);
+    }
+    return { state: s, applied, events };
+  }
+  var SURVIVAL_CONSUMED_ITEM_TYPES = Object.freeze(["consumable", "drink", "food"]);
+  var SURVIVAL_KEPT_ITEM_TYPES = Object.freeze(["collectible", "document", "key", "quest"]);
+  var SURVIVAL_ITEM_RESTORE_ACTIONS = Object.freeze({ food: "eat", drink: "drink" });
+  function useItemForNeeds(state, tuning, item, at) {
+    const held = fin(item.quantity) ? item.quantity : 1;
+    const type = typeof item.type === "string" ? item.type : "";
+    const consumedType = SURVIVAL_CONSUMED_ITEM_TYPES.includes(type);
+    if (!consumedType && !SURVIVAL_KEPT_ITEM_TYPES.includes(type)) {
+      return { ok: false, reason: "not_usable", state: cloneState(state) };
+    }
+    if (held < 1) return { ok: false, reason: "not_held", state: cloneState(state) };
+    if (!consumedType) {
+      return { ok: true, state: cloneState(state), consumed: 0, remaining: held, applied: [], action: null, events: [] };
+    }
+    const effects = isObj3(item.effects) ? item.effects : {};
+    const fed = consumeForNeeds(state, tuning, effects, at);
+    let next = fed.state;
+    const events = [...fed.events];
+    let action = null;
+    const fallback = SURVIVAL_ITEM_RESTORE_ACTIONS[type];
+    if (fed.applied.length === 0 && fallback !== void 0) {
+      const r = performSurvivalAction(next, tuning, fallback, at);
+      if (r.ok) {
+        next = r.state;
+        events.push(...r.events);
+        action = fallback;
+      }
+    }
+    return { ok: true, state: next, consumed: 1, remaining: held - 1, applied: fed.applied, action, events };
+  }
+  function setEnvironmentTemperature(state, tuning, value, at) {
+    if (!fin(value)) return { ok: false, reason: "bad_amount", state: cloneState(state) };
+    const s = cloneState(state);
+    s.environmentTemperature = r4(clamp(value, 0, 100));
+    const events = [];
+    const reading = s.needs.find((n) => n.id === "temperature");
+    const config = configOf(tuning, "temperature");
+    if (!tuning.temperatureEnvironmentDriven && reading && config) {
+      reading.value = r4(clamp(value, 0, reading.max));
+      rebanded(config, reading, tuning, at, events);
+    }
+    return { ok: true, state: s, events };
+  }
+  function applyNeedModifier(state, tuning, modifier, at) {
+    const m = typeof modifier === "string" ? tuning.modifierPresets.find((p) => p.id === modifier) : isObj3(modifier) && typeof modifier.id === "string" ? modifier : void 0;
+    if (!m) return { ok: false, reason: "unknown_modifier", state: cloneState(state) };
+    if (!state.needs.some((n) => n.id === m.needType)) return { ok: false, reason: "need_not_tracked", state: cloneState(state) };
+    if (!fin(m.rateMultiplier) || m.rateMultiplier < 0) return { ok: false, reason: "bad_amount", state: cloneState(state) };
+    const s = cloneState(state);
+    const active = {
+      id: m.id,
+      needType: m.needType,
+      rateMultiplier: m.rateMultiplier,
+      duration: numOr(m.duration, 0),
+      startedAt: at,
+      source: m.source ?? ""
+    };
+    const i = s.modifiers.findIndex((x) => x.id === m.id);
+    if (i >= 0) s.modifiers[i] = active;
+    else s.modifiers.push(active);
+    return { ok: true, state: s, events: [] };
+  }
+  function removeNeedModifier(state, id) {
+    const s = cloneState(state);
+    s.modifiers = s.modifiers.filter((m) => m.id !== id);
+    return s;
+  }
+  var SURVIVAL_BLOCK_MEMBERS = Object.freeze(["readings", "modifiers"]);
+  var SURVIVAL_MODIFIER_KEYS = Object.freeze(["id", "needType", "rateMultiplier", "remainingMs", "source"]);
+  function survivalSaveBlock(state, at) {
+    const readings = {};
+    for (const n of state.needs) readings[n.id] = n.value;
+    return {
+      readings,
+      modifiers: state.modifiers.map((m) => ({
+        id: m.id,
+        needType: m.needType,
+        rateMultiplier: m.rateMultiplier,
+        remainingMs: m.duration > 0 ? Math.max(0, m.duration - (at - m.startedAt)) : null,
+        source: m.source
+      }))
+    };
+  }
+  function readSurvivalBlock(v) {
+    if (v === void 0 || v === null) return { ok: true, value: null };
+    if (!isObj3(v)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const readings = {};
+    if (!isObj3(v.readings)) bad3.push("readings");
+    else {
+      for (const [k, x] of Object.entries(v.readings)) {
+        if (fin(x)) readings[k] = x;
+        else bad3.push(`readings.${k}`);
+      }
+    }
+    const modifiers = [];
+    if (v.modifiers !== void 0 && !Array.isArray(v.modifiers)) bad3.push("modifiers");
+    else {
+      (Array.isArray(v.modifiers) ? v.modifiers : []).forEach((m, i) => {
+        const okRow = isObj3(m) && typeof m.id === "string" && typeof m.needType === "string" && fin(m.rateMultiplier) && m.rateMultiplier >= 0 && (m.remainingMs === null || fin(m.remainingMs)) && (m.source === void 0 || typeof m.source === "string");
+        if (!okRow) {
+          bad3.push(`modifiers[${i}]`);
+          return;
+        }
+        const row = m;
+        modifiers.push({
+          id: row.id,
+          needType: row.needType,
+          rateMultiplier: row.rateMultiplier,
+          remainingMs: row.remainingMs,
+          source: row.source ?? ""
+        });
+      });
+    }
+    if (bad3.length > 0) return { ok: false, keys: bad3.sort() };
+    return { ok: true, value: { readings, modifiers } };
+  }
+  function survivalFromSave(block, tuning, at) {
+    const s = initialSurvival(tuning, at);
+    if (!block) return s;
+    for (const reading of s.needs) {
+      const config = configOf(tuning, reading.id);
+      const saved = isObj3(block.readings) ? block.readings[reading.id] : void 0;
+      if (!fin(saved)) continue;
+      reading.value = r4(clamp(saved, 0, reading.max));
+      reading.band = needBand(config, reading.value, tuning);
+    }
+    for (const m of Array.isArray(block.modifiers) ? block.modifiers : []) {
+      if (!s.needs.some((n) => n.id === m.needType)) continue;
+      if (m.remainingMs !== null && !(m.remainingMs > 0)) continue;
+      if (s.modifiers.some((x) => x.id === m.id)) continue;
+      s.modifiers.push({
+        id: m.id,
+        needType: m.needType,
+        rateMultiplier: m.rateMultiplier,
+        duration: m.remainingMs === null ? 0 : m.remainingMs,
+        startedAt: at,
+        source: m.source
+      });
+    }
+    return s;
+  }
+
+  // @insimul/core/src/stamina/stamina.ts
+  var STAMINA_THRESHOLD_NAMES = Object.freeze(["winded", "exhausted"]);
+  var DEFAULT_STAMINA_TUNING = Object.freeze({
+    maxStamina: 100,
+    recoveryRate: 5,
+    combatRecoveryRate: 0,
+    encumberedRecoveryMultiplier: 0.5,
+    windedPercent: 40,
+    exhaustedPercent: 15
+  });
+  function staminaTuningFromIR(ir) {
+    const config = ir?.staminaConfig;
+    if (!config) return { ...DEFAULT_STAMINA_TUNING };
+    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    return {
+      maxStamina: num5(config.maxStamina, DEFAULT_STAMINA_TUNING.maxStamina),
+      recoveryRate: num5(config.recoveryRate, DEFAULT_STAMINA_TUNING.recoveryRate),
+      combatRecoveryRate: num5(config.combatRecoveryRate, DEFAULT_STAMINA_TUNING.combatRecoveryRate),
+      encumberedRecoveryMultiplier: num5(
+        config.encumberedRecoveryMultiplier,
+        DEFAULT_STAMINA_TUNING.encumberedRecoveryMultiplier
+      ),
+      windedPercent: num5(config.windedPercent, DEFAULT_STAMINA_TUNING.windedPercent),
+      exhaustedPercent: num5(config.exhaustedPercent, DEFAULT_STAMINA_TUNING.exhaustedPercent)
+    };
+  }
+  function staminaStateOf(current, max, tuning) {
+    if (!(max > 0)) return "fresh";
+    if (current * 100 <= max * tuning.exhaustedPercent) return "exhausted";
+    if (current * 100 <= max * tuning.windedPercent) return "winded";
+    return "fresh";
+  }
+  function canAffordStamina(current, cost) {
+    return current >= cost;
+  }
+  function spendStamina(input) {
+    const { current, max, tuning } = input;
+    const cost = Math.max(0, Math.floor(input.cost));
+    const stateBefore = staminaStateOf(current, max, tuning);
+    if (!canAffordStamina(current, cost)) {
+      return {
+        affordable: false,
+        cost,
+        before: current,
+        after: current,
+        max,
+        spent: 0,
+        stateBefore,
+        state: stateBefore,
+        becameWinded: false,
+        becameExhausted: false
+      };
+    }
+    const after = Math.max(0, current - cost);
+    const state = staminaStateOf(after, max, tuning);
+    return {
+      affordable: true,
+      cost,
+      before: current,
+      after,
+      max,
+      spent: current - after,
+      stateBefore,
+      state,
+      becameWinded: state === "winded" && stateBefore === "fresh",
+      becameExhausted: state === "exhausted" && stateBefore !== "exhausted"
+    };
+  }
+  function staminaRegenRate(input) {
+    const base = Math.max(0, input.rate ?? input.tuning.recoveryRate);
+    if (input.inCombat) return Math.max(0, input.tuning.combatRecoveryRate);
+    if (input.encumbered) return Math.floor(base * input.tuning.encumberedRecoveryMultiplier);
+    return base;
+  }
+  function regenerateStamina(input) {
+    const rate = staminaRegenRate(input);
+    const ticks = Math.max(0, input.ticks);
+    const recovered = Math.max(0, Math.min(input.max - input.current, Math.floor(rate * ticks)));
+    const after = input.current + recovered;
+    return {
+      before: input.current,
+      after,
+      max: input.max,
+      rate,
+      recovered,
+      state: staminaStateOf(after, input.max, input.tuning)
+    };
+  }
+  var STAMINA_REST_TICK_MS = 1e3;
+  function staminaRestClock(lastTickAt, now, tickMs = STAMINA_REST_TICK_MS) {
+    const step = Math.max(1, Math.floor(tickMs));
+    if (!Number.isFinite(lastTickAt) || !Number.isFinite(now) || now <= lastTickAt) {
+      return { ticks: 0, lastTickAt };
+    }
+    const ticks = Math.floor((now - lastTickAt) / step);
+    return { ticks, lastTickAt: lastTickAt + ticks * step };
+  }
+
+  // @insimul/core/src/survival/survival-hud.ts
+  var SURVIVAL_BAR_LABELS = Object.freeze({
+    hunger: "Hunger",
+    thirst: "Thirst",
+    temperature: "Temp",
+    stamina: "Stamina",
+    sleep: "Rest"
+  });
+  var initialSurvivalHud = () => ({ flashes: {} });
+  var FLASH_OF = Object.freeze({
+    need_warning: "warning",
+    need_critical: "critical",
+    need_restored: "restored"
+  });
+  function reduceSurvivalHud(hud, events) {
+    const flashes = { ...hud.flashes };
+    for (const e of events) {
+      const kind = FLASH_OF[e.type];
+      if (kind) flashes[e.needType] = { kind, at: e.at };
+    }
+    return hud.stamina === void 0 ? { flashes } : { flashes, stamina: hud.stamina };
+  }
+  function staminaBand(state) {
+    return state === "exhausted" ? "critical" : state === "winded" ? "warning" : "ok";
+  }
+  var bandTone = (band) => band === "critical" ? "danger" : band === "warning" ? "warning" : "success";
+  var BAND_RANK = Object.freeze({ ok: 0, warning: 1, critical: 2 });
+  function staminaHudBand(held, reading, tuning) {
+    const raw = staminaBand(staminaStateOf(reading.current, reading.max, tuning));
+    if (held === null || held === void 0 || BAND_RANK[raw] >= BAND_RANK[held]) return raw;
+    const margin = Math.max(0, tuning.recoveryRate);
+    const cleared = staminaBand(staminaStateOf(reading.current - margin, reading.max, tuning));
+    return BAND_RANK[cleared] < BAND_RANK[held] ? cleared : held;
+  }
+  function staminaHudEvents(held, after, tuning, at) {
+    if (held === null || held === void 0) return [];
+    const to = staminaHudBand(held, after, tuning);
+    if (to === held) return [];
+    if (BAND_RANK[to] < BAND_RANK[held] && to !== "ok") return [];
+    const type = to === "critical" ? "need_critical" : to === "warning" ? "need_warning" : "need_restored";
+    const message = to === "critical" ? "Stamina critically low!" : to === "warning" ? "Stamina is getting low" : "Stamina restored";
+    return [{ type, needType: "stamina", value: after.current, message, at }];
+  }
+  function reduceStaminaHud(hud, reading, tuning, at) {
+    const held = hud.stamina ?? null;
+    const events = staminaHudEvents(held, reading, tuning, at);
+    const band = staminaHudBand(held, reading, tuning);
+    return { hud: { ...reduceSurvivalHud(hud, events), stamina: band }, band, events };
+  }
+  function survivalHudView(state, tuning, hud, input) {
+    if (!input.visible) return { visible: false, bars: [] };
+    const flashOf = (id) => {
+      const f = hud.flashes[id];
+      return f && input.now >= f.at && input.now < f.at + tuning.hudFlashMs ? f.kind : null;
+    };
+    const bar = (id, label, value, max, band) => ({
+      id,
+      label,
+      value,
+      max,
+      fraction: max > 0 ? roundDeterministic(Math.min(1, Math.max(0, value / max))) : 0,
+      band,
+      tone: bandTone(band),
+      flash: flashOf(id)
+    });
+    const bars = state.needs.map(
+      (n) => bar(n.id, SURVIVAL_BAR_LABELS[n.id] ?? tuning.needs.find((c) => c.id === n.id)?.name ?? n.id, n.value, n.max, n.band)
+    );
+    const st = input.stamina;
+    if (st) bars.push(bar("stamina", SURVIVAL_BAR_LABELS.stamina, st.current, st.max, hud.stamina ?? staminaBand(staminaStateOf(st.current, st.max, st.tuning))));
+    return { visible: true, bars };
+  }
+
+  // @insimul/core/src/survival/survival-systems.ts
+  var SURVIVAL_NEEDS_PACK_ID = "survival-needs";
+  var STAMINA_MODULE_ID = "stamina";
+  function survivalSystemsRunning(composition) {
+    const running = [...composition.genre.activation.modules];
+    return {
+      needs: composition.packs.some((p) => p.id === SURVIVAL_NEEDS_PACK_ID && p.active === true),
+      stamina: running.includes(STAMINA_MODULE_ID),
+      running
+    };
+  }
+
+  // @insimul/core/src/prolog/prolog-fact-serializer.ts
+  var ATOM_RE2 = /^[a-z][a-zA-Z0-9_]*$/;
+  function quoteAtom(s) {
+    return `'${s.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
+  }
+  function serializeArg(arg) {
+    if (typeof arg === "number") {
+      return Number.isFinite(arg) ? String(arg) : quoteAtom(String(arg));
+    }
+    if (arg === "") return quoteAtom("");
+    if (ATOM_RE2.test(arg)) return arg;
+    return quoteAtom(arg);
+  }
+  function serializedFactToProlog(fact) {
+    const args = fact.args.map(serializeArg).join(", ");
+    return `${fact.predicate}(${args}).`;
+  }
+
+  // @insimul/core/src/stamina/stamina-facts.ts
+  var STAMINA_RESOLUTION_PREDICATES = Object.freeze(["energy/3"]);
+  var STAMINA_AUTHORED_PREDICATES = Object.freeze([
+    "stamina_threshold/2",
+    "stamina_regen_base/2",
+    "action/4"
+  ]);
+  function energyFacts(actorId, before, after, max) {
+    if (before === after) return { retract: [], assert: [] };
+    return {
+      retract: [{ predicate: "energy", args: [actorId, before, max] }],
+      assert: [{ predicate: "energy", args: [actorId, after, max] }]
+    };
+  }
+  function spendFacts(actorId, spend) {
+    if (!spend.affordable) return { retract: [], assert: [] };
+    return energyFacts(actorId, spend.before, spend.after, spend.max);
+  }
+  function regenFacts(actorId, regen) {
+    return energyFacts(actorId, regen.before, regen.after, regen.max);
+  }
+  function staminaTuningFacts(tuning) {
+    const percent = {
+      winded: tuning.windedPercent,
+      exhausted: tuning.exhaustedPercent
+    };
+    return STAMINA_THRESHOLD_NAMES.map((name) => ({
+      predicate: "stamina_threshold",
+      args: [name, percent[name]]
+    }));
+  }
+  function staminaRegenBaseFact(actorId, rate) {
+    return { predicate: "stamina_regen_base", args: [actorId, rate] };
+  }
+
+  // @insimul/core/src/game-engine/logic/StaminaPool.ts
+  var StaminaPool = class {
+    constructor(config = {}) {
+      __publicField(this, "engine");
+      __publicField(this, "tuning");
+      __publicField(this, "survival");
+      __publicField(this, "survivalActorId");
+      __publicField(this, "costs", /* @__PURE__ */ new Map());
+      __publicField(this, "actors", /* @__PURE__ */ new Map());
+      this.engine = config.engine;
+      this.tuning = config.tuning ?? { ...DEFAULT_STAMINA_TUNING };
+      this.survival = config.survival;
+      this.survivalActorId = config.survivalActorId;
+      for (const [action, cost] of Object.entries(config.costs ?? {})) this.setCost(action, cost);
+      if (config.state) this.restore(config.state);
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    // ── The authored cost table ────────────────────────────────────────────
+    /** Price one action. Authored data, set at load rather than during play. */
+    setCost(actionId, cost) {
+      this.costs.set(actionId, Math.max(0, Math.floor(cost)));
+    }
+    /**
+     * What this action costs. An action the world never priced costs nothing —
+     * silently free rather than an error, because a world that authored no costs at
+     * all is a world with no stamina economy, not a broken one.
+     */
+    costOf(actionId) {
+      return this.costs.get(actionId) ?? 0;
+    }
+    /**
+     * Load the cost table from the IR's action block — `ActionIR.energyCost`, the
+     * authoring surface behind `action/4`'s fourth argument.
+     */
+    loadCosts(actions) {
+      for (const action of actions) {
+        if (typeof action.energyCost === "number" && Number.isFinite(action.energyCost)) {
+          this.setCost(action.id, action.energyCost);
+        }
+      }
+    }
+    /**
+     * Load the cost table from a KB that already consulted the world's action
+     * table. `action/4` IS the cost table (`docs/mechanic-predicates.md` §12 cut
+     * `stamina_cost/2` precisely so there would be only one), so this reads it
+     * rather than a stamina-specific predicate.
+     */
+    async loadCostsFromKb(engine) {
+      const result = await engine.query("action(Id, _, _, Cost)", MAX_ACTION_SOLUTIONS);
+      if (!result.success) return 0;
+      let loaded = 0;
+      for (const binding2 of result.bindings) {
+        const id = typeof binding2["Id"] === "string" ? binding2["Id"] : null;
+        const cost = typeof binding2["Cost"] === "number" ? binding2["Cost"] : Number(binding2["Cost"]);
+        if (id === null || !Number.isFinite(cost)) continue;
+        if (cost > (this.costs.get(id) ?? -Infinity)) this.setCost(id, cost);
+        loaded += 1;
+      }
+      return loaded;
+    }
+    /**
+     * Publish the world's authored thresholds into the KB as `stamina_threshold/2`,
+     * so `winded/1` and `exhausted/1` answer with the same percentages
+     * {@link staminaStateOf} uses.
+     *
+     * Called when a world is loaded, not when one is saved: these are authored
+     * facts, they are not in the save-restore validator's known set, and a
+     * playthrough that reloads gets them from the world again.
+     */
+    async publishTuning(engine = this.engine) {
+      if (!engine) return false;
+      const facts = [...staminaTuningFacts(this.tuning)];
+      for (const actor of this.actors.values()) {
+        if (actor.regenBase !== void 0) facts.push(staminaRegenBaseFact(actor.id, actor.regenBase));
+      }
+      for (const fact of facts) await engine.assertFact(term(fact));
+      return true;
+    }
+    // ── The roster ─────────────────────────────────────────────────────────
+    /** Add or replace an actor's meter. */
+    register(entry) {
+      const max = entry.max ?? this.tuning.maxStamina;
+      const state = {
+        id: entry.id,
+        max,
+        current: Math.max(0, Math.min(max, entry.current ?? max)),
+        regenBase: entry.regenBase
+      };
+      this.actors.set(entry.id, state);
+      return state;
+    }
+    unregister(actorId) {
+      this.actors.delete(actorId);
+    }
+    get(actorId) {
+      return this.actors.get(actorId);
+    }
+    /** Every actor with a meter, in registration order. */
+    roster() {
+      return [...this.actors.values()];
+    }
+    /** Which band this actor is in — `fresh`, `winded` or `exhausted`. */
+    stateOf(actorId) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return "fresh";
+      return staminaStateOf(actor.current, actor.max, this.tuning);
+    }
+    /**
+     * Whether this actor could pay for this action right now — `can_afford_stamina/2`
+     * without a round trip. An unregistered actor can afford anything: a world that
+     * never gave them a meter does not have one to check.
+     */
+    canAfford(actorId, action, cost) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return true;
+      return canAffordStamina(actor.current, cost ?? this.costOf(action));
+    }
+    // ── The decision ───────────────────────────────────────────────────────
+    /**
+     * Spend an action's cost out of this actor's meter.
+     *
+     * An unaffordable spend moves nothing and writes nothing: `affordable: false`
+     * is the caller's cue to refuse the action, exactly as a `refused` attack is
+     * `CombatResolver`'s. An unregistered actor is not an error either — the spend
+     * reports as affordable and free, so a world can price actions for the actors
+     * it gave meters to without every other caller having to check first.
+     */
+    async spend(actorId, request) {
+      const cost = request.cost ?? this.costOf(request.action);
+      const actor = this.actors.get(actorId);
+      if (!actor) {
+        return {
+          actorId,
+          action: request.action,
+          spend: unmeteredSpend(cost),
+          facts: { retract: [], assert: [] },
+          applied: false
+        };
+      }
+      const spend = spendStamina({
+        current: actor.current,
+        max: actor.max,
+        cost,
+        tuning: this.tuning
+      });
+      if (spend.affordable) actor.current = spend.after;
+      const facts = spendFacts(actorId, spend);
+      const applied = await this.writeFacts(facts);
+      if (spend.spent > 0 && actorId === this.survivalActorId) {
+        this.survival?.consumeStamina(spend.spent);
+      }
+      return { actorId, action: request.action, spend, facts, applied };
+    }
+    /**
+     * Grant rest. The host owns the clock and says how many ticks passed; core
+     * decides only the modifier (`docs/mechanic-predicates.md` §9), which is what
+     * keeps this off a per-frame path across the ABI. A tick is one second of play,
+     * counted by `staminaRestClock` (`src/stamina/stamina.ts`), and there is no
+     * at-rest condition beyond the rate's own (combat, encumbrance).
+     */
+    async rest(actorId, request) {
+      const actor = this.actors.get(actorId);
+      if (!actor) {
+        const empty = {
+          before: 0,
+          after: 0,
+          max: 0,
+          rate: 0,
+          recovered: 0,
+          state: "fresh"
+        };
+        return { actorId, regen: empty, facts: { retract: [], assert: [] }, applied: false };
+      }
+      const regen = regenerateStamina({
+        current: actor.current,
+        max: actor.max,
+        ticks: request.ticks,
+        tuning: this.tuning,
+        rate: actor.regenBase,
+        inCombat: request.inCombat,
+        encumbered: request.encumbered
+      });
+      actor.current = regen.after;
+      const facts = regenFacts(actorId, regen);
+      const applied = await this.writeFacts(facts);
+      if (regen.recovered > 0 && actorId === this.survivalActorId) {
+        this.survival?.recoverStamina(regen.recovered);
+      }
+      return { actorId, regen, facts, applied };
+    }
+    /**
+     * Write a delta into the KB. Retract first — `energy/3` is replaced, never
+     * accumulated — and a retraction of a fact the KB never carried is a no-op
+     * rather than a failure, the same way `CombatResolver` treats `health/3`.
+     */
+    async writeFacts(delta) {
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(term(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(term(fact));
+      }
+      return true;
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    /**
+     * The per-playthrough state, as a save carries it: how much each actor has
+     * left. No thresholds, no rates and no costs — those are the world template's,
+     * and a save that carried a copy would freeze a creator's balance pass at the
+     * moment the player first pressed New Game.
+     */
+    serialize() {
+      return { actors: this.roster().map((actor) => ({ ...actor })) };
+    }
+    /** Restore a saved pool. Silent: loading a save is not an actor getting tired. */
+    restore(state) {
+      this.actors = /* @__PURE__ */ new Map();
+      for (const entry of state.actors ?? []) {
+        this.actors.set(entry.id, { ...entry });
+      }
+    }
+  };
+  var MAX_ACTION_SOLUTIONS = 1e3;
+  function unmeteredSpend(cost) {
+    return {
+      affordable: true,
+      cost,
+      before: 0,
+      after: 0,
+      max: 0,
+      spent: 0,
+      stateBefore: "fresh",
+      state: "fresh",
+      becameWinded: false,
+      becameExhausted: false
+    };
+  }
+  function term(fact) {
+    return serializedFactToProlog(fact).replace(/\.$/, "");
+  }
+
   // @insimul/core/src/game-genres/recipes.ts
   function binding(b) {
     return Object.freeze({
@@ -7775,396 +9291,6 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   var RECIPE_IDS = Object.freeze(Object.keys(RECIPE_GENRE_BINDINGS));
   function getRecipeGenreBinding(recipeId) {
     return Object.prototype.hasOwnProperty.call(RECIPE_GENRE_BINDINGS, recipeId) ? RECIPE_GENRE_BINDINGS[recipeId] : void 0;
-  }
-
-  // @insimul/core/src/feature-modules/genre-bundles.ts
-  var ALL_MODULES = [
-    "knowledge-acquisition",
-    "proficiency",
-    "pattern-recognition",
-    "assessment",
-    "npc-exams",
-    "performance-scoring",
-    "voice",
-    "gamification",
-    "skill-tree",
-    "adaptive-difficulty",
-    "world-lore",
-    "conversation-analytics",
-    "onboarding"
-  ];
-  function compatibleExcluding(defaults) {
-    return ALL_MODULES.filter((m) => !defaults.includes(m));
-  }
-  var LANGUAGE_LEARNING_BUNDLE = {
-    id: "language-learning",
-    name: "Language Learning",
-    description: "Educational game focused on vocabulary, grammar, and conversational fluency",
-    defaultModules: [
-      "knowledge-acquisition",
-      "proficiency",
-      "pattern-recognition",
-      "performance-scoring",
-      "voice",
-      "gamification",
-      "skill-tree",
-      "adaptive-difficulty",
-      "world-lore",
-      "conversation-analytics",
-      "assessment",
-      "npc-exams",
-      "onboarding"
-    ],
-    compatibleModules: [],
-    // already includes all relevant modules
-    moduleConfigs: {
-      "proficiency": {
-        tierLabels: ["A1", "A2", "B1", "B2"],
-        dimensions: ["vocabulary", "grammar", "pronunciation", "listening", "communication"]
-      },
-      "knowledge-acquisition": {
-        entryLabel: "Vocabulary Word",
-        entryLabelPlural: "Vocabulary Words",
-        masteryLabels: ["New", "Learning", "Familiar", "Mastered"]
-      },
-      "adaptive-difficulty": {
-        tierLabels: ["Beginner", "Elementary", "Intermediate", "Advanced", "Near-native"]
-      },
-      "gamification": {
-        tierLabels: ["Beginner", "Elementary", "Intermediate", "Advanced", "Near-native"]
-      }
-    }
-  };
-  var RPG_BUNDLE = {
-    id: "rpg",
-    name: "Role-Playing Game",
-    description: "Character progression, quests, and story-driven gameplay",
-    defaultModules: [
-      "knowledge-acquisition",
-      "proficiency",
-      "gamification",
-      "skill-tree",
-      "adaptive-difficulty",
-      "world-lore",
-      "conversation-analytics",
-      "onboarding"
-    ],
-    compatibleModules: compatibleExcluding([
-      "knowledge-acquisition",
-      "proficiency",
-      "gamification",
-      "skill-tree",
-      "adaptive-difficulty",
-      "world-lore",
-      "conversation-analytics",
-      "onboarding"
-    ]),
-    moduleConfigs: {
-      "proficiency": {
-        tierLabels: ["Novice", "Apprentice", "Journeyman", "Expert", "Master"],
-        dimensions: ["melee", "ranged", "magic", "stealth", "diplomacy"]
-      },
-      "knowledge-acquisition": {
-        entryLabel: "Lore Entry",
-        entryLabelPlural: "Lore Entries",
-        masteryLabels: ["Unknown", "Discovered", "Studied", "Mastered"]
-      },
-      "adaptive-difficulty": {
-        tierLabels: ["Easy", "Normal", "Hard", "Veteran", "Legendary"]
-      }
-    }
-  };
-  var SURVIVAL_BUNDLE = {
-    id: "survival",
-    name: "Survival",
-    description: "Resource gathering, crafting, and surviving hostile environments",
-    defaultModules: [
-      "knowledge-acquisition",
-      "proficiency",
-      "gamification",
-      "adaptive-difficulty",
-      "world-lore",
-      "onboarding"
-    ],
-    compatibleModules: compatibleExcluding([
-      "knowledge-acquisition",
-      "proficiency",
-      "gamification",
-      "adaptive-difficulty",
-      "world-lore",
-      "onboarding"
-    ]),
-    moduleConfigs: {
-      "proficiency": {
-        tierLabels: ["Greenhorn", "Survivor", "Woodsman", "Ranger", "Wilderness Master"],
-        dimensions: ["foraging", "crafting", "navigation", "combat", "shelter"]
-      },
-      "knowledge-acquisition": {
-        entryLabel: "Discovery",
-        entryLabelPlural: "Discoveries",
-        masteryLabels: ["Unknown", "Discovered", "Practiced", "Mastered"]
-      },
-      "adaptive-difficulty": {
-        tierLabels: ["Peaceful", "Normal", "Hard", "Brutal", "Nightmare"]
-      }
-    }
-  };
-  var STRATEGY_BUNDLE = {
-    id: "strategy",
-    name: "Strategy",
-    description: "Tactical decision-making, resource management, and empire building",
-    defaultModules: [
-      "proficiency",
-      "gamification",
-      "adaptive-difficulty",
-      "world-lore",
-      "onboarding"
-    ],
-    compatibleModules: compatibleExcluding([
-      "proficiency",
-      "gamification",
-      "adaptive-difficulty",
-      "world-lore",
-      "onboarding"
-    ]),
-    moduleConfigs: {
-      "proficiency": {
-        tierLabels: ["Recruit", "Officer", "Commander", "General", "Overlord"],
-        dimensions: ["economics", "military", "diplomacy", "technology", "espionage"]
-      },
-      "adaptive-difficulty": {
-        tierLabels: ["Settler", "Chieftain", "Prince", "Emperor", "Deity"]
-      }
-    }
-  };
-  var PUZZLE_BUNDLE = {
-    id: "puzzle",
-    name: "Puzzle",
-    description: "Logic challenges and problem-solving",
-    defaultModules: [
-      "pattern-recognition",
-      "gamification",
-      "adaptive-difficulty",
-      "onboarding"
-    ],
-    compatibleModules: compatibleExcluding([
-      "pattern-recognition",
-      "gamification",
-      "adaptive-difficulty",
-      "onboarding"
-    ]),
-    moduleConfigs: {
-      "adaptive-difficulty": {
-        tierLabels: ["Casual", "Thinker", "Puzzler", "Genius", "Mastermind"]
-      }
-    }
-  };
-  var PLATFORMER_BUNDLE = {
-    id: "platformer",
-    name: "Platformer",
-    description: "Running, jumping and reaching places, level by level",
-    // A platformer is scored on runs and paced by its levels, so its feature
-    // modules are the scoring and pacing ones and nothing that needs a
-    // conversation or a lesson: `performance-scoring` (a run is scored), and
-    // `gamification`, `adaptive-difficulty` and `onboarding` as every game bundle
-    // carries them. No `proficiency` or `skill-tree`, so the pause menu shows no
-    // Character or Skills tab (`ui/pause-menu-model.ts`); the registry's
-    // `features.skills` stays as the registry has it, because module activation
-    // reads the bundle, not that flag.
-    defaultModules: [
-      "performance-scoring",
-      "gamification",
-      "adaptive-difficulty",
-      "onboarding"
-    ],
-    compatibleModules: compatibleExcluding([
-      "performance-scoring",
-      "gamification",
-      "adaptive-difficulty",
-      "onboarding"
-    ]),
-    moduleConfigs: {
-      "adaptive-difficulty": {
-        tierLabels: ["Stroll", "Hop", "Leap", "Sprint", "Daredevil"]
-      }
-    }
-  };
-  var ADVENTURE_BUNDLE = {
-    id: "adventure",
-    name: "Adventure",
-    description: "Exploration, narrative, and puzzle-solving",
-    defaultModules: [
-      "knowledge-acquisition",
-      "gamification",
-      "world-lore",
-      "conversation-analytics",
-      "onboarding"
-    ],
-    compatibleModules: compatibleExcluding([
-      "knowledge-acquisition",
-      "gamification",
-      "world-lore",
-      "conversation-analytics",
-      "onboarding"
-    ]),
-    moduleConfigs: {
-      "knowledge-acquisition": {
-        entryLabel: "Clue",
-        entryLabelPlural: "Clues",
-        masteryLabels: ["Unknown", "Found", "Examined", "Understood"]
-      }
-    }
-  };
-  var SIMULATION_BUNDLE = {
-    id: "simulation",
-    name: "Simulation",
-    description: "Realistic systems and life simulation",
-    defaultModules: [
-      "proficiency",
-      "gamification",
-      "world-lore",
-      "conversation-analytics",
-      "onboarding"
-    ],
-    compatibleModules: compatibleExcluding([
-      "proficiency",
-      "gamification",
-      "world-lore",
-      "conversation-analytics",
-      "onboarding"
-    ]),
-    moduleConfigs: {}
-  };
-  var EDUCATIONAL_BUNDLE = {
-    id: "educational",
-    name: "Educational",
-    description: "Learning experiences through gameplay",
-    defaultModules: [
-      "knowledge-acquisition",
-      "proficiency",
-      "pattern-recognition",
-      "assessment",
-      "gamification",
-      "skill-tree",
-      "adaptive-difficulty",
-      "onboarding"
-    ],
-    compatibleModules: compatibleExcluding([
-      "knowledge-acquisition",
-      "proficiency",
-      "pattern-recognition",
-      "assessment",
-      "gamification",
-      "skill-tree",
-      "adaptive-difficulty",
-      "onboarding"
-    ]),
-    moduleConfigs: {
-      "proficiency": {
-        tierLabels: ["Novice", "Beginner", "Intermediate", "Advanced", "Expert"]
-      },
-      "knowledge-acquisition": {
-        entryLabel: "Concept",
-        entryLabelPlural: "Concepts",
-        masteryLabels: ["New", "Learning", "Familiar", "Mastered"]
-      }
-    }
-  };
-  function gameBundle(id, name, description, defaultModules, moduleConfigs = {}) {
-    return { id, name, description, defaultModules, compatibleModules: compatibleExcluding(defaultModules), moduleConfigs };
-  }
-  var ACTION_BUNDLE = gameBundle(
-    "action",
-    "Action",
-    "Fast-paced combat and reflexes",
-    ["proficiency", "gamification", "skill-tree", "adaptive-difficulty", "onboarding"],
-    {
-      "proficiency": {
-        tierLabels: ["Rookie", "Fighter", "Veteran", "Elite", "Champion"],
-        dimensions: ["melee", "ranged", "agility", "defense"]
-      },
-      "adaptive-difficulty": {
-        tierLabels: ["Easy", "Normal", "Hard", "Brutal", "Nightmare"]
-      }
-    }
-  );
-  var FIGHTING_BUNDLE = gameBundle(
-    "fighting",
-    "Fighting",
-    "One-on-one combat with combos and special moves",
-    ["performance-scoring", "gamification", "adaptive-difficulty", "onboarding"],
-    {
-      "adaptive-difficulty": {
-        tierLabels: ["Easy", "Normal", "Hard", "Very Hard", "Arcade"]
-      }
-    }
-  );
-  var SHOOTER_BUNDLE = gameBundle(
-    "shooter",
-    "Shooter",
-    "Ranged combat and precision shooting",
-    ["proficiency", "performance-scoring", "gamification", "adaptive-difficulty", "onboarding"],
-    {
-      "proficiency": {
-        tierLabels: ["Recruit", "Marksman", "Sharpshooter", "Sniper", "Legend"],
-        dimensions: ["accuracy", "movement", "tactics"]
-      }
-    }
-  );
-  var SANDBOX_BUNDLE = gameBundle(
-    "sandbox",
-    "Sandbox",
-    "Open-world exploration and creativity",
-    ["proficiency", "gamification", "skill-tree", "world-lore", "onboarding"],
-    {
-      "proficiency": {
-        tierLabels: ["Novice", "Builder", "Crafter", "Artisan", "Master"],
-        dimensions: ["building", "crafting", "gathering", "survival"]
-      }
-    }
-  );
-  var CITY_BUILDING_BUNDLE = gameBundle(
-    "city-building",
-    "City Building",
-    "Urban planning and city management",
-    ["proficiency", "gamification", "adaptive-difficulty", "world-lore", "onboarding"],
-    {
-      "proficiency": {
-        tierLabels: ["Steward", "Planner", "Mayor", "Governor", "Founder"],
-        dimensions: ["economics", "infrastructure", "housing", "services"]
-      }
-    }
-  );
-  var ROGUELIKE_BUNDLE = gameBundle(
-    "roguelike",
-    "Roguelike",
-    "Procedural generation and permadeath",
-    ["proficiency", "gamification", "skill-tree", "adaptive-difficulty", "onboarding"],
-    {
-      "adaptive-difficulty": {
-        tierLabels: ["Easy", "Normal", "Hard", "Ascension", "Torment"]
-      }
-    }
-  );
-  var GENRE_BUNDLES = {
-    "language-learning": LANGUAGE_LEARNING_BUNDLE,
-    "rpg": RPG_BUNDLE,
-    "survival": SURVIVAL_BUNDLE,
-    "strategy": STRATEGY_BUNDLE,
-    "puzzle": PUZZLE_BUNDLE,
-    "platformer": PLATFORMER_BUNDLE,
-    "adventure": ADVENTURE_BUNDLE,
-    "simulation": SIMULATION_BUNDLE,
-    "educational": EDUCATIONAL_BUNDLE,
-    "action": ACTION_BUNDLE,
-    "fighting": FIGHTING_BUNDLE,
-    "shooter": SHOOTER_BUNDLE,
-    "sandbox": SANDBOX_BUNDLE,
-    "city-building": CITY_BUILDING_BUNDLE,
-    "roguelike": ROGUELIKE_BUNDLE
-  };
-  function getGenreBundle(genreId) {
-    return GENRE_BUNDLES[genreId];
   }
 
   // @insimul/core/src/ai/action-predicates.ts
@@ -13535,6 +14661,92 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     };
   }
 
+  // @insimul/core/src/modules/enabled-modules.ts
+  var ENABLED_MODULES_VOCABULARY = Object.freeze({
+    mechanic: Object.freeze(INSIMUL_MODULES.map((m) => m.id)),
+    feature: Object.freeze(FEATURE_MODULE_VERDICTS.map((v) => v.id)),
+    token: Object.freeze([NO_MECHANIC_MODULES])
+  });
+  var FEATURE_IDS = new Set(ENABLED_MODULES_VOCABULARY.feature);
+  function isFeatureModuleId(id) {
+    return typeof id === "string" && FEATURE_IDS.has(id);
+  }
+  var fold = (s) => s.toLowerCase().replace(/[-_\s]/g, "");
+  var ACCEPTED = [
+    ...ENABLED_MODULES_VOCABULARY.mechanic,
+    ...ENABLED_MODULES_VOCABULARY.feature,
+    ...ENABLED_MODULES_VOCABULARY.token
+  ];
+  function nearestEnabledModuleId(id) {
+    const f = fold(id);
+    return ACCEPTED.find((a) => fold(a) === f) ?? null;
+  }
+  var ENABLED_MODULE_REFUSAL_CODES = Object.freeze([
+    "refused-unknown-module",
+    "refused-not-an-id",
+    "refused-feature-module"
+  ]);
+  var FEATURE_MODULES_SERVED_REGARDLESS = Object.freeze(["voice", "onboarding"]);
+  var SERVED_REGARDLESS = new Set(FEATURE_MODULES_SERVED_REGARDLESS);
+  function featureReadBy(id) {
+    return SERVED_REGARDLESS.has(id) ? null : FEATURE_MODULE_READERS[id]?.how ?? null;
+  }
+  function readEnabledModules(enabledModules) {
+    if (!Array.isArray(enabledModules)) {
+      return { form: "absent", selects: false, mechanic: [], feature: [], aliases: [], refused: [] };
+    }
+    const list2 = enabledModules;
+    const mechanicSet = /* @__PURE__ */ new Set();
+    const feature = [];
+    const aliases = [];
+    const refused = [];
+    let token = false;
+    const seenStrings = /* @__PURE__ */ new Set();
+    const seenOthers = /* @__PURE__ */ new Set();
+    for (const raw of list2) {
+      if (isMechanicModuleId(raw)) {
+        mechanicSet.add(raw);
+        continue;
+      }
+      if (raw === NO_MECHANIC_MODULES) {
+        token = true;
+        continue;
+      }
+      const id = String(raw);
+      const seen = typeof raw === "string" ? seenStrings : seenOthers;
+      if (seen.has(id)) continue;
+      seen.add(id);
+      if (typeof raw !== "string") {
+        refused.push({
+          id,
+          code: "refused-not-an-id",
+          reason: `${JSON.stringify(raw) ?? id} is not a module id (meta.enabledModules holds strings)`,
+          nearest: null
+        });
+      } else if (isFeatureModuleId(raw)) {
+        const r = featureModuleRefusal(raw);
+        if (r) {
+          refused.push({ id, code: "refused-feature-module", reason: `feature module '${raw}': ${r.reason} (${r.code})`, nearest: null });
+        } else {
+          feature.push(raw);
+          aliases.push({ id: raw, family: "feature", mechanic: [], readBy: featureReadBy(raw) });
+        }
+      } else {
+        const nearest = nearestEnabledModuleId(raw);
+        refused.push({
+          id,
+          code: "refused-unknown-module",
+          reason: `'${raw}' is neither a mechanic module id nor a feature-module id nor '${NO_MECHANIC_MODULES}'` + (nearest ? `; ids are exact (did you mean '${nearest}'?)` : ""),
+          nearest
+        });
+      }
+    }
+    const mechanic = ENABLED_MODULES_VOCABULARY.mechanic.filter((m) => mechanicSet.has(m));
+    const selects = mechanic.length > 0 || token;
+    const form = list2.length === 0 ? "empty" : mechanic.length > 0 ? "selection" : token ? "none" : "no-selection";
+    return { form, selects, mechanic, feature, aliases, refused };
+  }
+
   // @insimul/core/src/game-genres/resolution.ts
   var GenreResolutionError = class extends Error {
     constructor(code, message) {
@@ -13644,9 +14856,36 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     }
     return { mode, source, notes };
   }
-  function bundleFor(genreId) {
+  function bundleFor(genreId, refused) {
     const bundle = genreId === null ? void 0 : getGenreBundle(genreId);
-    return bundle ? { id: bundle.id, featureModules: [...bundle.defaultModules] } : { id: null, featureModules: [] };
+    if (!bundle) return { id: null, featureModules: [] };
+    const featureModules = [];
+    for (const id of bundle.defaultModules) {
+      const r = featureModuleRefusal(id);
+      if (r) refused.push({ kind: "module", id, from: "bundle", ...r });
+      else featureModules.push(id);
+    }
+    return { id: bundle.id, featureModules };
+  }
+  function refuseFeatures(config, refused) {
+    const features = config.features;
+    if (features === null || typeof features !== "object") return;
+    for (const flag of Object.keys(GENRE_FEATURE_VERDICTS)) {
+      const r = genreFeatureRefusal(flag);
+      if (r && features[flag] === true) {
+        features[flag] = false;
+        refused.push({ kind: "feature", id: flag, from: "settings", ...r });
+      }
+    }
+  }
+  function refuseWorldModules(listed, refused) {
+    for (const r of readEnabledModules(listed).refused) {
+      const feature = r.code === "refused-feature-module" ? featureModuleRefusal(r.id) : null;
+      if (feature) refused.push({ kind: "module", id: r.id, from: "world-modules", ...feature });
+      else if (r.code !== "refused-feature-module") {
+        refused.push({ kind: "module", id: r.id, from: "world-modules", code: r.code, reason: r.reason });
+      }
+    }
   }
   function activationFor(genreId, enabledModules) {
     const set = resolveWorldActivation(genreId, enabledModules);
@@ -13662,28 +14901,36 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     return typeof id === "string" && id.length > 0;
   }
   function resolveGenre(requested) {
+    const refused = [];
     if (isGenreId(requested) && hasOwn(GENRE_REGISTRY, requested)) {
+      const config2 = clone(GENRE_REGISTRY[requested]);
+      refuseFeatures(config2, refused);
+      const bundle = bundleFor(requested, refused);
       return {
         requested,
         known: true,
         id: requested,
-        config: clone(GENRE_REGISTRY[requested]),
+        config: config2,
         fallback: null,
-        bundle: bundleFor(requested),
-        activation: activationFor(requested)
+        bundle,
+        activation: activationFor(requested),
+        refused
       };
     }
     const asked = isGenreId(requested) ? requested : null;
+    const config = clone(GENRE_REGISTRY[DEFAULT_GENRE_ID]);
+    refuseFeatures(config, refused);
     return {
       requested: asked,
       known: false,
       id: DEFAULT_GENRE_ID,
-      config: clone(GENRE_REGISTRY[DEFAULT_GENRE_ID]),
+      config,
       fallback: { reason: asked === null ? "no-genre" : "unknown-genre", requested: asked, to: DEFAULT_GENRE_ID },
       bundle: { id: null, featureModules: [] },
       // The id that was asked for, not rpg's: an unknown genre gets no mechanics.
       // With no id at all there is still nothing to activate; '' resolves as unknown.
-      activation: activationFor(asked ?? "")
+      activation: activationFor(asked ?? ""),
+      refused
     };
   }
   function applyOverride(config, override, recipeId) {
@@ -13703,6 +14950,10 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       const features = config.features;
       if (!hasOwn(features, sub) && !OPTIONAL_FEATURE_FLAGS.includes(sub)) {
         throw new GenreResolutionError("invalid-override", `${where}: features has no '${sub}'`);
+      }
+      const refusal3 = genreFeatureRefusal(sub);
+      if (refusal3) {
+        throw new GenreResolutionError("refused-feature", `${where}: ${refusal3.code}: ${refusal3.reason}`);
       }
       if (typeof override.value !== "boolean") {
         throw new GenreResolutionError("invalid-override", `${where}: a feature switch is a boolean`);
@@ -13891,6 +15142,10 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
     const listed = Array.isArray(rawModules) ? rawModules : [];
     const worldsGame = configSource !== "recipe";
     const activation = activationFor(declared, worldsGame ? listed : null);
+    const refused = [];
+    refuseFeatures(config, refused);
+    const bundle = known ? bundleFor(config.id, refused) : { id: null, featureModules: [] };
+    if (worldsGame) refuseWorldModules(listed, refused);
     if (listed.length > 0) {
       const mechanic = listed.filter(isMechanicModuleId);
       const shown = listed.map((id) => String(id)).join(", ");
@@ -13915,6 +15170,14 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
           detail: `the world's enabledModules (${shown}) names no mechanic module (feature-module ids select none), so its genre decides the modules`
         });
       }
+      if (worldsGame) {
+        for (const a of readEnabledModules(listed).aliases) {
+          notes.push({
+            code: "world-modules-alias",
+            detail: `'${a.id}' is a feature-module id: it selects no mechanic module` + (a.readBy ? ` (read by core: ${a.readBy})` : " (nothing reads the id: its system runs whether or not it is listed)")
+          });
+        }
+      }
     }
     return {
       recipe: recipeOut,
@@ -13922,8 +15185,9 @@ stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
       configSource,
       config,
       camera: { mode, policy: policy2, source, worldPerspective },
-      bundle: known ? bundleFor(config.id) : { id: null, featureModules: [] },
+      bundle,
       activation,
+      refused,
       notes
     };
   }
@@ -14574,97 +15838,6 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
     return `${prologAtom(WORLD_CONTEXT_FUNCTOR)}(${formatIdTerm(world2)})`;
   }
 
-  // @insimul/core/src/prolog/prolog-fact-serializer.ts
-  var ATOM_RE2 = /^[a-z][a-zA-Z0-9_]*$/;
-  function quoteAtom(s) {
-    return `'${s.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`;
-  }
-  function serializeArg(arg) {
-    if (typeof arg === "number") {
-      return Number.isFinite(arg) ? String(arg) : quoteAtom(String(arg));
-    }
-    if (arg === "") return quoteAtom("");
-    if (ATOM_RE2.test(arg)) return arg;
-    return quoteAtom(arg);
-  }
-  function serializedFactToProlog(fact) {
-    const args = fact.args.map(serializeArg).join(", ");
-    return `${fact.predicate}(${args}).`;
-  }
-
-  // @insimul/core/src/stamina/stamina.ts
-  var STAMINA_THRESHOLD_NAMES = Object.freeze(["winded", "exhausted"]);
-  var DEFAULT_STAMINA_TUNING = Object.freeze({
-    maxStamina: 100,
-    recoveryRate: 5,
-    combatRecoveryRate: 0,
-    encumberedRecoveryMultiplier: 0.5,
-    windedPercent: 40,
-    exhaustedPercent: 15
-  });
-  function staminaStateOf(current, max, tuning) {
-    if (!(max > 0)) return "fresh";
-    if (current * 100 <= max * tuning.exhaustedPercent) return "exhausted";
-    if (current * 100 <= max * tuning.windedPercent) return "winded";
-    return "fresh";
-  }
-  function canAffordStamina(current, cost) {
-    return current >= cost;
-  }
-  function spendStamina(input) {
-    const { current, max, tuning } = input;
-    const cost = Math.max(0, Math.floor(input.cost));
-    const stateBefore = staminaStateOf(current, max, tuning);
-    if (!canAffordStamina(current, cost)) {
-      return {
-        affordable: false,
-        cost,
-        before: current,
-        after: current,
-        max,
-        spent: 0,
-        stateBefore,
-        state: stateBefore,
-        becameWinded: false,
-        becameExhausted: false
-      };
-    }
-    const after = Math.max(0, current - cost);
-    const state = staminaStateOf(after, max, tuning);
-    return {
-      affordable: true,
-      cost,
-      before: current,
-      after,
-      max,
-      spent: current - after,
-      stateBefore,
-      state,
-      becameWinded: state === "winded" && stateBefore === "fresh",
-      becameExhausted: state === "exhausted" && stateBefore !== "exhausted"
-    };
-  }
-  function staminaRegenRate(input) {
-    const base = Math.max(0, input.rate ?? input.tuning.recoveryRate);
-    if (input.inCombat) return Math.max(0, input.tuning.combatRecoveryRate);
-    if (input.encumbered) return Math.floor(base * input.tuning.encumberedRecoveryMultiplier);
-    return base;
-  }
-  function regenerateStamina(input) {
-    const rate = staminaRegenRate(input);
-    const ticks = Math.max(0, input.ticks);
-    const recovered = Math.max(0, Math.min(input.max - input.current, Math.floor(rate * ticks)));
-    const after = input.current + recovered;
-    return {
-      before: input.current,
-      after,
-      max: input.max,
-      rate,
-      recovered,
-      state: staminaStateOf(after, input.max, input.tuning)
-    };
-  }
-
   // @insimul/core/src/combat/resolution.ts
   var DEFAULT_COMBAT_TUNING = Object.freeze({
     baseDamage: 10,
@@ -15298,7 +16471,7 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       let written = 0;
       for (const action of this.actions.all()) {
         for (const fact of combatActionFacts(action)) {
-          await engine.assertFact(term(fact));
+          await engine.assertFact(term2(fact));
           written += 1;
         }
       }
@@ -15392,12 +16565,12 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       if (delta.retract.length === 0 && delta.assert.length === 0) return false;
       for (const fact of delta.retract) {
         try {
-          await this.engine.retractFact(term(fact));
+          await this.engine.retractFact(term2(fact));
         } catch {
         }
       }
       for (const fact of delta.assert) {
-        await this.engine.assertFact(term(fact));
+        await this.engine.assertFact(term2(fact));
       }
       return true;
     }
@@ -15481,7 +16654,7 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       stamina: meter ? { current: meter.current, max: meter.max } : void 0
     };
   }
-  function term(fact) {
+  function term2(fact) {
     return serializedFactToProlog(fact).replace(/\.$/, "");
   }
   function atom2(id) {
@@ -18459,7 +19632,7 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
       let written = 0;
       for (const action of this.actions.all()) {
         for (const fact of stealthActionFacts(action)) {
-          await engine.assertFact(term2(fact));
+          await engine.assertFact(term3(fact));
           written += 1;
         }
       }
@@ -18793,7 +19966,7 @@ ${num(combo.damage, 0)} DMG`, tone: "accent" });
   function stripPeriod2(clause) {
     return clause.replace(/\.$/, "");
   }
-  function term2(fact) {
+  function term3(fact) {
     return stripPeriod2(serializedFactToProlog(fact));
   }
 
@@ -21726,6 +22899,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         nodeId,
         treeId: node.tree,
         cost: decision.cost,
+        // `effectTerm` text, never the effect objects: pinned by conformance/skills/effect-terms.json.
         effects: effects.map((effect) => effectTerm(effect))
       });
       return { ...decision, performed: true, remaining, effects, facts, applied };
@@ -21913,288 +23087,6 @@ player_meets_cefr(Player, RequiredLevel) :-
     const out = {};
     for (const key of Object.keys(record).sort(compareIds)) out[key] = record[key];
     return out;
-  }
-
-  // @insimul/core/src/stamina/stamina-facts.ts
-  var STAMINA_RESOLUTION_PREDICATES = Object.freeze(["energy/3"]);
-  var STAMINA_AUTHORED_PREDICATES = Object.freeze([
-    "stamina_threshold/2",
-    "stamina_regen_base/2",
-    "action/4"
-  ]);
-  function energyFacts(actorId, before, after, max) {
-    if (before === after) return { retract: [], assert: [] };
-    return {
-      retract: [{ predicate: "energy", args: [actorId, before, max] }],
-      assert: [{ predicate: "energy", args: [actorId, after, max] }]
-    };
-  }
-  function spendFacts(actorId, spend) {
-    if (!spend.affordable) return { retract: [], assert: [] };
-    return energyFacts(actorId, spend.before, spend.after, spend.max);
-  }
-  function regenFacts(actorId, regen) {
-    return energyFacts(actorId, regen.before, regen.after, regen.max);
-  }
-  function staminaTuningFacts(tuning) {
-    const percent = {
-      winded: tuning.windedPercent,
-      exhausted: tuning.exhaustedPercent
-    };
-    return STAMINA_THRESHOLD_NAMES.map((name) => ({
-      predicate: "stamina_threshold",
-      args: [name, percent[name]]
-    }));
-  }
-  function staminaRegenBaseFact(actorId, rate) {
-    return { predicate: "stamina_regen_base", args: [actorId, rate] };
-  }
-
-  // @insimul/core/src/game-engine/logic/StaminaPool.ts
-  var StaminaPool = class {
-    constructor(config = {}) {
-      __publicField(this, "engine");
-      __publicField(this, "tuning");
-      __publicField(this, "survival");
-      __publicField(this, "survivalActorId");
-      __publicField(this, "costs", /* @__PURE__ */ new Map());
-      __publicField(this, "actors", /* @__PURE__ */ new Map());
-      this.engine = config.engine;
-      this.tuning = config.tuning ?? { ...DEFAULT_STAMINA_TUNING };
-      this.survival = config.survival;
-      this.survivalActorId = config.survivalActorId;
-      for (const [action, cost] of Object.entries(config.costs ?? {})) this.setCost(action, cost);
-      if (config.state) this.restore(config.state);
-    }
-    /** The world's authored numbers, as this instance read them. */
-    getTuning() {
-      return { ...this.tuning };
-    }
-    // ── The authored cost table ────────────────────────────────────────────
-    /** Price one action. Authored data, set at load rather than during play. */
-    setCost(actionId, cost) {
-      this.costs.set(actionId, Math.max(0, Math.floor(cost)));
-    }
-    /**
-     * What this action costs. An action the world never priced costs nothing —
-     * silently free rather than an error, because a world that authored no costs at
-     * all is a world with no stamina economy, not a broken one.
-     */
-    costOf(actionId) {
-      return this.costs.get(actionId) ?? 0;
-    }
-    /**
-     * Load the cost table from the IR's action block — `ActionIR.energyCost`, the
-     * authoring surface behind `action/4`'s fourth argument.
-     */
-    loadCosts(actions) {
-      for (const action of actions) {
-        if (typeof action.energyCost === "number" && Number.isFinite(action.energyCost)) {
-          this.setCost(action.id, action.energyCost);
-        }
-      }
-    }
-    /**
-     * Load the cost table from a KB that already consulted the world's action
-     * table. `action/4` IS the cost table (`docs/mechanic-predicates.md` §12 cut
-     * `stamina_cost/2` precisely so there would be only one), so this reads it
-     * rather than a stamina-specific predicate.
-     */
-    async loadCostsFromKb(engine) {
-      const result = await engine.query("action(Id, _, _, Cost)", MAX_ACTION_SOLUTIONS);
-      if (!result.success) return 0;
-      let loaded = 0;
-      for (const binding2 of result.bindings) {
-        const id = typeof binding2["Id"] === "string" ? binding2["Id"] : null;
-        const cost = typeof binding2["Cost"] === "number" ? binding2["Cost"] : Number(binding2["Cost"]);
-        if (id === null || !Number.isFinite(cost)) continue;
-        if (cost > (this.costs.get(id) ?? -Infinity)) this.setCost(id, cost);
-        loaded += 1;
-      }
-      return loaded;
-    }
-    /**
-     * Publish the world's authored thresholds into the KB as `stamina_threshold/2`,
-     * so `winded/1` and `exhausted/1` answer with the same percentages
-     * {@link staminaStateOf} uses.
-     *
-     * Called when a world is loaded, not when one is saved: these are authored
-     * facts, they are not in the save-restore validator's known set, and a
-     * playthrough that reloads gets them from the world again.
-     */
-    async publishTuning(engine = this.engine) {
-      if (!engine) return false;
-      const facts = [...staminaTuningFacts(this.tuning)];
-      for (const actor of this.actors.values()) {
-        if (actor.regenBase !== void 0) facts.push(staminaRegenBaseFact(actor.id, actor.regenBase));
-      }
-      for (const fact of facts) await engine.assertFact(term3(fact));
-      return true;
-    }
-    // ── The roster ─────────────────────────────────────────────────────────
-    /** Add or replace an actor's meter. */
-    register(entry) {
-      const max = entry.max ?? this.tuning.maxStamina;
-      const state = {
-        id: entry.id,
-        max,
-        current: Math.max(0, Math.min(max, entry.current ?? max)),
-        regenBase: entry.regenBase
-      };
-      this.actors.set(entry.id, state);
-      return state;
-    }
-    unregister(actorId) {
-      this.actors.delete(actorId);
-    }
-    get(actorId) {
-      return this.actors.get(actorId);
-    }
-    /** Every actor with a meter, in registration order. */
-    roster() {
-      return [...this.actors.values()];
-    }
-    /** Which band this actor is in — `fresh`, `winded` or `exhausted`. */
-    stateOf(actorId) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return "fresh";
-      return staminaStateOf(actor.current, actor.max, this.tuning);
-    }
-    /**
-     * Whether this actor could pay for this action right now — `can_afford_stamina/2`
-     * without a round trip. An unregistered actor can afford anything: a world that
-     * never gave them a meter does not have one to check.
-     */
-    canAfford(actorId, action, cost) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return true;
-      return canAffordStamina(actor.current, cost ?? this.costOf(action));
-    }
-    // ── The decision ───────────────────────────────────────────────────────
-    /**
-     * Spend an action's cost out of this actor's meter.
-     *
-     * An unaffordable spend moves nothing and writes nothing: `affordable: false`
-     * is the caller's cue to refuse the action, exactly as a `refused` attack is
-     * `CombatResolver`'s. An unregistered actor is not an error either — the spend
-     * reports as affordable and free, so a world can price actions for the actors
-     * it gave meters to without every other caller having to check first.
-     */
-    async spend(actorId, request) {
-      const cost = request.cost ?? this.costOf(request.action);
-      const actor = this.actors.get(actorId);
-      if (!actor) {
-        return {
-          actorId,
-          action: request.action,
-          spend: unmeteredSpend(cost),
-          facts: { retract: [], assert: [] },
-          applied: false
-        };
-      }
-      const spend = spendStamina({
-        current: actor.current,
-        max: actor.max,
-        cost,
-        tuning: this.tuning
-      });
-      if (spend.affordable) actor.current = spend.after;
-      const facts = spendFacts(actorId, spend);
-      const applied = await this.writeFacts(facts);
-      if (spend.spent > 0 && actorId === this.survivalActorId) {
-        this.survival?.consumeStamina(spend.spent);
-      }
-      return { actorId, action: request.action, spend, facts, applied };
-    }
-    /**
-     * Grant rest. The host owns the clock and says how many ticks passed; core
-     * decides only the modifier (`docs/mechanic-predicates.md` §9), which is what
-     * keeps this off a per-frame path across the ABI.
-     */
-    async rest(actorId, request) {
-      const actor = this.actors.get(actorId);
-      if (!actor) {
-        const empty = {
-          before: 0,
-          after: 0,
-          max: 0,
-          rate: 0,
-          recovered: 0,
-          state: "fresh"
-        };
-        return { actorId, regen: empty, facts: { retract: [], assert: [] }, applied: false };
-      }
-      const regen = regenerateStamina({
-        current: actor.current,
-        max: actor.max,
-        ticks: request.ticks,
-        tuning: this.tuning,
-        rate: actor.regenBase,
-        inCombat: request.inCombat,
-        encumbered: request.encumbered
-      });
-      actor.current = regen.after;
-      const facts = regenFacts(actorId, regen);
-      const applied = await this.writeFacts(facts);
-      if (regen.recovered > 0 && actorId === this.survivalActorId) {
-        this.survival?.recoverStamina(regen.recovered);
-      }
-      return { actorId, regen, facts, applied };
-    }
-    /**
-     * Write a delta into the KB. Retract first — `energy/3` is replaced, never
-     * accumulated — and a retraction of a fact the KB never carried is a no-op
-     * rather than a failure, the same way `CombatResolver` treats `health/3`.
-     */
-    async writeFacts(delta) {
-      if (!this.engine) return false;
-      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
-      for (const fact of delta.retract) {
-        try {
-          await this.engine.retractFact(term3(fact));
-        } catch {
-        }
-      }
-      for (const fact of delta.assert) {
-        await this.engine.assertFact(term3(fact));
-      }
-      return true;
-    }
-    // ── Save/restore ───────────────────────────────────────────────────────
-    /**
-     * The per-playthrough state, as a save carries it: how much each actor has
-     * left. No thresholds, no rates and no costs — those are the world template's,
-     * and a save that carried a copy would freeze a creator's balance pass at the
-     * moment the player first pressed New Game.
-     */
-    serialize() {
-      return { actors: this.roster().map((actor) => ({ ...actor })) };
-    }
-    /** Restore a saved pool. Silent: loading a save is not an actor getting tired. */
-    restore(state) {
-      this.actors = /* @__PURE__ */ new Map();
-      for (const entry of state.actors ?? []) {
-        this.actors.set(entry.id, { ...entry });
-      }
-    }
-  };
-  var MAX_ACTION_SOLUTIONS = 1e3;
-  function unmeteredSpend(cost) {
-    return {
-      affordable: true,
-      cost,
-      before: 0,
-      after: 0,
-      max: 0,
-      spent: 0,
-      stateBefore: "fresh",
-      state: "fresh",
-      becameWinded: false,
-      becameExhausted: false
-    };
-  }
-  function term3(fact) {
-    return serializedFactToProlog(fact).replace(/\.$/, "");
   }
 
   // @insimul/core/src/traversal/mode-lending.ts
@@ -24632,7 +25524,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   // @insimul/core/src/quests/tutorial-save.ts
   var TUTORIAL_EXTENSION_KEY = "tutorial";
   var TUTORIAL_BLOCK_MEMBERS = Object.freeze(["completed", "skipped", "current", "endedBySkip"]);
-  var isObj3 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var isObj4 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
   var isId = (v) => typeof v === "string" && v.length > 0;
   function readIds(v, name, bad3, taken = /* @__PURE__ */ new Set()) {
     if (v === void 0) return [];
@@ -24654,7 +25546,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function readTutorialBlock(b) {
     if (b === void 0 || b === null) return { ok: true, value: null };
-    if (!isObj3(b)) return { ok: false, keys: [] };
+    if (!isObj4(b)) return { ok: false, keys: [] };
     const bad3 = [];
     const completed = readIds(b.completed, "completed", bad3);
     const skipped = readIds(b.skipped, "skipped", bad3, new Set(completed ?? []));
@@ -31245,7 +32137,8 @@ player_meets_cefr(Player, RequiredLevel) :-
         config,
         camera: { mode: config.cameraMode, decidedBy: cameraByGame ? "game" : base.camera.policy },
         bundle: base.bundle,
-        activation
+        activation,
+        refused: base.refused
       },
       refusals,
       notes
@@ -31537,407 +32430,6 @@ player_meets_cefr(Player, RequiredLevel) :-
     };
   }
 
-  // @insimul/core/src/editor/layout/building-fit.ts
-  var QUARTER_TURN2 = Math.PI / 2;
-  var DOOR_GROUND_FLOOR_BAND_M = 0.6;
-  var DOOR_OUTLINE_BAND_M = 1;
-  var DOOR_MIN_HEIGHT_M = 1;
-  var SEAT_TOLERANCE_M = 0.02;
-  var DEFAULT_FIT_SCALE_MIN = 0.5;
-  var DEFAULT_FIT_SCALE_MAX = 1;
-  var DEFAULT_DOOR_CLEARANCE = 1;
-  var DEFAULT_SEAT_SINK = 0;
-  var DEFAULT_NEIGHBOUR_GAP_M = 1;
-  var STATURE_PER_HEAD_BONE = 1.15;
-  var CROWN_RADIUS_M = 0.15;
-  var FIT_ISSUE_DOOR_BELOW_BODY = "door-below-body";
-  var FIT_OVERLAP_TOLERANCE_M = 0.02;
-  function defaultFitPolicy() {
-    return {
-      mode: "lot",
-      scaleMin: DEFAULT_FIT_SCALE_MIN,
-      scaleMax: DEFAULT_FIT_SCALE_MAX,
-      doorClearance: DEFAULT_DOOR_CLEARANCE,
-      seatSink: DEFAULT_SEAT_SINK,
-      neighbourGap: DEFAULT_NEIGHBOUR_GAP_M
-    };
-  }
-  function bodyStature(boundsHeight, headBoneHeight = 0, crownTop = 0) {
-    if (!(boundsHeight > 0)) return 0;
-    const person = headBoneHeight > 0 ? Math.min(boundsHeight, headBoneHeight * STATURE_PER_HEAD_BONE) : boundsHeight;
-    if (!(person > 0) || !(crownTop > 0)) return person;
-    return Math.min(boundsHeight, Math.max(person, crownTop));
-  }
-  function noDoor() {
-    return { source: "none", name: "", hasPosition: false, position: { x: 0, y: 0, z: 0 }, yaw: 0, candidates: 0, height: 0 };
-  }
-  function isDoorPartName(c) {
-    if (c.mesh !== "") return c.mesh.toLowerCase().includes("door");
-    return c.component.toLowerCase().includes("door") || c.owner.toLowerCase().includes("door");
-  }
-  function faceYawOf(p, min, max) {
-    const sides = [max.z - p.z, max.x - p.x, p.x - min.x, p.z - min.z];
-    const yaws = [0, QUARTER_TURN2, -QUARTER_TURN2, Math.PI];
-    let best = 0;
-    for (let i = 1; i < 4; i += 1) {
-      if (sides[i] < sides[best] - 1e-11) best = i;
-    }
-    return yaws[best];
-  }
-  function faceCentreFor(yaw, min, max, y) {
-    const cf = (min.z + max.z) / 2;
-    const cr = (min.x + max.x) / 2;
-    const hf = (max.z - min.z) / 2;
-    const hr = (max.x - min.x) / 2;
-    const df = Math.cos(yaw);
-    const dr = Math.sin(yaw);
-    const tf = Math.abs(df) > 1e-12 ? hf / Math.abs(df) : Infinity;
-    const tr = Math.abs(dr) > 1e-12 ? hr / Math.abs(dr) : Infinity;
-    const t = Math.min(tf, tr);
-    return { x: cr + dr * t, y, z: cf + df * t };
-  }
-  function facingRank(yaw) {
-    if (yaw === 0) return 0;
-    if (yaw === QUARTER_TURN2) return 1;
-    if (yaw === -QUARTER_TURN2) return 2;
-    return 3;
-  }
-  function compareStrings(a, b) {
-    return a < b ? -1 : a > b ? 1 : 0;
-  }
-  function chooseDoorPart(parts, boundsMin, boundsMax) {
-    const upright = [];
-    let named = 0;
-    for (const p of parts) {
-      if (!isDoorPartName(p)) continue;
-      named += 1;
-      const h = p.max.y - p.min.y;
-      const w = Math.max(p.max.z - p.min.z, p.max.x - p.min.x);
-      if (h < DOOR_MIN_HEIGHT_M || h < 0.5 * w) continue;
-      const c = { x: (p.min.x + p.max.x) / 2, y: p.min.y, z: (p.min.z + p.max.z) / 2 };
-      const outline = Math.min(boundsMax.z - c.z, boundsMax.x - c.x, c.x - boundsMin.x, c.z - boundsMin.z);
-      const yaw = faceYawOf(c, boundsMin, boundsMax);
-      const mesh = (p.mesh === "" ? p.component : p.mesh).toLowerCase();
-      upright.push({ part: p, leaf: !mesh.includes("wall"), outline, yaw, facingRank: facingRank(yaw) });
-    }
-    const out = noDoor();
-    out.candidates = named;
-    if (upright.length === 0) return out;
-    let lowest = Infinity;
-    for (const r of upright) lowest = Math.min(lowest, r.part.min.y);
-    let ground = upright.filter((r) => r.part.min.y <= lowest + DOOR_GROUND_FLOOR_BAND_M);
-    if (ground.some((r) => r.leaf)) ground = ground.filter((r) => r.leaf);
-    let nearest = Infinity;
-    for (const r of ground) nearest = Math.min(nearest, r.outline);
-    const near = ground.filter((r) => r.outline <= nearest + DOOR_OUTLINE_BAND_M);
-    near.sort((a, b) => a.facingRank - b.facingRank || (a.outline < b.outline ? -1 : a.outline > b.outline ? 1 : 0) || compareStrings(a.part.component, b.part.component) || compareStrings(a.part.owner, b.part.owner));
-    const chosen = near[0];
-    out.source = "component";
-    out.name = chosen.part.component;
-    out.hasPosition = true;
-    out.position = {
-      x: (chosen.part.min.x + chosen.part.max.x) / 2,
-      y: chosen.part.min.y,
-      z: (chosen.part.min.z + chosen.part.max.z) / 2
-    };
-    out.yaw = chosen.yaw;
-    out.height = chosen.part.max.y - chosen.part.min.y;
-    return out;
-  }
-  function streetHeadingOf(frontageYaw) {
-    return normalizeYaw(QUARTER_TURN2 - frontageYaw);
-  }
-  function quantizeFactor(f) {
-    const q = (f < 0 ? -Math.round(-f * 1e6) : Math.round(f * 1e6)) / 1e6;
-    return q === 0 ? 0 : q;
-  }
-  function turn(forward, right, heading) {
-    const c = Math.cos(heading);
-    const s = Math.sin(heading);
-    return [forward * c - right * s, forward * s + right * c];
-  }
-  function emptySeat() {
-    return { sampled: false, groundMin: 0, groundMax: 0, foundation: 0, float: 0, sink: 0 };
-  }
-  function sampleGrid(g, x, z) {
-    const { heights, resolution, sizeX, sizeZ } = g;
-    if (resolution < 1 || heights.length === 0) return 0;
-    if (resolution === 1) return heights[0];
-    if (sizeX <= 0 || sizeZ <= 0) return heights[0];
-    let gx = x / sizeX * (resolution - 1);
-    let gz = z / sizeZ * (resolution - 1);
-    gx = Math.min(Math.max(gx, 0), resolution - 1);
-    gz = Math.min(Math.max(gz, 0), resolution - 1);
-    const x0 = Math.floor(gx);
-    const z0 = Math.floor(gz);
-    const x1 = Math.min(x0 + 1, resolution - 1);
-    const z1 = Math.min(z0 + 1, resolution - 1);
-    const fx = gx - x0;
-    const fz = gz - z0;
-    const at = (xi, zi) => {
-      const idx = zi * resolution + xi;
-      return idx < heights.length ? heights[idx] : 0;
-    };
-    const top = at(x0, z0) + (at(x1, z0) - at(x0, z0)) * fx;
-    const bot = at(x0, z1) + (at(x1, z1) - at(x0, z1)) * fx;
-    return top + (bot - top) * fz;
-  }
-  function layoutGroundAt(g, x, z) {
-    return sampleGrid(g, x, z);
-  }
-  function fitBuildingToLot(input) {
-    const policy2 = { ...input.policy };
-    const notApplied = (why) => ({
-      applied: false,
-      notApplied: why,
-      fit: { outcome: "unmeasured", issues: [], rotationY: 0, aligned: false, required: { across: 0, away: 0 } },
-      lot: { width: 0, depth: 0, frontageYaw: 0, hasFrontage: false },
-      streetHeading: 0,
-      wantedFactor: 1,
-      factor: 1,
-      limited: false,
-      doorFactor: 0,
-      doorHeld: false,
-      doorHeight: 0,
-      castHeight: 0,
-      policy: policy2,
-      scale: { x: 1, y: 1, z: 1 },
-      fixupScale: { x: 1, y: 1, z: 1 },
-      heading: 0,
-      fixupHeading: 0,
-      location: { x: 0, y: 0, z: 0 },
-      offsetFromNode: { x: 0, y: 0, z: 0 },
-      door: noDoor(),
-      doorWorld: { x: 0, y: 0, z: 0 },
-      doorHeading: 0,
-      seat: emptySeat(),
-      footprint: { entityId: input.entityId, lotId: input.lotId, corners: [[0, 0], [0, 0], [0, 0], [0, 0]] },
-      settleShift: [0, 0],
-      notes: []
-    });
-    if (input.lot === null) return notApplied("no-lot");
-    if (policy2.mode === "none") return notApplied("fit-none");
-    const inLot2 = input.lot;
-    const notes = [];
-    let door2 = { ...input.door, position: { ...input.door.position } };
-    if (door2.source === "none" && policy2.doorYaw !== void 0) {
-      door2 = { ...door2, source: "binding_yaw", name: "doorYaw", yaw: policy2.doorYaw, hasPosition: false };
-    }
-    const hasDoor = door2.source !== "none";
-    const hostLot = {
-      width: inLot2.width,
-      depth: inLot2.depth,
-      frontageYaw: inLot2.hasFrontage ? streetHeadingOf(inLot2.frontageYaw) : 0,
-      hasFrontage: inLot2.hasFrontage
-    };
-    const streetHeading = inLot2.hasFrontage ? hostLot.frontageYaw : 0;
-    const b = input.bounds;
-    const size = b === null ? null : { x: b.max.x - b.min.x, y: b.max.y - b.min.y, z: b.max.z - b.min.z };
-    const hasFootprint = size !== null && size.x > 0 && size.y > 0 && size.z > 0;
-    const g = input.geometry;
-    const sockets = hasDoor ? [{ name: "door", kind: "door", position: { ...door2.position }, yaw: door2.yaw, node: "" }] : [];
-    const checkGeometry = (factor2) => ({
-      convention: CORE_CONVENTION,
-      measured: true,
-      footprint: hasFootprint && size !== null ? { size, pivot: { x: 0, y: 0, z: 0 } } : null,
-      offset: { ...g.offset },
-      yaw: g.yaw,
-      scale: { x: g.scale.x * factor2, y: g.scale.y * factor2, z: g.scale.z * factor2 },
-      sockets
-    });
-    const placement = { rotationY: input.nodeHeading, scale: { ...input.nodeScale } };
-    const first = checkAssetFit(checkGeometry(1), hostLot, placement);
-    let wanted = 1;
-    if (hasFootprint && lotIsBounded(inLot2) && first.required.across > 0 && first.required.away > 0) {
-      wanted = Math.min(inLot2.width / first.required.across, inLot2.depth / first.required.away);
-    }
-    const wantedFactor = quantizeFactor(wanted);
-    const lotFactor = Math.max(policy2.scaleMin, Math.min(policy2.scaleMax, wanted));
-    let factor = lotFactor;
-    const limited = wanted < policy2.scaleMin - 1e-9;
-    let doorShort = false;
-    let doorFactor = 0;
-    let doorHeld = false;
-    const doorLocal = door2.height * g.scale.y * input.nodeScale.y;
-    if (policy2.doorClearance > 0 && input.castHeight > 0 && doorLocal > 0) {
-      const floor = input.castHeight * policy2.doorClearance / doorLocal;
-      doorFactor = quantizeFactor(floor);
-      if (floor > factor + 1e-9) {
-        if (floor <= policy2.scaleMax + 1e-9) {
-          factor = Math.min(policy2.scaleMax, Math.ceil(floor * 1e6) / 1e6);
-          doorHeld = true;
-        } else {
-          factor = policy2.scaleMax;
-          doorHeld = factor > lotFactor + 1e-9;
-          doorShort = true;
-        }
-      }
-    }
-    factor = quantizeFactor(factor);
-    const doorHeight = doorLocal * factor;
-    const fit = checkAssetFit(checkGeometry(factor), hostLot, placement);
-    let fitOut = fit;
-    if (doorShort) {
-      const issues = [.../* @__PURE__ */ new Set([...fit.issues, FIT_ISSUE_DOOR_BELOW_BODY])].sort();
-      fitOut = { ...fit, outcome: "misfit", issues };
-    }
-    const fixupScale = { x: g.scale.x * factor, y: g.scale.y * factor, z: g.scale.z * factor };
-    const scale = { x: input.nodeScale.x * fixupScale.x, y: input.nodeScale.y * fixupScale.y, z: input.nodeScale.z * fixupScale.z };
-    const heading = normalizeYaw(fitOut.rotationY + g.yaw);
-    const fixupHeading = normalizeYaw(heading - input.nodeHeading);
-    const target = input.lotCentre !== null ? [input.lotCentre[0], input.lotCentre[1]] : [input.node.x, input.node.z];
-    const settleShift = [input.settleShift[0], input.settleShift[1]];
-    target[0] += settleShift[0];
-    target[1] += settleShift[1];
-    if (doorHeld && lotIsBounded(inLot2) && inLot2.hasFrontage && fitOut.required.away > inLot2.depth + FIT_QUANTUM) {
-      const back = (fitOut.required.away - inLot2.depth) / 2;
-      target[0] -= Math.cos(hostLot.frontageYaw) * back;
-      target[1] -= Math.sin(hostLot.frontageYaw) * back;
-    }
-    let centreF = 0;
-    let centreR = 0;
-    if (b !== null) {
-      centreF = (b.min.z + b.max.z) / 2;
-      centreR = (b.min.x + b.max.x) / 2;
-    } else {
-      notes.push("no-bounds");
-    }
-    const shift = turn((g.offset.z - centreF) * scale.z, (g.offset.x - centreR) * scale.x, heading);
-    const location = { x: target[0] + shift[0], y: input.node.y, z: target[1] + shift[1] };
-    const corners = [];
-    if (b !== null) {
-      const fs = [b.min.z, b.max.z, b.max.z, b.min.z];
-      const rs = [b.min.x, b.min.x, b.max.x, b.max.x];
-      for (let i = 0; i < 4; i += 1) {
-        const w = turn(fs[i] * scale.z, rs[i] * scale.x, heading);
-        corners.push([location.x + w[0], location.z + w[1]]);
-      }
-    } else {
-      for (let i = 0; i < 4; i += 1) corners.push([location.x, location.z]);
-    }
-    const bottom = b !== null ? b.min.y : 0;
-    const floorKnown = hasDoor && door2.hasPosition;
-    const floorLocal = floorKnown ? Math.max(door2.position.y, bottom) : bottom;
-    let y = input.node.y - bottom * scale.y;
-    const seat = emptySeat();
-    if (input.ground !== null) {
-      let gMin = Infinity;
-      let gMax = -Infinity;
-      const samples = corners.map((c) => [c[0], c[1]]);
-      for (let i = 0; i < 4; i += 1) {
-        const a = corners[i];
-        const c = corners[(i + 1) % 4];
-        samples.push([(a[0] + c[0]) / 2, (a[1] + c[1]) / 2]);
-      }
-      samples.push([target[0], target[1]]);
-      for (const s of samples) {
-        const h = sampleGrid(input.ground, s[0], s[1]);
-        gMin = Math.min(gMin, h);
-        gMax = Math.max(gMax, h);
-      }
-      if (gMin <= gMax) {
-        seat.sampled = true;
-        seat.groundMin = gMin;
-        seat.groundMax = gMax;
-        const bottomOnLow = gMin - bottom * scale.y;
-        const floorOnHigh = gMax - floorLocal * scale.y;
-        seat.foundation = (floorLocal - bottom) * scale.y;
-        const sink = floorKnown ? Math.max(0, Math.min(1, policy2.seatSink)) * seat.foundation : 0;
-        y = floorKnown ? Math.max(bottomOnLow - sink, floorOnHigh) : bottomOnLow;
-        const float = y + bottom * scale.y - gMin;
-        seat.float = float > SEAT_TOLERANCE_M ? float : 0;
-        seat.sink = float < -SEAT_TOLERANCE_M ? -float : 0;
-        if (policy2.seatSink > 0 && !floorKnown) notes.push("seat-sink-needs-floor");
-        if (!floorKnown && gMax - gMin > SEAT_TOLERANCE_M) notes.push("no-floor");
-      }
-    }
-    y += g.offset.y * scale.y;
-    location.y = y;
-    const offsetFromNode = { x: location.x - input.node.x, y: location.y - input.node.y, z: location.z - input.node.z };
-    let doorWorld = { x: 0, y: 0, z: 0 };
-    let doorHeading = 0;
-    if (hasDoor) {
-      let local;
-      if (b !== null) {
-        const face = faceCentreFor(door2.yaw, b.min, b.max, floorLocal);
-        if (door2.hasPosition) {
-          const alongRight = Math.abs(Math.cos(door2.yaw)) > 0.5;
-          local = alongRight ? { x: door2.position.x, y: floorLocal, z: face.z } : { x: face.x, y: floorLocal, z: door2.position.z };
-        } else {
-          local = face;
-        }
-      } else {
-        local = door2.hasPosition ? { ...door2.position } : { x: 0, y: 0, z: 0 };
-      }
-      const w = turn(local.z * scale.z, local.x * scale.x, heading);
-      doorWorld = { x: location.x + w[0], y: location.y + local.y * scale.y, z: location.z + w[1] };
-      doorHeading = normalizeYaw(heading + door2.yaw);
-    } else {
-      notes.push("no-door");
-    }
-    if (doorHeld) notes.push("door-held");
-    if (doorShort) notes.push("door-below-body");
-    if (policy2.doorClearance > 0 && input.castHeight > 0 && hasDoor && doorLocal <= 0) notes.push("door-unmeasured");
-    if (limited) notes.push("limited");
-    if (Math.hypot(settleShift[0], settleShift[1]) > 5e-4) notes.push("settled");
-    return {
-      applied: true,
-      notApplied: null,
-      fit: fitOut,
-      lot: hostLot,
-      streetHeading,
-      wantedFactor,
-      factor,
-      limited,
-      doorFactor,
-      doorHeld,
-      doorHeight,
-      castHeight: input.castHeight,
-      policy: policy2,
-      scale,
-      fixupScale,
-      heading,
-      fixupHeading,
-      location,
-      offsetFromNode,
-      door: door2,
-      doorWorld,
-      doorHeading,
-      seat,
-      footprint: { entityId: input.entityId, lotId: input.lotId, corners },
-      settleShift,
-      notes
-    };
-  }
-  function findFitOverlaps(buildings, obstacles2) {
-    const out = [];
-    for (let i = 0; i < buildings.length; i += 1) {
-      const a = buildings[i].corners;
-      for (let j = 0; j < buildings.length; j += 1) {
-        if (i === j) continue;
-        const d = satDepth(a, buildings[j].corners);
-        if (d > FIT_OVERLAP_TOLERANCE_M) out.push({ entityId: buildings[i].entityId, with: buildings[j].entityId, withKind: "building", depth: d });
-      }
-      for (const o of obstacles2) {
-        if (o.points.length < 2) continue;
-        if (o.lotId !== "" && o.lotId === buildings[i].lotId) continue;
-        let depth;
-        if (o.closed && o.points.length >= 3) {
-          depth = outlineDepth(a, o.points);
-        } else {
-          let nearest = Infinity;
-          for (let k = 0; k + 1 < o.points.length; k += 1) {
-            nearest = Math.min(nearest, segmentOutlineDistance(o.points[k], o.points[k + 1], a));
-          }
-          depth = o.halfWidth - nearest;
-        }
-        if (depth > FIT_OVERLAP_TOLERANCE_M) out.push({ entityId: buildings[i].entityId, with: o.entityId, withKind: o.kind, depth });
-      }
-    }
-    out.sort((x, y) => compareStrings(x.entityId, y.entityId) || compareStrings(x.withKind, y.withKind) || compareStrings(x.with, y.with));
-    return out;
-  }
-
   // @insimul/core/src/editor/layout/settle.ts
   var SETTLE_OBSTACLE_GAP_M = 0.25;
   var SETTLE_BUILDING_MAX_SHIFT_M = 2;
@@ -31956,6 +32448,10 @@ player_meets_cefr(Player, RequiredLevel) :-
   var START_CLEAR_RADIUS_M = 1;
   var START_CLEAR_SIDES = 16;
   var START_CLEAR_PUSH_M = 1e-3;
+  var DOOR_APPROACH_DEPTH_M = 1.5;
+  var DOOR_APPROACH_HALF_WIDTH_M = 0.75;
+  var DOOR_APPROACH_CLEAR_M = 1;
+  var DOOR_APPROACH_REACH_M = DOOR_APPROACH_DEPTH_M + DOOR_APPROACH_CLEAR_M;
   var SETTLE_DEFAULT_ITERATIONS = 128;
   var SLACK = 1e-4;
   var neighbourPairGap = (a, b) => Math.max(a.gap, b.gap);
@@ -32056,7 +32552,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     const shift = bodies.map(() => [0, 0]);
     const limited = bodies.map(() => false);
     const movable = (i) => bodies[i].mass > 0 && bodies[i].maxShift > 0 && base[i].length >= 3;
-    const clamp = (i) => {
+    const clamp2 = (i) => {
       const l = Math.sqrt(shift[i][0] * shift[i][0] + shift[i][1] * shift[i][1]);
       if (l > bodies[i].maxShift) {
         shift[i][0] *= bodies[i].maxShift / l;
@@ -32079,6 +32575,21 @@ player_meets_cefr(Player, RequiredLevel) :-
         pairs.push({ i, j, gap: g });
       }
     }
+    const apronBase = bodies.map((b) => b.apron !== void 0 && b.apron.length >= 3 ? b.apron : []);
+    const aprons = [];
+    for (let i = 0; i < n; i += 1) {
+      if (apronBase[i].length < 3 || base[i].length < 3) continue;
+      const g = Math.max(0, bodies[i].apronGap ?? 0);
+      const c = circle(apronBase[i]);
+      for (let j = 0; j < n; j += 1) {
+        if (j === i || base[j].length < 3 || !movable(i) && !movable(j)) continue;
+        if (pairGap(bodies[i], bodies[j]) < 0) continue;
+        const cj = circles[j].centre;
+        const r = c.radius + (movable(i) ? bodies[i].maxShift : 0) + reach(j) + g;
+        if (Math.hypot(c.centre[0] - cj[0], c.centre[1] - cj[1]) > r) continue;
+        aprons.push({ i, j, gap: g });
+      }
+    }
     const near = bodies.map(() => []);
     for (let i = 0; i < n; i += 1) {
       if (!movable(i) || bodies[i].obstacleGap < 0) continue;
@@ -32091,37 +32602,47 @@ player_meets_cefr(Player, RequiredLevel) :-
         near[i].push(k);
       }
     }
+    let worst = 0;
+    const part = (i, j, axis, short) => {
+      const mi = movable(i);
+      const mj = movable(j);
+      let shareI = 0;
+      let shareJ = 0;
+      if (mi && mj) {
+        const massI = bodies[i].mass;
+        const massJ = bodies[j].mass;
+        shareI = massJ / (massI + massJ);
+        shareJ = massI / (massI + massJ);
+      } else if (mi) {
+        shareI = 1;
+      } else {
+        shareJ = 1;
+      }
+      const push = short + SLACK;
+      const beforeI = [shift[i][0], shift[i][1]];
+      const beforeJ = [shift[j][0], shift[j][1]];
+      shift[i][0] -= axis[0] * push * shareI;
+      shift[i][1] -= axis[1] * push * shareI;
+      shift[j][0] += axis[0] * push * shareJ;
+      shift[j][1] += axis[1] * push * shareJ;
+      clamp2(i);
+      clamp2(j);
+      const movedBy = Math.hypot(shift[i][0] - beforeI[0], shift[i][1] - beforeI[1]) + Math.hypot(shift[j][0] - beforeJ[0], shift[j][1] - beforeJ[1]);
+      if (movedBy > SLACK) worst = Math.max(worst, short);
+    };
     for (let it = 0; it < Math.max(1, iterations); it += 1) {
-      let worst = 0;
+      worst = 0;
       for (const p of pairs) {
         const sep = planSeparation(moved(base[p.i], shift[p.i]), moved(base[p.j], shift[p.j]));
         const short = p.gap - sep.gap;
         if (short <= SLACK) continue;
-        const mi = movable(p.i);
-        const mj = movable(p.j);
-        let shareI = 0;
-        let shareJ = 0;
-        if (mi && mj) {
-          const massI = bodies[p.i].mass;
-          const massJ = bodies[p.j].mass;
-          shareI = massJ / (massI + massJ);
-          shareJ = massI / (massI + massJ);
-        } else if (mi) {
-          shareI = 1;
-        } else {
-          shareJ = 1;
-        }
-        const push = short + SLACK;
-        const beforeI = [shift[p.i][0], shift[p.i][1]];
-        const beforeJ = [shift[p.j][0], shift[p.j][1]];
-        shift[p.i][0] -= sep.axis[0] * push * shareI;
-        shift[p.i][1] -= sep.axis[1] * push * shareI;
-        shift[p.j][0] += sep.axis[0] * push * shareJ;
-        shift[p.j][1] += sep.axis[1] * push * shareJ;
-        clamp(p.i);
-        clamp(p.j);
-        const movedBy = Math.hypot(shift[p.i][0] - beforeI[0], shift[p.i][1] - beforeI[1]) + Math.hypot(shift[p.j][0] - beforeJ[0], shift[p.j][1] - beforeJ[1]);
-        if (movedBy > SLACK) worst = Math.max(worst, short);
+        part(p.i, p.j, sep.axis, short);
+      }
+      for (const p of aprons) {
+        const sep = planSeparation(moved(apronBase[p.i], shift[p.i]), moved(base[p.j], shift[p.j]));
+        const short = p.gap - sep.gap;
+        if (short <= SLACK) continue;
+        part(p.i, p.j, sep.axis, short);
       }
       for (let i = 0; i < n; i += 1) {
         for (const k of near[i]) {
@@ -32132,7 +32653,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           const before = [shift[i][0], shift[i][1]];
           shift[i][0] -= sep.axis[0] * (short + SLACK);
           shift[i][1] -= sep.axis[1] * (short + SLACK);
-          clamp(i);
+          clamp2(i);
           if (Math.hypot(shift[i][0] - before[0], shift[i][1] - before[1]) > SLACK) worst = Math.max(worst, short);
         }
       }
@@ -32155,6 +32676,12 @@ player_meets_cefr(Player, RequiredLevel) :-
     };
     for (const p of pairs) {
       const short = p.gap - planSeparation(moved(base[p.i], shift[p.i]), moved(base[p.j], shift[p.j])).gap;
+      if (short < 0.01) continue;
+      note(p.i, short, bodies[p.j].entityId);
+      note(p.j, short, bodies[p.i].entityId);
+    }
+    for (const p of aprons) {
+      const short = p.gap - planSeparation(moved(apronBase[p.i], shift[p.i]), moved(base[p.j], shift[p.j])).gap;
       if (short < 0.01) continue;
       note(p.i, short, bodies[p.j].entityId);
       note(p.j, short, bodies[p.i].entityId);
@@ -32193,21 +32720,65 @@ player_meets_cefr(Player, RequiredLevel) :-
     }
     return out;
   }
+  function doorApproachOutline(door2) {
+    const f = [Math.cos(door2.heading), Math.sin(door2.heading)];
+    const s = [-f[1] * DOOR_APPROACH_HALF_WIDTH_M, f[0] * DOOR_APPROACH_HALF_WIDTH_M];
+    const out = [f[0] * DOOR_APPROACH_DEPTH_M, f[1] * DOOR_APPROACH_DEPTH_M];
+    return [
+      [door2.x - s[0], door2.z - s[1]],
+      [door2.x - s[0] + out[0], door2.z - s[1] + out[1]],
+      [door2.x + s[0] + out[0], door2.z + s[1] + out[1]],
+      [door2.x + s[0], door2.z + s[1]]
+    ];
+  }
+  function fittedBodyOf(b) {
+    const gap = Math.max(0, b.neighbourGap);
+    const body2 = {
+      entityId: b.entityId,
+      lotId: b.lotId,
+      outline: b.corners.map((c) => [c[0], c[1]]),
+      mass: 1,
+      maxShift: settleBuildingMaxShiftM(gap),
+      obstacleGap: SETTLE_OBSTACLE_GAP_M,
+      class: CLEARANCE_BUILDING,
+      gap
+    };
+    if (b.door !== void 0 && b.door !== null) {
+      body2.apron = doorApproachOutline(b.door);
+      body2.apronGap = DOOR_APPROACH_CLEAR_M;
+      body2.maxShift = settleBuildingMaxShiftM(Math.max(gap, DOOR_APPROACH_REACH_M));
+    }
+    return body2;
+  }
   function settleFittedBuildings(buildings, obstacles2, iterations = SETTLE_DEFAULT_ITERATIONS) {
-    const bodies = buildings.map((b) => {
-      const gap = Math.max(0, b.neighbourGap);
-      return {
-        entityId: b.entityId,
-        lotId: b.lotId,
-        outline: b.corners.map((c) => [c[0], c[1]]),
-        mass: 1,
-        maxShift: settleBuildingMaxShiftM(gap),
-        obstacleGap: SETTLE_OBSTACLE_GAP_M,
-        class: CLEARANCE_BUILDING,
-        gap
-      };
-    });
-    return settleBodies(bodies, obstacles2, neighbourPairGap, iterations);
+    return settleBodies(buildings.map(fittedBodyOf), obstacles2, neighbourPairGap, iterations);
+  }
+  function doorFrontage(buildings, moves) {
+    const out = [];
+    if (moves.length !== buildings.length) return out;
+    const footprint = (k) => moved(buildings[k].corners, [moves[k].dx, moves[k].dz]);
+    for (let i = 0; i < buildings.length; i += 1) {
+      const d = buildings[i].door;
+      if (d === void 0 || d === null) continue;
+      const approach = moved(doorApproachOutline(d), [moves[i].dx, moves[i].dz]);
+      let clear = Infinity;
+      let nearest = "";
+      for (let k = 0; k < buildings.length; k += 1) {
+        if (k === i || buildings[k].corners.length < 3) continue;
+        const g = planSeparation(approach, footprint(k)).gap;
+        if (g < clear - 1e-12) {
+          clear = g;
+          nearest = buildings[k].entityId;
+        }
+      }
+      if (nearest === "") {
+        out.push({ index: i, entityId: buildings[i].entityId, clear: 0, nearest: "", short: 0 });
+        continue;
+      }
+      const q = quantizeMillimetre(clear);
+      out.push({ index: i, entityId: buildings[i].entityId, clear: q, nearest, short: Math.max(0, quantizeMillimetre(DOOR_APPROACH_CLEAR_M - clear)) });
+    }
+    return out;
   }
   function plantTrunkOutline(x, z) {
     const h = PLANT_TRUNK_HALF_M;
@@ -32289,6 +32860,453 @@ player_meets_cefr(Player, RequiredLevel) :-
       startMoves.push({ index: i, entityId: items[i].entityId, dx, dz });
     }
     return { moves, setAsides: clearanceSetAsides(bodies, moves), startMoves, startCovered };
+  }
+
+  // @insimul/core/src/editor/layout/building-fit.ts
+  var QUARTER_TURN2 = Math.PI / 2;
+  var DOOR_GROUND_FLOOR_BAND_M = 0.6;
+  var DOOR_OUTLINE_BAND_M = 1;
+  var DOOR_MIN_HEIGHT_M = 1;
+  var SEAT_TOLERANCE_M = 0.02;
+  var DEFAULT_FIT_SCALE_MIN = 0.5;
+  var DEFAULT_FIT_SCALE_MAX = 1;
+  var DEFAULT_DOOR_CLEARANCE = 1;
+  var DEFAULT_SEAT_SINK = 0;
+  var DEFAULT_NEIGHBOUR_GAP_M = 1;
+  var STATURE_PER_HEAD_BONE = 1.15;
+  var CROWN_RADIUS_M = 0.15;
+  var FIT_ISSUE_DOOR_BELOW_BODY = "door-below-body";
+  var FIT_OVERLAP_TOLERANCE_M = 0.02;
+  var FIT_FRONT_CLEARANCE_M = SETTLE_OBSTACLE_GAP_M;
+  function defaultFitPolicy() {
+    return {
+      mode: "lot",
+      scaleMin: DEFAULT_FIT_SCALE_MIN,
+      scaleMax: DEFAULT_FIT_SCALE_MAX,
+      doorClearance: DEFAULT_DOOR_CLEARANCE,
+      seatSink: DEFAULT_SEAT_SINK,
+      neighbourGap: DEFAULT_NEIGHBOUR_GAP_M
+    };
+  }
+  function bodyStature(boundsHeight, headBoneHeight = 0, crownTop = 0) {
+    if (!(boundsHeight > 0)) return 0;
+    const person = headBoneHeight > 0 ? Math.min(boundsHeight, headBoneHeight * STATURE_PER_HEAD_BONE) : boundsHeight;
+    if (!(person > 0) || !(crownTop > 0)) return person;
+    return Math.min(boundsHeight, Math.max(person, crownTop));
+  }
+  function noDoor() {
+    return { source: "none", name: "", hasPosition: false, position: { x: 0, y: 0, z: 0 }, yaw: 0, candidates: 0, height: 0 };
+  }
+  function isDoorPartName(c) {
+    if (c.mesh !== "") return c.mesh.toLowerCase().includes("door");
+    return c.component.toLowerCase().includes("door") || c.owner.toLowerCase().includes("door");
+  }
+  function faceYawOf(p, min, max) {
+    const sides = [max.z - p.z, max.x - p.x, p.x - min.x, p.z - min.z];
+    const yaws = [0, QUARTER_TURN2, -QUARTER_TURN2, Math.PI];
+    let best = 0;
+    for (let i = 1; i < 4; i += 1) {
+      if (sides[i] < sides[best] - 1e-11) best = i;
+    }
+    return yaws[best];
+  }
+  function faceCentreFor(yaw, min, max, y) {
+    const cf = (min.z + max.z) / 2;
+    const cr = (min.x + max.x) / 2;
+    const hf = (max.z - min.z) / 2;
+    const hr = (max.x - min.x) / 2;
+    const df = Math.cos(yaw);
+    const dr = Math.sin(yaw);
+    const tf = Math.abs(df) > 1e-12 ? hf / Math.abs(df) : Infinity;
+    const tr = Math.abs(dr) > 1e-12 ? hr / Math.abs(dr) : Infinity;
+    const t = Math.min(tf, tr);
+    return { x: cr + dr * t, y, z: cf + df * t };
+  }
+  function facingRank(yaw) {
+    if (yaw === 0) return 0;
+    if (yaw === QUARTER_TURN2) return 1;
+    if (yaw === -QUARTER_TURN2) return 2;
+    return 3;
+  }
+  function compareStrings(a, b) {
+    return a < b ? -1 : a > b ? 1 : 0;
+  }
+  function chooseDoorPart(parts, boundsMin, boundsMax) {
+    const upright = [];
+    let named = 0;
+    for (const p of parts) {
+      if (!isDoorPartName(p)) continue;
+      named += 1;
+      const h = p.max.y - p.min.y;
+      const w = Math.max(p.max.z - p.min.z, p.max.x - p.min.x);
+      if (h < DOOR_MIN_HEIGHT_M || h < 0.5 * w) continue;
+      const c = { x: (p.min.x + p.max.x) / 2, y: p.min.y, z: (p.min.z + p.max.z) / 2 };
+      const outline = Math.min(boundsMax.z - c.z, boundsMax.x - c.x, c.x - boundsMin.x, c.z - boundsMin.z);
+      const yaw = faceYawOf(c, boundsMin, boundsMax);
+      const mesh = (p.mesh === "" ? p.component : p.mesh).toLowerCase();
+      upright.push({ part: p, leaf: !mesh.includes("wall"), outline, yaw, facingRank: facingRank(yaw) });
+    }
+    const out = noDoor();
+    out.candidates = named;
+    if (upright.length === 0) return out;
+    let lowest = Infinity;
+    for (const r of upright) lowest = Math.min(lowest, r.part.min.y);
+    let ground = upright.filter((r) => r.part.min.y <= lowest + DOOR_GROUND_FLOOR_BAND_M);
+    if (ground.some((r) => r.leaf)) ground = ground.filter((r) => r.leaf);
+    let nearest = Infinity;
+    for (const r of ground) nearest = Math.min(nearest, r.outline);
+    const near = ground.filter((r) => r.outline <= nearest + DOOR_OUTLINE_BAND_M);
+    near.sort((a, b) => a.facingRank - b.facingRank || (a.outline < b.outline ? -1 : a.outline > b.outline ? 1 : 0) || compareStrings(a.part.component, b.part.component) || compareStrings(a.part.owner, b.part.owner));
+    const chosen = near[0];
+    out.source = "component";
+    out.name = chosen.part.component;
+    out.hasPosition = true;
+    out.position = {
+      x: (chosen.part.min.x + chosen.part.max.x) / 2,
+      y: chosen.part.min.y,
+      z: (chosen.part.min.z + chosen.part.max.z) / 2
+    };
+    out.yaw = chosen.yaw;
+    out.height = chosen.part.max.y - chosen.part.min.y;
+    return out;
+  }
+  function streetHeadingOf(frontageYaw) {
+    return normalizeYaw(QUARTER_TURN2 - frontageYaw);
+  }
+  function finiteNumber(v) {
+    return typeof v === "number" && Number.isFinite(v);
+  }
+  function recordOf(v) {
+    return typeof v === "object" && v !== null && !Array.isArray(v) ? v : null;
+  }
+  function planPointOf(v) {
+    const o = recordOf(v);
+    return o !== null && finiteNumber(o.x) && finiteNumber(o.z) ? [o.x, o.z] : null;
+  }
+  function buildingAreaOf(lot, building) {
+    const l = recordOf(lot);
+    const bd = recordOf(building);
+    if (l === null || bd === null) return null;
+    const buildTo = recordOf(l.buildTo);
+    if (buildTo === null || !finiteNumber(buildTo.front) || buildTo.front < 0) return null;
+    const spec = recordOf(bd.spec);
+    if (spec === null || !finiteNumber(spec.width) || !finiteNumber(spec.depth) || spec.width <= 0 || spec.depth <= 0) return null;
+    const centre = planPointOf(bd.position);
+    if (centre === null) return null;
+    const frontageYaw = finiteNumber(l.facingAngle) ? l.facingAngle : null;
+    const lotCentre = planPointOf(l.position);
+    let frontLine2 = null;
+    if (frontageYaw !== null && lotCentre !== null && finiteNumber(l.lotDepth) && l.lotDepth > 0) {
+      const fx = Math.sin(frontageYaw);
+      const fz = Math.cos(frontageYaw);
+      const street = (lotCentre[0] - centre[0]) * fx + (lotCentre[1] - centre[1]) * fz + l.lotDepth / 2;
+      frontLine2 = { street, buildTo: buildTo.front };
+    }
+    return { width: spec.width, depth: spec.depth, frontageYaw, centre, frontLine: frontLine2 };
+  }
+  function quantizeFactor(f) {
+    const q = (f < 0 ? -Math.round(-f * 1e6) : Math.round(f * 1e6)) / 1e6;
+    return q === 0 ? 0 : q;
+  }
+  function turn(forward, right, heading) {
+    const c = Math.cos(heading);
+    const s = Math.sin(heading);
+    return [forward * c - right * s, forward * s + right * c];
+  }
+  function emptySeat() {
+    return { sampled: false, groundMin: 0, groundMax: 0, foundation: 0, float: 0, sink: 0 };
+  }
+  function sampleGrid(g, x, z) {
+    const { heights, resolution, sizeX, sizeZ } = g;
+    if (resolution < 1 || heights.length === 0) return 0;
+    if (resolution === 1) return heights[0];
+    if (sizeX <= 0 || sizeZ <= 0) return heights[0];
+    let gx = x / sizeX * (resolution - 1);
+    let gz = z / sizeZ * (resolution - 1);
+    gx = Math.min(Math.max(gx, 0), resolution - 1);
+    gz = Math.min(Math.max(gz, 0), resolution - 1);
+    const x0 = Math.floor(gx);
+    const z0 = Math.floor(gz);
+    const x1 = Math.min(x0 + 1, resolution - 1);
+    const z1 = Math.min(z0 + 1, resolution - 1);
+    const fx = gx - x0;
+    const fz = gz - z0;
+    const at = (xi, zi) => {
+      const idx = zi * resolution + xi;
+      return idx < heights.length ? heights[idx] : 0;
+    };
+    const top = at(x0, z0) + (at(x1, z0) - at(x0, z0)) * fx;
+    const bot = at(x0, z1) + (at(x1, z1) - at(x0, z1)) * fx;
+    return top + (bot - top) * fz;
+  }
+  function layoutGroundAt(g, x, z) {
+    return sampleGrid(g, x, z);
+  }
+  function fitBuildingToLot(input) {
+    const policy2 = { ...input.policy };
+    const notApplied = (why) => ({
+      applied: false,
+      notApplied: why,
+      fit: { outcome: "unmeasured", issues: [], rotationY: 0, aligned: false, required: { across: 0, away: 0 } },
+      lot: { width: 0, depth: 0, frontageYaw: 0, hasFrontage: false },
+      streetHeading: 0,
+      wantedFactor: 1,
+      factor: 1,
+      limited: false,
+      doorFactor: 0,
+      doorHeld: false,
+      doorHeight: 0,
+      castHeight: 0,
+      policy: policy2,
+      scale: { x: 1, y: 1, z: 1 },
+      fixupScale: { x: 1, y: 1, z: 1 },
+      heading: 0,
+      fixupHeading: 0,
+      location: { x: 0, y: 0, z: 0 },
+      offsetFromNode: { x: 0, y: 0, z: 0 },
+      door: noDoor(),
+      doorWorld: { x: 0, y: 0, z: 0 },
+      doorHeading: 0,
+      seat: emptySeat(),
+      footprint: { entityId: input.entityId, lotId: input.lotId, corners: [[0, 0], [0, 0], [0, 0], [0, 0]] },
+      settleShift: [0, 0],
+      facade: null,
+      notes: []
+    });
+    if (input.lot === null) return notApplied("no-lot");
+    if (policy2.mode === "none") return notApplied("fit-none");
+    const inLot2 = input.lot;
+    const notes = [];
+    let door2 = { ...input.door, position: { ...input.door.position } };
+    if (door2.source === "none" && policy2.doorYaw !== void 0) {
+      door2 = { ...door2, source: "binding_yaw", name: "doorYaw", yaw: policy2.doorYaw, hasPosition: false };
+    }
+    const hasDoor = door2.source !== "none";
+    const hostLot = {
+      width: inLot2.width,
+      depth: inLot2.depth,
+      frontageYaw: inLot2.hasFrontage ? streetHeadingOf(inLot2.frontageYaw) : 0,
+      hasFrontage: inLot2.hasFrontage
+    };
+    const streetHeading = inLot2.hasFrontage ? hostLot.frontageYaw : 0;
+    const b = input.bounds;
+    const size = b === null ? null : { x: b.max.x - b.min.x, y: b.max.y - b.min.y, z: b.max.z - b.min.z };
+    const hasFootprint = size !== null && size.x > 0 && size.y > 0 && size.z > 0;
+    const g = input.geometry;
+    const sockets = hasDoor ? [{ name: "door", kind: "door", position: { ...door2.position }, yaw: door2.yaw, node: "" }] : [];
+    const checkGeometry = (factor2) => ({
+      convention: CORE_CONVENTION,
+      measured: true,
+      footprint: hasFootprint && size !== null ? { size, pivot: { x: 0, y: 0, z: 0 } } : null,
+      offset: { ...g.offset },
+      yaw: g.yaw,
+      scale: { x: g.scale.x * factor2, y: g.scale.y * factor2, z: g.scale.z * factor2 },
+      sockets
+    });
+    const placement = { rotationY: input.nodeHeading, scale: { ...input.nodeScale } };
+    const first = checkAssetFit(checkGeometry(1), hostLot, placement);
+    let wanted = 1;
+    if (hasFootprint && lotIsBounded(inLot2) && first.required.across > 0 && first.required.away > 0) {
+      wanted = Math.min(inLot2.width / first.required.across, inLot2.depth / first.required.away);
+    }
+    const wantedFactor = quantizeFactor(wanted);
+    const lotFactor = Math.max(policy2.scaleMin, Math.min(policy2.scaleMax, wanted));
+    let factor = lotFactor;
+    const limited = wanted < policy2.scaleMin - 1e-9;
+    let doorShort = false;
+    let doorFactor = 0;
+    let doorHeld = false;
+    const doorLocal = door2.height * g.scale.y * input.nodeScale.y;
+    if (policy2.doorClearance > 0 && input.castHeight > 0 && doorLocal > 0) {
+      const floor = input.castHeight * policy2.doorClearance / doorLocal;
+      doorFactor = quantizeFactor(floor);
+      if (floor > factor + 1e-9) {
+        if (floor <= policy2.scaleMax + 1e-9) {
+          factor = Math.min(policy2.scaleMax, Math.ceil(floor * 1e6) / 1e6);
+          doorHeld = true;
+        } else {
+          factor = policy2.scaleMax;
+          doorHeld = factor > lotFactor + 1e-9;
+          doorShort = true;
+        }
+      }
+    }
+    factor = quantizeFactor(factor);
+    const doorHeight = doorLocal * factor;
+    const fit = checkAssetFit(checkGeometry(factor), hostLot, placement);
+    let fitOut = fit;
+    if (doorShort) {
+      const issues = [.../* @__PURE__ */ new Set([...fit.issues, FIT_ISSUE_DOOR_BELOW_BODY])].sort();
+      fitOut = { ...fit, outcome: "misfit", issues };
+    }
+    const fixupScale = { x: g.scale.x * factor, y: g.scale.y * factor, z: g.scale.z * factor };
+    const scale = { x: input.nodeScale.x * fixupScale.x, y: input.nodeScale.y * fixupScale.y, z: input.nodeScale.z * fixupScale.z };
+    const heading = normalizeYaw(fitOut.rotationY + g.yaw);
+    const fixupHeading = normalizeYaw(heading - input.nodeHeading);
+    const target = input.lotCentre !== null ? [input.lotCentre[0], input.lotCentre[1]] : [input.node.x, input.node.z];
+    const settleShift = [input.settleShift[0], input.settleShift[1]];
+    target[0] += settleShift[0];
+    target[1] += settleShift[1];
+    let centreF = 0;
+    let centreR = 0;
+    if (b !== null) {
+      centreF = (b.min.z + b.max.z) / 2;
+      centreR = (b.min.x + b.max.x) / 2;
+    } else {
+      notes.push("no-bounds");
+    }
+    const shift = turn((g.offset.z - centreF) * scale.z, (g.offset.x - centreR) * scale.x, heading);
+    const reach = [];
+    if (b !== null) {
+      const fs = [b.min.z, b.max.z, b.max.z, b.min.z];
+      const rs = [b.min.x, b.min.x, b.max.x, b.max.x];
+      for (let i = 0; i < 4; i += 1) reach.push(turn(fs[i] * scale.z, rs[i] * scale.x, heading));
+    }
+    let facade = null;
+    const fl = input.frontLine ?? null;
+    if (fl !== null && b !== null && lotIsBounded(inLot2) && inLot2.hasFrontage && Number.isFinite(fl.street) && Number.isFinite(fl.buildTo) && fl.buildTo >= 0) {
+      const sx = Math.cos(hostLot.frontageYaw);
+      const sz = Math.sin(hostLot.frontageYaw);
+      facade = { line: fl.street - fl.buildTo, front: fl.street - Math.max(fl.buildTo, FIT_FRONT_CLEARANCE_M) };
+      let front = -Infinity;
+      for (const w of reach) front = Math.max(front, (shift[0] + w[0]) * sx + (shift[1] + w[1]) * sz);
+      const along = facade.front - front;
+      target[0] += sx * along;
+      target[1] += sz * along;
+    } else if (doorHeld && lotIsBounded(inLot2) && inLot2.hasFrontage && fitOut.required.away > inLot2.depth + FIT_QUANTUM) {
+      const back = (fitOut.required.away - inLot2.depth) / 2;
+      target[0] -= Math.cos(hostLot.frontageYaw) * back;
+      target[1] -= Math.sin(hostLot.frontageYaw) * back;
+    }
+    const location = { x: target[0] + shift[0], y: input.node.y, z: target[1] + shift[1] };
+    const corners = [];
+    if (b !== null) {
+      for (const w of reach) corners.push([location.x + w[0], location.z + w[1]]);
+    } else {
+      for (let i = 0; i < 4; i += 1) corners.push([location.x, location.z]);
+    }
+    const bottom = b !== null ? b.min.y : 0;
+    const floorKnown = hasDoor && door2.hasPosition;
+    const floorLocal = floorKnown ? Math.max(door2.position.y, bottom) : bottom;
+    let y = input.node.y - bottom * scale.y;
+    const seat = emptySeat();
+    if (input.ground !== null) {
+      let gMin = Infinity;
+      let gMax = -Infinity;
+      const samples = corners.map((c) => [c[0], c[1]]);
+      for (let i = 0; i < 4; i += 1) {
+        const a = corners[i];
+        const c = corners[(i + 1) % 4];
+        samples.push([(a[0] + c[0]) / 2, (a[1] + c[1]) / 2]);
+      }
+      samples.push([target[0], target[1]]);
+      for (const s of samples) {
+        const h = sampleGrid(input.ground, s[0], s[1]);
+        gMin = Math.min(gMin, h);
+        gMax = Math.max(gMax, h);
+      }
+      if (gMin <= gMax) {
+        seat.sampled = true;
+        seat.groundMin = gMin;
+        seat.groundMax = gMax;
+        const bottomOnLow = gMin - bottom * scale.y;
+        const floorOnHigh = gMax - floorLocal * scale.y;
+        seat.foundation = (floorLocal - bottom) * scale.y;
+        const sink = floorKnown ? Math.max(0, Math.min(1, policy2.seatSink)) * seat.foundation : 0;
+        y = floorKnown ? Math.max(bottomOnLow - sink, floorOnHigh) : bottomOnLow;
+        const float = y + bottom * scale.y - gMin;
+        seat.float = float > SEAT_TOLERANCE_M ? float : 0;
+        seat.sink = float < -SEAT_TOLERANCE_M ? -float : 0;
+        if (policy2.seatSink > 0 && !floorKnown) notes.push("seat-sink-needs-floor");
+        if (!floorKnown && gMax - gMin > SEAT_TOLERANCE_M) notes.push("no-floor");
+      }
+    }
+    y += g.offset.y * scale.y;
+    location.y = y;
+    const offsetFromNode = { x: location.x - input.node.x, y: location.y - input.node.y, z: location.z - input.node.z };
+    let doorWorld = { x: 0, y: 0, z: 0 };
+    let doorHeading = 0;
+    if (hasDoor) {
+      let local;
+      if (b !== null) {
+        const face = faceCentreFor(door2.yaw, b.min, b.max, floorLocal);
+        if (door2.hasPosition) {
+          const alongRight = Math.abs(Math.cos(door2.yaw)) > 0.5;
+          local = alongRight ? { x: door2.position.x, y: floorLocal, z: face.z } : { x: face.x, y: floorLocal, z: door2.position.z };
+        } else {
+          local = face;
+        }
+      } else {
+        local = door2.hasPosition ? { ...door2.position } : { x: 0, y: 0, z: 0 };
+      }
+      const w = turn(local.z * scale.z, local.x * scale.x, heading);
+      doorWorld = { x: location.x + w[0], y: location.y + local.y * scale.y, z: location.z + w[1] };
+      doorHeading = normalizeYaw(heading + door2.yaw);
+    } else {
+      notes.push("no-door");
+    }
+    if (doorHeld) notes.push("door-held");
+    if (doorShort) notes.push("door-below-body");
+    if (policy2.doorClearance > 0 && input.castHeight > 0 && hasDoor && doorLocal <= 0) notes.push("door-unmeasured");
+    if (limited) notes.push("limited");
+    if (Math.hypot(settleShift[0], settleShift[1]) > 5e-4) notes.push("settled");
+    return {
+      applied: true,
+      notApplied: null,
+      fit: fitOut,
+      lot: hostLot,
+      streetHeading,
+      wantedFactor,
+      factor,
+      limited,
+      doorFactor,
+      doorHeld,
+      doorHeight,
+      castHeight: input.castHeight,
+      policy: policy2,
+      scale,
+      fixupScale,
+      heading,
+      fixupHeading,
+      location,
+      offsetFromNode,
+      door: door2,
+      doorWorld,
+      doorHeading,
+      seat,
+      footprint: { entityId: input.entityId, lotId: input.lotId, corners },
+      settleShift,
+      facade,
+      notes
+    };
+  }
+  function findFitOverlaps(buildings, obstacles2) {
+    const out = [];
+    for (let i = 0; i < buildings.length; i += 1) {
+      const a = buildings[i].corners;
+      for (let j = 0; j < buildings.length; j += 1) {
+        if (i === j) continue;
+        const d = satDepth(a, buildings[j].corners);
+        if (d > FIT_OVERLAP_TOLERANCE_M) out.push({ entityId: buildings[i].entityId, with: buildings[j].entityId, withKind: "building", depth: d });
+      }
+      for (const o of obstacles2) {
+        if (o.points.length < 2) continue;
+        if (o.lotId !== "" && o.lotId === buildings[i].lotId) continue;
+        let depth;
+        if (o.closed && o.points.length >= 3) {
+          depth = outlineDepth(a, o.points);
+        } else {
+          let nearest = Infinity;
+          for (let k = 0; k + 1 < o.points.length; k += 1) {
+            nearest = Math.min(nearest, segmentOutlineDistance(o.points[k], o.points[k + 1], a));
+          }
+          depth = o.halfWidth - nearest;
+        }
+        if (depth > FIT_OVERLAP_TOLERANCE_M) out.push({ entityId: buildings[i].entityId, with: o.entityId, withKind: o.kind, depth });
+      }
+    }
+    out.sort((x, y) => compareStrings(x.entityId, y.entityId) || compareStrings(x.withKind, y.withKind) || compareStrings(x.with, y.with));
+    return out;
   }
 
   // @insimul/core/src/editor/layout/pairing.ts
@@ -33145,7 +34163,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     if (typeof v !== "number") bad(`'${k}' is not a number`);
     return v;
   }
-  function numOr(o, k, d) {
+  function numOr2(o, k, d) {
     const v = o[k];
     return typeof v === "number" ? v : d;
   }
@@ -33169,7 +34187,15 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function vec2(v) {
     const o = obj(v, "a vector");
-    return { x: numOr(o, "x", 0), y: numOr(o, "y", 0), z: numOr(o, "z", 0) };
+    return { x: numOr2(o, "x", 0), y: numOr2(o, "y", 0), z: numOr2(o, "z", 0) };
+  }
+  function fittedDoor(v) {
+    const o = obj(v, "a door");
+    return { x: num3(o, "x"), z: num3(o, "z"), heading: num3(o, "heading") };
+  }
+  function frontLine(v) {
+    const o = obj(v, "a front line");
+    return { street: num3(o, "street"), buildTo: num3(o, "buildTo") };
   }
   function grid(v) {
     const o = obj(v, "a terrain grid");
@@ -33190,9 +34216,9 @@ player_meets_cefr(Player, RequiredLevel) :-
       name: str3(o, "name"),
       hasPosition: bool(o, "hasPosition"),
       position: present(o, "position") ? vec2(o.position) : { x: 0, y: 0, z: 0 },
-      yaw: numOr(o, "yaw", 0),
-      candidates: numOr(o, "candidates", 0),
-      height: numOr(o, "height", 0)
+      yaw: numOr2(o, "yaw", 0),
+      candidates: numOr2(o, "candidates", 0),
+      height: numOr2(o, "height", 0)
     };
   }
   function candidate(v) {
@@ -33204,11 +34230,11 @@ player_meets_cefr(Player, RequiredLevel) :-
     const d = defaultFitPolicy();
     const p = {
       mode: str3(o, "mode", "lot") === "none" ? "none" : "lot",
-      scaleMin: numOr(o, "scaleMin", d.scaleMin),
-      scaleMax: numOr(o, "scaleMax", d.scaleMax),
-      doorClearance: numOr(o, "doorClearance", d.doorClearance),
-      seatSink: numOr(o, "seatSink", d.seatSink),
-      neighbourGap: numOr(o, "neighbourGap", d.neighbourGap)
+      scaleMin: numOr2(o, "scaleMin", d.scaleMin),
+      scaleMax: numOr2(o, "scaleMax", d.scaleMax),
+      doorClearance: numOr2(o, "doorClearance", d.doorClearance),
+      seatSink: numOr2(o, "seatSink", d.seatSink),
+      neighbourGap: numOr2(o, "neighbourGap", d.neighbourGap)
     };
     if (present(o, "doorYaw")) p.doorYaw = num3(o, "doorYaw");
     return p;
@@ -33230,8 +34256,9 @@ player_meets_cefr(Player, RequiredLevel) :-
       bounds: b === null ? null : { min: vec2(b.min), max: vec2(b.max) },
       door: door(o.door),
       ground: present(o, "ground") ? grid(o.ground) : null,
-      castHeight: numOr(o, "castHeight", 0),
-      settleShift: point(o.settleShift)
+      castHeight: numOr2(o, "castHeight", 0),
+      settleShift: point(o.settleShift),
+      frontLine: present(o, "frontLine") ? frontLine(o.frontLine) : null
     };
   }
   function obstacle(v) {
@@ -33241,7 +34268,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       kind: str3(o, "kind"),
       lotId: str3(o, "lotId"),
       points: points(o.points),
-      halfWidth: numOr(o, "halfWidth", 0),
+      halfWidth: numOr2(o, "halfWidth", 0),
       closed: bool(o, "closed")
     };
   }
@@ -33257,8 +34284,8 @@ player_meets_cefr(Player, RequiredLevel) :-
       mass: num3(o, "mass"),
       maxShift: num3(o, "maxShift"),
       obstacleGap: num3(o, "obstacleGap"),
-      class: numOr(o, "class", 0),
-      gap: numOr(o, "gap", 0)
+      class: numOr2(o, "class", 0),
+      gap: numOr2(o, "gap", 0)
     };
   }
   function layoutNode(v) {
@@ -33277,7 +34304,7 @@ player_meets_cefr(Player, RequiredLevel) :-
       archetype: str3(o, "archetype"),
       lotId: str3(o, "lotId"),
       path: present(o, "path") ? points(o.path) : [],
-      width: numOr(o, "width", 0),
+      width: numOr2(o, "width", 0),
       closed: bool(o, "closed"),
       lot: present(o, "lot") ? readFitLot(o.lot) : null,
       lotCentre: present(o, "lotCentre") ? point(o.lotCentre) : null,
@@ -33296,7 +34323,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         surface,
         lotId: str3(s, "lotId"),
         points: points(s.points),
-        halfWidth: numOr(s, "halfWidth", 0),
+        halfWidth: numOr2(s, "halfWidth", 0),
         closed: bool(s, "closed")
       };
     }) : [];
@@ -33333,7 +34360,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   function choices(v) {
     return arr(v, "authored").map((x) => {
       const o = obj(x, "a layer choice");
-      return { surface: str3(o, "surface"), layer: str3(o, "layer"), strength: numOr(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
+      return { surface: str3(o, "surface"), layer: str3(o, "layer"), strength: numOr2(o, "strength", 1), hasStrength: bool(o, "hasStrength") };
     });
   }
   var v3 = (v) => ({ x: v.x, y: v.y, z: v.z });
@@ -33390,6 +34417,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     o.seat = { ...f.seat };
     o.footprint = f.footprint.corners.map((c) => [c[0], c[1]]);
     o.settleShift = [f.settleShift[0], f.settleShift[1]];
+    if (f.facade !== null) o.facade = { line: f.facade.line, front: f.facade.front };
     o.notes = [...f.notes];
     return o;
   }
@@ -33440,9 +34468,20 @@ player_meets_cefr(Player, RequiredLevel) :-
       case "chooseDoorPart":
         return doorJson(chooseDoorPart(arr(i.parts, "parts").map(candidate), vec2(i.boundsMin), vec2(i.boundsMax)));
       case "bodyStature":
-        return bodyStature(num3(i, "boundsHeight"), numOr(i, "headBoneHeight", 0), numOr(i, "crownTop", 0));
+        return bodyStature(num3(i, "boundsHeight"), numOr2(i, "headBoneHeight", 0), numOr2(i, "crownTop", 0));
       case "fitBuildingToLot":
         return fitJson(fitBuildingToLot(fitInput(input)));
+      case "buildingAreaOf": {
+        const a = buildingAreaOf(i.lot, i.building);
+        if (a === null) return null;
+        return {
+          width: a.width,
+          depth: a.depth,
+          frontageYaw: a.frontageYaw,
+          centre: [a.centre[0], a.centre[1]],
+          frontLine: a.frontLine === null ? null : { street: a.frontLine.street, buildTo: a.frontLine.buildTo }
+        };
+      }
       case "findFitOverlaps": {
         const buildings = arr(i.buildings, "buildings").map((x) => {
           const o = obj(x, "a footprint");
@@ -33464,7 +34503,7 @@ player_meets_cefr(Player, RequiredLevel) :-
           arr(i.bodies, "bodies").map(body),
           obstacles(i.obstacles),
           settlePairGapOf(rule2),
-          numOr(i, "iterations", SETTLE_DEFAULT_ITERATIONS)
+          numOr2(i, "iterations", SETTLE_DEFAULT_ITERATIONS)
         ));
       }
       case "settleFittedBuildings":
@@ -33472,6 +34511,30 @@ player_meets_cefr(Player, RequiredLevel) :-
           const o = obj(x, "a fitted footprint");
           return { entityId: str3(o, "entityId"), lotId: str3(o, "lotId"), corners: points(o.corners), neighbourGap: num3(o, "neighbourGap") };
         }), obstacles(i.obstacles)));
+      case "settleDoorFrontage": {
+        const buildings = arr(i.buildings, "buildings").map((x) => {
+          const o = obj(x, "a fitted footprint");
+          return {
+            entityId: str3(o, "entityId"),
+            lotId: str3(o, "lotId"),
+            corners: points(o.corners),
+            neighbourGap: num3(o, "neighbourGap"),
+            door: present(o, "door") ? fittedDoor(o.door) : null
+          };
+        });
+        const moves = settleFittedBuildings(buildings, obstacles(i.obstacles));
+        return {
+          moves: movesJson(moves),
+          doors: doorFrontage(buildings, moves).map((d) => ({ index: d.index, entityId: d.entityId, clear: d.clear, nearest: d.nearest, short: d.short }))
+        };
+      }
+      case "doorApproachOutline":
+        return {
+          depthM: DOOR_APPROACH_DEPTH_M,
+          halfWidthM: DOOR_APPROACH_HALF_WIDTH_M,
+          clearM: DOOR_APPROACH_CLEAR_M,
+          outline: doorApproachOutline(fittedDoor(i.door)).map(pt)
+        };
       case "settleClearance": {
         const items = arr(i.items, "items").map((x) => {
           const o = obj(x, "a clearance item");
@@ -33481,11 +34544,11 @@ player_meets_cefr(Player, RequiredLevel) :-
             kind: kind === "building" ? "building" : kind === "plant" ? "plant" : "prop",
             outline: points(o.outline)
           };
-          item.area = numOr(o, "area", 0);
+          item.area = numOr2(o, "area", 0);
           item.archetype = str3(o, "archetype");
-          item.height = numOr(o, "height", 0);
-          item.longestPlan = numOr(o, "longestPlan", 0);
-          item.crownRadius = numOr(o, "crownRadius", 1);
+          item.height = numOr2(o, "height", 0);
+          item.longestPlan = numOr2(o, "longestPlan", 0);
+          item.crownRadius = numOr2(o, "crownRadius", 1);
           return item;
         });
         const start = present(i, "playerStart") ? vec2(i.playerStart) : null;
@@ -33549,8 +34612,8 @@ player_meets_cefr(Player, RequiredLevel) :-
           return {
             entityId: str3(o, "entityId"),
             lotId: str3(o, "lotId"),
-            shiftX: numOr(o, "shiftX", 0),
-            shiftZ: numOr(o, "shiftZ", 0),
+            shiftX: numOr2(o, "shiftX", 0),
+            shiftZ: numOr2(o, "shiftZ", 0),
             door: d === null ? null : { x: num3(d, "x"), z: num3(d, "z"), faceX: num3(d, "faceX"), faceZ: num3(d, "faceZ") }
           };
         });
@@ -33585,7 +34648,7 @@ player_meets_cefr(Player, RequiredLevel) :-
         const p = present(i, "plan") ? plan(i.plan) : null;
         const area = op === "trimGeneratedPoints" ? (() => {
           const layer = obj(i.layer, "a layer");
-          return buildLayerArea(points(layer.instances), numOr(layer, "cell", LAYER_AREA_CELL_M), numOr(layer, "dilate", LAYER_AREA_DILATE));
+          return buildLayerArea(points(layer.instances), numOr2(layer, "cell", LAYER_AREA_CELL_M), numOr2(layer, "dilate", LAYER_AREA_DILATE));
         })() : null;
         return arr(i.points, "points").map((x) => {
           const q = arr(x, "a point");
@@ -33702,6 +34765,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     "chooseDoorPart",
     "bodyStature",
     "fitBuildingToLot",
+    "buildingAreaOf",
     "findFitOverlaps",
     "settleSeparation",
     "settleBodies",
@@ -33716,6 +34780,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     "plantTrunkOutline",
     "layoutConstants",
     "startClearOutline",
+    "settleDoorFrontage",
+    "doorApproachOutline",
     "buildGroundPlan",
     "gradeTerrain",
     "followSettledBuildings",
@@ -36157,6 +37223,7 @@ player_meets_cefr(Player, RequiredLevel) :-
     return plain({
       "camera-movement": {
         modes: movementModeTable(),
+        solidKinds: [...MOVEMENT_SOLID_KINDS],
         storeyM: BUILDING_STOREY_M,
         gait: PLAYER_GAIT,
         ground: PLAYER_GROUND
@@ -36174,6 +37241,49 @@ player_meets_cefr(Player, RequiredLevel) :-
         defaultFootstepSurface: DEFAULT_FOOTSTEP_SURFACE
       }
     });
+  }
+  function survivalTuningOf(args) {
+    return survivalTuningFromIR(args.survival, args.params);
+  }
+  function staminaTuningOf(args) {
+    return staminaTuningFromIR(args.staminaConfig ? { staminaConfig: args.staminaConfig } : null);
+  }
+  function survivalStateOf(method, value, name = "state") {
+    return coded("invalid-input", () => needObject(method, value, name));
+  }
+  function survivalOk(value) {
+    return { ok: true, value: plain(value) };
+  }
+  function staminaPoolView(pool) {
+    return plain({ tuning: pool.getTuning(), actors: pool.serialize().actors });
+  }
+  function recordingSurvivalHost(calls) {
+    const none = () => void 0;
+    return {
+      update: none,
+      restoreNeed: none,
+      consumeStamina: (amount) => {
+        calls.push({ method: "consumeStamina", amount });
+        return true;
+      },
+      recoverStamina: (amount) => {
+        calls.push({ method: "recoverStamina", amount });
+      },
+      setTemperature: none,
+      addModifier: none,
+      removeModifier: none,
+      getNeed: () => void 0,
+      getAllNeeds: () => [],
+      getNeedPercent: () => 0,
+      isAnyCritical: () => false,
+      isAnyWarning: () => false,
+      setEnabled: none,
+      isEnabled: () => true,
+      setOnNeedChanged: none,
+      setOnSurvivalEvent: none,
+      setOnDamageFromNeed: none,
+      dispose: none
+    };
   }
   function movementModeOf(method, value) {
     return oneOf(method, value, CAMERA_MODES, "mode");
@@ -37879,6 +38989,303 @@ player_meets_cefr(Player, RequiredLevel) :-
      * surface's (`source: 'default'`).
      */
     "audio.ground.footstepAt": (args) => ({ cue: plain(footstepAt(args.world, args.at ?? null, args.gait ?? null)) }),
+    // ── survival: the needs, the HUD bars and stamina (P9c; PL.native-survival-rows, U106(1)) ──
+    // One row per core function of `survival/needs`, `survival/survival-hud`,
+    // `survival/survival-systems`, `stamina/stamina` and `StaminaPool`, named
+    // `survival.<group>.<op>` after the corpus file's area (`survival-needs`,
+    // `survival-hud`, `survival-stamina`). Where a row answers a whole corpus op,
+    // its args are that case's `input` and its answer is the case's `expected`
+    // shape (`{ ok: true, value }`, or `{ ok: false, refusal: { code, field, keys? } }`
+    // for a refusal core's corpus records as a value). The step rows a game calls as
+    // it plays (advance, restore, …) are STATELESS over the state they are sent: the
+    // args are the last answer's `state` and the step's own fields, and the answer is
+    // core's result whole, the new `state` in it; the HUD's state (`hud`) travels the
+    // same way. The needs rows read the world's tuning from `survival` (the IR's
+    // block) and `params` (the pack's flat parameters) on every call; the stamina
+    // rows from `staminaConfig`. Times are the host's play clock in ms. Only what core
+    // dereferences unread is type-checked (`[invalid-input]`): `state` and `hud`
+    // objects, `item` and `stamina` objects, `events` an array, the pool's `actors`
+    // and `actions` lists of objects, `costs` and `state` objects, `start` a number,
+    // and `survival.hud.systems`' `catalog` as `packs.compose` checks it. Core reads every other field itself, and its corpus pins the refusals
+    // (`need_not_tracked`, `unknown_action`, `unknown_modifier`, `bad_amount`,
+    // `not_usable`, `not_held`) as values.
+    /** `survival.needs.tuning { survival?, params? }` → `{ ok, value: SurvivalTuning }` — core's `survivalTuningFromIR`. */
+    "survival.needs.tuning": (args) => survivalOk(survivalTuningOf(args)),
+    /**
+     * `survival.needs.initial { survival?, params?, at? }` → `{ ok, value: SurvivalState }`
+     * — core's `initialSurvival`: each need at its start value, the clock at `at` (0
+     * when absent), the environment at its neutral 50.
+     */
+    "survival.needs.initial": (args) => survivalOk(initialSurvival(survivalTuningOf(args), args.at ?? 0)),
+    /**
+     * `survival.needs.advance { survival?, params?, state, at }` → core's
+     * `advanceSurvival`: `{ state, ticks, skipped, events, expired, hurt }` — decay over
+     * the whole ticks from `state.lastTickAt` to `at` (the remainder kept), band
+     * changes as events, expired modifiers, and the deprivation damage owed to
+     * `hurtPlayer` (whole points; the fraction stays in `state.damageOwed`).
+     */
+    "survival.needs.advance": (args) => {
+      const state = survivalStateOf("survival.needs.advance", args.state);
+      return plain(advanceSurvival(state, survivalTuningOf(args), args.at));
+    },
+    /**
+     * `survival.needs.restore { survival?, params?, state, need, amount, at }` → core's
+     * `restoreNeed`: `{ ok: true, state, events }` or `{ ok: false, reason, state }`
+     * (`need_not_tracked`, `bad_amount`).
+     */
+    "survival.needs.restore": (args) => {
+      const state = survivalStateOf("survival.needs.restore", args.state);
+      return plain(restoreNeed(state, survivalTuningOf(args), args.need, args.amount, args.at));
+    },
+    /**
+     * `survival.needs.action { survival?, params?, state, action, at, amount? }` → core's
+     * `performSurvivalAction`: the restore-actions hook (`eat`, `drink`, `sleep`, each
+     * restoring its row once at its flat amount, or `amount` when stated): `{ ok: true,
+     * state, events }` or `{ ok: false, reason, state }` (`unknown_action`, …).
+     */
+    "survival.needs.action": (args) => {
+      const state = survivalStateOf("survival.needs.action", args.state);
+      return plain(performSurvivalAction(state, survivalTuningOf(args), args.action, args.at, args.amount));
+    },
+    /**
+     * `survival.needs.consume { survival?, params?, state, effects, at }` → core's
+     * `consumeForNeeds`: `{ state, applied: [{ need, amount }], events }` — an item's
+     * `effects` restoring the needs they name.
+     */
+    "survival.needs.consume": (args) => {
+      const state = survivalStateOf("survival.needs.consume", args.state);
+      return plain(consumeForNeeds(state, survivalTuningOf(args), args.effects, args.at));
+    },
+    /**
+     * `survival.needs.useItem { survival?, params?, state, item: { type, quantity?,
+     * effects? }, at }` → core's `useItemForNeeds`: `{ ok: true, state, consumed,
+     * remaining, applied, action, events }` (one of a consumable, food or drink stack
+     * spent; a collectible, document, key or quest item used unspent) or `{ ok: false,
+     * reason, state }` (`not_usable`, `not_held`).
+     */
+    "survival.needs.useItem": (args) => {
+      const m = "survival.needs.useItem";
+      const [state, item] = coded("invalid-input", () => [needObject(m, args.state, "state"), needObject(m, args.item, "item")]);
+      return plain(useItemForNeeds(state, survivalTuningOf(args), item, args.at));
+    },
+    /**
+     * `survival.needs.setTemperature { survival?, params?, state, value, at }` → core's
+     * `setEnvironmentTemperature`: `{ ok: true, state, events }` or `{ ok: false, reason,
+     * state }` (`bad_amount`).
+     */
+    "survival.needs.setTemperature": (args) => {
+      const state = survivalStateOf("survival.needs.setTemperature", args.state);
+      return plain(setEnvironmentTemperature(state, survivalTuningOf(args), args.value, args.at));
+    },
+    /**
+     * `survival.needs.modifier { survival?, params?, state, modifier, at }` → core's
+     * `applyNeedModifier`: `modifier` is a preset id of the tuning's `modifierPresets`
+     * or a modifier object; `{ ok: true, state, events }` or `{ ok: false, reason, state }`
+     * (`unknown_modifier`, `need_not_tracked`, `bad_amount`).
+     */
+    "survival.needs.modifier": (args) => {
+      const state = survivalStateOf("survival.needs.modifier", args.state);
+      return plain(applyNeedModifier(state, survivalTuningOf(args), args.modifier, args.at));
+    },
+    /** `survival.needs.removeModifier { state, id }` → `{ state }` — core's `removeNeedModifier`. */
+    "survival.needs.removeModifier": (args) => {
+      const state = survivalStateOf("survival.needs.removeModifier", args.state);
+      return { state: plain(removeNeedModifier(state, args.id)) };
+    },
+    /** `survival.needs.enable { state, enabled }` → `{ state }` — core's `setSurvivalEnabled`. */
+    "survival.needs.enable": (args) => {
+      const state = survivalStateOf("survival.needs.enable", args.state);
+      return { state: plain(setSurvivalEnabled(state, args.enabled)) };
+    },
+    /**
+     * `survival.needs.save { state, at }` → `{ ok, value: SavedSurvivalNeeds }` — core's
+     * `survivalSaveBlock`: the `survivalNeeds` save extension (`{ readings, modifiers }`).
+     */
+    "survival.needs.save": (args) => {
+      const state = survivalStateOf("survival.needs.save", args.state);
+      return survivalOk(survivalSaveBlock(state, args.at));
+    },
+    /**
+     * `survival.needs.load { block, survival?, params?, at? }` → `{ ok, value:
+     * SurvivalState }` — core's `readSurvivalBlock` then `survivalFromSave` (a null
+     * block is a new playthrough's needs); an unreadable block is the VALUE `{ ok:
+     * false, refusal: { code: 'unreadable_survival', field: 'block', keys } }`, the
+     * keys core could not read.
+     */
+    "survival.needs.load": (args) => {
+      const read = readSurvivalBlock(args.block);
+      if (!read.ok) return { ok: false, refusal: { code: "unreadable_survival", field: "block", keys: plain(read.keys) } };
+      return survivalOk(survivalFromSave(read.value, survivalTuningOf(args), args.at ?? 0));
+    },
+    /**
+     * `survival.hud.view { survival?, params?, state?, hud?, now, visible?, stamina?,
+     * staminaConfig? }` → `{ ok, value: { visible, bars } }` — core's `survivalHudView`:
+     * one bar per tracked need, then the stamina bar when `stamina { current, max }` is
+     * sent, each with its band, tone and flash at `now`. `state` absent is a new
+     * playthrough's at 0, `hud` absent no flashes, `visible` false no bars.
+     */
+    "survival.hud.view": (args) => {
+      const m = "survival.hud.view";
+      const tuning = survivalTuningOf(args);
+      const state = args.state === void 0 || args.state === null ? initialSurvival(tuning, 0) : survivalStateOf(m, args.state);
+      const hud = args.hud === void 0 || args.hud === null ? initialSurvivalHud() : survivalStateOf(m, args.hud, "hud");
+      const stamina = args.stamina ? { ...args.stamina, tuning: staminaTuningOf(args) } : null;
+      return survivalOk(survivalHudView(state, tuning, hud, { now: args.now, visible: args.visible !== false, stamina }));
+    },
+    /** `survival.hud.initial` → `{ hud }` — core's `initialSurvivalHud`: a new HUD, no flashes, no stamina band held yet. */
+    "survival.hud.initial": () => ({ hud: plain(initialSurvivalHud()) }),
+    /**
+     * `survival.hud.reduce { hud, events }` → `{ hud }` — core's `reduceSurvivalHud`:
+     * the band changes among a needs row's `events` recorded as the bars' flashes.
+     * Send every event list a needs row answers.
+     */
+    "survival.hud.reduce": (args) => {
+      const m = "survival.hud.reduce";
+      const [hud, events] = coded("invalid-input", () => [needObject(m, args.hud, "hud"), needArray(m, args.events, "events")]);
+      return { hud: plain(reduceSurvivalHud(hud, events)) };
+    },
+    /**
+     * `survival.hud.stamina { hud, stamina: { current, max }, staminaConfig?, at }` →
+     * `{ hud, band, events }` — core's `reduceStaminaHud`: a new stamina reading on the
+     * bar, its band held with one rest tick of hysteresis, and the drop or climb event
+     * it raises (`need_warning`, `need_critical`, `need_restored`).
+     */
+    "survival.hud.stamina": (args) => {
+      const m = "survival.hud.stamina";
+      const [hud, reading] = coded("invalid-input", () => [needObject(m, args.hud, "hud"), needObject(m, args.stamina, "stamina")]);
+      return plain(reduceStaminaHud(hud, { current: reading.current, max: reading.max }, staminaTuningOf(args), args.at));
+    },
+    /**
+     * `survival.hud.systems { request, catalog }` → `{ ok, value: { needs, stamina,
+     * running, worldActivation } }` — what runs: core's `resolveComposition` over the
+     * request (the `packs.compose` row's) and the catalog the caller sends, read by
+     * `survivalSystemsRunning`, beside the world's own activation
+     * (`resolveWorldActivation` over its `meta.genreConfig.id` and
+     * `meta.enabledModules`). A request core refuses is the VALUE `{ ok: false,
+     * refusal: { code, field: 'request' } }`.
+     */
+    "survival.hud.systems": (args) => {
+      const m = "survival.hud.systems";
+      const catalog = coded("invalid-input", () => catalogOf(m, args.catalog));
+      const request = plain(args.request ?? null);
+      const meta = request && request.world && request.world.meta || null;
+      const genreId = meta && meta.genreConfig && typeof meta.genreConfig.id === "string" ? meta.genreConfig.id : "";
+      const world2 = resolveWorldActivation(genreId, meta ? meta.enabledModules : void 0);
+      let composition;
+      try {
+        composition = resolveComposition(request, catalog);
+      } catch (err) {
+        if (err instanceof CompositionError || err instanceof GenreResolutionError) return { ok: false, refusal: { code: err.code, field: "request" } };
+        throw err;
+      }
+      return survivalOk({ ...survivalSystemsRunning(composition), worldActivation: world2.modules.map((mod) => mod.id) });
+    },
+    /** `survival.stamina.tuning { staminaConfig? }` → `{ ok, value: StaminaTuning }` — core's `staminaTuningFromIR`. */
+    "survival.stamina.tuning": (args) => survivalOk(staminaTuningOf(args)),
+    /** `survival.stamina.state { current, max, staminaConfig? }` → `{ state }` — core's `staminaStateOf` (`fresh`, `winded`, `exhausted`). */
+    "survival.stamina.state": (args) => ({ state: staminaStateOf(args.current, args.max, staminaTuningOf(args)) }),
+    /**
+     * `survival.stamina.spend { current, max, cost, staminaConfig? }` → `{ ok, value:
+     * StaminaSpendResult }` — core's `spendStamina` (an unaffordable spend moves nothing).
+     */
+    "survival.stamina.spend": (args) => survivalOk(spendStamina({ current: args.current, max: args.max, cost: args.cost, tuning: staminaTuningOf(args) })),
+    /**
+     * `survival.stamina.regen { current, max, ticks, rate?, inCombat?, encumbered?,
+     * staminaConfig? }` → `{ ok, value: StaminaRegenResult }` — core's `regenerateStamina`.
+     */
+    "survival.stamina.regen": (args) => survivalOk(
+      regenerateStamina({
+        current: args.current,
+        max: args.max,
+        ticks: args.ticks,
+        tuning: staminaTuningOf(args),
+        rate: args.rate,
+        inCombat: args.inCombat,
+        encumbered: args.encumbered
+      })
+    ),
+    /**
+     * `survival.stamina.clock { lastTickAt, now, tickMs? }` → `{ ticks, lastTickAt }` —
+     * core's `staminaRestClock`: the whole rest ticks (one second of play each) from
+     * the host's last grant to `now`, the remainder kept; a clock that does not move
+     * forward grants none.
+     */
+    "survival.stamina.clock": (args) => plain(staminaRestClock(args.lastTickAt, args.now, args.tickMs)),
+    /**
+     * `survival.stamina.pool.create { staminaConfig?, costs?, actions?, actors?,
+     * survivalActorId?, start?, state? }` → `{ session, view: { tuning, actors } }` —
+     * core's `StaminaPool` for one playthrough, with no KB (each op answers the fact
+     * delta for the host to apply): `costs` the authored cost table, `actions` the IR's
+     * action block (`loadCosts`), `actors` registered in order, `survivalActorId` the
+     * actor whose spends and rest reach the host (`host` in an op's answer), `state` a
+     * saved pool restored, `start` the play clock's first reading (0).
+     */
+    "survival.stamina.pool.create": (args) => {
+      const m = "survival.stamina.pool.create";
+      const input = coded("invalid-input", () => {
+        const actors = optArrayValue(m, args.actors, "actors") ?? [];
+        actors.forEach((a, i) => needObject(m, a, `actors[${i}]`));
+        const actions = optArrayValue(m, args.actions, "actions");
+        (actions ?? []).forEach((a, i) => needObject(m, a, `actions[${i}]`));
+        return {
+          costs: optObject(m, args.costs, "costs") ?? {},
+          actions,
+          actors,
+          state: optObject(m, args.state, "state"),
+          start: optNumber(m, args.start, "start") ?? 0
+        };
+      });
+      const calls = [];
+      const pool = new StaminaPool({
+        tuning: staminaTuningOf(args),
+        costs: input.costs,
+        survival: recordingSurvivalHost(calls),
+        survivalActorId: args.survivalActorId ?? void 0,
+        state: input.state ?? void 0
+      });
+      if (input.actions) pool.loadCosts(input.actions);
+      for (const actor of input.actors) pool.register(actor);
+      return { session: openSession("stamina-pool", { pool, calls, clock: input.start }), view: staminaPoolView(pool) };
+    },
+    /**
+     * `survival.stamina.pool.apply { session, ops }` → `{ results, view }`.
+     * ops: `cost { action }` → `{ cost }` · `afford { actor, action, cost? }` →
+     * `{ affordable }` · `spend { actor, action, cost? }` → `{ action, spend, facts, host }`
+     * · `rest { actor, ticks, inCombat?, encumbered? }` → `{ regen, facts, host }` ·
+     * `play { actor, at, inCombat?, encumbered? }` → `{ at, ticks, lastTickAt, regen,
+     * host }` (the session's play clock reaches `at`; its whole seconds since the last
+     * grant are rest ticks, core's `staminaRestClock`) · `band { actor }` → `{ state }`
+     * · `save` → `{ state }` (core's `serialize()`). `facts` is the `energy/3` delta
+     * (`{ retract, assert }`) for the host's KB; `host` the `ISurvivalSystem` calls core
+     * made for `survivalActorId` (`consumeStamina`, `recoverStamina`), in order.
+     */
+    "survival.stamina.pool.apply": async (args) => {
+      const m = "survival.stamina.pool.apply";
+      const s = session(m, args, "stamina-pool");
+      s.calls.length = 0;
+      const host = () => s.calls.splice(0, s.calls.length);
+      const results = await applyOps(m, s, args, {
+        cost: ({ pool }, op) => ({ cost: pool.costOf(op.action) }),
+        afford: ({ pool }, op) => ({ affordable: pool.canAfford(op.actor, op.action, op.cost ?? void 0) }),
+        spend: async ({ pool }, op) => {
+          const r = await pool.spend(op.actor, { action: op.action, cost: op.cost ?? void 0 });
+          return { action: r.action, spend: r.spend, facts: r.facts, host: host() };
+        },
+        rest: async ({ pool }, op) => {
+          const r = await pool.rest(op.actor, { ticks: op.ticks, inCombat: op.inCombat, encumbered: op.encumbered });
+          return { regen: r.regen, facts: r.facts, host: host() };
+        },
+        play: async (st, op) => {
+          const c = staminaRestClock(st.clock, op.at);
+          st.clock = c.lastTickAt;
+          const r = await st.pool.rest(op.actor, { ticks: c.ticks, inCombat: op.inCombat, encumbered: op.encumbered });
+          return { at: op.at, ticks: c.ticks, lastTickAt: c.lastTickAt, regen: r.regen, host: host() };
+        },
+        band: ({ pool }, op) => ({ state: pool.stateOf(op.actor) }),
+        save: ({ pool }) => ({ state: pool.serialize() })
+      });
+      return { results: plain(results), view: staminaPoolView(s.pool) };
+    },
     // ── the genre HUD and the world rules panel (P9a) ──
     // Each row is one of core's corpus runners and nothing else: the args are
     // `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and
@@ -38038,6 +39445,8 @@ player_meets_cefr(Player, RequiredLevel) :-
     "layout.chooseDoorPart": layoutRow("chooseDoorPart"),
     "layout.bodyStature": layoutRow("bodyStature"),
     "layout.fitBuildingToLot": layoutRow("fitBuildingToLot"),
+    // PL.native-survival-rows' re-pin: new in LAYOUT_OPS at core 6cd4b4e (PL.fit-front-line, PL.brightwater-door-facing).
+    "layout.buildingAreaOf": layoutRow("buildingAreaOf"),
     "layout.findFitOverlaps": layoutRow("findFitOverlaps"),
     "layout.settleSeparation": layoutRow("settleSeparation"),
     "layout.settleBodies": layoutRow("settleBodies"),
@@ -38053,6 +39462,9 @@ player_meets_cefr(Player, RequiredLevel) :-
     "layout.layoutConstants": layoutRow("layoutConstants"),
     // PL.start-clearance (U78): the start's clear ground, new in LAYOUT_OPS at core f9aef13.
     "layout.startClearOutline": layoutRow("startClearOutline"),
+    // PL.native-survival-rows' re-pin: a door's approach and the neighbour settle that keeps it clear, new at core 6cd4b4e.
+    "layout.settleDoorFrontage": layoutRow("settleDoorFrontage"),
+    "layout.doorApproachOutline": layoutRow("doorApproachOutline"),
     "layout.buildGroundPlan": layoutRow("buildGroundPlan"),
     "layout.gradeTerrain": layoutRow("gradeTerrain"),
     "layout.followSettledBuildings": layoutRow("followSettledBuildings"),

@@ -1,0 +1,59 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "strategy",
+  "version": "0.1.0",
+  "name": "Strategy",
+  "summary": "The world as a board: its businesses are holdings that yield by trade per hand per turn, its settlements the territory a strict majority controls, its residents the hands; the player takes holdings, puts people to work and feeds them, turn by turn, against keepers who hold and wait.",
+  "kind": "optional",
+  "phase": "P9j",
+  "catalog": ["genre-strategy"],
+  "core": {
+    "modules": ["strategy"],
+    "predicatePacks": ["strategy"],
+    "hostInterfaces": ["IAgentActionHost"],
+    "corpus": [
+      "conformance/strategy/campaign.json",
+      "conformance/strategy/run.json",
+      "conformance/strategy/save.json",
+      "conformance/prolog/mechanic-strategy.json",
+      "conformance/genre-pieces/kinds.json",
+      "conformance/genre-pieces/build-plan.json"
+    ],
+    "saveExtensions": ["strategy"]
+  },
+  "requires": [{ "id": "business-sim" }],
+  "parameters": [
+    { "id": "claimCoin", "type": "integer", "min": 0, "maps": "StrategyTuning.claimCoin", "source": "core-default", "doc": "coin a holding costs when the world's strategy section names no default price (10)" },
+    { "id": "upkeepFood", "type": "integer", "min": 0, "maps": "StrategyTuning.upkeepFood", "source": "core-default", "doc": "food one worker eats a turn when the section names no upkeep (1)" },
+    { "id": "startingCoin", "type": "integer", "min": 0, "maps": "StrategyTuning.startingCoin", "source": "core-default", "doc": "coin in the player's starting purse when the section names none (25)" },
+    { "id": "startingFood", "type": "integer", "min": 0, "maps": "StrategyTuning.startingFood", "source": "core-default", "doc": "food in the player's starting purse when the section names none (6)" },
+    { "id": "workersPerHolding", "type": "integer", "min": 0, "max": 20, "maps": "StrategyTuning.workersPerHolding", "source": "core-default", "doc": "hands one holding takes besides its holder when the section names none (2)" }
+  ],
+  "extensionPoints": [
+    { "id": "yields-and-prices", "kind": "prolog-facts", "signature": "WorldIR.strategy {resources?, outputs?, claimCosts?, workerUpkeep?, workersPerHolding?, startingStock?, playerFaction?}", "doc": "a world's own table over core's (src/strategy/strategy.ts): authored rows win, table for table" },
+    { "id": "on-work", "kind": "binding-hook", "signature": "IAgentActionHost.perform(ActionOrder {action: work, target: business})", "doc": "each remaining worker turning up at their holding at the end of a turn" },
+    { "id": "campaign", "kind": "save-extension", "signature": "currentState.extensions.strategy = StrategyDirector.serialize()", "doc": "read with readStrategyBlock (src/strategy/strategy-save.ts), restored with StrategyDirector.restore over the same world's campaign" }
+  ],
+  "styles": {
+    "tokens": ["accent", "warning", "text_secondary"],
+    "art": ["building.strategy.*", "npc.strategy.*"],
+    "layouts": ["board", "resource-bar", "turn-button"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "src/strategy/strategy.ts builds the campaign (campaignForWorld: holdings, yields, prices, upkeep, the board and its neighbours from the world and its strategy section); StrategyDirector (src/game-engine/logic/StrategyDirector.ts) remembers holders, stockpiles, workers and the turn and asks the KB every question; src/strategy/strategy-save.ts is the extensions.strategy block. The engine draws the board, the resource bar and the turn button.",
+    "notes": [
+      "Only the player's faction acts: the keepers hold, earn and wait. There is no opponent AI in this pack.",
+      "End a turn with endTurn(): a faction that cannot feed its workers sends them home (canonically last first) before the turn's net is added, and every remaining worker is told to work.",
+      "A strict majority of a settlement's trading businesses is control; control of every settlement that trades is victory.",
+      "City-building uses this module (U87(6)); player construction and base building (catalog construction-building-placement) is port-later and not part of this pack."
+    ],
+    "doNot": [
+      "Change a stockpile or a holder outside the director: the KB and the director must say the same.",
+      "Store a turn's net, control or victory in a save: they are derived from the board."
+    ]
+  }
+}

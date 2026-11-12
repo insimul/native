@@ -1,0 +1,55 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "puzzle",
+  "version": "0.1.0",
+  "name": "Puzzle",
+  "summary": "Riddles the world's own facts answer and locks opened by what was found out: a puzzle authored in the world or generated from its businesses, people, secrets, texts and keys, played by a director that remembers clues, answers, locks and keys while the knowledge base gives every verdict.",
+  "kind": "optional",
+  "phase": "P9j",
+  "catalog": ["puzzle-rule-module"],
+  "core": {
+    "modules": ["puzzle"],
+    "predicatePacks": ["puzzle"],
+    "hostInterfaces": ["IAgentActionHost"],
+    "corpus": [
+      "conformance/puzzle/definition.json",
+      "conformance/puzzle/run.json",
+      "conformance/puzzle/save.json",
+      "conformance/prolog/mechanic-puzzle.json",
+      "conformance/genre-pieces/kinds.json",
+      "conformance/genre-pieces/build-plan.json"
+    ],
+    "saveExtensions": ["puzzle"]
+  },
+  "requires": [{ "id": "quests" }],
+  "parameters": [
+    { "id": "maxAttempts", "type": "integer", "min": 1, "maps": "PuzzleTuning.maxAttempts", "source": "core-default", "doc": "wrong answers a riddle tolerates when the world's puzzle section names no limit (3); an authored limit, or null for never, wins" }
+  ],
+  "extensionPoints": [
+    { "id": "riddles-and-locks", "kind": "prolog-facts", "signature": "WorldIR.puzzle {riddles: [{id, relation, subject, prompt?, clues?}], locks: [{id, target, needs: [{kind: riddle|item|clue|lock, ref}], holds?}], finalLock?, maxAttempts?}", "doc": "an authored puzzle; with no riddles one is generated from the world (src/puzzle/puzzle.ts)" },
+    { "id": "on-unlock", "kind": "binding-hook", "signature": "IAgentActionHost.perform(ActionOrder {action: open_container, target})", "doc": "the lid lifting: the engine plays it; the decision is already core's" },
+    { "id": "puzzle-run", "kind": "save-extension", "signature": "currentState.extensions.puzzle = PuzzleDirector.serialize()", "doc": "read with readPuzzleBlock (src/puzzle/puzzle-save.ts), restored with PuzzleDirector.restore over the same world's definition" }
+  ],
+  "styles": {
+    "tokens": ["accent", "text_secondary"],
+    "art": ["item.puzzle.*", "prop.puzzle.*"],
+    "layouts": ["riddle-prompt", "lock-panel"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "src/puzzle/puzzle.ts builds the puzzle (puzzleForWorld: the world's authored section, else generated from it); PuzzleDirector (src/game-engine/logic/PuzzleDirector.ts) remembers each actor's clues, answers, opened locks and taken keys, and asks the KB every question; src/puzzle/puzzle-save.ts is the extensions.puzzle block. The engine draws the riddle prompt, the choices (puzzleChoices) and the lock, and plays open_container when told.",
+    "notes": [
+      "Give the director evidence, not verdicts: findClue when a clue text is read, answer with the answer the player chose; whether it is right is puzzle_correct/2's.",
+      "Publish the definition (and puzzleWorldFacts when the KB is a slice) before the first question.",
+      "A save keeps only the director's state; build the puzzle again from the same world on load and restore into a fresh director.",
+      "Puzzle mini-games (catalog puzzle-minigames: riddle, combination, cipher, lockpick, sequence and word puzzles in a modal) are a later P9j slice: do not generate one from this pack."
+    ],
+    "doNot": [
+      "Put a riddle's answer in the prompt or the binding: the answer is the world's fact.",
+      "Open a container a lock is on without unlock() saying so."
+    ]
+  }
+}

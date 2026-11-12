@@ -3,7 +3,7 @@
  "description": "core's quest-golden corpora through quest.hydrate and quest.radiantTick (the engines' parity surface); the radiant facts are an order-independent multiset, as core declares them",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "603063d6f58ba99bb7afcf1d6d32f2932b8767e5",
+  "coreCommit": "6cd4b4e499efde9c73505fae1f397611138c154e",
   "files": {
    "conformance/quests/hydration-cases.json": "f735845a1c2d227867e5c8a489117e10a462ed387df104d25a48cfdd47a477f1",
    "conformance/quests/radiant-cases.json": "d09e08e434fb1c4adcc09c2bb7727f5719a3352052b81b2ebb8eae840ed448d5"

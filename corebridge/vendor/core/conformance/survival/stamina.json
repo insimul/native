@@ -1,0 +1,1923 @@
+{
+  "area": "survival-stamina",
+  "catalog": "survival-stamina",
+  "description": "The stamina pool (P9c.core; catalog survival-stamina; src/stamina/stamina.ts and src/game-engine/logic/StaminaPool.ts): one meter shared by combat and traversal, spent by the action table's EnergyCost and handed to ISurvivalSystem. Ops: tuning {staminaConfig?} -> StaminaTuning (per field over DEFAULT_STAMINA_TUNING); bands {staminaConfig?, readings} -> each reading's state (exhausted if C x 100 <= M x exhaustedPercent, else winded if <= M x windedPercent, else fresh; M <= 0 is fresh); spend {current, max, cost, staminaConfig?} -> StaminaSpendResult (cost floored at 0; unaffordable moves nothing); regen {current, max, ticks, rate?, inCombat?, encumbered?, staminaConfig?} -> StaminaRegenResult (rate included) (combat rate first, then encumbered floor(base x multiplier), then base; floor(rate x ticks), capped at max); pool {staminaConfig?, costs?, actions?, actors, survivalActorId?, steps: [{do: cost (action) | afford (actor, action, cost?) | spend (actor, action, cost?) | rest (actor, ticks, inCombat?, encumbered?) | play (actor, at, inCombat?, encumbered?: the host's play clock reaches at, and the whole seconds since its last tick are rest ticks, from input start, default 0) | band (actor) | save}]} -> {tuning, steps}, a spend or rest reporting its energy/3 fact delta and host: the ISurvivalSystem calls it made (consumeStamina / recoverStamina, only for survivalActorId, only for a non-zero amount); clock {start?, tickMs?, readings} -> each reading's {now, ticks, lastTickAt} (a rest tick is 1000 ms of play, whole ticks in (lastTickAt, now], the remainder kept; none when the clock does not move or goes back). Every tick of play is rest: there is no at-rest condition beyond the rate (combat, encumbrance). Runner: src/survival/systems-corpus.ts. Every case {name, op, input, expected}; compare exactly, object key sets included; an unknown op or step is an error, never a skip. Regenerate with npm run survival-corpus; npm run survival-corpus:check fails on any difference. See docs/survival-systems.md.",
+  "version": 1,
+  "ops": [
+    "tuning",
+    "bands",
+    "spend",
+    "regen",
+    "pool",
+    "clock"
+  ],
+  "contract": {
+    "rules": {
+      "restTick": "A StaminaPool.rest tick is one second of play (STAMINA_REST_TICK_MS 1000): StaminaConfig.recoveryRate is per second, and each original template recovered recoveryRate x delta seconds. A host grants the whole seconds of its play clock since its last grant and keeps the remainder (staminaRestClock), as advanceSurvival does for the needs.",
+      "atRest": "There is no at-rest condition: every tick of play recovers, including one in which the actor jumped, ran or swung (each original template recovered every frame whatever the player did). Only the rate changes: in combat the combat rate (stamina_regen/2's cut clause), encumbered the reduced rate."
+    },
+    "openQuestions": [
+      "Whether recovery should pause for a while after a spend (a common design; none of the original engines had one): needs_ruling if wanted, with its delay."
+    ]
+  },
+  "cases": [
+    {
+      "name": "tuning: no survival section is core's defaults",
+      "op": "tuning",
+      "input": {},
+      "expected": {
+        "ok": true,
+        "value": {
+          "maxStamina": 100,
+          "recoveryRate": 5,
+          "combatRecoveryRate": 0,
+          "encumberedRecoveryMultiplier": 0.5,
+          "windedPercent": 40,
+          "exhaustedPercent": 15
+        }
+      }
+    },
+    {
+      "name": "tuning: an older world authored actionDriven and recoveryRate only; the rest fall back per field",
+      "op": "tuning",
+      "input": {
+        "staminaConfig": {
+          "actionDriven": true,
+          "recoveryRate": 2
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "maxStamina": 100,
+          "recoveryRate": 2,
+          "combatRecoveryRate": 0,
+          "encumberedRecoveryMultiplier": 0.5,
+          "windedPercent": 40,
+          "exhaustedPercent": 15
+        }
+      }
+    },
+    {
+      "name": "tuning: a fully authored staminaConfig",
+      "op": "tuning",
+      "input": {
+        "staminaConfig": {
+          "actionDriven": true,
+          "recoveryRate": 3,
+          "maxStamina": 80,
+          "combatRecoveryRate": 1,
+          "encumberedRecoveryMultiplier": 0.25,
+          "windedPercent": 50,
+          "exhaustedPercent": 20
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "maxStamina": 80,
+          "recoveryRate": 3,
+          "combatRecoveryRate": 1,
+          "encumberedRecoveryMultiplier": 0.25,
+          "windedPercent": 50,
+          "exhaustedPercent": 20
+        }
+      }
+    },
+    {
+      "name": "bands: exhausted at <= 15%, else winded at <= 40%, by integer comparison; no max reads fresh",
+      "op": "bands",
+      "input": {
+        "readings": [
+          {
+            "current": 100,
+            "max": 100
+          },
+          {
+            "current": 41,
+            "max": 100
+          },
+          {
+            "current": 40,
+            "max": 100
+          },
+          {
+            "current": 16,
+            "max": 100
+          },
+          {
+            "current": 15,
+            "max": 100
+          },
+          {
+            "current": 0,
+            "max": 100
+          },
+          {
+            "current": 6,
+            "max": 40
+          },
+          {
+            "current": 7,
+            "max": 40
+          },
+          {
+            "current": 0,
+            "max": 0
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": [
+          {
+            "current": 100,
+            "max": 100,
+            "state": "fresh"
+          },
+          {
+            "current": 41,
+            "max": 100,
+            "state": "fresh"
+          },
+          {
+            "current": 40,
+            "max": 100,
+            "state": "winded"
+          },
+          {
+            "current": 16,
+            "max": 100,
+            "state": "winded"
+          },
+          {
+            "current": 15,
+            "max": 100,
+            "state": "exhausted"
+          },
+          {
+            "current": 0,
+            "max": 100,
+            "state": "exhausted"
+          },
+          {
+            "current": 6,
+            "max": 40,
+            "state": "exhausted"
+          },
+          {
+            "current": 7,
+            "max": 40,
+            "state": "winded"
+          },
+          {
+            "current": 0,
+            "max": 0,
+            "state": "fresh"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bands: the world's own thresholds",
+      "op": "bands",
+      "input": {
+        "staminaConfig": {
+          "actionDriven": true,
+          "recoveryRate": 5,
+          "windedPercent": 50,
+          "exhaustedPercent": 20
+        },
+        "readings": [
+          {
+            "current": 51,
+            "max": 100
+          },
+          {
+            "current": 50,
+            "max": 100
+          },
+          {
+            "current": 21,
+            "max": 100
+          },
+          {
+            "current": 20,
+            "max": 100
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": [
+          {
+            "current": 51,
+            "max": 100,
+            "state": "fresh"
+          },
+          {
+            "current": 50,
+            "max": 100,
+            "state": "winded"
+          },
+          {
+            "current": 21,
+            "max": 100,
+            "state": "winded"
+          },
+          {
+            "current": 20,
+            "max": 100,
+            "state": "exhausted"
+          }
+        ]
+      }
+    },
+    {
+      "name": "spend: a spend into winded reports becameWinded",
+      "op": "spend",
+      "input": {
+        "current": 50,
+        "max": 100,
+        "cost": 10
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "affordable": true,
+          "cost": 10,
+          "before": 50,
+          "after": 40,
+          "max": 100,
+          "spent": 10,
+          "stateBefore": "fresh",
+          "state": "winded",
+          "becameWinded": true,
+          "becameExhausted": false
+        }
+      }
+    },
+    {
+      "name": "spend: fresh straight to exhausted is becameExhausted, not becameWinded",
+      "op": "spend",
+      "input": {
+        "current": 50,
+        "max": 100,
+        "cost": 40
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "affordable": true,
+          "cost": 40,
+          "before": 50,
+          "after": 10,
+          "max": 100,
+          "spent": 40,
+          "stateBefore": "fresh",
+          "state": "exhausted",
+          "becameWinded": false,
+          "becameExhausted": true
+        }
+      }
+    },
+    {
+      "name": "spend: winded to exhausted is becameExhausted",
+      "op": "spend",
+      "input": {
+        "current": 30,
+        "max": 100,
+        "cost": 20
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "affordable": true,
+          "cost": 20,
+          "before": 30,
+          "after": 10,
+          "max": 100,
+          "spent": 20,
+          "stateBefore": "winded",
+          "state": "exhausted",
+          "becameWinded": false,
+          "becameExhausted": true
+        }
+      }
+    },
+    {
+      "name": "spend: an unaffordable spend moves nothing",
+      "op": "spend",
+      "input": {
+        "current": 10,
+        "max": 100,
+        "cost": 11
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "affordable": false,
+          "cost": 11,
+          "before": 10,
+          "after": 10,
+          "max": 100,
+          "spent": 0,
+          "stateBefore": "exhausted",
+          "state": "exhausted",
+          "becameWinded": false,
+          "becameExhausted": false
+        }
+      }
+    },
+    {
+      "name": "spend: emptying the meter exactly is allowed",
+      "op": "spend",
+      "input": {
+        "current": 10,
+        "max": 100,
+        "cost": 10
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "affordable": true,
+          "cost": 10,
+          "before": 10,
+          "after": 0,
+          "max": 100,
+          "spent": 10,
+          "stateBefore": "exhausted",
+          "state": "exhausted",
+          "becameWinded": false,
+          "becameExhausted": false
+        }
+      }
+    },
+    {
+      "name": "spend: a fractional cost floors",
+      "op": "spend",
+      "input": {
+        "current": 50,
+        "max": 100,
+        "cost": 2.9
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "affordable": true,
+          "cost": 2,
+          "before": 50,
+          "after": 48,
+          "max": 100,
+          "spent": 2,
+          "stateBefore": "fresh",
+          "state": "fresh",
+          "becameWinded": false,
+          "becameExhausted": false
+        }
+      }
+    },
+    {
+      "name": "spend: a negative cost is free",
+      "op": "spend",
+      "input": {
+        "current": 50,
+        "max": 100,
+        "cost": -5
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "affordable": true,
+          "cost": 0,
+          "before": 50,
+          "after": 50,
+          "max": 100,
+          "spent": 0,
+          "stateBefore": "fresh",
+          "state": "fresh",
+          "becameWinded": false,
+          "becameExhausted": false
+        }
+      }
+    },
+    {
+      "name": "regen: rate x ticks, floored, capped at max",
+      "op": "regen",
+      "input": {
+        "current": 90,
+        "max": 100,
+        "ticks": 3
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "before": 90,
+          "after": 100,
+          "max": 100,
+          "rate": 5,
+          "recovered": 10,
+          "state": "fresh"
+        }
+      }
+    },
+    {
+      "name": "regen: in combat the combat rate (0) wins over encumbrance",
+      "op": "regen",
+      "input": {
+        "current": 10,
+        "max": 100,
+        "ticks": 4,
+        "inCombat": true,
+        "encumbered": true
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "before": 10,
+          "after": 10,
+          "max": 100,
+          "rate": 0,
+          "recovered": 0,
+          "state": "exhausted"
+        }
+      }
+    },
+    {
+      "name": "regen: encumbered recovers half the base, floored",
+      "op": "regen",
+      "input": {
+        "current": 10,
+        "max": 100,
+        "ticks": 2,
+        "encumbered": true
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "before": 10,
+          "after": 14,
+          "max": 100,
+          "rate": 2,
+          "recovered": 4,
+          "state": "exhausted"
+        }
+      }
+    },
+    {
+      "name": "regen: an actor's own regen base replaces the world's rate",
+      "op": "regen",
+      "input": {
+        "current": 10,
+        "max": 100,
+        "ticks": 2,
+        "rate": 3
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "before": 10,
+          "after": 16,
+          "max": 100,
+          "rate": 3,
+          "recovered": 6,
+          "state": "winded"
+        }
+      }
+    },
+    {
+      "name": "regen: a fractional tick buys nothing until it is a whole point",
+      "op": "regen",
+      "input": {
+        "current": 10,
+        "max": 100,
+        "ticks": 0.5,
+        "rate": 1
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "before": 10,
+          "after": 10,
+          "max": 100,
+          "rate": 1,
+          "recovered": 0,
+          "state": "exhausted"
+        }
+      }
+    },
+    {
+      "name": "regen: rest out of exhausted into winded and on to fresh",
+      "op": "regen",
+      "input": {
+        "current": 10,
+        "max": 100,
+        "ticks": 7
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "before": 10,
+          "after": 45,
+          "max": 100,
+          "rate": 5,
+          "recovered": 35,
+          "state": "fresh"
+        }
+      }
+    },
+    {
+      "name": "pool: one meter for combat and traversal: three heavy attacks leave a climb unaffordable; rest recovers; what reaches ISurvivalSystem",
+      "op": "pool",
+      "input": {
+        "actions": [
+          {
+            "id": "heavy_attack",
+            "energyCost": 30
+          },
+          {
+            "id": "dodge",
+            "energyCost": 10.7
+          },
+          {
+            "id": "look",
+            "energyCost": "free"
+          }
+        ],
+        "actors": [
+          {
+            "id": "player"
+          }
+        ],
+        "survivalActorId": "player",
+        "steps": [
+          {
+            "do": "cost",
+            "action": "heavy_attack"
+          },
+          {
+            "do": "cost",
+            "action": "dodge"
+          },
+          {
+            "do": "cost",
+            "action": "look"
+          },
+          {
+            "do": "spend",
+            "actor": "player",
+            "action": "heavy_attack"
+          },
+          {
+            "do": "spend",
+            "actor": "player",
+            "action": "heavy_attack"
+          },
+          {
+            "do": "band",
+            "actor": "player"
+          },
+          {
+            "do": "spend",
+            "actor": "player",
+            "action": "heavy_attack"
+          },
+          {
+            "do": "band",
+            "actor": "player"
+          },
+          {
+            "do": "afford",
+            "actor": "player",
+            "action": "climb",
+            "cost": 15
+          },
+          {
+            "do": "spend",
+            "actor": "player",
+            "action": "climb",
+            "cost": 15
+          },
+          {
+            "do": "rest",
+            "actor": "player",
+            "ticks": 2
+          },
+          {
+            "do": "rest",
+            "actor": "player",
+            "ticks": 3,
+            "inCombat": true
+          },
+          {
+            "do": "save"
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "tuning": {
+            "maxStamina": 100,
+            "recoveryRate": 5,
+            "combatRecoveryRate": 0,
+            "encumberedRecoveryMultiplier": 0.5,
+            "windedPercent": 40,
+            "exhaustedPercent": 15
+          },
+          "steps": [
+            {
+              "do": "cost",
+              "action": "heavy_attack",
+              "cost": 30
+            },
+            {
+              "do": "cost",
+              "action": "dodge",
+              "cost": 10
+            },
+            {
+              "do": "cost",
+              "action": "look",
+              "cost": 0
+            },
+            {
+              "do": "spend",
+              "actor": "player",
+              "action": "heavy_attack",
+              "spend": {
+                "affordable": true,
+                "cost": 30,
+                "before": 100,
+                "after": 70,
+                "max": 100,
+                "spent": 30,
+                "stateBefore": "fresh",
+                "state": "fresh",
+                "becameWinded": false,
+                "becameExhausted": false
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      100,
+                      100
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      70,
+                      100
+                    ]
+                  }
+                ]
+              },
+              "host": [
+                {
+                  "method": "consumeStamina",
+                  "amount": 30
+                }
+              ]
+            },
+            {
+              "do": "spend",
+              "actor": "player",
+              "action": "heavy_attack",
+              "spend": {
+                "affordable": true,
+                "cost": 30,
+                "before": 70,
+                "after": 40,
+                "max": 100,
+                "spent": 30,
+                "stateBefore": "fresh",
+                "state": "winded",
+                "becameWinded": true,
+                "becameExhausted": false
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      70,
+                      100
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      40,
+                      100
+                    ]
+                  }
+                ]
+              },
+              "host": [
+                {
+                  "method": "consumeStamina",
+                  "amount": 30
+                }
+              ]
+            },
+            {
+              "do": "band",
+              "actor": "player",
+              "state": "winded"
+            },
+            {
+              "do": "spend",
+              "actor": "player",
+              "action": "heavy_attack",
+              "spend": {
+                "affordable": true,
+                "cost": 30,
+                "before": 40,
+                "after": 10,
+                "max": 100,
+                "spent": 30,
+                "stateBefore": "winded",
+                "state": "exhausted",
+                "becameWinded": false,
+                "becameExhausted": true
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      40,
+                      100
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      10,
+                      100
+                    ]
+                  }
+                ]
+              },
+              "host": [
+                {
+                  "method": "consumeStamina",
+                  "amount": 30
+                }
+              ]
+            },
+            {
+              "do": "band",
+              "actor": "player",
+              "state": "exhausted"
+            },
+            {
+              "do": "afford",
+              "actor": "player",
+              "action": "climb",
+              "affordable": false
+            },
+            {
+              "do": "spend",
+              "actor": "player",
+              "action": "climb",
+              "spend": {
+                "affordable": false,
+                "cost": 15,
+                "before": 10,
+                "after": 10,
+                "max": 100,
+                "spent": 0,
+                "stateBefore": "exhausted",
+                "state": "exhausted",
+                "becameWinded": false,
+                "becameExhausted": false
+              },
+              "facts": {
+                "retract": [],
+                "assert": []
+              },
+              "host": []
+            },
+            {
+              "do": "rest",
+              "actor": "player",
+              "regen": {
+                "before": 10,
+                "after": 20,
+                "max": 100,
+                "rate": 5,
+                "recovered": 10,
+                "state": "winded"
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      10,
+                      100
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      20,
+                      100
+                    ]
+                  }
+                ]
+              },
+              "host": [
+                {
+                  "method": "recoverStamina",
+                  "amount": 10
+                }
+              ]
+            },
+            {
+              "do": "rest",
+              "actor": "player",
+              "regen": {
+                "before": 20,
+                "after": 20,
+                "max": 100,
+                "rate": 0,
+                "recovered": 0,
+                "state": "winded"
+              },
+              "facts": {
+                "retract": [],
+                "assert": []
+              },
+              "host": []
+            },
+            {
+              "do": "save",
+              "state": {
+                "actors": [
+                  {
+                    "id": "player",
+                    "max": 100,
+                    "current": 20
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "pool: only the survival actor's spends and recoveries reach the host; an actor with no meter pays nothing",
+      "op": "pool",
+      "input": {
+        "costs": {
+          "swing": 20
+        },
+        "actors": [
+          {
+            "id": "player"
+          },
+          {
+            "id": "guard",
+            "max": 60
+          }
+        ],
+        "survivalActorId": "player",
+        "steps": [
+          {
+            "do": "spend",
+            "actor": "guard",
+            "action": "swing"
+          },
+          {
+            "do": "spend",
+            "actor": "player",
+            "action": "swing"
+          },
+          {
+            "do": "spend",
+            "actor": "ghost",
+            "action": "swing"
+          },
+          {
+            "do": "afford",
+            "actor": "ghost",
+            "action": "swing",
+            "cost": 1000
+          },
+          {
+            "do": "band",
+            "actor": "ghost"
+          },
+          {
+            "do": "rest",
+            "actor": "guard",
+            "ticks": 1
+          },
+          {
+            "do": "rest",
+            "actor": "ghost",
+            "ticks": 1
+          },
+          {
+            "do": "save"
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "tuning": {
+            "maxStamina": 100,
+            "recoveryRate": 5,
+            "combatRecoveryRate": 0,
+            "encumberedRecoveryMultiplier": 0.5,
+            "windedPercent": 40,
+            "exhaustedPercent": 15
+          },
+          "steps": [
+            {
+              "do": "spend",
+              "actor": "guard",
+              "action": "swing",
+              "spend": {
+                "affordable": true,
+                "cost": 20,
+                "before": 60,
+                "after": 40,
+                "max": 60,
+                "spent": 20,
+                "stateBefore": "fresh",
+                "state": "fresh",
+                "becameWinded": false,
+                "becameExhausted": false
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "guard",
+                      60,
+                      60
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "guard",
+                      40,
+                      60
+                    ]
+                  }
+                ]
+              },
+              "host": []
+            },
+            {
+              "do": "spend",
+              "actor": "player",
+              "action": "swing",
+              "spend": {
+                "affordable": true,
+                "cost": 20,
+                "before": 100,
+                "after": 80,
+                "max": 100,
+                "spent": 20,
+                "stateBefore": "fresh",
+                "state": "fresh",
+                "becameWinded": false,
+                "becameExhausted": false
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      100,
+                      100
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      80,
+                      100
+                    ]
+                  }
+                ]
+              },
+              "host": [
+                {
+                  "method": "consumeStamina",
+                  "amount": 20
+                }
+              ]
+            },
+            {
+              "do": "spend",
+              "actor": "ghost",
+              "action": "swing",
+              "spend": {
+                "affordable": true,
+                "cost": 20,
+                "before": 0,
+                "after": 0,
+                "max": 0,
+                "spent": 0,
+                "stateBefore": "fresh",
+                "state": "fresh",
+                "becameWinded": false,
+                "becameExhausted": false
+              },
+              "facts": {
+                "retract": [],
+                "assert": []
+              },
+              "host": []
+            },
+            {
+              "do": "afford",
+              "actor": "ghost",
+              "action": "swing",
+              "affordable": true
+            },
+            {
+              "do": "band",
+              "actor": "ghost",
+              "state": "fresh"
+            },
+            {
+              "do": "rest",
+              "actor": "guard",
+              "regen": {
+                "before": 40,
+                "after": 45,
+                "max": 60,
+                "rate": 5,
+                "recovered": 5,
+                "state": "fresh"
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "guard",
+                      40,
+                      60
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "guard",
+                      45,
+                      60
+                    ]
+                  }
+                ]
+              },
+              "host": []
+            },
+            {
+              "do": "rest",
+              "actor": "ghost",
+              "regen": {
+                "before": 0,
+                "after": 0,
+                "max": 0,
+                "rate": 0,
+                "recovered": 0,
+                "state": "fresh"
+              },
+              "facts": {
+                "retract": [],
+                "assert": []
+              },
+              "host": []
+            },
+            {
+              "do": "save",
+              "state": {
+                "actors": [
+                  {
+                    "id": "player",
+                    "max": 100,
+                    "current": 80
+                  },
+                  {
+                    "id": "guard",
+                    "max": 60,
+                    "current": 45
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "pool: a registered current clamps into [0, max]; an actor's regen base is their own rate; an unpriced action is free",
+      "op": "pool",
+      "input": {
+        "staminaConfig": {
+          "actionDriven": true,
+          "recoveryRate": 5,
+          "maxStamina": 80
+        },
+        "actors": [
+          {
+            "id": "npc",
+            "current": 150,
+            "regenBase": 2
+          },
+          {
+            "id": "npc2",
+            "current": 10,
+            "regenBase": 2
+          },
+          {
+            "id": "npc3",
+            "current": -4
+          }
+        ],
+        "steps": [
+          {
+            "do": "band",
+            "actor": "npc"
+          },
+          {
+            "do": "rest",
+            "actor": "npc",
+            "ticks": 3
+          },
+          {
+            "do": "rest",
+            "actor": "npc2",
+            "ticks": 3
+          },
+          {
+            "do": "band",
+            "actor": "npc3"
+          },
+          {
+            "do": "spend",
+            "actor": "npc3",
+            "action": "wave"
+          },
+          {
+            "do": "save"
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "tuning": {
+            "maxStamina": 80,
+            "recoveryRate": 5,
+            "combatRecoveryRate": 0,
+            "encumberedRecoveryMultiplier": 0.5,
+            "windedPercent": 40,
+            "exhaustedPercent": 15
+          },
+          "steps": [
+            {
+              "do": "band",
+              "actor": "npc",
+              "state": "fresh"
+            },
+            {
+              "do": "rest",
+              "actor": "npc",
+              "regen": {
+                "before": 80,
+                "after": 80,
+                "max": 80,
+                "rate": 2,
+                "recovered": 0,
+                "state": "fresh"
+              },
+              "facts": {
+                "retract": [],
+                "assert": []
+              },
+              "host": []
+            },
+            {
+              "do": "rest",
+              "actor": "npc2",
+              "regen": {
+                "before": 10,
+                "after": 16,
+                "max": 80,
+                "rate": 2,
+                "recovered": 6,
+                "state": "winded"
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "npc2",
+                      10,
+                      80
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "npc2",
+                      16,
+                      80
+                    ]
+                  }
+                ]
+              },
+              "host": []
+            },
+            {
+              "do": "band",
+              "actor": "npc3",
+              "state": "exhausted"
+            },
+            {
+              "do": "spend",
+              "actor": "npc3",
+              "action": "wave",
+              "spend": {
+                "affordable": true,
+                "cost": 0,
+                "before": 0,
+                "after": 0,
+                "max": 80,
+                "spent": 0,
+                "stateBefore": "exhausted",
+                "state": "exhausted",
+                "becameWinded": false,
+                "becameExhausted": false
+              },
+              "facts": {
+                "retract": [],
+                "assert": []
+              },
+              "host": []
+            },
+            {
+              "do": "save",
+              "state": {
+                "actors": [
+                  {
+                    "id": "npc",
+                    "max": 80,
+                    "current": 80,
+                    "regenBase": 2
+                  },
+                  {
+                    "id": "npc2",
+                    "max": 80,
+                    "current": 16,
+                    "regenBase": 2
+                  },
+                  {
+                    "id": "npc3",
+                    "max": 80,
+                    "current": 0
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "pool: an action list after a costs record replaces its price; a non-finite cost leaves it",
+      "op": "pool",
+      "input": {
+        "costs": {
+          "sprint": 5,
+          "jump": 4
+        },
+        "actions": [
+          {
+            "id": "sprint",
+            "energyCost": 8
+          },
+          {
+            "id": "jump"
+          }
+        ],
+        "actors": [
+          {
+            "id": "player"
+          }
+        ],
+        "steps": [
+          {
+            "do": "cost",
+            "action": "sprint"
+          },
+          {
+            "do": "cost",
+            "action": "jump"
+          },
+          {
+            "do": "afford",
+            "actor": "player",
+            "action": "sprint"
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "tuning": {
+            "maxStamina": 100,
+            "recoveryRate": 5,
+            "combatRecoveryRate": 0,
+            "encumberedRecoveryMultiplier": 0.5,
+            "windedPercent": 40,
+            "exhaustedPercent": 15
+          },
+          "steps": [
+            {
+              "do": "cost",
+              "action": "sprint",
+              "cost": 8
+            },
+            {
+              "do": "cost",
+              "action": "jump",
+              "cost": 4
+            },
+            {
+              "do": "afford",
+              "actor": "player",
+              "action": "sprint",
+              "affordable": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "clock: a rest tick is one whole second of play, the remainder kept; a clock that does not move or goes back grants none",
+      "op": "clock",
+      "input": {
+        "start": 0,
+        "readings": [
+          999,
+          1000,
+          2500,
+          2400,
+          2500,
+          3000,
+          10000
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": [
+          {
+            "now": 999,
+            "ticks": 0,
+            "lastTickAt": 0
+          },
+          {
+            "now": 1000,
+            "ticks": 1,
+            "lastTickAt": 1000
+          },
+          {
+            "now": 2500,
+            "ticks": 1,
+            "lastTickAt": 2000
+          },
+          {
+            "now": 2400,
+            "ticks": 0,
+            "lastTickAt": 2000
+          },
+          {
+            "now": 2500,
+            "ticks": 0,
+            "lastTickAt": 2000
+          },
+          {
+            "now": 3000,
+            "ticks": 1,
+            "lastTickAt": 3000
+          },
+          {
+            "now": 10000,
+            "ticks": 7,
+            "lastTickAt": 10000
+          }
+        ]
+      }
+    },
+    {
+      "name": "clock: a reading behind the last tick grants none and keeps the last tick, so the same seconds never recover twice",
+      "op": "clock",
+      "input": {
+        "start": 0,
+        "readings": [
+          3000,
+          1500,
+          3000,
+          4200
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": [
+          {
+            "now": 3000,
+            "ticks": 3,
+            "lastTickAt": 3000
+          },
+          {
+            "now": 1500,
+            "ticks": 0,
+            "lastTickAt": 3000
+          },
+          {
+            "now": 3000,
+            "ticks": 0,
+            "lastTickAt": 3000
+          },
+          {
+            "now": 4200,
+            "ticks": 1,
+            "lastTickAt": 4000
+          }
+        ]
+      }
+    },
+    {
+      "name": "clock: a host calling every 400 ms grants the ticks one calling once at 2000 ms does",
+      "op": "clock",
+      "input": {
+        "start": 0,
+        "readings": [
+          400,
+          800,
+          1200,
+          1600,
+          2000
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": [
+          {
+            "now": 400,
+            "ticks": 0,
+            "lastTickAt": 0
+          },
+          {
+            "now": 800,
+            "ticks": 0,
+            "lastTickAt": 0
+          },
+          {
+            "now": 1200,
+            "ticks": 1,
+            "lastTickAt": 1000
+          },
+          {
+            "now": 1600,
+            "ticks": 0,
+            "lastTickAt": 1000
+          },
+          {
+            "now": 2000,
+            "ticks": 1,
+            "lastTickAt": 2000
+          }
+        ]
+      }
+    },
+    {
+      "name": "clock: calling once at 2000 ms",
+      "op": "clock",
+      "input": {
+        "start": 0,
+        "readings": [
+          2000
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": [
+          {
+            "now": 2000,
+            "ticks": 2,
+            "lastTickAt": 2000
+          }
+        ]
+      }
+    },
+    {
+      "name": "pool: every second of play is rest: a jump between ticks does not stop the next tick recovering at the full rate (no at-rest condition); combat and encumbrance alone change the rate",
+      "op": "pool",
+      "input": {
+        "costs": {
+          "jump": 3
+        },
+        "actors": [
+          {
+            "id": "player",
+            "current": 16
+          }
+        ],
+        "survivalActorId": "player",
+        "start": 0,
+        "steps": [
+          {
+            "do": "spend",
+            "actor": "player",
+            "action": "jump"
+          },
+          {
+            "do": "band",
+            "actor": "player"
+          },
+          {
+            "do": "play",
+            "actor": "player",
+            "at": 500
+          },
+          {
+            "do": "play",
+            "actor": "player",
+            "at": 1000
+          },
+          {
+            "do": "band",
+            "actor": "player"
+          },
+          {
+            "do": "spend",
+            "actor": "player",
+            "action": "jump"
+          },
+          {
+            "do": "spend",
+            "actor": "player",
+            "action": "jump"
+          },
+          {
+            "do": "play",
+            "actor": "player",
+            "at": 2000
+          },
+          {
+            "do": "play",
+            "actor": "player",
+            "at": 3999
+          },
+          {
+            "do": "play",
+            "actor": "player",
+            "at": 5000,
+            "inCombat": true
+          },
+          {
+            "do": "play",
+            "actor": "player",
+            "at": 6000,
+            "encumbered": true
+          },
+          {
+            "do": "save"
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "tuning": {
+            "maxStamina": 100,
+            "recoveryRate": 5,
+            "combatRecoveryRate": 0,
+            "encumberedRecoveryMultiplier": 0.5,
+            "windedPercent": 40,
+            "exhaustedPercent": 15
+          },
+          "steps": [
+            {
+              "do": "spend",
+              "actor": "player",
+              "action": "jump",
+              "spend": {
+                "affordable": true,
+                "cost": 3,
+                "before": 16,
+                "after": 13,
+                "max": 100,
+                "spent": 3,
+                "stateBefore": "winded",
+                "state": "exhausted",
+                "becameWinded": false,
+                "becameExhausted": true
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      16,
+                      100
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      13,
+                      100
+                    ]
+                  }
+                ]
+              },
+              "host": [
+                {
+                  "method": "consumeStamina",
+                  "amount": 3
+                }
+              ]
+            },
+            {
+              "do": "band",
+              "actor": "player",
+              "state": "exhausted"
+            },
+            {
+              "do": "play",
+              "actor": "player",
+              "at": 500,
+              "ticks": 0,
+              "lastTickAt": 0,
+              "regen": {
+                "before": 13,
+                "after": 13,
+                "max": 100,
+                "rate": 5,
+                "recovered": 0,
+                "state": "exhausted"
+              },
+              "host": []
+            },
+            {
+              "do": "play",
+              "actor": "player",
+              "at": 1000,
+              "ticks": 1,
+              "lastTickAt": 1000,
+              "regen": {
+                "before": 13,
+                "after": 18,
+                "max": 100,
+                "rate": 5,
+                "recovered": 5,
+                "state": "winded"
+              },
+              "host": [
+                {
+                  "method": "recoverStamina",
+                  "amount": 5
+                }
+              ]
+            },
+            {
+              "do": "band",
+              "actor": "player",
+              "state": "winded"
+            },
+            {
+              "do": "spend",
+              "actor": "player",
+              "action": "jump",
+              "spend": {
+                "affordable": true,
+                "cost": 3,
+                "before": 18,
+                "after": 15,
+                "max": 100,
+                "spent": 3,
+                "stateBefore": "winded",
+                "state": "exhausted",
+                "becameWinded": false,
+                "becameExhausted": true
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      18,
+                      100
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      15,
+                      100
+                    ]
+                  }
+                ]
+              },
+              "host": [
+                {
+                  "method": "consumeStamina",
+                  "amount": 3
+                }
+              ]
+            },
+            {
+              "do": "spend",
+              "actor": "player",
+              "action": "jump",
+              "spend": {
+                "affordable": true,
+                "cost": 3,
+                "before": 15,
+                "after": 12,
+                "max": 100,
+                "spent": 3,
+                "stateBefore": "exhausted",
+                "state": "exhausted",
+                "becameWinded": false,
+                "becameExhausted": false
+              },
+              "facts": {
+                "retract": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      15,
+                      100
+                    ]
+                  }
+                ],
+                "assert": [
+                  {
+                    "predicate": "energy",
+                    "args": [
+                      "player",
+                      12,
+                      100
+                    ]
+                  }
+                ]
+              },
+              "host": [
+                {
+                  "method": "consumeStamina",
+                  "amount": 3
+                }
+              ]
+            },
+            {
+              "do": "play",
+              "actor": "player",
+              "at": 2000,
+              "ticks": 1,
+              "lastTickAt": 2000,
+              "regen": {
+                "before": 12,
+                "after": 17,
+                "max": 100,
+                "rate": 5,
+                "recovered": 5,
+                "state": "winded"
+              },
+              "host": [
+                {
+                  "method": "recoverStamina",
+                  "amount": 5
+                }
+              ]
+            },
+            {
+              "do": "play",
+              "actor": "player",
+              "at": 3999,
+              "ticks": 1,
+              "lastTickAt": 3000,
+              "regen": {
+                "before": 17,
+                "after": 22,
+                "max": 100,
+                "rate": 5,
+                "recovered": 5,
+                "state": "winded"
+              },
+              "host": [
+                {
+                  "method": "recoverStamina",
+                  "amount": 5
+                }
+              ]
+            },
+            {
+              "do": "play",
+              "actor": "player",
+              "at": 5000,
+              "ticks": 2,
+              "lastTickAt": 5000,
+              "regen": {
+                "before": 22,
+                "after": 22,
+                "max": 100,
+                "rate": 0,
+                "recovered": 0,
+                "state": "winded"
+              },
+              "host": []
+            },
+            {
+              "do": "play",
+              "actor": "player",
+              "at": 6000,
+              "ticks": 1,
+              "lastTickAt": 6000,
+              "regen": {
+                "before": 22,
+                "after": 24,
+                "max": 100,
+                "rate": 2,
+                "recovered": 2,
+                "state": "winded"
+              },
+              "host": [
+                {
+                  "method": "recoverStamina",
+                  "amount": 2
+                }
+              ]
+            },
+            {
+              "do": "save",
+              "state": {
+                "actors": [
+                  {
+                    "id": "player",
+                    "max": 100,
+                    "current": 24
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

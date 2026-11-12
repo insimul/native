@@ -435,6 +435,35 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   case as `tests/props_corpus.cpp` does: the case's `input` is the row's args, and
   every case is driven again with the world's `settlements`, `groundSurfaces` and
   `roads` reversed.
+- **Survival: needs, the HUD bars and stamina (Unreal's
+  `P9c.unreal.retire-survival-copy`, after PL.native-survival-rows; U106(1)).**
+  Core's P9c logic is the `survival.*` rows (`README.md`, "The survival rows"), so
+  the retirement row binds them in place of the interim copy
+  `Portable/InsimulSurvival.{h,cpp}` (1,685 lines, accepted under U36 by U106(1)).
+  Read at the P9c cell's branch `71dd7b4` (read only; not yet on unreal main):
+
+  | Unreal's interim copy (`insimul::survival`) | Row |
+  |---|---|
+  | `SurvivalTuningFromIr(Ir, Overrides)` | `survival.needs.tuning { survival, params }` (every needs row reads the same two fields itself: send them, never a tuning) |
+  | `InitialSurvival`, `AdvanceSurvival` | `survival.needs.initial { …, at }`, `survival.needs.advance { …, state, at }` |
+  | `RestoreNeed`, `PerformSurvivalAction`, `ConsumeForNeeds`, `SetEnvironmentTemperature`, `ApplyNeedModifier`, `RemoveNeedModifier`, `SetSurvivalEnabled` | `survival.needs.restore`, `.action`, `.consume`, `.setTemperature`, `.modifier`, `.removeModifier`, `.enable`, each over the `state` the last answer carried |
+  | — (core's `useItemForNeeds`, PL.core-survival-rules; not in the copy) | `survival.needs.useItem { …, state, item: { type, quantity, effects }, at }` → `consumed`, `remaining` (take ONE from the stack; 0 drops the entry) |
+  | `SurvivalSaveBlock`, `ReadSurvivalBlock` + `SurvivalFromSave` | `survival.needs.save { state, at }`, `survival.needs.load { block, survival, params, at }` (an unreadable block is the value `unreadable_survival`) |
+  | `ReduceSurvivalHud`, `StaminaHudEvents`, `SurvivalHudView` | `survival.hud.initial`, `survival.hud.reduce { hud, events }` (send every needs answer's `events`), `survival.hud.stamina { hud, stamina, staminaConfig, at }`, `survival.hud.view { …, state, hud, now, visible, stamina, staminaConfig }` |
+  | — (what runs, from the composer's activation: core's `survivalSystemsRunning`, PL.core-survival-rules) | `survival.hud.systems { request, catalog }`, beside `packs.compose` |
+  | `StaminaTuningFromConfig`, `StaminaStateOf`, `SpendStamina`, `RegenerateStamina` | `survival.stamina.tuning`, `.state`, `.spend`, `.regen` (`staminaConfig` on each) |
+  | `FStaminaPool` (`SetCost`, `LoadCosts`, `Register`, `CanAfford`, `Spend`, `Rest`, `DrainHostCalls`, `Serialize`, `Restore`) | the session `survival.stamina.pool.create { staminaConfig, costs, actions, actors, survivalActorId, start, state }` / `.apply` ops `cost`, `afford`, `spend`, `rest`, `play { actor, at }` (the rest clock, core's `staminaRestClock`, kept in the session), `band`, `save`; each op answers its `energy/3` delta (`facts`) and the `ISurvivalSystem` calls (`host`), the copy's `DrainHostCalls` |
+  | — (the rest clock, core's `staminaRestClock`, PL.core-survival-rules) outside a pool | `survival.stamina.clock { lastTickAt, now, tickMs? }` |
+
+  **What changes for the binding**: the state lives in the game as the JSON the
+  rows answer (the copy's `StateToJson`/`StateFromJson` become the row's args and
+  answer), the pool in one session per playthrough (dispose it on unload). Times
+  are the play clock in ms, as the copy's. Nothing is converted. Re-vendor
+  `conformance/survival/{needs,hud,stamina}.json` from core at this library's pin
+  and drive each case as `tests/survival_corpus.cpp` does (its header lists the
+  mapping step by step). The copy's corpus is core's at its own re-vendor (70
+  cases); at this pin the files hold 89, among them the `use_item`, `action`,
+  `systems`, `clock` and `play` cases the copy has no function for.
 - **Save slots: the disk can change under the session since the 72c658c pin**
   (core's PL.disk-changed-step). When the save files change outside the game,
   send the new listing as `saves.slots.apply` op `disk_changed { slots }` (the

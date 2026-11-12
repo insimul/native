@@ -3,14 +3,14 @@
  "description": "core's pause-menu tab-gating matrix through ui.pause.*",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "603063d6f58ba99bb7afcf1d6d32f2932b8767e5",
+  "coreCommit": "6cd4b4e499efde9c73505fae1f397611138c154e",
   "files": {
-   "conformance/ui/pause-menu-cases.json": "f0596dc331ab7ccb3731339cd4d3d02ec1d3b339436f684484bd7850d5084a32"
+   "conformance/ui/pause-menu-cases.json": "51c634f9c1313acb11c88fcba220777dcee601e2fda3a7543f855a02cc86c43e"
   }
  },
  "cases": [
   {
-   "name": "language-learning bundle shows every gated tab",
+   "name": "language-learning bundle shows every gated tab but Assessment (assessment is refused: port-later)",
    "steps": [
     {
      "call": "ui.pause.create",
@@ -45,10 +45,189 @@
           "vocabulary",
           "skills",
           "analytics",
-          "assessment",
           "settings",
           "save"
          ]
+        }
+       }
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "a tab gated on a refused module is never offered, even when the module is listed (G.cat-flags)",
+   "steps": [
+    {
+     "call": "ui.pause.create",
+     "args": {
+      "enabledModules": [
+       "assessment",
+       "npc-exams",
+       "performance-scoring",
+       "world-lore",
+       "proficiency"
+      ],
+      "tabs": [
+       {
+        "key": "resume",
+        "label": "Resume"
+       },
+       {
+        "key": "assessment",
+        "label": "Assessment",
+        "requires": "assessment"
+       },
+       {
+        "key": "exams",
+        "label": "Exams",
+        "requires": "npc-exams"
+       },
+       {
+        "key": "scores",
+        "label": "Scores",
+        "requires": "performance-scoring"
+       },
+       {
+        "key": "lore",
+        "label": "Lore",
+        "requires": "world-lore"
+       },
+       {
+        "key": "character",
+        "label": "Character",
+        "requires": "proficiency"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1,
+       "view": {
+        "$subset": {
+         "visibleKeys": [
+          "resume",
+          "character"
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "open",
+        "tab": "lore"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "open": true
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "active": "resume"
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setActive",
+        "key": "assessment"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        false
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setActive",
+        "key": "exams"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        false
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "setActive",
+        "key": "scores"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "results": [
+        false
+       ],
+       "view": {
+        "$subset": {}
+       }
+      }
+     }
+    },
+    {
+     "call": "ui.pause.apply",
+     "args": {
+      "session": 1,
+      "ops": []
+     },
+     "expect": {
+      "$subset": {
+       "view": {
+        "$subset": {
+         "active": "resume"
         }
        }
       }

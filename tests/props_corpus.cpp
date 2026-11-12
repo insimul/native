@@ -607,7 +607,7 @@ const std::vector<Area> &areas() {
 	     {"camera.movement.occluders", "camera.movement.sideView", "camera.movement.buildingSolid",
 	      "camera.movement.move", "camera.movement.slope", "camera.movement.slopeAtRest", "camera.movement.step",
 	      "camera.movement.contract"},
-	     {"modes", "storeyM", "gait", "ground"},
+	     {"modes", "solidKinds", "storeyM", "gait", "ground"},
 	     {},
 	     false,
 	     "camera.movement.contract",

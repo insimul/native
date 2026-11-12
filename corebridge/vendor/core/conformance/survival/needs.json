@@ -1,0 +1,4641 @@
+{
+  "area": "survival-needs",
+  "catalog": "survival-needs",
+  "description": "Survival needs: hunger, thirst, temperature and sleep (P9c.core; catalog survival-needs; src/survival/needs.ts). Stamina is not a need here (stamina.json). Ops: tuning {survival?: SurvivalIR, params?} -> SurvivalTuning (per field over Babylon's defaults; params are the pack's flat parameters); initial {survival?, params?, at?} -> SurvivalState; run {survival?, params?, start, steps: [{do: advance (at) | restore (need, amount, at) | action (action, amount?, at) | consume (effects, at) | use_item (item {type, quantity?, effects?}, at) | set_temperature (value, at) | modifier (preset | modifier, at) | remove_modifier (id) | enable (enabled) | save (at)}]} -> each step's result (a refused step: {do, ok: false, reason}); save {state, at} -> the block; load {survival?, params?, block, at} -> SurvivalState, refusal unreadable_survival (block) with keys. Time runs in whole ticks of tickMs (default 1000), the remainder kept; each tick expires modifiers (T - startedAt >= duration > 0), decays each need by decayRate x the product of its modifiers x tickMs/1000 floored at 0 (environment-driven temperature drifts toward its target by temperatureDriftPerSecond x tickMs/1000 instead), re-reads its band (critical <= criticalThreshold, else warning <= warningThreshold; temperature with criticalAtBothExtremes also at >= max - threshold) raising need_critical / need_warning / need_restored on a change, and charges a deprived need (temperature: critical; others: 0) damageRate x globalDamageMultiplier x tickMs/1000 into damageOwed; each advance hands the whole points over as hurt. A restore ending at >= satisfiedFraction x max raises need_satisfied. use_item spends one of a consumable, food or drink stack (consumed 1, remaining quantity - 1; a missing quantity reads 1) and restores its effects, or, when they name no tracked need, performs eat (food) or drink (drink); collectible, document, key and quest items are used unspent (consumed 0); another type is refused not_usable, a stack under 1 not_held. A performed action restores its restoreActions row once at its flat amount (sleep: Rest 50 per sleep). Every number is rounded to 4 places after each operation. Runner: src/survival/systems-corpus.ts. Every case {name, op, input, expected}; compare exactly, object key sets included; an unknown op or step is an error, never a skip. Regenerate with npm run survival-corpus; npm run survival-corpus:check fails on any difference. See docs/survival-systems.md.",
+  "version": 1,
+  "ops": [
+    "tuning",
+    "initial",
+    "run",
+    "save",
+    "load"
+  ],
+  "contract": {
+    "rules": {
+      "restoreActions": "The restore-actions hook is an action id: a performed action whose id is a restoreActions key restores that row once, at its flat amount (eat: hunger 30, drink: thirst 25, sleep: Rest 50; Godot survival_system.gd). sleep is the action matrix's Sleep (event furniture_slept, the bed's verb in the original game), and restores 50 per sleep whatever its length, as Godot's sleep_rest ignored its duration.",
+      "itemUse": "Using an item (useItemForNeeds): a consumable, food or drink item spends one of its stack and restores the needs its effects name; when they name no tracked need, food performs eat and drink performs drink (Godot eat(item_id, 30) / drink(item_id, 25) took the item); a consumable restores nothing then. A collectible, document, key or quest item is used unspent (the original game's handleUseItem). Another type is refused not_usable; a stack under 1 not_held.",
+      "stack": "One of a stack, never the whole has_item/3 fact: the original game's handleUseItem called inventory.removeItem(item.id, 1), InventoryModel.removeItem takes 1 by default, and the use_item and consume action effects (prolog/action-effects.ts TAKE_ONE_ITEM_EFFECT) now replace has_item(A, I, N) with N - 1, dropping it at 0."
+    },
+    "openQuestions": [
+      "Which prop or verb performs Sleep in a world (needs_ruling, core's owner or the catalog owner): core has no bed interactable; the original game's beds (Babylon FurnitureInteractionManager) slept only from 20:00 to 05:00 and advanced the clock to 07:00. Until that is ruled, a host binds Sleep to whatever verb it already offers for the action matrix's sleep, or to none.",
+      "Whether a sleep also refills stamina (needs_ruling): Godot's sleep_rest restored stamina 30 as well; core's stamina is the pool, recovered by rest ticks, and the sleep row restores Rest only.",
+      "Whether an item's energy effect (Babylon: effects.energy, or +15 for any consumable with no effects) restores the stamina pool (needs_ruling, the stamina pack's owner): useItemForNeeds reads only the four needs.",
+      "A need climbing from critical to warning still raises need_warning (\"<Need> is getting low\"), as Godot did; the stamina bar no longer does (hud.json). Whether the needs take the same climb rule is open."
+    ]
+  },
+  "cases": [
+    {
+      "name": "tuning: no survival section is the four default needs (Babylon's numbers); stamina is not one of them",
+      "op": "tuning",
+      "input": {},
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 80,
+              "decayRate": 0.15,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            },
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 90,
+              "decayRate": 0.25,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 3
+            },
+            {
+              "id": "temperature",
+              "name": "Temperature",
+              "maxValue": 100,
+              "startValue": 50,
+              "decayRate": 0,
+              "warningThreshold": 20,
+              "criticalThreshold": 10,
+              "damageRate": 1.5
+            },
+            {
+              "id": "sleep",
+              "name": "Rest",
+              "maxValue": 100,
+              "startValue": 100,
+              "decayRate": 0.08,
+              "warningThreshold": 25,
+              "criticalThreshold": 10,
+              "damageRate": 0.5
+            }
+          ],
+          "tickMs": 1000,
+          "maxTicksPerAdvance": 86400,
+          "damageEnabled": true,
+          "globalDamageMultiplier": 1,
+          "temperatureEnvironmentDriven": false,
+          "comfortMin": 20,
+          "comfortMax": 80,
+          "criticalAtBothExtremes": true,
+          "temperatureDriftPerSecond": 10,
+          "satisfiedFraction": 0.9,
+          "hudFlashMs": 1500,
+          "restoreActions": {
+            "eat": {
+              "need": "hunger",
+              "amount": 30
+            },
+            "drink": {
+              "need": "thirst",
+              "amount": 25
+            },
+            "sleep": {
+              "need": "sleep",
+              "amount": 50
+            }
+          },
+          "modifierPresets": []
+        }
+      }
+    },
+    {
+      "name": "tuning: only the authored needs, in the IR's order; a stamina row and an unknown id are ignored; a missing field falls back to that need's default, a start above max clamps",
+      "op": "tuning",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "thirst",
+              "decayRate": 0.5
+            },
+            {
+              "id": "stamina",
+              "decayRate": 0
+            },
+            {
+              "id": "mana"
+            },
+            {
+              "id": "hunger",
+              "maxValue": 50,
+              "startValue": 80
+            },
+            {
+              "id": "thirst",
+              "decayRate": 9
+            }
+          ],
+          "damageConfig": {
+            "enabled": false
+          },
+          "temperatureConfig": {
+            "environmentDriven": true,
+            "comfortZone": {
+              "min": 30,
+              "max": 70
+            },
+            "criticalAtBothExtremes": false
+          },
+          "modifierPresets": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "duration": 3000,
+              "source": "meal"
+            },
+            {
+              "id": "well_fed",
+              "needType": "thirst",
+              "rateMultiplier": 9,
+              "duration": 1,
+              "source": "dupe"
+            },
+            {
+              "id": "",
+              "needType": "hunger"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": [
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 90,
+              "decayRate": 0.5,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 3
+            },
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 50,
+              "startValue": 50,
+              "decayRate": 0.15,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ],
+          "tickMs": 1000,
+          "maxTicksPerAdvance": 86400,
+          "damageEnabled": false,
+          "globalDamageMultiplier": 1,
+          "temperatureEnvironmentDriven": true,
+          "comfortMin": 30,
+          "comfortMax": 70,
+          "criticalAtBothExtremes": false,
+          "temperatureDriftPerSecond": 10,
+          "satisfiedFraction": 0.9,
+          "hudFlashMs": 1500,
+          "restoreActions": {
+            "eat": {
+              "need": "hunger",
+              "amount": 30
+            },
+            "drink": {
+              "need": "thirst",
+              "amount": 25
+            },
+            "sleep": {
+              "need": "sleep",
+              "amount": 50
+            }
+          },
+          "modifierPresets": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "duration": 3000,
+              "source": "meal"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "tuning: an empty needs list tracks none; pack parameters override flat fields; a mistyped parameter is ignored; tickMs floors and is at least 1",
+      "op": "tuning",
+      "input": {
+        "survival": {
+          "needs": []
+        },
+        "params": {
+          "tickMs": 0.5,
+          "maxTicksPerAdvance": 0,
+          "damageEnabled": false,
+          "hudFlashMs": "long",
+          "satisfiedFraction": 0.75
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": [],
+          "tickMs": 1,
+          "maxTicksPerAdvance": 1,
+          "damageEnabled": false,
+          "globalDamageMultiplier": 1,
+          "temperatureEnvironmentDriven": false,
+          "comfortMin": 20,
+          "comfortMax": 80,
+          "criticalAtBothExtremes": true,
+          "temperatureDriftPerSecond": 10,
+          "satisfiedFraction": 0.75,
+          "hudFlashMs": 1500,
+          "restoreActions": {
+            "eat": {
+              "need": "hunger",
+              "amount": 30
+            },
+            "drink": {
+              "need": "thirst",
+              "amount": 25
+            },
+            "sleep": {
+              "need": "sleep",
+              "amount": 50
+            }
+          },
+          "modifierPresets": []
+        }
+      }
+    },
+    {
+      "name": "tuning: a fractional tickMs and maxTicksPerAdvance floor to whole numbers",
+      "op": "tuning",
+      "input": {
+        "survival": {
+          "needs": []
+        },
+        "params": {
+          "tickMs": 2500.75,
+          "maxTicksPerAdvance": 3.9
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": [],
+          "tickMs": 2500,
+          "maxTicksPerAdvance": 3,
+          "damageEnabled": true,
+          "globalDamageMultiplier": 1,
+          "temperatureEnvironmentDriven": false,
+          "comfortMin": 20,
+          "comfortMax": 80,
+          "criticalAtBothExtremes": true,
+          "temperatureDriftPerSecond": 10,
+          "satisfiedFraction": 0.9,
+          "hudFlashMs": 1500,
+          "restoreActions": {
+            "eat": {
+              "need": "hunger",
+              "amount": 30
+            },
+            "drink": {
+              "need": "thirst",
+              "amount": 25
+            },
+            "sleep": {
+              "need": "sleep",
+              "amount": 50
+            }
+          },
+          "modifierPresets": []
+        }
+      }
+    },
+    {
+      "name": "initial: each need at its start value, the clock at the given time",
+      "op": "initial",
+      "input": {
+        "at": 1000
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 80,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "thirst",
+              "value": 90,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "temperature",
+              "value": 50,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "sleep",
+              "value": 100,
+              "max": 100,
+              "band": "ok"
+            }
+          ],
+          "modifiers": [],
+          "environmentTemperature": 50,
+          "lastTickAt": 1000,
+          "enabled": true,
+          "damageOwed": 0
+        }
+      }
+    },
+    {
+      "name": "initial: a need that starts in a band starts there, with no event (hunger warning; temperature critical at the hot extreme)",
+      "op": "initial",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "startValue": 25
+            },
+            {
+              "id": "temperature",
+              "startValue": 95
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 25,
+              "max": 100,
+              "band": "warning"
+            },
+            {
+              "id": "temperature",
+              "value": 95,
+              "max": 100,
+              "band": "critical"
+            }
+          ],
+          "modifiers": [],
+          "environmentTemperature": 50,
+          "lastTickAt": 0,
+          "enabled": true,
+          "damageOwed": 0
+        }
+      }
+    },
+    {
+      "name": "run: needs decay per whole tick of 1000 ms; a part tick waits for the next call",
+      "op": "run",
+      "input": {
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 500
+          },
+          {
+            "do": "advance",
+            "at": 1000
+          },
+          {
+            "do": "advance",
+            "at": 2999
+          },
+          {
+            "do": "advance",
+            "at": 3000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 500,
+              "ticks": 0,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 80,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 1000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 79.85,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 89.75,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 99.92,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 2999,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 79.7,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 89.5,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 99.84,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 3000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 79.55,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 89.25,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 99.76,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: sixty seconds in one call",
+      "op": "run",
+      "input": {
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 60000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 60000,
+              "ticks": 60,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 71,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 75,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 95.2,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: the same sixty seconds in four uneven calls reach the same readings",
+      "op": "run",
+      "input": {
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 7300
+          },
+          {
+            "do": "advance",
+            "at": 21000
+          },
+          {
+            "do": "advance",
+            "at": 44999
+          },
+          {
+            "do": "advance",
+            "at": 60000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 7300,
+              "ticks": 7,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 78.95,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 88.25,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 99.44,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 21000,
+              "ticks": 14,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 76.85,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 84.75,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 98.32,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 44999,
+              "ticks": 23,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 73.4,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 79,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 96.48,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 60000,
+              "ticks": 16,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 71,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 75,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 95.2,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: into warning, then critical, then empty: each band change raises its event once; at zero hunger hurts 2 a tick",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 32,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 2000
+          },
+          {
+            "do": "advance",
+            "at": 3000
+          },
+          {
+            "do": "advance",
+            "at": 17000
+          },
+          {
+            "do": "advance",
+            "at": 32000
+          },
+          {
+            "do": "advance",
+            "at": 34000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 2000,
+              "ticks": 2,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "hunger",
+                  "value": 30,
+                  "message": "Hunger is getting low",
+                  "at": 2000
+                }
+              ],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 30,
+                  "max": 100,
+                  "band": "warning"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 3000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 29,
+                  "max": 100,
+                  "band": "warning"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 17000,
+              "ticks": 14,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "need_critical",
+                  "needType": "hunger",
+                  "value": 15,
+                  "message": "Hunger critically low!",
+                  "at": 17000
+                }
+              ],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 15,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 32000,
+              "ticks": 15,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "hunger",
+                  "value": 2,
+                  "message": "Taking damage from hunger deprivation!",
+                  "at": 32000
+                }
+              ],
+              "expired": [],
+              "hurt": 2,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 34000,
+              "ticks": 2,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "hunger",
+                  "value": 4,
+                  "message": "Taking damage from hunger deprivation!",
+                  "at": 33000
+                }
+              ],
+              "expired": [],
+              "hurt": 4,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: damage accrues per tick; whole points go to hurt and the fraction stays owed",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "sleep",
+              "name": "Rest",
+              "maxValue": 100,
+              "startValue": 1,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 0.5
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 1000
+          },
+          {
+            "do": "advance",
+            "at": 2000
+          },
+          {
+            "do": "advance",
+            "at": 3000
+          },
+          {
+            "do": "advance",
+            "at": 5500
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 1000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "sleep",
+                  "value": 0.5,
+                  "message": "Taking damage from rest deprivation!",
+                  "at": 1000
+                }
+              ],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "sleep",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0.5
+            },
+            {
+              "do": "advance",
+              "at": 2000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "sleep",
+                  "value": 0.5,
+                  "message": "Taking damage from rest deprivation!",
+                  "at": 2000
+                }
+              ],
+              "expired": [],
+              "hurt": 1,
+              "needs": [
+                {
+                  "id": "sleep",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 3000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "sleep",
+                  "value": 0.5,
+                  "message": "Taking damage from rest deprivation!",
+                  "at": 3000
+                }
+              ],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "sleep",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0.5
+            },
+            {
+              "do": "advance",
+              "at": 5500,
+              "ticks": 2,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "sleep",
+                  "value": 1,
+                  "message": "Taking damage from rest deprivation!",
+                  "at": 4000
+                }
+              ],
+              "expired": [],
+              "hurt": 1,
+              "needs": [
+                {
+                  "id": "sleep",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: globalDamageMultiplier scales every need's damage",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 0,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 3
+            }
+          ],
+          "damageConfig": {
+            "enabled": true,
+            "globalDamageMultiplier": 0.5
+          }
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 3000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 3000,
+              "ticks": 3,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "thirst",
+                  "value": 4.5,
+                  "message": "Taking damage from thirst deprivation!",
+                  "at": 1000
+                }
+              ],
+              "expired": [],
+              "hurt": 4,
+              "needs": [
+                {
+                  "id": "thirst",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: a long advance raises one damage_from_need per need, at the first tick it was charged, carrying the whole call's damage",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 0,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 3
+            },
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 2,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 0.25
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 600000
+          },
+          {
+            "do": "advance",
+            "at": 601000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 600000,
+              "ticks": 600,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "thirst",
+                  "value": 1800,
+                  "message": "Taking damage from thirst deprivation!",
+                  "at": 1000
+                },
+                {
+                  "type": "damage_from_need",
+                  "needType": "hunger",
+                  "value": 149.75,
+                  "message": "Taking damage from hunger deprivation!",
+                  "at": 2000
+                }
+              ],
+              "expired": [],
+              "hurt": 1949,
+              "needs": [
+                {
+                  "id": "thirst",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                },
+                {
+                  "id": "hunger",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0.75
+            },
+            {
+              "do": "advance",
+              "at": 601000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "thirst",
+                  "value": 3,
+                  "message": "Taking damage from thirst deprivation!",
+                  "at": 601000
+                },
+                {
+                  "type": "damage_from_need",
+                  "needType": "hunger",
+                  "value": 0.25,
+                  "message": "Taking damage from hunger deprivation!",
+                  "at": 601000
+                }
+              ],
+              "expired": [],
+              "hurt": 4,
+              "needs": [
+                {
+                  "id": "thirst",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                },
+                {
+                  "id": "hunger",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: need_satisfied at exactly satisfiedFraction x max, not just below it",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 60,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "restore",
+            "need": "hunger",
+            "amount": 29.75,
+            "at": 100
+          },
+          {
+            "do": "restore",
+            "need": "hunger",
+            "amount": 0.25,
+            "at": 200
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "restore",
+              "ok": true,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 89.75,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "restore",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_satisfied",
+                  "needType": "hunger",
+                  "value": 90,
+                  "message": "Hunger satisfied",
+                  "at": 200
+                }
+              ],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: damage disabled: a need at zero hurts nothing",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 0,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 3
+            }
+          ],
+          "damageConfig": {
+            "enabled": false
+          }
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 3000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 3000,
+              "ticks": 3,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "thirst",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: eat, drink and sleep add Godot's amounts and clamp at max; leaving warning raises need_restored; ending at 90% or more raises need_satisfied, a drain never does; a negative amount drains",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 25,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            },
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 90,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            },
+            {
+              "id": "sleep",
+              "name": "Rest",
+              "maxValue": 100,
+              "startValue": 70,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "action",
+            "action": "eat",
+            "at": 100
+          },
+          {
+            "do": "action",
+            "action": "drink",
+            "at": 200
+          },
+          {
+            "do": "restore",
+            "need": "thirst",
+            "amount": -5,
+            "at": 250
+          },
+          {
+            "do": "action",
+            "action": "sleep",
+            "amount": -45,
+            "at": 300
+          },
+          {
+            "do": "action",
+            "action": "sleep",
+            "at": 400
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "action",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "hunger",
+                  "value": 55,
+                  "message": "Hunger restored",
+                  "at": 100
+                }
+              ],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 55,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 70,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "action",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_satisfied",
+                  "needType": "thirst",
+                  "value": 100,
+                  "message": "Thirst satisfied",
+                  "at": 200
+                }
+              ],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 55,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 70,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "restore",
+              "ok": true,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 55,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 95,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 70,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "action",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "sleep",
+                  "value": 25,
+                  "message": "Rest is getting low",
+                  "at": 300
+                }
+              ],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 55,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 95,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 25,
+                  "max": 100,
+                  "band": "warning"
+                }
+              ]
+            },
+            {
+              "do": "action",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "sleep",
+                  "value": 75,
+                  "message": "Rest restored",
+                  "at": 400
+                }
+              ],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 55,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 95,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 75,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: refusals change nothing: an unknown action, a need the world does not track (stamina), an amount that is not a number",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 50,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "action",
+            "action": "pray",
+            "at": 10
+          },
+          {
+            "do": "restore",
+            "need": "stamina",
+            "amount": 10,
+            "at": 20
+          },
+          {
+            "do": "restore",
+            "need": "thirst",
+            "amount": 10,
+            "at": 30
+          },
+          {
+            "do": "restore",
+            "need": "hunger",
+            "amount": "lots",
+            "at": 40
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "action",
+              "ok": false,
+              "reason": "unknown_action",
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "restore",
+              "ok": false,
+              "reason": "need_not_tracked",
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "restore",
+              "ok": false,
+              "reason": "need_not_tracked",
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "restore",
+              "ok": false,
+              "reason": "bad_amount",
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: a critical need restored into warning raises need_warning, not need_restored",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 10,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "restore",
+            "need": "hunger",
+            "amount": 10,
+            "at": 50
+          },
+          {
+            "do": "restore",
+            "need": "hunger",
+            "amount": 0.5,
+            "at": 60
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "restore",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "hunger",
+                  "value": 20,
+                  "message": "Hunger is getting low",
+                  "at": 50
+                }
+              ],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 20,
+                  "max": 100,
+                  "band": "warning"
+                }
+              ]
+            },
+            {
+              "do": "restore",
+              "ok": true,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 20.5,
+                  "max": 100,
+                  "band": "warning"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: consuming an item restores each tracked need its effects name, in tuning order; other keys are ignored",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 40,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            },
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 40,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "consume",
+            "effects": {
+              "thirst": 10,
+              "damage": 4,
+              "hunger": 5,
+              "stamina": 20,
+              "sleep": 9,
+              "flavour": "salty"
+            },
+            "at": 10
+          },
+          {
+            "do": "consume",
+            "effects": {
+              "damage": 4
+            },
+            "at": 20
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "consume",
+              "applied": [
+                {
+                  "need": "hunger",
+                  "amount": 5
+                },
+                {
+                  "need": "thirst",
+                  "amount": 10
+                }
+              ],
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 45,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "consume",
+              "applied": [],
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 45,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: a preset modifier halves hunger's decay; the same id refreshes it; it expires at its duration, before that tick's decay",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 100,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ],
+          "modifierPresets": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "duration": 3000,
+              "source": "meal"
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "modifier",
+            "preset": "well_fed",
+            "at": 0
+          },
+          {
+            "do": "advance",
+            "at": 2000
+          },
+          {
+            "do": "modifier",
+            "preset": "well_fed",
+            "at": 2000
+          },
+          {
+            "do": "advance",
+            "at": 6000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "modifier",
+              "ok": true,
+              "events": [],
+              "modifiers": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 3000,
+                  "startedAt": 0,
+                  "source": "meal"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 2000,
+              "ticks": 2,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 99,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "modifier",
+              "ok": true,
+              "events": [],
+              "modifiers": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 3000,
+                  "startedAt": 2000,
+                  "source": "meal"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 6000,
+              "ticks": 4,
+              "skipped": 0,
+              "events": [],
+              "expired": [
+                "well_fed"
+              ],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 96,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: two modifiers multiply; a permanent one never expires; removing it restores the base rate; unknown and untracked modifiers are refused",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 100,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ],
+          "modifierPresets": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "duration": 3000,
+              "source": "meal"
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "modifier",
+            "preset": "well_fed",
+            "at": 0
+          },
+          {
+            "do": "modifier",
+            "modifier": {
+              "id": "cold",
+              "needType": "hunger",
+              "rateMultiplier": 3,
+              "duration": 0,
+              "source": "weather"
+            },
+            "at": 0
+          },
+          {
+            "do": "advance",
+            "at": 2000
+          },
+          {
+            "do": "advance",
+            "at": 10000
+          },
+          {
+            "do": "remove_modifier",
+            "id": "cold"
+          },
+          {
+            "do": "advance",
+            "at": 11000
+          },
+          {
+            "do": "modifier",
+            "preset": "feast",
+            "at": 11000
+          },
+          {
+            "do": "modifier",
+            "modifier": {
+              "id": "tired",
+              "needType": "stamina",
+              "rateMultiplier": 2,
+              "duration": 0
+            },
+            "at": 11000
+          },
+          {
+            "do": "modifier",
+            "modifier": {
+              "id": "odd",
+              "needType": "hunger",
+              "rateMultiplier": -1,
+              "duration": 0
+            },
+            "at": 11000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "modifier",
+              "ok": true,
+              "events": [],
+              "modifiers": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 3000,
+                  "startedAt": 0,
+                  "source": "meal"
+                }
+              ]
+            },
+            {
+              "do": "modifier",
+              "ok": true,
+              "events": [],
+              "modifiers": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 3000,
+                  "startedAt": 0,
+                  "source": "meal"
+                },
+                {
+                  "id": "cold",
+                  "needType": "hunger",
+                  "rateMultiplier": 3,
+                  "duration": 0,
+                  "startedAt": 0,
+                  "source": "weather"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 2000,
+              "ticks": 2,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 97,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 10000,
+              "ticks": 8,
+              "skipped": 0,
+              "events": [],
+              "expired": [
+                "well_fed"
+              ],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 73,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "remove_modifier",
+              "modifiers": []
+            },
+            {
+              "do": "advance",
+              "at": 11000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 72,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "modifier",
+              "ok": false,
+              "reason": "unknown_modifier",
+              "modifiers": []
+            },
+            {
+              "do": "modifier",
+              "ok": false,
+              "reason": "need_not_tracked",
+              "modifiers": []
+            },
+            {
+              "do": "modifier",
+              "ok": false,
+              "reason": "bad_amount",
+              "modifiers": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: environment-driven temperature drifts 10 a second toward its target; cold reaches warning then critical and hurts; warmth restores it",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "temperature",
+              "name": "Temperature",
+              "maxValue": 100,
+              "startValue": 50,
+              "decayRate": 0,
+              "warningThreshold": 20,
+              "criticalThreshold": 10,
+              "damageRate": 1.5
+            }
+          ],
+          "temperatureConfig": {
+            "environmentDriven": true
+          }
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "set_temperature",
+            "value": 0,
+            "at": 0
+          },
+          {
+            "do": "advance",
+            "at": 5000
+          },
+          {
+            "do": "set_temperature",
+            "value": 50,
+            "at": 5000
+          },
+          {
+            "do": "advance",
+            "at": 9000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 0,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 5000,
+              "ticks": 5,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "temperature",
+                  "value": 20,
+                  "message": "Temperature is getting low",
+                  "at": 3000
+                },
+                {
+                  "type": "need_critical",
+                  "needType": "temperature",
+                  "value": 10,
+                  "message": "Temperature critically low!",
+                  "at": 4000
+                },
+                {
+                  "type": "damage_from_need",
+                  "needType": "temperature",
+                  "value": 3,
+                  "message": "Taking damage from temperature deprivation!",
+                  "at": 4000
+                }
+              ],
+              "expired": [],
+              "hurt": 3,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 50,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 9000,
+              "ticks": 4,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "temperature",
+                  "value": 1.5,
+                  "message": "Taking damage from temperature deprivation!",
+                  "at": 6000
+                },
+                {
+                  "type": "need_warning",
+                  "needType": "temperature",
+                  "value": 20,
+                  "message": "Temperature is getting low",
+                  "at": 7000
+                },
+                {
+                  "type": "need_restored",
+                  "needType": "temperature",
+                  "value": 30,
+                  "message": "Temperature restored",
+                  "at": 8000
+                }
+              ],
+              "expired": [],
+              "hurt": 1,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: environment-driven with criticalAtBothExtremes off: only the cold end is a band, and a critical temperature hurts before it reaches 0 (Godot)",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "temperature",
+              "name": "Temperature",
+              "maxValue": 100,
+              "startValue": 50,
+              "decayRate": 0,
+              "warningThreshold": 20,
+              "criticalThreshold": 10,
+              "damageRate": 1.5
+            }
+          ],
+          "temperatureConfig": {
+            "environmentDriven": true,
+            "criticalAtBothExtremes": false
+          }
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "set_temperature",
+            "value": 0,
+            "at": 0
+          },
+          {
+            "do": "advance",
+            "at": 4000
+          },
+          {
+            "do": "set_temperature",
+            "value": 100,
+            "at": 4000
+          },
+          {
+            "do": "advance",
+            "at": 14000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 0,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 4000,
+              "ticks": 4,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "temperature",
+                  "value": 20,
+                  "message": "Temperature is getting low",
+                  "at": 3000
+                },
+                {
+                  "type": "need_critical",
+                  "needType": "temperature",
+                  "value": 10,
+                  "message": "Temperature critically low!",
+                  "at": 4000
+                },
+                {
+                  "type": "damage_from_need",
+                  "needType": "temperature",
+                  "value": 1.5,
+                  "message": "Taking damage from temperature deprivation!",
+                  "at": 4000
+                }
+              ],
+              "expired": [],
+              "hurt": 1,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 10,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0.5
+            },
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 100,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 10,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 14000,
+              "ticks": 10,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "temperature",
+                  "value": 20,
+                  "message": "Temperature is getting low",
+                  "at": 5000
+                },
+                {
+                  "type": "need_restored",
+                  "needType": "temperature",
+                  "value": 30,
+                  "message": "Temperature restored",
+                  "at": 6000
+                }
+              ],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: environment-driven heat climbs toward max: warning, then critical at the hot extreme, and it hurts there too",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "temperature",
+              "name": "Temperature",
+              "maxValue": 100,
+              "startValue": 50,
+              "decayRate": 0,
+              "warningThreshold": 20,
+              "criticalThreshold": 10,
+              "damageRate": 1.5
+            }
+          ],
+          "temperatureConfig": {
+            "environmentDriven": true
+          }
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "set_temperature",
+            "value": 100,
+            "at": 0
+          },
+          {
+            "do": "advance",
+            "at": 6000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 100,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 6000,
+              "ticks": 6,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "need_warning",
+                  "needType": "temperature",
+                  "value": 80,
+                  "message": "Temperature is getting high",
+                  "at": 3000
+                },
+                {
+                  "type": "need_critical",
+                  "needType": "temperature",
+                  "value": 90,
+                  "message": "Temperature critically high!",
+                  "at": 4000
+                },
+                {
+                  "type": "damage_from_need",
+                  "needType": "temperature",
+                  "value": 4.5,
+                  "message": "Taking damage from temperature deprivation!",
+                  "at": 4000
+                }
+              ],
+              "expired": [],
+              "hurt": 4,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 100,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0.5
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: environment targets between the comfort zone and the extremes are proportional; a reading within one step lands on the target",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "temperature",
+              "name": "Temperature",
+              "maxValue": 100,
+              "startValue": 50,
+              "decayRate": 0,
+              "warningThreshold": 20,
+              "criticalThreshold": 10,
+              "damageRate": 2
+            }
+          ],
+          "temperatureConfig": {
+            "environmentDriven": true,
+            "comfortZone": {
+              "min": 20,
+              "max": 80
+            }
+          }
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "set_temperature",
+            "value": 10,
+            "at": 0
+          },
+          {
+            "do": "advance",
+            "at": 3000
+          },
+          {
+            "do": "set_temperature",
+            "value": 90,
+            "at": 3000
+          },
+          {
+            "do": "advance",
+            "at": 8000
+          },
+          {
+            "do": "set_temperature",
+            "value": 150,
+            "at": 8000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 10,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 3000,
+              "ticks": 3,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 25,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 90,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 25,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 8000,
+              "ticks": 5,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 75,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 100,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 75,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: not environment-driven, set_temperature sets the reading at once (Babylon), clamped; both extremes are critical",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "temperature",
+              "name": "Temperature",
+              "maxValue": 100,
+              "startValue": 50,
+              "decayRate": 0,
+              "warningThreshold": 20,
+              "criticalThreshold": 10,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "set_temperature",
+            "value": 95,
+            "at": 10
+          },
+          {
+            "do": "set_temperature",
+            "value": 150,
+            "at": 20
+          },
+          {
+            "do": "set_temperature",
+            "value": 50,
+            "at": 30
+          },
+          {
+            "do": "set_temperature",
+            "value": 5,
+            "at": 40
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_critical",
+                  "needType": "temperature",
+                  "value": 95,
+                  "message": "Temperature critically high!",
+                  "at": 10
+                }
+              ],
+              "environmentTemperature": 95,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 95,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ]
+            },
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 100,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 100,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ]
+            },
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "temperature",
+                  "value": 50,
+                  "message": "Temperature restored",
+                  "at": 30
+                }
+              ],
+              "environmentTemperature": 50,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 50,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_critical",
+                  "needType": "temperature",
+                  "value": 5,
+                  "message": "Temperature critically low!",
+                  "at": 40
+                }
+              ],
+              "environmentTemperature": 5,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 5,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: criticalAtBothExtremes off: only the cold end is a band, and temperature hurts only at zero",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "temperature",
+              "name": "Temperature",
+              "maxValue": 100,
+              "startValue": 50,
+              "decayRate": 0,
+              "warningThreshold": 20,
+              "criticalThreshold": 10,
+              "damageRate": 2
+            }
+          ],
+          "temperatureConfig": {
+            "criticalAtBothExtremes": false
+          }
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "set_temperature",
+            "value": 95,
+            "at": 10
+          },
+          {
+            "do": "set_temperature",
+            "value": 0,
+            "at": 20
+          },
+          {
+            "do": "advance",
+            "at": 1000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [],
+              "environmentTemperature": 95,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 95,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "set_temperature",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_critical",
+                  "needType": "temperature",
+                  "value": 0,
+                  "message": "Temperature critically low!",
+                  "at": 20
+                }
+              ],
+              "environmentTemperature": 0,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 1000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [
+                {
+                  "type": "damage_from_need",
+                  "needType": "temperature",
+                  "value": 2,
+                  "message": "Taking damage from temperature deprivation!",
+                  "at": 1000
+                }
+              ],
+              "expired": [],
+              "hurt": 2,
+              "needs": [
+                {
+                  "id": "temperature",
+                  "value": 0,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: disabled, ticks pass and nothing decays; enabled again, decay resumes at the next whole tick",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 100,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 1000
+          },
+          {
+            "do": "enable",
+            "enabled": false
+          },
+          {
+            "do": "advance",
+            "at": 5500
+          },
+          {
+            "do": "enable",
+            "enabled": true
+          },
+          {
+            "do": "advance",
+            "at": 6000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 1000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 99,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "enable",
+              "enabled": false
+            },
+            {
+              "do": "advance",
+              "at": 5500,
+              "ticks": 0,
+              "skipped": 4,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 99,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "enable",
+              "enabled": true
+            },
+            {
+              "do": "advance",
+              "at": 6000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 98,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: a clock that goes backwards runs no tick",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 100,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 10000,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 5000
+          },
+          {
+            "do": "advance",
+            "at": 11000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 5000,
+              "ticks": 0,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 11000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 99,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: more ticks than maxTicksPerAdvance: the rest are skipped and reported, not queued",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 100,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "params": {
+          "maxTicksPerAdvance": 3
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "advance",
+            "at": 10000
+          },
+          {
+            "do": "advance",
+            "at": 11000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "advance",
+              "at": 10000,
+              "ticks": 3,
+              "skipped": 7,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 97,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "advance",
+              "at": 11000,
+              "ticks": 1,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 96,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: a save mid-run keeps the readings and each modifier's remaining time",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 100,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            },
+            {
+              "id": "sleep",
+              "name": "Rest",
+              "maxValue": 100,
+              "startValue": 100,
+              "decayRate": 0.25,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ],
+          "modifierPresets": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "duration": 3000,
+              "source": "meal"
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "modifier",
+            "preset": "well_fed",
+            "at": 0
+          },
+          {
+            "do": "modifier",
+            "modifier": {
+              "id": "cold",
+              "needType": "sleep",
+              "rateMultiplier": 2,
+              "duration": 0,
+              "source": "weather"
+            },
+            "at": 0
+          },
+          {
+            "do": "advance",
+            "at": 2000
+          },
+          {
+            "do": "save",
+            "at": 2500
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "modifier",
+              "ok": true,
+              "events": [],
+              "modifiers": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 3000,
+                  "startedAt": 0,
+                  "source": "meal"
+                }
+              ]
+            },
+            {
+              "do": "modifier",
+              "ok": true,
+              "events": [],
+              "modifiers": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 3000,
+                  "startedAt": 0,
+                  "source": "meal"
+                },
+                {
+                  "id": "cold",
+                  "needType": "sleep",
+                  "rateMultiplier": 2,
+                  "duration": 0,
+                  "startedAt": 0,
+                  "source": "weather"
+                }
+              ]
+            },
+            {
+              "do": "advance",
+              "at": 2000,
+              "ticks": 2,
+              "skipped": 0,
+              "events": [],
+              "expired": [],
+              "hurt": 0,
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 99,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "sleep",
+                  "value": 99,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "damageOwed": 0
+            },
+            {
+              "do": "save",
+              "at": 2500,
+              "block": {
+                "readings": {
+                  "hunger": 99,
+                  "sleep": 99
+                },
+                "modifiers": [
+                  {
+                    "id": "well_fed",
+                    "needType": "hunger",
+                    "rateMultiplier": 0.5,
+                    "remainingMs": 500,
+                    "source": "meal"
+                  },
+                  {
+                    "id": "cold",
+                    "needType": "sleep",
+                    "rateMultiplier": 2,
+                    "remainingMs": null,
+                    "source": "weather"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "save: readings by id; a timed modifier keeps its remaining ms (never below 0), a permanent one null",
+      "op": "save",
+      "input": {
+        "at": 9000,
+        "state": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 61.25,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "thirst",
+              "value": 12,
+              "max": 100,
+              "band": "critical"
+            }
+          ],
+          "modifiers": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "duration": 10000,
+              "startedAt": 4000,
+              "source": "meal"
+            },
+            {
+              "id": "stale",
+              "needType": "hunger",
+              "rateMultiplier": 2,
+              "duration": 1000,
+              "startedAt": 0,
+              "source": ""
+            },
+            {
+              "id": "cold",
+              "needType": "thirst",
+              "rateMultiplier": 2,
+              "duration": 0,
+              "startedAt": 0,
+              "source": "weather"
+            }
+          ],
+          "environmentTemperature": 50,
+          "lastTickAt": 9000,
+          "enabled": true,
+          "damageOwed": 0.5
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "readings": {
+            "hunger": 61.25,
+            "thirst": 12
+          },
+          "modifiers": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "remainingMs": 5000,
+              "source": "meal"
+            },
+            {
+              "id": "stale",
+              "needType": "hunger",
+              "rateMultiplier": 2,
+              "remainingMs": 0,
+              "source": ""
+            },
+            {
+              "id": "cold",
+              "needType": "thirst",
+              "rateMultiplier": 2,
+              "remainingMs": null,
+              "source": "weather"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "load: readings clamp into [0, max]; a missing one starts at its start value; bands re-read with no event; modifiers rebased on the load's clock, spent and untracked ones dropped",
+      "op": "load",
+      "input": {
+        "at": 500,
+        "block": {
+          "readings": {
+            "hunger": 12,
+            "thirst": 150,
+            "sleep": -3,
+            "stamina": 40
+          },
+          "modifiers": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "remainingMs": 2000,
+              "source": "meal"
+            },
+            {
+              "id": "spent",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "remainingMs": 0,
+              "source": ""
+            },
+            {
+              "id": "cold",
+              "needType": "thirst",
+              "rateMultiplier": 2,
+              "remainingMs": null
+            },
+            {
+              "id": "tired",
+              "needType": "stamina",
+              "rateMultiplier": 2,
+              "remainingMs": null,
+              "source": ""
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 12,
+              "max": 100,
+              "band": "critical"
+            },
+            {
+              "id": "thirst",
+              "value": 100,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "temperature",
+              "value": 50,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "sleep",
+              "value": 0,
+              "max": 100,
+              "band": "critical"
+            }
+          ],
+          "modifiers": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "duration": 2000,
+              "startedAt": 500,
+              "source": "meal"
+            },
+            {
+              "id": "cold",
+              "needType": "thirst",
+              "rateMultiplier": 2,
+              "duration": 0,
+              "startedAt": 500,
+              "source": ""
+            }
+          ],
+          "environmentTemperature": 50,
+          "lastTickAt": 500,
+          "enabled": true,
+          "damageOwed": 0
+        }
+      }
+    },
+    {
+      "name": "load: no block is a new playthrough",
+      "op": "load",
+      "input": {
+        "at": 0,
+        "block": null
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 80,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "thirst",
+              "value": 90,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "temperature",
+              "value": 50,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "sleep",
+              "value": 100,
+              "max": 100,
+              "band": "ok"
+            }
+          ],
+          "modifiers": [],
+          "environmentTemperature": 50,
+          "lastTickAt": 0,
+          "enabled": true,
+          "damageOwed": 0
+        }
+      }
+    },
+    {
+      "name": "load: an unreadable block is refused, naming each unreadable member in order",
+      "op": "load",
+      "input": {
+        "at": 0,
+        "block": {
+          "readings": {
+            "hunger": "full",
+            "thirst": 20
+          },
+          "modifiers": [
+            {
+              "id": "a",
+              "needType": "hunger",
+              "rateMultiplier": 1,
+              "remainingMs": null
+            },
+            {
+              "id": 7
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unreadable_survival",
+          "field": "block",
+          "keys": [
+            "modifiers[1]",
+            "readings.hunger"
+          ]
+        }
+      }
+    },
+    {
+      "name": "load: a block that is not an object is refused with no member named",
+      "op": "load",
+      "input": {
+        "at": 0,
+        "block": 5
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unreadable_survival",
+          "field": "block",
+          "keys": []
+        }
+      }
+    },
+    {
+      "name": "load: a negative rateMultiplier is unreadable, like any other bad modifier row",
+      "op": "load",
+      "input": {
+        "at": 0,
+        "block": {
+          "readings": {
+            "hunger": 50
+          },
+          "modifiers": [
+            {
+              "id": "odd",
+              "needType": "hunger",
+              "rateMultiplier": -0.5,
+              "remainingMs": null,
+              "source": ""
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "unreadable_survival",
+          "field": "block",
+          "keys": [
+            "modifiers[0]"
+          ]
+        }
+      }
+    },
+    {
+      "name": "load: a repeated modifier id keeps its first row and drops the rest",
+      "op": "load",
+      "input": {
+        "at": 100,
+        "block": {
+          "readings": {
+            "hunger": 50
+          },
+          "modifiers": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "remainingMs": 2000,
+              "source": "meal"
+            },
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 3,
+              "remainingMs": null,
+              "source": "dupe"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "needs": [
+            {
+              "id": "hunger",
+              "value": 50,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "thirst",
+              "value": 90,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "temperature",
+              "value": 50,
+              "max": 100,
+              "band": "ok"
+            },
+            {
+              "id": "sleep",
+              "value": 100,
+              "max": 100,
+              "band": "ok"
+            }
+          ],
+          "modifiers": [
+            {
+              "id": "well_fed",
+              "needType": "hunger",
+              "rateMultiplier": 0.5,
+              "duration": 2000,
+              "startedAt": 100,
+              "source": "meal"
+            }
+          ],
+          "environmentTemperature": 50,
+          "lastTickAt": 100,
+          "enabled": true,
+          "damageOwed": 0
+        }
+      }
+    },
+    {
+      "name": "run: using food spends one of its stack (not the whole has_item fact) and restores the needs its effects name; the last one empties the stack",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 40,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            },
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 40,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "use_item",
+            "item": {
+              "type": "food",
+              "quantity": 3,
+              "effects": {
+                "hunger": 20
+              }
+            },
+            "at": 10
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "food",
+              "quantity": 1,
+              "effects": {
+                "hunger": 20,
+                "thirst": 5,
+                "health": 10
+              }
+            },
+            "at": 20
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "drink",
+              "effects": {
+                "thirst": 10
+              }
+            },
+            "at": 30
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 1,
+              "remaining": 2,
+              "applied": [
+                {
+                  "need": "hunger",
+                  "amount": 20
+                }
+              ],
+              "action": null,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 60,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 1,
+              "remaining": 0,
+              "applied": [
+                {
+                  "need": "hunger",
+                  "amount": 20
+                },
+                {
+                  "need": "thirst",
+                  "amount": 5
+                }
+              ],
+              "action": null,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 80,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 45,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 1,
+              "remaining": 0,
+              "applied": [
+                {
+                  "need": "thirst",
+                  "amount": 10
+                }
+              ],
+              "action": null,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 80,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 55,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: food or drink whose effects name no tracked need performs eat or drink at the restoreActions amount (Godot eat 30, drink 25); a consumable restores nothing then",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 40,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            },
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 40,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "use_item",
+            "item": {
+              "type": "food",
+              "quantity": 2,
+              "effects": {
+                "health": 10
+              }
+            },
+            "at": 10
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "drink",
+              "quantity": 5
+            },
+            "at": 20
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "drink",
+              "quantity": 5,
+              "effects": null
+            },
+            "at": 25
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "consumable",
+              "quantity": 4,
+              "effects": {
+                "energy": 10
+              }
+            },
+            "at": 30
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 1,
+              "remaining": 1,
+              "applied": [],
+              "action": "eat",
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 70,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 1,
+              "remaining": 4,
+              "applied": [],
+              "action": "drink",
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 70,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 65,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 1,
+              "remaining": 4,
+              "applied": [],
+              "action": "drink",
+              "events": [
+                {
+                  "type": "need_satisfied",
+                  "needType": "thirst",
+                  "value": 90,
+                  "message": "Thirst satisfied",
+                  "at": 25
+                }
+              ],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 70,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 1,
+              "remaining": 3,
+              "applied": [],
+              "action": null,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 70,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: a document, key, quest or collectible item is used without being spent; another type is refused (not_usable), as is a stack holding none (not_held)",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 40,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "use_item",
+            "item": {
+              "type": "document",
+              "quantity": 1
+            },
+            "at": 10
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "key",
+              "quantity": 2,
+              "effects": {
+                "hunger": 50
+              }
+            },
+            "at": 20
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "quest"
+            },
+            "at": 30
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "collectible",
+              "quantity": 3
+            },
+            "at": 40
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "weapon",
+              "quantity": 1,
+              "effects": {
+                "hunger": 50
+              }
+            },
+            "at": 50
+          },
+          {
+            "do": "use_item",
+            "item": {
+              "type": "food",
+              "quantity": 0,
+              "effects": {
+                "hunger": 50
+              }
+            },
+            "at": 60
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 0,
+              "remaining": 1,
+              "applied": [],
+              "action": null,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 0,
+              "remaining": 2,
+              "applied": [],
+              "action": null,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 0,
+              "remaining": 1,
+              "applied": [],
+              "action": null,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 0,
+              "remaining": 3,
+              "applied": [],
+              "action": null,
+              "events": [],
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": false,
+              "reason": "not_usable",
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "use_item",
+              "ok": false,
+              "reason": "not_held",
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: food in a world that does not track hunger is still spent, one of the stack, and restores nothing",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "thirst",
+              "name": "Thirst",
+              "maxValue": 100,
+              "startValue": 40,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "use_item",
+            "item": {
+              "type": "food",
+              "quantity": 2
+            },
+            "at": 10
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "use_item",
+              "ok": true,
+              "consumed": 1,
+              "remaining": 1,
+              "applied": [],
+              "action": null,
+              "events": [],
+              "needs": [
+                {
+                  "id": "thirst",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "run: the restore-actions hook is an action id: sleep (the action matrix's Sleep, the bed's verb) restores Rest by its flat 50 per sleep, whatever its length; eat and drink by id the same way",
+      "op": "run",
+      "input": {
+        "survival": {
+          "needs": [
+            {
+              "id": "sleep",
+              "name": "Rest",
+              "maxValue": 100,
+              "startValue": 10,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            },
+            {
+              "id": "hunger",
+              "name": "Hunger",
+              "maxValue": 100,
+              "startValue": 10,
+              "decayRate": 1,
+              "warningThreshold": 30,
+              "criticalThreshold": 15,
+              "damageRate": 2
+            }
+          ]
+        },
+        "start": 0,
+        "steps": [
+          {
+            "do": "action",
+            "action": "sleep",
+            "at": 1000
+          },
+          {
+            "do": "action",
+            "action": "sleep",
+            "at": 2000
+          },
+          {
+            "do": "action",
+            "action": "eat",
+            "at": 3000
+          },
+          {
+            "do": "action",
+            "action": "drink",
+            "at": 4000
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "steps": [
+            {
+              "do": "action",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "sleep",
+                  "value": 60,
+                  "message": "Rest restored",
+                  "at": 1000
+                }
+              ],
+              "needs": [
+                {
+                  "id": "sleep",
+                  "value": 60,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "hunger",
+                  "value": 10,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ]
+            },
+            {
+              "do": "action",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_satisfied",
+                  "needType": "sleep",
+                  "value": 100,
+                  "message": "Rest satisfied",
+                  "at": 2000
+                }
+              ],
+              "needs": [
+                {
+                  "id": "sleep",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "hunger",
+                  "value": 10,
+                  "max": 100,
+                  "band": "critical"
+                }
+              ]
+            },
+            {
+              "do": "action",
+              "ok": true,
+              "events": [
+                {
+                  "type": "need_restored",
+                  "needType": "hunger",
+                  "value": 40,
+                  "message": "Hunger restored",
+                  "at": 3000
+                }
+              ],
+              "needs": [
+                {
+                  "id": "sleep",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            },
+            {
+              "do": "action",
+              "ok": false,
+              "reason": "need_not_tracked",
+              "needs": [
+                {
+                  "id": "sleep",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

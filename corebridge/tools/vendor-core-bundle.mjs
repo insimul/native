@@ -197,6 +197,13 @@ const CAMERA_CORPUS_FILES = ['conformance/camera/movement.json'];
 // vendor/core/conformance/audio/ is a stray the next write removes.
 const AUDIO_CORPUS_FILES = ['conformance/audio/ground.json'];
 
+// core's P9c survival corpora (PL.native-survival-rows, U106(1); core's P9c.core and
+// PL.core-survival-rules), copied verbatim the same way: the needs, HUD and stamina
+// files, driven through the `survival.*` rows by tests/survival_corpus.cpp.
+// `conformance/survival/` is this set's alone, so a file an earlier pin left there is
+// seen, hashed and removed by the next write.
+const SURVIVAL_CORPUS_FILES = ['conformance/survival/hud.json', 'conformance/survival/needs.json', 'conformance/survival/stamina.json'];
+
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
 // village-state comparator and the save-file game state behind it. No row needs them;
 // they came in only through a corpus RUNNER module's comparator import (the P8 rows
@@ -434,6 +441,11 @@ function audioFilesOnDisk() {
   return ownDirFilesOnDisk(AUDIO_CORPUS_FILES);
 }
 
+/** The vendored survival corpus files on disk: the camera set's rule (no other set copies into `conformance/survival/`). */
+function survivalFilesOnDisk() {
+  return ownDirFilesOnDisk(SURVIVAL_CORPUS_FILES);
+}
+
 /** Every file under the directories of `files`, which no other set copies into, sorted. */
 function ownDirFilesOnDisk(files) {
   const out = [];
@@ -451,6 +463,11 @@ function cameraFilesAtPin(src) {
 /** core's ground reading corpus at the pin, as { 'vendor/core/<path>': Buffer }. */
 function audioFilesAtPin(src) {
   return filesAtPin(src, AUDIO_CORPUS_FILES, 'the audio.ground rows');
+}
+
+/** core's survival corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
+function survivalFilesAtPin(src) {
+  return filesAtPin(src, SURVIVAL_CORPUS_FILES, 'the survival.* rows');
 }
 
 /** core's save corpora (slots, tutorial progress) at the pin, as { 'vendor/core/<path>': Buffer }. */
@@ -826,6 +843,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The survival corpora: the same exact-set replacement (only the listed files).
+    const survival = survivalFilesAtPin(src);
+    for (const rel of survivalFilesOnDisk()) if (!(rel in survival)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(survival)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -848,6 +873,7 @@ async function write(coreDir) {
       titleCorpus: TITLE_CORPUS_FILES,
       cameraCorpus: CAMERA_CORPUS_FILES,
       audioCorpus: AUDIO_CORPUS_FILES,
+      survivalCorpus: SURVIVAL_CORPUS_FILES,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -866,6 +892,7 @@ async function write(coreDir) {
       ...titleFilesOnDisk(),
       ...cameraFilesOnDisk(),
       ...audioFilesOnDisk(),
+      ...survivalFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -882,6 +909,7 @@ async function write(coreDir) {
     console.log(`  P8 title-flow and tutorial corpus files (${Object.keys(title).length}), copied unchanged`);
     console.log(`  camera movement corpus files (${Object.keys(camera).length}), copied unchanged`);
     console.log(`  audio ground reading corpus files (${Object.keys(audio).length}), copied unchanged`);
+    console.log(`  survival corpus files (${Object.keys(survival).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -950,6 +978,10 @@ async function check(coreDir) {
   for (const rel of AUDIO_CORPUS_FILES) {
     if (!audioFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the audio ground corpus gate would run nothing`);
   }
+  const survivalFiles = survivalFilesOnDisk();
+  for (const rel of SURVIVAL_CORPUS_FILES) {
+    if (!survivalFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the survival corpus gate would run nothing`);
+  }
   // conformance/ui/ is shared by the P9a, P6 and P8 sets: a file belongs to exactly one.
   const claimedTwice = propsFiles.filter((rel) => p9aFiles.includes(rel));
   if (claimedTwice.length) fail(`${claimedTwice.join(', ')} is listed as both a P9a and a P6 corpus file`);
@@ -966,6 +998,7 @@ async function check(coreDir) {
     ...titleFiles,
     ...cameraFiles,
     ...audioFiles,
+    ...survivalFiles,
     ...ADAPTER_MODULES,
     ...TOOL_INPUTS,
   ];
@@ -1011,7 +1044,8 @@ async function check(coreDir) {
       `(${manifest.bundleBytes} bytes, ${caseFiles.length} case file(s), ${layoutFiles.length} layout corpus file(s), ` +
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
       `${savesFiles.length} saves (slots, tutorial progress), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
-      `${cameraFiles.length} camera movement and ${audioFiles.length} audio ground corpus file(s), core ${manifest.coreCommit}, ` +
+      `${cameraFiles.length} camera movement, ${audioFiles.length} audio ground and ${survivalFiles.length} survival corpus file(s), ` +
+      `core ${manifest.coreCommit}, ` +
       `esbuild ${manifest.esbuild})`,
   );
 
@@ -1121,13 +1155,23 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const survival = survivalFilesAtPin(src);
+      const wantSurvival = Object.keys(survival).sort();
+      if (JSON.stringify(wantSurvival) !== JSON.stringify(survivalFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s survival corpora are ${wantSurvival.join(', ')} but vendor/core/ holds ${survivalFiles.join(', ')}`);
+      }
+      for (const rel of wantSurvival) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(survival[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       console.log(
         `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
           `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s), all ` +
           `${wantP9a.length} P9a corpus file(s), all ${wantSaves.length} save (slots, tutorial progress) corpus file(s), all ` +
           `${wantProps.length} P6 props/inventory corpus file(s), all ${wantTitle.length} P8 title/tutorial ` +
-          `corpus file(s), all ${wantCamera.length} camera movement corpus file(s) and all ${wantAudio.length} audio ground ` +
-          `corpus file(s) byte for byte`,
+          `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio ground ` +
+          `corpus file(s) and all ${wantSurvival.length} survival corpus file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });

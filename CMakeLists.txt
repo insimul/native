@@ -872,6 +872,39 @@ add_test(NAME audio_ground_corpus_negative COMMAND insimulcore_props_corpus
 set_tests_properties(audio_ground_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "contract.ground.kindDefaults.footpath: .terrain.texture.sidewalk. != .terrain.texture.path.*expected WRONGLY the wilderness for a position that is not finite [^\n]*reading: expected a object, got a null.*expected WRONGLY no reading where the world states no ground [^\n]*reading: expected a null, got a object.*expected WRONGLY a stated road id ignored [^\n]*shapeId: .road.a.b. != .road.map.lane-7.*expected WRONGLY a footpath with no archetype read as sidewalk [^\n]*surface: .terrain.texture.sidewalk. != .terrain.texture.path.*expected WRONGLY the first listed road on a tie [^\n]*surface: .terrain.texture.road. != .terrain.texture.gravel.*expected WRONGLY the road of width 0 read [^\n]*surface: .terrain.texture.road. != .terrain.texture.ground.*op footstepAt of area audio-ground: no case of it was driven.*props_corpus: FAIL")
 
+# survival_corpus (PL.native-survival-rows, rulings U106(1) and U36): core's P9c
+# logic (P9c.core and PL.core-survival-rules: src/survival/needs.ts,
+# survival-hud.ts, survival-systems.ts, src/stamina/stamina.ts and
+# game-engine/logic/StaminaPool.ts) as libinsimulcore's `survival.*` rows, held to
+# core's own corpora: conformance/survival/{needs,hud,stamina}.json, COPIED byte for
+# byte into corebridge/vendor/core/conformance/survival/ at the pin
+# (vendor-core-bundle.mjs SURVIVAL_CORPUS_FILES; hashed, and byte-compared under
+# --check --core). tests/survival_corpus.cpp drives EVERY case through the rows: an
+# op whose case input is a row's args as is, a run one row per step over the state
+# the last answer carried, a pool one survival.stamina.pool.apply per step. The
+# first argument is the vendored core root, whose composition.json names the pack
+# catalog hud.json's systems cases compose over. Unreal's Portable/InsimulSurvival
+# is the interim copy these rows retire (P9c.unreal.retire-survival-copy). The regex
+# demands each file's driven line with 0 undriven, in file order, and holds no ';'.
+set(INSIMUL_CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core)
+add_executable(insimulcore_survival_corpus tests/survival_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_survival_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_survival_corpus PRIVATE insimulcore)
+add_test(NAME survival_corpus COMMAND insimulcore_survival_corpus ${INSIMUL_CORE_ROOT}
+  ${INSIMUL_PROPS_CORPUS}/survival/needs.json ${INSIMUL_PROPS_CORPUS}/survival/hud.json
+  ${INSIMUL_PROPS_CORPUS}/survival/stamina.json)
+set_tests_properties(survival_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "survival-needs: [0-9]+ case[(]s[)], driven tuning [1-9][0-9]*, initial [1-9][0-9]*, run [1-9][0-9]*, save [1-9][0-9]*, load [1-9][0-9]*. 0 undriven\n.*survival-hud: [0-9]+ case[(]s[)], driven view [1-9][0-9]*, run [1-9][0-9]*, systems [1-9][0-9]*. 0 undriven\n.*survival-stamina: [0-9]+ case[(]s[)], driven tuning [1-9][0-9]*, bands [1-9][0-9]*, spend [1-9][0-9]*, regen [1-9][0-9]*, pool [1-9][0-9]*, clock [1-9][0-9]*. 0 undriven\n.*survival_corpus: PASS")
+# Its negative pass, as Unreal's survival_corpus_negative: every case's expectation
+# perturbed (its value's last leaf, or its refusal's) must be refused, each file's
+# count and the total stated; the runner prints PASS only when every case of every
+# file was refused (refused == cases, none accepted, no case undriven).
+add_test(NAME survival_corpus_negative COMMAND insimulcore_survival_corpus --negative ${INSIMUL_CORE_ROOT}
+  ${INSIMUL_PROPS_CORPUS}/survival/needs.json ${INSIMUL_PROPS_CORPUS}/survival/hud.json
+  ${INSIMUL_PROPS_CORPUS}/survival/stamina.json)
+set_tests_properties(survival_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*survival_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*survival_corpus --negative: PASS")
+
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
 # (TutorialQuestSystem) and the onboarding flow on it (OnboardingManager) — as

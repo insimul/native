@@ -1,0 +1,56 @@
+{
+  "schema": "insimul.pack/1",
+  "id": "platformer",
+  "version": "0.1.0",
+  "name": "Platformer",
+  "summary": "A course of levels over the world's own streets, ending at its people's homes and workplaces: start, goal, checkpoints and par, every step a traversal movement, a fall back to the furthest checkpoint, and up to three stars a level.",
+  "kind": "optional",
+  "phase": "P9j",
+  "catalog": ["genre-platformer"],
+  "core": {
+    "modules": ["platformer", "traversal"],
+    "predicatePacks": ["platformer"],
+    "hostInterfaces": ["ITraversalProbe", "ILocomotionHost"],
+    "corpus": [
+      "conformance/platformer/course.json",
+      "conformance/platformer/run.json",
+      "conformance/platformer/save.json",
+      "conformance/prolog/mechanic-platformer.json",
+      "conformance/genre-pieces/kinds.json",
+      "conformance/genre-pieces/build-plan.json"
+    ],
+    "saveExtensions": ["platformer"]
+  },
+  "requires": [{ "id": "controls" }],
+  "parameters": [
+    { "id": "levelCount", "type": "integer", "min": 1, "max": 50, "maps": "PlatformerTuning.levelCount", "source": "core-default", "doc": "levels a generated course has when the world's platformer section names no count (5); an authored count, or authored levels, win" }
+  ],
+  "extensionPoints": [
+    { "id": "levels", "kind": "prolog-facts", "signature": "WorldIR.platformer {levels: [{id, start, goal, goalKind?, subject?, checkpoints?, par?}], levelCount?, runnerModes?}", "doc": "authored levels over the world's link graph; with none a course is generated (src/platformer/course.ts)" },
+    { "id": "jump-geometry", "kind": "host-slot", "signature": "ITraversalProbe.query({actor, from, to, mode, link}) -> {passable}", "doc": "whether this jump can be made from here: the engine's geometry answers, core decides" },
+    { "id": "movement", "kind": "host-slot", "signature": "ILocomotionHost.travel(LocomotionOrder)", "doc": "the run, the jump arc and the landing are the engine's" },
+    { "id": "course-runs", "kind": "save-extension", "signature": "currentState.extensions.platformer = PlatformerDirector.serialize()", "doc": "read with readPlatformerBlock (src/platformer/platformer-save.ts), restored with PlatformerDirector.restore over the same world's course" }
+  ],
+  "styles": {
+    "tokens": ["accent", "warning"],
+    "art": ["item.platformer.*", "prop.platformer.*"],
+    "layouts": ["level-select", "run-timer", "star-result"]
+  },
+  "checks": [
+    { "id": "corpus", "kind": "corpus" },
+    { "id": "compile", "kind": "compile" }
+  ],
+  "assistant": {
+    "summary": "src/platformer/course.ts builds the course (courseForWorld: authored levels, else generated over the streets, homes and workplaces); PlatformerDirector (src/game-engine/logic/PlatformerDirector.ts) moves runners only through TraversalPlanner and remembers the level, checkpoints, run cost and best clears; src/platformer/platformer-save.ts is the extensions.platformer block. The engine draws the level select, the timer and the stars, and answers the probe.",
+    "notes": [
+      "Every step is one traversal movement to an adjacent place: step(runner, to). A fall is respawn(runner): the KB puts the runner at the furthest checkpoint this run touched, or the start.",
+      "Stars are integers from the run's cost against par: within par 3, within half as much again 2, else 1.",
+      "Runner modes (walk, jump) come from the world's platformer section; without jump no doorstep is reached and the generated course is empty.",
+      "The side-view rig (GAP-RCP2) and the recipe-plan build of the level's pieces (P9j.core-build-plan) are separate rows: do not place pieces from this pack."
+    ],
+    "doNot": [
+      "Move a runner outside the director: a teleport skips the checkpoints and the cost the stars read.",
+      "Store a level's stars for a run under way: they are derived when the level is cleared."
+    ]
+  }
+}

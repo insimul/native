@@ -451,7 +451,13 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` 603063d (2026-11-11,
+  and pin disagree. The pin today is core `main` 6cd4b4e (2026-11-12,
+  PL.native-survival-rows: PL.core-survival-rules' five survival host rules and
+  grown corpora, which the new `survival.*` rows run over P9c.core's needs, HUD bars
+  and stamina; PL.core-camera-movement-gaps' `prop` solid kind, which
+  `camera.movement.contract` states as `solidKinds`; three new layout ops, each a
+  `layout.*` row; and G.cat-flags' refused genre flags and modules, which move
+  some genre, pause-menu and composition answers). Before that, core `main` 603063d (2026-11-11,
   PL.native-tutorial-save: PL.tutorial-progress-save's tutorial save block — the
   registered extension `tutorial`, `readTutorialBlock`, and the `progress` option
   and `saveProgress()` of `TutorialQuestSystem` and `OnboardingManager` — which the
@@ -499,7 +505,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement and audio ground ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground and survival ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -641,7 +647,7 @@
   (`UNBUNDLED_CORE_MODULES`, with its own remedy)), taking a case's `input` as their args; the
   runner drives every case a second time with `solids` and `exclude` reversed
   (the file's `order` rule, as core's `checkMovementCase` does; self-tested), and
-  holds the data tables (`modes`, `storeyM`, `gait`, `ground`) to
+  holds the data tables (`modes`, `solidKinds` since 6cd4b4e, `storeyM`, `gait`, `ground`) to
   `camera.movement.contract` — an Area's `contract_row`, not `props.contract`.
   Import the contract module only, never `camera/movement-corpus` (its comparator
   is the save-file code `UNBUNDLED_CORE_MODULES` refuses). Core's metres in the
@@ -670,6 +676,31 @@
   (its comparator is the save-file code). IR metres on `{x, z}`, nothing converted
   (Unreal's `Portable/InsimulAudioPlace` maps centimetres and its level offset in,
   then binds these rows in place of its interim reading).
+- **The survival rows (PL.native-survival-rows, U106(1)) run core's P9c corpora
+  UNCHANGED**, `conformance/survival/{needs,hud,stamina}.json` copied as their own
+  set (`SURVIVAL_CORPUS_FILES`) and driven by their own runner,
+  `tests/survival_corpus.cpp`, as `survival_corpus` (+ `survival_corpus_negative`,
+  which perturbs EVERY case's expectation and must see each refused, as Unreal's
+  does). One row per core function of `survival/needs`, `survival/survival-hud`,
+  `survival/survival-systems`, `stamina/stamina` and `StaminaPool`, named
+  `survival.<group>.<op>` after the file's area (`survival.needs.*`,
+  `survival.hud.*`, `survival.stamina.*`). A row that answers a whole corpus op
+  takes the case's `input` and answers its `expected` (`{ ok, value }`, a refusal
+  `{ ok: false, refusal }` as a VALUE); the step rows a game calls as it plays
+  (`advance`, `restore`, `action`, `consume`, `useItem`, `setTemperature`,
+  `modifier`, `removeModifier`, `enable`; `survival.hud.reduce`/`.stamina`) are
+  STATELESS over the `state` (and `hud`) the last answer carried, so a `run` case
+  is one row per step and the runner records each in core's runner's shape. The
+  needs rows read the tuning from `survival` and `params` on every call (never a
+  tuning sent back), the stamina rows from `staminaConfig`. `StaminaPool` is the
+  session `survival.stamina.pool.create`/`.apply` (no KB: each op answers its
+  `energy/3` delta and the `ISurvivalSystem` calls core made, under `host`).
+  Import those modules only, never `survival/systems-corpus` (core's runner). Only
+  `state`, `hud`, `item`, `events`, `stamina` and the pool's create lists are
+  type-checked (`[invalid-input]`); core reads the rest and its corpus pins the
+  refusals (`need_not_tracked`, `bad_amount`, `not_usable`, …) as values. Unreal's
+  `Portable/InsimulSurvival` is the interim copy these rows retire
+  (`P9c.unreal.retire-survival-copy`).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

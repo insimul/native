@@ -1,6 +1,6 @@
 {
   "area": "layout-building-fit",
-  "description": "Buildings fitted to their lots (core src/editor/layout/building-fit.ts; the Unreal plugin's BYOA B2/B7/B8 fit, characterised from its Portable code before core implemented it). The door finder's part rule, a body's stature for the door hold, the fit itself (one uniform factor within the binding's limits, held up so the door leaf is doorClearance x the tallest body, the footprint centred on its lot plus the settle, the door turned to the street, the seat on the ground) and the overlaps of fitted footprints with each other and the paving. Brightwater Vale's seven lots carry the B8 pairing's houses as the editor measured them in the village it builds (House_01, BP_House_01, for the farm, the smithy and the third home; House_03 standing for BP_House_02 on the bakery and two homes, with BP_House_02's own bounds and door parts; House_Large, BP_House_Large_03, for the restaurant), the 6 m neighbour gap, the seat sinks the pairing writes and the 2.01 m cast; the rest are the degraded cases. Plan frame: IR (x, z) metres, y up, a heading points along (cos h, sin h); asset-local geometry in core's convention (x right, y up, z forward, metres), placed forward along the heading and right along heading + pi/2.",
+  "description": "Buildings fitted to their lots (core src/editor/layout/building-fit.ts; the Unreal plugin's BYOA B2/B7/B8 fit, characterised from its Portable code before core implemented it). The door finder's part rule, a body's stature for the door hold, the fit itself (one uniform factor within the binding's limits, held up so the door leaf is doorClearance x the tallest body, the footprint centred on its lot plus the settle, the door turned to the street, the seat on the ground) and the overlaps of fitted footprints with each other and the paving. Brightwater Vale's seven lots carry the B8 pairing's houses as the editor measured them in the village it builds (House_01, BP_House_01, for the farm, the smithy and the third home; House_03 standing for BP_House_02 on the bakery and two homes, with BP_House_02's own bounds and door parts; House_Large, BP_House_Large_03, for the restaurant), the 6 m neighbour gap, the seat sinks the pairing writes and the 2.01 m cast; the rest are the degraded cases. Plan frame: IR (x, z) metres, y up, a heading points along (cos h, sin h); asset-local geometry in core's convention (x right, y up, z forward, metres), placed forward along the heading and right along heading + pi/2. Since PL.fit-front-line: a lot that states a build-to line has a building area (buildingAreaOf: the building's IR spec box at its position, the lot's frontage, and the lot's front edge and buildTo.front as a front line), and a fit given that front line stands the footprint's front on the facade line, but at least FIT_FRONT_CLEARANCE_M (0.25 m, the settle's paving clearance) behind the lot's front edge, and answers where (facade {line, front}, metres forward of lotCentre along the street heading, before the settle).",
   "version": 1,
   "sources": [
     {
@@ -9,6 +9,12 @@
       "irSha256": "b51cc94a9841462c10905548145cb1bce19d0dc14f75d1facdd2e367e591880d",
       "pairing": "BYOA B8 round 5: houses by role, the 6 m neighbour gap, the seat sinks, the 2.01 m cast, MI_Landscape_01a's layers and its ground paint",
       "world": "Brightwater Vale (6abb84ae358820954abf1ea2)"
+    },
+    {
+      "cases": "the 'building area:', 'front line:' and 'front line control:' cases (PL.fit-front-line, operator ruling U105(2); the B9.fit round-1 verdict's M1 and m1)",
+      "writtenBy": "core src/editor/layout/building-fit.ts buildingAreaOf, and fitBuildingToLot given a frontLine (npm run layout-corpus -- --check replays them)",
+      "measuredBy": "unreal origin/feat/b9-fit a3a5f04 tools/verify-unreal/fixtures/brightwater-l3/: brightwater-l3.ir.json (sha256 65208501b178658c36e94c389838b280c8ba912a33073613e1e75d13aff5219a; the Village WorldIR 6abb84ae… exported 2026-11-10T02:16Z, trimmed) and smoke-1015-houses.json (sha256 10e99f4ff606406bab18bafaf89fd3b1e098a5e87b023f334435f375cf18f600; the seven houses as the editor measures them, and the SYNTHETIC inputAsStated twins)",
+      "frame": "building area: the IR plan as the world states it; front line: the placement frame, IR (x, z) + terrainSize / 2 (256 m), as the other Brightwater cases; nodeHeading = -rotation"
     },
     {
       "cases": "'door: House_03, a leaf wins over its wall's opening; a flat hatch is no door' (renamed from 'door: House_03, a leaf wins over a nearer side opening': the side opening is not in BP_House_02), the two 'door: House_Large' cases, the seven 'brightwater:' and seven 'brightwater settled:' fits, 'fit: the large house, held over a wider range' and the two Brightwater 'overlaps:' cases (PL.layout-standins, operator ruling U80(3))",
@@ -7789,6 +7795,4988 @@
           "withKind": "road"
         }
       ]
+    },
+    {
+      "name": "building area: Brightwater L3 bld_6abb84eef2e499b951eecec0 (Farm)",
+      "note": "B9.fit m1: the lot states buildTo {front: 0}, so its building area is the building's spec box (10 x 10) at its IR position, and its front line is the lot's front edge (lot 15 x 15) measured from that centre; the Village's WorldIR as the Unreal lane exported it",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 153.911
+          },
+          "facingAngle": 0,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec0",
+          "lotId": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 156.411
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Farm",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": {
+        "width": 10,
+        "depth": 10,
+        "frontageYaw": 0,
+        "centre": [180.392, 156.411],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0
+        }
+      }
+    },
+    {
+      "name": "building area: Brightwater L3 bld_6abb84eef2e499b951eecec1 (Blacksmith)",
+      "note": "B9.fit m1: the lot states buildTo {front: 0}, so its building area is the building's spec box (10 x 10) at its IR position, and its front line is the lot's front edge (lot 15 x 15) measured from that centre; the Village's WorldIR as the Unreal lane exported it",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec1",
+          "position": {
+            "x": 181.892,
+            "y": 0,
+            "z": 190.911
+          },
+          "facingAngle": -3.142,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec1",
+          "lotId": "6abb84eef2e499b951eecec1",
+          "position": {
+            "x": 181.892,
+            "y": 0,
+            "z": 188.411
+          },
+          "rotation": -3.142,
+          "spec": {
+            "buildingRole": "Blacksmith",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": {
+        "width": 10,
+        "depth": 10,
+        "frontageYaw": -3.142,
+        "centre": [181.892, 188.411],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      }
+    },
+    {
+      "name": "building area: Brightwater L3 bld_6abb84eef2e499b951eecec2 (Bakery)",
+      "note": "B9.fit m1: the lot states buildTo {front: 0}, so its building area is the building's spec box (12 x 10) at its IR position, and its front line is the lot's front edge (lot 17 x 15) measured from that centre; the Village's WorldIR as the Unreal lane exported it",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec2",
+          "position": {
+            "x": 160.392,
+            "y": 0,
+            "z": 169.911
+          },
+          "facingAngle": 1.571,
+          "lotWidth": 17,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec2",
+          "lotId": "6abb84eef2e499b951eecec2",
+          "position": {
+            "x": 162.892,
+            "y": 0,
+            "z": 169.911
+          },
+          "rotation": 1.571,
+          "spec": {
+            "buildingRole": "Bakery",
+            "width": 12,
+            "depth": 10
+          }
+        }
+      },
+      "expected": {
+        "width": 12,
+        "depth": 10,
+        "frontageYaw": 1.571,
+        "centre": [162.892, 169.911],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      }
+    },
+    {
+      "name": "building area: Brightwater L3 bld_6abb84eef2e499b951eecec3 (Restaurant)",
+      "note": "B9.fit m1: the lot states buildTo {front: 0}, so its building area is the building's spec box (15 x 12) at its IR position, and its front line is the lot's front edge (lot 20 x 17) measured from that centre; the Village's WorldIR as the Unreal lane exported it",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec3",
+          "position": {
+            "x": 198.392,
+            "y": 0,
+            "z": 171.911
+          },
+          "facingAngle": -1.571,
+          "lotWidth": 20,
+          "lotDepth": 17,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec3",
+          "lotId": "6abb84eef2e499b951eecec3",
+          "position": {
+            "x": 195.892,
+            "y": 0,
+            "z": 171.911
+          },
+          "rotation": -1.571,
+          "spec": {
+            "buildingRole": "Restaurant",
+            "width": 15,
+            "depth": 12
+          }
+        }
+      },
+      "expected": {
+        "width": 15,
+        "depth": 12,
+        "frontageYaw": -1.571,
+        "centre": [195.892, 171.911],
+        "frontLine": {
+          "street": 6.000000051853467,
+          "buildTo": 0
+        }
+      }
+    },
+    {
+      "name": "building area: Brightwater L3 bld_6abb84bcf2e499b951eece64_4 (residence_small)",
+      "note": "B9.fit m1: the lot states buildTo {front: 0}, so its building area is the building's spec box (10 x 10) at its IR position, and its front line is the lot's front edge (lot 15 x 15) measured from that centre; the Village's WorldIR as the Unreal lane exported it",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec4",
+          "position": {
+            "x": 160.392,
+            "y": 0,
+            "z": 190.911
+          },
+          "facingAngle": -3.142,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84bcf2e499b951eece64_4",
+          "lotId": "6abb84eef2e499b951eecec4",
+          "position": {
+            "x": 160.392,
+            "y": 0,
+            "z": 188.411
+          },
+          "rotation": -3.142,
+          "spec": {
+            "buildingRole": "residence_small",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": {
+        "width": 10,
+        "depth": 10,
+        "frontageYaw": -3.142,
+        "centre": [160.392, 188.411],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      }
+    },
+    {
+      "name": "building area: Brightwater L3 bld_6abb84bcf2e499b951eece64_5 (residence_small)",
+      "note": "B9.fit m1: the lot states buildTo {front: 0}, so its building area is the building's spec box (10 x 10) at its IR position, and its front line is the lot's front edge (lot 15 x 15) measured from that centre; the Village's WorldIR as the Unreal lane exported it",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec5",
+          "position": {
+            "x": 160.392,
+            "y": 0,
+            "z": 152.911
+          },
+          "facingAngle": 1.571,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84bcf2e499b951eece64_5",
+          "lotId": "6abb84eef2e499b951eecec5",
+          "position": {
+            "x": 162.892,
+            "y": 0,
+            "z": 152.911
+          },
+          "rotation": 1.571,
+          "spec": {
+            "buildingRole": "residence_small",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": {
+        "width": 10,
+        "depth": 10,
+        "frontageYaw": 1.571,
+        "centre": [162.892, 152.911],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      }
+    },
+    {
+      "name": "building area: Brightwater L3 bld_6abb84bcf2e499b951eece64_6 (residence_small)",
+      "note": "B9.fit m1: the lot states buildTo {front: 0}, so its building area is the building's spec box (10 x 10) at its IR position, and its front line is the lot's front edge (lot 15 x 15) measured from that centre; the Village's WorldIR as the Unreal lane exported it",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec6",
+          "position": {
+            "x": 144.392,
+            "y": 0,
+            "z": 190.911
+          },
+          "facingAngle": -3.142,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84bcf2e499b951eece64_6",
+          "lotId": "6abb84eef2e499b951eecec6",
+          "position": {
+            "x": 144.392,
+            "y": 0,
+            "z": 188.411
+          },
+          "rotation": -3.142,
+          "spec": {
+            "buildingRole": "residence_small",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": {
+        "width": 10,
+        "depth": 10,
+        "frontageYaw": -3.142,
+        "centre": [144.392, 188.411],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      }
+    },
+    {
+      "name": "building area: a lot with no build-to line states none",
+      "note": "the room is then the whole lot, as before (a world exported before L3)",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 153.911
+          },
+          "facingAngle": 0,
+          "lotWidth": 15,
+          "lotDepth": 15
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec0",
+          "lotId": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 156.411
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Farm",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "name": "building area: a negative build-to front states none",
+      "note": "pipelines' buildToOf refuses a front under 0, and so does the reading",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 153.911
+          },
+          "facingAngle": 0,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": -1
+          }
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec0",
+          "lotId": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 156.411
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Farm",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "name": "building area: a build-to front that is not a number states none",
+      "note": "a string front is not a line",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 153.911
+          },
+          "facingAngle": 0,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": "0"
+          }
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec0",
+          "lotId": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 156.411
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Farm",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "name": "building area: a building with no spec box states none",
+      "note": "no spec.width/depth: the area is unknown, the room is the whole lot",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 153.911
+          },
+          "facingAngle": 0,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec0",
+          "lotId": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 156.411
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Farm"
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "name": "building area: a building with no position states none",
+      "note": "the area stands where the world stood the building; with no position there is none",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 153.911
+          },
+          "facingAngle": 0,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec0",
+          "lotId": "6abb84eef2e499b951eecec0",
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Farm",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "name": "building area: a lot with no facing has an area and no front line",
+      "note": "the street heading is unknown, so the fit centres the footprint (no frontLine)",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 153.911
+          },
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 0
+          }
+        },
+        "building": {
+          "id": "bld_6abb84eef2e499b951eecec0",
+          "lotId": "6abb84eef2e499b951eecec0",
+          "position": {
+            "x": 180.392,
+            "y": 0,
+            "z": 156.411
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "Farm",
+            "width": 10,
+            "depth": 10
+          }
+        }
+      },
+      "expected": {
+        "width": 10,
+        "depth": 10,
+        "frontageYaw": null,
+        "centre": [180.392, 156.411],
+        "frontLine": null
+      }
+    },
+    {
+      "name": "building area: a 0.35 m build-to line puts the area's front on the facade line",
+      "note": "synthetic: a 12 x 10 house on a 16 x 20 lot facing +x, stood by pipelines' buildToForward(20, 10, {front: 0.35}) = 4.65 m ahead of the lot's centre; the front edge is 5.35 m ahead of the area's centre, the facade line 5 m (the area's own front)",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "lot.synthetic",
+          "position": {
+            "x": 10,
+            "y": 0,
+            "z": 20
+          },
+          "facingAngle": 1.5707963267948966,
+          "lotWidth": 16,
+          "lotDepth": 20,
+          "buildTo": {
+            "front": 0.35
+          }
+        },
+        "building": {
+          "id": "bld.synthetic",
+          "lotId": "lot.synthetic",
+          "position": {
+            "x": 14.65,
+            "y": 0,
+            "z": 20
+          },
+          "rotation": 1.5707963267948966,
+          "spec": {
+            "buildingRole": "residence_small",
+            "width": 12,
+            "depth": 10
+          }
+        }
+      },
+      "expected": {
+        "width": 12,
+        "depth": 10,
+        "frontageYaw": 1.5707963267948966,
+        "centre": [14.65, 20],
+        "frontLine": {
+          "street": 5.35,
+          "buildTo": 0.35
+        }
+      }
+    },
+    {
+      "name": "building area: a house deeper than the lot behind its line stands at the centre, the line inside its area",
+      "note": "synthetic: a 10 x 14 house on a 15 x 15 lot facing +z with a 2 m build-to line; pipelines' buildToForward(15, 14, {front: 2}) is negative and so 0, the house at the lot's centre: the front edge is 7.5 m ahead of the area's centre, the facade line 5.5 m, 1.5 m inside the area's own front (7 m). The front line is the LOT's, not the area's",
+      "op": "buildingAreaOf",
+      "input": {
+        "lot": {
+          "id": "lot.deep",
+          "position": {
+            "x": -3,
+            "y": 0,
+            "z": 8
+          },
+          "facingAngle": 0,
+          "lotWidth": 15,
+          "lotDepth": 15,
+          "buildTo": {
+            "front": 2
+          }
+        },
+        "building": {
+          "id": "bld.deep",
+          "lotId": "lot.deep",
+          "position": {
+            "x": -3,
+            "y": 0,
+            "z": 8
+          },
+          "rotation": 0,
+          "spec": {
+            "buildingRole": "residence_small",
+            "width": 10,
+            "depth": 14
+          }
+        }
+      },
+      "expected": {
+        "width": 10,
+        "depth": 14,
+        "frontageYaw": 0,
+        "centre": [-3, 8],
+        "frontLine": {
+          "street": 7.5,
+          "buildTo": 2
+        }
+      }
+    },
+    {
+      "name": "front line: Brightwater L3 bld_6abb84eef2e499b951eecec0 (Farm), the Village's house",
+      "note": "PL.fit-front-line (U105(2), B9.fit M1): the smoke-1015 house as the editor measures it, held by the area's width, fitted to its building area with the lot's front line; its front stands 0.25 m behind the facade line (buildTo.front 0, the paving's edge), where the settle leaves it; centred it stood 0.635 m behind (the control below)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.0516676902771,
+            "y": 12.001367568969727,
+            "z": 5.283374547958374
+          },
+          "min": {
+            "x": -6.0516676902771,
+            "y": -0.234694704413414,
+            "z": -5.283374547958374
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 0
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.731
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.392,
+          "y": 0.1939143872692436,
+          "z": 412.7956593301203
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.1939143872692436,
+          "z": 0.3846593301203143
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 436.392,
+          "y": 0.18070655787780882,
+          "z": 417.161
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[441.39213596408223, 408.43031866024063], [441.39213596408223, 417.161], [431.39186403591776, 417.161], [431.39186403591776, 408.43031866024063]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5,
+          "front": 4.75
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: Brightwater L3 bld_6abb84eef2e499b951eecec1 (Blacksmith), the Village's house",
+      "note": "PL.fit-front-line (U105(2), B9.fit M1): the smoke-1015 house as the editor measures it, held by the area's width, fitted to its building area with the lot's front line; its front stands 0.25 m behind the facade line (buildTo.front 0, the paving's edge), where the settle leaves it; centred it stood 0.842 m behind (the control below)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.232149362564087,
+            "y": 9.001367568969727,
+            "z": 5.182681322097778
+          },
+          "min": {
+            "x": -6.232149362564087,
+            "y": -0.03458359092473984,
+            "z": -5.182681322097778
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.0033770801965147257,
+            "z": 5.182681322097778
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec1",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [437.892, 444.411],
+        "lotId": "6abb84eef2e499b951eecec1",
+        "node": {
+          "x": 437.892,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.316
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.802311,
+        "factor": 0.802311,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.802311,
+          "y": 0.802311,
+          "z": 0.802311
+        },
+        "fixupScale": {
+          "x": 0.802311,
+          "y": 0.802311,
+          "z": 0.802311
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 437.892241099361,
+          "y": 0.027746795418418943,
+          "z": 443.8191220759052
+        },
+        "offsetFromNode": {
+          "x": 0.00024109936100558116,
+          "y": 0.027746795418418943,
+          "z": -0.5918779240947742
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.0033770801965147257,
+            "z": 5.182681322097778
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 437.89393489547945,
+          "y": 0.025037326828873017,
+          "z": 439.66100018667254
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[432.89042573085226, 447.97520718345214], [432.89381332308915, 439.65896340498676], [442.89405646786975, 439.6630369683583], [442.89066887563285, 447.9792807468237]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000207413869,
+          "front": 4.750000207413869
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: Brightwater L3 bld_6abb84eef2e499b951eecec2 (Bakery), the Village's house",
+      "note": "PL.fit-front-line (U105(2), B9.fit M1): the smoke-1015 house as the editor measures it, held by the area's width, fitted to its building area with the lot's front line; its front stands 0.25 m behind the facade line (buildTo.front 0, the paving's edge), where the settle leaves it; centred it stood 0.633 m behind (the control below)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.3647143840789795,
+            "y": 12.001367568969727,
+            "z": 5.360371828079224
+          },
+          "min": {
+            "x": -7.3647143840789795,
+            "y": -0.234694704413414,
+            "z": -5.360371828079224
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.360371828079224
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec2",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 425.911],
+        "lotId": "6abb84eef2e499b951eecec2",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 425.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 12,
+          "away": 8.734
+        },
+        "aligned": true,
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.814719,
+        "factor": 0.814719,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.814719,
+          "y": 0.814719,
+          "z": 0.814719
+        },
+        "fixupScale": {
+          "x": 0.814719,
+          "y": 0.814719,
+          "z": 0.814719
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 419.2748032685127,
+          "y": 0.19121023488499223,
+          "z": 425.9109220332303
+        },
+        "offsetFromNode": {
+          "x": 0.38280326851270274,
+          "y": 0.19121023488499223,
+          "z": -0.00007796676970883709
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.360371828079224
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 423.64199995333183,
+          "y": 0.026242007823452346,
+          "z": 425.9100325522719
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[414.9063845092892, 419.9116389003582], [423.6407778789275, 419.90985993844134], [423.6432220277362, 431.9102051661024], [414.9088286580979, 431.91198412801924]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000051853467,
+          "front": 4.750000051853467
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: Brightwater L3 bld_6abb84eef2e499b951eecec3 (Restaurant), the Village's house",
+      "note": "PL.fit-front-line (U105(2), B9.fit M1): the smoke-1015 house as the editor measures it, held by the area's width, fitted to its building area with the lot's front line; its front stands 0.25 m behind the facade line (buildTo.front 0, the paving's edge), where the settle leaves it; centred it stood 1.194 m behind (the control below)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 8.821845054626465,
+            "y": 12.841463088989258,
+            "z": 5.653210878372192
+          },
+          "min": {
+            "x": -8.821845054626465,
+            "y": -0.2511233389377594,
+            "z": -5.653210878372192
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.00777052529156208,
+            "z": 5.653210878372192
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec3",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "frontageYaw": -1.571
+        },
+        "lotCentre": [451.892, 427.911],
+        "lotId": "6abb84eef2e499b951eecec3",
+        "node": {
+          "x": 451.892,
+          "y": 0,
+          "z": 427.911
+        },
+        "nodeHeading": 1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 6.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 15,
+          "away": 9.612
+        },
+        "aligned": true,
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.850147,
+        "factor": 0.850147,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.850147,
+          "y": 0.850147,
+          "z": 0.850147
+        },
+        "fixupScale": {
+          "x": 0.850147,
+          "y": 0.850147,
+          "z": 0.850147
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 450.9480602363406,
+          "y": 0.21349175322791933,
+          "z": 427.91080774476023
+        },
+        "offsetFromNode": {
+          "x": -0.9439397636593867,
+          "y": 0.21349175322791933,
+          "z": -0.00019225523976729164
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.00777052529156208,
+            "z": 5.653210878372192
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 446.14200006740947,
+          "y": 0.2068856644628737,
+          "z": 427.9098288790682
+        },
+        "doorHeading": -3.14138898038469,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[455.75259288371797, 435.4116515625502], [446.14047254585574, 435.40969383116607], [446.14352758896325, 420.40996392697025], [455.7556479268255, 420.4119216583544]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 6.000000051853467,
+          "front": 5.750000051853467
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: Brightwater L3 bld_6abb84bcf2e499b951eece64_4 (residence_small), the Village's house",
+      "note": "PL.fit-front-line (U105(2), B9.fit M1): the smoke-1015 house as the editor measures it, held by the area's width, fitted to its building area with the lot's front line; its front stands 0.25 m behind the facade line (buildTo.front 0, the paving's edge), where the settle leaves it; centred it stood 0.588 m behind (the control below)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.221374988555908,
+            "y": 12.001367568969727,
+            "z": 5.490058422088623
+          },
+          "min": {
+            "x": -6.221374988555908,
+            "y": -0.234694704413414,
+            "z": -5.490058422088623
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.490058422088623
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_4",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [416.392, 444.411],
+        "lotId": "6abb84eef2e499b951eecec4",
+        "node": {
+          "x": 416.392,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.824
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.803665,
+        "factor": 0.803665,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "fixupScale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 416.39213761481386,
+          "y": 0.18861591962240634,
+          "z": 444.0731676224024
+        },
+        "offsetFromNode": {
+          "x": 0.00013761481386609375,
+          "y": 0.18861591962240634,
+          "z": -0.33783237759757867
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.490058422088623
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 416.39393489547945,
+          "y": 0.02588595972038804,
+          "z": 439.6610001866725
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[411.39043941879004, 448.4832983663305], [411.3940339801212, 439.6589634948706], [421.3938358108377, 439.6630368784744], [421.3902412495065, 448.48737174993425]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000207413869,
+          "front": 4.750000207413869
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: Brightwater L3 bld_6abb84bcf2e499b951eece64_5 (residence_small), the Village's house",
+      "note": "PL.fit-front-line (U105(2), B9.fit M1): the smoke-1015 house as the editor measures it, held by the area's width, fitted to its building area with the lot's front line; its front stands 0.25 m behind the facade line (buildTo.front 0, the paving's edge), where the settle leaves it; centred it stood 0.635 m behind (the control below)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.0516676902771,
+            "y": 12.001367568969727,
+            "z": 5.283374547958374
+          },
+          "min": {
+            "x": -6.0516676902771,
+            "y": -0.234694704413414,
+            "z": -5.283374547958374
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_5",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 408.911],
+        "lotId": "6abb84eef2e499b951eecec5",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.731
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 419.2766593739954,
+          "y": 0.1939143872692436,
+          "z": 408.9109216551913
+        },
+        "offsetFromNode": {
+          "x": 0.3846593739954187,
+          "y": 0.1939143872692436,
+          "z": -0.0000783448086849603
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 423.6419999533319,
+          "y": 0.026613130154147735,
+          "z": 408.91003255227184
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[414.91030040094824, 403.9116748977383], [423.64098155962114, 403.90989669189935], [423.6430183470426, 413.91016841264434], [414.9123371883697, 413.9119466184833]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000051853467,
+          "front": 4.750000051853467
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: Brightwater L3 bld_6abb84bcf2e499b951eece64_6 (residence_small), the Village's house",
+      "note": "PL.fit-front-line (U105(2), B9.fit M1): the smoke-1015 house as the editor measures it, held by the area's width, fitted to its building area with the lot's front line; its front stands 0.25 m behind the facade line (buildTo.front 0, the paving's edge), where the settle leaves it; centred it stood 0.588 m behind (the control below)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.221374988555908,
+            "y": 12.001367568969727,
+            "z": 5.490058422088623
+          },
+          "min": {
+            "x": -6.221374988555908,
+            "y": -0.234694704413414,
+            "z": -5.490058422088623
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.490058422088623
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_6",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [400.392, 444.411],
+        "lotId": "6abb84eef2e499b951eecec6",
+        "node": {
+          "x": 400.392,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.824
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.803665,
+        "factor": 0.803665,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "fixupScale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 400.39213761481386,
+          "y": 0.18861591962240634,
+          "z": 444.0731676224024
+        },
+        "offsetFromNode": {
+          "x": 0.00013761481386609375,
+          "y": 0.18861591962240634,
+          "z": -0.33783237759757867
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.490058422088623
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 400.39393489547945,
+          "y": 0.02588595972038804,
+          "z": 439.6610001866725
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[395.39043941879004, 448.4832983663305], [395.3940339801212, 439.6589634948706], [405.3938358108377, 439.6630368784744], [405.3902412495065, 448.48737174993425]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000207413869,
+          "front": 4.750000207413869
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line control: Brightwater L3 bld_6abb84eef2e499b951eecec0 (Farm), centred with no front line",
+      "note": "the same house and area given no front line: core's centring as B9.fit measured it, the front 0.635 m behind the facade line (the declared divergence this item ends); no facade key, so no earlier answer's shape changed",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.0516676902771,
+            "y": 12.001367568969727,
+            "z": 5.283374547958374
+          },
+          "min": {
+            "x": -6.0516676902771,
+            "y": -0.234694704413414,
+            "z": -5.283374547958374
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 0
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0]
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.731
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.392,
+          "y": 0.1939143872692436,
+          "z": 412.411
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.1939143872692436,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 436.392,
+          "y": 0.18070655787780882,
+          "z": 416.7763406698797
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[441.39213596408223, 408.0456593301203], [441.39213596408223, 416.7763406698797], [431.39186403591776, 416.7763406698797], [431.39186403591776, 408.0456593301203]],
+        "settleShift": [0, 0],
+        "notes": []
+      }
+    },
+    {
+      "name": "front line control: Brightwater L3 bld_6abb84eef2e499b951eecec1 (Blacksmith), centred with no front line",
+      "note": "the same house and area given no front line: core's centring as B9.fit measured it, the front 0.842 m behind the facade line (the declared divergence this item ends); no facade key, so no earlier answer's shape changed",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.232149362564087,
+            "y": 9.001367568969727,
+            "z": 5.182681322097778
+          },
+          "min": {
+            "x": -6.232149362564087,
+            "y": -0.03458359092473984,
+            "z": -5.182681322097778
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.0033770801965147257,
+            "z": 5.182681322097778
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec1",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [437.892, 444.411],
+        "lotId": "6abb84eef2e499b951eecec1",
+        "node": {
+          "x": 437.892,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0]
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.316
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.802311,
+        "factor": 0.802311,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.802311,
+          "y": 0.802311,
+          "z": 0.802311
+        },
+        "fixupScale": {
+          "x": 0.802311,
+          "y": 0.802311,
+          "z": 0.802311
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 437.892,
+          "y": 0.027746795418418943,
+          "z": 444.411
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.027746795418418943,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.0033770801965147257,
+            "z": 5.182681322097778
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 437.89369379611844,
+          "y": 0.025037326828873017,
+          "z": 440.2528781107673
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[432.89018463149125, 448.5670851075469], [432.89357222372814, 440.25084132908154], [442.89381536850874, 440.2549148924531], [442.89042777627185, 448.57115867091846]],
+        "settleShift": [0, 0],
+        "notes": []
+      }
+    },
+    {
+      "name": "front line control: Brightwater L3 bld_6abb84eef2e499b951eecec2 (Bakery), centred with no front line",
+      "note": "the same house and area given no front line: core's centring as B9.fit measured it, the front 0.633 m behind the facade line (the declared divergence this item ends); no facade key, so no earlier answer's shape changed",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.3647143840789795,
+            "y": 12.001367568969727,
+            "z": 5.360371828079224
+          },
+          "min": {
+            "x": -7.3647143840789795,
+            "y": -0.234694704413414,
+            "z": -5.360371828079224
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.360371828079224
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec2",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 425.911],
+        "lotId": "6abb84eef2e499b951eecec2",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 425.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0]
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 12,
+          "away": 8.734
+        },
+        "aligned": true,
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.814719,
+        "factor": 0.814719,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.814719,
+          "y": 0.814719,
+          "z": 0.814719
+        },
+        "fixupScale": {
+          "x": 0.814719,
+          "y": 0.814719,
+          "z": 0.814719
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 418.892,
+          "y": 0.19121023488499223,
+          "z": 425.911
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.19121023488499223,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.360371828079224
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 423.25919668481913,
+          "y": 0.026242007823452346,
+          "z": 425.9101105190416
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[414.5235812407765, 419.9117168671279], [423.2579746104148, 419.90993790521105], [423.2604187592235, 431.9102831328721], [414.5260253895852, 431.91206209478895]],
+        "settleShift": [0, 0],
+        "notes": []
+      }
+    },
+    {
+      "name": "front line control: Brightwater L3 bld_6abb84eef2e499b951eecec3 (Restaurant), centred with no front line",
+      "note": "the same house and area given no front line: core's centring as B9.fit measured it, the front 1.194 m behind the facade line (the declared divergence this item ends); no facade key, so no earlier answer's shape changed",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 8.821845054626465,
+            "y": 12.841463088989258,
+            "z": 5.653210878372192
+          },
+          "min": {
+            "x": -8.821845054626465,
+            "y": -0.2511233389377594,
+            "z": -5.653210878372192
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.00777052529156208,
+            "z": 5.653210878372192
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec3",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "frontageYaw": -1.571
+        },
+        "lotCentre": [451.892, 427.911],
+        "lotId": "6abb84eef2e499b951eecec3",
+        "node": {
+          "x": 451.892,
+          "y": 0,
+          "z": 427.911
+        },
+        "nodeHeading": 1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0]
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 15,
+          "away": 9.612
+        },
+        "aligned": true,
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.850147,
+        "factor": 0.850147,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.850147,
+          "y": 0.850147,
+          "z": 0.850147
+        },
+        "fixupScale": {
+          "x": 0.850147,
+          "y": 0.850147,
+          "z": 0.850147
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.892,
+          "y": 0.21349175322791933,
+          "z": 427.911
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.21349175322791933,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.00777052529156208,
+            "z": 5.653210878372192
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 447.08593983106886,
+          "y": 0.2068856644628737,
+          "z": 427.91002113430795
+        },
+        "doorHeading": -3.14138898038469,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[456.69653264737735, 435.41184381779], [447.08441230951513, 435.40988608640583], [447.08746735262264, 420.41015618221], [456.69958769048486, 420.41211391359417]],
+        "settleShift": [0, 0],
+        "notes": []
+      }
+    },
+    {
+      "name": "front line control: Brightwater L3 bld_6abb84bcf2e499b951eece64_4 (residence_small), centred with no front line",
+      "note": "the same house and area given no front line: core's centring as B9.fit measured it, the front 0.588 m behind the facade line (the declared divergence this item ends); no facade key, so no earlier answer's shape changed",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.221374988555908,
+            "y": 12.001367568969727,
+            "z": 5.490058422088623
+          },
+          "min": {
+            "x": -6.221374988555908,
+            "y": -0.234694704413414,
+            "z": -5.490058422088623
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.490058422088623
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_4",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [416.392, 444.411],
+        "lotId": "6abb84eef2e499b951eecec4",
+        "node": {
+          "x": 416.392,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0]
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.824
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.803665,
+        "factor": 0.803665,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "fixupScale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 416.392,
+          "y": 0.18861591962240634,
+          "z": 444.411
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.18861591962240634,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.490058422088623
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 416.3937972806656,
+          "y": 0.02588595972038804,
+          "z": 439.99883256427006
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[411.3903018039762, 448.82113074392805], [411.39389636530734, 439.99679587246817], [421.3936981960238, 440.00086925607195], [421.39010363469265, 448.82520412753183]],
+        "settleShift": [0, 0],
+        "notes": []
+      }
+    },
+    {
+      "name": "front line control: Brightwater L3 bld_6abb84bcf2e499b951eece64_5 (residence_small), centred with no front line",
+      "note": "the same house and area given no front line: core's centring as B9.fit measured it, the front 0.635 m behind the facade line (the declared divergence this item ends); no facade key, so no earlier answer's shape changed",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.0516676902771,
+            "y": 12.001367568969727,
+            "z": 5.283374547958374
+          },
+          "min": {
+            "x": -6.0516676902771,
+            "y": -0.234694704413414,
+            "z": -5.283374547958374
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_5",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 408.911],
+        "lotId": "6abb84eef2e499b951eecec5",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0]
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.731
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 418.892,
+          "y": 0.1939143872692436,
+          "z": 408.911
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.1939143872692436,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 423.25734057933647,
+          "y": 0.026613130154147735,
+          "z": 408.91011089708053
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[414.5256410269528, 403.911753242547], [423.2563221856257, 403.90997503670803], [423.25835897304717, 413.910246757453], [414.5276778143743, 413.91202496329197]],
+        "settleShift": [0, 0],
+        "notes": []
+      }
+    },
+    {
+      "name": "front line control: Brightwater L3 bld_6abb84bcf2e499b951eece64_6 (residence_small), centred with no front line",
+      "note": "the same house and area given no front line: core's centring as B9.fit measured it, the front 0.588 m behind the facade line (the declared divergence this item ends); no facade key, so no earlier answer's shape changed",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.221374988555908,
+            "y": 12.001367568969727,
+            "z": 5.490058422088623
+          },
+          "min": {
+            "x": -6.221374988555908,
+            "y": -0.234694704413414,
+            "z": -5.490058422088623
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.490058422088623
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_6",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [400.392, 444.411],
+        "lotId": "6abb84eef2e499b951eecec6",
+        "node": {
+          "x": 400.392,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0]
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.824
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.803665,
+        "factor": 0.803665,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "fixupScale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 400.392,
+          "y": 0.18861591962240634,
+          "z": 444.411
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.18861591962240634,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.20248481631278992,
+            "z": 5.490058422088623
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 400.3937972806656,
+          "y": 0.02588595972038804,
+          "z": 439.99883256427006
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[395.3903018039762, 448.82113074392805], [395.39389636530734, 439.99679587246817], [405.3936981960238, 440.00086925607195], [405.39010363469265, 448.82520412753183]],
+        "settleShift": [0, 0],
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: SYNTHETIC twin bld_6abb84eef2e499b951eecec0 (Farm), as the binding states it",
+      "note": "SYNTHETIC (B9.fit's inputAsStated, not what the Village stands): the binding's stated footprint, which the area holds by its depth; fronted on the same line, 0.25 m behind the facade line, its back 0.25 m past the area's (the settle pushed it there before)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 5.590751647949219,
+            "y": 12.001367568969727,
+            "z": 6.251337051391602
+          },
+          "min": {
+            "x": -4.975997447967529,
+            "y": -0.234694704413414,
+            "z": -5.851998329162598
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": -1.2016219761568605,
+            "y": -0.01598544418811798,
+            "z": 6.251337051391602
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 0
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 8.731,
+          "away": 10
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.6459675624735,
+          "y": 0.1939143872692436,
+          "z": 411.9958890233212
+        },
+        "offsetFromNode": {
+          "x": 0.2539675624735196,
+          "y": 0.1939143872692436,
+          "z": -0.41511097667881813
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": -1.2016219761568605,
+            "y": -0.01598544418811798,
+            "z": 6.251337051391602
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 437.63879690567535,
+          "y": 0.18070655787780882,
+          "z": 417.16100000000006
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[440.7573406698797, 407.16072807183554], [440.7573406698797, 417.16100000000006], [432.0266593301203, 417.16100000000006], [432.0266593301203, 407.16072807183554]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5,
+          "front": 4.75
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: SYNTHETIC twin bld_6abb84eef2e499b951eecec1 (Blacksmith), as the binding states it",
+      "note": "SYNTHETIC (B9.fit's inputAsStated, not what the Village stands): the binding's stated footprint, which the area holds by its depth; fronted on the same line, 0.25 m behind the facade line, its back 0.25 m past the area's (the settle pushed it there before)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 5.389365196228027,
+            "y": 9.001367568969727,
+            "z": 6.612300395965576
+          },
+          "min": {
+            "x": -4.975997447967529,
+            "y": -0.03458359092473984,
+            "z": -5.851998329162598
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": -1.9597753927120802,
+            "y": -0.0033770801965147257,
+            "z": 6.612300395965576
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec1",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [437.892, 444.411],
+        "lotId": "6abb84eef2e499b951eecec1",
+        "node": {
+          "x": 437.892,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 8.316,
+          "away": 10
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.802311,
+        "factor": 0.802311,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.802311,
+          "y": 0.802311,
+          "z": 0.802311
+        },
+        "fixupScale": {
+          "x": 0.802311,
+          "y": 0.802311,
+          "z": 0.802311
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 437.72594914142485,
+          "y": 0.027746795418418943,
+          "z": 444.9660535414047
+        },
+        "offsetFromNode": {
+          "x": -0.16605085857514723,
+          "y": 0.027746795418418943,
+          "z": 0.5550535414046749
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": -1.9597753927120802,
+            "y": -0.0033770801965147257,
+            "z": 6.612300395965576
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 436.15576093884846,
+          "y": 0.025037326828873017,
+          "z": 439.66029214771174
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[433.7317394428752, 449.6595495353346], [433.73581300624676, 439.659306390554], [442.05205678471214, 439.6626939827909], [442.0479832213406, 449.6629371275715]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000207413869,
+          "front": 4.750000207413869
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: SYNTHETIC twin bld_6abb84eef2e499b951eecec2 (Bakery), as the binding states it",
+      "note": "SYNTHETIC (B9.fit's inputAsStated, not what the Village stands): the binding's stated footprint, which the area holds by its depth; fronted on the same line, 0.25 m behind the facade line, its back 0.25 m past the area's (the settle pushed it there before)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 5.389365196228027,
+            "y": 12.001367568969727,
+            "z": 7.612300395965576
+          },
+          "min": {
+            "x": -5.33137845993042,
+            "y": -0.234694704413414,
+            "z": -7.117128372192383
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": -1.0049101356036958,
+            "y": -0.20248481631278992,
+            "z": 7.612300395965576
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec2",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 425.911],
+        "lotId": "6abb84eef2e499b951eecec2",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 425.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 7.279,
+          "away": 10
+        },
+        "aligned": true,
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.678933,
+        "factor": 0.678933,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.678933,
+          "y": 0.678933,
+          "z": 0.678933
+        },
+        "fixupScale": {
+          "x": 0.678933,
+          "y": 0.678933,
+          "z": 0.678933
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 418.47375410657804,
+          "y": 0.1593419797515124,
+          "z": 425.89140063065713
+        },
+        "offsetFromNode": {
+          "x": -0.41824589342195395,
+          "y": 0.1593419797515124,
+          "z": -0.019599369342870432
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": -1.0049101356036958,
+            "y": -0.20248481631278992,
+            "z": 7.612300395965576
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 423.6418569846806,
+          "y": 0.021868355957820995,
+          "z": 425.2080813593181
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[413.6409636642222, 422.27273609357724], [423.641258718654, 422.2706993014034], [423.6427411880098, 429.54936580314035], [413.642446133578, 429.55140259531424]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000051853467,
+          "front": 4.750000051853467
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: SYNTHETIC twin bld_6abb84eef2e499b951eecec3 (Restaurant), as the binding states it",
+      "note": "SYNTHETIC (B9.fit's inputAsStated, not what the Village stands): the binding's stated footprint, which the area holds by its depth; fronted on the same line, 0.25 m behind the facade line, its back 0.25 m past the area's (the settle pushed it there before)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 5.982104301452637,
+            "y": 12.841463088989258,
+            "z": 9.215161323547363
+          },
+          "min": {
+            "x": -5.324317455291748,
+            "y": -0.2511233389377594,
+            "z": -8.428528785705566
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": -0.44412928256388806,
+            "y": -0.00777052529156208,
+            "z": 9.215161323547363
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec3",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "frontageYaw": -1.571
+        },
+        "lotCentre": [451.892, 427.911],
+        "lotId": "6abb84eef2e499b951eecec3",
+        "node": {
+          "x": 451.892,
+          "y": 0,
+          "z": 427.911
+        },
+        "nodeHeading": 1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 6.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 7.69,
+          "away": 12
+        },
+        "aligned": true,
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.680118,
+        "factor": 0.680118,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.680118,
+          "y": 0.680118,
+          "z": 0.680118
+        },
+        "fixupScale": {
+          "x": 0.680118,
+          "y": 0.680118,
+          "z": 0.680118
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 452.40935146755044,
+          "y": 0.17079350303167104,
+          "z": 428.1347917123912
+        },
+        "offsetFromNode": {
+          "x": 0.5173514675504407,
+          "y": 0.17079350303167104,
+          "z": 0.22379171239117568
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": -0.44412928256388806,
+            "y": -0.00777052529156208,
+            "z": 9.215161323547363
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 446.1418929869036,
+          "y": 0.16550862891142443,
+          "z": 428.43557552468087
+        },
+        "doorHeading": -3.14138898038469,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[458.1410079552278, 431.7571233114208], [446.14121697439526, 431.7546792754974], [446.1427831604237, 424.06497848263894], [458.14257414125626, 424.0674225185624]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 6.000000051853467,
+          "front": 5.750000051853467
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: SYNTHETIC twin bld_6abb84bcf2e499b951eece64_4 (residence_small), as the binding states it",
+      "note": "SYNTHETIC (B9.fit's inputAsStated, not what the Village stands): the binding's stated footprint, which the area holds by its depth; fronted on the same line, 0.25 m behind the facade line, its back 0.25 m past the area's (the settle pushed it there before)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 5.389365196228027,
+            "y": 12.001367568969727,
+            "z": 6.590751647949219
+          },
+          "min": {
+            "x": -5.590751647949219,
+            "y": -0.234694704413414,
+            "z": -5.851998329162598
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0.26396837559167424,
+            "y": -0.20248481631278992,
+            "z": 6.590751647949219
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_4",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [416.392, 444.411],
+        "lotId": "6abb84eef2e499b951eecec4",
+        "node": {
+          "x": 416.392,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 8.824,
+          "away": 10
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.803665,
+        "factor": 0.803665,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "fixupScale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 416.4727008954718,
+          "y": 0.18861591962240634,
+          "z": 444.95778913431906
+        },
+        "offsetFromNode": {
+          "x": 0.08070089547180714,
+          "y": 0.18861591962240634,
+          "z": 0.5467891343190558
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0.26396837559167424,
+            "y": -0.20248481631278992,
+            "z": 6.590751647949219
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 416.6870006370962,
+          "y": 0.02588595972038804,
+          "z": 439.6611195659569
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[411.9776940761457, 449.6590047367234], [411.9817674597495, 439.6592029060069], [420.8061023312094, 439.66279746733807], [420.80202894760555, 449.66259929805454]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000207413869,
+          "front": 4.750000207413869
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: SYNTHETIC twin bld_6abb84bcf2e499b951eece64_5 (residence_small), as the binding states it",
+      "note": "SYNTHETIC (B9.fit's inputAsStated, not what the Village stands): the binding's stated footprint, which the area holds by its depth; fronted on the same line, 0.25 m behind the facade line, its back 0.25 m past the area's (the settle pushed it there before)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 5.590751647949219,
+            "y": 12.001367568969727,
+            "z": 6.251337051391602
+          },
+          "min": {
+            "x": -4.975997447967529,
+            "y": -0.234694704413414,
+            "z": -5.851998329162598
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0.26396837559167424,
+            "y": -0.20248481631278992,
+            "z": 6.590751647949219
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_5",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 408.911],
+        "lotId": "6abb84eef2e499b951eecec5",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 8.731,
+          "away": 10
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 418.4768373573975,
+          "y": 0.1939143872692436,
+          "z": 408.65711698976605
+        },
+        "offsetFromNode": {
+          "x": -0.4151626426024677,
+          "y": 0.1939143872692436,
+          "z": -0.2538830102339489
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0.26396837559167424,
+            "y": -0.20248481631278992,
+            "z": 6.590751647949219
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 423.6419926483749,
+          "y": 0.026613130154147735,
+          "z": 408.8741664851595
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[413.6408391296675, 404.54672876035687], [423.6411108504124, 404.5446919729354], [423.64288905625136, 413.2753731316083], [413.6426173355064, 413.27740991902976]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000051853467,
+          "front": 4.750000051853467
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: SYNTHETIC twin bld_6abb84bcf2e499b951eece64_6 (residence_small), as the binding states it",
+      "note": "SYNTHETIC (B9.fit's inputAsStated, not what the Village stands): the binding's stated footprint, which the area holds by its depth; fronted on the same line, 0.25 m behind the facade line, its back 0.25 m past the area's (the settle pushed it there before)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 5.389365196228027,
+            "y": 12.001367568969727,
+            "z": 6.590751647949219
+          },
+          "min": {
+            "x": -5.590751647949219,
+            "y": -0.234694704413414,
+            "z": -5.851998329162598
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0.26396837559167424,
+            "y": -0.20248481631278992,
+            "z": 6.590751647949219
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_6",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [400.392, 444.411],
+        "lotId": "6abb84eef2e499b951eecec6",
+        "node": {
+          "x": 400.392,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 8.824,
+          "away": 10
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.803665,
+        "factor": 0.803665,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "fixupScale": {
+          "x": 0.803665,
+          "y": 0.803665,
+          "z": 0.803665
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 400.4727008954718,
+          "y": 0.18861591962240634,
+          "z": 444.95778913431906
+        },
+        "offsetFromNode": {
+          "x": 0.08070089547180714,
+          "y": 0.18861591962240634,
+          "z": 0.5467891343190558
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0.26396837559167424,
+            "y": -0.20248481631278992,
+            "z": 6.590751647949219
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 400.6870006370962,
+          "y": 0.02588595972038804,
+          "z": 439.6611195659569
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[395.9776940761457, 449.6590047367234], [395.9817674597495, 439.6592029060069], [404.8061023312094, 439.66279746733807], [404.80202894760555, 449.66259929805454]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000207413869,
+          "front": 4.750000207413869
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: a build-to front 0.225 m keeps the paving clearance",
+      "note": "threshold (FIT_FRONT_CLEARANCE_M 0.25, 10 % under): the facade line is 0.225 m behind the front edge, nearer than the clearance, so the front stands 0.25 m behind the edge (0.025 m behind the line)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.0516676902771,
+            "y": 12.001367568969727,
+            "z": 5.283374547958374
+          },
+          "min": {
+            "x": -6.0516676902771,
+            "y": -0.234694704413414,
+            "z": -5.283374547958374
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 0
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0.225
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.731
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.392,
+          "y": 0.1939143872692436,
+          "z": 412.7956593301203
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.1939143872692436,
+          "z": 0.3846593301203143
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 436.392,
+          "y": 0.18070655787780882,
+          "z": 417.161
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[441.39213596408223, 408.43031866024063], [441.39213596408223, 417.161], [431.39186403591776, 417.161], [431.39186403591776, 408.43031866024063]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 4.775,
+          "front": 4.75
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: a build-to front 0.275 m is on the facade line",
+      "note": "threshold (10 % over): the facade line is farther than the clearance from the front edge, so the front stands on it",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.0516676902771,
+            "y": 12.001367568969727,
+            "z": 5.283374547958374
+          },
+          "min": {
+            "x": -6.0516676902771,
+            "y": -0.234694704413414,
+            "z": -5.283374547958374
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 0
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0.275
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.731
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.392,
+          "y": 0.1939143872692436,
+          "z": 412.77065933012034
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.1939143872692436,
+          "z": 0.359659330120337
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 436.392,
+          "y": 0.18070655787780882,
+          "z": 417.136
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[441.39213596408223, 408.40531866024065], [441.39213596408223, 417.136], [431.39186403591776, 417.136], [431.39186403591776, 408.40531866024065]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 4.725,
+          "front": 4.725
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: a door-held house deeper than its area runs back from the line",
+      "note": "the large house held by its door (factor 0.99 over a 15 x 12 room): fronted 0.25 m behind the room's front edge (street 6, buildTo 0), it runs back past the room; without a front line it keeps its front on the street line (the case it is built from)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 9.5049,
+            "y": 9.558,
+            "z": 7.386699999999999
+          },
+          "min": {
+            "x": -8.1758,
+            "y": -2.123,
+            "z": -6.074
+          }
+        },
+        "castHeight": 2.01,
+        "door": {
+          "candidates": 5,
+          "hasPosition": true,
+          "height": 2.2497,
+          "name": "SM_Door_B2_StaticMeshComponent0",
+          "position": {
+            "x": -4.28385,
+            "y": -1.1457,
+            "z": 5.33465
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec3",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "ground": {
+          "$fixture": "brightwaterTerrain"
+        },
+        "lot": {
+          "depth": 12,
+          "frontageYaw": 0,
+          "width": 15
+        },
+        "lotCentre": [436.392, 411.411],
+        "lotId": "6abb84eef2e499b951eecec3",
+        "node": {
+          "x": 436,
+          "y": 10.437316428928193,
+          "z": 411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 1,
+          "scaleMax": 1.6,
+          "scaleMin": 0.25,
+          "seatSink": 0
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 6,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "misfit",
+        "issues": ["too-large"],
+        "required": {
+          "across": 15.797,
+          "away": 12.027
+        },
+        "aligned": true,
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.848368,
+        "factor": 0.893453,
+        "limited": false,
+        "doorFactor": 0.893452,
+        "doorHeld": true,
+        "doorHeight": 2.0100012141,
+        "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.25,
+          "scaleMax": 1.6,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.893453,
+          "y": 0.893453,
+          "z": 0.893453
+        },
+        "fixupScale": {
+          "x": 0.893453,
+          "y": 0.893453,
+          "z": 0.893453
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.98574419115,
+          "y": 11.56548517599459,
+          "z": 410.5613307249
+        },
+        "offsetFromNode": {
+          "x": 0.9857441911499905,
+          "y": 1.1281687470663968,
+          "z": -0.43866927509998277
+        },
+        "door": {
+          "source": "component",
+          "name": "SM_Door_B2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": -4.28385,
+            "y": -1.1457,
+            "z": 5.33465
+          },
+          "yaw": 0,
+          "candidates": 5,
+          "height": 2.2497
+        },
+        "doorWorld": {
+          "x": 440.8131628252,
+          "y": 10.541856073894591,
+          "z": 417.161
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": true,
+          "groundMin": 9.66868445699459,
+          "groundMax": 10.412808067774222,
+          "foundation": 0.8731716169000003,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[444.29043722855, 405.13449720290004], [444.29043722855, 417.161], [428.49356277145, 417.161], [428.49356277145, 405.13449720290004]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 6,
+          "front": 5.75
+        },
+        "notes": ["door-held"]
+      }
+    },
+    {
+      "name": "front line: a settle shift moves the fronted house with it",
+      "note": "the farm fronted, then settled 0.4 m back and 0.1 m across: the front stands 0.4 m behind where it was (facade answers before the settle)",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.0516676902771,
+            "y": 12.001367568969727,
+            "z": 5.283374547958374
+          },
+          "min": {
+            "x": -6.0516676902771,
+            "y": -0.234694704413414,
+            "z": -5.283374547958374
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 0
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0.1, -0.4],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.731
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.492,
+          "y": 0.1939143872692436,
+          "z": 412.39565933012034
+        },
+        "offsetFromNode": {
+          "x": 0.10000000000002274,
+          "y": 0.1939143872692436,
+          "z": -0.015340669879662983
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 436.492,
+          "y": 0.18070655787780882,
+          "z": 416.761
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[441.49213596408225, 408.03031866024065], [441.49213596408225, 416.761], [431.4918640359178, 416.761], [431.4918640359178, 408.03031866024065]],
+        "settleShift": [0.1, -0.4],
+        "facade": {
+          "line": 5,
+          "front": 4.75
+        },
+        "notes": ["settled"]
+      }
+    },
+    {
+      "name": "front line: a lot with no frontage ignores it",
+      "note": "no street heading: the footprint is centred and no facade is answered",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.0516676902771,
+            "y": 12.001367568969727,
+            "z": 5.283374547958374
+          },
+          "min": {
+            "x": -6.0516676902771,
+            "y": -0.234694704413414,
+            "z": -5.283374547958374
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.731
+        },
+        "aligned": false,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": false
+        },
+        "streetHeading": 0,
+        "wantedFactor": 0.826241,
+        "factor": 0.826241,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "fixupScale": {
+          "x": 0.826241,
+          "y": 0.826241,
+          "z": 0.826241
+        },
+        "heading": 0,
+        "fixupHeading": 0,
+        "location": {
+          "x": 436.392,
+          "y": 0.1939143872692436,
+          "z": 412.411
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.1939143872692436,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 440.7573406698797,
+          "y": 0.18070655787780882,
+          "z": 412.411
+        },
+        "doorHeading": 0,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[432.0266593301203, 407.41086403591777], [440.7573406698797, 407.41086403591777], [440.7573406698797, 417.41113596408223], [432.0266593301203, 417.41113596408223]],
+        "settleShift": [0, 0],
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: an unbounded lot ignores it",
+      "note": "no room to front in: centred on its node as before, no facade",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 6.0516676902771,
+            "y": 12.001367568969727,
+            "z": 5.283374547958374
+          },
+          "min": {
+            "x": -6.0516676902771,
+            "y": -0.234694704413414,
+            "z": -5.283374547958374
+          }
+        },
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "frontageYaw": 0
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "unbounded",
+        "issues": [],
+        "required": {
+          "across": 12.103,
+          "away": 10.567
+        },
+        "aligned": true,
+        "lot": {
+          "width": 0,
+          "depth": 0,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 1,
+        "factor": 1,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "fixupScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.392,
+          "y": 0.234694704413414,
+          "z": 412.411
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0.234694704413414,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 436.392,
+          "y": 0.21870926022529602,
+          "z": 417.6943745479584
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[442.4436676902771, 407.1276254520416], [442.4436676902771, 417.6943745479584], [430.3403323097229, 417.6943745479584], [430.3403323097229, 407.1276254520416]],
+        "settleShift": [0, 0],
+        "notes": []
+      }
+    },
+    {
+      "name": "front line: no measurable bounds ignores it",
+      "note": "no footprint to front: the node stands on the lot centre, no facade",
+      "op": "fitBuildingToLot",
+      "input": {
+        "castHeight": 0,
+        "door": {
+          "candidates": 0,
+          "hasPosition": true,
+          "height": 0,
+          "name": "door",
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "source": "binding_socket",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 0
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {},
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "unmeasured",
+        "issues": [],
+        "required": {
+          "across": 0,
+          "away": 0
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 1,
+        "factor": 1,
+        "limited": false,
+        "doorFactor": 0,
+        "doorHeld": false,
+        "doorHeight": 0,
+        "castHeight": 0,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "fixupScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "door": {
+          "source": "binding_socket",
+          "name": "door",
+          "hasPosition": true,
+          "position": {
+            "x": 0,
+            "y": -0.01598544418811798,
+            "z": 5.283374547958374
+          },
+          "yaw": 0,
+          "candidates": 0,
+          "height": 0
+        },
+        "doorWorld": {
+          "x": 436.392,
+          "y": -0.01598544418811798,
+          "z": 417.6943745479584
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[436.392, 412.411], [436.392, 412.411], [436.392, 412.411], [436.392, 412.411]],
+        "settleShift": [0, 0],
+        "notes": ["no-bounds"]
+      }
     }
   ]
 }

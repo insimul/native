@@ -70,7 +70,7 @@
     {
       "name": "the core re-pin's save answers: tutorial is a registered extension, and a migrated save gains its null default",
       "steps": [
-        {"call": "save.rules", "expect": {"$subset": {"extensionKeys": ["achievements", "aiBlackboards", "detectionStates", "droppedFacts", "evaluations", "gamification", "gathering", "introShown", "languageLearning", "npcLife", "playthroughTelemetry", "progression", "sessions", "skillTree", "social", "survivalNeeds", "traversal", "tutorial", "weather"]}}},
+        {"call": "save.rules", "expect": {"$subset": {"extensionKeys": ["achievements", "aiBlackboards", "detectionStates", "droppedFacts", "evaluations", "gamification", "gathering", "introShown", "languageLearning", "npcLife", "platformer", "playthroughTelemetry", "progression", "puzzle", "sessions", "skillTree", "social", "strategy", "survivalNeeds", "traversal", "tutorial", "weather"]}}},
         {"call": "save.migrate",
          "args": {"saveFile": {"id": "t", "version": 3, "worldSnapshot": {"insimulVersion": "a", "engineRevision": "b", "snapshotCreatedAt": "c"}, "currentState": {"extensions": {}}}},
          "expect": {"$subset": {"saveFile": {"$subset": {"currentState": {"$subset": {"extensions": {"$subset": {"tutorial": null}}}}}}}}},

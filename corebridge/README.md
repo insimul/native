@@ -191,7 +191,7 @@ game; **meta** = about the bridge itself.
 | `genre.camera` | `{ value }` → `{ mode }` | `game-genres/resolution` `normalizeCameraMode` | P7 |
 | `genre.resolveGame` | `{ recipe?, world? }` → core's `GameGenreResolution` (refusals are errors with a code) | `game-genres/resolution` `resolveGameGenre` | P7/P9 |
 | `genre.recipes` | `{}` → `{ ids, bindings }` | `game-genres/recipes` | P9 |
-| `camera.movement.contract` | `{}` → `{ 'camera-movement': { modes, storeyM, gait, ground } }` — the data tables of core's `conformance/camera/movement.json` `contract` | `camera/movement-rules` `movementModeTable`, `BUILDING_STOREY_M`, `PLAYER_GAIT`, `PLAYER_GROUND` | P7 movement (PL.native-camera-movement, U95(5); core's PL.movement-contract, U94(4)) |
+| `camera.movement.contract` | `{}` → `{ 'camera-movement': { modes, solidKinds, storeyM, gait, ground } }` — the data tables of core's `conformance/camera/movement.json` `contract` | `camera/movement-rules` `movementModeTable`, `MOVEMENT_SOLID_KINDS`, `BUILDING_STOREY_M`, `PLAYER_GAIT`, `PLAYER_GROUND` | P7 movement (PL.native-camera-movement, U95(5); core's PL.movement-contract, U94(4)) |
 | `camera.movement.occluders` | `{ mode, feet, view?, solids?, exclude? }` → `{ rule, pivot, lens, hidden: [{ id, atM }], unreadable }`, or the refusal value `{ error: missing-view-yaw }` | `camera/movement-rules` `sightOccluders` | P7 movement |
 | `camera.movement.sideView` | `{ mode, feet, radiusM, solids? }` → `{ depthZ, blockers: [{ id, xMin, xMax, bottomY, topY }], unreadable }`, or the refusal values `{ error: not-a-side-view }` and `{ error: invalid-radius }` | `camera/movement-rules` `sideViewBlockers` | P7 movement |
 | `camera.movement.buildingSolid` | `{ building }` → `{ solid }` (null: no footprint stated) | `camera/movement-rules` `buildingSolidOf` | P7 movement |
@@ -203,6 +203,31 @@ game; **meta** = about the bridge itself.
 | `audio.ground.placeAt` | `{ world, at }` → `{ reading }`: `{ place: settlement, settlementId, settlementName }`, `{ place: wilderness, settlementId: null, settlementName: null }`, or null (no position) | `audio/ground-from-ir` `placeAt` | P5 ground |
 | `audio.ground.groundSurfaceAt` | `{ world, at }` → `{ reading }`: `{ surface, tier, shapeId }` (tier `road`, `closed`, `open`, or `ground`: the open ground `terrain.texture.ground`, a default), or null (no position) | `audio/ground-from-ir` `groundSurfaceAt` | P5 ground |
 | `audio.ground.footstepAt` | `{ world, at, gait }` → `{ cue }`: `{ key, surface, gait, volume, intervalSec, source }`, or null (no step) | `audio/ground-from-ir` `footstepAt` | P5 ground |
+| `survival.needs.tuning` | `{ survival?, params? }` → `{ ok, value: SurvivalTuning }` | `survival/needs` `survivalTuningFromIR` | P9c survival (PL.native-survival-rows, U106(1); core's P9c.core, PL.core-survival-rules) |
+| `survival.needs.initial` | `{ survival?, params?, at? }` → `{ ok, value: SurvivalState }` | `survival/needs` `initialSurvival` | P9c survival |
+| `survival.needs.advance` | `{ survival?, params?, state, at }` → `{ state, ticks, skipped, events, expired, hurt }` | `survival/needs` `advanceSurvival` | P9c survival |
+| `survival.needs.restore` | `{ survival?, params?, state, need, amount, at }` → `{ ok: true, state, events }` or `{ ok: false, reason, state }` | `survival/needs` `restoreNeed` | P9c survival |
+| `survival.needs.action` | `{ survival?, params?, state, action, at, amount? }` → `{ ok: true, state, events }` or `{ ok: false, reason, state }` | `survival/needs` `performSurvivalAction` | P9c survival |
+| `survival.needs.consume` | `{ survival?, params?, state, effects, at }` → `{ state, applied, events }` | `survival/needs` `consumeForNeeds` | P9c survival |
+| `survival.needs.useItem` | `{ survival?, params?, state, item, at }` → `{ ok: true, state, consumed, remaining, applied, action, events }` or `{ ok: false, reason, state }` | `survival/needs` `useItemForNeeds` | P9c survival |
+| `survival.needs.setTemperature` | `{ survival?, params?, state, value, at }` → `{ ok: true, state, events }` or `{ ok: false, reason, state }` | `survival/needs` `setEnvironmentTemperature` | P9c survival |
+| `survival.needs.modifier` | `{ survival?, params?, state, modifier, at }` → `{ ok: true, state, events }` or `{ ok: false, reason, state }` | `survival/needs` `applyNeedModifier` | P9c survival |
+| `survival.needs.removeModifier` | `{ state, id }` → `{ state }` | `survival/needs` `removeNeedModifier` | P9c survival |
+| `survival.needs.enable` | `{ state, enabled }` → `{ state }` | `survival/needs` `setSurvivalEnabled` | P9c survival |
+| `survival.needs.save` | `{ state, at }` → `{ ok, value: SavedSurvivalNeeds }` (the `survivalNeeds` save extension) | `survival/needs` `survivalSaveBlock` | P9c survival |
+| `survival.needs.load` | `{ block, survival?, params?, at? }` → `{ ok, value: SurvivalState }`, or the value `{ ok: false, refusal: { code: unreadable_survival, field: block, keys } }` | `survival/needs` `readSurvivalBlock`, `survivalFromSave` | P9c survival |
+| `survival.hud.initial` | `{}` → `{ hud }` (a new HUD state) | `survival/survival-hud` `initialSurvivalHud` | P9c survival |
+| `survival.hud.view` | `{ survival?, params?, state?, hud?, now, visible?, stamina?, staminaConfig? }` → `{ ok, value: { visible, bars } }` | `survival/survival-hud` `survivalHudView` | P9c survival |
+| `survival.hud.reduce` | `{ hud, events }` → `{ hud }` (a needs row's band changes as the bars' flashes) | `survival/survival-hud` `reduceSurvivalHud` | P9c survival |
+| `survival.hud.stamina` | `{ hud, stamina: { current, max }, staminaConfig?, at }` → `{ hud, band, events }` | `survival/survival-hud` `reduceStaminaHud` | P9c survival |
+| `survival.hud.systems` | `{ request, catalog }` → `{ ok, value: { needs, stamina, running, worldActivation } }`, or the value `{ ok: false, refusal: { code, field: request } }` | `survival/survival-systems` `survivalSystemsRunning` over `system-packs/composer` `resolveComposition`; `modules/module-activation` `resolveWorldActivation` | P9c survival |
+| `survival.stamina.tuning` | `{ staminaConfig? }` → `{ ok, value: StaminaTuning }` | `stamina/stamina` `staminaTuningFromIR` | P9c survival |
+| `survival.stamina.state` | `{ current, max, staminaConfig? }` → `{ state }` (`fresh`, `winded`, `exhausted`) | `stamina/stamina` `staminaStateOf` | P9c survival |
+| `survival.stamina.spend` | `{ current, max, cost, staminaConfig? }` → `{ ok, value: StaminaSpendResult }` | `stamina/stamina` `spendStamina` | P9c survival |
+| `survival.stamina.regen` | `{ current, max, ticks, rate?, inCombat?, encumbered?, staminaConfig? }` → `{ ok, value: StaminaRegenResult }` | `stamina/stamina` `regenerateStamina` | P9c survival |
+| `survival.stamina.clock` | `{ lastTickAt, now, tickMs? }` → `{ ticks, lastTickAt }` | `stamina/stamina` `staminaRestClock` | P9c survival |
+| `survival.stamina.pool.create` | `{ staminaConfig?, costs?, actions?, actors?, survivalActorId?, start?, state? }` → `{ session, view: { tuning, actors } }` | `game-engine/logic/StaminaPool` | P9c survival |
+| `survival.stamina.pool.apply` | `{ session, ops }` → `{ results, view }`; ops `cost`, `afford`, `spend`, `rest`, `play`, `band`, `save` | `StaminaPool` `costOf`, `canAfford`, `spend`, `rest` (with `staminaRestClock`), `stateOf`, `serialize` | P9c survival |
 | `ui.genreHud` | `{ op: config, view, genre_view, config_of or view_of, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`; `config_of` / `view_of` take a game's own settings, `{ genreConfig }` or `{ recipe, world? }`, plus `state?` for `view_of`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }` (`unresolved_recipe` also carries `reason`); an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`, `genreHudConfigOf`; `game-genres/resolution` `resolveGameGenre` for a recipe) | P9a.native (U84); `config_of` / `view_of` PL.native-genre-hud-config (U92(2)) |
 | `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
@@ -216,6 +241,7 @@ game; **meta** = about the bridge itself.
 | `layout.chooseDoorPart` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('chooseDoorPart')` | L.native-layout |
 | `layout.bodyStature` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('bodyStature')` | L.native-layout |
 | `layout.fitBuildingToLot` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('fitBuildingToLot')` | L.native-layout |
+| `layout.buildingAreaOf` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('buildingAreaOf')` | PL.native-survival-rows' re-pin (core's PL.fit-front-line) |
 | `layout.findFitOverlaps` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('findFitOverlaps')` | L.native-layout |
 | `layout.settleSeparation` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('settleSeparation')` | L.native-layout |
 | `layout.settleBodies` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('settleBodies')` | L.native-layout |
@@ -230,6 +256,8 @@ game; **meta** = about the bridge itself.
 | `layout.plantTrunkOutline` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('plantTrunkOutline')` | L.native-layout |
 | `layout.layoutConstants` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('layoutConstants')` | L.native-layout |
 | `layout.startClearOutline` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('startClearOutline')` | P9a.native (core's PL.start-clearance, U78) |
+| `layout.settleDoorFrontage` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('settleDoorFrontage')` | PL.native-survival-rows' re-pin (core's PL.brightwater-door-facing) |
+| `layout.doorApproachOutline` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('doorApproachOutline')` | PL.native-survival-rows' re-pin (core's PL.brightwater-door-facing) |
 | `layout.buildGroundPlan` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('buildGroundPlan')` | L.native-layout |
 | `layout.gradeTerrain` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('gradeTerrain')` | L.native-layout |
 | `layout.followSettledBuildings` | a `conformance/layout/` case's `input` → its `expected` shape | `editor/layout/corpus` `runLayoutOp('followSettledBuildings')` | L.native-layout |
@@ -878,14 +906,16 @@ core, which answers it as its corpus pins: an unreadable solid (counted in
 `unreadable`), a view yaw, radius, move, walk, building, slope or rise that is not
 a number.
 
-**The evidence** is core's `conformance/camera/movement.json` (87 cases over
-`occluders` 21, `sideView` 9, `buildingSolid` 8, `move` 19, `slope` 11,
-`slopeAtRest` 11, `step` 8), copied byte for byte as its own set
+**The evidence** is core's `conformance/camera/movement.json` (95 cases at the
+6cd4b4e pin over `occluders` 28, `sideView` 10, `buildingSolid` 8, `move` 19,
+`slope` 11, `slopeAtRest` 11, `step` 8; 87 before core's
+PL.core-camera-movement-gaps added a solid's optional `kind`, `building` or `prop`,
+a prop never hidden by the lens, and the contract's `solidKinds` table), copied byte for byte as its own set
 (`CAMERA_CORPUS_FILES`) and driven by `tests/props_corpus.cpp` as the ctest
 `camera_movement_corpus`, 0 undriven. The case's `input` is the row's args as it
 stands; every case with more than one solid or exclusion is driven a second time
 with `solids` and `exclude` reversed (the file's `order` rule, as core's
-`checkMovementCase` checks it; 13 cases), and the data tables are held to
+`checkMovementCase` checks it; 20 cases at 6cd4b4e), and the data tables are held to
 `camera.movement.contract`. `camera_movement_corpus_negative`
 (`tests/props-negative/movement-wrong.json`) must see Unreal's 45 cm step in the
 contract, an op with no case, and six answers an engine keeping one of its interim
@@ -1128,6 +1158,104 @@ a type; 165 → 166). The pin alone takes the bundle from 1,659,828 bytes to
 `OnboardingManager`, and the registry entry). The rows take it to 1,669,036
 (+5,882), for +9,208 in all; `libinsimulcore.dylib` (Release) goes from 5,068,152 bytes to 5,084,664. The 23 cases take about 13 ms under QuickJS.
 
+### The survival rows: the needs, the HUD bars and stamina (PL.native-survival-rows)
+
+Core's P9c logic (P9c.core, with PL.core-survival-rules' five host rules; catalog
+systems `survival-needs` and `survival-stamina`) is a set of rows (U106(1)), so an
+engine binds core's survival instead of keeping a copy of it (Unreal's interim
+`Portable/InsimulSurvival`, which `P9c.unreal.retire-survival-copy` retires):
+hunger, thirst, temperature and sleep decaying per whole tick, restored by the
+restore actions (`eat`, `drink`, `sleep`) and by items, modified by presets, with
+deprivation damage owed to the host; the HUD bars over them and the stamina bar,
+held with one rest tick of hysteresis; what runs, read from the composer's
+activation; the stamina meter; and `StaminaPool`, the decision layer that spends
+and grants rest.
+
+The rows are named `survival.<group>.<op>` after the corpus file's area
+(`survival-needs`, `survival-hud`, `survival-stamina`), one core function each:
+
+- **A row that answers a whole corpus op** takes the case's `input` as its args
+  and answers its `expected` shape: `survival.needs.{tuning, initial, save, load}`,
+  `survival.hud.{view, systems}`, `survival.stamina.{tuning, spend, regen}` answer
+  `{ ok: true, value }`; an unreadable save block (`unreadable_survival`, with the
+  keys core could not read) and a composition core refuses are VALUES `{ ok: false,
+  refusal: { code, field, keys? } }`.
+- **The step rows a game calls as it plays are stateless over the state they are
+  sent.** `survival.needs.{advance, restore, action, consume, useItem,
+  setTemperature, modifier, removeModifier, enable}` take the `state` the last
+  answer carried (a `SurvivalState`) with the step's own fields, and answer core's
+  result whole, the new `state` in it: `advance` → `{ state, ticks, skipped,
+  events, expired, hurt }` (`hurt` is the whole points of deprivation damage the
+  host hands its vitals), a change → `{ ok: true, state, events }` or `{ ok: false,
+  reason, state }`, `useItem` → `{ ok, state, consumed, remaining, applied, action,
+  events }` (one of a stack spent). The HUD's state travels the same way:
+  `survival.hud.initial` → `{ hud }`, then `survival.hud.reduce { hud, events }`
+  with every needs answer's `events`, and `survival.hud.stamina { hud, stamina:
+  { current, max }, staminaConfig, at }` → `{ hud, band, events }` on every stamina
+  reading. Nothing is kept between two calls, so a save is `survival.needs.save`
+  of the state the game holds and a load is `survival.needs.load`.
+- **The tuning is read, never sent back.** Every needs row reads the world's
+  tuning from `survival` (the World IR's block) and `params` (the pack's flat
+  parameters), as core's corpus reads a case's input; the stamina rows read
+  `staminaConfig`. A binding sends the IR it holds on each call; `survival.needs.tuning`
+  and `survival.stamina.tuning` answer what core read, for display.
+- **`StaminaPool` is a session**, `survival.stamina.pool.create { staminaConfig,
+  costs, actions, actors, survivalActorId, start, state }` → `{ session, view: {
+  tuning, actors } }` and `.apply` with the ops `cost`, `afford`, `spend`, `rest`,
+  `play { actor, at }` (the session's play clock reaches `at`: core's
+  `staminaRestClock` grants its whole seconds as rest ticks and keeps the
+  remainder), `band` and `save`. The session holds no KB: each `spend` and `rest`
+  answers its `energy/3` delta (`facts: { retract, assert }`) for the host's KB, and
+  `host` lists the `ISurvivalSystem` calls core made for `survivalActorId`
+  (`consumeStamina`, `recoverStamina`). `survival.stamina.state` and
+  `survival.stamina.clock` are the meter's band and the rest clock outside a pool.
+
+Only the JSON types core dereferences unread are checked, as `[invalid-input]`
+errors: `state` and `hud` objects, `item` an object, `events` an array, `stamina`
+an object, the pool's `actors`/`actions` lists of objects, `costs` and `state`
+objects and `start` a number, and the systems row's `catalog` as `packs.compose`
+checks it. Everything else goes to core, whose corpus pins the
+refusals as values (`need_not_tracked`, `unknown_action`, `unknown_modifier`,
+`bad_amount`, `not_usable`, `not_held`). The rows import `survival/needs`,
+`survival/survival-hud`, `survival/survival-systems`, `stamina/stamina` and
+`StaminaPool`, never `survival/systems-corpus` (core's runner).
+
+**The evidence** is core's three P9c corpora (89 cases at the 6cd4b4e pin:
+`needs.json` 43 over `tuning` 4, `initial` 2, `run` 30, `save` 1, `load` 6;
+`hud.json` 19 over `view` 6, `run` 8, `systems` 5; `stamina.json` 27 over `tuning`
+3, `bands` 2, `spend` 7, `regen` 6, `pool` 5, `clock` 4), copied byte for byte as
+their own set (`SURVIVAL_CORPUS_FILES`) and driven by their own runner,
+`tests/survival_corpus.cpp`, as the ctest `survival_corpus`, 0 undriven. A `run`
+case is one row per step (161 steps across the two files), each sent the state
+the last answer carried, and recorded in core's runner's shape; a `pool` case is
+one `.apply` per step (42); `bands` and `clock` are one row call per reading;
+`systems` sends the case's request with the pack catalog the vendored
+`composition.json` names. Each file's catalog and op list must be core's.
+`survival_corpus_negative` perturbs EVERY case's expectation (the last leaf of its
+`value` or `refusal`) and must see all 89 refused, as Unreal's
+`survival_corpus_negative` does for its copy. The hand cases in
+`tests/cases/bridge-survival.json` (every expectation computed by core's own
+functions at the pin) pin the state threading, the refusal values, the
+`[invalid-input]` errors and the pool session's lifecycle.
+
+**What the core pin changed beside the survival corpora** (603063d → 6cd4b4e): the
+movement corpus's solids gained an optional `kind` (`building`, the default, or
+`prop`, which the lens never hides), and `camera.movement.contract` states the new
+`solidKinds` table; core's layout corpus gained the ops `buildingAreaOf`,
+`settleDoorFrontage` and `doorApproachOutline`, each a new `layout.*` row; core
+refuses genre flags and feature modules nothing reads (G.cat-flags), so the rpg
+bundle no longer lists `world-lore` nor the platformer bundle `performance-scoring`,
+and a refused module (`assessment`, port-later) gates no pause-menu tab even when
+listed; P9j's puzzle, platformer and strategy packs join the vendored catalog and
+their save extensions `save.rules`' `extensionKeys` (22 keys).
+
+**Cost.** Three core modules for the rows (`survival/needs`,
+`survival/survival-hud`, `survival/survival-systems`; `stamina/stamina` and
+`StaminaPool` were already bundled, 169 → 172 modules). The pin alone takes the
+bundle from 1,669,036 bytes to 1,697,748 (+28,712); the rows, the three layout
+rows and `solidKinds` take it to 1,740,208 (+42,460). The 89 cases take about
+25 ms under QuickJS.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
@@ -1218,8 +1346,9 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
 | `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (33 cases at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give and two runner controls (a case's `ranges`, a lone `prop`) seen as wrong |
 | `audio_ground_corpus`, `audio_ground_corpus_negative` | core's ground reading corpus driven whole through the `audio.ground.*` rows (48 cases, 0 undriven; every case whose world lists two or more settlements, ground surfaces or roads driven again with them reversed; its contract's data held to `audio.ground.contract`), and Unreal's sidewalk for a footpath in the contract, an undriven op and six answers an engine keeping one of its interim readings would give seen as wrong |
-| `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (87 cases, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
+| `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (95 cases at 6cd4b4e, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
+| `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's

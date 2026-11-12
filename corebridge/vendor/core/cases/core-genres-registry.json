@@ -3,10 +3,10 @@
  "description": "core's genre resolution corpus through genre.resolve (and the registry ids through genre.registry)",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "603063d6f58ba99bb7afcf1d6d32f2932b8767e5",
+  "coreCommit": "6cd4b4e499efde9c73505fae1f397611138c154e",
   "files": {
    "conformance/genres/camera.json": "a2eca78d3c8b3271648aaa61d5a91fe4c5dc61b331a04444d4d6f3d99ca5ba61",
-   "conformance/genres/registry.json": "38ef2b82f3bad688726661c34abaa6d9b7252f13b00f8fe540ff75b1433c64ea"
+   "conformance/genres/registry.json": "41b9c9f234f41b29c2ed10338f80c4ba1ce8cffd7af2048d412594dac59beece"
   }
  },
  "cases": [
@@ -73,7 +73,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -102,7 +102,6 @@
         "gamification",
         "skill-tree",
         "adaptive-difficulty",
-        "world-lore",
         "conversation-analytics",
         "onboarding"
        ]
@@ -157,7 +156,23 @@
         "IAgentActionHost",
         "IWeatherSink"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "world-lore",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'world-lore' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -195,7 +210,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -255,7 +270,16 @@
         "ICombatStatSink",
         "IAgentActionHost"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       }
+      ]
      }
     }
    ]
@@ -314,7 +338,6 @@
       "bundle": {
        "id": "fighting",
        "featureModules": [
-        "performance-scoring",
         "gamification",
         "adaptive-difficulty",
         "onboarding"
@@ -337,7 +360,16 @@
         "ICombatSystem",
         "ITrajectoryProbe"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "module",
+        "id": "performance-scoring",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'performance-scoring' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -375,7 +407,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "platformer"
@@ -398,7 +430,6 @@
       "bundle": {
        "id": "platformer",
        "featureModules": [
-        "performance-scoring",
         "gamification",
         "adaptive-difficulty",
         "onboarding"
@@ -423,7 +454,23 @@
         "ITraversalProbe",
         "ILocomotionHost"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "performance-scoring",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'performance-scoring' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -456,12 +503,12 @@
         "crafting": false,
         "dialogue": true,
         "combat": false,
-        "building": true,
-        "resources": true,
+        "building": false,
+        "resources": false,
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "strategy"
@@ -487,7 +534,6 @@
         "proficiency",
         "gamification",
         "adaptive-difficulty",
-        "world-lore",
         "onboarding"
        ]
       },
@@ -507,7 +553,37 @@
        "hostInterfaces": [
         "IAgentActionHost"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "building",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'building', so the composer's FEATURE_FLAGS gate on it is unreachable; building placement is the 'construction' pack (port-later), which no flag gates; nothing reads features.building"
+       },
+       {
+        "kind": "feature",
+        "id": "resources",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'resources', so the composer's FEATURE_FLAGS gate on it is unreachable; a world's resources are WorldIR.resources, read by the 'gathering' pack, which no flag gates; nothing reads features.resources"
+       },
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "world-lore",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'world-lore' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -540,12 +616,12 @@
         "crafting": true,
         "dialogue": true,
         "combat": true,
-        "building": true,
-        "resources": true,
+        "building": false,
+        "resources": false,
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "survival"
@@ -573,7 +649,6 @@
         "proficiency",
         "gamification",
         "adaptive-difficulty",
-        "world-lore",
         "onboarding"
        ]
       },
@@ -627,7 +702,37 @@
         "IAgentActionHost",
         "IWeatherSink"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "building",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'building', so the composer's FEATURE_FLAGS gate on it is unreachable; building placement is the 'construction' pack (port-later), which no flag gates; nothing reads features.building"
+       },
+       {
+        "kind": "feature",
+        "id": "resources",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'resources', so the composer's FEATURE_FLAGS gate on it is unreachable; a world's resources are WorldIR.resources, read by the 'gathering' pack, which no flag gates; nothing reads features.resources"
+       },
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "world-lore",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'world-lore' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -665,7 +770,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "shooter"
@@ -690,7 +795,6 @@
        "id": "shooter",
        "featureModules": [
         "proficiency",
-        "performance-scoring",
         "gamification",
         "adaptive-difficulty",
         "onboarding"
@@ -726,7 +830,23 @@
         "ICombatStatSink",
         "IAgentActionHost"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "performance-scoring",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'performance-scoring' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -759,12 +879,12 @@
         "crafting": true,
         "dialogue": true,
         "combat": true,
-        "building": true,
-        "resources": true,
+        "building": false,
+        "resources": false,
         "permadeath": false,
         "quests": false,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [],
        "difficultyLevels": [
@@ -789,7 +909,6 @@
         "proficiency",
         "gamification",
         "skill-tree",
-        "world-lore",
         "onboarding"
        ]
       },
@@ -831,7 +950,37 @@
         "ICombatStatSink",
         "IAgentActionHost"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "building",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'building', so the composer's FEATURE_FLAGS gate on it is unreachable; building placement is the 'construction' pack (port-later), which no flag gates; nothing reads features.building"
+       },
+       {
+        "kind": "feature",
+        "id": "resources",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'resources', so the composer's FEATURE_FLAGS gate on it is unreachable; a world's resources are WorldIR.resources, read by the 'gathering' pack, which no flag gates; nothing reads features.resources"
+       },
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "world-lore",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'world-lore' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -864,8 +1013,8 @@
         "crafting": false,
         "dialogue": false,
         "combat": false,
-        "building": true,
-        "resources": true,
+        "building": false,
+        "resources": false,
         "permadeath": false,
         "quests": false,
         "experience": false,
@@ -893,7 +1042,6 @@
         "proficiency",
         "gamification",
         "adaptive-difficulty",
-        "world-lore",
         "onboarding"
        ]
       },
@@ -913,7 +1061,30 @@
        "hostInterfaces": [
         "IAgentActionHost"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "building",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'building', so the composer's FEATURE_FLAGS gate on it is unreachable; building placement is the 'construction' pack (port-later), which no flag gates; nothing reads features.building"
+       },
+       {
+        "kind": "feature",
+        "id": "resources",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'resources', so the composer's FEATURE_FLAGS gate on it is unreachable; a world's resources are WorldIR.resources, read by the 'gathering' pack, which no flag gates; nothing reads features.resources"
+       },
+       {
+        "kind": "module",
+        "id": "world-lore",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'world-lore' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -951,7 +1122,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -976,7 +1147,6 @@
        "featureModules": [
         "proficiency",
         "gamification",
-        "world-lore",
         "conversation-analytics",
         "onboarding"
        ]
@@ -1020,7 +1190,23 @@
         "IAgentActionHost",
         "IWeatherSink"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "world-lore",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'world-lore' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -1104,7 +1290,8 @@
        "hostInterfaces": [
         "IAgentActionHost"
        ]
-      }
+      },
+      "refused": []
      }
     }
    ]
@@ -1142,7 +1329,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "language-learning"
@@ -1168,15 +1355,11 @@
         "knowledge-acquisition",
         "proficiency",
         "pattern-recognition",
-        "performance-scoring",
         "voice",
         "gamification",
         "skill-tree",
         "adaptive-difficulty",
-        "world-lore",
         "conversation-analytics",
-        "assessment",
-        "npc-exams",
         "onboarding"
        ]
       },
@@ -1196,7 +1379,44 @@
        "hostInterfaces": [
         "IAgentActionHost"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "performance-scoring",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'performance-scoring' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       },
+       {
+        "kind": "module",
+        "id": "world-lore",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'world-lore' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       },
+       {
+        "kind": "module",
+        "id": "assessment",
+        "from": "bundle",
+        "code": "port_later",
+        "reason": "'assessment' is approved for after parity (language-assessment (P9h, port-later)); nothing runs it yet"
+       },
+       {
+        "kind": "module",
+        "id": "npc-exams",
+        "from": "bundle",
+        "code": "port_later",
+        "reason": "'npc-exams' is approved for after parity (language-assessment (P9h, port-later)); nothing runs it yet"
+       }
+      ]
      }
     }
    ]
@@ -1234,7 +1454,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "language-learning"
@@ -1260,7 +1480,6 @@
         "knowledge-acquisition",
         "proficiency",
         "pattern-recognition",
-        "assessment",
         "gamification",
         "skill-tree",
         "adaptive-difficulty",
@@ -1283,7 +1502,23 @@
        "hostInterfaces": [
         "IAgentActionHost"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "assessment",
+        "from": "bundle",
+        "code": "port_later",
+        "reason": "'assessment' is approved for after parity (language-assessment (P9h, port-later)); nothing runs it yet"
+       }
+      ]
      }
     }
    ]
@@ -1321,7 +1556,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -1346,7 +1581,6 @@
        "featureModules": [
         "knowledge-acquisition",
         "gamification",
-        "world-lore",
         "conversation-analytics",
         "onboarding"
        ]
@@ -1385,7 +1619,23 @@
         "IAgentActionHost",
         "IWeatherSink"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       },
+       {
+        "kind": "module",
+        "id": "world-lore",
+        "from": "bundle",
+        "code": "unimplemented",
+        "reason": "no repository implements 'world-lore' (progression-performance-scoring-world-lore, core-only); nothing runs it"
+       }
+      ]
      }
     }
    ]
@@ -1420,10 +1670,10 @@
         "combat": true,
         "building": false,
         "resources": false,
-        "permadeath": true,
+        "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -1483,7 +1733,23 @@
         "ICombatStatSink",
         "IAgentActionHost"
        ]
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "permadeath",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'permadeath', so the composer's FEATURE_FLAGS gate on it is unreachable; roguelike runs are the 'dungeon-runs' pack (genre-roguelike-runs, port-later), which no flag gates, and src/game-engine/logic/RunManager.ts never reads the flag; nothing reads features.permadeath"
+       },
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       }
+      ]
      }
     }
    ]
@@ -1521,7 +1787,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -1561,7 +1827,16 @@
         "scaffold"
        ],
        "hostInterfaces": []
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       }
+      ]
      }
     }
    ]
@@ -1599,7 +1874,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -1639,7 +1914,16 @@
         "scaffold"
        ],
        "hostInterfaces": []
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       }
+      ]
      }
     }
    ]
@@ -1677,7 +1961,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -1717,7 +2001,16 @@
         "scaffold"
        ],
        "hostInterfaces": []
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       }
+      ]
      }
     }
    ]
@@ -1755,7 +2048,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -1795,7 +2088,16 @@
         "scaffold"
        ],
        "hostInterfaces": []
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       }
+      ]
      }
     }
    ]
@@ -1833,7 +2135,7 @@
         "permadeath": false,
         "quests": true,
         "experience": true,
-        "skills": true
+        "skills": false
        },
        "questTypes": [
         "rpg"
@@ -1873,7 +2175,16 @@
         "scaffold"
        ],
        "hostInterfaces": []
-      }
+      },
+      "refused": [
+       {
+        "kind": "feature",
+        "id": "skills",
+        "from": "settings",
+        "code": "no_reader",
+        "reason": "no catalogue pack is named 'skills', so the composer's FEATURE_FLAGS gate on it is unreachable; the skill tree is the 'skill-tree' feature module, and module activation reads the bundle, not this flag; nothing reads features.skills"
+       }
+      ]
      }
     }
    ]

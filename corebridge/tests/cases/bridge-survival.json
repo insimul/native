@@ -1,0 +1,2485 @@
+{
+  "area": "survival",
+  "description": "Hand-written: the survival.* rows' own contract (PL.native-survival-rows, U106(1); core's P9c survival logic, P9c.core and PL.core-survival-rules) — each row's answer shape over core's functions, the state one row answers being the state the next row is sent (the needs and the HUD carry no session), core's refusals as VALUES, the rows' own refusals as errors coded [invalid-input], and the StaminaPool session: each op's fact delta and the host calls core made, a saved pool restored. Every expectation here was computed by core's own functions at the pin, not by these rows. Core's own corpora (conformance/survival/{needs,hud,stamina}.json, 89 cases) are driven whole through these rows by the survival_corpus ctest (tests/survival_corpus.cpp), not transcribed here.",
+  "cases": [
+    {
+      "name": "survival.needs: the state one row answers is the state the next row is sent; each answer is core's, whole",
+      "steps": [
+        {
+          "call": "survival.needs.tuning",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "tickMs": 1000,
+              "maxTicksPerAdvance": 86400,
+              "damageEnabled": true,
+              "globalDamageMultiplier": 1,
+              "temperatureEnvironmentDriven": false,
+              "comfortMin": 20,
+              "comfortMax": 80,
+              "criticalAtBothExtremes": true,
+              "temperatureDriftPerSecond": 10,
+              "satisfiedFraction": 0.9,
+              "hudFlashMs": 2000,
+              "restoreActions": {
+                "eat": {
+                  "need": "hunger",
+                  "amount": 30
+                },
+                "drink": {
+                  "need": "thirst",
+                  "amount": 25
+                },
+                "sleep": {
+                  "need": "sleep",
+                  "amount": 50
+                }
+              },
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "survival.needs.initial",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "at": 1000
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 1000,
+              "enabled": true,
+              "damageOwed": 0
+            }
+          },
+          "bind": "s0"
+        },
+        {
+          "call": "survival.needs.advance",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "s0.value"
+            },
+            "at": 12500
+          },
+          "expect": {
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 29,
+                  "max": 100,
+                  "band": "warning"
+                },
+                {
+                  "id": "thirst",
+                  "value": 84.5,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 12000,
+              "enabled": true,
+              "damageOwed": 0
+            },
+            "ticks": 11,
+            "skipped": 0,
+            "events": [
+              {
+                "type": "need_warning",
+                "needType": "hunger",
+                "value": 30,
+                "message": "Hunger is getting low",
+                "at": 11000
+              }
+            ],
+            "expired": [],
+            "hurt": 0
+          },
+          "bind": "adv"
+        },
+        {
+          "call": "survival.needs.restore",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "adv.state"
+            },
+            "need": "hunger",
+            "amount": 20,
+            "at": 13000
+          },
+          "expect": {
+            "ok": true,
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 49,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 84.5,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 12000,
+              "enabled": true,
+              "damageOwed": 0
+            },
+            "events": [
+              {
+                "type": "need_restored",
+                "needType": "hunger",
+                "value": 49,
+                "message": "Hunger restored",
+                "at": 13000
+              }
+            ]
+          },
+          "bind": "res"
+        },
+        {
+          "call": "survival.needs.action",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "res.state"
+            },
+            "action": "drink",
+            "at": 13500
+          },
+          "expect": {
+            "ok": true,
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 49,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 12000,
+              "enabled": true,
+              "damageOwed": 0
+            },
+            "events": [
+              {
+                "type": "need_satisfied",
+                "needType": "thirst",
+                "value": 100,
+                "message": "Thirst satisfied",
+                "at": 13500
+              }
+            ]
+          },
+          "bind": "act"
+        },
+        {
+          "call": "survival.needs.consume",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "act.state"
+            },
+            "effects": {
+              "hunger": 5,
+              "thirst": "x"
+            },
+            "at": 14000
+          },
+          "expect": {
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 54,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 12000,
+              "enabled": true,
+              "damageOwed": 0
+            },
+            "applied": [
+              {
+                "need": "hunger",
+                "amount": 5
+              }
+            ],
+            "events": []
+          },
+          "bind": "con"
+        },
+        {
+          "call": "survival.needs.useItem",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "con.state"
+            },
+            "item": {
+              "type": "food",
+              "quantity": 3,
+              "effects": {}
+            },
+            "at": 14500
+          },
+          "expect": {
+            "ok": true,
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 84,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 12000,
+              "enabled": true,
+              "damageOwed": 0
+            },
+            "consumed": 1,
+            "remaining": 2,
+            "applied": [],
+            "action": "eat",
+            "events": []
+          },
+          "bind": "use"
+        },
+        {
+          "call": "survival.needs.setTemperature",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "use.state"
+            },
+            "value": 5,
+            "at": 15000
+          },
+          "expect": {
+            "ok": true,
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 84,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 5,
+              "lastTickAt": 12000,
+              "enabled": true,
+              "damageOwed": 0
+            },
+            "events": []
+          },
+          "bind": "tmp"
+        },
+        {
+          "call": "survival.needs.modifier",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "tmp.state"
+            },
+            "modifier": "well_fed",
+            "at": 15000
+          },
+          "expect": {
+            "ok": true,
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 84,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "startedAt": 15000,
+                  "source": "food"
+                }
+              ],
+              "environmentTemperature": 5,
+              "lastTickAt": 12000,
+              "enabled": true,
+              "damageOwed": 0
+            },
+            "events": []
+          },
+          "bind": "mod"
+        },
+        {
+          "call": "survival.needs.removeModifier",
+          "args": {
+            "state": {
+              "$ref": "mod.state"
+            },
+            "id": "well_fed"
+          },
+          "expect": {
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 84,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 5,
+              "lastTickAt": 12000,
+              "enabled": true,
+              "damageOwed": 0
+            }
+          },
+          "bind": "rem"
+        },
+        {
+          "call": "survival.needs.enable",
+          "args": {
+            "state": {
+              "$ref": "rem.state"
+            },
+            "enabled": false
+          },
+          "expect": {
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 84,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 5,
+              "lastTickAt": 12000,
+              "enabled": false,
+              "damageOwed": 0
+            }
+          },
+          "bind": "off"
+        },
+        {
+          "call": "survival.needs.save",
+          "args": {
+            "state": {
+              "$ref": "off.state"
+            },
+            "at": 16000
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "readings": {
+                "hunger": 84,
+                "thirst": 100
+              },
+              "modifiers": []
+            }
+          },
+          "bind": "block"
+        },
+        {
+          "call": "survival.needs.load",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "block": {
+              "$ref": "block.value"
+            },
+            "at": 20000
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 84,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 100,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 20000,
+              "enabled": true,
+              "damageOwed": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "survival.needs: core's refusals are VALUES; a state, hud, item or events of the wrong JSON type is [invalid-input]",
+      "steps": [
+        {
+          "call": "survival.needs.initial",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 0,
+              "enabled": true,
+              "damageOwed": 0
+            }
+          },
+          "bind": "s0"
+        },
+        {
+          "call": "survival.needs.restore",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "s0.value"
+            },
+            "need": "temperature",
+            "amount": 10,
+            "at": 0
+          },
+          "expect": {
+            "ok": false,
+            "reason": "need_not_tracked",
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 0,
+              "enabled": true,
+              "damageOwed": 0
+            }
+          }
+        },
+        {
+          "call": "survival.needs.action",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "s0.value"
+            },
+            "action": "dance",
+            "at": 0
+          },
+          "expect": {
+            "ok": false,
+            "reason": "unknown_action",
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 0,
+              "enabled": true,
+              "damageOwed": 0
+            }
+          }
+        },
+        {
+          "call": "survival.needs.modifier",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "s0.value"
+            },
+            "modifier": "feast",
+            "at": 0
+          },
+          "expect": {
+            "ok": false,
+            "reason": "unknown_modifier",
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 0,
+              "enabled": true,
+              "damageOwed": 0
+            }
+          }
+        },
+        {
+          "call": "survival.needs.useItem",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "s0.value"
+            },
+            "item": {
+              "type": "weapon"
+            },
+            "at": 0
+          },
+          "expect": {
+            "ok": false,
+            "reason": "not_usable",
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 40,
+                  "max": 100,
+                  "band": "ok"
+                },
+                {
+                  "id": "thirst",
+                  "value": 90,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 0,
+              "enabled": true,
+              "damageOwed": 0
+            }
+          }
+        },
+        {
+          "call": "survival.needs.load",
+          "args": {
+            "block": {
+              "readings": "x",
+              "modifiers": []
+            }
+          },
+          "expect": {
+            "ok": false,
+            "refusal": {
+              "code": "unreadable_survival",
+              "field": "block",
+              "keys": [
+                "readings"
+              ]
+            }
+          }
+        },
+        {
+          "call": "survival.needs.advance",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "at": 5000
+          },
+          "expectError": "[invalid-input] insimulcore: survival.needs.advance: `state` must be a JSON object"
+        },
+        {
+          "call": "survival.needs.save",
+          "args": {
+            "state": [],
+            "at": 0
+          },
+          "expectError": "[invalid-input] insimulcore: survival.needs.save: `state` must be a JSON object"
+        },
+        {
+          "call": "survival.needs.useItem",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "s0.value"
+            },
+            "item": "bread",
+            "at": 0
+          },
+          "expectError": "[invalid-input] insimulcore: survival.needs.useItem: `item` must be a JSON object"
+        },
+        {
+          "call": "survival.hud.reduce",
+          "args": {
+            "hud": {
+              "flashes": {}
+            },
+            "events": {}
+          },
+          "expectError": "[invalid-input] insimulcore: survival.hud.reduce: `events` must be an array"
+        },
+        {
+          "call": "survival.hud.stamina",
+          "args": {
+            "hud": {
+              "flashes": {}
+            },
+            "at": 0
+          },
+          "expectError": "[invalid-input] insimulcore: survival.hud.stamina: `stamina` must be a JSON object"
+        },
+        {
+          "call": "survival.hud.view",
+          "args": {
+            "now": 0,
+            "hud": "x"
+          },
+          "expectError": "[invalid-input] insimulcore: survival.hud.view: `hud` must be a JSON object"
+        },
+        {
+          "call": "survival.hud.systems",
+          "args": {
+            "request": {}
+          },
+          "expectError": "[invalid-input] insimulcore: survival.hud.systems: `catalog` must be a JSON object"
+        }
+      ]
+    },
+    {
+      "name": "survival.hud: a new HUD, the needs' flashes, the stamina bar held with one rest tick of hysteresis, and the bars",
+      "steps": [
+        {
+          "call": "survival.hud.initial",
+          "expect": {
+            "hud": {
+              "flashes": {}
+            }
+          },
+          "bind": "h0"
+        },
+        {
+          "call": "survival.needs.initial",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            }
+          },
+          "bind": "s0"
+        },
+        {
+          "call": "survival.needs.advance",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "s0.value"
+            },
+            "at": 11000
+          },
+          "expect": {
+            "state": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "value": 29,
+                  "max": 100,
+                  "band": "warning"
+                },
+                {
+                  "id": "thirst",
+                  "value": 84.5,
+                  "max": 100,
+                  "band": "ok"
+                }
+              ],
+              "modifiers": [],
+              "environmentTemperature": 50,
+              "lastTickAt": 11000,
+              "enabled": true,
+              "damageOwed": 0
+            },
+            "ticks": 11,
+            "skipped": 0,
+            "events": [
+              {
+                "type": "need_warning",
+                "needType": "hunger",
+                "value": 30,
+                "message": "Hunger is getting low",
+                "at": 10000
+              }
+            ],
+            "expired": [],
+            "hurt": 0
+          },
+          "bind": "adv"
+        },
+        {
+          "call": "survival.hud.reduce",
+          "args": {
+            "hud": {
+              "$ref": "h0.hud"
+            },
+            "events": {
+              "$ref": "adv.events"
+            }
+          },
+          "expect": {
+            "hud": {
+              "flashes": {
+                "hunger": {
+                  "kind": "warning",
+                  "at": 10000
+                }
+              }
+            }
+          },
+          "bind": "h1"
+        },
+        {
+          "call": "survival.hud.stamina",
+          "args": {
+            "hud": {
+              "$ref": "h1.hud"
+            },
+            "stamina": {
+              "current": 50,
+              "max": 50
+            },
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            },
+            "at": 11000
+          },
+          "expect": {
+            "hud": {
+              "flashes": {
+                "hunger": {
+                  "kind": "warning",
+                  "at": 10000
+                }
+              },
+              "stamina": "ok"
+            },
+            "band": "ok",
+            "events": []
+          },
+          "bind": "r1"
+        },
+        {
+          "call": "survival.hud.stamina",
+          "args": {
+            "hud": {
+              "$ref": "r1.hud"
+            },
+            "stamina": {
+              "current": 18,
+              "max": 50
+            },
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            },
+            "at": 11500
+          },
+          "expect": {
+            "hud": {
+              "flashes": {
+                "hunger": {
+                  "kind": "warning",
+                  "at": 10000
+                },
+                "stamina": {
+                  "kind": "warning",
+                  "at": 11500
+                }
+              },
+              "stamina": "warning"
+            },
+            "band": "warning",
+            "events": [
+              {
+                "type": "need_warning",
+                "needType": "stamina",
+                "value": 18,
+                "message": "Stamina is getting low",
+                "at": 11500
+              }
+            ]
+          },
+          "bind": "r2"
+        },
+        {
+          "call": "survival.hud.stamina",
+          "args": {
+            "hud": {
+              "$ref": "r2.hud"
+            },
+            "stamina": {
+              "current": 22,
+              "max": 50
+            },
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            },
+            "at": 12000
+          },
+          "expect": {
+            "hud": {
+              "flashes": {
+                "hunger": {
+                  "kind": "warning",
+                  "at": 10000
+                },
+                "stamina": {
+                  "kind": "warning",
+                  "at": 11500
+                }
+              },
+              "stamina": "warning"
+            },
+            "band": "warning",
+            "events": []
+          },
+          "bind": "r3"
+        },
+        {
+          "call": "survival.hud.view",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "adv.state"
+            },
+            "hud": {
+              "$ref": "r3.hud"
+            },
+            "now": 12000,
+            "stamina": {
+              "current": 22,
+              "max": 50
+            },
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "visible": true,
+              "bars": [
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 29,
+                  "max": 100,
+                  "fraction": 0.29,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": null
+                },
+                {
+                  "id": "thirst",
+                  "label": "Thirst",
+                  "value": 84.5,
+                  "max": 100,
+                  "fraction": 0.845,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": null
+                },
+                {
+                  "id": "stamina",
+                  "label": "Stamina",
+                  "value": 22,
+                  "max": 50,
+                  "fraction": 0.44,
+                  "band": "warning",
+                  "tone": "warning",
+                  "flash": "warning"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "survival.hud.view",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "state": {
+              "$ref": "adv.state"
+            },
+            "hud": {
+              "$ref": "r3.hud"
+            },
+            "now": 12000,
+            "visible": false
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "visible": false,
+              "bars": []
+            }
+          }
+        },
+        {
+          "call": "survival.hud.view",
+          "args": {
+            "survival": {
+              "needs": [
+                {
+                  "id": "hunger",
+                  "name": "Hunger",
+                  "maxValue": 100,
+                  "startValue": 40,
+                  "decayRate": 1,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 2
+                },
+                {
+                  "id": "thirst",
+                  "name": "Thirst",
+                  "maxValue": 100,
+                  "startValue": 90,
+                  "decayRate": 0.5,
+                  "warningThreshold": 30,
+                  "criticalThreshold": 15,
+                  "damageRate": 3
+                }
+              ],
+              "modifierPresets": [
+                {
+                  "id": "well_fed",
+                  "needType": "hunger",
+                  "rateMultiplier": 0.5,
+                  "duration": 60000,
+                  "source": "food"
+                }
+              ]
+            },
+            "params": {
+              "hudFlashMs": 2000
+            },
+            "now": 0
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "visible": true,
+              "bars": [
+                {
+                  "id": "hunger",
+                  "label": "Hunger",
+                  "value": 40,
+                  "max": 100,
+                  "fraction": 0.4,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": null
+                },
+                {
+                  "id": "thirst",
+                  "label": "Thirst",
+                  "value": 90,
+                  "max": 100,
+                  "fraction": 0.9,
+                  "band": "ok",
+                  "tone": "success",
+                  "flash": null
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "survival.stamina: the tuning, the band, a spend, rest at the combat rate, and the rest clock",
+      "steps": [
+        {
+          "call": "survival.stamina.tuning",
+          "args": {
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "combatRecoveryRate": 0,
+              "encumberedRecoveryMultiplier": 0.5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            }
+          }
+        },
+        {
+          "call": "survival.stamina.tuning",
+          "expect": {
+            "ok": true,
+            "value": {
+              "maxStamina": 100,
+              "recoveryRate": 5,
+              "combatRecoveryRate": 0,
+              "encumberedRecoveryMultiplier": 0.5,
+              "windedPercent": 40,
+              "exhaustedPercent": 15
+            }
+          }
+        },
+        {
+          "call": "survival.stamina.state",
+          "args": {
+            "current": 20,
+            "max": 50,
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            }
+          },
+          "expect": {
+            "state": "winded"
+          }
+        },
+        {
+          "call": "survival.stamina.state",
+          "args": {
+            "current": 4,
+            "max": 50,
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            }
+          },
+          "expect": {
+            "state": "exhausted"
+          }
+        },
+        {
+          "call": "survival.stamina.spend",
+          "args": {
+            "current": 30,
+            "max": 50,
+            "cost": 12,
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "affordable": true,
+              "cost": 12,
+              "before": 30,
+              "after": 18,
+              "max": 50,
+              "spent": 12,
+              "stateBefore": "fresh",
+              "state": "winded",
+              "becameWinded": true,
+              "becameExhausted": false
+            }
+          }
+        },
+        {
+          "call": "survival.stamina.spend",
+          "args": {
+            "current": 5,
+            "max": 50,
+            "cost": 12,
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "affordable": false,
+              "cost": 12,
+              "before": 5,
+              "after": 5,
+              "max": 50,
+              "spent": 0,
+              "stateBefore": "exhausted",
+              "state": "exhausted",
+              "becameWinded": false,
+              "becameExhausted": false
+            }
+          }
+        },
+        {
+          "call": "survival.stamina.regen",
+          "args": {
+            "current": 10,
+            "max": 50,
+            "ticks": 3,
+            "inCombat": true,
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "before": 10,
+              "after": 10,
+              "max": 50,
+              "rate": 0,
+              "recovered": 0,
+              "state": "winded"
+            }
+          }
+        },
+        {
+          "call": "survival.stamina.clock",
+          "args": {
+            "lastTickAt": 1000,
+            "now": 3500
+          },
+          "expect": {
+            "ticks": 2,
+            "lastTickAt": 3000
+          }
+        },
+        {
+          "call": "survival.stamina.clock",
+          "args": {
+            "lastTickAt": 3000,
+            "now": 2000
+          },
+          "expect": {
+            "ticks": 0,
+            "lastTickAt": 3000
+          }
+        },
+        {
+          "call": "survival.stamina.clock",
+          "args": {
+            "lastTickAt": 0,
+            "now": 1000,
+            "tickMs": 250
+          },
+          "expect": {
+            "ticks": 4,
+            "lastTickAt": 1000
+          }
+        }
+      ]
+    },
+    {
+      "name": "survival.stamina.pool: one session per playthrough; each op's fact delta and host calls; a saved pool restores",
+      "steps": [
+        {
+          "call": "survival.stamina.pool.create",
+          "args": {
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            },
+            "costs": {
+              "swing": 8
+            },
+            "actions": [
+              {
+                "id": "climb",
+                "energyCost": 15
+              },
+              {
+                "id": "free"
+              }
+            ],
+            "actors": [
+              {
+                "id": "player"
+              },
+              {
+                "id": "guard",
+                "current": 20
+              }
+            ],
+            "survivalActorId": "player",
+            "start": 500
+          },
+          "expect": {
+            "session": 1,
+            "view": {
+              "tuning": {
+                "maxStamina": 50,
+                "recoveryRate": 5,
+                "combatRecoveryRate": 0,
+                "encumberedRecoveryMultiplier": 0.5,
+                "windedPercent": 40,
+                "exhaustedPercent": 10
+              },
+              "actors": [
+                {
+                  "id": "player",
+                  "max": 50,
+                  "current": 50
+                },
+                {
+                  "id": "guard",
+                  "max": 50,
+                  "current": 20
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "survival.stamina.pool.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "cost",
+                "action": "climb"
+              },
+              {
+                "op": "afford",
+                "actor": "guard",
+                "action": "climb"
+              },
+              {
+                "op": "spend",
+                "actor": "player",
+                "action": "swing"
+              },
+              {
+                "op": "spend",
+                "actor": "guard",
+                "action": "climb"
+              },
+              {
+                "op": "rest",
+                "actor": "player",
+                "ticks": 1
+              },
+              {
+                "op": "play",
+                "actor": "guard",
+                "at": 2700,
+                "encumbered": true
+              },
+              {
+                "op": "band",
+                "actor": "guard"
+              },
+              {
+                "op": "save"
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "cost": 15
+              },
+              {
+                "affordable": true
+              },
+              {
+                "action": "swing",
+                "spend": {
+                  "affordable": true,
+                  "cost": 8,
+                  "before": 50,
+                  "after": 42,
+                  "max": 50,
+                  "spent": 8,
+                  "stateBefore": "fresh",
+                  "state": "fresh",
+                  "becameWinded": false,
+                  "becameExhausted": false
+                },
+                "facts": {
+                  "retract": [
+                    {
+                      "predicate": "energy",
+                      "args": [
+                        "player",
+                        50,
+                        50
+                      ]
+                    }
+                  ],
+                  "assert": [
+                    {
+                      "predicate": "energy",
+                      "args": [
+                        "player",
+                        42,
+                        50
+                      ]
+                    }
+                  ]
+                },
+                "host": [
+                  {
+                    "method": "consumeStamina",
+                    "amount": 8
+                  }
+                ]
+              },
+              {
+                "action": "climb",
+                "spend": {
+                  "affordable": true,
+                  "cost": 15,
+                  "before": 20,
+                  "after": 5,
+                  "max": 50,
+                  "spent": 15,
+                  "stateBefore": "winded",
+                  "state": "exhausted",
+                  "becameWinded": false,
+                  "becameExhausted": true
+                },
+                "facts": {
+                  "retract": [
+                    {
+                      "predicate": "energy",
+                      "args": [
+                        "guard",
+                        20,
+                        50
+                      ]
+                    }
+                  ],
+                  "assert": [
+                    {
+                      "predicate": "energy",
+                      "args": [
+                        "guard",
+                        5,
+                        50
+                      ]
+                    }
+                  ]
+                },
+                "host": []
+              },
+              {
+                "regen": {
+                  "before": 42,
+                  "after": 47,
+                  "max": 50,
+                  "rate": 5,
+                  "recovered": 5,
+                  "state": "fresh"
+                },
+                "facts": {
+                  "retract": [
+                    {
+                      "predicate": "energy",
+                      "args": [
+                        "player",
+                        42,
+                        50
+                      ]
+                    }
+                  ],
+                  "assert": [
+                    {
+                      "predicate": "energy",
+                      "args": [
+                        "player",
+                        47,
+                        50
+                      ]
+                    }
+                  ]
+                },
+                "host": [
+                  {
+                    "method": "recoverStamina",
+                    "amount": 5
+                  }
+                ]
+              },
+              {
+                "at": 2700,
+                "ticks": 2,
+                "lastTickAt": 2500,
+                "regen": {
+                  "before": 5,
+                  "after": 9,
+                  "max": 50,
+                  "rate": 2,
+                  "recovered": 4,
+                  "state": "winded"
+                },
+                "host": []
+              },
+              {
+                "state": "winded"
+              },
+              {
+                "state": {
+                  "actors": [
+                    {
+                      "id": "player",
+                      "max": 50,
+                      "current": 47
+                    },
+                    {
+                      "id": "guard",
+                      "max": 50,
+                      "current": 9
+                    }
+                  ]
+                }
+              }
+            ],
+            "view": {
+              "tuning": {
+                "maxStamina": 50,
+                "recoveryRate": 5,
+                "combatRecoveryRate": 0,
+                "encumberedRecoveryMultiplier": 0.5,
+                "windedPercent": 40,
+                "exhaustedPercent": 10
+              },
+              "actors": [
+                {
+                  "id": "player",
+                  "max": 50,
+                  "current": 47
+                },
+                {
+                  "id": "guard",
+                  "max": 50,
+                  "current": 9
+                }
+              ]
+            }
+          },
+          "bind": "a"
+        },
+        {
+          "call": "survival.stamina.pool.create",
+          "args": {
+            "staminaConfig": {
+              "maxStamina": 50,
+              "recoveryRate": 5,
+              "windedPercent": 40,
+              "exhaustedPercent": 10
+            },
+            "state": {
+              "$ref": "a.results.7.state"
+            }
+          },
+          "expect": {
+            "session": 2,
+            "view": {
+              "tuning": {
+                "maxStamina": 50,
+                "recoveryRate": 5,
+                "combatRecoveryRate": 0,
+                "encumberedRecoveryMultiplier": 0.5,
+                "windedPercent": 40,
+                "exhaustedPercent": 10
+              },
+              "actors": [
+                {
+                  "id": "player",
+                  "max": 50,
+                  "current": 47
+                },
+                {
+                  "id": "guard",
+                  "max": 50,
+                  "current": 9
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "session.list",
+          "expect": {
+            "sessions": [
+              {
+                "session": 1,
+                "kind": "stamina-pool"
+              },
+              {
+                "session": 2,
+                "kind": "stamina-pool"
+              }
+            ]
+          }
+        },
+        {
+          "call": "survival.stamina.pool.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "jump",
+                "actor": "player"
+              }
+            ]
+          },
+          "expectError": "ops[0] has no known op \"jump\""
+        },
+        {
+          "call": "survival.stamina.pool.apply",
+          "args": {
+            "session": 3,
+            "ops": []
+          },
+          "expectError": "no open session 3"
+        },
+        {
+          "call": "survival.stamina.pool.create",
+          "args": {
+            "actors": [
+              1
+            ]
+          },
+          "expectError": "[invalid-input] insimulcore: survival.stamina.pool.create: `actors[0]` must be a JSON object"
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          }
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 2
+          }
+        },
+        {
+          "call": "session.list",
+          "expect": {
+            "sessions": []
+          }
+        }
+      ]
+    }
+  ]
+}

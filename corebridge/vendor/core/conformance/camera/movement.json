@@ -9,7 +9,8 @@
     "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/CameraManager.ts:42-123 CAMERA_CONFIGS (controllerMode, movementPlane, lockAlpha)",
     "core src/camera/camera-modes.ts CAMERA_MODE_PARAMETERS (pivot, distance, pitch, yaw, collision, movement), src/props/doors.ts (the IR yaw: forward (sin r, cos r), right (cos r, −sin r))",
     "the Unreal P7 cell's round-2 verdict (run 7): m4 (the side view has no collision), m5 (the world frame against the mirrored level), m6 (run speed, slope and step)",
-    "PL.movement-followups (U95(5)), from the movement contract's round-1 critique: m2 (a follow mode's sight line with no view yaw is refused, as the move is) and m3 (a player at rest on any slope above the stand limit slides back, the blocked ones included)"
+    "PL.movement-followups (U95(5)), from the movement contract's round-1 critique: m2 (a follow mode's sight line with no view yaw is refused, as the move is) and m3 (a player at rest on any slope above the stand limit slides back, the blocked ones included)",
+    "PL.core-camera-movement-gaps (U106(6)), from the Unreal P7 cell's run-10 round-3 critique: m1 (a prop, whatever its height, is never hidden by the lens, nor with its lot's building; it still blocks) and m2 (a building stated as pieces is hidden piece by piece; a pitched roof's shape is not pinned); m3 (the slide slope's slowing) is not pinned. babylon bfcdeb2 TownSquareGenerator.ts:385-386, :417-418; BabylonGame.ts:9141-9197, :9481-9483; CharacterController.ts:976-984, :1041-1052, :1144-1153, :1453-1455, :1652-1659, :1663-1683; ProceduralBuildingGenerator.ts:791-805, :893-943"
   ],
   "tolerance": 1e-9,
   "contract": {
@@ -47,13 +48,20 @@
     ],
     "occlusion": {
       "sightLine": "the segment from the pivot (the feet plus the mode's pivotHeightM) to the lens (the pivot, back along the view by distanceM, then the offset)",
-      "hide": "every solid the sight line touches is not drawn while it touches it and is drawn again once it does not; the player and the conversation partner are never hidden; listed nearest the pivot first (ties by id)",
+      "hide": "every building solid the sight line touches is not drawn while it touches it and is drawn again once it does not; the player and the conversation partner are never hidden; listed nearest the pivot first (ties by id)",
+      "props": "a solid of kind prop (a lot's edge wall, a lamp post, a bench, street furniture) is never hidden by the lens, whatever its height, and is not hidden with its lot's building; it still blocks the player (the side view's strip). A solid that states no kind is a building",
+      "pieces": "a building may be stated as several solids, its drawn pieces (the walls, a flat roof's slab, a porch): each is hidden on its own while the sight line touches it, and hiding one hides no other. A building's solid from the IR is its walls piece",
+      "pitchedRoof": "not pinned (needs_ruling): how a pitched roof's piece is stated, as a roof-aware solid or as several boxes. The IR states no roof and a solid is a box; one box over a pitched roof lists the sight lines that pass over its slopes",
       "pullIn": "the boom's own sweep (CAMERA_MODE_PARAMETERS.third_person.collision): the lens comes in front of the solid, never nearer than collision.minDistanceM; nothing is hidden",
       "none": "the eye sits at the pivot: there is no sight line to clear",
       "viewYaw": "the sight line is read at the mode's fixed yaw, else the view yaw given, else the mode's opening yaw; a mode that opens on the player's facing (first_person, third_person) given no view yaw is refused (error missing-view-yaw), as the move is",
-      "source": "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/BabylonGame.ts:10836-10837 (setCameraElasticity(true), makeObstructionInvisible(true), for every mode), :16405-16410 (the conversation partner is excluded); CharacterController.ts _handleObstruction. Unreal's follow arm keeps its sweep (pull-in), which the table already carries"
+      "source": "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/BabylonGame.ts:10836-10837 (setCameraElasticity(true), makeObstructionInvisible(true), for every mode), :16405-16410 (the conversation partner is excluded); CharacterController.ts _handleObstruction (:1652-1659 only pickable meshes are picked; :1663-1683 each picked mesh is hidden on its own). Props: TownSquareGenerator.ts:385-386 (the bench) and :417-418 (the 4 m lamp post) not pickable, colliding; BabylonGame.ts:9481-9483 (street furniture) not pickable, in a collision box; :9141-9197 optimizeStaticMeshes (every prop_, street_prop, wilderness_ and tree mesh made non-pickable unless it is an interactive building). Pieces: ProceduralBuildingGenerator.ts:791-805 (the walls, one box width × floors·4 m × depth) and createRoof :893-943 (the roof, its own mesh). Unreal's follow arm keeps its sweep (pull-in), which the table already carries"
     },
-    "solid": "a box standing on the ground: at (its base centre), halfWidthM across and halfDepthM along its facing, rotation (radians, the IR yaw: forward (sin r, cos r), right (cos r, −sin r)), heightM; every number finite, every extent > 0. A building's solid from the IR: spec.width × spec.depth about position, turned by rotation, max(1, floor(spec.floors)) × storeyM tall; no solid when width or depth is not a positive number",
+    "solid": "a box standing on the ground: at (its base centre), halfWidthM across and halfDepthM along its facing, rotation (radians, the IR yaw: forward (sin r, cos r), right (cos r, −sin r)), heightM, and kind (optional: building, the default, or prop; any other kind is unreadable); every number finite, every extent > 0. A building's solid from the IR: spec.width × spec.depth about position, turned by rotation, max(1, floor(spec.floors)) × storeyM tall (its walls piece); no solid when width or depth is not a positive number",
+    "solidKinds": [
+      "building",
+      "prop"
+    ],
     "storeyM": 4,
     "sideView": "plane xy: the player walks the line z = its own z. A solid whose footprint comes within the body radius of that line blocks the strip from xMin to xMax (the footprint clipped to the band z ± radius); the player passes over its top only (a jump, or a step when topY − the ground <= ground.stepUpM). Solids off the line are walked past; sorted by xMin, then id",
     "frame": {
@@ -76,6 +84,7 @@
       "source": "babylon bfcdeb2 packages/babylon/src/engine/game-engine/rendering/BabylonGame.ts:10769-10770 (setStepOffset(0.75), setSlopeLimit(15, 75)); CharacterController.ts:1463-1521 _doIdle (:1491-1497 and :1512-1518: slope <= the lower limit (_sl1) grounded, else ungrounded and slideBack, with no test of the upper limit), :1138-1153 _doMove (>= the upper limit (_sl2) going up: moved back to where it started; above the lower: slowed), the step offset (a rise > stepOffset is refused)"
     },
     "slope": "slopeDeg in [0, 90], the player moving: <= standMaxDeg walk (walked, stood on); < climbMaxDeg slide (walked up slowed, slid down when idle); else blocked (not gone up: a step up it is undone; slid down when idle, as slopeAtRest says). Anything else is unreadable (null)",
+    "slideSlowing": "not pinned (needs_ruling): how much slower a slide slope is walked up. Babylon scales no walk by the slope (_doMove moves walk.speed · dt on any ground); going up a face steeper than standMaxDeg it only leaves its fall clock running (_movFallTime, not reset there as _endFreeFall resets it on walkable ground), so the pull down grows with the time on the face. That is a physics behaviour, not a factor core can state",
     "slopeAtRest": "slopeDeg in [0, 90], the player not moving: <= standMaxDeg stand (grounded, stays put); else slideBack (slides down the slope under gravity until it stands on ground no steeper than standMaxDeg), the blocked slopes at or above climbMaxDeg included: the climb limit plays no part at rest (Babylon _doIdle reads only the lower limit). Anything else is unreadable (null)",
     "step": "riseM: <= 0 none; <= stepUpM step; else blocked. Not a number: null",
     "order": "answers do not depend on the order of solids or exclude"
@@ -1102,6 +1111,409 @@
       }
     },
     {
+      "name": "occluders: side view, a lot's 3.6 m edge wall (a prop) on the sight line stays drawn; the house beyond it is hidden",
+      "note": "The wall crosses the sight line 2 m out and stands 2 m over it. Babylon hides only pickable meshes, and every prop is made non-pickable (it keeps its collision), so the lens hides the house and draws the wall.",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "lot-edge-wall",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 2
+            },
+            "halfWidthM": 6,
+            "halfDepthM": 0.1,
+            "rotation": 0,
+            "heightM": 3.6,
+            "kind": "prop"
+          },
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "smithy",
+            "atM": 5
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, the lens inside its lot's edge wall: the restaurant on the line is hidden, the wall is not hidden with it",
+      "note": "The Unreal P7 critic's drawn-again stand (run 10, round 3, m1): the lens 15 m out stands inside the restaurant lot's edge wall. A prop is not hidden under its lot's building: the frame shows the wall.",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "restaurant",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 9
+            },
+            "halfWidthM": 6,
+            "halfDepthM": 4,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "restaurant-lot-edge",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 14.95
+            },
+            "halfWidthM": 8,
+            "halfDepthM": 0.07,
+            "rotation": 0,
+            "heightM": 3.6,
+            "kind": "prop"
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "restaurant",
+            "atM": 5
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: isometric, the Town Square's 4 m lamp post (a prop) on the sight line stays drawn",
+      "note": "At yaw 0 the sight line is 3.1 m up where it passes the post, under its 4 m top. Babylon's TownSquareGenerator makes the lamp post non-pickable, so its lens never hides it.",
+      "op": "occluders",
+      "input": {
+        "mode": "isometric",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "square-lamp",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -1.5
+            },
+            "halfWidthM": 0.075,
+            "halfDepthM": 0.075,
+            "rotation": 0,
+            "heightM": 4,
+            "kind": "prop"
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": 0,
+          "y": 19.277669529663687,
+          "z": -17.67766952966369
+        },
+        "hidden": [],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: isometric, the same post stated as a building is hidden, as a solid with no kind is",
+      "op": "occluders",
+      "input": {
+        "mode": "isometric",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "post-as-building",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -1.5
+            },
+            "halfWidthM": 0.075,
+            "halfDepthM": 0.075,
+            "rotation": 0,
+            "heightM": 4,
+            "kind": "building"
+          },
+          {
+            "id": "post-no-kind",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -1
+            },
+            "halfWidthM": 0.075,
+            "halfDepthM": 0.075,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": 0,
+          "y": 19.277669529663687,
+          "z": -17.67766952966369
+        },
+        "hidden": [
+          {
+            "id": "post-no-kind",
+            "atM": 1.308147545195113
+          },
+          {
+            "id": "post-as-building",
+            "atM": 2.0152543263816605
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: a solid of a kind the contract does not name is unreadable",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "smithy",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "tree",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 4
+            },
+            "halfWidthM": 0.5,
+            "halfDepthM": 0.5,
+            "rotation": 0,
+            "heightM": 6,
+            "kind": "tree"
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "smithy",
+            "atM": 5
+          }
+        ],
+        "unreadable": 1
+      }
+    },
+    {
+      "name": "occluders: isometric, a one-storey shop stated as walls and flat roof: only the roof the sight line touches is hidden",
+      "note": "The sight line passes 4.35 m up over the walls' near edge (4 m) and through the slab's overhang (4 to 4.5 m). Babylon hides each mesh it picks on its own.",
+      "op": "occluders",
+      "input": {
+        "mode": "isometric",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "shop.walls",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -6
+            },
+            "halfWidthM": 4,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "shop.roof",
+            "at": {
+              "x": 0,
+              "y": 4,
+              "z": -6
+            },
+            "halfWidthM": 4.25,
+            "halfDepthM": 3.25,
+            "rotation": 0,
+            "heightM": 0.5
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": 0,
+          "y": 19.277669529663687,
+          "z": -17.67766952966369
+        },
+        "hidden": [
+          {
+            "id": "shop.roof",
+            "atM": 3.8890872965260117
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
+      "name": "occluders: side view, the Smithy stated as walls and flat roof: the walls are hidden, the roof above the sight line stays drawn",
+      "note": "The level sight line runs 1.6 m up, through the walls and under the slab at 4 to 4.5 m: hiding the walls does not hide the roof.",
+      "op": "occluders",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "solids": [
+          {
+            "id": "smithy.walls",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 8
+            },
+            "halfWidthM": 5,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          },
+          {
+            "id": "smithy.roof",
+            "at": {
+              "x": 0,
+              "y": 4,
+              "z": 8
+            },
+            "halfWidthM": 5.25,
+            "halfDepthM": 3.25,
+            "rotation": 0,
+            "heightM": 0.5
+          }
+        ]
+      },
+      "expected": {
+        "rule": "hide",
+        "pivot": {
+          "x": 0,
+          "y": 1.6,
+          "z": 0
+        },
+        "lens": {
+          "x": -1.83697019872103e-15,
+          "y": 1.6,
+          "z": 15
+        },
+        "hidden": [
+          {
+            "id": "smithy.walls",
+            "atM": 5
+          }
+        ],
+        "unreadable": 0
+      }
+    },
+    {
       "name": "sideView: a house across the player's line blocks the strip; one behind the line does not",
       "note": "The Smithy stands 5 m off the line: the player walks past in front of it (and the lens hides it).",
       "op": "sideView",
@@ -1486,6 +1898,67 @@
           }
         ],
         "unreadable": 1
+      }
+    },
+    {
+      "name": "sideView: a lot's edge wall (a prop) across the strip blocks it, as a house does",
+      "note": "The lens never hides a prop, but the player cannot walk through it: Babylon's props keep their collision (a collision box, or checkCollisions on the lamp post and the bench).",
+      "op": "sideView",
+      "input": {
+        "mode": "side_scroll",
+        "feet": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "radiusM": 0.42,
+        "solids": [
+          {
+            "id": "lot-edge-wall",
+            "at": {
+              "x": 6,
+              "y": 0,
+              "z": 0
+            },
+            "halfWidthM": 0.07,
+            "halfDepthM": 4,
+            "rotation": 0,
+            "heightM": 3.6,
+            "kind": "prop"
+          },
+          {
+            "id": "house",
+            "at": {
+              "x": -9,
+              "y": 0,
+              "z": 0
+            },
+            "halfWidthM": 3,
+            "halfDepthM": 3,
+            "rotation": 0,
+            "heightM": 4
+          }
+        ]
+      },
+      "expected": {
+        "depthZ": 0,
+        "blockers": [
+          {
+            "id": "house",
+            "xMin": -12,
+            "xMax": -6,
+            "bottomY": 0,
+            "topY": 4
+          },
+          {
+            "id": "lot-edge-wall",
+            "xMin": 5.93,
+            "xMax": 6.07,
+            "bottomY": 0,
+            "topY": 3.6
+          }
+        ],
+        "unreadable": 0
       }
     },
     {

@@ -471,6 +471,51 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/survival/needs",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the survival.needs.* rows (core's hunger, thirst, temperature and sleep: decay, restores, modifiers and the save block) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-survival-rows (Features Gauntlet PL.native-survival-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/survival/survival-hud",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the survival.hud.* rows (core's HUD bars over the needs and the stamina meter) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-survival-rows (Features Gauntlet PL.native-survival-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/survival/survival-systems",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the survival.hud.systems row (core's reading of what runs from the composer's activation) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-survival-rows (Features Gauntlet PL.native-survival-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/stamina/stamina",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the survival.stamina.* rows (core's stamina meter: tuning, bands, spend, regen and the rest clock) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-survival-rows (Features Gauntlet PL.native-survival-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/StaminaPool",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the survival.stamina.pool.* session (core's stamina decision layer) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-survival-rows (Features Gauntlet PL.native-survival-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/game-engine/logic/NoticeGenerator",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the props.* and inventory.* rows (PL.native-props-rows, rulings U89(2) and U36), exactly as the saves.slots rows' specifier above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

@@ -1,6 +1,6 @@
 {
   "area": "layout-settle",
-  "description": "Settling a village apart (core src/editor/layout/settle.ts and pairing.ts; the Unreal plugin's BYOA B7 r4 - B8 r5 settle, characterised from its Portable code). The smallest change that parts what stands too close: each pair short of the gap its rule asks, and each body inside its clearance of an obstacle, pushed apart along the axis that separates them most, the lighter taking the larger share, repeated until nothing is short or nothing can move, every body within its own limit; shifts quantized to the millimetre. The neighbour rule (fitted buildings: the larger of two gaps, 0.25 m off other lots' paving, a limit that grows with the gap) on Brightwater Vale's ring of seven pack houses at 1, 4.5 and 6 m and on its real fits; the clearance rule (props out of each other and the walls, plant trunks off walls and paving, set-asides) on its props, whose positions and archetypes are the world's and at the sizes the editor measured (by entity id where the editor's build stood the prop, else its archetype's measured size); the player start's clear ground (startClearRadiusM, 1 m round the IR's player.startPosition: a prop or plant the settle left on it moved off by the least move, a building on it named, set-asides read where the items end); the pairing's seat sink; and the rules' tables. Plan frame: IR (x, z) metres.",
+  "description": "Settling a village apart (core src/editor/layout/settle.ts and pairing.ts; the Unreal plugin's BYOA B7 r4 - B8 r5 settle, characterised from its Portable code). The smallest change that parts what stands too close: each pair short of the gap its rule asks, and each body inside its clearance of an obstacle, pushed apart along the axis that separates them most, the lighter taking the larger share, repeated until nothing is short or nothing can move, every body within its own limit; shifts quantized to the millimetre. The neighbour rule (fitted buildings: the larger of two gaps, 0.25 m off other lots' paving, a limit that grows with the gap) on Brightwater Vale's ring of seven pack houses at 1, 4.5 and 6 m and on its real fits; the clearance rule (props out of each other and the walls, plant trunks off walls and paving, set-asides) on its props, whose positions and archetypes are the world's and at the sizes the editor measured (by entity id where the editor's build stood the prop, else its archetype's measured size); the player start's clear ground (startClearRadiusM, 1 m round the IR's player.startPosition: a prop or plant the settle left on it moved off by the least move, a building on it named, set-asides read where the items end); door frontage (a building given its door keeps every other building 1 m off the door's approach, the 1.5 m of ground in front of it, parted like a short neighbour gap, its limit grown to a 2.5 m gap's); the pairing's seat sink; and the rules' tables. Plan frame: IR (x, z) metres. The 'front line settle:' cases pin that the paving clearance leaves a building fronted by fitBuildingToLot's front line where it stands (PL.fit-front-line).",
   "version": 1,
   "sources": [
     {
@@ -14,6 +14,16 @@
       "cases": "the 'start clearance:' cases (PL.start-clearance, operator rulings U78 and U79(4))",
       "writtenBy": "core src/editor/layout/settle.ts settleClearance and startClearOutline (npm run layout-corpus -- --write semantics: core's own answers), synthetic inputs",
       "crossCheckedAgainst": "the Unreal plugin's interim engine copy at unreal main e859b55 (P0.unreal.openframe): Portable/InsimulBuildingFit KeepClearOfStart and StartClearOutline (kStartClearRadiusM 1.0) applied after SettleClearance as FinishPropClearance applies them; every move and the outline agree. Two deliberate differences, which the engine's binding takes from this corpus when it re-vendors: set-asides are read after the start's move (the interim copy reads them before), and a building on the start is named in startCovered (the interim copy logs a FINDING)"
+    },
+    {
+      "cases": "the 'door frontage:' cases (PL.brightwater-door-facing, operator rulings U78 and U79(4))",
+      "writtenBy": "core src/editor/layout/settle.ts settleFittedBuildings given each building's door, doorFrontage and doorApproachOutline (core's own answers); the synthetic pairs' inputs written here, the Brightwater cases' footprints the 'neighbours: Brightwater's seven fitted houses' case's and their doors building-fit.json's 'brightwater:' answers on brightwater-ir-20261017.json",
+      "measuredBy": "the Unreal editor's door points on Brightwater (P0.unreal.homeslots round 1: its control run's unreachable lines and its place lines): each of the seven door points bears 84-111 degrees (a quarter turn, +pi/2) from the door core's fit turns to the street, seen from the house's fit-alone centre, and stands 0.40-2.61 m from the middle of that quarter-turned wall 1.5 m out (64_5 0.40, the Bakery 0.75, the Tavern 1.01, 64_4 1.10, 64_6 1.19, the Farmstead 1.59, the Smithy 2.61): the quarter-turn case stands its doors there. The editor's own positions are not in this corpus (the held PL.layout-recharacterise, operator ruling U82)"
+    },
+    {
+      "cases": "the 'front line settle:' cases (PL.fit-front-line, operator ruling U105(2))",
+      "writtenBy": "core src/editor/layout/settle.ts settleFittedBuildings, unchanged, over the 'front line:' fits of building-fit.json and the L3 IR's roads, plaza and footpaths (placement frame)",
+      "measuredBy": "unreal origin/feat/b9-fit a3a5f04 tools/verify-unreal/fixtures/brightwater-l3/: brightwater-l3.ir.json (sha256 65208501b178658c36e94c389838b280c8ba912a33073613e1e75d13aff5219a; the Village WorldIR 6abb84ae… exported 2026-11-10T02:16Z, trimmed) and smoke-1015-houses.json (sha256 10e99f4ff606406bab18bafaf89fd3b1e098a5e87b023f334435f375cf18f600; the seven houses as the editor measures them, and the SYNTHETIC inputAsStated twins)"
     },
     {
       "cases": "'neighbours: Brightwater's seven fitted houses', 'clearance: Brightwater's props round its settled houses' and the four 'seat sink:' cases of House_03 and House_Large (PL.layout-standins, operator ruling U80(3))",
@@ -11930,6 +11940,1431 @@
         "crownRadius": 0.15,
         "pairingNeighbourGap": 6
       }
+    },
+    {
+      "name": "door frontage: a neighbour 0.995 m beyond the approach is parted to 1 m",
+      "note": "house.door's door opens east onto house.next's wall 1.5 + 0.995 m away (the 1 m neighbour gap kept); the approach's 1 m clearance parts them, each taking half",
+      "op": "settleDoorFrontage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house.door",
+            "lotId": "lot.a",
+            "corners": [[0, 0], [10, 0], [10, 10], [0, 10]],
+            "neighbourGap": 1,
+            "door": {
+              "x": 10,
+              "z": 5,
+              "heading": 0
+            }
+          },
+          {
+            "entityId": "house.next",
+            "lotId": "lot.b",
+            "corners": [[12.495, 0], [22.494999999999997, 0], [22.494999999999997, 10], [12.495, 10]],
+            "neighbourGap": 1,
+            "door": null
+          }
+        ],
+        "obstacles": []
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house.door",
+            "dx": -0.003,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "house.next",
+            "dx": 0.003,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "doors": [
+          {
+            "index": 0,
+            "entityId": "house.door",
+            "clear": 1.001,
+            "nearest": "house.next",
+            "short": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "door frontage: a neighbour 1.005 m beyond the approach is left",
+      "note": "the same pair with the wall 1.5 + 1.005 m from the door: nothing moves",
+      "op": "settleDoorFrontage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house.door",
+            "lotId": "lot.a",
+            "corners": [[0, 0], [10, 0], [10, 10], [0, 10]],
+            "neighbourGap": 1,
+            "door": {
+              "x": 10,
+              "z": 5,
+              "heading": 0
+            }
+          },
+          {
+            "entityId": "house.next",
+            "lotId": "lot.b",
+            "corners": [[12.505, 0], [22.505000000000003, 0], [22.505000000000003, 10], [12.505, 10]],
+            "neighbourGap": 1,
+            "door": null
+          }
+        ],
+        "obstacles": []
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house.door",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "house.next",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "doors": [
+          {
+            "index": 0,
+            "entityId": "house.door",
+            "clear": 1.005,
+            "nearest": "house.next",
+            "short": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "door frontage: a neighbour 0.9 m beside the approach is moved off it along the wall",
+      "note": "house.next stands 0.5 m from house.door's front wall (neighbour gaps 0, so the neighbour rule asks nothing) and 0.9 m to the side of the approach's 1.5 m-wide ground: the two part across the door's heading",
+      "op": "settleDoorFrontage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house.door",
+            "lotId": "lot.a",
+            "corners": [[0, 0], [10, 0], [10, 10], [0, 10]],
+            "neighbourGap": 0,
+            "door": {
+              "x": 10,
+              "z": 5,
+              "heading": 0
+            }
+          },
+          {
+            "entityId": "house.next",
+            "lotId": "lot.b",
+            "corners": [[10.5, 6.65], [20.5, 6.65], [20.5, 16.65], [10.5, 16.65]],
+            "neighbourGap": 0,
+            "door": null
+          }
+        ],
+        "obstacles": []
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house.door",
+            "dx": 0,
+            "dz": -0.05,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "house.next",
+            "dx": 0,
+            "dz": 0.05,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "doors": [
+          {
+            "index": 0,
+            "entityId": "house.door",
+            "clear": 1,
+            "nearest": "house.next",
+            "short": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "door frontage: a house given no door keeps no approach",
+      "note": "the 0.995 m pair with house.door's door null: the settle is the neighbour rule's alone, and no door is listed",
+      "op": "settleDoorFrontage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house.door",
+            "lotId": "lot.a",
+            "corners": [[0, 0], [10, 0], [10, 10], [0, 10]],
+            "neighbourGap": 1,
+            "door": null
+          },
+          {
+            "entityId": "house.next",
+            "lotId": "lot.b",
+            "corners": [[12.495, 0], [22.494999999999997, 0], [22.494999999999997, 10], [12.495, 10]],
+            "neighbourGap": 1,
+            "door": null
+          }
+        ],
+        "obstacles": []
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house.door",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "house.next",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "doors": []
+      }
+    },
+    {
+      "name": "door frontage: Brightwater's seven fitted houses, each door turned to its street",
+      "note": "the neighbours case's footprints and the pairing's 6 m, each given its door as building-fit.json's 'brightwater:' cases fit it on brightwater-ir-20261017.json's lots (doorWorld x/z, doorHeading: the lot's street heading): every approach is already clear, so the moves are that case's",
+      "op": "settleDoorFrontage",
+      "input": {
+        "buildings": [
+          {
+            "corners": [[456.5557265751901, 439.8565758613559], [445.8908519719944, 439.85440371213343], [445.89327341101693, 427.96555958132456], [456.55814801421263, 427.96773173054703]],
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "lotId": "6abb84eef2e499b951eecec4",
+            "neighbourGap": 6,
+            "door": {
+              "x": 445.89203734104234,
+              "z": 434.03444800904737,
+              "heading": -3.1413889803846904
+            }
+          },
+          {
+            "corners": [[413.5718037050012, 410.81036412885874], [423.8909144613684, 410.8082624024681], [423.8931963016153, 422.01170084289316], [413.574085545248, 422.0138025692839]],
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "lotId": "6abb84eef2e499b951eecec5",
+            "neighbourGap": 6,
+            "door": {
+              "x": 423.89202278678465,
+              "z": 416.24994728359997,
+              "heading": -0.00020367320510339404
+            }
+          },
+          {
+            "corners": [[434.4452707126271, 450.073515503233], [434.44961501098203, 439.4086415636502], [446.3384584020175, 439.4134844415949], [446.3341141036626, 450.07835838117774]],
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "lotId": "6abb84eef2e499b951eecec6",
+            "neighbourGap": 6,
+            "door": {
+              "x": 440.2695703519262,
+              "z": 439.41101230169704,
+              "heading": -1.5703889803846898
+            }
+          },
+          {
+            "corners": [[456.2099144547519, 428.5138025692839], [445.8908036983846, 428.5117008428933], [445.8930855386315, 417.3082624024681], [456.2121962949988, 417.31036412885874]],
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "lotId": "6abb84eef2e499b951eecec0",
+            "neighbourGap": 6,
+            "door": {
+              "x": 445.89191202380084,
+              "z": 423.0700159617614,
+              "heading": -3.1413889803846904
+            }
+          },
+          {
+            "corners": [[423.78811443025205, 449.72777320370204], [423.79231788294607, 439.40866308943276], [434.9957556262466, 439.4132267698318], [434.9915521735526, 449.7323368841012]],
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "lotId": "6abb84eef2e499b951eecec1",
+            "neighbourGap": 6,
+            "door": {
+              "x": 429.23400242547365,
+              "z": 439.4108797402192,
+              "heading": -1.5703889803846898
+            }
+          },
+          {
+            "corners": [[413.22585198578736, 422.46773173054703], [423.89072658898306, 422.46555958132456], [423.89314802800567, 434.35440371213343], [413.22827342480997, 434.3565758613559]],
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "lotId": "6abb84eef2e499b951eecec2",
+            "neighbourGap": 6,
+            "door": {
+              "x": 423.8919119580311,
+              "z": 428.28551528441056,
+              "heading": -0.00020367320510339404
+            }
+          },
+          {
+            "corners": [[444.29043722855, 405.38424860145], [444.29043722855, 417.4107513985501], [428.49356277145, 417.4107513985501], [428.49356277145, 405.38424860145]],
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "lotId": "6abb84eef2e499b951eecec3",
+            "neighbourGap": 6,
+            "door": {
+              "x": 440.8131628252,
+              "z": 417.4107513985501,
+              "heading": 1.5707963267948966
+            }
+          }
+        ],
+        "obstacles": {
+          "$fixture": "brightwaterPaving"
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "dx": 0.003,
+            "dz": 0.912,
+            "short": 0.077,
+            "shortOf": "bld_6abb84bcf2e499b951eece64_6",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "dx": -0.751,
+            "dz": -5.742,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "dx": 1.814,
+            "dz": 7.277,
+            "short": 0.077,
+            "shortOf": "bld_6abb84bcf2e499b951eece64_4",
+            "limited": true
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "dx": 4.996,
+            "dz": -5.594,
+            "short": 0.051,
+            "shortOf": "bld_6abb84eef2e499b951eecec3",
+            "limited": true
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "dx": -4.73,
+            "dz": 2.047,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "dx": -1.054,
+            "dz": -0.195,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "dx": 0.649,
+            "dz": -0.21,
+            "short": 0.051,
+            "shortOf": "bld_6abb84eef2e499b951eecec0",
+            "limited": false
+          }
+        ],
+        "doors": [
+          {
+            "index": 0,
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "clear": 10.993,
+            "nearest": "bld_6abb84bcf2e499b951eece64_6",
+            "short": 0
+          },
+          {
+            "index": 1,
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "clear": 4.501,
+            "nearest": "bld_6abb84eef2e499b951eecec3",
+            "short": 0
+          },
+          {
+            "index": 2,
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "clear": 4.423,
+            "nearest": "bld_6abb84bcf2e499b951eece64_4",
+            "short": 0
+          },
+          {
+            "index": 3,
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "clear": 4.449,
+            "nearest": "bld_6abb84eef2e499b951eecec3",
+            "short": 0
+          },
+          {
+            "index": 4,
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "clear": 5.798,
+            "nearest": "bld_6abb84eef2e499b951eecec2",
+            "short": 0
+          },
+          {
+            "index": 5,
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "clear": 10.139,
+            "nearest": "bld_6abb84eef2e499b951eecec3",
+            "short": 0
+          },
+          {
+            "index": 6,
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "clear": 8.675,
+            "nearest": "bld_6abb84eef2e499b951eecec0",
+            "short": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "door frontage: Brightwater's houses at the default 1 m with each door a quarter turn off its street, as the Unreal editor stood them",
+      "note": "the same footprints from brightwater-ir-20261017.json at the default policy's 1 m gap, each door at the middle of the wall a quarter turn (+pi/2) from the fit's: where P0.unreal.homeslots's editor stood the doors (64_4's door point V(45051, 42731) south onto Malvern's Farmstead, 44 cm; 64_5's V(41885, 42313) north onto Malvern's Bakery, 51 cm). Settled without doors, 64_4's approach ends 0.5 m inside the Farmstead, 64_5's inside the Bakery and the Smithy's inside 64_6; with them, each house and the neighbour it faces part until every approach is 1 m clear",
+      "op": "settleDoorFrontage",
+      "input": {
+        "buildings": [
+          {
+            "corners": [[456.5557265751901, 439.8565758613559], [445.8908519719944, 439.85440371213343], [445.89327341101693, 427.96555958132456], [456.55814801421263, 427.96773173054703]],
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "lotId": "6abb84eef2e499b951eecec4",
+            "neighbourGap": 1,
+            "door": {
+              "x": 451.22571071261484,
+              "z": 427.9666456559358,
+              "heading": -1.5705926535897938
+            }
+          },
+          {
+            "corners": [[413.5718037050012, 410.81036412885874], [423.8909144613684, 410.8082624024681], [423.8931963016153, 422.01170084289316], [413.574085545248, 422.0138025692839]],
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "lotId": "6abb84eef2e499b951eecec5",
+            "neighbourGap": 1,
+            "door": {
+              "x": 418.7336409234316,
+              "z": 422.0127517060886,
+              "heading": 1.5705926535897932
+            }
+          },
+          {
+            "corners": [[434.4452707126271, 450.073515503233], [434.44961501098203, 439.4086415636502], [446.3384584020175, 439.4134844415949], [446.3341141036626, 450.07835838117774]],
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "lotId": "6abb84eef2e499b951eecec6",
+            "neighbourGap": 1,
+            "door": {
+              "x": 446.33628625284007,
+              "z": 444.7459214113863,
+              "heading": 0.0004073464102067881
+            }
+          },
+          {
+            "corners": [[456.2099144547519, 428.5138025692839], [445.8908036983846, 428.5117008428933], [445.8930855386315, 417.3082624024681], [456.2121962949988, 417.31036412885874]],
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "lotId": "6abb84eef2e499b951eecec0",
+            "neighbourGap": 1,
+            "door": {
+              "x": 451.05264091681516,
+              "z": 417.3093132656634,
+              "heading": -1.5705926535897938
+            }
+          },
+          {
+            "corners": [[423.78811443025205, 449.72777320370204], [423.79231788294607, 439.40866308943276], [434.9957556262466, 439.4132267698318], [434.9915521735526, 449.7323368841012]],
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "lotId": "6abb84eef2e499b951eecec1",
+            "neighbourGap": 1,
+            "door": {
+              "x": 434.99365389989964,
+              "z": 444.5727818269665,
+              "heading": 0.0004073464102067881
+            }
+          },
+          {
+            "corners": [[413.22585198578736, 422.46773173054703], [423.89072658898306, 422.46555958132456], [423.89314802800567, 434.35440371213343], [413.22827342480997, 434.3565758613559]],
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "lotId": "6abb84eef2e499b951eecec2",
+            "neighbourGap": 1,
+            "door": {
+              "x": 418.56071072640776,
+              "z": 434.35548978674467,
+              "heading": 1.5705926535897932
+            }
+          },
+          {
+            "corners": [[444.29043722855, 405.38424860145], [444.29043722855, 417.4107513985501], [428.49356277145, 417.4107513985501], [428.49356277145, 405.38424860145]],
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "lotId": "6abb84eef2e499b951eecec3",
+            "neighbourGap": 1,
+            "door": {
+              "x": 428.49356277145,
+              "z": 411.39750000000004,
+              "heading": 3.141592653589793
+            }
+          }
+        ],
+        "obstacles": {
+          "$fixture": "brightwaterPaving"
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "dx": 0,
+            "dz": 0.535,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "dx": -0.251,
+            "dz": -2.242,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "dx": 1.522,
+            "dz": 1.977,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "dx": 0.046,
+            "dz": -2.511,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "dx": -1.523,
+            "dz": 0.252,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "dx": -0.858,
+            "dz": -0.195,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "dx": 0.648,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "doors": [
+          {
+            "index": 0,
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "clear": 1,
+            "nearest": "bld_6abb84eef2e499b951eecec0",
+            "short": 0
+          },
+          {
+            "index": 1,
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "clear": 1.001,
+            "nearest": "bld_6abb84eef2e499b951eecec2",
+            "short": 0
+          },
+          {
+            "index": 2,
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "clear": 5.583,
+            "nearest": "bld_6abb84bcf2e499b951eece64_4",
+            "short": 0
+          },
+          {
+            "index": 3,
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "clear": 5.41,
+            "nearest": "bld_6abb84eef2e499b951eecec3",
+            "short": 0
+          },
+          {
+            "index": 4,
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "clear": 1,
+            "nearest": "bld_6abb84bcf2e499b951eece64_6",
+            "short": 0
+          },
+          {
+            "index": 5,
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "clear": 4.001,
+            "nearest": "bld_6abb84eef2e499b951eecec1",
+            "short": 0
+          },
+          {
+            "index": 6,
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "clear": 4.001,
+            "nearest": "bld_6abb84bcf2e499b951eece64_5",
+            "short": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "door frontage: a door's approach",
+      "note": "the approach of a door at (10, 20) opening along +z: 0.75 m either side of it and 1.5 m out, and the 1 m every other building keeps from it",
+      "op": "doorApproachOutline",
+      "input": {
+        "door": {
+          "x": 10,
+          "z": 20,
+          "heading": 1.5707963267948966
+        }
+      },
+      "expected": {
+        "depthM": 1.5,
+        "halfWidthM": 0.75,
+        "clearM": 1,
+        "outline": [[10.75, 20], [10.75, 21.5], [9.25, 21.5], [9.25, 20]]
+      }
+    },
+    {
+      "name": "door frontage: an approach the lanes hold short is reported",
+      "note": "house.door's door opens east onto house.next 0.5 m off its wall (neighbour gaps 0); a lane runs behind each, 0.25 m off it, so neither may move back and nothing moves: the approach, 1 m inside house.next, is left 2 m short and named in both moves' short and in the door's report",
+      "op": "settleDoorFrontage",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "house.door",
+            "lotId": "lot.a",
+            "corners": [[0, 0], [10, 0], [10, 10], [0, 10]],
+            "neighbourGap": 0,
+            "door": {
+              "x": 10,
+              "z": 5,
+              "heading": 0
+            }
+          },
+          {
+            "entityId": "house.next",
+            "lotId": "lot.b",
+            "corners": [[10.5, 0], [20.5, 0], [20.5, 10], [10.5, 10]],
+            "neighbourGap": 0,
+            "door": null
+          }
+        ],
+        "obstacles": [
+          {
+            "closed": false,
+            "entityId": "lane.west",
+            "halfWidth": 0.25,
+            "kind": "road",
+            "lotId": "",
+            "points": [[-0.5, -5], [-0.5, 15]]
+          },
+          {
+            "closed": false,
+            "entityId": "lane.east",
+            "halfWidth": 0.25,
+            "kind": "road",
+            "lotId": "",
+            "points": [[21, -5], [21, 15]]
+          }
+        ]
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house.door",
+            "dx": 0,
+            "dz": 0,
+            "short": 2,
+            "shortOf": "house.next",
+            "limited": false
+          },
+          {
+            "entityId": "house.next",
+            "dx": 0,
+            "dz": 0,
+            "short": 2,
+            "shortOf": "house.door",
+            "limited": false
+          }
+        ],
+        "doors": [
+          {
+            "index": 0,
+            "entityId": "house.door",
+            "clear": -1,
+            "nearest": "house.next",
+            "short": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "front line settle: Brightwater L3's fronted houses stay put, to the IR yaw's 2 mm",
+      "note": "PL.fit-front-line: the seven Village houses as 'front line: Brightwater L3 …' fits them (fronts 0.25 m behind the facade line, the roads' and plaza's edge) among the L3 roads, plaza and footpaths: the paving clearance pushes none back by more than 2 mm (the IR's 3-decimal facing, 1.571 or -3.142, tilts a 10-15 m front by 1-2 mm against the axis-aligned roads; nothing is left short). The answer this item settles: the clearance does not push a fronted building back",
+      "op": "settleFittedBuildings",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "lotId": "6abb84eef2e499b951eecec0",
+            "corners": [[441.39213596408223, 408.43031866024063], [441.39213596408223, 417.161], [431.39186403591776, 417.161], [431.39186403591776, 408.43031866024063]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "lotId": "6abb84eef2e499b951eecec1",
+            "corners": [[432.89042573085226, 447.97520718345214], [432.89381332308915, 439.65896340498676], [442.89405646786975, 439.6630369683583], [442.89066887563285, 447.9792807468237]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "lotId": "6abb84eef2e499b951eecec2",
+            "corners": [[414.9063845092892, 419.9116389003582], [423.6407778789275, 419.90985993844134], [423.6432220277362, 431.9102051661024], [414.9088286580979, 431.91198412801924]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "lotId": "6abb84eef2e499b951eecec3",
+            "corners": [[455.75259288371797, 435.4116515625502], [446.14047254585574, 435.40969383116607], [446.14352758896325, 420.40996392697025], [455.7556479268255, 420.4119216583544]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "lotId": "6abb84eef2e499b951eecec4",
+            "corners": [[411.39043941879004, 448.4832983663305], [411.3940339801212, 439.6589634948706], [421.3938358108377, 439.6630368784744], [421.3902412495065, 448.48737174993425]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "lotId": "6abb84eef2e499b951eecec5",
+            "corners": [[414.91030040094824, 403.9116748977383], [423.64098155962114, 403.90989669189935], [423.6430183470426, 413.91016841264434], [414.9123371883697, 413.9119466184833]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "lotId": "6abb84eef2e499b951eecec6",
+            "corners": [[395.39043941879004, 448.4832983663305], [395.3940339801212, 439.6589634948706], [405.3938358108377, 439.6630368784744], [405.3902412495065, 448.48737174993425]],
+            "neighbourGap": 1
+          }
+        ],
+        "obstacles": [
+          {
+            "entityId": "road.street_lane_0_mouth.street_lane_0_end",
+            "kind": "road",
+            "lotId": "",
+            "points": [[423.892, 436.911], [390.892, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.street_lane_1_mouth.street_lane_1_end",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 417.411], [426.392, 399.411]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_zn_xp.square_corner_xp_zp",
+            "kind": "road",
+            "lotId": "",
+            "points": [[443.392, 419.911], [443.392, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_xp_zp.square_corner_zp_xn",
+            "kind": "road",
+            "lotId": "",
+            "points": [[443.392, 436.911], [426.392, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_zp_xn.street_lane_0_mouth",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 436.911], [423.892, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_zp_xn.square_corner_xn_zn",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 436.911], [426.392, 419.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_xn_zn.street_lane_1_mouth",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 419.911], [426.392, 417.411]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_xn_zn.square_corner_zn_xp",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 419.911], [443.392, 419.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+            "kind": "plaza",
+            "lotId": "6abb84eef2e499b951eeced2",
+            "points": [[444.392, 418.911], [444.392, 437.911], [425.392, 437.911], [425.392, 418.911]],
+            "halfWidth": 0,
+            "closed": true
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec0",
+            "points": [[436.392, 417.111], [436.392, 418.211]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec1",
+            "points": [[437.89493289398786, 439.71100080476583], [437.8953809751112, 438.611000688614]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec2",
+            "points": [[423.5919997988085, 425.90953355294397], [424.6919998278465, 425.9093095124093]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec3",
+            "points": [[446.19200022193286, 427.90932987974026], [445.0920001928949, 427.9091058392056]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec4",
+            "points": [[416.39493289398786, 439.71100080476583], [416.3953809751112, 438.611000688614]],
+            "halfWidth": 0.75,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec5",
+            "points": [[423.5919997988085, 408.90953355294397], [424.6919998278465, 408.9093095124093]],
+            "halfWidth": 0.75,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec6.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec6",
+            "points": [[400.39493289398786, 439.71100080476583], [400.3953809751112, 438.611000688614]],
+            "halfWidth": 0.75,
+            "closed": false
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec0",
+          "dx": 0,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec1",
+          "dx": 0,
+          "dz": 0.002,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec2",
+          "dx": -0.001,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec3",
+          "dx": 0.002,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84bcf2e499b951eece64_4",
+          "dx": 0,
+          "dz": 0.002,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84bcf2e499b951eece64_5",
+          "dx": -0.001,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84bcf2e499b951eece64_6",
+          "dx": 0,
+          "dz": 0.002,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        }
+      ]
+    },
+    {
+      "name": "front line settle: the SYNTHETIC twins fronted stay put, to the IR yaw's 2 mm",
+      "note": "the stated footprints, held by the area's depth, fronted: none moved more than 2 mm (the IR's 3-decimal facing), nothing left short",
+      "op": "settleFittedBuildings",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "lotId": "6abb84eef2e499b951eecec0",
+            "corners": [[440.7573406698797, 407.16072807183554], [440.7573406698797, 417.16100000000006], [432.0266593301203, 417.16100000000006], [432.0266593301203, 407.16072807183554]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "lotId": "6abb84eef2e499b951eecec1",
+            "corners": [[433.7317394428752, 449.6595495353346], [433.73581300624676, 439.659306390554], [442.05205678471214, 439.6626939827909], [442.0479832213406, 449.6629371275715]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "lotId": "6abb84eef2e499b951eecec2",
+            "corners": [[413.6409636642222, 422.27273609357724], [423.641258718654, 422.2706993014034], [423.6427411880098, 429.54936580314035], [413.642446133578, 429.55140259531424]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "lotId": "6abb84eef2e499b951eecec3",
+            "corners": [[458.1410079552278, 431.7571233114208], [446.14121697439526, 431.7546792754974], [446.1427831604237, 424.06497848263894], [458.14257414125626, 424.0674225185624]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "lotId": "6abb84eef2e499b951eecec4",
+            "corners": [[411.9776940761457, 449.6590047367234], [411.9817674597495, 439.6592029060069], [420.8061023312094, 439.66279746733807], [420.80202894760555, 449.66259929805454]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "lotId": "6abb84eef2e499b951eecec5",
+            "corners": [[413.6408391296675, 404.54672876035687], [423.6411108504124, 404.5446919729354], [423.64288905625136, 413.2753731316083], [413.6426173355064, 413.27740991902976]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "lotId": "6abb84eef2e499b951eecec6",
+            "corners": [[395.9776940761457, 449.6590047367234], [395.9817674597495, 439.6592029060069], [404.8061023312094, 439.66279746733807], [404.80202894760555, 449.66259929805454]],
+            "neighbourGap": 1
+          }
+        ],
+        "obstacles": [
+          {
+            "entityId": "road.street_lane_0_mouth.street_lane_0_end",
+            "kind": "road",
+            "lotId": "",
+            "points": [[423.892, 436.911], [390.892, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.street_lane_1_mouth.street_lane_1_end",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 417.411], [426.392, 399.411]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_zn_xp.square_corner_xp_zp",
+            "kind": "road",
+            "lotId": "",
+            "points": [[443.392, 419.911], [443.392, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_xp_zp.square_corner_zp_xn",
+            "kind": "road",
+            "lotId": "",
+            "points": [[443.392, 436.911], [426.392, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_zp_xn.street_lane_0_mouth",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 436.911], [423.892, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_zp_xn.square_corner_xn_zn",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 436.911], [426.392, 419.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_xn_zn.street_lane_1_mouth",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 419.911], [426.392, 417.411]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_xn_zn.square_corner_zn_xp",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 419.911], [443.392, 419.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+            "kind": "plaza",
+            "lotId": "6abb84eef2e499b951eeced2",
+            "points": [[444.392, 418.911], [444.392, 437.911], [425.392, 437.911], [425.392, 418.911]],
+            "halfWidth": 0,
+            "closed": true
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec0",
+            "points": [[436.392, 417.111], [436.392, 418.211]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec1",
+            "points": [[437.89493289398786, 439.71100080476583], [437.8953809751112, 438.611000688614]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec2",
+            "points": [[423.5919997988085, 425.90953355294397], [424.6919998278465, 425.9093095124093]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec3",
+            "points": [[446.19200022193286, 427.90932987974026], [445.0920001928949, 427.9091058392056]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec4",
+            "points": [[416.39493289398786, 439.71100080476583], [416.3953809751112, 438.611000688614]],
+            "halfWidth": 0.75,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec5",
+            "points": [[423.5919997988085, 408.90953355294397], [424.6919998278465, 408.9093095124093]],
+            "halfWidth": 0.75,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec6.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec6",
+            "points": [[400.39493289398786, 439.71100080476583], [400.3953809751112, 438.611000688614]],
+            "halfWidth": 0.75,
+            "closed": false
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec0",
+          "dx": 0,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec1",
+          "dx": 0,
+          "dz": 0.002,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec2",
+          "dx": -0.001,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec3",
+          "dx": 0.001,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84bcf2e499b951eece64_4",
+          "dx": 0,
+          "dz": 0.002,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84bcf2e499b951eece64_5",
+          "dx": -0.001,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84bcf2e499b951eece64_6",
+          "dx": 0,
+          "dz": 0.002,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        }
+      ]
+    },
+    {
+      "name": "front line settle: control, fronts ON the facade line are pushed 0.25 m back",
+      "note": "the SYNTHETIC twins centred with no front line (their fronts land on the facade line, the paving's edge): the settle moves each 0.25 m back (0.250-0.252 m; the farm also 0.115 m across, off the square's road end), the B9.fit S measurement; the fit now puts a front there itself",
+      "op": "settleFittedBuildings",
+      "input": {
+        "buildings": [
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec0",
+            "lotId": "6abb84eef2e499b951eecec0",
+            "corners": [[440.7573406698797, 407.41086403591777], [440.7573406698797, 417.4111359640823], [432.0266593301203, 417.4111359640823], [432.0266593301203, 407.41086403591777]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec1",
+            "lotId": "6abb84eef2e499b951eecec1",
+            "corners": [[433.73184132908153, 449.4094277762718], [433.7359148924531, 439.4091846314912], [442.05215867091846, 439.41257222372815], [442.0480851075469, 449.41281536850875]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec2",
+            "lotId": "6abb84eef2e499b951eecec2",
+            "corners": [[413.89111123810625, 422.2726851452184], [423.891406292538, 422.2706483530446], [423.8928887618938, 429.5493148547815], [413.892593707462, 429.5513516469554]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84eef2e499b951eecec3",
+            "lotId": "6abb84eef2e499b951eecec3",
+            "corners": [[457.891112397402, 431.7570724143909], [445.8913214165695, 431.7546283784675], [445.8928876025979, 424.06492758560904], [457.8926785834305, 424.0673716215325]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_4",
+            "lotId": "6abb84eef2e499b951eecec4",
+            "corners": [[411.97779587246816, 449.40910363469266], [411.98186925607195, 439.4093018039762], [420.8062041275318, 439.41289636530735], [420.802130743928, 449.4126981960238]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_5",
+            "lotId": "6abb84eef2e499b951eecec5",
+            "corners": [[413.8909750367081, 404.5466778143743], [423.891246757453, 404.54464102695283], [423.89302496329196, 413.2753221856257], [413.892753242547, 413.27735897304717]],
+            "neighbourGap": 1
+          },
+          {
+            "entityId": "bld_6abb84bcf2e499b951eece64_6",
+            "lotId": "6abb84eef2e499b951eecec6",
+            "corners": [[395.97779587246816, 449.40910363469266], [395.98186925607195, 439.4093018039762], [404.8062041275318, 439.41289636530735], [404.802130743928, 449.4126981960238]],
+            "neighbourGap": 1
+          }
+        ],
+        "obstacles": [
+          {
+            "entityId": "road.street_lane_0_mouth.street_lane_0_end",
+            "kind": "road",
+            "lotId": "",
+            "points": [[423.892, 436.911], [390.892, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.street_lane_1_mouth.street_lane_1_end",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 417.411], [426.392, 399.411]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_zn_xp.square_corner_xp_zp",
+            "kind": "road",
+            "lotId": "",
+            "points": [[443.392, 419.911], [443.392, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_xp_zp.square_corner_zp_xn",
+            "kind": "road",
+            "lotId": "",
+            "points": [[443.392, 436.911], [426.392, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_zp_xn.street_lane_0_mouth",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 436.911], [423.892, 436.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_zp_xn.square_corner_xn_zn",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 436.911], [426.392, 419.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_xn_zn.street_lane_1_mouth",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 419.911], [426.392, 417.411]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "road.square_corner_xn_zn.square_corner_zn_xp",
+            "kind": "road",
+            "lotId": "",
+            "points": [[426.392, 419.911], [443.392, 419.911]],
+            "halfWidth": 2.5,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
+            "kind": "plaza",
+            "lotId": "6abb84eef2e499b951eeced2",
+            "points": [[444.392, 418.911], [444.392, 437.911], [425.392, 437.911], [425.392, 418.911]],
+            "halfWidth": 0,
+            "closed": true
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec0.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec0",
+            "points": [[436.392, 417.111], [436.392, 418.211]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec1.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec1",
+            "points": [[437.89493289398786, 439.71100080476583], [437.8953809751112, 438.611000688614]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec2.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec2",
+            "points": [[423.5919997988085, 425.90953355294397], [424.6919998278465, 425.9093095124093]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec3.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec3",
+            "points": [[446.19200022193286, 427.90932987974026], [445.0920001928949, 427.9091058392056]],
+            "halfWidth": 1.2,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec4.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec4",
+            "points": [[416.39493289398786, 439.71100080476583], [416.3953809751112, 438.611000688614]],
+            "halfWidth": 0.75,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec5.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec5",
+            "points": [[423.5919997988085, 408.90953355294397], [424.6919998278465, 408.9093095124093]],
+            "halfWidth": 0.75,
+            "closed": false
+          },
+          {
+            "entityId": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec6.footpath",
+            "kind": "footpath",
+            "lotId": "6abb84eef2e499b951eecec6",
+            "points": [[400.39493289398786, 439.71100080476583], [400.3953809751112, 438.611000688614]],
+            "halfWidth": 0.75,
+            "closed": false
+          }
+        ]
+      },
+      "expected": [
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec0",
+          "dx": -0.115,
+          "dz": -0.25,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec1",
+          "dx": 0,
+          "dz": 0.252,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec2",
+          "dx": -0.251,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84eef2e499b951eecec3",
+          "dx": 0.251,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84bcf2e499b951eece64_4",
+          "dx": 0,
+          "dz": 0.252,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84bcf2e499b951eece64_5",
+          "dx": -0.251,
+          "dz": 0,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        },
+        {
+          "entityId": "bld_6abb84bcf2e499b951eece64_6",
+          "dx": 0,
+          "dz": 0.252,
+          "short": 0,
+          "shortOf": "",
+          "limited": false
+        }
+      ]
     }
   ]
 }

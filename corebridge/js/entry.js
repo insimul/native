@@ -92,6 +92,7 @@ import { weatherClimateFacts, weatherDelta } from '@insimul/core/weather/weather
 // (vendor-core-bundle.mjs UNBUNDLED_CORE_MODULES refuses that).
 import {
 	BUILDING_STOREY_M,
+	MOVEMENT_SOLID_KINDS,
 	PLAYER_GAIT,
 	PLAYER_GROUND,
 	buildingSolidOf,
@@ -121,14 +122,44 @@ import {
 } from '@insimul/core/audio/ground-from-ir';
 import { DEFAULT_FOOTSTEP_SURFACE } from '@insimul/core/audio/footsteps';
 
+// ── survival: the needs, the HUD bars and stamina (P9c; PL.native-survival-rows,
+// U106(1); core's P9c.core and PL.core-survival-rules) ────────────────────────────
+// Core's P9c logic, one function per row: the needs (`survival/needs`), the HUD
+// bars over them and the stamina meter (`survival/survival-hud`), what runs
+// (`survival/survival-systems`), the stamina meter (`stamina/stamina`) and its
+// decision layer (`StaminaPool`). Never `survival/systems-corpus`, core's corpus
+// runner: the rows are what a binding calls, and tests/survival_corpus.cpp drives
+// the corpus through them the way that runner drives core.
+import {
+	advanceSurvival,
+	applyNeedModifier,
+	consumeForNeeds,
+	initialSurvival,
+	performSurvivalAction,
+	readSurvivalBlock,
+	removeNeedModifier,
+	restoreNeed,
+	setEnvironmentTemperature,
+	setSurvivalEnabled,
+	survivalFromSave,
+	survivalSaveBlock,
+	survivalTuningFromIR,
+	useItemForNeeds,
+} from '@insimul/core/survival/needs';
+import { initialSurvivalHud, reduceStaminaHud, reduceSurvivalHud, survivalHudView } from '@insimul/core/survival/survival-hud';
+import { survivalSystemsRunning } from '@insimul/core/survival/survival-systems';
+import { regenerateStamina, spendStamina, staminaRestClock, staminaStateOf, staminaTuningFromIR } from '@insimul/core/stamina/stamina';
+import { StaminaPool } from '@insimul/core/game-engine/logic/StaminaPool';
+
 // ── genre and module activation ───────────────────────────────────────────────
 import { CAMERA_MODES, DEFAULT_GENRE_ID, GENRE_IDS, getAllGenres } from '@insimul/core/game-genres/registry';
 import { RECIPE_GENRE_BINDINGS, RECIPE_IDS } from '@insimul/core/game-genres/recipes';
-import { normalizeCameraMode, resolveGameGenre, resolveGenre } from '@insimul/core/game-genres/resolution';
+import { GenreResolutionError, normalizeCameraMode, resolveGameGenre, resolveGenre } from '@insimul/core/game-genres/resolution';
 import {
 	activeModulesForWorld,
 	moduleActivationTable,
 	resolveActiveModules,
+	resolveWorldActivation,
 } from '@insimul/core/modules/module-activation';
 import { PREDICATE_PACK_AREAS, PREDICATE_PACKS } from '@insimul/core/prolog/predicate-packs';
 
@@ -346,7 +377,7 @@ import {
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
 // settings and activation, over the pack catalog the caller sends.
-import { resolveComposition } from '@insimul/core/system-packs/composer';
+import { CompositionError, resolveComposition } from '@insimul/core/system-packs/composer';
 
 // ── village layout and composition (U23, U36: L.native-layout) ────────────────
 // Core's own JSON boundary for its layout rules: `runLayoutOp` /
@@ -915,15 +946,18 @@ function interactInputOf(method, args) {
  * The data tables of core's `conformance/camera/movement.json` `contract`, built
  * from core's exported constants exactly as core's emitter
  * (`scripts/emit-camera-movement-corpus.ts`) builds them, keyed by the file's
- * `area`: `modes` (each mode's occlusion rule and opening view yaw), `storeyM`,
+ * `area`: `modes` (each mode's occlusion rule and opening view yaw),
+ * `solidKinds` (the solid kinds core reads: `building`, the default, and `prop`,
+ * which the lens never hides; core's PL.core-camera-movement-gaps), `storeyM`,
  * `gait` and `ground` (each with core's own `source` line). The prose keys
- * (`occlusion`, `solid`, `sideView`, `frame`, `slope`, `slopeAtRest`, `step`,
- * `order`) are rules written out, not data, and are not here.
+ * (`occlusion`, `solid`, `sideView`, `frame`, `slope`, `slopeAtRest`,
+ * `slideSlowing`, `step`, `order`) are rules written out, not data, and are not here.
  */
 function movementContract() {
 	return plain({
 		'camera-movement': {
 			modes: movementModeTable(),
+			solidKinds: [...MOVEMENT_SOLID_KINDS],
 			storeyM: BUILDING_STOREY_M,
 			gait: PLAYER_GAIT,
 			ground: PLAYER_GROUND,
@@ -958,6 +992,83 @@ function groundContract() {
 			defaultFootstepSurface: DEFAULT_FOOTSTEP_SURFACE,
 		},
 	});
+}
+
+// ── survival (PL.native-survival-rows) ────────────────────────────────────────
+
+/**
+ * The world's survival tuning, read by core from what the row was sent: `survival`
+ * (the World IR's `survival` block) and `params` (the pack's flat parameters), as
+ * core's corpus reads a case's input (`survivalTuningFromIR(input.survival,
+ * input.params)`). Every needs row reads it this way, so the one tuning a binding
+ * holds is the IR it already has, never a second copy of core's numbers.
+ */
+function survivalTuningOf(args) {
+	return survivalTuningFromIR(args.survival, args.params);
+}
+
+/** The stamina tuning core reads from `staminaConfig` (`WorldIR.survival.staminaConfig`); absent is core's default. */
+function staminaTuningOf(args) {
+	return staminaTuningFromIR(args.staminaConfig ? { staminaConfig: args.staminaConfig } : null);
+}
+
+/**
+ * The row's own check on the state it carries: `state` (a `SurvivalState`, what the
+ * last row answered) and `hud` (a `SurvivalHudState`) must be JSON objects, which
+ * core dereferences unread. Everything else goes to core as sent: core reads each
+ * amount, need, action, item effect and temperature itself, and its corpus pins
+ * the refusals (`need_not_tracked`, `unknown_action`, `bad_amount`, …) as values.
+ */
+function survivalStateOf(method, value, name = 'state') {
+	return coded('invalid-input', () => needObject(method, value, name));
+}
+
+/** `{ ok: true, value }`, the shape core's survival corpus records an answer in. */
+function survivalOk(value) {
+	return { ok: true, value: plain(value) };
+}
+
+/**
+ * A `StaminaPool` session's view: the tuning it read and every actor's meter
+ * (core's `serialize()`, what a save carries), in registration order.
+ */
+function staminaPoolView(pool) {
+	return plain({ tuning: pool.getTuning(), actors: pool.serialize().actors });
+}
+
+/**
+ * The host side of `ISurvivalSystem` a `StaminaPool` session is given: it records
+ * what core hands the host (`consumeStamina`, `recoverStamina`) and reads nothing,
+ * as core's corpus runner's recording host does, so each op answers the calls it
+ * caused under `host`. A binding applies them to its own meter display.
+ */
+function recordingSurvivalHost(calls) {
+	const none = () => undefined;
+	return {
+		update: none,
+		restoreNeed: none,
+		consumeStamina: (amount) => {
+			calls.push({ method: 'consumeStamina', amount });
+			return true;
+		},
+		recoverStamina: (amount) => {
+			calls.push({ method: 'recoverStamina', amount });
+		},
+		setTemperature: none,
+		addModifier: none,
+		removeModifier: none,
+		getNeed: () => undefined,
+		getAllNeeds: () => [],
+		getNeedPercent: () => 0,
+		isAnyCritical: () => false,
+		isAnyWarning: () => false,
+		setEnabled: none,
+		isEnabled: () => true,
+		setOnNeedChanged: none,
+		setOnSurvivalEvent: none,
+		setOnDamageFromNeed: none,
+		dispose: none,
+	};
 }
 
 /**
@@ -2915,6 +3026,331 @@ const METHODS = {
 	 */
 	'audio.ground.footstepAt': (args) => ({ cue: plain(footstepAt(args.world, args.at ?? null, args.gait ?? null)) }),
 
+	// ── survival: the needs, the HUD bars and stamina (P9c; PL.native-survival-rows, U106(1)) ──
+	// One row per core function of `survival/needs`, `survival/survival-hud`,
+	// `survival/survival-systems`, `stamina/stamina` and `StaminaPool`, named
+	// `survival.<group>.<op>` after the corpus file's area (`survival-needs`,
+	// `survival-hud`, `survival-stamina`). Where a row answers a whole corpus op,
+	// its args are that case's `input` and its answer is the case's `expected`
+	// shape (`{ ok: true, value }`, or `{ ok: false, refusal: { code, field, keys? } }`
+	// for a refusal core's corpus records as a value). The step rows a game calls as
+	// it plays (advance, restore, …) are STATELESS over the state they are sent: the
+	// args are the last answer's `state` and the step's own fields, and the answer is
+	// core's result whole, the new `state` in it; the HUD's state (`hud`) travels the
+	// same way. The needs rows read the world's tuning from `survival` (the IR's
+	// block) and `params` (the pack's flat parameters) on every call; the stamina
+	// rows from `staminaConfig`. Times are the host's play clock in ms. Only what core
+	// dereferences unread is type-checked (`[invalid-input]`): `state` and `hud`
+	// objects, `item` and `stamina` objects, `events` an array, the pool's `actors`
+	// and `actions` lists of objects, `costs` and `state` objects, `start` a number,
+	// and `survival.hud.systems`' `catalog` as `packs.compose` checks it. Core reads every other field itself, and its corpus pins the refusals
+	// (`need_not_tracked`, `unknown_action`, `unknown_modifier`, `bad_amount`,
+	// `not_usable`, `not_held`) as values.
+
+	/** `survival.needs.tuning { survival?, params? }` → `{ ok, value: SurvivalTuning }` — core's `survivalTuningFromIR`. */
+	'survival.needs.tuning': (args) => survivalOk(survivalTuningOf(args)),
+
+	/**
+	 * `survival.needs.initial { survival?, params?, at? }` → `{ ok, value: SurvivalState }`
+	 * — core's `initialSurvival`: each need at its start value, the clock at `at` (0
+	 * when absent), the environment at its neutral 50.
+	 */
+	'survival.needs.initial': (args) => survivalOk(initialSurvival(survivalTuningOf(args), args.at ?? 0)),
+
+	/**
+	 * `survival.needs.advance { survival?, params?, state, at }` → core's
+	 * `advanceSurvival`: `{ state, ticks, skipped, events, expired, hurt }` — decay over
+	 * the whole ticks from `state.lastTickAt` to `at` (the remainder kept), band
+	 * changes as events, expired modifiers, and the deprivation damage owed to
+	 * `hurtPlayer` (whole points; the fraction stays in `state.damageOwed`).
+	 */
+	'survival.needs.advance': (args) => {
+		const state = survivalStateOf('survival.needs.advance', args.state);
+		return plain(advanceSurvival(state, survivalTuningOf(args), args.at));
+	},
+
+	/**
+	 * `survival.needs.restore { survival?, params?, state, need, amount, at }` → core's
+	 * `restoreNeed`: `{ ok: true, state, events }` or `{ ok: false, reason, state }`
+	 * (`need_not_tracked`, `bad_amount`).
+	 */
+	'survival.needs.restore': (args) => {
+		const state = survivalStateOf('survival.needs.restore', args.state);
+		return plain(restoreNeed(state, survivalTuningOf(args), args.need, args.amount, args.at));
+	},
+
+	/**
+	 * `survival.needs.action { survival?, params?, state, action, at, amount? }` → core's
+	 * `performSurvivalAction`: the restore-actions hook (`eat`, `drink`, `sleep`, each
+	 * restoring its row once at its flat amount, or `amount` when stated): `{ ok: true,
+	 * state, events }` or `{ ok: false, reason, state }` (`unknown_action`, …).
+	 */
+	'survival.needs.action': (args) => {
+		const state = survivalStateOf('survival.needs.action', args.state);
+		return plain(performSurvivalAction(state, survivalTuningOf(args), args.action, args.at, args.amount));
+	},
+
+	/**
+	 * `survival.needs.consume { survival?, params?, state, effects, at }` → core's
+	 * `consumeForNeeds`: `{ state, applied: [{ need, amount }], events }` — an item's
+	 * `effects` restoring the needs they name.
+	 */
+	'survival.needs.consume': (args) => {
+		const state = survivalStateOf('survival.needs.consume', args.state);
+		return plain(consumeForNeeds(state, survivalTuningOf(args), args.effects, args.at));
+	},
+
+	/**
+	 * `survival.needs.useItem { survival?, params?, state, item: { type, quantity?,
+	 * effects? }, at }` → core's `useItemForNeeds`: `{ ok: true, state, consumed,
+	 * remaining, applied, action, events }` (one of a consumable, food or drink stack
+	 * spent; a collectible, document, key or quest item used unspent) or `{ ok: false,
+	 * reason, state }` (`not_usable`, `not_held`).
+	 */
+	'survival.needs.useItem': (args) => {
+		const m = 'survival.needs.useItem';
+		const [state, item] = coded('invalid-input', () => [needObject(m, args.state, 'state'), needObject(m, args.item, 'item')]);
+		return plain(useItemForNeeds(state, survivalTuningOf(args), item, args.at));
+	},
+
+	/**
+	 * `survival.needs.setTemperature { survival?, params?, state, value, at }` → core's
+	 * `setEnvironmentTemperature`: `{ ok: true, state, events }` or `{ ok: false, reason,
+	 * state }` (`bad_amount`).
+	 */
+	'survival.needs.setTemperature': (args) => {
+		const state = survivalStateOf('survival.needs.setTemperature', args.state);
+		return plain(setEnvironmentTemperature(state, survivalTuningOf(args), args.value, args.at));
+	},
+
+	/**
+	 * `survival.needs.modifier { survival?, params?, state, modifier, at }` → core's
+	 * `applyNeedModifier`: `modifier` is a preset id of the tuning's `modifierPresets`
+	 * or a modifier object; `{ ok: true, state, events }` or `{ ok: false, reason, state }`
+	 * (`unknown_modifier`, `need_not_tracked`, `bad_amount`).
+	 */
+	'survival.needs.modifier': (args) => {
+		const state = survivalStateOf('survival.needs.modifier', args.state);
+		return plain(applyNeedModifier(state, survivalTuningOf(args), args.modifier, args.at));
+	},
+
+	/** `survival.needs.removeModifier { state, id }` → `{ state }` — core's `removeNeedModifier`. */
+	'survival.needs.removeModifier': (args) => {
+		const state = survivalStateOf('survival.needs.removeModifier', args.state);
+		return { state: plain(removeNeedModifier(state, args.id)) };
+	},
+
+	/** `survival.needs.enable { state, enabled }` → `{ state }` — core's `setSurvivalEnabled`. */
+	'survival.needs.enable': (args) => {
+		const state = survivalStateOf('survival.needs.enable', args.state);
+		return { state: plain(setSurvivalEnabled(state, args.enabled)) };
+	},
+
+	/**
+	 * `survival.needs.save { state, at }` → `{ ok, value: SavedSurvivalNeeds }` — core's
+	 * `survivalSaveBlock`: the `survivalNeeds` save extension (`{ readings, modifiers }`).
+	 */
+	'survival.needs.save': (args) => {
+		const state = survivalStateOf('survival.needs.save', args.state);
+		return survivalOk(survivalSaveBlock(state, args.at));
+	},
+
+	/**
+	 * `survival.needs.load { block, survival?, params?, at? }` → `{ ok, value:
+	 * SurvivalState }` — core's `readSurvivalBlock` then `survivalFromSave` (a null
+	 * block is a new playthrough's needs); an unreadable block is the VALUE `{ ok:
+	 * false, refusal: { code: 'unreadable_survival', field: 'block', keys } }`, the
+	 * keys core could not read.
+	 */
+	'survival.needs.load': (args) => {
+		const read = readSurvivalBlock(args.block);
+		if (!read.ok) return { ok: false, refusal: { code: 'unreadable_survival', field: 'block', keys: plain(read.keys) } };
+		return survivalOk(survivalFromSave(read.value, survivalTuningOf(args), args.at ?? 0));
+	},
+
+	/**
+	 * `survival.hud.view { survival?, params?, state?, hud?, now, visible?, stamina?,
+	 * staminaConfig? }` → `{ ok, value: { visible, bars } }` — core's `survivalHudView`:
+	 * one bar per tracked need, then the stamina bar when `stamina { current, max }` is
+	 * sent, each with its band, tone and flash at `now`. `state` absent is a new
+	 * playthrough's at 0, `hud` absent no flashes, `visible` false no bars.
+	 */
+	'survival.hud.view': (args) => {
+		const m = 'survival.hud.view';
+		const tuning = survivalTuningOf(args);
+		const state = args.state === undefined || args.state === null ? initialSurvival(tuning, 0) : survivalStateOf(m, args.state);
+		const hud = args.hud === undefined || args.hud === null ? initialSurvivalHud() : survivalStateOf(m, args.hud, 'hud');
+		const stamina = args.stamina ? { ...args.stamina, tuning: staminaTuningOf(args) } : null;
+		return survivalOk(survivalHudView(state, tuning, hud, { now: args.now, visible: args.visible !== false, stamina }));
+	},
+
+	/** `survival.hud.initial` → `{ hud }` — core's `initialSurvivalHud`: a new HUD, no flashes, no stamina band held yet. */
+	'survival.hud.initial': () => ({ hud: plain(initialSurvivalHud()) }),
+
+	/**
+	 * `survival.hud.reduce { hud, events }` → `{ hud }` — core's `reduceSurvivalHud`:
+	 * the band changes among a needs row's `events` recorded as the bars' flashes.
+	 * Send every event list a needs row answers.
+	 */
+	'survival.hud.reduce': (args) => {
+		const m = 'survival.hud.reduce';
+		const [hud, events] = coded('invalid-input', () => [needObject(m, args.hud, 'hud'), needArray(m, args.events, 'events')]);
+		return { hud: plain(reduceSurvivalHud(hud, events)) };
+	},
+
+	/**
+	 * `survival.hud.stamina { hud, stamina: { current, max }, staminaConfig?, at }` →
+	 * `{ hud, band, events }` — core's `reduceStaminaHud`: a new stamina reading on the
+	 * bar, its band held with one rest tick of hysteresis, and the drop or climb event
+	 * it raises (`need_warning`, `need_critical`, `need_restored`).
+	 */
+	'survival.hud.stamina': (args) => {
+		const m = 'survival.hud.stamina';
+		const [hud, reading] = coded('invalid-input', () => [needObject(m, args.hud, 'hud'), needObject(m, args.stamina, 'stamina')]);
+		return plain(reduceStaminaHud(hud, { current: reading.current, max: reading.max }, staminaTuningOf(args), args.at));
+	},
+
+	/**
+	 * `survival.hud.systems { request, catalog }` → `{ ok, value: { needs, stamina,
+	 * running, worldActivation } }` — what runs: core's `resolveComposition` over the
+	 * request (the `packs.compose` row's) and the catalog the caller sends, read by
+	 * `survivalSystemsRunning`, beside the world's own activation
+	 * (`resolveWorldActivation` over its `meta.genreConfig.id` and
+	 * `meta.enabledModules`). A request core refuses is the VALUE `{ ok: false,
+	 * refusal: { code, field: 'request' } }`.
+	 */
+	'survival.hud.systems': (args) => {
+		const m = 'survival.hud.systems';
+		const catalog = coded('invalid-input', () => catalogOf(m, args.catalog));
+		const request = plain(args.request ?? null);
+		const meta = (request && request.world && request.world.meta) || null;
+		const genreId = meta && meta.genreConfig && typeof meta.genreConfig.id === 'string' ? meta.genreConfig.id : '';
+		const world = resolveWorldActivation(genreId, meta ? meta.enabledModules : undefined);
+		let composition;
+		try {
+			composition = resolveComposition(request, catalog);
+		} catch (err) {
+			if (err instanceof CompositionError || err instanceof GenreResolutionError) return { ok: false, refusal: { code: err.code, field: 'request' } };
+			throw err;
+		}
+		return survivalOk({ ...survivalSystemsRunning(composition), worldActivation: world.modules.map((mod) => mod.id) });
+	},
+
+	/** `survival.stamina.tuning { staminaConfig? }` → `{ ok, value: StaminaTuning }` — core's `staminaTuningFromIR`. */
+	'survival.stamina.tuning': (args) => survivalOk(staminaTuningOf(args)),
+
+	/** `survival.stamina.state { current, max, staminaConfig? }` → `{ state }` — core's `staminaStateOf` (`fresh`, `winded`, `exhausted`). */
+	'survival.stamina.state': (args) => ({ state: staminaStateOf(args.current, args.max, staminaTuningOf(args)) }),
+
+	/**
+	 * `survival.stamina.spend { current, max, cost, staminaConfig? }` → `{ ok, value:
+	 * StaminaSpendResult }` — core's `spendStamina` (an unaffordable spend moves nothing).
+	 */
+	'survival.stamina.spend': (args) =>
+		survivalOk(spendStamina({ current: args.current, max: args.max, cost: args.cost, tuning: staminaTuningOf(args) })),
+
+	/**
+	 * `survival.stamina.regen { current, max, ticks, rate?, inCombat?, encumbered?,
+	 * staminaConfig? }` → `{ ok, value: StaminaRegenResult }` — core's `regenerateStamina`.
+	 */
+	'survival.stamina.regen': (args) =>
+		survivalOk(
+			regenerateStamina({
+				current: args.current,
+				max: args.max,
+				ticks: args.ticks,
+				tuning: staminaTuningOf(args),
+				rate: args.rate,
+				inCombat: args.inCombat,
+				encumbered: args.encumbered,
+			}),
+		),
+
+	/**
+	 * `survival.stamina.clock { lastTickAt, now, tickMs? }` → `{ ticks, lastTickAt }` —
+	 * core's `staminaRestClock`: the whole rest ticks (one second of play each) from
+	 * the host's last grant to `now`, the remainder kept; a clock that does not move
+	 * forward grants none.
+	 */
+	'survival.stamina.clock': (args) => plain(staminaRestClock(args.lastTickAt, args.now, args.tickMs)),
+
+	/**
+	 * `survival.stamina.pool.create { staminaConfig?, costs?, actions?, actors?,
+	 * survivalActorId?, start?, state? }` → `{ session, view: { tuning, actors } }` —
+	 * core's `StaminaPool` for one playthrough, with no KB (each op answers the fact
+	 * delta for the host to apply): `costs` the authored cost table, `actions` the IR's
+	 * action block (`loadCosts`), `actors` registered in order, `survivalActorId` the
+	 * actor whose spends and rest reach the host (`host` in an op's answer), `state` a
+	 * saved pool restored, `start` the play clock's first reading (0).
+	 */
+	'survival.stamina.pool.create': (args) => {
+		const m = 'survival.stamina.pool.create';
+		const input = coded('invalid-input', () => {
+			const actors = optArrayValue(m, args.actors, 'actors') ?? [];
+			actors.forEach((a, i) => needObject(m, a, `actors[${i}]`));
+			const actions = optArrayValue(m, args.actions, 'actions');
+			(actions ?? []).forEach((a, i) => needObject(m, a, `actions[${i}]`));
+			return {
+				costs: optObject(m, args.costs, 'costs') ?? {},
+				actions,
+				actors,
+				state: optObject(m, args.state, 'state'),
+				start: optNumber(m, args.start, 'start') ?? 0,
+			};
+		});
+		const calls = [];
+		const pool = new StaminaPool({
+			tuning: staminaTuningOf(args),
+			costs: input.costs,
+			survival: recordingSurvivalHost(calls),
+			survivalActorId: args.survivalActorId ?? undefined,
+			state: input.state ?? undefined,
+		});
+		if (input.actions) pool.loadCosts(input.actions);
+		for (const actor of input.actors) pool.register(actor);
+		return { session: openSession('stamina-pool', { pool, calls, clock: input.start }), view: staminaPoolView(pool) };
+	},
+
+	/**
+	 * `survival.stamina.pool.apply { session, ops }` → `{ results, view }`.
+	 * ops: `cost { action }` → `{ cost }` · `afford { actor, action, cost? }` →
+	 * `{ affordable }` · `spend { actor, action, cost? }` → `{ action, spend, facts, host }`
+	 * · `rest { actor, ticks, inCombat?, encumbered? }` → `{ regen, facts, host }` ·
+	 * `play { actor, at, inCombat?, encumbered? }` → `{ at, ticks, lastTickAt, regen,
+	 * host }` (the session's play clock reaches `at`; its whole seconds since the last
+	 * grant are rest ticks, core's `staminaRestClock`) · `band { actor }` → `{ state }`
+	 * · `save` → `{ state }` (core's `serialize()`). `facts` is the `energy/3` delta
+	 * (`{ retract, assert }`) for the host's KB; `host` the `ISurvivalSystem` calls core
+	 * made for `survivalActorId` (`consumeStamina`, `recoverStamina`), in order.
+	 */
+	'survival.stamina.pool.apply': async (args) => {
+		const m = 'survival.stamina.pool.apply';
+		const s = session(m, args, 'stamina-pool');
+		s.calls.length = 0;
+		const host = () => s.calls.splice(0, s.calls.length);
+		const results = await applyOps(m, s, args, {
+			cost: ({ pool }, op) => ({ cost: pool.costOf(op.action) }),
+			afford: ({ pool }, op) => ({ affordable: pool.canAfford(op.actor, op.action, op.cost ?? undefined) }),
+			spend: async ({ pool }, op) => {
+				const r = await pool.spend(op.actor, { action: op.action, cost: op.cost ?? undefined });
+				return { action: r.action, spend: r.spend, facts: r.facts, host: host() };
+			},
+			rest: async ({ pool }, op) => {
+				const r = await pool.rest(op.actor, { ticks: op.ticks, inCombat: op.inCombat, encumbered: op.encumbered });
+				return { regen: r.regen, facts: r.facts, host: host() };
+			},
+			play: async (st, op) => {
+				const c = staminaRestClock(st.clock, op.at);
+				st.clock = c.lastTickAt;
+				const r = await st.pool.rest(op.actor, { ticks: c.ticks, inCombat: op.inCombat, encumbered: op.encumbered });
+				return { at: op.at, ticks: c.ticks, lastTickAt: c.lastTickAt, regen: r.regen, host: host() };
+			},
+			band: ({ pool }, op) => ({ state: pool.stateOf(op.actor) }),
+			save: ({ pool }) => ({ state: pool.serialize() }),
+		});
+		return { results: plain(results), view: staminaPoolView(s.pool) };
+	},
+
 	// ── the genre HUD and the world rules panel (P9a) ──
 	// Each row is one of core's corpus runners and nothing else: the args are
 	// `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and
@@ -3085,6 +3521,8 @@ const METHODS = {
 	'layout.chooseDoorPart': layoutRow('chooseDoorPart'),
 	'layout.bodyStature': layoutRow('bodyStature'),
 	'layout.fitBuildingToLot': layoutRow('fitBuildingToLot'),
+	// PL.native-survival-rows' re-pin: new in LAYOUT_OPS at core 6cd4b4e (PL.fit-front-line, PL.brightwater-door-facing).
+	'layout.buildingAreaOf': layoutRow('buildingAreaOf'),
 	'layout.findFitOverlaps': layoutRow('findFitOverlaps'),
 	'layout.settleSeparation': layoutRow('settleSeparation'),
 	'layout.settleBodies': layoutRow('settleBodies'),
@@ -3100,6 +3538,9 @@ const METHODS = {
 	'layout.layoutConstants': layoutRow('layoutConstants'),
 	// PL.start-clearance (U78): the start's clear ground, new in LAYOUT_OPS at core f9aef13.
 	'layout.startClearOutline': layoutRow('startClearOutline'),
+	// PL.native-survival-rows' re-pin: a door's approach and the neighbour settle that keeps it clear, new at core 6cd4b4e.
+	'layout.settleDoorFrontage': layoutRow('settleDoorFrontage'),
+	'layout.doorApproachOutline': layoutRow('doorApproachOutline'),
 	'layout.buildGroundPlan': layoutRow('buildGroundPlan'),
 	'layout.gradeTerrain': layoutRow('gradeTerrain'),
 	'layout.followSettledBuildings': layoutRow('followSettledBuildings'),
