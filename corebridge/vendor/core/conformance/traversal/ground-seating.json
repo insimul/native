@@ -1,0 +1,923 @@
+{
+  "area": "traversal",
+  "file": "traversal/ground-seating",
+  "description": "Ground seating on paving (Unity's InsimulGroundSeat; src/ground-seating/ground-seat.ts), in integer mm and ms: the probe points, the drawn ground under a footprint, the carried offset and the standing height with their reasons (nothing_drawn, too_far, level, seated), and the settle from absolute instants. No slope limit or step-up here: they are the movement contract's (PLAYER_GROUND, conformance/camera/movement.json; U94(4)).",
+  "catalog": [
+    "traversal-ground-seating"
+  ],
+  "ops": [
+    "tuning",
+    "footprint",
+    "ground",
+    "target",
+    "stand",
+    "moved",
+    "settle"
+  ],
+  "steps": {
+    "settle": [
+      "target",
+      "at",
+      "unseat"
+    ]
+  },
+  "runner": "src/traversal/systems-corpus.ts (runTraversalSystemsOp). Compare exactly, object key sets included; an unknown op or step is an error.",
+  "regenerate": "npm run traversal-systems-corpus; npm run traversal-systems-corpus:check fails on any difference.",
+  "cases": [
+    {
+      "name": "tuning: Unity’s inspector defaults in mm and ms",
+      "op": "tuning",
+      "input": {},
+      "expected": {
+        "lookFromMm": 1500,
+        "footprintMm": 150,
+        "settleMmPerS": 1500,
+        "upFactor": 4,
+        "maxOffsetMm": 750,
+        "reachMm": 12000,
+        "levelMm": 2
+      }
+    },
+    {
+      "name": "tuning: authored numbers merge; a negative keeps the default; the up factor is at least 1",
+      "op": "tuning",
+      "input": {
+        "params": {
+          "footprintMm": 200,
+          "maxOffsetMm": -5,
+          "upFactor": 0,
+          "settleMmPerS": 1200.9
+        }
+      },
+      "expected": {
+        "lookFromMm": 1500,
+        "footprintMm": 200,
+        "settleMmPerS": 1200,
+        "upFactor": 1,
+        "maxOffsetMm": 750,
+        "reachMm": 12000,
+        "levelMm": 2
+      }
+    },
+    {
+      "name": "footprint: the centre then +x, -x, +z, -z",
+      "op": "footprint",
+      "input": {
+        "xMm": 1000,
+        "zMm": -2000
+      },
+      "expected": {
+        "points": [
+          [
+            1000,
+            -2000
+          ],
+          [
+            1150,
+            -2000
+          ],
+          [
+            850,
+            -2000
+          ],
+          [
+            1000,
+            -1850
+          ],
+          [
+            1000,
+            -2150
+          ]
+        ]
+      }
+    },
+    {
+      "name": "footprint: a footprint of 0 is the centre alone",
+      "op": "footprint",
+      "input": {
+        "xMm": 5,
+        "zMm": 5,
+        "params": {
+          "footprintMm": 0
+        }
+      },
+      "expected": {
+        "points": [
+          [
+            5,
+            5
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ground: the paving over the terrain is the highest drawn surface",
+      "op": "ground",
+      "input": {
+        "fromMm": 1500,
+        "probes": [
+          [
+            {
+              "heightMm": 0,
+              "paved": false
+            },
+            {
+              "heightMm": 60,
+              "paved": true
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "found": true,
+        "heightMm": 60,
+        "paved": true
+      }
+    },
+    {
+      "name": "ground: a foot on the kerb — the paving beside the centre wins",
+      "op": "ground",
+      "note": "Unity measured 6-9 cm in the kerb before the footprint: a body whose middle is a hair off the paving still has a foot on it.",
+      "input": {
+        "fromMm": 1500,
+        "probes": [
+          [
+            {
+              "heightMm": 0,
+              "paved": false
+            }
+          ],
+          [
+            {
+              "heightMm": 70,
+              "paved": true
+            }
+          ],
+          [
+            {
+              "heightMm": 0,
+              "paved": false
+            }
+          ],
+          [
+            {
+              "heightMm": 0,
+              "paved": false
+            }
+          ],
+          [
+            {
+              "heightMm": 0,
+              "paved": false
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "found": true,
+        "heightMm": 70,
+        "paved": true
+      }
+    },
+    {
+      "name": "ground: a tie keeps the first, so the centre’s terrain wins against equal paving beside it",
+      "op": "ground",
+      "input": {
+        "fromMm": 1500,
+        "probes": [
+          [
+            {
+              "heightMm": 40,
+              "paved": false
+            }
+          ],
+          [
+            {
+              "heightMm": 40,
+              "paved": true
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "found": true,
+        "heightMm": 40,
+        "paved": false
+      }
+    },
+    {
+      "name": "ground: a surface above the ray’s start or past its reach does not count",
+      "op": "ground",
+      "input": {
+        "fromMm": 1500,
+        "probes": [
+          [
+            {
+              "heightMm": 1501,
+              "paved": true
+            },
+            {
+              "heightMm": -10501,
+              "paved": false
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "found": false,
+        "heightMm": null,
+        "paved": false
+      }
+    },
+    {
+      "name": "ground: a surface exactly at the ray’s start counts (the top is inclusive)",
+      "op": "ground",
+      "note": "Unity's strip test excludes only a hit above the ray's start (h > fromY): the window is [fromMm − reachMm, fromMm], both ends inclusive.",
+      "input": {
+        "fromMm": 1500,
+        "probes": [
+          [
+            {
+              "heightMm": 0,
+              "paved": false
+            },
+            {
+              "heightMm": 1500,
+              "paved": true
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "found": true,
+        "heightMm": 1500,
+        "paved": true
+      }
+    },
+    {
+      "name": "ground: a surface exactly at the reach counts",
+      "op": "ground",
+      "input": {
+        "fromMm": 1500,
+        "probes": [
+          [
+            {
+              "heightMm": 1501,
+              "paved": true
+            },
+            {
+              "heightMm": -10501,
+              "paved": false
+            },
+            {
+              "heightMm": -10500,
+              "paved": false
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "found": true,
+        "heightMm": -10500,
+        "paved": false
+      }
+    },
+    {
+      "name": "ground: nothing drawn",
+      "op": "ground",
+      "input": {
+        "fromMm": 1500,
+        "probes": [
+          [],
+          [],
+          []
+        ]
+      },
+      "expected": {
+        "found": false,
+        "heightMm": null,
+        "paved": false
+      }
+    },
+    {
+      "name": "target: carried 60 mm above the mesh onto the paving",
+      "op": "target",
+      "input": {
+        "meshMm": 0,
+        "probes": [
+          [
+            {
+              "heightMm": -20,
+              "paved": false
+            },
+            {
+              "heightMm": 60,
+              "paved": true
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "reason": "seated",
+        "wantMm": 60,
+        "onPaving": true
+      }
+    },
+    {
+      "name": "target: the mesh floats above the terrain, so the body is carried below it",
+      "op": "target",
+      "input": {
+        "meshMm": 100,
+        "probes": [
+          [
+            {
+              "heightMm": 20,
+              "paved": false
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "reason": "seated",
+        "wantMm": -80,
+        "onPaving": false
+      }
+    },
+    {
+      "name": "target: exactly the believed offset is seated",
+      "op": "target",
+      "input": {
+        "meshMm": 0,
+        "probes": [
+          [
+            {
+              "heightMm": 750,
+              "paved": true
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "reason": "seated",
+        "wantMm": 750,
+        "onPaving": true
+      }
+    },
+    {
+      "name": "target: a reading farther than the believed offset rides the mesh",
+      "op": "target",
+      "note": "A roof or a bridge deck under the ray is not where the body stands: offset 0, not on paving.",
+      "input": {
+        "meshMm": 0,
+        "probes": [
+          [
+            {
+              "heightMm": 751,
+              "paved": true
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "reason": "too_far",
+        "wantMm": 0,
+        "onPaving": false
+      }
+    },
+    {
+      "name": "target: nothing drawn rides the mesh",
+      "op": "target",
+      "input": {
+        "meshMm": 0,
+        "probes": [
+          []
+        ]
+      },
+      "expected": {
+        "reason": "nothing_drawn",
+        "wantMm": 0,
+        "onPaving": false
+      }
+    },
+    {
+      "name": "stand: a standing body is set on the paving",
+      "op": "stand",
+      "input": {
+        "bodyMm": 0,
+        "probes": [
+          [
+            {
+              "heightMm": 45,
+              "paved": true
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "reason": "seated",
+        "heightMm": 45,
+        "onPaving": true
+      }
+    },
+    {
+      "name": "stand: within 2 mm the body is left where it is",
+      "op": "stand",
+      "input": {
+        "bodyMm": 0,
+        "probes": [
+          [
+            {
+              "heightMm": 2,
+              "paved": true
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "reason": "level",
+        "heightMm": 0,
+        "onPaving": true
+      }
+    },
+    {
+      "name": "stand: 3 mm away it is moved",
+      "op": "stand",
+      "input": {
+        "bodyMm": 0,
+        "probes": [
+          [
+            {
+              "heightMm": -3,
+              "paved": false
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "reason": "seated",
+        "heightMm": -3,
+        "onPaving": false
+      }
+    },
+    {
+      "name": "stand: too far keeps the body where it is and leaves its paving flag to the host",
+      "op": "stand",
+      "input": {
+        "bodyMm": 0,
+        "probes": [
+          [
+            {
+              "heightMm": -900,
+              "paved": false
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "reason": "too_far",
+        "heightMm": 0,
+        "onPaving": null
+      }
+    },
+    {
+      "name": "stand: nothing drawn",
+      "op": "stand",
+      "input": {
+        "bodyMm": 0,
+        "probes": []
+      },
+      "expected": {
+        "reason": "nothing_drawn",
+        "heightMm": 0,
+        "onPaving": null
+      }
+    },
+    {
+      "name": "moved: 1 mm sideways is not a move",
+      "op": "moved",
+      "input": {
+        "from": {
+          "xMm": 0,
+          "zMm": 0
+        },
+        "to": {
+          "xMm": 1,
+          "zMm": 0
+        }
+      },
+      "expected": {
+        "moved": false
+      }
+    },
+    {
+      "name": "moved: a diagonal mm is",
+      "op": "moved",
+      "input": {
+        "from": {
+          "xMm": 0,
+          "zMm": 0
+        },
+        "to": {
+          "xMm": 1,
+          "zMm": 1
+        }
+      },
+      "expected": {
+        "moved": true
+      }
+    },
+    {
+      "name": "settle: the first seat at once, then up four times as fast as down, never past the target",
+      "op": "settle",
+      "note": "Up at 1.5 m/s × 4 = 6 mm a ms: 30 mm after 5 ms, the full 60 after 10. Down at 1.5 mm a ms: 75 mm after 50 ms, and capped at the target after 100.",
+      "input": {
+        "steps": [
+          {
+            "do": "target",
+            "wantMm": 0,
+            "at": 0
+          },
+          {
+            "do": "target",
+            "wantMm": 60,
+            "at": 1000
+          },
+          {
+            "do": "at",
+            "at": 1005
+          },
+          {
+            "do": "at",
+            "at": 1010
+          },
+          {
+            "do": "at",
+            "at": 1999
+          },
+          {
+            "do": "target",
+            "wantMm": -80,
+            "at": 2000
+          },
+          {
+            "do": "at",
+            "at": 2050
+          },
+          {
+            "do": "at",
+            "at": 2100
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": 0,
+            "since": 0
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": 60,
+            "since": 1000
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "at",
+          "offsetMm": 30
+        },
+        {
+          "do": "at",
+          "offsetMm": 60
+        },
+        {
+          "do": "at",
+          "offsetMm": 60
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 60,
+            "wantMm": -80,
+            "since": 2000
+          },
+          "offsetMm": 60
+        },
+        {
+          "do": "at",
+          "offsetMm": -15
+        },
+        {
+          "do": "at",
+          "offsetMm": -80
+        }
+      ]
+    },
+    {
+      "name": "settle: the same target again changes nothing, so the settle keeps its start",
+      "op": "settle",
+      "note": "Split invariance: asked every 7 ms or once at 20, the offset is −30. Rebasing on every frame would floor away a fraction each time.",
+      "input": {
+        "steps": [
+          {
+            "do": "target",
+            "wantMm": 0,
+            "at": 0
+          },
+          {
+            "do": "target",
+            "wantMm": -100,
+            "at": 0
+          },
+          {
+            "do": "target",
+            "wantMm": -100,
+            "at": 7
+          },
+          {
+            "do": "target",
+            "wantMm": -100,
+            "at": 13
+          },
+          {
+            "do": "at",
+            "at": 20
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": 0,
+            "since": 0
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": -100,
+            "since": 0
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": -100,
+            "since": 0
+          },
+          "offsetMm": -10
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": -100,
+            "since": 0
+          },
+          "offsetMm": -19
+        },
+        {
+          "do": "at",
+          "offsetMm": -30
+        }
+      ]
+    },
+    {
+      "name": "settle: a new target mid-settle starts from where the offset is",
+      "op": "settle",
+      "input": {
+        "steps": [
+          {
+            "do": "target",
+            "wantMm": 0,
+            "at": 0
+          },
+          {
+            "do": "target",
+            "wantMm": -150,
+            "at": 100
+          },
+          {
+            "do": "target",
+            "wantMm": 90,
+            "at": 140
+          },
+          {
+            "do": "at",
+            "at": 160
+          },
+          {
+            "do": "at",
+            "at": 170
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": 0,
+            "since": 0
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": -150,
+            "since": 100
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": -60,
+            "wantMm": 90,
+            "since": 140
+          },
+          "offsetMm": -60
+        },
+        {
+          "do": "at",
+          "offsetMm": 60
+        },
+        {
+          "do": "at",
+          "offsetMm": 90
+        }
+      ]
+    },
+    {
+      "name": "settle: a clock that runs backwards moves nothing",
+      "op": "settle",
+      "input": {
+        "steps": [
+          {
+            "do": "target",
+            "wantMm": 0,
+            "at": 500
+          },
+          {
+            "do": "target",
+            "wantMm": -60,
+            "at": 520
+          },
+          {
+            "do": "at",
+            "at": 400
+          },
+          {
+            "do": "target",
+            "wantMm": 30,
+            "at": 510
+          },
+          {
+            "do": "at",
+            "at": 530
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": 0,
+            "since": 500
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": -60,
+            "since": 520
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "at",
+          "offsetMm": 0
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": 30,
+            "since": 520
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "at",
+          "offsetMm": 30
+        }
+      ]
+    },
+    {
+      "name": "settle: switched off the body rides the mesh, and the next seat is at once",
+      "op": "settle",
+      "input": {
+        "steps": [
+          {
+            "do": "target",
+            "wantMm": 0,
+            "at": 0
+          },
+          {
+            "do": "target",
+            "wantMm": 200,
+            "at": 10
+          },
+          {
+            "do": "unseat"
+          },
+          {
+            "do": "at",
+            "at": 50
+          },
+          {
+            "do": "target",
+            "wantMm": 200,
+            "at": 60
+          }
+        ]
+      },
+      "expected": [
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": 0,
+            "since": 0
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 0,
+            "wantMm": 200,
+            "since": 10
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "unseat",
+          "state": {
+            "seated": false,
+            "fromMm": 0,
+            "wantMm": 0,
+            "since": 0
+          },
+          "offsetMm": 0
+        },
+        {
+          "do": "at",
+          "offsetMm": 0
+        },
+        {
+          "do": "target",
+          "state": {
+            "seated": true,
+            "fromMm": 200,
+            "wantMm": 200,
+            "since": 60
+          },
+          "offsetMm": 200
+        }
+      ]
+    }
+  ]
+}

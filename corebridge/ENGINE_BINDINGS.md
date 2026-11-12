@@ -464,6 +464,63 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   mapping step by step). The copy's corpus is core's at its own re-vendor (70
   cases); at this pin the files hold 89, among them the `use_item`, `action`,
   `systems`, `clock` and `play` cases the copy has no function for.
+- **Traversal: the planner, vehicles, fast travel and ground seating (Unreal's
+  `P9e.unreal.retire-traversal-copy`, after BOTH slices of PL.native-traversal-rows;
+  U106(1), U107).** Core's P9e kernels are the `traversal.*` rows (`README.md`, "The
+  traversal kernel rows"); the stateful layers are slice 2's rows, not yet here. The
+  retirement row binds both in place of the interim copy
+  `Portable/InsimulTraversal.{h,cpp}` (3,238 lines: 725 + 2,513, accepted under U36
+  by U106(1)). Read at the P9e cell's branch `a68b6d0` (read only; not yet on unreal
+  main). **Slice 1 (this library, now):**
+
+  | Unreal's interim copy (`insimul::traversal`) | Row |
+  |---|---|
+  | `TraversalTuningFromIR(Ir)` (and `DefaultTraversalTuning`) | `traversal.affordances.tuning { traversal }` (the World IR's `traversal` block; absent: core's defaults) |
+  | `LinksFromJson(Ir->Find("links"))` | `traversal.affordances.links { traversal }` (core's `traversalLinksFromIR`) |
+  | `ResolveAffordances` (with `TraversalLinkId`, `EdgeRequirements`, `TraversalCost`, `TraversalAction`, `EdgeKey` inside it) | `traversal.affordances.resolve { actor, from, links, modes, blocked, geometry, stamina, tuning }` — each affordance carries its `id`, `cost`, `action` and `requires` |
+  | `BestAffordance` | `traversal.affordances.best { affordances, to }` |
+  | `FindRoute` | `traversal.affordances.route { …, to, maxSteps }` |
+  | `TraversalGraphFacts` (with `TraversalLinkFact`) | `traversal.affordances.graphFacts { links, tuning }` |
+  | `VehiclesFromIR(Ir->Find("vehicles"))` | `traversal.vehicles.fromIR { vehicles }` |
+  | `ResolveVehicleVerb`, `ApplyVehicleVerb` | `traversal.vehicles.resolve { vehicle, state, actor, at, verb }`, `traversal.vehicles.apply { state, actor, verb, resolution }` (null `next` for a refused verb) |
+  | `VehicleActionsOf`, `VehicleSeats`, `IsAnothersVehicle` | `traversal.vehicles.actions`, `.seats { vehicle }`, `.anothers { state, actor }` |
+  | `VehicleModeFact`, `VehicleStateFacts`, `VehicleStateDelta` | `traversal.vehicles.modeFact { vehicle }`, `.stateFacts { state }`, `.stateDelta { before, after }` |
+  | `FastTravelTuningFromIR(Ir->Find("fastTravel"))` | `traversal.fastTravel.tuning { fastTravel }` |
+  | `FastTravelCeiling`, `FastTravelHours` | `traversal.fastTravel.ceiling { tuning }`, `.hours { routeCost, tuning }` |
+  | `PlanFastTravel` (with `FastTravelSteps`, `FastTravelDraw`, `SeedString`, and `DerivedValue`/`RoundDeterministic` inside them) | `traversal.fastTravel.plan { seed, actor, from, to, journey, route, tuning }` over a route the route row answered — each step carries its `draw` |
+  | `DiscoveryDelta` (with `LocationDiscoveredFact`), and `ArrivalDelta` as a journey's arrival (core's `fastTravelArrivalDelta`) | `traversal.fastTravel.discovery { location, known }`, `.arrival { actor, from, to }` |
+  | `GroundSeatTuning(Params)` | `traversal.groundSeating.tuning { params }` (every ground-seat row reads `params` itself) |
+  | `FootprintPoints`, `DrawnGround` | `traversal.groundSeating.footprint { xMm, zMm }`, `.ground { probes, fromMm }` |
+  | `SeatTarget`, `StandSeat`, `MovedSideways` | `traversal.groundSeating.target { meshMm, probes }`, `.stand { bodyMm, probes }`, `.moved { from, to }` |
+  | `FSeatState()`, `RetargetSeat`, `SeatOffsetAt`, `Unseat` | `traversal.groundSeating.initial`, `.retarget { state, wantMm, at }`, `.offsetAt { state, at }`, `.unseat` (stateless: the binding's `FSeatBook` keeps each body's `state` as the JSON the rows answer) |
+  | `JNull` … `JPush`, `CompareIds`, `JsRound`, `PrologAtom` | none: JSON building and core's own id order, atom quoting and rounding run inside the rows |
+
+  **Left for slice 2** (the stateful rows, over core's `session.json`, `mounts.json`
+  and `save.json`): `FTraversalPlanner` (`Register`, `ModesOf`, `LentOf`,
+  `LendModeTo`, `ReturnModeFrom`, `SetModes`, `Arrive`, `Block`, `Unblock`,
+  `Affordances`, `Route`, `CanTraverse`, `Traverse`, `Roster`, `Serialize`,
+  `Restore`, with the planner's fact deltas `MovementModeFact`,
+  `TraversalBlockedFact`, `AtLocationFact`, `MovementModeDelta`, `ArrivalDelta`,
+  `Merge`), `FVehicleRegistry` (with `InitialVehicleState`, `VehicleStateFromJson`
+  and its `traversal_completed` follow), `FFastTravelDirector` (`Discover`,
+  `Destinations`, `CanFastTravel`, `FastTravel`, `Ceiling`, `Serialize`,
+  `Restore`), the `FStaminaPool` part the planner charges a climb to, the event bus
+  (`FTraversalBus`) and the host slots (`FProbe`, `FLocomotion`, `FClock`), mode
+  lending (`VehicleLender`, `PersonalLender`, `CanonicalLent`, `LendMode`,
+  `ReturnMode`), the personal vehicles (`PersonalVehicleTuning`, `PersonalPace`,
+  `PersonalVehicleLabel`, `PersonalVehicleModes`, `MountPersonal`,
+  `DismountPersonal`, `CyclePersonal`, `PersonalFromSave`, `RidingToJson`) and the
+  save block (`ReadTraversalBlock`, `FSavedTraversal::ToJson`,
+  `kTraversalExtensionKey`). Until slice 2 lands the retirement row cannot run; slice
+  1's rows can be bound one by one beside the copy, each held by its corpus.
+
+  **What changes for the binding**: tunings are core's resolved tunings, read once
+  from the IR through the four reader rows and sent back on each call; a seat's
+  state lives in the game as the JSON the settle rows answer. Units are core's
+  (location atoms; integer mm and ms for seating), nothing converted. Re-vendor
+  `conformance/traversal/{affordances,vehicles,fast-travel,ground-seating}.json`
+  from core at this library's pin and drive each case as `tests/traversal_corpus.cpp`
+  does (its header lists the mapping row by row).
 - **Save slots: the disk can change under the session since the 72c658c pin**
   (core's PL.disk-changed-step). When the save files change outside the game,
   send the new listing as `saves.slots.apply` op `disk_changed { slots }` (the

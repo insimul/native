@@ -151,6 +151,52 @@ import { survivalSystemsRunning } from '@insimul/core/survival/survival-systems'
 import { regenerateStamina, spendStamina, staminaRestClock, staminaStateOf, staminaTuningFromIR } from '@insimul/core/stamina/stamina';
 import { StaminaPool } from '@insimul/core/game-engine/logic/StaminaPool';
 
+// ── traversal: the planner, vehicles, fast travel and ground seating — the
+// stateless kernels (P9e; PL.native-traversal-rows slice 1, U106(1); core's
+// P9e.core) ────────────────────────────────────────────────────────────────────
+// Core's P9e kernels, one function per row: the link graph (`traversal/traversal`:
+// affordances, cost, routes; its graph facts from `traversal/traversal-facts`), the
+// three vehicle verbs (`traversal/vehicles`, `traversal/vehicle-facts`), fast travel
+// (`traversal/fast-travel`, `traversal/fast-travel-facts`) and ground seating
+// (`ground-seating/ground-seat`). Never `traversal/systems-corpus`, core's corpus
+// runner: tests/traversal_corpus.cpp drives the corpora through these rows the way
+// that runner (and core's traversal-corpus test) drives core. The stateful layers
+// (TraversalPlanner, VehicleRegistry, FastTravelDirector, personal vehicles and the
+// save block) are slice 2's.
+import {
+	DEFAULT_TRAVERSAL_TUNING,
+	bestAffordance,
+	findRoute,
+	resolveAffordances,
+	traversalLinksFromIR,
+	traversalTuningFromIR,
+} from '@insimul/core/traversal/traversal';
+import { traversalGraphFacts } from '@insimul/core/traversal/traversal-facts';
+import {
+	VEHICLE_VERBS,
+	applyVehicleVerb,
+	isAnothersVehicle,
+	resolveVehicleVerb,
+	vehicleActions,
+	vehicleSeats,
+	vehiclesFromIR,
+} from '@insimul/core/traversal/vehicles';
+import { vehicleModeFact, vehicleStateDelta, vehicleStateFacts } from '@insimul/core/traversal/vehicle-facts';
+import { fastTravelCeiling, fastTravelHours, fastTravelTuningFromIR, planFastTravel } from '@insimul/core/traversal/fast-travel';
+import { discoveryDelta, fastTravelArrivalDelta } from '@insimul/core/traversal/fast-travel-facts';
+import {
+	drawnGround,
+	footprintPoints,
+	groundSeatTuning,
+	initialSeat,
+	movedSideways,
+	retargetSeat,
+	seatOffsetAt,
+	seatTarget,
+	standSeat,
+	unseat,
+} from '@insimul/core/ground-seating/ground-seat';
+
 // ── genre and module activation ───────────────────────────────────────────────
 import { CAMERA_MODES, DEFAULT_GENRE_ID, GENRE_IDS, getAllGenres } from '@insimul/core/game-genres/registry';
 import { RECIPE_GENRE_BINDINGS, RECIPE_IDS } from '@insimul/core/game-genres/recipes';
@@ -1069,6 +1115,102 @@ function recordingSurvivalHost(calls) {
 		setOnDamageFromNeed: none,
 		dispose: none,
 	};
+}
+
+// ── traversal kernels (PL.native-traversal-rows slice 1) ──────────────────────
+// The rows' own checks, all coded `[invalid-input]`, are on what core dereferences
+// unread or what its TypeScript declares and JSON cannot hold: lists that core
+// filters, iterates or makes a Set of, the objects it reads members of, a verb of
+// core's `VEHICLE_VERBS`, and the ground-seat numbers (integer mm and ms). A JSON
+// `null` in an optional member is JSON's "absent". Everything else (ids, location
+// atoms, costs, the seed) goes to core as sent.
+
+/** `value` absent (`undefined` or `null`) → undefined; otherwise `check(value)`. */
+function optionalArg(value, check) {
+	return value === undefined || value === null ? undefined : check(value);
+}
+
+/** An array of JSON objects. */
+function objectList(method, value, name) {
+	needArray(method, value, name).forEach((item, i) => needObject(method, item, `${name}[${i}]`));
+	return value;
+}
+
+/** An array of strings. */
+function stringList(method, value, name) {
+	needArray(method, value, name).forEach((item, i) => needString(method, item, `${name}[${i}]`));
+	return value;
+}
+
+/** A resolved `TraversalTuning`: core indexes its `modeCost` and `modeAction` tables unread. */
+function traversalTuningArg(method, value, name) {
+	needObject(method, value, name);
+	needObject(method, value.modeCost, `${name}.modeCost`);
+	needObject(method, value.modeAction, `${name}.modeAction`);
+	return value;
+}
+
+/**
+ * A `TraversalAffordanceInput` (and a route's, which adds `to` and `maxSteps`), as
+ * core's `resolveAffordances` and `findRoute` read it. `stamina`, when sent, reaches
+ * every leg a route search resolves, exactly as core's corpus runner's spread of a
+ * case's input sends it.
+ */
+function affordanceInputOf(method, args) {
+	return coded('invalid-input', () => ({
+		actor: args.actor,
+		from: args.from,
+		links: objectList(method, args.links, 'links'),
+		modes: stringList(method, args.modes, 'modes'),
+		blocked: optionalArg(args.blocked, (v) => objectList(method, v, 'blocked')),
+		geometry: optionalArg(args.geometry, (v) => needObject(method, v, 'geometry')),
+		stamina: optionalArg(args.stamina, (v) => needObject(method, v, 'stamina')),
+		tuning: optionalArg(args.tuning, (v) => traversalTuningArg(method, v, 'tuning')),
+	}));
+}
+
+/** A `VehicleState`: core reads its `occupants` list unread. */
+function vehicleStateArg(method, value, name) {
+	needObject(method, value, name);
+	needArray(method, value.occupants, `${name}.occupants`);
+	return value;
+}
+
+/** A route as `findRoute` answers it: core walks `steps` and each step's `requires`. */
+function routeArg(method, value, name) {
+	needObject(method, value, name);
+	objectList(method, value.steps, `${name}.steps`).forEach((step, i) => needArray(method, step.requires, `${name}.steps[${i}].requires`));
+	return value;
+}
+
+/** The probes of a footprint: one list of `GroundHit { heightMm, paved }` per point. */
+function groundProbesArg(method, value) {
+	needArray(method, value, 'probes').forEach((probe, i) => {
+		needArray(method, probe, `probes[${i}]`).forEach((hit, j) => {
+			needObject(method, hit, `probes[${i}][${j}]`);
+			needNumber(method, hit.heightMm, `probes[${i}][${j}].heightMm`);
+			if (typeof hit.paved !== 'boolean') throw refuse(method, `\`probes[${i}][${j}].paved\` must be a boolean`);
+		});
+	});
+	return value;
+}
+
+/** A ground-seat point `{ xMm, zMm }`. */
+function groundPointArg(method, value, name) {
+	needObject(method, value, name);
+	needNumber(method, value.xMm, `${name}.xMm`);
+	needNumber(method, value.zMm, `${name}.zMm`);
+	return value;
+}
+
+/** A `SeatState` (what the last settle row answered). */
+function seatStateArg(method, value) {
+	return needObject(method, value, 'state');
+}
+
+/** The ground-seat tuning core reads from the pack's `params` (absent is core's default). */
+function groundSeatTuningOf(args) {
+	return groundSeatTuning(args.params ?? {});
 }
 
 /**
@@ -3350,6 +3492,258 @@ const METHODS = {
 		});
 		return { results: plain(results), view: staminaPoolView(s.pool) };
 	},
+
+	// ── traversal: the stateless kernels (P9e; PL.native-traversal-rows slice 1, U106(1)) ──
+	// One row per core function of `traversal/traversal` (+ its graph facts),
+	// `traversal/vehicles` (+ `vehicle-facts`), `traversal/fast-travel` (+
+	// `fast-travel-facts`) and `ground-seating/ground-seat`, named
+	// `traversal.<group>.<fn>` after the corpus file's area (`traversal-affordances`,
+	// `traversal-vehicles`, `traversal-fast-travel`, and `traversal/ground-seating`).
+	// The three older corpora pin several functions per case, so a row answers ONE
+	// function under a named key and tests/traversal_corpus.cpp composes a case's
+	// record from several rows, as core's corpus test does from core's functions. The
+	// ground-seating rows that answer a whole corpus op take the case's `input` and
+	// answer its `expected`; the settle is three STATELESS rows over the `state` the
+	// last answer carried. Tunings are core's RESOLVED tunings, as the corpora carry
+	// them; the `*.tuning`, `.links` and `.fromIR` rows read a world's IR block into
+	// them. Refusals (`mode`, `blocked`, `elsewhere`, `too_far`, …) are values.
+
+	/** `traversal.affordances.tuning { traversal? }` → `{ tuning }` — core's `traversalTuningFromIR` over the World IR's `traversal` block (absent: core's defaults). */
+	'traversal.affordances.tuning': (args) => {
+		const ir = coded('invalid-input', () => optionalArg(args.traversal, (v) => needObject('traversal.affordances.tuning', v, 'traversal')));
+		return { tuning: plain(traversalTuningFromIR(ir)) };
+	},
+
+	/** `traversal.affordances.links { traversal? }` → `{ links }` — core's `traversalLinksFromIR`: the authored `links` of the World IR's `traversal` block as `TraversalLink`s. */
+	'traversal.affordances.links': (args) => {
+		const m = 'traversal.affordances.links';
+		const ir = coded('invalid-input', () =>
+			optionalArg(args.traversal, (v) => {
+				needObject(m, v, 'traversal');
+				optionalArg(v.links, (l) => objectList(m, l, 'traversal.links'));
+				return v;
+			}),
+		);
+		return { links: plain(traversalLinksFromIR(ir)) };
+	},
+
+	/**
+	 * `traversal.affordances.resolve { actor, from, links, modes, blocked?, geometry?,
+	 * stamina?, tuning? }` → `{ affordances }` — core's `resolveAffordances`: every
+	 * authored link out of `from`, refused ones included, sorted by (to, mode, id), each
+	 * `{ id, from, to, mode, action, cost, available, refusal?, requires, conditional }`
+	 * (the first refusal of `unreachable`, `blocked`, `mode`, `impassable`, `stamina`;
+	 * `requires`/`forbidden` are the rules layer's). `geometry` is the host probe's
+	 * answer per geometric link id; `tuning` absent is core's default.
+	 */
+	'traversal.affordances.resolve': (args) => ({
+		affordances: plain(resolveAffordances(affordanceInputOf('traversal.affordances.resolve', args))),
+	}),
+
+	/** `traversal.affordances.best { affordances, to }` → `{ best }` — core's `bestAffordance`: the cheapest available affordance to `to`, or null. */
+	'traversal.affordances.best': (args) => {
+		const affordances = coded('invalid-input', () => objectList('traversal.affordances.best', args.affordances, 'affordances'));
+		return { best: plain(bestAffordance(affordances, args.to)) };
+	},
+
+	/**
+	 * `traversal.affordances.route { …resolve's args, to, maxSteps? }` → `{ route }` —
+	 * core's `findRoute`: `{ from, to, steps, cost, conditional }` by uniform-cost search
+	 * with core's tie-break, or null (no route within `maxSteps`, core's default 32).
+	 */
+	'traversal.affordances.route': (args) => {
+		const input = affordanceInputOf('traversal.affordances.route', args);
+		return { route: plain(findRoute({ ...input, to: args.to, maxSteps: args.maxSteps ?? undefined })) };
+	},
+
+	/**
+	 * `traversal.affordances.graphFacts { links, tuning? }` → `{ facts }` — core's
+	 * `traversalGraphFacts`: `traversal_link/3` per link, `traversal_cost/3` (the cheapest
+	 * resolved way) and `traversal_requires/3` per edge. `tuning` absent is
+	 * `DEFAULT_TRAVERSAL_TUNING`, the planner's own default.
+	 */
+	'traversal.affordances.graphFacts': (args) => {
+		const m = 'traversal.affordances.graphFacts';
+		const [links, tuning] = coded('invalid-input', () => [
+			objectList(m, args.links, 'links'),
+			optionalArg(args.tuning, (v) => traversalTuningArg(m, v, 'tuning')),
+		]);
+		return { facts: plain(traversalGraphFacts(links, tuning ?? DEFAULT_TRAVERSAL_TUNING)) };
+	},
+
+	/** `traversal.vehicles.fromIR { vehicles? }` → `{ vehicles }` — core's `vehiclesFromIR` over the World IR's `traversal.vehicles` (an action atom kept only when non-empty). */
+	'traversal.vehicles.fromIR': (args) => {
+		const vehicles = coded('invalid-input', () => optionalArg(args.vehicles, (v) => objectList('traversal.vehicles.fromIR', v, 'vehicles')));
+		return { vehicles: plain(vehiclesFromIR(vehicles)) };
+	},
+
+	/**
+	 * `traversal.vehicles.resolve { vehicle, state, actor, at, verb }` → `{ resolution }` —
+	 * core's `resolveVehicleVerb`: `{ vehicle, actor, verb, action, available, refusal?,
+	 * grants? }` (the first of `elsewhere`, `full`, `not_aboard`, `occupied`, `redundant`;
+	 * `drive` grants the vehicle's mode). `at` is where the ACTOR is (a location atom).
+	 */
+	'traversal.vehicles.resolve': (args) => {
+		const m = 'traversal.vehicles.resolve';
+		const [vehicle, state, verb] = coded('invalid-input', () => [
+			needObject(m, args.vehicle, 'vehicle'),
+			vehicleStateArg(m, args.state, 'state'),
+			oneOf(m, args.verb, VEHICLE_VERBS, 'verb'),
+		]);
+		return { resolution: plain(resolveVehicleVerb({ vehicle, state, actor: args.actor, at: args.at, verb })) };
+	},
+
+	/** `traversal.vehicles.apply { state, actor, verb, resolution }` → `{ next }` — core's `applyVehicleVerb`: the state the verb produced, or null for a refused verb. */
+	'traversal.vehicles.apply': (args) => {
+		const m = 'traversal.vehicles.apply';
+		const [state, verb, resolution] = coded('invalid-input', () => [
+			vehicleStateArg(m, args.state, 'state'),
+			oneOf(m, args.verb, VEHICLE_VERBS, 'verb'),
+			needObject(m, args.resolution, 'resolution'),
+		]);
+		return { next: plain(applyVehicleVerb(state, args.actor, verb, resolution)) };
+	},
+
+	/** `traversal.vehicles.actions { vehicle }` → `{ actions }` — core's `vehicleActions`: the board/drive/disembark action atoms over core's defaults. */
+	'traversal.vehicles.actions': (args) => ({
+		actions: plain(vehicleActions(coded('invalid-input', () => needObject('traversal.vehicles.actions', args.vehicle, 'vehicle')))),
+	}),
+
+	/** `traversal.vehicles.seats { vehicle }` → `{ seats }` — core's `vehicleSeats` (whole, at least 1). */
+	'traversal.vehicles.seats': (args) => ({
+		seats: vehicleSeats(coded('invalid-input', () => needObject('traversal.vehicles.seats', args.vehicle, 'vehicle'))),
+	}),
+
+	/** `traversal.vehicles.modeFact { vehicle }` → `{ fact }` — core's `vehicleModeFact`: `vehicle_mode(Id, Mode).` */
+	'traversal.vehicles.modeFact': (args) => ({
+		fact: vehicleModeFact(coded('invalid-input', () => needObject('traversal.vehicles.modeFact', args.vehicle, 'vehicle'))),
+	}),
+
+	/** `traversal.vehicles.stateFacts { state }` → `{ facts }` — core's `vehicleStateFacts`: where it is, its owner, occupants and driver as facts. */
+	'traversal.vehicles.stateFacts': (args) => ({
+		facts: plain(vehicleStateFacts(coded('invalid-input', () => vehicleStateArg('traversal.vehicles.stateFacts', args.state, 'state')))),
+	}),
+
+	/** `traversal.vehicles.stateDelta { before?, after }` → `{ delta }` — core's `vehicleStateDelta`: `{ retract, assert }` by diffing the two states (`before` absent: everything asserted). */
+	'traversal.vehicles.stateDelta': (args) => {
+		const m = 'traversal.vehicles.stateDelta';
+		const [before, after] = coded('invalid-input', () => [
+			optionalArg(args.before, (v) => vehicleStateArg(m, v, 'before')),
+			vehicleStateArg(m, args.after, 'after'),
+		]);
+		return { delta: plain(vehicleStateDelta(before, after)) };
+	},
+
+	/** `traversal.vehicles.anothers { state, actor }` → `{ anothers }` — core's `isAnothersVehicle`: owned, and not by `actor`. */
+	'traversal.vehicles.anothers': (args) => ({
+		anothers: isAnothersVehicle(coded('invalid-input', () => needObject('traversal.vehicles.anothers', args.state, 'state')), args.actor),
+	}),
+
+	/** `traversal.fastTravel.tuning { fastTravel? }` → `{ tuning }` — core's `fastTravelTuningFromIR` over the World IR's `traversal.fastTravel` (absent: core's defaults). */
+	'traversal.fastTravel.tuning': (args) => {
+		const ir = coded('invalid-input', () => optionalArg(args.fastTravel, (v) => needObject('traversal.fastTravel.tuning', v, 'fastTravel')));
+		return { tuning: plain(fastTravelTuningFromIR(ir)) };
+	},
+
+	/** `traversal.fastTravel.ceiling { tuning }` → `{ ceiling }` — core's `fastTravelCeiling`: the smaller of `maxHours` and `stepHours × maxSteps`. */
+	'traversal.fastTravel.ceiling': (args) => ({
+		ceiling: fastTravelCeiling(coded('invalid-input', () => needObject('traversal.fastTravel.ceiling', args.tuning, 'tuning'))),
+	}),
+
+	/** `traversal.fastTravel.hours { routeCost, tuning }` → `{ hours }` — core's `fastTravelHours`: the route cost × `hoursPerCost`, floored, clamped to the minimum and the ceiling. */
+	'traversal.fastTravel.hours': (args) => ({
+		hours: fastTravelHours(args.routeCost, coded('invalid-input', () => needObject('traversal.fastTravel.hours', args.tuning, 'tuning'))),
+	}),
+
+	/**
+	 * `traversal.fastTravel.plan { seed, actor, from, to, journey, route, tuning? }` →
+	 * `{ plan }` — core's `planFastTravel` over a route `traversal.affordances.route`
+	 * answered: `{ actor, from, to, journey, route, cost, hours, ceiling, capped, steps,
+	 * requires }`, each step `{ index, hours, elapsed, draw }` with its draw derived
+	 * from (seed, actor, from, to, journey, index). `tuning` absent is core's default.
+	 */
+	'traversal.fastTravel.plan': (args) => {
+		const m = 'traversal.fastTravel.plan';
+		const [route, tuning] = coded('invalid-input', () => [
+			routeArg(m, args.route, 'route'),
+			optionalArg(args.tuning, (v) => needObject(m, v, 'tuning')),
+		]);
+		const { seed, actor, from, to, journey } = args;
+		return { plan: plain(planFastTravel({ seed, actor, from, to, journey, route, tuning })) };
+	},
+
+	/** `traversal.fastTravel.arrival { actor, from, to }` → `{ delta }` — core's `fastTravelArrivalDelta`: the `at_location/2` swap. */
+	'traversal.fastTravel.arrival': (args) => ({ delta: plain(fastTravelArrivalDelta(args.actor, args.from, args.to)) }),
+
+	/** `traversal.fastTravel.discovery { location, known }` → `{ delta }` — core's `discoveryDelta`: `location_discovered/1` asserted unless already `known`. */
+	'traversal.fastTravel.discovery': (args) => {
+		coded('invalid-input', () => {
+			if (typeof args.known !== 'boolean') throw refuse('traversal.fastTravel.discovery', '`known` must be a boolean');
+		});
+		return { delta: plain(discoveryDelta(args.location, args.known)) };
+	},
+
+	/** `traversal.groundSeating.tuning { params? }` → core's `groundSeatTuning` (Unity's defaults in mm and ms; an authored number merges, a bad or negative one keeps the default). */
+	'traversal.groundSeating.tuning': (args) => plain(groundSeatTuningOf(args)),
+
+	/** `traversal.groundSeating.footprint { xMm, zMm, params? }` → `{ points }` — core's `footprintPoints`: the centre, then +x, −x, +z, −z at the footprint. */
+	'traversal.groundSeating.footprint': (args) => {
+		const m = 'traversal.groundSeating.footprint';
+		coded('invalid-input', () => [needNumber(m, args.xMm, 'xMm'), needNumber(m, args.zMm, 'zMm')]);
+		return { points: plain(footprintPoints(args.xMm, args.zMm, groundSeatTuningOf(args))) };
+	},
+
+	/** `traversal.groundSeating.ground { probes, fromMm, params? }` → core's `drawnGround`: `{ found, heightMm, paved }`, the first highest hit inside the reach, the centre's first. */
+	'traversal.groundSeating.ground': (args) => {
+		const m = 'traversal.groundSeating.ground';
+		const probes = coded('invalid-input', () => (needNumber(m, args.fromMm, 'fromMm'), groundProbesArg(m, args.probes)));
+		return plain(drawnGround(probes, args.fromMm, groundSeatTuningOf(args)));
+	},
+
+	/** `traversal.groundSeating.target { meshMm, probes, params? }` → core's `seatTarget`: `{ reason, wantMm, onPaving }` for a body an agent carries. */
+	'traversal.groundSeating.target': (args) => {
+		const m = 'traversal.groundSeating.target';
+		const probes = coded('invalid-input', () => (needNumber(m, args.meshMm, 'meshMm'), groundProbesArg(m, args.probes)));
+		return plain(seatTarget({ meshMm: args.meshMm, probes }, groundSeatTuningOf(args)));
+	},
+
+	/** `traversal.groundSeating.stand { bodyMm, probes, params? }` → core's `standSeat`: `{ reason, heightMm, onPaving }` for a body standing with its agent off. */
+	'traversal.groundSeating.stand': (args) => {
+		const m = 'traversal.groundSeating.stand';
+		const probes = coded('invalid-input', () => (needNumber(m, args.bodyMm, 'bodyMm'), groundProbesArg(m, args.probes)));
+		return plain(standSeat({ bodyMm: args.bodyMm, probes }, groundSeatTuningOf(args)));
+	},
+
+	/** `traversal.groundSeating.moved { from, to }` → `{ moved }` — core's `movedSideways`: more than 1 mm² sideways. */
+	'traversal.groundSeating.moved': (args) => {
+		const m = 'traversal.groundSeating.moved';
+		const [from, to] = coded('invalid-input', () => [groundPointArg(m, args.from, 'from'), groundPointArg(m, args.to, 'to')]);
+		return { moved: movedSideways(from, to) };
+	},
+
+	/** `traversal.groundSeating.initial {}` → `{ state }` — core's `initialSeat`: not seated, offset 0. */
+	'traversal.groundSeating.initial': () => ({ state: plain(initialSeat()) }),
+
+	/**
+	 * `traversal.groundSeating.retarget { state, wantMm, at, params? }` → `{ state }` —
+	 * core's `retargetSeat`: the first seat at once, the same target changes nothing, a
+	 * new one settles from the offset at `at` (an `at` before the settle's start is its start).
+	 */
+	'traversal.groundSeating.retarget': (args) => {
+		const m = 'traversal.groundSeating.retarget';
+		const state = coded('invalid-input', () => (needNumber(m, args.wantMm, 'wantMm'), needNumber(m, args.at, 'at'), seatStateArg(m, args.state)));
+		return { state: plain(retargetSeat(state, args.wantMm, args.at, groundSeatTuningOf(args))) };
+	},
+
+	/** `traversal.groundSeating.offsetAt { state, at, params? }` → `{ offsetMm }` — core's `seatOffsetAt`: the carried offset at instant `at` (0 unseated). */
+	'traversal.groundSeating.offsetAt': (args) => {
+		const m = 'traversal.groundSeating.offsetAt';
+		const state = coded('invalid-input', () => (needNumber(m, args.at, 'at'), seatStateArg(m, args.state)));
+		return { offsetMm: seatOffsetAt(state, args.at, groundSeatTuningOf(args)) };
+	},
+
+	/** `traversal.groundSeating.unseat {}` → `{ state }` — core's `unseat`: whenever nothing carries the body (switched off, or standing with its agent off). */
+	'traversal.groundSeating.unseat': () => ({ state: plain(unseat()) }),
 
 	// ── the genre HUD and the world rules panel (P9a) ──
 	// Each row is one of core's corpus runners and nothing else: the args are

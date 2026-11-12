@@ -228,6 +228,37 @@ game; **meta** = about the bridge itself.
 | `survival.stamina.clock` | `{ lastTickAt, now, tickMs? }` → `{ ticks, lastTickAt }` | `stamina/stamina` `staminaRestClock` | P9c survival |
 | `survival.stamina.pool.create` | `{ staminaConfig?, costs?, actions?, actors?, survivalActorId?, start?, state? }` → `{ session, view: { tuning, actors } }` | `game-engine/logic/StaminaPool` | P9c survival |
 | `survival.stamina.pool.apply` | `{ session, ops }` → `{ results, view }`; ops `cost`, `afford`, `spend`, `rest`, `play`, `band`, `save` | `StaminaPool` `costOf`, `canAfford`, `spend`, `rest` (with `staminaRestClock`), `stateOf`, `serialize` | P9c survival |
+| `traversal.affordances.tuning` | `{ traversal? }` (the World IR's `traversal` block) → `{ tuning }` (`TraversalTuning`; absent: core's defaults) | `traversal/traversal` `traversalTuningFromIR` | P9e traversal kernels (PL.native-traversal-rows slice 1, U106(1); core's P9e.core) |
+| `traversal.affordances.links` | `{ traversal? }` → `{ links }` (the block's authored links as `TraversalLink`s) | `traversal/traversal` `traversalLinksFromIR` | P9e traversal kernels |
+| `traversal.affordances.resolve` | `{ actor, from, links, modes, blocked?, geometry?, stamina?, tuning? }` → `{ affordances }` (every authored way out of `from`, refused ones included, sorted) | `traversal/traversal` `resolveAffordances` | P9e traversal kernels |
+| `traversal.affordances.best` | `{ affordances, to }` → `{ best }` (the cheapest available affordance to `to`, or null) | `traversal/traversal` `bestAffordance` | P9e traversal kernels |
+| `traversal.affordances.route` | `{ …resolve's args, to, maxSteps? }` → `{ route }` (`{ from, to, steps, cost, conditional }`, or null) | `traversal/traversal` `findRoute` | P9e traversal kernels |
+| `traversal.affordances.graphFacts` | `{ links, tuning? }` → `{ facts }` (`traversal_link/3` per link, `traversal_cost/3` and `traversal_requires/3` per edge) | `traversal/traversal-facts` `traversalGraphFacts` | P9e traversal kernels |
+| `traversal.vehicles.fromIR` | `{ vehicles? }` (the IR's `traversal.vehicles`) → `{ vehicles }` | `traversal/vehicles` `vehiclesFromIR` | P9e traversal kernels |
+| `traversal.vehicles.resolve` | `{ vehicle, state, actor, at, verb }` → `{ resolution }` (`{ vehicle, actor, verb, action, available, refusal?, grants? }`) | `traversal/vehicles` `resolveVehicleVerb` | P9e traversal kernels |
+| `traversal.vehicles.apply` | `{ state, actor, verb, resolution }` → `{ next }` (null for a refused verb) | `traversal/vehicles` `applyVehicleVerb` | P9e traversal kernels |
+| `traversal.vehicles.actions` | `{ vehicle }` → `{ actions }` (`{ board, drive, disembark }`) | `traversal/vehicles` `vehicleActions` | P9e traversal kernels |
+| `traversal.vehicles.seats` | `{ vehicle }` → `{ seats }` | `traversal/vehicles` `vehicleSeats` | P9e traversal kernels |
+| `traversal.vehicles.modeFact` | `{ vehicle }` → `{ fact }` (`vehicle_mode/2`) | `traversal/vehicle-facts` `vehicleModeFact` | P9e traversal kernels |
+| `traversal.vehicles.stateFacts` | `{ state }` → `{ facts }` | `traversal/vehicle-facts` `vehicleStateFacts` | P9e traversal kernels |
+| `traversal.vehicles.stateDelta` | `{ before?, after }` → `{ delta: { retract, assert } }` | `traversal/vehicle-facts` `vehicleStateDelta` | P9e traversal kernels |
+| `traversal.vehicles.anothers` | `{ state, actor }` → `{ anothers }` | `traversal/vehicles` `isAnothersVehicle` | P9e traversal kernels |
+| `traversal.fastTravel.tuning` | `{ fastTravel? }` (the IR's `traversal.fastTravel`) → `{ tuning }` (`FastTravelTuning`) | `traversal/fast-travel` `fastTravelTuningFromIR` | P9e traversal kernels |
+| `traversal.fastTravel.ceiling` | `{ tuning }` → `{ ceiling }` | `traversal/fast-travel` `fastTravelCeiling` | P9e traversal kernels |
+| `traversal.fastTravel.hours` | `{ routeCost, tuning }` → `{ hours }` | `traversal/fast-travel` `fastTravelHours` | P9e traversal kernels |
+| `traversal.fastTravel.plan` | `{ seed, actor, from, to, journey, route, tuning? }` → `{ plan }` (`{ …, cost, hours, ceiling, capped, steps, requires }`) | `traversal/fast-travel` `planFastTravel` | P9e traversal kernels |
+| `traversal.fastTravel.arrival` | `{ actor, from, to }` → `{ delta }` | `traversal/fast-travel-facts` `fastTravelArrivalDelta` | P9e traversal kernels |
+| `traversal.fastTravel.discovery` | `{ location, known }` → `{ delta }` | `traversal/fast-travel-facts` `discoveryDelta` | P9e traversal kernels |
+| `traversal.groundSeating.tuning` | `{ params? }` → `GroundSeatTuning` (a `conformance/traversal/ground-seating.json` `tuning` case's `input` → its `expected`) | `ground-seating/ground-seat` `groundSeatTuning` | P9e traversal kernels |
+| `traversal.groundSeating.footprint` | `{ xMm, zMm, params? }` → `{ points }` | `ground-seating/ground-seat` `footprintPoints` | P9e traversal kernels |
+| `traversal.groundSeating.ground` | `{ probes, fromMm, params? }` → `{ found, heightMm, paved }` | `ground-seating/ground-seat` `drawnGround` | P9e traversal kernels |
+| `traversal.groundSeating.target` | `{ meshMm, probes, params? }` → `{ reason, wantMm, onPaving }` | `ground-seating/ground-seat` `seatTarget` | P9e traversal kernels |
+| `traversal.groundSeating.stand` | `{ bodyMm, probes, params? }` → `{ reason, heightMm, onPaving }` | `ground-seating/ground-seat` `standSeat` | P9e traversal kernels |
+| `traversal.groundSeating.moved` | `{ from: { xMm, zMm }, to }` → `{ moved }` | `ground-seating/ground-seat` `movedSideways` | P9e traversal kernels |
+| `traversal.groundSeating.initial` | `{}` → `{ state }` (a `SeatState`, not seated) | `ground-seating/ground-seat` `initialSeat` | P9e traversal kernels |
+| `traversal.groundSeating.retarget` | `{ state, wantMm, at, params? }` → `{ state }` | `ground-seating/ground-seat` `retargetSeat` | P9e traversal kernels |
+| `traversal.groundSeating.offsetAt` | `{ state, at, params? }` → `{ offsetMm }` | `ground-seating/ground-seat` `seatOffsetAt` | P9e traversal kernels |
+| `traversal.groundSeating.unseat` | `{}` → `{ state }` | `ground-seating/ground-seat` `unseat` | P9e traversal kernels |
 | `ui.genreHud` | `{ op: config, view, genre_view, config_of or view_of, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`; `config_of` / `view_of` take a game's own settings, `{ genreConfig }` or `{ recipe, world? }`, plus `state?` for `view_of`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }` (`unresolved_recipe` also carries `reason`); an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`, `genreHudConfigOf`; `game-genres/resolution` `resolveGameGenre` for a recipe) | P9a.native (U84); `config_of` / `view_of` PL.native-genre-hud-config (U92(2)) |
 | `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
@@ -1256,6 +1287,97 @@ bundle from 1,669,036 bytes to 1,697,748 (+28,712); the rows, the three layout
 rows and `solidKinds` take it to 1,740,208 (+42,460). The 89 cases take about
 25 ms under QuickJS.
 
+### The traversal kernel rows: affordances, routes, vehicles, fast travel, ground seating (PL.native-traversal-rows, slice 1)
+
+Core's P9e kernels (P9e.core; catalog systems `traversal-planner`,
+`traversal-vehicles`, `traversal-fast-travel` and `traversal-ground-seating`) are a
+set of rows (U106(1)), so an engine binds core's traversal instead of keeping a copy
+of it (Unreal's interim `Portable/InsimulTraversal`, which
+`P9e.unreal.retire-traversal-copy` retires once slice 2's rows land too): what the
+link graph affords an actor out of a place and what each way costs, the cheapest way
+and the route by core's uniform-cost search, the graph as facts; the three vehicle
+verbs (board, drive, disembark) over one vehicle and the facts they change; a fast
+travel's hours, its bounded advances and their derived draws; and where a body is
+seated on the drawn ground. This is **slice 1 of 2**: the stateless kernels. The
+stateful layers (`TraversalPlanner`, `VehicleRegistry`, `FastTravelDirector`, the
+personal vehicles, mode lending and the `extensions.traversal` save block, with
+core's `session.json`, `mounts.json` and `save.json`) are slice 2's.
+
+The rows are named `traversal.<group>.<fn>` after the corpus file's area
+(`traversal-affordances`, `traversal-vehicles`, `traversal-fast-travel`, and
+`traversal/ground-seating`), one core function each:
+
+- **The three older corpora pin several functions per case** (core's traversal
+  corpus test composes each case's record from `resolveAffordances`,
+  `bestAffordance`, `findRoute` and `traversalGraphFacts`; from the vehicle verb
+  and its facts; from `findRoute` and `planFastTravel` with the arrival and
+  discovery deltas), so each row answers ONE function under a named key
+  (`{ affordances }`, `{ best }`, `{ route }`, `{ facts }`, `{ resolution }`,
+  `{ next }`, `{ plan }`, `{ delta }`, …) and the runner composes the record from
+  the rows. A route the route row answered is what `traversal.fastTravel.plan`
+  prices; a resolution the resolve row answered is what `traversal.vehicles.apply`
+  applies.
+- **A ground-seating row that answers a whole corpus op** takes the case's `input`
+  and answers its `expected` (`traversal.groundSeating.{tuning, footprint, ground,
+  target, stand, moved}`), and the settle is three rows **stateless over the
+  state they are sent**: `.initial` → `{ state }`, then per frame `.retarget {
+  state, wantMm, at }` → `{ state }` and `.offsetAt { state, at }` → `{ offsetMm }`,
+  and `.unseat` → `{ state }` whenever nothing carries the body. Each reads the
+  pack's `params` on every call (core's `groundSeatTuning`).
+- **Tunings are core's resolved tunings**, as the corpora carry them. A binding
+  reads its World IR's `traversal` block once through `traversal.affordances.tuning`
+  and `.links`, `traversal.vehicles.fromIR` (its `vehicles`) and
+  `traversal.fastTravel.tuning` (its `fastTravel`), and sends what they answered.
+  An absent tuning is core's own default (`DEFAULT_TRAVERSAL_TUNING`, which the
+  planner also defaults to, for `.resolve`, `.route` and `.graphFacts`;
+  `DEFAULT_FAST_TRAVEL_TUNING` for `.plan`); `.ceiling` and `.hours` take one,
+  as core's functions do.
+- **`stamina` on the route row** reaches every leg the search resolves, as core's
+  corpus test's spread of a case's input sends it to `findRoute`; core's planner
+  sends none, and neither need a binding that routes as the planner does.
+
+Refusals are values (`unreachable`, `blocked`, `mode`, `impassable`, `stamina` on an
+affordance; `elsewhere`, `full`, `not_aboard`, `occupied`, `redundant` on a vehicle
+verb; `nothing_drawn`, `too_far`, `level` on a seat), and a refused verb's `next`
+is null. Only what core dereferences unread or its TypeScript declares and JSON
+cannot hold is checked, as `[invalid-input]` errors: `links`, `blocked`,
+`affordances`, `vehicles` and a route's `steps` lists of objects, `modes` a list of
+strings, `geometry`, `stamina`, `vehicle`, `resolution` and the fast-travel
+`tuning` objects, a stated traversal `tuning`'s `modeCost`/`modeAction` objects, a
+vehicle state's `occupants` list, `verb` one of core's `VEHICLE_VERBS`, `known` a
+boolean, and the ground-seat numbers, points and probes (each hit `{ heightMm:
+number, paved: boolean }`). Ids, location atoms, costs and the seed go to core as
+sent. The rows import `traversal/traversal`, `traversal/traversal-facts`,
+`traversal/vehicles`, `traversal/vehicle-facts`, `traversal/fast-travel`,
+`traversal/fast-travel-facts` and `ground-seating/ground-seat`, never
+`traversal/systems-corpus` (core's runner).
+
+**The evidence** is core's four kernel corpora (67 cases at the 6cd4b4e pin:
+`affordances.json` 14, `vehicles.json` 14, `fast-travel.json` 11,
+`ground-seating.json` 28 over `tuning` 2, `footprint` 2, `ground` 7, `target` 5,
+`stand` 5, `moved` 2, `settle` 5), copied byte for byte as their own set
+(`TRAVERSAL_CORPUS_FILES`) and driven by their own runner,
+`tests/traversal_corpus.cpp`, as the ctest `traversal_corpus`, 0 undriven. The
+runner composes each older case's record from the rows as core's test composes it
+from core's functions, and drives every one of them a second time with its lists
+reversed (the links, modes and closures; a vehicle's occupants), as core's order
+guard does; each planned fast-travel case also asks `.ceiling` and `.hours`, which
+must answer the pinned plan's. A settle is one row per step (28 steps). The
+ground-seating file's catalog, op list and settle steps must be core's.
+`traversal_corpus_negative` perturbs EVERY case's expectation (its last leaf) and
+must see all 67 refused, as Unreal's `traversal_corpus_negative` does for its copy.
+The hand cases in `tests/cases/bridge-traversal.json` (every expectation computed
+by core's own functions at the pin) pin the IR readers, the answer of one row sent
+to the next, a stated `stamina` on the route row, the ground-seat `params` and the
+`[invalid-input]` errors.
+
+**Cost.** Five core modules for the rows (`traversal/vehicles`,
+`traversal/vehicle-facts`, `traversal/fast-travel`, `traversal/fast-travel-facts`,
+`ground-seating/ground-seat`; `traversal/traversal` and `traversal/traversal-facts`
+were already bundled through the mechanic runtime, 172 → 177 modules). The bundle
+goes from 1,740,440 bytes to 1,773,586 (+33,146). The 67 cases take about 15 ms
+under QuickJS.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
@@ -1349,6 +1471,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (95 cases at 6cd4b4e, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 | `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |
+| `traversal_corpus`, `traversal_corpus_negative` | core's four P9e kernel corpora (`affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`; 67 cases at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step; ground-seating's catalog, ops and steps held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's

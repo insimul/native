@@ -505,7 +505,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground and survival ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival and traversal ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -701,6 +701,29 @@
   refusals (`need_not_tracked`, `bad_amount`, `not_usable`, …) as values. Unreal's
   `Portable/InsimulSurvival` is the interim copy these rows retire
   (`P9c.unreal.retire-survival-copy`).
+- **The traversal kernel rows (PL.native-traversal-rows slice 1, U106(1)) run
+  core's P9e kernel corpora UNCHANGED**,
+  `conformance/traversal/{affordances,vehicles,fast-travel,ground-seating}.json`
+  copied as their own set (`TRAVERSAL_CORPUS_FILES`; slice 2 adds `session.json`,
+  `mounts.json` and `save.json` with the stateful rows) and driven by their own
+  runner, `tests/traversal_corpus.cpp`, as `traversal_corpus` (+
+  `traversal_corpus_negative`, every case perturbed and refused). One row per core
+  function of `traversal/traversal` (+ `traversalGraphFacts`), `traversal/vehicles`
+  (+ `vehicle-facts`), `traversal/fast-travel` (+ `fast-travel-facts`) and
+  `ground-seating/ground-seat`, named `traversal.<group>.<fn>` after the file's area
+  (`traversal.affordances.*`, `traversal.vehicles.*`, `traversal.fastTravel.*`,
+  `traversal.groundSeating.*`). The three older corpora pin several functions per
+  case, so each row answers ONE function under a named key and the runner composes
+  the case's record from the rows, as core's corpus test composes it from core's
+  functions, then drives it again with its lists reversed (core's order guard).
+  The ground-seating rows that answer a whole op take the case's `input` and answer
+  its `expected`; the settle rows (`initial`, `retarget`, `offsetAt`, `unseat`) are
+  STATELESS over the `state` the last answer carried. Tunings are core's RESOLVED
+  tunings, read from the IR by the `*.tuning`, `.links` and `.fromIR` rows. Never
+  import `traversal/systems-corpus` (core's runner). Unreal's
+  `Portable/InsimulTraversal` is the interim copy these rows and slice 2's retire
+  (`P9e.unreal.retire-traversal-copy`; `corebridge/ENGINE_BINDINGS.md` maps every
+  function of it and lists what slice 2 owes).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

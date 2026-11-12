@@ -1,0 +1,2357 @@
+{
+  "area": "traversal",
+  "description": "Hand-written: the traversal.* kernel rows’ own contract (PL.native-traversal-rows slice 1, U106(1); core’s P9e kernels, P9e.core) — each row’s answer shape over core’s functions, the IR readers feeding the decision rows (the answer one row gives is what the next row is sent), core’s refusals as VALUES, the rows’ own refusals as errors coded [invalid-input], and the rows no corpus pins (the IR readers, a stated stamina on the route row, the ground-seat params on a settle). Every expectation here was computed by core’s own functions at the pin, not by these rows. Core’s own corpora (conformance/traversal/{affordances,vehicles,fast-travel,ground-seating}.json, 67 cases) are driven whole through these rows by the traversal_corpus ctest (tests/traversal_corpus.cpp), not transcribed here.",
+  "cases": [
+    {
+      "name": "traversal.affordances: a world IR block read into core’s tuning and links, then resolved, the best way and the route",
+      "steps": [
+        {
+          "call": "traversal.affordances.tuning",
+          "args": {
+            "traversal": {
+              "links": [
+                {
+                  "from": "camp",
+                  "to": "ford",
+                  "mode": "walk",
+                  "cost": 4
+                },
+                {
+                  "id": "ford-swim",
+                  "from": "ford",
+                  "to": "far_bank",
+                  "mode": "swim",
+                  "cost": 6
+                },
+                {
+                  "from": "ford",
+                  "to": "far_bank",
+                  "mode": "boat",
+                  "cost": 10,
+                  "requires": [
+                    "has_item(Actor, oar, 1)"
+                  ]
+                },
+                {
+                  "from": "camp",
+                  "to": "ridge",
+                  "mode": "climb",
+                  "geometric": true
+                },
+                {
+                  "from": "ridge",
+                  "to": "far_bank",
+                  "mode": "walk",
+                  "cost": 2,
+                  "action": "scramble"
+                }
+              ],
+              "defaultCost": 3,
+              "modeCost": {
+                "swim": 3
+              },
+              "modeAction": {
+                "boat": "paddle"
+              }
+            }
+          },
+          "expect": {
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 3,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "paddle"
+              },
+              "defaultAction": "traverse"
+            }
+          },
+          "bind": "t"
+        },
+        {
+          "call": "traversal.affordances.tuning",
+          "args": {},
+          "expect": {
+            "tuning": {
+              "defaultCost": 5,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 2.5,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "row"
+              },
+              "defaultAction": "traverse"
+            }
+          }
+        },
+        {
+          "call": "traversal.affordances.links",
+          "args": {
+            "traversal": {
+              "links": [
+                {
+                  "from": "camp",
+                  "to": "ford",
+                  "mode": "walk",
+                  "cost": 4
+                },
+                {
+                  "id": "ford-swim",
+                  "from": "ford",
+                  "to": "far_bank",
+                  "mode": "swim",
+                  "cost": 6
+                },
+                {
+                  "from": "ford",
+                  "to": "far_bank",
+                  "mode": "boat",
+                  "cost": 10,
+                  "requires": [
+                    "has_item(Actor, oar, 1)"
+                  ]
+                },
+                {
+                  "from": "camp",
+                  "to": "ridge",
+                  "mode": "climb",
+                  "geometric": true
+                },
+                {
+                  "from": "ridge",
+                  "to": "far_bank",
+                  "mode": "walk",
+                  "cost": 2,
+                  "action": "scramble"
+                }
+              ],
+              "defaultCost": 3,
+              "modeCost": {
+                "swim": 3
+              },
+              "modeAction": {
+                "boat": "paddle"
+              }
+            }
+          },
+          "expect": {
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ]
+          },
+          "bind": "l"
+        },
+        {
+          "call": "traversal.affordances.links",
+          "args": {},
+          "expect": {
+            "links": []
+          }
+        },
+        {
+          "call": "traversal.affordances.resolve",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": {
+              "$ref": "l.links"
+            },
+            "modes": [
+              "walk",
+              "swim",
+              "climb"
+            ],
+            "tuning": {
+              "$ref": "t.tuning"
+            }
+          },
+          "expect": {
+            "affordances": [
+              {
+                "id": "camp>ford:walk",
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "action": "walk",
+                "cost": 4,
+                "available": true,
+                "requires": [],
+                "conditional": false
+              },
+              {
+                "id": "camp>ridge:climb",
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "action": "climb",
+                "cost": 9,
+                "available": true,
+                "requires": [],
+                "conditional": false
+              }
+            ]
+          },
+          "bind": "a"
+        },
+        {
+          "call": "traversal.affordances.resolve",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ],
+            "modes": [
+              "walk",
+              "swim",
+              "climb"
+            ],
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 3,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "paddle"
+              },
+              "defaultAction": "traverse"
+            },
+            "geometry": {
+              "camp>ridge:climb": false
+            },
+            "stamina": {
+              "current": 10,
+              "max": 60
+            }
+          },
+          "expect": {
+            "affordances": [
+              {
+                "id": "camp>ford:walk",
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "action": "walk",
+                "cost": 4,
+                "available": true,
+                "requires": [],
+                "conditional": false
+              },
+              {
+                "id": "camp>ridge:climb",
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "action": "climb",
+                "cost": 9,
+                "available": false,
+                "refusal": "impassable",
+                "requires": [],
+                "conditional": false
+              }
+            ]
+          }
+        },
+        {
+          "call": "traversal.affordances.best",
+          "args": {
+            "affordances": {
+              "$ref": "a.affordances"
+            },
+            "to": "ford"
+          },
+          "expect": {
+            "best": {
+              "id": "camp>ford:walk",
+              "from": "camp",
+              "to": "ford",
+              "mode": "walk",
+              "action": "walk",
+              "cost": 4,
+              "available": true,
+              "requires": [],
+              "conditional": false
+            }
+          }
+        },
+        {
+          "call": "traversal.affordances.best",
+          "args": {
+            "affordances": {
+              "$ref": "a.affordances"
+            },
+            "to": "nowhere"
+          },
+          "expect": {
+            "best": null
+          }
+        },
+        {
+          "call": "traversal.affordances.route",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ],
+            "modes": [
+              "walk",
+              "swim",
+              "climb"
+            ],
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 3,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "paddle"
+              },
+              "defaultAction": "traverse"
+            },
+            "to": "far_bank"
+          },
+          "expect": {
+            "route": {
+              "from": "camp",
+              "to": "far_bank",
+              "steps": [
+                {
+                  "id": "camp>ridge:climb",
+                  "from": "camp",
+                  "to": "ridge",
+                  "mode": "climb",
+                  "cost": 9,
+                  "requires": []
+                },
+                {
+                  "id": "ridge>far_bank:walk",
+                  "from": "ridge",
+                  "to": "far_bank",
+                  "mode": "walk",
+                  "cost": 2,
+                  "requires": []
+                }
+              ],
+              "cost": 11,
+              "conditional": false
+            }
+          }
+        },
+        {
+          "call": "traversal.affordances.route",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ],
+            "modes": [
+              "walk",
+              "swim",
+              "climb"
+            ],
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 3,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "paddle"
+              },
+              "defaultAction": "traverse"
+            },
+            "geometry": {
+              "camp>ridge:climb": false
+            },
+            "to": "far_bank"
+          },
+          "expect": {
+            "route": {
+              "from": "camp",
+              "to": "far_bank",
+              "steps": [
+                {
+                  "id": "camp>ford:walk",
+                  "from": "camp",
+                  "to": "ford",
+                  "mode": "walk",
+                  "cost": 4,
+                  "requires": []
+                },
+                {
+                  "id": "ford-swim",
+                  "from": "ford",
+                  "to": "far_bank",
+                  "mode": "swim",
+                  "cost": 18,
+                  "requires": [
+                    "has_item(Actor, oar, 1)"
+                  ]
+                }
+              ],
+              "cost": 22,
+              "conditional": true
+            }
+          }
+        },
+        {
+          "call": "traversal.affordances.route",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ],
+            "modes": [
+              "walk",
+              "swim",
+              "climb"
+            ],
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 3,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "paddle"
+              },
+              "defaultAction": "traverse"
+            },
+            "to": "far_bank",
+            "maxSteps": 1
+          },
+          "expect": {
+            "route": null
+          }
+        },
+        {
+          "call": "traversal.affordances.graphFacts",
+          "args": {
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ],
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 3,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "paddle"
+              },
+              "defaultAction": "traverse"
+            }
+          },
+          "expect": {
+            "facts": [
+              "traversal_link(camp, ford, walk).",
+              "traversal_link(ford, far_bank, swim).",
+              "traversal_link(ford, far_bank, boat).",
+              "traversal_link(camp, ridge, climb).",
+              "traversal_link(ridge, far_bank, walk).",
+              "traversal_cost(camp, ford, 4).",
+              "traversal_cost(ford, far_bank, 2).",
+              "traversal_cost(camp, ridge, 9).",
+              "traversal_cost(ridge, far_bank, 2).",
+              "traversal_requires(ford, far_bank, has_item(Actor, oar, 1))."
+            ]
+          }
+        },
+        {
+          "call": "traversal.affordances.graphFacts",
+          "args": {
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ]
+          },
+          "expect": {
+            "facts": [
+              "traversal_link(camp, ford, walk).",
+              "traversal_link(ford, far_bank, swim).",
+              "traversal_link(ford, far_bank, boat).",
+              "traversal_link(camp, ridge, climb).",
+              "traversal_link(ridge, far_bank, walk).",
+              "traversal_cost(camp, ford, 4).",
+              "traversal_cost(ford, far_bank, 2).",
+              "traversal_cost(camp, ridge, 15).",
+              "traversal_cost(ridge, far_bank, 2).",
+              "traversal_requires(ford, far_bank, has_item(Actor, oar, 1))."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.affordances.route: stamina, when sent, reaches every leg the search resolves, as core’s findRoute reads it",
+      "steps": [
+        {
+          "call": "traversal.affordances.route",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ],
+            "modes": [
+              "walk",
+              "swim",
+              "climb"
+            ],
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 3,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "paddle"
+              },
+              "defaultAction": "traverse"
+            },
+            "to": "far_bank",
+            "stamina": {
+              "current": 5,
+              "max": 60
+            }
+          },
+          "expect": {
+            "route": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.affordances: the rows’ own refusals are errors coded [invalid-input]",
+      "steps": [
+        {
+          "call": "traversal.affordances.resolve",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": "camp>ford",
+            "modes": [
+              "walk"
+            ]
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "traversal.affordances.resolve",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ],
+            "modes": "walk"
+          },
+          "expectError": "`modes` must be an array"
+        },
+        {
+          "call": "traversal.affordances.route",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ],
+            "modes": [
+              "walk",
+              "swim",
+              "climb"
+            ],
+            "tuning": {
+              "defaultCost": 5
+            },
+            "to": "far_bank"
+          },
+          "expectError": "`tuning.modeCost` must be a JSON object"
+        },
+        {
+          "call": "traversal.affordances.best",
+          "args": {
+            "to": "ford"
+          },
+          "expectError": "`affordances` must be an array"
+        },
+        {
+          "call": "traversal.affordances.graphFacts",
+          "args": {
+            "links": [
+              1
+            ]
+          },
+          "expectError": "`links[0]` must be a JSON object"
+        },
+        {
+          "call": "traversal.affordances.links",
+          "args": {
+            "traversal": {
+              "links": {}
+            }
+          },
+          "expectError": "`traversal.links` must be an array"
+        },
+        {
+          "call": "traversal.affordances.tuning",
+          "args": {
+            "traversal": []
+          },
+          "expectError": "[invalid-input]"
+        }
+      ]
+    },
+    {
+      "name": "traversal.vehicles: the IR’s vehicles read by core, boarded and driven, each answer core’s",
+      "steps": [
+        {
+          "call": "traversal.vehicles.fromIR",
+          "args": {
+            "vehicles": [
+              {
+                "id": "skiff",
+                "name": "Skiff",
+                "mode": "boat",
+                "owner": "odo",
+                "location": "ford",
+                "seats": 2,
+                "actions": {
+                  "board": "embark",
+                  "drive": "",
+                  "disembark": ""
+                }
+              },
+              {
+                "id": "cart",
+                "mode": "ride",
+                "location": "camp"
+              }
+            ]
+          },
+          "expect": {
+            "vehicles": [
+              {
+                "id": "skiff",
+                "name": "Skiff",
+                "mode": "boat",
+                "owner": "odo",
+                "location": "ford",
+                "seats": 2,
+                "actions": {
+                  "board": "embark"
+                }
+              },
+              {
+                "id": "cart",
+                "mode": "ride",
+                "location": "camp"
+              }
+            ]
+          }
+        },
+        {
+          "call": "traversal.vehicles.fromIR",
+          "args": {},
+          "expect": {
+            "vehicles": []
+          }
+        },
+        {
+          "call": "traversal.vehicles.resolve",
+          "args": {
+            "vehicle": {
+              "id": "skiff",
+              "name": "Skiff",
+              "mode": "boat",
+              "owner": "odo",
+              "location": "ford",
+              "seats": 2,
+              "actions": {
+                "board": "embark"
+              }
+            },
+            "state": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            },
+            "actor": "mira",
+            "at": "ford",
+            "verb": "board"
+          },
+          "expect": {
+            "resolution": {
+              "vehicle": "skiff",
+              "actor": "mira",
+              "verb": "board",
+              "action": "embark",
+              "available": true
+            }
+          },
+          "bind": "r1"
+        },
+        {
+          "call": "traversal.vehicles.apply",
+          "args": {
+            "state": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            },
+            "actor": "mira",
+            "verb": "board",
+            "resolution": {
+              "$ref": "r1.resolution"
+            }
+          },
+          "expect": {
+            "next": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": [
+                "mira"
+              ]
+            }
+          },
+          "bind": "s1"
+        },
+        {
+          "call": "traversal.vehicles.resolve",
+          "args": {
+            "vehicle": {
+              "id": "skiff",
+              "name": "Skiff",
+              "mode": "boat",
+              "owner": "odo",
+              "location": "ford",
+              "seats": 2,
+              "actions": {
+                "board": "embark"
+              }
+            },
+            "state": {
+              "$ref": "s1.next"
+            },
+            "actor": "mira",
+            "at": "ford",
+            "verb": "drive"
+          },
+          "expect": {
+            "resolution": {
+              "vehicle": "skiff",
+              "actor": "mira",
+              "verb": "drive",
+              "action": "drive",
+              "available": true,
+              "grants": "boat"
+            }
+          },
+          "bind": "r2"
+        },
+        {
+          "call": "traversal.vehicles.apply",
+          "args": {
+            "state": {
+              "$ref": "s1.next"
+            },
+            "actor": "mira",
+            "verb": "drive",
+            "resolution": {
+              "$ref": "r2.resolution"
+            }
+          },
+          "expect": {
+            "next": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": [
+                "mira"
+              ],
+              "driver": "mira"
+            }
+          }
+        },
+        {
+          "call": "traversal.vehicles.resolve",
+          "args": {
+            "vehicle": {
+              "id": "skiff",
+              "name": "Skiff",
+              "mode": "boat",
+              "owner": "odo",
+              "location": "ford",
+              "seats": 2,
+              "actions": {
+                "board": "embark"
+              }
+            },
+            "state": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            },
+            "actor": "mira",
+            "at": "camp",
+            "verb": "board"
+          },
+          "expect": {
+            "resolution": {
+              "vehicle": "skiff",
+              "actor": "mira",
+              "verb": "board",
+              "action": "embark",
+              "available": false,
+              "refusal": "elsewhere"
+            }
+          }
+        },
+        {
+          "call": "traversal.vehicles.apply",
+          "args": {
+            "state": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            },
+            "actor": "mira",
+            "verb": "board",
+            "resolution": {
+              "vehicle": "skiff",
+              "actor": "mira",
+              "verb": "board",
+              "action": "embark",
+              "available": false,
+              "refusal": "elsewhere"
+            }
+          },
+          "expect": {
+            "next": null
+          }
+        },
+        {
+          "call": "traversal.vehicles.actions",
+          "args": {
+            "vehicle": {
+              "id": "skiff",
+              "name": "Skiff",
+              "mode": "boat",
+              "owner": "odo",
+              "location": "ford",
+              "seats": 2,
+              "actions": {
+                "board": "embark"
+              }
+            }
+          },
+          "expect": {
+            "actions": {
+              "board": "embark",
+              "drive": "drive",
+              "disembark": "disembark"
+            }
+          }
+        },
+        {
+          "call": "traversal.vehicles.seats",
+          "args": {
+            "vehicle": {
+              "id": "skiff",
+              "name": "Skiff",
+              "mode": "boat",
+              "owner": "odo",
+              "location": "ford",
+              "seats": 0,
+              "actions": {
+                "board": "embark"
+              }
+            }
+          },
+          "expect": {
+            "seats": 1
+          }
+        },
+        {
+          "call": "traversal.vehicles.modeFact",
+          "args": {
+            "vehicle": {
+              "id": "skiff",
+              "name": "Skiff",
+              "mode": "boat",
+              "owner": "odo",
+              "location": "ford",
+              "seats": 2,
+              "actions": {
+                "board": "embark"
+              }
+            }
+          },
+          "expect": {
+            "fact": "vehicle_mode(skiff, boat)."
+          }
+        },
+        {
+          "call": "traversal.vehicles.stateFacts",
+          "args": {
+            "state": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": [
+                "mira"
+              ],
+              "driver": "mira"
+            }
+          },
+          "expect": {
+            "facts": [
+              "at_location(skiff, ford).",
+              "vehicle_owner(skiff, odo).",
+              "vehicle_occupant(skiff, mira).",
+              "vehicle_driver(skiff, mira)."
+            ]
+          }
+        },
+        {
+          "call": "traversal.vehicles.stateDelta",
+          "args": {
+            "after": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            }
+          },
+          "expect": {
+            "delta": {
+              "retract": [],
+              "assert": [
+                "at_location(skiff, ford).",
+                "vehicle_owner(skiff, odo)."
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.vehicles.stateDelta",
+          "args": {
+            "before": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            },
+            "after": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": [
+                "mira"
+              ],
+              "driver": "mira"
+            }
+          },
+          "expect": {
+            "delta": {
+              "retract": [],
+              "assert": [
+                "vehicle_occupant(skiff, mira).",
+                "vehicle_driver(skiff, mira)."
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.vehicles.anothers",
+          "args": {
+            "state": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            },
+            "actor": "mira"
+          },
+          "expect": {
+            "anothers": true
+          }
+        },
+        {
+          "call": "traversal.vehicles.anothers",
+          "args": {
+            "state": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            },
+            "actor": "odo"
+          },
+          "expect": {
+            "anothers": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.vehicles: the rows’ own refusals are errors coded [invalid-input]",
+      "steps": [
+        {
+          "call": "traversal.vehicles.resolve",
+          "args": {
+            "vehicle": {
+              "id": "skiff",
+              "name": "Skiff",
+              "mode": "boat",
+              "owner": "odo",
+              "location": "ford",
+              "seats": 2,
+              "actions": {
+                "board": "embark"
+              }
+            },
+            "state": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            },
+            "actor": "mira",
+            "at": "ford",
+            "verb": "steal"
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "traversal.vehicles.resolve",
+          "args": {
+            "vehicle": {
+              "id": "skiff",
+              "name": "Skiff",
+              "mode": "boat",
+              "owner": "odo",
+              "location": "ford",
+              "seats": 2,
+              "actions": {
+                "board": "embark"
+              }
+            },
+            "state": {
+              "id": "skiff",
+              "location": "ford"
+            },
+            "actor": "mira",
+            "at": "ford",
+            "verb": "board"
+          },
+          "expectError": "`state.occupants` must be an array"
+        },
+        {
+          "call": "traversal.vehicles.apply",
+          "args": {
+            "state": {
+              "id": "skiff",
+              "location": "ford",
+              "owner": "odo",
+              "occupants": []
+            },
+            "actor": "mira",
+            "verb": "board"
+          },
+          "expectError": "`resolution` must be a JSON object"
+        },
+        {
+          "call": "traversal.vehicles.stateDelta",
+          "args": {
+            "before": null,
+            "after": "skiff"
+          },
+          "expectError": "`after` must be a JSON object"
+        },
+        {
+          "call": "traversal.vehicles.fromIR",
+          "args": {
+            "vehicles": {}
+          },
+          "expectError": "[invalid-input]"
+        }
+      ]
+    },
+    {
+      "name": "traversal.fastTravel: the IR’s tuning read by core, the ceiling, the hours and a plan priced from a route the route row answered",
+      "steps": [
+        {
+          "call": "traversal.fastTravel.tuning",
+          "args": {
+            "fastTravel": {
+              "hoursPerCost": 2,
+              "minimumHours": 3,
+              "maxHours": 30,
+              "stepHours": 4
+            }
+          },
+          "expect": {
+            "tuning": {
+              "hoursPerCost": 2,
+              "minimumHours": 3,
+              "maxHours": 30,
+              "stepHours": 4,
+              "maxSteps": 12,
+              "action": "fast_travel",
+              "mode": "fast_travel"
+            }
+          },
+          "bind": "ft"
+        },
+        {
+          "call": "traversal.fastTravel.tuning",
+          "args": {},
+          "expect": {
+            "tuning": {
+              "hoursPerCost": 1,
+              "minimumHours": 1,
+              "maxHours": 72,
+              "stepHours": 6,
+              "maxSteps": 12,
+              "action": "fast_travel",
+              "mode": "fast_travel"
+            }
+          }
+        },
+        {
+          "call": "traversal.fastTravel.ceiling",
+          "args": {
+            "tuning": {
+              "$ref": "ft.tuning"
+            }
+          },
+          "expect": {
+            "ceiling": 30
+          }
+        },
+        {
+          "call": "traversal.fastTravel.hours",
+          "args": {
+            "routeCost": 40,
+            "tuning": {
+              "hoursPerCost": 2,
+              "minimumHours": 3,
+              "maxHours": 30,
+              "stepHours": 4,
+              "maxSteps": 12,
+              "action": "fast_travel",
+              "mode": "fast_travel"
+            }
+          },
+          "expect": {
+            "hours": 30
+          }
+        },
+        {
+          "call": "traversal.fastTravel.hours",
+          "args": {
+            "routeCost": 0.4,
+            "tuning": {
+              "hoursPerCost": 2,
+              "minimumHours": 3,
+              "maxHours": 30,
+              "stepHours": 4,
+              "maxSteps": 12,
+              "action": "fast_travel",
+              "mode": "fast_travel"
+            }
+          },
+          "expect": {
+            "hours": 3
+          }
+        },
+        {
+          "call": "traversal.affordances.route",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "links": [
+              {
+                "from": "camp",
+                "to": "ford",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "id": "ford-swim",
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6
+              },
+              {
+                "from": "ford",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 10,
+                "requires": [
+                  "has_item(Actor, oar, 1)"
+                ]
+              },
+              {
+                "from": "camp",
+                "to": "ridge",
+                "mode": "climb",
+                "geometric": true
+              },
+              {
+                "from": "ridge",
+                "to": "far_bank",
+                "mode": "walk",
+                "cost": 2,
+                "action": "scramble"
+              }
+            ],
+            "modes": [
+              "walk",
+              "swim",
+              "climb"
+            ],
+            "tuning": {
+              "defaultCost": 3,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 3,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "paddle"
+              },
+              "defaultAction": "traverse"
+            },
+            "to": "far_bank"
+          },
+          "bind": "r"
+        },
+        {
+          "call": "traversal.fastTravel.plan",
+          "args": {
+            "seed": "thistle",
+            "actor": "mira",
+            "from": "camp",
+            "to": "far_bank",
+            "journey": 2,
+            "route": {
+              "$ref": "r.route"
+            },
+            "tuning": {
+              "$ref": "ft.tuning"
+            }
+          },
+          "expect": {
+            "plan": {
+              "actor": "mira",
+              "from": "camp",
+              "to": "far_bank",
+              "journey": 2,
+              "route": {
+                "from": "camp",
+                "to": "far_bank",
+                "steps": [
+                  {
+                    "id": "camp>ridge:climb",
+                    "from": "camp",
+                    "to": "ridge",
+                    "mode": "climb",
+                    "cost": 9,
+                    "requires": []
+                  },
+                  {
+                    "id": "ridge>far_bank:walk",
+                    "from": "ridge",
+                    "to": "far_bank",
+                    "mode": "walk",
+                    "cost": 2,
+                    "requires": []
+                  }
+                ],
+                "cost": 11,
+                "conditional": false
+              },
+              "cost": 11,
+              "hours": 22,
+              "ceiling": 30,
+              "capped": false,
+              "steps": [
+                {
+                  "index": 0,
+                  "hours": 4,
+                  "elapsed": 4,
+                  "draw": 0.5381
+                },
+                {
+                  "index": 1,
+                  "hours": 4,
+                  "elapsed": 8,
+                  "draw": 0.7903
+                },
+                {
+                  "index": 2,
+                  "hours": 4,
+                  "elapsed": 12,
+                  "draw": 0.6537
+                },
+                {
+                  "index": 3,
+                  "hours": 4,
+                  "elapsed": 16,
+                  "draw": 0.8497
+                },
+                {
+                  "index": 4,
+                  "hours": 4,
+                  "elapsed": 20,
+                  "draw": 0.4947
+                },
+                {
+                  "index": 5,
+                  "hours": 2,
+                  "elapsed": 22,
+                  "draw": 0.924
+                }
+              ],
+              "requires": []
+            }
+          }
+        },
+        {
+          "call": "traversal.fastTravel.plan",
+          "args": {
+            "seed": 7,
+            "actor": "mira",
+            "from": "camp",
+            "to": "far_bank",
+            "journey": 0,
+            "route": {
+              "from": "camp",
+              "to": "far_bank",
+              "steps": [
+                {
+                  "id": "camp>ridge:climb",
+                  "from": "camp",
+                  "to": "ridge",
+                  "mode": "climb",
+                  "cost": 9,
+                  "requires": []
+                },
+                {
+                  "id": "ridge>far_bank:walk",
+                  "from": "ridge",
+                  "to": "far_bank",
+                  "mode": "walk",
+                  "cost": 2,
+                  "requires": []
+                }
+              ],
+              "cost": 11,
+              "conditional": false
+            }
+          },
+          "expect": {
+            "plan": {
+              "actor": "mira",
+              "from": "camp",
+              "to": "far_bank",
+              "journey": 0,
+              "route": {
+                "from": "camp",
+                "to": "far_bank",
+                "steps": [
+                  {
+                    "id": "camp>ridge:climb",
+                    "from": "camp",
+                    "to": "ridge",
+                    "mode": "climb",
+                    "cost": 9,
+                    "requires": []
+                  },
+                  {
+                    "id": "ridge>far_bank:walk",
+                    "from": "ridge",
+                    "to": "far_bank",
+                    "mode": "walk",
+                    "cost": 2,
+                    "requires": []
+                  }
+                ],
+                "cost": 11,
+                "conditional": false
+              },
+              "cost": 11,
+              "hours": 11,
+              "ceiling": 72,
+              "capped": false,
+              "steps": [
+                {
+                  "index": 0,
+                  "hours": 6,
+                  "elapsed": 6,
+                  "draw": 0.024
+                },
+                {
+                  "index": 1,
+                  "hours": 5,
+                  "elapsed": 11,
+                  "draw": 0.6038
+                }
+              ],
+              "requires": []
+            }
+          }
+        },
+        {
+          "call": "traversal.fastTravel.arrival",
+          "args": {
+            "actor": "mira",
+            "from": "camp",
+            "to": "far_bank"
+          },
+          "expect": {
+            "delta": {
+              "retract": [
+                "at_location(mira, camp)."
+              ],
+              "assert": [
+                "at_location(mira, far_bank)."
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.fastTravel.discovery",
+          "args": {
+            "location": "far_bank",
+            "known": false
+          },
+          "expect": {
+            "delta": {
+              "retract": [],
+              "assert": [
+                "location_discovered(far_bank)."
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.fastTravel.discovery",
+          "args": {
+            "location": "far_bank",
+            "known": true
+          },
+          "expect": {
+            "delta": {
+              "retract": [],
+              "assert": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.fastTravel: the rows’ own refusals are errors coded [invalid-input]",
+      "steps": [
+        {
+          "call": "traversal.fastTravel.ceiling",
+          "args": {},
+          "expectError": "`tuning` must be a JSON object"
+        },
+        {
+          "call": "traversal.fastTravel.hours",
+          "args": {
+            "routeCost": 3
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "traversal.fastTravel.plan",
+          "args": {
+            "seed": 1,
+            "actor": "mira",
+            "from": "camp",
+            "to": "far_bank",
+            "journey": 0,
+            "route": {
+              "steps": [
+                {
+                  "id": "x"
+                }
+              ]
+            }
+          },
+          "expectError": "`route.steps[0].requires` must be an array"
+        },
+        {
+          "call": "traversal.fastTravel.discovery",
+          "args": {
+            "location": "far_bank",
+            "known": "no"
+          },
+          "expectError": "`known` must be a boolean"
+        },
+        {
+          "call": "traversal.fastTravel.tuning",
+          "args": {
+            "fastTravel": 3
+          },
+          "expectError": "[invalid-input]"
+        }
+      ]
+    },
+    {
+      "name": "traversal.groundSeating: each row is core’s ground-seat function, the pack’s params read on every call, the settle over the state the last answer carried",
+      "steps": [
+        {
+          "call": "traversal.groundSeating.tuning",
+          "args": {
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            }
+          },
+          "expect": {
+            "lookFromMm": 1500,
+            "footprintMm": 100,
+            "settleMmPerS": 1000,
+            "upFactor": 2,
+            "maxOffsetMm": 500,
+            "reachMm": 12000,
+            "levelMm": 2
+          }
+        },
+        {
+          "call": "traversal.groundSeating.tuning",
+          "args": {},
+          "expect": {
+            "lookFromMm": 1500,
+            "footprintMm": 150,
+            "settleMmPerS": 1500,
+            "upFactor": 4,
+            "maxOffsetMm": 750,
+            "reachMm": 12000,
+            "levelMm": 2
+          }
+        },
+        {
+          "call": "traversal.groundSeating.footprint",
+          "args": {
+            "xMm": 10,
+            "zMm": 20,
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            }
+          },
+          "expect": {
+            "points": [
+              [
+                10,
+                20
+              ],
+              [
+                110,
+                20
+              ],
+              [
+                -90,
+                20
+              ],
+              [
+                10,
+                120
+              ],
+              [
+                10,
+                -80
+              ]
+            ]
+          }
+        },
+        {
+          "call": "traversal.groundSeating.ground",
+          "args": {
+            "probes": [
+              [
+                {
+                  "heightMm": 0,
+                  "paved": false
+                },
+                {
+                  "heightMm": 40,
+                  "paved": true
+                }
+              ],
+              [
+                {
+                  "heightMm": 90,
+                  "paved": true
+                }
+              ],
+              [],
+              [],
+              []
+            ],
+            "fromMm": 1500,
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            }
+          },
+          "expect": {
+            "found": true,
+            "heightMm": 90,
+            "paved": true
+          }
+        },
+        {
+          "call": "traversal.groundSeating.target",
+          "args": {
+            "meshMm": -450,
+            "probes": [
+              [
+                {
+                  "heightMm": 0,
+                  "paved": false
+                },
+                {
+                  "heightMm": 40,
+                  "paved": true
+                }
+              ],
+              [
+                {
+                  "heightMm": 90,
+                  "paved": true
+                }
+              ],
+              [],
+              [],
+              []
+            ],
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            }
+          },
+          "expect": {
+            "reason": "too_far",
+            "wantMm": 0,
+            "onPaving": false
+          }
+        },
+        {
+          "call": "traversal.groundSeating.target",
+          "args": {
+            "meshMm": -450,
+            "probes": [
+              [
+                {
+                  "heightMm": 0,
+                  "paved": false
+                },
+                {
+                  "heightMm": 40,
+                  "paved": true
+                }
+              ],
+              [
+                {
+                  "heightMm": 90,
+                  "paved": true
+                }
+              ],
+              [],
+              [],
+              []
+            ]
+          },
+          "expect": {
+            "reason": "seated",
+            "wantMm": 540,
+            "onPaving": true
+          }
+        },
+        {
+          "call": "traversal.groundSeating.stand",
+          "args": {
+            "bodyMm": 88,
+            "probes": [
+              [
+                {
+                  "heightMm": 0,
+                  "paved": false
+                },
+                {
+                  "heightMm": 40,
+                  "paved": true
+                }
+              ],
+              [
+                {
+                  "heightMm": 90,
+                  "paved": true
+                }
+              ],
+              [],
+              [],
+              []
+            ],
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            }
+          },
+          "expect": {
+            "reason": "level",
+            "heightMm": 88,
+            "onPaving": true
+          }
+        },
+        {
+          "call": "traversal.groundSeating.moved",
+          "args": {
+            "from": {
+              "xMm": 0,
+              "zMm": 0
+            },
+            "to": {
+              "xMm": 1,
+              "zMm": 1
+            }
+          },
+          "expect": {
+            "moved": true
+          }
+        },
+        {
+          "call": "traversal.groundSeating.initial",
+          "expect": {
+            "state": {
+              "seated": false,
+              "fromMm": 0,
+              "wantMm": 0,
+              "since": 0
+            }
+          },
+          "bind": "s0"
+        },
+        {
+          "call": "traversal.groundSeating.retarget",
+          "args": {
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            },
+            "state": {
+              "$ref": "s0.state"
+            },
+            "wantMm": 40,
+            "at": 0
+          },
+          "expect": {
+            "state": {
+              "seated": true,
+              "fromMm": 40,
+              "wantMm": 40,
+              "since": 0
+            }
+          },
+          "bind": "s1"
+        },
+        {
+          "call": "traversal.groundSeating.retarget",
+          "args": {
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            },
+            "state": {
+              "$ref": "s1.state"
+            },
+            "wantMm": -60,
+            "at": 1000
+          },
+          "expect": {
+            "state": {
+              "seated": true,
+              "fromMm": 40,
+              "wantMm": -60,
+              "since": 1000
+            }
+          },
+          "bind": "s2"
+        },
+        {
+          "call": "traversal.groundSeating.offsetAt",
+          "args": {
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            },
+            "state": {
+              "$ref": "s2.state"
+            },
+            "at": 1050
+          },
+          "expect": {
+            "offsetMm": -10
+          }
+        },
+        {
+          "call": "traversal.groundSeating.offsetAt",
+          "args": {
+            "state": {
+              "$ref": "s2.state"
+            },
+            "at": 1050
+          },
+          "expect": {
+            "offsetMm": -35
+          }
+        },
+        {
+          "call": "traversal.groundSeating.unseat",
+          "expect": {
+            "state": {
+              "seated": false,
+              "fromMm": 0,
+              "wantMm": 0,
+              "since": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.groundSeating: the rows’ own refusals are errors coded [invalid-input]",
+      "steps": [
+        {
+          "call": "traversal.groundSeating.ground",
+          "args": {
+            "probes": [
+              [
+                {
+                  "heightMm": "40",
+                  "paved": true
+                }
+              ]
+            ],
+            "fromMm": 1500
+          },
+          "expectError": "`probes[0][0].heightMm` must be a finite number"
+        },
+        {
+          "call": "traversal.groundSeating.target",
+          "args": {
+            "meshMm": 0,
+            "probes": [
+              [
+                {
+                  "heightMm": 40
+                }
+              ]
+            ]
+          },
+          "expectError": "`probes[0][0].paved` must be a boolean"
+        },
+        {
+          "call": "traversal.groundSeating.stand",
+          "args": {
+            "probes": []
+          },
+          "expectError": "`bodyMm` must be a finite number"
+        },
+        {
+          "call": "traversal.groundSeating.footprint",
+          "args": {
+            "xMm": 1
+          },
+          "expectError": "[invalid-input]"
+        },
+        {
+          "call": "traversal.groundSeating.moved",
+          "args": {
+            "from": {
+              "xMm": 0
+            },
+            "to": {
+              "xMm": 1,
+              "zMm": 1
+            }
+          },
+          "expectError": "`from.zMm` must be a finite number"
+        },
+        {
+          "call": "traversal.groundSeating.retarget",
+          "args": {
+            "state": null,
+            "wantMm": 1,
+            "at": 0
+          },
+          "expectError": "`state` must be a JSON object"
+        },
+        {
+          "call": "traversal.groundSeating.offsetAt",
+          "args": {
+            "state": {},
+            "at": null
+          },
+          "expectError": "[invalid-input]"
+        }
+      ]
+    }
+  ]
+}

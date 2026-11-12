@@ -745,7 +745,7 @@
   function fillTitle(title, bindings) {
     return title.replace(
       /\{(\w+)\}/g,
-      (whole, slot) => slot in bindings ? String(bindings[slot]) : whole
+      (whole3, slot) => slot in bindings ? String(bindings[slot]) : whole3
     );
   }
   function evalAmount(arg, tpl, bindMap) {
@@ -9241,6 +9241,622 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
   function term(fact) {
     return serializedFactToProlog(fact).replace(/\.$/, "");
+  }
+
+  // @insimul/core/src/traversal/traversal.ts
+  var TRAVERSAL_MODES = Object.freeze([
+    "walk",
+    "climb",
+    "swim",
+    "jump",
+    "ride",
+    "boat"
+  ]);
+  function traversalLinkId(link) {
+    return link.id ?? `${link.from}>${link.to}:${link.mode}`;
+  }
+  function edgeRequirements(links, from, to) {
+    const goals = /* @__PURE__ */ new Set();
+    for (const link of links) {
+      if (link.from !== from || link.to !== to) continue;
+      for (const goal of link.requires ?? []) goals.add(goal);
+    }
+    return [...goals].sort(compareIds);
+  }
+  var DEFAULT_TRAVERSAL_TUNING = Object.freeze({
+    defaultCost: 5,
+    modeCost: Object.freeze({ walk: 1, climb: 3, swim: 2.5, jump: 2, ride: 0.2, boat: 0.2 }),
+    modeAction: Object.freeze({
+      walk: "walk",
+      climb: "climb",
+      swim: "swim",
+      jump: "jump",
+      ride: "ride",
+      boat: "row"
+    }),
+    defaultAction: "traverse"
+  });
+  function traversalTuningFromIR(ir) {
+    const d = DEFAULT_TRAVERSAL_TUNING;
+    if (!ir) return { ...d };
+    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    return {
+      defaultCost: num5(ir.defaultCost, d.defaultCost),
+      modeCost: { ...d.modeCost, ...ir.modeCost ?? {} },
+      modeAction: { ...d.modeAction, ...ir.modeAction ?? {} },
+      defaultAction: ir.defaultAction ?? d.defaultAction
+    };
+  }
+  function traversalLinksFromIR(ir) {
+    return (ir?.links ?? []).map((link) => linkFromIR(link));
+  }
+  function linkFromIR(link) {
+    return {
+      id: link.id,
+      from: link.from,
+      to: link.to,
+      mode: link.mode,
+      cost: link.cost,
+      requires: link.requires,
+      action: link.action,
+      geometric: link.geometric
+    };
+  }
+  function traversalCost(link, tuning) {
+    const base = link.cost ?? tuning.defaultCost;
+    const multiplier = tuning.modeCost[link.mode] ?? 1;
+    const cost = Math.floor(base * multiplier);
+    return Number.isFinite(cost) && cost > 0 ? cost : 0;
+  }
+  function traversalAction(link, tuning) {
+    return link.action ?? tuning.modeAction[link.mode] ?? tuning.defaultAction;
+  }
+  var TRAVERSAL_REFUSALS = Object.freeze([
+    /** No authored link goes that way at all. Not a refusal so much as an absence. */
+    "unreachable",
+    /** `traversal_blocked(From, To)` — the landslide closed the pass. */
+    "blocked",
+    /** `movement_mode(Actor, Mode)` does not hold — you cannot swim. */
+    "mode",
+    /** The host's geometry said no: the gap is too wide from here, the door is barred. */
+    "impassable",
+    /** `can_afford_stamina/2` — nothing left in the meter. */
+    "stamina",
+    /** A `traversal_requires/3` goal the rules layer did not satisfy. */
+    "requires",
+    /** `permissible/3` refused it — a norm, a law, a locked region, 123's skill gates. */
+    "forbidden"
+  ]);
+  function resolveAffordances(input) {
+    const tuning = input.tuning ?? DEFAULT_TRAVERSAL_TUNING;
+    const modes = new Set(input.modes);
+    const blocked = new Set((input.blocked ?? []).map((edge) => edgeKey(edge.from, edge.to)));
+    const affordances = input.links.filter((link) => link.from === input.from).map((link) => {
+      const id = traversalLinkId(link);
+      const cost = traversalCost(link, tuning);
+      const requires = edgeRequirements(input.links, link.from, link.to);
+      const refusal3 = refuse(link, id, cost, { modes, blocked, input });
+      return {
+        id,
+        from: link.from,
+        to: link.to,
+        mode: link.mode,
+        action: traversalAction(link, tuning),
+        cost,
+        available: refusal3 === void 0,
+        refusal: refusal3,
+        requires,
+        conditional: requires.length > 0
+      };
+    });
+    affordances.sort(
+      (a, b) => compareIds(a.to, b.to) || compareIds(a.mode, b.mode) || compareIds(a.id, b.id)
+    );
+    return affordances;
+  }
+  function refuse(link, id, cost, ctx) {
+    if (ctx.blocked.has(edgeKey(link.from, link.to))) return "blocked";
+    if (!ctx.modes.has(link.mode)) return "mode";
+    if (link.geometric && ctx.input.geometry?.[id] === false) return "impassable";
+    const stamina = ctx.input.stamina;
+    if (stamina !== void 0 && stamina.current < cost) return "stamina";
+    return void 0;
+  }
+  function bestAffordance(affordances, to) {
+    let best;
+    for (const affordance of affordances) {
+      if (affordance.to !== to || !affordance.available) continue;
+      if (best === void 0 || affordance.cost < best.cost) best = affordance;
+    }
+    return best;
+  }
+  var DEFAULT_MAX_ROUTE_STEPS = 32;
+  function findRoute(input) {
+    const maxSteps = input.maxSteps ?? DEFAULT_MAX_ROUTE_STEPS;
+    if (input.to === input.from) {
+      return { from: input.from, to: input.to, steps: [], cost: 0, conditional: false };
+    }
+    const settled = /* @__PURE__ */ new Set();
+    let frontier = [
+      { at: input.from, steps: [], cost: 0 }
+    ];
+    while (frontier.length > 0) {
+      frontier.sort(
+        (a, b) => a.cost - b.cost || a.steps.length - b.steps.length || compareIds(a.at, b.at) || compareIds(lastStepId(a.steps), lastStepId(b.steps))
+      );
+      const here = frontier.shift();
+      if (here.at === input.to) {
+        return {
+          from: input.from,
+          to: input.to,
+          steps: here.steps,
+          cost: here.cost,
+          conditional: here.steps.some((step) => step.requires.length > 0)
+        };
+      }
+      if (settled.has(here.at) || here.steps.length >= maxSteps) continue;
+      settled.add(here.at);
+      const next = resolveAffordances({ ...input, from: here.at });
+      frontier = frontier.concat(
+        next.filter((affordance) => affordance.available && !settled.has(affordance.to)).map((affordance) => ({
+          at: affordance.to,
+          cost: here.cost + affordance.cost,
+          steps: [
+            ...here.steps,
+            {
+              id: affordance.id,
+              from: affordance.from,
+              to: affordance.to,
+              mode: affordance.mode,
+              cost: affordance.cost,
+              requires: affordance.requires
+            }
+          ]
+        }))
+      );
+    }
+    return void 0;
+  }
+  function lastStepId(steps) {
+    return steps.length === 0 ? "" : steps[steps.length - 1].id;
+  }
+  function edgeKey(from, to) {
+    return `${from.length}:${from}${to.length}:${to}`;
+  }
+
+  // @insimul/core/src/traversal/traversal-facts.ts
+  function emptyTraversalDelta() {
+    return { retract: [], assert: [] };
+  }
+  var TRAVERSAL_RESOLUTION_PREDICATES = Object.freeze([
+    "movement_mode/2",
+    "traversal_blocked/2",
+    "at_location/2"
+  ]);
+  var TRAVERSAL_AUTHORED_PREDICATES = Object.freeze([
+    "traversal_link/3",
+    "traversal_cost/3",
+    "traversal_requires/3"
+  ]);
+  function traversalLinkFact(link) {
+    return `traversal_link(${prologAtom(link.from)}, ${prologAtom(link.to)}, ${prologAtom(link.mode)}).`;
+  }
+  function traversalGraphFacts(links, tuning) {
+    const facts = links.map((link) => traversalLinkFact(link));
+    const cheapest = /* @__PURE__ */ new Map();
+    const goals = /* @__PURE__ */ new Map();
+    for (const link of links) {
+      const key = `${link.from.length}:${link.from}${link.to.length}:${link.to}`;
+      const cost = traversalCost(link, tuning);
+      const seen = cheapest.get(key);
+      if (seen === void 0 || cost < seen.cost) {
+        cheapest.set(key, { from: link.from, to: link.to, cost });
+      }
+      if ((link.requires ?? []).length === 0) continue;
+      const edge = goals.get(key) ?? { from: link.from, to: link.to, goals: [] };
+      for (const goal of link.requires ?? []) if (!edge.goals.includes(goal)) edge.goals.push(goal);
+      goals.set(key, edge);
+    }
+    for (const edge of cheapest.values()) {
+      facts.push(`traversal_cost(${prologAtom(edge.from)}, ${prologAtom(edge.to)}, ${edge.cost}).`);
+    }
+    for (const edge of goals.values()) {
+      for (const goal of edge.goals) {
+        facts.push(`traversal_requires(${prologAtom(edge.from)}, ${prologAtom(edge.to)}, ${goal}).`);
+      }
+    }
+    return facts;
+  }
+  function movementModeFact(actor, mode) {
+    return `movement_mode(${prologAtom(actor)}, ${prologAtom(mode)}).`;
+  }
+  function traversalBlockedFact(from, to) {
+    return `traversal_blocked(${prologAtom(from)}, ${prologAtom(to)}).`;
+  }
+  function atLocationFact(actor, location) {
+    return `at_location(${prologAtom(actor)}, ${prologAtom(location)}).`;
+  }
+  function movementModeDelta(actor, before, after) {
+    const had = new Set(before);
+    const has2 = new Set(after);
+    return {
+      retract: before.filter((mode) => !has2.has(mode)).map((mode) => movementModeFact(actor, mode)),
+      assert: after.filter((mode) => !had.has(mode)).map((mode) => movementModeFact(actor, mode))
+    };
+  }
+  function arrivalDelta(actor, before, after) {
+    if (before === after) return emptyTraversalDelta();
+    return {
+      retract: before === void 0 ? [] : [atLocationFact(actor, before)],
+      assert: [atLocationFact(actor, after)]
+    };
+  }
+  function mergeTraversalDeltas(...deltas) {
+    const merged = emptyTraversalDelta();
+    for (const delta of deltas) {
+      merged.retract.push(...delta.retract);
+      merged.assert.push(...delta.assert);
+    }
+    return merged;
+  }
+
+  // @insimul/core/src/traversal/vehicles.ts
+  var DEFAULT_VEHICLE_ACTIONS = Object.freeze({
+    board: "board",
+    drive: "drive",
+    disembark: "disembark"
+  });
+  var DEFAULT_VEHICLE_SEATS = 1;
+  function vehicleActions(vehicle) {
+    return { ...DEFAULT_VEHICLE_ACTIONS, ...vehicle.actions ?? {} };
+  }
+  function vehicleSeats(vehicle) {
+    const seats = Math.floor(vehicle.seats ?? DEFAULT_VEHICLE_SEATS);
+    return Number.isFinite(seats) && seats > 0 ? seats : DEFAULT_VEHICLE_SEATS;
+  }
+  function vehiclesFromIR(vehicles) {
+    return (vehicles ?? []).map((vehicle) => ({
+      id: vehicle.id,
+      name: vehicle.name,
+      mode: vehicle.mode,
+      owner: vehicle.owner,
+      location: vehicle.location,
+      seats: vehicle.seats,
+      actions: actionsFromIR(vehicle.actions)
+    }));
+  }
+  function actionsFromIR(actions) {
+    if (!actions) return void 0;
+    const picked = {};
+    if (actions.board) picked.board = actions.board;
+    if (actions.drive) picked.drive = actions.drive;
+    if (actions.disembark) picked.disembark = actions.disembark;
+    return Object.keys(picked).length === 0 ? void 0 : picked;
+  }
+  var VEHICLE_VERBS = Object.freeze(["board", "drive", "disembark"]);
+  var VEHICLE_REFUSALS = Object.freeze([
+    /** No such vehicle. Not a refusal so much as an absence. */
+    "unknown",
+    /** The actor and the vehicle are not in the same place. */
+    "elsewhere",
+    /** Every seat is taken. */
+    "full",
+    /** The actor is not aboard, and the verb needs them to be. */
+    "not_aboard",
+    /** Somebody else has the reins. */
+    "occupied",
+    /** Already true — boarding what you are already in, driving what you already drive. */
+    "redundant",
+    /** `permissible/3` refused it: a law, a norm, an owner who is not you. */
+    "forbidden"
+  ]);
+  function resolveVehicleVerb(input) {
+    const { vehicle, state, actor, verb } = input;
+    const action = vehicleActions(vehicle)[verb];
+    const aboard = state.occupants.includes(actor);
+    const refusal3 = refuseVerb(input, aboard);
+    return {
+      vehicle: vehicle.id,
+      actor,
+      verb,
+      action,
+      available: refusal3 === void 0,
+      refusal: refusal3,
+      grants: verb === "drive" ? vehicle.mode : void 0
+    };
+  }
+  function refuseVerb(input, aboard) {
+    const { vehicle, state, actor, at, verb } = input;
+    if (verb === "board") {
+      if (aboard) return "redundant";
+      if (state.location !== at) return "elsewhere";
+      if (state.occupants.length >= vehicleSeats(vehicle)) return "full";
+      return void 0;
+    }
+    if (verb === "drive") {
+      if (!aboard) return "not_aboard";
+      if (state.driver === actor) return "redundant";
+      if (state.driver !== void 0) return "occupied";
+      return void 0;
+    }
+    return aboard ? void 0 : "not_aboard";
+  }
+  function applyVehicleVerb(state, actor, verb, resolution) {
+    if (!resolution.available) return null;
+    const occupants = new Set(state.occupants);
+    let driver = state.driver;
+    if (verb === "board") occupants.add(actor);
+    if (verb === "drive") driver = actor;
+    if (verb === "disembark") {
+      occupants.delete(actor);
+      if (driver === actor) driver = void 0;
+    }
+    return {
+      ...state,
+      occupants: [...occupants].sort(compareIds),
+      driver
+    };
+  }
+  function isAnothersVehicle(state, actor) {
+    return state.owner !== void 0 && state.owner !== actor;
+  }
+
+  // @insimul/core/src/traversal/vehicle-facts.ts
+  var VEHICLE_RESOLUTION_PREDICATES = Object.freeze([
+    "vehicle_owner/2",
+    "vehicle_occupant/2",
+    "vehicle_driver/2",
+    "at_location/2"
+  ]);
+  var VEHICLE_AUTHORED_PREDICATES = Object.freeze(["vehicle_mode/2"]);
+  function vehicleModeFact(vehicle) {
+    return `vehicle_mode(${prologAtom(vehicle.id)}, ${prologAtom(vehicle.mode)}).`;
+  }
+  function vehicleOwnerFact(vehicleId, owner) {
+    return `vehicle_owner(${prologAtom(vehicleId)}, ${prologAtom(owner)}).`;
+  }
+  function vehicleOccupantFact(vehicleId, actor) {
+    return `vehicle_occupant(${prologAtom(vehicleId)}, ${prologAtom(actor)}).`;
+  }
+  function vehicleDriverFact(vehicleId, actor) {
+    return `vehicle_driver(${prologAtom(vehicleId)}, ${prologAtom(actor)}).`;
+  }
+  function vehicleStateFacts(state) {
+    const facts = [atLocationFact(state.id, state.location)];
+    if (state.owner !== void 0) facts.push(vehicleOwnerFact(state.id, state.owner));
+    for (const occupant of state.occupants) facts.push(vehicleOccupantFact(state.id, occupant));
+    if (state.driver !== void 0) facts.push(vehicleDriverFact(state.id, state.driver));
+    return facts;
+  }
+  function vehicleStateDelta(before, after) {
+    const delta = emptyTraversalDelta();
+    const had = new Set(before?.occupants ?? []);
+    const has2 = new Set(after.occupants);
+    if (before?.location !== after.location) {
+      if (before !== void 0) delta.retract.push(atLocationFact(after.id, before.location));
+      delta.assert.push(atLocationFact(after.id, after.location));
+    }
+    if (before?.owner !== after.owner) {
+      if (before?.owner !== void 0) delta.retract.push(vehicleOwnerFact(after.id, before.owner));
+      if (after.owner !== void 0) delta.assert.push(vehicleOwnerFact(after.id, after.owner));
+    }
+    for (const gone of before?.occupants ?? []) {
+      if (!has2.has(gone)) delta.retract.push(vehicleOccupantFact(after.id, gone));
+    }
+    for (const joined of after.occupants) {
+      if (!had.has(joined)) delta.assert.push(vehicleOccupantFact(after.id, joined));
+    }
+    if (before?.driver !== after.driver) {
+      if (before?.driver !== void 0) delta.retract.push(vehicleDriverFact(after.id, before.driver));
+      if (after.driver !== void 0) delta.assert.push(vehicleDriverFact(after.id, after.driver));
+    }
+    return delta;
+  }
+
+  // @insimul/core/src/traversal/fast-travel.ts
+  var DEFAULT_FAST_TRAVEL_TUNING = Object.freeze({
+    hoursPerCost: 1,
+    minimumHours: 1,
+    maxHours: 72,
+    stepHours: 6,
+    maxSteps: 12,
+    action: "fast_travel",
+    mode: "fast_travel"
+  });
+  function fastTravelTuningFromIR(ir) {
+    const d = DEFAULT_FAST_TRAVEL_TUNING;
+    if (!ir) return { ...d };
+    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    return {
+      hoursPerCost: num5(ir.hoursPerCost, d.hoursPerCost),
+      minimumHours: num5(ir.minimumHours, d.minimumHours),
+      maxHours: num5(ir.maxHours, d.maxHours),
+      stepHours: num5(ir.stepHours, d.stepHours),
+      maxSteps: num5(ir.maxSteps, d.maxSteps),
+      action: ir.action ?? d.action,
+      mode: ir.mode ?? d.mode
+    };
+  }
+  function whole(value, fallback) {
+    const n = Math.floor(Number.isFinite(value) ? value : fallback);
+    return n > 0 ? n : 0;
+  }
+  function fastTravelCeiling(tuning) {
+    const byHours = whole(tuning.maxHours, DEFAULT_FAST_TRAVEL_TUNING.maxHours);
+    const bySteps = whole(tuning.stepHours, DEFAULT_FAST_TRAVEL_TUNING.stepHours) * whole(tuning.maxSteps, DEFAULT_FAST_TRAVEL_TUNING.maxSteps);
+    return Math.min(byHours, bySteps);
+  }
+  function fastTravelHours(routeCost, tuning) {
+    const ceiling = fastTravelCeiling(tuning);
+    const minimum = Math.min(whole(tuning.minimumHours, DEFAULT_FAST_TRAVEL_TUNING.minimumHours), ceiling);
+    const cost = Number.isFinite(routeCost) && routeCost > 0 ? routeCost : 0;
+    const rate = Number.isFinite(tuning.hoursPerCost) ? tuning.hoursPerCost : 1;
+    const raw = Math.floor(cost * rate);
+    return Math.min(Math.max(raw, minimum), ceiling);
+  }
+  function fastTravelDraw(identity, index) {
+    return roundDeterministic(
+      derivedValue(identity.seed, identity.actor, identity.from, identity.to, identity.journey, index)
+    );
+  }
+  function fastTravelSteps(hours, tuning, identity) {
+    const chunk = whole(tuning.stepHours, DEFAULT_FAST_TRAVEL_TUNING.stepHours) || 1;
+    const limit = whole(tuning.maxSteps, DEFAULT_FAST_TRAVEL_TUNING.maxSteps);
+    const steps = [];
+    let elapsed = 0;
+    while (elapsed < hours && steps.length < limit) {
+      const span = Math.min(chunk, hours - elapsed);
+      elapsed += span;
+      steps.push({
+        index: steps.length,
+        hours: span,
+        elapsed,
+        draw: fastTravelDraw(identity, steps.length)
+      });
+    }
+    return steps;
+  }
+  var FAST_TRAVEL_REFUSALS = Object.freeze([
+    /** The traveller is already there. Not a refusal so much as a no-op. */
+    "same_place",
+    /**
+     * No route the actor can currently use gets there. This is `reachable/3`, so a
+     * landslide, a mode they do not have and a link that was never authored all land
+     * here — you cannot fast travel past something you could not have walked past.
+     */
+    "unreachable",
+    /** `location_discovered/1` — you have not found the place yet. */
+    "undiscovered",
+    /** A `traversal_requires/3` goal on some leg of the route the rules layer did not satisfy. */
+    "requires",
+    /** `permissible/3` refused it — a law, a closed border, 123's skill gates. */
+    "forbidden"
+  ]);
+  function planFastTravel(input) {
+    const tuning = input.tuning ?? DEFAULT_FAST_TRAVEL_TUNING;
+    const ceiling = fastTravelCeiling(tuning);
+    const hours = fastTravelHours(input.route.cost, tuning);
+    const uncapped = Math.floor(
+      Math.max(input.route.cost, 0) * (Number.isFinite(tuning.hoursPerCost) ? tuning.hoursPerCost : 1)
+    );
+    const requires = [];
+    for (const step of input.route.steps) {
+      for (const goal of step.requires) if (!requires.includes(goal)) requires.push(goal);
+    }
+    return {
+      actor: input.actor,
+      from: input.from,
+      to: input.to,
+      journey: input.journey,
+      route: input.route,
+      cost: input.route.cost,
+      hours,
+      ceiling,
+      capped: uncapped > ceiling,
+      steps: fastTravelSteps(hours, tuning, input),
+      requires
+    };
+  }
+
+  // @insimul/core/src/traversal/fast-travel-facts.ts
+  var FAST_TRAVEL_RESOLUTION_PREDICATES = Object.freeze([
+    "location_discovered/1",
+    "at_location/2"
+  ]);
+  function locationDiscoveredFact(location) {
+    return `location_discovered(${prologAtom(location)}).`;
+  }
+  function discoveryDelta(location, known) {
+    return known ? { retract: [], assert: [] } : { retract: [], assert: [locationDiscoveredFact(location)] };
+  }
+  function fastTravelArrivalDelta(actor, from, to) {
+    return arrivalDelta(actor, from, to);
+  }
+
+  // @insimul/core/src/ground-seating/ground-seat.ts
+  var DEFAULT_GROUND_SEAT_TUNING = Object.freeze({
+    lookFromMm: 1500,
+    footprintMm: 150,
+    settleMmPerS: 1500,
+    upFactor: 4,
+    maxOffsetMm: 750,
+    reachMm: 12e3,
+    levelMm: 2
+  });
+  var whole2 = (v) => typeof v === "number" && Number.isFinite(v) && v >= 0 ? Math.floor(v) : void 0;
+  function groundSeatTuning(params = {}) {
+    const d = DEFAULT_GROUND_SEAT_TUNING;
+    return {
+      lookFromMm: whole2(params.lookFromMm) ?? d.lookFromMm,
+      footprintMm: whole2(params.footprintMm) ?? d.footprintMm,
+      settleMmPerS: whole2(params.settleMmPerS) ?? d.settleMmPerS,
+      upFactor: Math.max(1, whole2(params.upFactor) ?? d.upFactor),
+      maxOffsetMm: whole2(params.maxOffsetMm) ?? d.maxOffsetMm,
+      reachMm: whole2(params.reachMm) ?? d.reachMm,
+      levelMm: whole2(params.levelMm) ?? d.levelMm
+    };
+  }
+  function footprintPoints(xMm, zMm, tuning) {
+    const r = tuning.footprintMm;
+    if (r <= 0) return [[xMm, zMm]];
+    return [
+      [xMm, zMm],
+      [xMm + r, zMm],
+      [xMm - r, zMm],
+      [xMm, zMm + r],
+      [xMm, zMm - r]
+    ];
+  }
+  function drawnGround(probes, fromMm, tuning) {
+    let best = null;
+    for (const probe of probes) {
+      for (const hit of probe) {
+        if (hit.heightMm > fromMm || hit.heightMm < fromMm - tuning.reachMm) continue;
+        if (best === null || hit.heightMm > best.heightMm) best = hit;
+      }
+    }
+    return best === null ? { found: false, heightMm: null, paved: false } : { found: true, heightMm: best.heightMm, paved: best.paved };
+  }
+  var GROUND_SEAT_REASONS = Object.freeze(["nothing_drawn", "too_far", "level", "seated"]);
+  function seatTarget(input, tuning) {
+    const g = drawnGround(input.probes, input.meshMm + tuning.lookFromMm, tuning);
+    if (!g.found || g.heightMm === null) return { reason: "nothing_drawn", wantMm: 0, onPaving: false };
+    const want = g.heightMm - input.meshMm;
+    if (Math.abs(want) > tuning.maxOffsetMm) return { reason: "too_far", wantMm: 0, onPaving: false };
+    return { reason: "seated", wantMm: want, onPaving: g.paved };
+  }
+  function standSeat(input, tuning) {
+    const g = drawnGround(input.probes, input.bodyMm + tuning.lookFromMm, tuning);
+    if (!g.found || g.heightMm === null) return { reason: "nothing_drawn", heightMm: input.bodyMm, onPaving: null };
+    const gap = Math.abs(g.heightMm - input.bodyMm);
+    if (gap > tuning.maxOffsetMm) return { reason: "too_far", heightMm: input.bodyMm, onPaving: null };
+    if (gap <= tuning.levelMm) return { reason: "level", heightMm: input.bodyMm, onPaving: g.paved };
+    return { reason: "seated", heightMm: g.heightMm, onPaving: g.paved };
+  }
+  function movedSideways(from, to) {
+    const dx = to.xMm - from.xMm;
+    const dz = to.zMm - from.zMm;
+    return dx * dx + dz * dz > 1;
+  }
+  function initialSeat() {
+    return { seated: false, fromMm: 0, wantMm: 0, since: 0 };
+  }
+  function seatOffsetAt(state, at, tuning) {
+    if (!state.seated) return 0;
+    const dt = Math.max(0, at - state.since);
+    const up = state.wantMm > state.fromMm;
+    const rate = up ? tuning.settleMmPerS * tuning.upFactor : tuning.settleMmPerS;
+    const travel = Math.floor(rate * dt / 1e3);
+    return up ? Math.min(state.wantMm, state.fromMm + travel) : Math.max(state.wantMm, state.fromMm - travel);
+  }
+  function retargetSeat(state, wantMm, at, tuning) {
+    if (!state.seated) return { seated: true, fromMm: wantMm, wantMm, since: at };
+    if (wantMm === state.wantMm) return state;
+    const when = Math.max(at, state.since);
+    return { seated: true, fromMm: seatOffsetAt(state, when, tuning), wantMm, since: when };
+  }
+  function unseat() {
+    return initialSeat();
   }
 
   // @insimul/core/src/game-genres/recipes.ts
@@ -23124,237 +23740,6 @@ player_meets_cefr(Player, RequiredLevel) :-
     return { modes: modes.filter((m) => m !== mode), lent: next };
   }
 
-  // @insimul/core/src/traversal/traversal.ts
-  var TRAVERSAL_MODES = Object.freeze([
-    "walk",
-    "climb",
-    "swim",
-    "jump",
-    "ride",
-    "boat"
-  ]);
-  function traversalLinkId(link) {
-    return link.id ?? `${link.from}>${link.to}:${link.mode}`;
-  }
-  function edgeRequirements(links, from, to) {
-    const goals = /* @__PURE__ */ new Set();
-    for (const link of links) {
-      if (link.from !== from || link.to !== to) continue;
-      for (const goal of link.requires ?? []) goals.add(goal);
-    }
-    return [...goals].sort(compareIds);
-  }
-  var DEFAULT_TRAVERSAL_TUNING = Object.freeze({
-    defaultCost: 5,
-    modeCost: Object.freeze({ walk: 1, climb: 3, swim: 2.5, jump: 2, ride: 0.2, boat: 0.2 }),
-    modeAction: Object.freeze({
-      walk: "walk",
-      climb: "climb",
-      swim: "swim",
-      jump: "jump",
-      ride: "ride",
-      boat: "row"
-    }),
-    defaultAction: "traverse"
-  });
-  function traversalCost(link, tuning) {
-    const base = link.cost ?? tuning.defaultCost;
-    const multiplier = tuning.modeCost[link.mode] ?? 1;
-    const cost = Math.floor(base * multiplier);
-    return Number.isFinite(cost) && cost > 0 ? cost : 0;
-  }
-  function traversalAction(link, tuning) {
-    return link.action ?? tuning.modeAction[link.mode] ?? tuning.defaultAction;
-  }
-  var TRAVERSAL_REFUSALS = Object.freeze([
-    /** No authored link goes that way at all. Not a refusal so much as an absence. */
-    "unreachable",
-    /** `traversal_blocked(From, To)` — the landslide closed the pass. */
-    "blocked",
-    /** `movement_mode(Actor, Mode)` does not hold — you cannot swim. */
-    "mode",
-    /** The host's geometry said no: the gap is too wide from here, the door is barred. */
-    "impassable",
-    /** `can_afford_stamina/2` — nothing left in the meter. */
-    "stamina",
-    /** A `traversal_requires/3` goal the rules layer did not satisfy. */
-    "requires",
-    /** `permissible/3` refused it — a norm, a law, a locked region, 123's skill gates. */
-    "forbidden"
-  ]);
-  function resolveAffordances(input) {
-    const tuning = input.tuning ?? DEFAULT_TRAVERSAL_TUNING;
-    const modes = new Set(input.modes);
-    const blocked = new Set((input.blocked ?? []).map((edge) => edgeKey(edge.from, edge.to)));
-    const affordances = input.links.filter((link) => link.from === input.from).map((link) => {
-      const id = traversalLinkId(link);
-      const cost = traversalCost(link, tuning);
-      const requires = edgeRequirements(input.links, link.from, link.to);
-      const refusal3 = refuse(link, id, cost, { modes, blocked, input });
-      return {
-        id,
-        from: link.from,
-        to: link.to,
-        mode: link.mode,
-        action: traversalAction(link, tuning),
-        cost,
-        available: refusal3 === void 0,
-        refusal: refusal3,
-        requires,
-        conditional: requires.length > 0
-      };
-    });
-    affordances.sort(
-      (a, b) => compareIds(a.to, b.to) || compareIds(a.mode, b.mode) || compareIds(a.id, b.id)
-    );
-    return affordances;
-  }
-  function refuse(link, id, cost, ctx) {
-    if (ctx.blocked.has(edgeKey(link.from, link.to))) return "blocked";
-    if (!ctx.modes.has(link.mode)) return "mode";
-    if (link.geometric && ctx.input.geometry?.[id] === false) return "impassable";
-    const stamina = ctx.input.stamina;
-    if (stamina !== void 0 && stamina.current < cost) return "stamina";
-    return void 0;
-  }
-  function bestAffordance(affordances, to) {
-    let best;
-    for (const affordance of affordances) {
-      if (affordance.to !== to || !affordance.available) continue;
-      if (best === void 0 || affordance.cost < best.cost) best = affordance;
-    }
-    return best;
-  }
-  var DEFAULT_MAX_ROUTE_STEPS = 32;
-  function findRoute(input) {
-    const maxSteps = input.maxSteps ?? DEFAULT_MAX_ROUTE_STEPS;
-    if (input.to === input.from) {
-      return { from: input.from, to: input.to, steps: [], cost: 0, conditional: false };
-    }
-    const settled = /* @__PURE__ */ new Set();
-    let frontier = [
-      { at: input.from, steps: [], cost: 0 }
-    ];
-    while (frontier.length > 0) {
-      frontier.sort(
-        (a, b) => a.cost - b.cost || a.steps.length - b.steps.length || compareIds(a.at, b.at) || compareIds(lastStepId(a.steps), lastStepId(b.steps))
-      );
-      const here = frontier.shift();
-      if (here.at === input.to) {
-        return {
-          from: input.from,
-          to: input.to,
-          steps: here.steps,
-          cost: here.cost,
-          conditional: here.steps.some((step) => step.requires.length > 0)
-        };
-      }
-      if (settled.has(here.at) || here.steps.length >= maxSteps) continue;
-      settled.add(here.at);
-      const next = resolveAffordances({ ...input, from: here.at });
-      frontier = frontier.concat(
-        next.filter((affordance) => affordance.available && !settled.has(affordance.to)).map((affordance) => ({
-          at: affordance.to,
-          cost: here.cost + affordance.cost,
-          steps: [
-            ...here.steps,
-            {
-              id: affordance.id,
-              from: affordance.from,
-              to: affordance.to,
-              mode: affordance.mode,
-              cost: affordance.cost,
-              requires: affordance.requires
-            }
-          ]
-        }))
-      );
-    }
-    return void 0;
-  }
-  function lastStepId(steps) {
-    return steps.length === 0 ? "" : steps[steps.length - 1].id;
-  }
-  function edgeKey(from, to) {
-    return `${from.length}:${from}${to.length}:${to}`;
-  }
-
-  // @insimul/core/src/traversal/traversal-facts.ts
-  function emptyTraversalDelta() {
-    return { retract: [], assert: [] };
-  }
-  var TRAVERSAL_RESOLUTION_PREDICATES = Object.freeze([
-    "movement_mode/2",
-    "traversal_blocked/2",
-    "at_location/2"
-  ]);
-  var TRAVERSAL_AUTHORED_PREDICATES = Object.freeze([
-    "traversal_link/3",
-    "traversal_cost/3",
-    "traversal_requires/3"
-  ]);
-  function traversalLinkFact(link) {
-    return `traversal_link(${prologAtom(link.from)}, ${prologAtom(link.to)}, ${prologAtom(link.mode)}).`;
-  }
-  function traversalGraphFacts(links, tuning) {
-    const facts = links.map((link) => traversalLinkFact(link));
-    const cheapest = /* @__PURE__ */ new Map();
-    const goals = /* @__PURE__ */ new Map();
-    for (const link of links) {
-      const key = `${link.from.length}:${link.from}${link.to.length}:${link.to}`;
-      const cost = traversalCost(link, tuning);
-      const seen = cheapest.get(key);
-      if (seen === void 0 || cost < seen.cost) {
-        cheapest.set(key, { from: link.from, to: link.to, cost });
-      }
-      if ((link.requires ?? []).length === 0) continue;
-      const edge = goals.get(key) ?? { from: link.from, to: link.to, goals: [] };
-      for (const goal of link.requires ?? []) if (!edge.goals.includes(goal)) edge.goals.push(goal);
-      goals.set(key, edge);
-    }
-    for (const edge of cheapest.values()) {
-      facts.push(`traversal_cost(${prologAtom(edge.from)}, ${prologAtom(edge.to)}, ${edge.cost}).`);
-    }
-    for (const edge of goals.values()) {
-      for (const goal of edge.goals) {
-        facts.push(`traversal_requires(${prologAtom(edge.from)}, ${prologAtom(edge.to)}, ${goal}).`);
-      }
-    }
-    return facts;
-  }
-  function movementModeFact(actor, mode) {
-    return `movement_mode(${prologAtom(actor)}, ${prologAtom(mode)}).`;
-  }
-  function traversalBlockedFact(from, to) {
-    return `traversal_blocked(${prologAtom(from)}, ${prologAtom(to)}).`;
-  }
-  function atLocationFact(actor, location) {
-    return `at_location(${prologAtom(actor)}, ${prologAtom(location)}).`;
-  }
-  function movementModeDelta(actor, before, after) {
-    const had = new Set(before);
-    const has2 = new Set(after);
-    return {
-      retract: before.filter((mode) => !has2.has(mode)).map((mode) => movementModeFact(actor, mode)),
-      assert: after.filter((mode) => !had.has(mode)).map((mode) => movementModeFact(actor, mode))
-    };
-  }
-  function arrivalDelta(actor, before, after) {
-    if (before === after) return emptyTraversalDelta();
-    return {
-      retract: before === void 0 ? [] : [atLocationFact(actor, before)],
-      assert: [atLocationFact(actor, after)]
-    };
-  }
-  function mergeTraversalDeltas(...deltas) {
-    const merged = emptyTraversalDelta();
-    for (const delta of deltas) {
-      merged.retract.push(...delta.retract);
-      merged.assert.push(...delta.assert);
-    }
-    return merged;
-  }
-
   // @insimul/core/src/game-engine/logic/TraversalPlanner.ts
   var TraversalPlanner = class {
     constructor(config = {}) {
@@ -33854,10 +34239,10 @@ player_meets_cefr(Player, RequiredLevel) :-
   var LOOK_PI = Math.fround(Math.PI);
   function lookNeighbours(layerId, row, look, terrain, plan2, paving, obstacles2, radius) {
     const density = Math.max(0, look.density);
-    const whole = Math.floor(density);
-    const frac = density - whole;
+    const whole3 = Math.floor(density);
+    const frac = density - whole3;
     const key = layerInstanceKey(layerId, row.x, row.z);
-    const evenCopies = whole + (lookHash01(key, 0) < frac ? 1 : 0);
+    const evenCopies = whole3 + (lookHash01(key, 0) < frac ? 1 : 0);
     let copies = evenCopies;
     if (look.clumping > 0 && density > 1) {
       const d = density * clumpWeight(row.x, row.z, look.clumping, look.clumpCell);
@@ -37285,6 +37670,67 @@ player_meets_cefr(Player, RequiredLevel) :-
       dispose: none
     };
   }
+  function optionalArg(value, check) {
+    return value === void 0 || value === null ? void 0 : check(value);
+  }
+  function objectList(method, value, name) {
+    needArray(method, value, name).forEach((item, i) => needObject(method, item, `${name}[${i}]`));
+    return value;
+  }
+  function stringList(method, value, name) {
+    needArray(method, value, name).forEach((item, i) => needString(method, item, `${name}[${i}]`));
+    return value;
+  }
+  function traversalTuningArg(method, value, name) {
+    needObject(method, value, name);
+    needObject(method, value.modeCost, `${name}.modeCost`);
+    needObject(method, value.modeAction, `${name}.modeAction`);
+    return value;
+  }
+  function affordanceInputOf(method, args) {
+    return coded("invalid-input", () => ({
+      actor: args.actor,
+      from: args.from,
+      links: objectList(method, args.links, "links"),
+      modes: stringList(method, args.modes, "modes"),
+      blocked: optionalArg(args.blocked, (v) => objectList(method, v, "blocked")),
+      geometry: optionalArg(args.geometry, (v) => needObject(method, v, "geometry")),
+      stamina: optionalArg(args.stamina, (v) => needObject(method, v, "stamina")),
+      tuning: optionalArg(args.tuning, (v) => traversalTuningArg(method, v, "tuning"))
+    }));
+  }
+  function vehicleStateArg(method, value, name) {
+    needObject(method, value, name);
+    needArray(method, value.occupants, `${name}.occupants`);
+    return value;
+  }
+  function routeArg(method, value, name) {
+    needObject(method, value, name);
+    objectList(method, value.steps, `${name}.steps`).forEach((step, i) => needArray(method, step.requires, `${name}.steps[${i}].requires`));
+    return value;
+  }
+  function groundProbesArg(method, value) {
+    needArray(method, value, "probes").forEach((probe, i) => {
+      needArray(method, probe, `probes[${i}]`).forEach((hit, j) => {
+        needObject(method, hit, `probes[${i}][${j}]`);
+        needNumber(method, hit.heightMm, `probes[${i}][${j}].heightMm`);
+        if (typeof hit.paved !== "boolean") throw refuse2(method, `\`probes[${i}][${j}].paved\` must be a boolean`);
+      });
+    });
+    return value;
+  }
+  function groundPointArg(method, value, name) {
+    needObject(method, value, name);
+    needNumber(method, value.xMm, `${name}.xMm`);
+    needNumber(method, value.zMm, `${name}.zMm`);
+    return value;
+  }
+  function seatStateArg(method, value) {
+    return needObject(method, value, "state");
+  }
+  function groundSeatTuningOf(args) {
+    return groundSeatTuning(args.params ?? {});
+  }
   function movementModeOf(method, value) {
     return oneOf(method, value, CAMERA_MODES, "mode");
   }
@@ -39286,6 +39732,227 @@ player_meets_cefr(Player, RequiredLevel) :-
       });
       return { results: plain(results), view: staminaPoolView(s.pool) };
     },
+    // ── traversal: the stateless kernels (P9e; PL.native-traversal-rows slice 1, U106(1)) ──
+    // One row per core function of `traversal/traversal` (+ its graph facts),
+    // `traversal/vehicles` (+ `vehicle-facts`), `traversal/fast-travel` (+
+    // `fast-travel-facts`) and `ground-seating/ground-seat`, named
+    // `traversal.<group>.<fn>` after the corpus file's area (`traversal-affordances`,
+    // `traversal-vehicles`, `traversal-fast-travel`, and `traversal/ground-seating`).
+    // The three older corpora pin several functions per case, so a row answers ONE
+    // function under a named key and tests/traversal_corpus.cpp composes a case's
+    // record from several rows, as core's corpus test does from core's functions. The
+    // ground-seating rows that answer a whole corpus op take the case's `input` and
+    // answer its `expected`; the settle is three STATELESS rows over the `state` the
+    // last answer carried. Tunings are core's RESOLVED tunings, as the corpora carry
+    // them; the `*.tuning`, `.links` and `.fromIR` rows read a world's IR block into
+    // them. Refusals (`mode`, `blocked`, `elsewhere`, `too_far`, …) are values.
+    /** `traversal.affordances.tuning { traversal? }` → `{ tuning }` — core's `traversalTuningFromIR` over the World IR's `traversal` block (absent: core's defaults). */
+    "traversal.affordances.tuning": (args) => {
+      const ir = coded("invalid-input", () => optionalArg(args.traversal, (v) => needObject("traversal.affordances.tuning", v, "traversal")));
+      return { tuning: plain(traversalTuningFromIR(ir)) };
+    },
+    /** `traversal.affordances.links { traversal? }` → `{ links }` — core's `traversalLinksFromIR`: the authored `links` of the World IR's `traversal` block as `TraversalLink`s. */
+    "traversal.affordances.links": (args) => {
+      const m = "traversal.affordances.links";
+      const ir = coded(
+        "invalid-input",
+        () => optionalArg(args.traversal, (v) => {
+          needObject(m, v, "traversal");
+          optionalArg(v.links, (l) => objectList(m, l, "traversal.links"));
+          return v;
+        })
+      );
+      return { links: plain(traversalLinksFromIR(ir)) };
+    },
+    /**
+     * `traversal.affordances.resolve { actor, from, links, modes, blocked?, geometry?,
+     * stamina?, tuning? }` → `{ affordances }` — core's `resolveAffordances`: every
+     * authored link out of `from`, refused ones included, sorted by (to, mode, id), each
+     * `{ id, from, to, mode, action, cost, available, refusal?, requires, conditional }`
+     * (the first refusal of `unreachable`, `blocked`, `mode`, `impassable`, `stamina`;
+     * `requires`/`forbidden` are the rules layer's). `geometry` is the host probe's
+     * answer per geometric link id; `tuning` absent is core's default.
+     */
+    "traversal.affordances.resolve": (args) => ({
+      affordances: plain(resolveAffordances(affordanceInputOf("traversal.affordances.resolve", args)))
+    }),
+    /** `traversal.affordances.best { affordances, to }` → `{ best }` — core's `bestAffordance`: the cheapest available affordance to `to`, or null. */
+    "traversal.affordances.best": (args) => {
+      const affordances = coded("invalid-input", () => objectList("traversal.affordances.best", args.affordances, "affordances"));
+      return { best: plain(bestAffordance(affordances, args.to)) };
+    },
+    /**
+     * `traversal.affordances.route { …resolve's args, to, maxSteps? }` → `{ route }` —
+     * core's `findRoute`: `{ from, to, steps, cost, conditional }` by uniform-cost search
+     * with core's tie-break, or null (no route within `maxSteps`, core's default 32).
+     */
+    "traversal.affordances.route": (args) => {
+      const input = affordanceInputOf("traversal.affordances.route", args);
+      return { route: plain(findRoute({ ...input, to: args.to, maxSteps: args.maxSteps ?? void 0 })) };
+    },
+    /**
+     * `traversal.affordances.graphFacts { links, tuning? }` → `{ facts }` — core's
+     * `traversalGraphFacts`: `traversal_link/3` per link, `traversal_cost/3` (the cheapest
+     * resolved way) and `traversal_requires/3` per edge. `tuning` absent is
+     * `DEFAULT_TRAVERSAL_TUNING`, the planner's own default.
+     */
+    "traversal.affordances.graphFacts": (args) => {
+      const m = "traversal.affordances.graphFacts";
+      const [links, tuning] = coded("invalid-input", () => [
+        objectList(m, args.links, "links"),
+        optionalArg(args.tuning, (v) => traversalTuningArg(m, v, "tuning"))
+      ]);
+      return { facts: plain(traversalGraphFacts(links, tuning ?? DEFAULT_TRAVERSAL_TUNING)) };
+    },
+    /** `traversal.vehicles.fromIR { vehicles? }` → `{ vehicles }` — core's `vehiclesFromIR` over the World IR's `traversal.vehicles` (an action atom kept only when non-empty). */
+    "traversal.vehicles.fromIR": (args) => {
+      const vehicles = coded("invalid-input", () => optionalArg(args.vehicles, (v) => objectList("traversal.vehicles.fromIR", v, "vehicles")));
+      return { vehicles: plain(vehiclesFromIR(vehicles)) };
+    },
+    /**
+     * `traversal.vehicles.resolve { vehicle, state, actor, at, verb }` → `{ resolution }` —
+     * core's `resolveVehicleVerb`: `{ vehicle, actor, verb, action, available, refusal?,
+     * grants? }` (the first of `elsewhere`, `full`, `not_aboard`, `occupied`, `redundant`;
+     * `drive` grants the vehicle's mode). `at` is where the ACTOR is (a location atom).
+     */
+    "traversal.vehicles.resolve": (args) => {
+      const m = "traversal.vehicles.resolve";
+      const [vehicle, state, verb] = coded("invalid-input", () => [
+        needObject(m, args.vehicle, "vehicle"),
+        vehicleStateArg(m, args.state, "state"),
+        oneOf(m, args.verb, VEHICLE_VERBS, "verb")
+      ]);
+      return { resolution: plain(resolveVehicleVerb({ vehicle, state, actor: args.actor, at: args.at, verb })) };
+    },
+    /** `traversal.vehicles.apply { state, actor, verb, resolution }` → `{ next }` — core's `applyVehicleVerb`: the state the verb produced, or null for a refused verb. */
+    "traversal.vehicles.apply": (args) => {
+      const m = "traversal.vehicles.apply";
+      const [state, verb, resolution] = coded("invalid-input", () => [
+        vehicleStateArg(m, args.state, "state"),
+        oneOf(m, args.verb, VEHICLE_VERBS, "verb"),
+        needObject(m, args.resolution, "resolution")
+      ]);
+      return { next: plain(applyVehicleVerb(state, args.actor, verb, resolution)) };
+    },
+    /** `traversal.vehicles.actions { vehicle }` → `{ actions }` — core's `vehicleActions`: the board/drive/disembark action atoms over core's defaults. */
+    "traversal.vehicles.actions": (args) => ({
+      actions: plain(vehicleActions(coded("invalid-input", () => needObject("traversal.vehicles.actions", args.vehicle, "vehicle"))))
+    }),
+    /** `traversal.vehicles.seats { vehicle }` → `{ seats }` — core's `vehicleSeats` (whole, at least 1). */
+    "traversal.vehicles.seats": (args) => ({
+      seats: vehicleSeats(coded("invalid-input", () => needObject("traversal.vehicles.seats", args.vehicle, "vehicle")))
+    }),
+    /** `traversal.vehicles.modeFact { vehicle }` → `{ fact }` — core's `vehicleModeFact`: `vehicle_mode(Id, Mode).` */
+    "traversal.vehicles.modeFact": (args) => ({
+      fact: vehicleModeFact(coded("invalid-input", () => needObject("traversal.vehicles.modeFact", args.vehicle, "vehicle")))
+    }),
+    /** `traversal.vehicles.stateFacts { state }` → `{ facts }` — core's `vehicleStateFacts`: where it is, its owner, occupants and driver as facts. */
+    "traversal.vehicles.stateFacts": (args) => ({
+      facts: plain(vehicleStateFacts(coded("invalid-input", () => vehicleStateArg("traversal.vehicles.stateFacts", args.state, "state"))))
+    }),
+    /** `traversal.vehicles.stateDelta { before?, after }` → `{ delta }` — core's `vehicleStateDelta`: `{ retract, assert }` by diffing the two states (`before` absent: everything asserted). */
+    "traversal.vehicles.stateDelta": (args) => {
+      const m = "traversal.vehicles.stateDelta";
+      const [before, after] = coded("invalid-input", () => [
+        optionalArg(args.before, (v) => vehicleStateArg(m, v, "before")),
+        vehicleStateArg(m, args.after, "after")
+      ]);
+      return { delta: plain(vehicleStateDelta(before, after)) };
+    },
+    /** `traversal.vehicles.anothers { state, actor }` → `{ anothers }` — core's `isAnothersVehicle`: owned, and not by `actor`. */
+    "traversal.vehicles.anothers": (args) => ({
+      anothers: isAnothersVehicle(coded("invalid-input", () => needObject("traversal.vehicles.anothers", args.state, "state")), args.actor)
+    }),
+    /** `traversal.fastTravel.tuning { fastTravel? }` → `{ tuning }` — core's `fastTravelTuningFromIR` over the World IR's `traversal.fastTravel` (absent: core's defaults). */
+    "traversal.fastTravel.tuning": (args) => {
+      const ir = coded("invalid-input", () => optionalArg(args.fastTravel, (v) => needObject("traversal.fastTravel.tuning", v, "fastTravel")));
+      return { tuning: plain(fastTravelTuningFromIR(ir)) };
+    },
+    /** `traversal.fastTravel.ceiling { tuning }` → `{ ceiling }` — core's `fastTravelCeiling`: the smaller of `maxHours` and `stepHours × maxSteps`. */
+    "traversal.fastTravel.ceiling": (args) => ({
+      ceiling: fastTravelCeiling(coded("invalid-input", () => needObject("traversal.fastTravel.ceiling", args.tuning, "tuning")))
+    }),
+    /** `traversal.fastTravel.hours { routeCost, tuning }` → `{ hours }` — core's `fastTravelHours`: the route cost × `hoursPerCost`, floored, clamped to the minimum and the ceiling. */
+    "traversal.fastTravel.hours": (args) => ({
+      hours: fastTravelHours(args.routeCost, coded("invalid-input", () => needObject("traversal.fastTravel.hours", args.tuning, "tuning")))
+    }),
+    /**
+     * `traversal.fastTravel.plan { seed, actor, from, to, journey, route, tuning? }` →
+     * `{ plan }` — core's `planFastTravel` over a route `traversal.affordances.route`
+     * answered: `{ actor, from, to, journey, route, cost, hours, ceiling, capped, steps,
+     * requires }`, each step `{ index, hours, elapsed, draw }` with its draw derived
+     * from (seed, actor, from, to, journey, index). `tuning` absent is core's default.
+     */
+    "traversal.fastTravel.plan": (args) => {
+      const m = "traversal.fastTravel.plan";
+      const [route, tuning] = coded("invalid-input", () => [
+        routeArg(m, args.route, "route"),
+        optionalArg(args.tuning, (v) => needObject(m, v, "tuning"))
+      ]);
+      const { seed, actor, from, to, journey } = args;
+      return { plan: plain(planFastTravel({ seed, actor, from, to, journey, route, tuning })) };
+    },
+    /** `traversal.fastTravel.arrival { actor, from, to }` → `{ delta }` — core's `fastTravelArrivalDelta`: the `at_location/2` swap. */
+    "traversal.fastTravel.arrival": (args) => ({ delta: plain(fastTravelArrivalDelta(args.actor, args.from, args.to)) }),
+    /** `traversal.fastTravel.discovery { location, known }` → `{ delta }` — core's `discoveryDelta`: `location_discovered/1` asserted unless already `known`. */
+    "traversal.fastTravel.discovery": (args) => {
+      coded("invalid-input", () => {
+        if (typeof args.known !== "boolean") throw refuse2("traversal.fastTravel.discovery", "`known` must be a boolean");
+      });
+      return { delta: plain(discoveryDelta(args.location, args.known)) };
+    },
+    /** `traversal.groundSeating.tuning { params? }` → core's `groundSeatTuning` (Unity's defaults in mm and ms; an authored number merges, a bad or negative one keeps the default). */
+    "traversal.groundSeating.tuning": (args) => plain(groundSeatTuningOf(args)),
+    /** `traversal.groundSeating.footprint { xMm, zMm, params? }` → `{ points }` — core's `footprintPoints`: the centre, then +x, −x, +z, −z at the footprint. */
+    "traversal.groundSeating.footprint": (args) => {
+      const m = "traversal.groundSeating.footprint";
+      coded("invalid-input", () => [needNumber(m, args.xMm, "xMm"), needNumber(m, args.zMm, "zMm")]);
+      return { points: plain(footprintPoints(args.xMm, args.zMm, groundSeatTuningOf(args))) };
+    },
+    /** `traversal.groundSeating.ground { probes, fromMm, params? }` → core's `drawnGround`: `{ found, heightMm, paved }`, the first highest hit inside the reach, the centre's first. */
+    "traversal.groundSeating.ground": (args) => {
+      const m = "traversal.groundSeating.ground";
+      const probes = coded("invalid-input", () => (needNumber(m, args.fromMm, "fromMm"), groundProbesArg(m, args.probes)));
+      return plain(drawnGround(probes, args.fromMm, groundSeatTuningOf(args)));
+    },
+    /** `traversal.groundSeating.target { meshMm, probes, params? }` → core's `seatTarget`: `{ reason, wantMm, onPaving }` for a body an agent carries. */
+    "traversal.groundSeating.target": (args) => {
+      const m = "traversal.groundSeating.target";
+      const probes = coded("invalid-input", () => (needNumber(m, args.meshMm, "meshMm"), groundProbesArg(m, args.probes)));
+      return plain(seatTarget({ meshMm: args.meshMm, probes }, groundSeatTuningOf(args)));
+    },
+    /** `traversal.groundSeating.stand { bodyMm, probes, params? }` → core's `standSeat`: `{ reason, heightMm, onPaving }` for a body standing with its agent off. */
+    "traversal.groundSeating.stand": (args) => {
+      const m = "traversal.groundSeating.stand";
+      const probes = coded("invalid-input", () => (needNumber(m, args.bodyMm, "bodyMm"), groundProbesArg(m, args.probes)));
+      return plain(standSeat({ bodyMm: args.bodyMm, probes }, groundSeatTuningOf(args)));
+    },
+    /** `traversal.groundSeating.moved { from, to }` → `{ moved }` — core's `movedSideways`: more than 1 mm² sideways. */
+    "traversal.groundSeating.moved": (args) => {
+      const m = "traversal.groundSeating.moved";
+      const [from, to] = coded("invalid-input", () => [groundPointArg(m, args.from, "from"), groundPointArg(m, args.to, "to")]);
+      return { moved: movedSideways(from, to) };
+    },
+    /** `traversal.groundSeating.initial {}` → `{ state }` — core's `initialSeat`: not seated, offset 0. */
+    "traversal.groundSeating.initial": () => ({ state: plain(initialSeat()) }),
+    /**
+     * `traversal.groundSeating.retarget { state, wantMm, at, params? }` → `{ state }` —
+     * core's `retargetSeat`: the first seat at once, the same target changes nothing, a
+     * new one settles from the offset at `at` (an `at` before the settle's start is its start).
+     */
+    "traversal.groundSeating.retarget": (args) => {
+      const m = "traversal.groundSeating.retarget";
+      const state = coded("invalid-input", () => (needNumber(m, args.wantMm, "wantMm"), needNumber(m, args.at, "at"), seatStateArg(m, args.state)));
+      return { state: plain(retargetSeat(state, args.wantMm, args.at, groundSeatTuningOf(args))) };
+    },
+    /** `traversal.groundSeating.offsetAt { state, at, params? }` → `{ offsetMm }` — core's `seatOffsetAt`: the carried offset at instant `at` (0 unseated). */
+    "traversal.groundSeating.offsetAt": (args) => {
+      const m = "traversal.groundSeating.offsetAt";
+      const state = coded("invalid-input", () => (needNumber(m, args.at, "at"), seatStateArg(m, args.state)));
+      return { offsetMm: seatOffsetAt(state, args.at, groundSeatTuningOf(args)) };
+    },
+    /** `traversal.groundSeating.unseat {}` → `{ state }` — core's `unseat`: whenever nothing carries the body (switched off, or standing with its agent off). */
+    "traversal.groundSeating.unseat": () => ({ state: plain(unseat()) }),
     // ── the genre HUD and the world rules panel (P9a) ──
     // Each row is one of core's corpus runners and nothing else: the args are
     // `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and

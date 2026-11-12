@@ -1,0 +1,2137 @@
+{
+  "area": "traversal-fast-travel",
+  "description": "Fast travel as a WORLD-SIMULATION operation (US-3 and US-4 of 122-traversal-and-travel), and the part of this module a generic engine cannot supply: every engine can already put a character somewhere else, and none of them can say what the world did meanwhile. Each case carries the WHOLE input — the authored link graph, the traveller’s modes, the runtime closures, the seed, the journey ordinal, and the fully resolved FastTravelTuning and TraversalTuning — so a harness in any language reproduces it with no defaults table, no world file and no KB. `expected.route` is the route the journey is PRICED from, found by the same uniform-cost search a walk uses, which is why a landslide on the only pass refuses the journey too: you cannot fast travel past something you could not have walked past, and a case pins exactly that with `plan: null`. `expected.plan.hours` is the route cost times the world’s `hoursPerCost`, floored, clamped up to `minimumHours` and down to `ceiling`; `ceiling` is the SMALLER of `maxHours` and `stepHours × maxSteps`, because the two bound different things — how much the world moves, and how many times the dependent systems are woken to move it — and cases pin both winning. A journey longer than the ceiling is truncated and reported `capped`, never refused. `plan.steps` are the bounded advances, summing to `hours` exactly with the last one carrying the remainder, each with a `draw` in [0, 1) derived from (seed, actor, from, to, journey ordinal, step index) and rounded to four places — never a shared RNG advanced per step, so the same journey later in the same playthrough draws different numbers and a replay reproduces both. `plan.cost` is what walking it WOULD have cost and is deliberately not charged: a journey spends TIME, and a simulation that passed a day and a half and emptied the meter has charged for the trip twice. There is no journey predicate and no elapsed fact — what a fast travel does to the world is that the CLOCK moved and everything downstream of it ran, so `expected.arrival` and `expected.discovery` are the only deltas and both are in predicates that already existed. Regenerate with `npm run traversal-corpus`.",
+  "cases": [
+    {
+      "name": "a-journey-passes-the-world-time-the-route-costs",
+      "note": "THE case the mechanic exists for. A fast travel is not a teleport: the route to the ridge costs 30 out of the shared meter, the world’s `hoursPerCost` turns that into 30 hours, and the journey is broken into five six-hour advances the dependent systems run FORWARD through — so a shop that opens in the middle of the trip is open when it should be. An implementation that hands the clock one 30-hour jump reproduces the elapsed total and gets every schedule inside it wrong.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 0,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 1,
+          "minimumHours": 1,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            },
+            {
+              "id": "ford_path>far_bank:jump",
+              "from": "ford_path",
+              "to": "far_bank",
+              "mode": "jump",
+              "cost": 6,
+              "requires": []
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 15,
+              "requires": []
+            }
+          ],
+          "cost": 25,
+          "conditional": false
+        },
+        "plan": {
+          "actor": "wren",
+          "from": "riverside_camp",
+          "to": "ridge",
+          "journey": 0,
+          "route": {
+            "from": "riverside_camp",
+            "to": "ridge",
+            "steps": [
+              {
+                "id": "riverside_camp>ford_path:walk",
+                "from": "riverside_camp",
+                "to": "ford_path",
+                "mode": "walk",
+                "cost": 4,
+                "requires": []
+              },
+              {
+                "id": "ford_path>far_bank:jump",
+                "from": "ford_path",
+                "to": "far_bank",
+                "mode": "jump",
+                "cost": 6,
+                "requires": []
+              },
+              {
+                "id": "far_bank>ridge:climb",
+                "from": "far_bank",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 15,
+                "requires": []
+              }
+            ],
+            "cost": 25,
+            "conditional": false
+          },
+          "cost": 25,
+          "hours": 25,
+          "ceiling": 72,
+          "capped": false,
+          "steps": [
+            {
+              "index": 0,
+              "hours": 6,
+              "elapsed": 6,
+              "draw": 0.7768
+            },
+            {
+              "index": 1,
+              "hours": 6,
+              "elapsed": 12,
+              "draw": 0.8601
+            },
+            {
+              "index": 2,
+              "hours": 6,
+              "elapsed": 18,
+              "draw": 0.98
+            },
+            {
+              "index": 3,
+              "hours": 6,
+              "elapsed": 24,
+              "draw": 0.8258
+            },
+            {
+              "index": 4,
+              "hours": 1,
+              "elapsed": 25,
+              "draw": 0.51
+            }
+          ],
+          "requires": []
+        },
+        "arrival": {
+          "retract": [
+            "at_location(wren, riverside_camp)."
+          ],
+          "assert": [
+            "at_location(wren, ridge)."
+          ]
+        },
+        "discovery": {
+          "retract": [],
+          "assert": [
+            "location_discovered(ridge)."
+          ]
+        },
+        "discoveryWhenAlreadyKnown": {
+          "retract": [],
+          "assert": []
+        }
+      }
+    },
+    {
+      "name": "the-same-journey-later-in-the-playthrough-draws-different-numbers",
+      "note": "Every draw is derived from (seed, actor, from, to, journey ordinal, step index) and from nothing else — never a shared RNG advanced once per step, which would make the schedule depend on how many journeys ran before it. The identical trip as the playthrough’s FOURTH journey has the same hours and the same step boundaries and different draws, which is what lets an ambush on the road be stochastic and still reproducible. The journey ordinal is why it rides in the save.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 3,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 1,
+          "minimumHours": 1,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            },
+            {
+              "id": "ford_path>far_bank:jump",
+              "from": "ford_path",
+              "to": "far_bank",
+              "mode": "jump",
+              "cost": 6,
+              "requires": []
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 15,
+              "requires": []
+            }
+          ],
+          "cost": 25,
+          "conditional": false
+        },
+        "plan": {
+          "actor": "wren",
+          "from": "riverside_camp",
+          "to": "ridge",
+          "journey": 3,
+          "route": {
+            "from": "riverside_camp",
+            "to": "ridge",
+            "steps": [
+              {
+                "id": "riverside_camp>ford_path:walk",
+                "from": "riverside_camp",
+                "to": "ford_path",
+                "mode": "walk",
+                "cost": 4,
+                "requires": []
+              },
+              {
+                "id": "ford_path>far_bank:jump",
+                "from": "ford_path",
+                "to": "far_bank",
+                "mode": "jump",
+                "cost": 6,
+                "requires": []
+              },
+              {
+                "id": "far_bank>ridge:climb",
+                "from": "far_bank",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 15,
+                "requires": []
+              }
+            ],
+            "cost": 25,
+            "conditional": false
+          },
+          "cost": 25,
+          "hours": 25,
+          "ceiling": 72,
+          "capped": false,
+          "steps": [
+            {
+              "index": 0,
+              "hours": 6,
+              "elapsed": 6,
+              "draw": 0.7713
+            },
+            {
+              "index": 1,
+              "hours": 6,
+              "elapsed": 12,
+              "draw": 0.9862
+            },
+            {
+              "index": 2,
+              "hours": 6,
+              "elapsed": 18,
+              "draw": 0.4847
+            },
+            {
+              "index": 3,
+              "hours": 6,
+              "elapsed": 24,
+              "draw": 0.0611
+            },
+            {
+              "index": 4,
+              "hours": 1,
+              "elapsed": 25,
+              "draw": 0.875
+            }
+          ],
+          "requires": []
+        },
+        "arrival": {
+          "retract": [
+            "at_location(wren, riverside_camp)."
+          ],
+          "assert": [
+            "at_location(wren, ridge)."
+          ]
+        },
+        "discovery": {
+          "retract": [],
+          "assert": [
+            "location_discovered(ridge)."
+          ]
+        },
+        "discoveryWhenAlreadyKnown": {
+          "retract": [],
+          "assert": []
+        }
+      }
+    },
+    {
+      "name": "a-trip-next-door-still-takes-the-authored-minimum",
+      "note": "`minimumHours` clamps up, and here the world prices travel at a tenth of an hour per unit so the four-cost walk to the ford floors to zero. A journey that passed no time at all would be a teleport with extra steps, so it takes an hour and the world lives through it.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ford_path",
+        "journey": 0,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 0.1,
+          "minimumHours": 1,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": {
+          "from": "riverside_camp",
+          "to": "ford_path",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            }
+          ],
+          "cost": 4,
+          "conditional": false
+        },
+        "plan": {
+          "actor": "wren",
+          "from": "riverside_camp",
+          "to": "ford_path",
+          "journey": 0,
+          "route": {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "steps": [
+              {
+                "id": "riverside_camp>ford_path:walk",
+                "from": "riverside_camp",
+                "to": "ford_path",
+                "mode": "walk",
+                "cost": 4,
+                "requires": []
+              }
+            ],
+            "cost": 4,
+            "conditional": false
+          },
+          "cost": 4,
+          "hours": 1,
+          "ceiling": 72,
+          "capped": false,
+          "steps": [
+            {
+              "index": 0,
+              "hours": 1,
+              "elapsed": 1,
+              "draw": 0.4409
+            }
+          ],
+          "requires": []
+        },
+        "arrival": {
+          "retract": [
+            "at_location(wren, riverside_camp)."
+          ],
+          "assert": [
+            "at_location(wren, ford_path)."
+          ]
+        },
+        "discovery": {
+          "retract": [],
+          "assert": [
+            "location_discovered(ford_path)."
+          ]
+        },
+        "discoveryWhenAlreadyKnown": {
+          "retract": [],
+          "assert": []
+        }
+      }
+    },
+    {
+      "name": "a-fractional-journey-floors-and-does-not-round",
+      "note": "`fastTravelHours` is `floor(cost × hoursPerCost)`, clamped: a world that prices travel at three quarters of an hour per unit makes the 25-cost walk to the ridge 18.75 hours, and the journey passes 18 of them — not the 19 a round (or a ceiling) gives. The answer sits above `minimumHours` and below the ceiling, so neither clamp hides the reading; a port that rounds runs one more advance and wakes every dependent system for an hour the world did not author.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 0,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 0.75,
+          "minimumHours": 1,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            },
+            {
+              "id": "ford_path>far_bank:jump",
+              "from": "ford_path",
+              "to": "far_bank",
+              "mode": "jump",
+              "cost": 6,
+              "requires": []
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 15,
+              "requires": []
+            }
+          ],
+          "cost": 25,
+          "conditional": false
+        },
+        "plan": {
+          "actor": "wren",
+          "from": "riverside_camp",
+          "to": "ridge",
+          "journey": 0,
+          "route": {
+            "from": "riverside_camp",
+            "to": "ridge",
+            "steps": [
+              {
+                "id": "riverside_camp>ford_path:walk",
+                "from": "riverside_camp",
+                "to": "ford_path",
+                "mode": "walk",
+                "cost": 4,
+                "requires": []
+              },
+              {
+                "id": "ford_path>far_bank:jump",
+                "from": "ford_path",
+                "to": "far_bank",
+                "mode": "jump",
+                "cost": 6,
+                "requires": []
+              },
+              {
+                "id": "far_bank>ridge:climb",
+                "from": "far_bank",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 15,
+                "requires": []
+              }
+            ],
+            "cost": 25,
+            "conditional": false
+          },
+          "cost": 25,
+          "hours": 18,
+          "ceiling": 72,
+          "capped": false,
+          "steps": [
+            {
+              "index": 0,
+              "hours": 6,
+              "elapsed": 6,
+              "draw": 0.7768
+            },
+            {
+              "index": 1,
+              "hours": 6,
+              "elapsed": 12,
+              "draw": 0.8601
+            },
+            {
+              "index": 2,
+              "hours": 6,
+              "elapsed": 18,
+              "draw": 0.98
+            }
+          ],
+          "requires": []
+        },
+        "arrival": {
+          "retract": [
+            "at_location(wren, riverside_camp)."
+          ],
+          "assert": [
+            "at_location(wren, ridge)."
+          ]
+        },
+        "discovery": {
+          "retract": [],
+          "assert": [
+            "location_discovered(ridge)."
+          ]
+        },
+        "discoveryWhenAlreadyKnown": {
+          "retract": [],
+          "assert": []
+        }
+      }
+    },
+    {
+      "name": "a-journey-longer-than-the-ceiling-is-truncated-and-says-so",
+      "note": "The answer to \"can a long journey hang the game\". A world that prices travel at ten hours per unit wants 250 hours for this route; the ceiling is 72, so the advance is truncated to it, `capped` is true and the trip runs twelve advances rather than forty-two. Arriving late is a better answer than a destination the player cannot reach, so it is never refused.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 0,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 10,
+          "minimumHours": 1,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            },
+            {
+              "id": "ford_path>far_bank:jump",
+              "from": "ford_path",
+              "to": "far_bank",
+              "mode": "jump",
+              "cost": 6,
+              "requires": []
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 15,
+              "requires": []
+            }
+          ],
+          "cost": 25,
+          "conditional": false
+        },
+        "plan": {
+          "actor": "wren",
+          "from": "riverside_camp",
+          "to": "ridge",
+          "journey": 0,
+          "route": {
+            "from": "riverside_camp",
+            "to": "ridge",
+            "steps": [
+              {
+                "id": "riverside_camp>ford_path:walk",
+                "from": "riverside_camp",
+                "to": "ford_path",
+                "mode": "walk",
+                "cost": 4,
+                "requires": []
+              },
+              {
+                "id": "ford_path>far_bank:jump",
+                "from": "ford_path",
+                "to": "far_bank",
+                "mode": "jump",
+                "cost": 6,
+                "requires": []
+              },
+              {
+                "id": "far_bank>ridge:climb",
+                "from": "far_bank",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 15,
+                "requires": []
+              }
+            ],
+            "cost": 25,
+            "conditional": false
+          },
+          "cost": 25,
+          "hours": 72,
+          "ceiling": 72,
+          "capped": true,
+          "steps": [
+            {
+              "index": 0,
+              "hours": 6,
+              "elapsed": 6,
+              "draw": 0.7768
+            },
+            {
+              "index": 1,
+              "hours": 6,
+              "elapsed": 12,
+              "draw": 0.8601
+            },
+            {
+              "index": 2,
+              "hours": 6,
+              "elapsed": 18,
+              "draw": 0.98
+            },
+            {
+              "index": 3,
+              "hours": 6,
+              "elapsed": 24,
+              "draw": 0.8258
+            },
+            {
+              "index": 4,
+              "hours": 6,
+              "elapsed": 30,
+              "draw": 0.51
+            },
+            {
+              "index": 5,
+              "hours": 6,
+              "elapsed": 36,
+              "draw": 0.8019
+            },
+            {
+              "index": 6,
+              "hours": 6,
+              "elapsed": 42,
+              "draw": 0.9165
+            },
+            {
+              "index": 7,
+              "hours": 6,
+              "elapsed": 48,
+              "draw": 0.3912
+            },
+            {
+              "index": 8,
+              "hours": 6,
+              "elapsed": 54,
+              "draw": 0.8693
+            },
+            {
+              "index": 9,
+              "hours": 6,
+              "elapsed": 60,
+              "draw": 0.3511
+            },
+            {
+              "index": 10,
+              "hours": 6,
+              "elapsed": 66,
+              "draw": 0.9985
+            },
+            {
+              "index": 11,
+              "hours": 6,
+              "elapsed": 72,
+              "draw": 0.836
+            }
+          ],
+          "requires": []
+        },
+        "arrival": {
+          "retract": [
+            "at_location(wren, riverside_camp)."
+          ],
+          "assert": [
+            "at_location(wren, ridge)."
+          ]
+        },
+        "discovery": {
+          "retract": [],
+          "assert": [
+            "location_discovered(ridge)."
+          ]
+        },
+        "discoveryWhenAlreadyKnown": {
+          "retract": [],
+          "assert": []
+        }
+      }
+    },
+    {
+      "name": "the-ceiling-is-the-smaller-of-the-two-authored-bounds",
+      "note": "Bounded TWICE, because the two bounds bound different things and a game needs both: `maxHours` bounds how much the world moves, and `stepHours × maxSteps` bounds how many times the dependent systems are woken to move it. Here the world authors a generous 100 hours and a budget of four advances, so the step budget wins at 24 and the number is reported on the plan rather than living in a source file. A port that implements only `maxHours` runs a 100-hour journey here.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 0,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 1,
+          "minimumHours": 1,
+          "maxHours": 100,
+          "stepHours": 6,
+          "maxSteps": 4,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            },
+            {
+              "id": "ford_path>far_bank:jump",
+              "from": "ford_path",
+              "to": "far_bank",
+              "mode": "jump",
+              "cost": 6,
+              "requires": []
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 15,
+              "requires": []
+            }
+          ],
+          "cost": 25,
+          "conditional": false
+        },
+        "plan": {
+          "actor": "wren",
+          "from": "riverside_camp",
+          "to": "ridge",
+          "journey": 0,
+          "route": {
+            "from": "riverside_camp",
+            "to": "ridge",
+            "steps": [
+              {
+                "id": "riverside_camp>ford_path:walk",
+                "from": "riverside_camp",
+                "to": "ford_path",
+                "mode": "walk",
+                "cost": 4,
+                "requires": []
+              },
+              {
+                "id": "ford_path>far_bank:jump",
+                "from": "ford_path",
+                "to": "far_bank",
+                "mode": "jump",
+                "cost": 6,
+                "requires": []
+              },
+              {
+                "id": "far_bank>ridge:climb",
+                "from": "far_bank",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 15,
+                "requires": []
+              }
+            ],
+            "cost": 25,
+            "conditional": false
+          },
+          "cost": 25,
+          "hours": 24,
+          "ceiling": 24,
+          "capped": true,
+          "steps": [
+            {
+              "index": 0,
+              "hours": 6,
+              "elapsed": 6,
+              "draw": 0.7768
+            },
+            {
+              "index": 1,
+              "hours": 6,
+              "elapsed": 12,
+              "draw": 0.8601
+            },
+            {
+              "index": 2,
+              "hours": 6,
+              "elapsed": 18,
+              "draw": 0.98
+            },
+            {
+              "index": 3,
+              "hours": 6,
+              "elapsed": 24,
+              "draw": 0.8258
+            }
+          ],
+          "requires": []
+        },
+        "arrival": {
+          "retract": [
+            "at_location(wren, riverside_camp)."
+          ],
+          "assert": [
+            "at_location(wren, ridge)."
+          ]
+        },
+        "discovery": {
+          "retract": [],
+          "assert": [
+            "location_discovered(ridge)."
+          ]
+        },
+        "discoveryWhenAlreadyKnown": {
+          "retract": [],
+          "assert": []
+        }
+      }
+    },
+    {
+      "name": "the-last-advance-carries-the-remainder-and-the-steps-sum-to-the-hours",
+      "note": "Twenty-five hours in six-hour advances is 6 + 6 + 6 + 6 + 1, not five sixes and an overshoot. The steps always sum to the elapsed total exactly, which is what makes the elapsed world an honest function of the journey rather than of the step size — and the caller has already clamped the hours to the ceiling, which is what makes that possible.",
+      "input": {
+        "seed": "corpus",
+        "actor": "tam",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 1,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 1,
+          "minimumHours": 1,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            },
+            {
+              "id": "ford_path>far_bank:jump",
+              "from": "ford_path",
+              "to": "far_bank",
+              "mode": "jump",
+              "cost": 6,
+              "requires": []
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 15,
+              "requires": []
+            }
+          ],
+          "cost": 25,
+          "conditional": false
+        },
+        "plan": {
+          "actor": "tam",
+          "from": "riverside_camp",
+          "to": "ridge",
+          "journey": 1,
+          "route": {
+            "from": "riverside_camp",
+            "to": "ridge",
+            "steps": [
+              {
+                "id": "riverside_camp>ford_path:walk",
+                "from": "riverside_camp",
+                "to": "ford_path",
+                "mode": "walk",
+                "cost": 4,
+                "requires": []
+              },
+              {
+                "id": "ford_path>far_bank:jump",
+                "from": "ford_path",
+                "to": "far_bank",
+                "mode": "jump",
+                "cost": 6,
+                "requires": []
+              },
+              {
+                "id": "far_bank>ridge:climb",
+                "from": "far_bank",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 15,
+                "requires": []
+              }
+            ],
+            "cost": 25,
+            "conditional": false
+          },
+          "cost": 25,
+          "hours": 25,
+          "ceiling": 72,
+          "capped": false,
+          "steps": [
+            {
+              "index": 0,
+              "hours": 6,
+              "elapsed": 6,
+              "draw": 0.7954
+            },
+            {
+              "index": 1,
+              "hours": 6,
+              "elapsed": 12,
+              "draw": 0.2247
+            },
+            {
+              "index": 2,
+              "hours": 6,
+              "elapsed": 18,
+              "draw": 0.3406
+            },
+            {
+              "index": 3,
+              "hours": 6,
+              "elapsed": 24,
+              "draw": 0.1784
+            },
+            {
+              "index": 4,
+              "hours": 1,
+              "elapsed": 25,
+              "draw": 0.533
+            }
+          ],
+          "requires": []
+        },
+        "arrival": {
+          "retract": [
+            "at_location(tam, riverside_camp)."
+          ],
+          "assert": [
+            "at_location(tam, ridge)."
+          ]
+        },
+        "discovery": {
+          "retract": [],
+          "assert": [
+            "location_discovered(ridge)."
+          ]
+        },
+        "discoveryWhenAlreadyKnown": {
+          "retract": [],
+          "assert": []
+        }
+      }
+    },
+    {
+      "name": "a-journey-along-a-conditional-route-carries-the-goal-the-rules-layer-answers",
+      "note": "The only route to the ridge without the jump goes through the water, so the plan carries the rope goal of the leg that asks it, deduplicated and in route order. Core cannot evaluate an authored Prolog goal, so a journey is refused `requires` by the decision layer and not here — and it is evaluated by the pack’s own `traversal_goal_met/2`, which rebinds the goal to the caller’s actor.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 0,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 1,
+          "minimumHours": 1,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>far_bank:swim",
+              "from": "riverside_camp",
+              "to": "far_bank",
+              "mode": "swim",
+              "cost": 15,
+              "requires": [
+                "has_item(rope, 1)"
+              ]
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 15,
+              "requires": []
+            }
+          ],
+          "cost": 30,
+          "conditional": true
+        },
+        "plan": {
+          "actor": "wren",
+          "from": "riverside_camp",
+          "to": "ridge",
+          "journey": 0,
+          "route": {
+            "from": "riverside_camp",
+            "to": "ridge",
+            "steps": [
+              {
+                "id": "riverside_camp>far_bank:swim",
+                "from": "riverside_camp",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 15,
+                "requires": [
+                  "has_item(rope, 1)"
+                ]
+              },
+              {
+                "id": "far_bank>ridge:climb",
+                "from": "far_bank",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 15,
+                "requires": []
+              }
+            ],
+            "cost": 30,
+            "conditional": true
+          },
+          "cost": 30,
+          "hours": 30,
+          "ceiling": 72,
+          "capped": false,
+          "steps": [
+            {
+              "index": 0,
+              "hours": 6,
+              "elapsed": 6,
+              "draw": 0.7768
+            },
+            {
+              "index": 1,
+              "hours": 6,
+              "elapsed": 12,
+              "draw": 0.8601
+            },
+            {
+              "index": 2,
+              "hours": 6,
+              "elapsed": 18,
+              "draw": 0.98
+            },
+            {
+              "index": 3,
+              "hours": 6,
+              "elapsed": 24,
+              "draw": 0.8258
+            },
+            {
+              "index": 4,
+              "hours": 6,
+              "elapsed": 30,
+              "draw": 0.51
+            }
+          ],
+          "requires": [
+            "has_item(rope, 1)"
+          ]
+        },
+        "arrival": {
+          "retract": [
+            "at_location(wren, riverside_camp)."
+          ],
+          "assert": [
+            "at_location(wren, ridge)."
+          ]
+        },
+        "discovery": {
+          "retract": [],
+          "assert": [
+            "location_discovered(ridge)."
+          ]
+        },
+        "discoveryWhenAlreadyKnown": {
+          "retract": [],
+          "assert": []
+        }
+      }
+    },
+    {
+      "name": "a-world-that-authored-travel-as-instantaneous-runs-no-advance-at-all",
+      "note": "The honest zero. A world whose `hoursPerCost` and `minimumHours` are both zero produces a plan with no steps, so nothing is advanced and the traveller simply arrives — and it is still a decision, still gated on discovery and permissibility, and still priced from a route the actor could have walked. A port that runs one advance \"because there is always one\" wakes every dependent system for a journey the world said takes no time.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 0,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 0,
+          "minimumHours": 0,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            },
+            {
+              "id": "ford_path>far_bank:jump",
+              "from": "ford_path",
+              "to": "far_bank",
+              "mode": "jump",
+              "cost": 6,
+              "requires": []
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 15,
+              "requires": []
+            }
+          ],
+          "cost": 25,
+          "conditional": false
+        },
+        "plan": {
+          "actor": "wren",
+          "from": "riverside_camp",
+          "to": "ridge",
+          "journey": 0,
+          "route": {
+            "from": "riverside_camp",
+            "to": "ridge",
+            "steps": [
+              {
+                "id": "riverside_camp>ford_path:walk",
+                "from": "riverside_camp",
+                "to": "ford_path",
+                "mode": "walk",
+                "cost": 4,
+                "requires": []
+              },
+              {
+                "id": "ford_path>far_bank:jump",
+                "from": "ford_path",
+                "to": "far_bank",
+                "mode": "jump",
+                "cost": 6,
+                "requires": []
+              },
+              {
+                "id": "far_bank>ridge:climb",
+                "from": "far_bank",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 15,
+                "requires": []
+              }
+            ],
+            "cost": 25,
+            "conditional": false
+          },
+          "cost": 25,
+          "hours": 0,
+          "ceiling": 72,
+          "capped": false,
+          "steps": [],
+          "requires": []
+        },
+        "arrival": {
+          "retract": [
+            "at_location(wren, riverside_camp)."
+          ],
+          "assert": [
+            "at_location(wren, ridge)."
+          ]
+        },
+        "discovery": {
+          "retract": [],
+          "assert": [
+            "location_discovered(ridge)."
+          ]
+        },
+        "discoveryWhenAlreadyKnown": {
+          "retract": [],
+          "assert": []
+        }
+      }
+    },
+    {
+      "name": "negative-a-landslide-on-the-only-pass-refuses-the-journey-too",
+      "note": "THE negative case, and the whole reason this is a world operation rather than a menu that ignores the world. The route is found by the same `reachable/3` a walk uses, so closing the two ways across the water leaves no route and there is NO PLAN — not a plan at zero hours, and not an arrival. You cannot fast travel past something you could not have walked past. An implementation that teleports to any discovered place passes every other case in this file.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 0,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "blocked": [
+          {
+            "from": "riverside_camp",
+            "to": "far_bank"
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank"
+          }
+        ],
+        "tuning": {
+          "hoursPerCost": 1,
+          "minimumHours": 1,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": null,
+        "plan": null,
+        "arrival": null,
+        "discovery": null,
+        "discoveryWhenAlreadyKnown": null
+      }
+    },
+    {
+      "name": "negative-a-mode-the-traveller-does-not-have-is-a-destination-they-cannot-reach",
+      "note": "The second negative, on a different mechanism: nothing is closed, the graph is whole, and the traveller can only walk. Every way across the water needs a mode they do not have, so there is no route and no plan. Reachability is the actor’s, not the map’s.",
+      "input": {
+        "seed": "corpus",
+        "actor": "wren",
+        "from": "riverside_camp",
+        "to": "ridge",
+        "journey": 0,
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk"
+        ],
+        "blocked": [],
+        "tuning": {
+          "hoursPerCost": 1,
+          "minimumHours": 1,
+          "maxHours": 72,
+          "stepHours": 6,
+          "maxSteps": 12,
+          "action": "fast_travel",
+          "mode": "fast_travel"
+        },
+        "graphTuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "expected": {
+        "route": null,
+        "plan": null,
+        "arrival": null,
+        "discovery": null,
+        "discoveryWhenAlreadyKnown": null
+      }
+    }
+  ]
+}

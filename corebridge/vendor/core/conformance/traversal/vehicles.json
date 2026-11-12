@@ -1,0 +1,780 @@
+{
+  "area": "traversal-vehicles",
+  "description": "A vehicle as an entity the simulation still understands (US-2 and US-4 of 122-traversal-and-travel). Each case carries the WHOLE input — the authored vehicle with its mode, owner, seat count and action atoms, its per-playthrough state, the actor, where the ACTOR is, and the verb — so a harness in any language reproduces it with no defaults table and no world file. What is deliberately absent from every case is the whole of what an engine has: there is no speed, no acceleration, no turning circle, no buoyancy and no mesh, because a vehicle’s entire traversal meaning is the mode it lends whoever is driving it (docs/mechanic-predicates.md §12) and speed and handling are the host’s (§11). `expected.resolution` is what core decided before the rules layer was asked; the refusal is the FIRST that applies in VEHICLE_REFUSALS order (unknown, elsewhere, full, not_aboard, occupied, redundant, forbidden). `unknown` never appears because it belongs to the decision layer — a pure function is handed a vehicle — and `forbidden` never appears because permissibility is the rules layer’s: this module supplies `anothers`, the fact a theft norm is authored over, and an unowned cart is `false` because core does not invent a prohibition. `expected.next` is the state the verb produced and is `null` for a refused verb, so a caller cannot apply a transition core did not afford; `expected.delta` is the { retract, assert } fact delta in the 110 vocabulary, computed by DIFFING the two states rather than from which verb ran, so a state restored from a save produces the same facts as one reached by playing. Occupant lists are canonically sorted. Regenerate with `npm run traversal-corpus`.",
+  "cases": [
+    {
+      "name": "boarding-a-skiff-moored-where-the-actor-is-standing",
+      "note": "The first verb, and the whole of what colocation means here: the actor’s location atom and the vehicle’s are compared, never a distance. A host that knows the rider is three metres from the hull resolves that to a place and hands over the NAME — there is no radius in this module and nothing to author one on.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": []
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "board",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "board",
+          "action": "board",
+          "available": true
+        },
+        "next": {
+          "id": "skiff",
+          "location": "riverside_camp",
+          "owner": "ferryman",
+          "occupants": [
+            "wren"
+          ]
+        },
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": [
+            "vehicle_occupant(skiff, wren)."
+          ]
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "negative-the-skiff-is-moored-somewhere-the-actor-is-not",
+      "note": "The first refusal core settles from its own state. The actor is at the ford and the skiff is at the camp, so there is nothing to get into — and the state it would have produced is `null`, because `applyVehicleVerb` refuses to apply a transition core did not afford.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": []
+      },
+      "actor": "wren",
+      "at": "ford_path",
+      "verb": "board",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "board",
+          "action": "board",
+          "available": false,
+          "refusal": "elsewhere"
+        },
+        "next": null,
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": []
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "negative-every-seat-in-the-cart-is-taken",
+      "note": "Capacity is core’s own number and not a predicate: §12 cut `vehicle_capacity/2`, and a rule that wants to know whether the cart is full counts `vehicle_occupant/2`. One seat, one occupant, and the second traveller is refused.",
+      "vehicle": {
+        "id": "cart",
+        "name": "A handcart",
+        "mode": "ride",
+        "location": "ford_path",
+        "seats": 1,
+        "actions": {
+          "drive": "take_reins"
+        }
+      },
+      "state": {
+        "id": "cart",
+        "location": "ford_path",
+        "occupants": [
+          "tam"
+        ]
+      },
+      "actor": "wren",
+      "at": "ford_path",
+      "verb": "board",
+      "expected": {
+        "resolution": {
+          "vehicle": "cart",
+          "actor": "wren",
+          "verb": "board",
+          "action": "board",
+          "available": false,
+          "refusal": "full"
+        },
+        "next": null,
+        "actions": {
+          "board": "board",
+          "drive": "take_reins",
+          "disembark": "disembark"
+        },
+        "seats": 1,
+        "modeFact": "vehicle_mode(cart, ride).",
+        "stateFacts": [
+          "at_location(cart, ford_path).",
+          "vehicle_occupant(cart, tam)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": []
+        },
+        "anothers": false
+      }
+    },
+    {
+      "name": "negative-boarding-what-you-are-already-in-changes-nothing",
+      "note": "`redundant` is a refusal rather than a no-op on purpose: a caller that boards twice would otherwise write a `vehicle_occupant/2` the KB already carries, and a duplicated fact is a seat that never frees up. The pinned delta of every refused case is empty for the same reason.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": [
+          "wren"
+        ]
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "board",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "board",
+          "action": "board",
+          "available": false,
+          "refusal": "redundant"
+        },
+        "next": null,
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman).",
+          "vehicle_occupant(skiff, wren)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": []
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "taking-the-reins-grants-the-mode-the-vehicle-lends",
+      "note": "THE vehicle case. `grants` is a boat, and that is the ENTIRE traversal meaning of a vehicle (§12): driving asserts `movement_mode(Actor, boat)` and the boat links of the authored graph become afforded, priced by the world’s own multiplier out of the shared energy/3 meter. There is no speed here, no handling curve and no fuel — a port looking for them is looking at the wrong side of the seam.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": [
+          "wren"
+        ]
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "drive",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "drive",
+          "action": "drive",
+          "available": true,
+          "grants": "boat"
+        },
+        "next": {
+          "id": "skiff",
+          "location": "riverside_camp",
+          "owner": "ferryman",
+          "occupants": [
+            "wren"
+          ],
+          "driver": "wren"
+        },
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman).",
+          "vehicle_occupant(skiff, wren)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": [
+            "vehicle_driver(skiff, wren)."
+          ]
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "the-action-atom-a-verb-is-gated-as-is-the-worlds-and-not-this-modules",
+      "note": "The cart’s `drive` is authored as `take_reins`, a row of the world’s ONE action table — which is what lets `forbids/4` refuse a theft, `candidate_action/3` offer an NPC the cart, and 123’s skill gates ask for a riding skill, none of them knowing that a vehicle module exists. A port that hardcodes the three default atoms cannot express a world’s own verbs.",
+      "vehicle": {
+        "id": "cart",
+        "name": "A handcart",
+        "mode": "ride",
+        "location": "ford_path",
+        "seats": 1,
+        "actions": {
+          "drive": "take_reins"
+        }
+      },
+      "state": {
+        "id": "cart",
+        "location": "ford_path",
+        "occupants": [
+          "wren"
+        ]
+      },
+      "actor": "wren",
+      "at": "ford_path",
+      "verb": "drive",
+      "expected": {
+        "resolution": {
+          "vehicle": "cart",
+          "actor": "wren",
+          "verb": "drive",
+          "action": "take_reins",
+          "available": true,
+          "grants": "ride"
+        },
+        "next": {
+          "id": "cart",
+          "location": "ford_path",
+          "occupants": [
+            "wren"
+          ],
+          "driver": "wren"
+        },
+        "actions": {
+          "board": "board",
+          "drive": "take_reins",
+          "disembark": "disembark"
+        },
+        "seats": 1,
+        "modeFact": "vehicle_mode(cart, ride).",
+        "stateFacts": [
+          "at_location(cart, ford_path).",
+          "vehicle_occupant(cart, wren)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": [
+            "vehicle_driver(cart, wren)."
+          ]
+        },
+        "anothers": false
+      }
+    },
+    {
+      "name": "negative-you-cannot-drive-a-skiff-from-the-bank",
+      "note": "The verb order matters and this is why: board, then drive. An actor who is not aboard is refused `not_aboard` however close they are and however unattended the hull is, so a port that folds boarding into driving has a character who rows a boat they are standing beside.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": []
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "drive",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "drive",
+          "action": "drive",
+          "available": false,
+          "refusal": "not_aboard",
+          "grants": "boat"
+        },
+        "next": null,
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": []
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "negative-somebody-else-already-has-the-reins",
+      "note": "At most one driver is ever true of a vehicle, and the passenger who tries to take the reins is refused `occupied` rather than silently replacing them. Two `vehicle_driver/2` facts for one hull is a cart that follows two people to two places.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": [
+          "tam",
+          "wren"
+        ],
+        "driver": "tam"
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "drive",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "drive",
+          "action": "drive",
+          "available": false,
+          "refusal": "occupied",
+          "grants": "boat"
+        },
+        "next": null,
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman).",
+          "vehicle_occupant(skiff, tam).",
+          "vehicle_occupant(skiff, wren).",
+          "vehicle_driver(skiff, tam)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": []
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "negative-driving-what-you-already-drive-is-redundant",
+      "note": "The other `redundant`, on the other verb. It is not an error and it is not a second assertion of the reins — the delta is empty, so a caller that re-issues the verb every tick writes nothing, which is what keeps a vehicle off any per-frame path.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": [
+          "wren"
+        ],
+        "driver": "wren"
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "drive",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "drive",
+          "action": "drive",
+          "available": false,
+          "refusal": "redundant",
+          "grants": "boat"
+        },
+        "next": null,
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman).",
+          "vehicle_occupant(skiff, wren).",
+          "vehicle_driver(skiff, wren)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": []
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "getting-off-hands-back-the-reins",
+      "note": "Disembarking removes the occupant AND clears the driver when it was them. A hull still holding a `vehicle_driver/2` for somebody standing on the bank is a cart that follows a person who left it, which is precisely the drift the `traversal_completed` subscription would then act on.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": [
+          "wren"
+        ],
+        "driver": "wren"
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "disembark",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "disembark",
+          "action": "disembark",
+          "available": true
+        },
+        "next": {
+          "id": "skiff",
+          "location": "riverside_camp",
+          "owner": "ferryman",
+          "occupants": []
+        },
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman).",
+          "vehicle_occupant(skiff, wren).",
+          "vehicle_driver(skiff, wren)."
+        ],
+        "delta": {
+          "retract": [
+            "vehicle_occupant(skiff, wren).",
+            "vehicle_driver(skiff, wren)."
+          ],
+          "assert": []
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "a-driver-leaving-a-loaded-cart-leaves-a-passenger-waiting-for-one",
+      "note": "A driverless vehicle with somebody still in it is a real state and not a bug: it is what `vehicle_unattended/1` keys off, and it is how an NPC comes to choose the cart through `candidate_action/3`. The pinned delta retracts the reins and NOT the passenger.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": [
+          "tam",
+          "wren"
+        ],
+        "driver": "wren"
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "disembark",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "disembark",
+          "action": "disembark",
+          "available": true
+        },
+        "next": {
+          "id": "skiff",
+          "location": "riverside_camp",
+          "owner": "ferryman",
+          "occupants": [
+            "tam"
+          ]
+        },
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman).",
+          "vehicle_occupant(skiff, tam).",
+          "vehicle_occupant(skiff, wren).",
+          "vehicle_driver(skiff, wren)."
+        ],
+        "delta": {
+          "retract": [
+            "vehicle_occupant(skiff, wren).",
+            "vehicle_driver(skiff, wren)."
+          ],
+          "assert": []
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "negative-you-cannot-get-off-something-you-were-never-on",
+      "note": "The third verb’s own refusal, and the one that keeps the delta honest: a caller that disembarks an actor who is not aboard would otherwise retract a `vehicle_occupant/2` that belongs to somebody else’s bookkeeping.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": [
+          "tam"
+        ],
+        "driver": "tam"
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "disembark",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "disembark",
+          "action": "disembark",
+          "available": false,
+          "refusal": "not_aboard"
+        },
+        "next": null,
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman).",
+          "vehicle_occupant(skiff, tam).",
+          "vehicle_driver(skiff, tam)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": []
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "the-skiff-belongs-to-somebody-and-taking-it-is-a-fact-the-enforcer-can-see",
+      "note": "Core states WHO OWNS the hull; whether taking somebody else’s is wrong is `forbids/4`’s answer, and a world where the roads are common property authors no such norm. That is why `forbidden` never appears in this file: permissibility is the rules layer’s throughout, and this module supplies the fact a theft norm is authored over.",
+      "vehicle": {
+        "id": "skiff",
+        "name": "The ferryman’s skiff",
+        "mode": "boat",
+        "owner": "ferryman",
+        "location": "riverside_camp",
+        "seats": 2
+      },
+      "state": {
+        "id": "skiff",
+        "location": "riverside_camp",
+        "owner": "ferryman",
+        "occupants": []
+      },
+      "actor": "wren",
+      "at": "riverside_camp",
+      "verb": "board",
+      "expected": {
+        "resolution": {
+          "vehicle": "skiff",
+          "actor": "wren",
+          "verb": "board",
+          "action": "board",
+          "available": true
+        },
+        "next": {
+          "id": "skiff",
+          "location": "riverside_camp",
+          "owner": "ferryman",
+          "occupants": [
+            "wren"
+          ]
+        },
+        "actions": {
+          "board": "board",
+          "drive": "drive",
+          "disembark": "disembark"
+        },
+        "seats": 2,
+        "modeFact": "vehicle_mode(skiff, boat).",
+        "stateFacts": [
+          "at_location(skiff, riverside_camp).",
+          "vehicle_owner(skiff, ferryman)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": [
+            "vehicle_occupant(skiff, wren)."
+          ]
+        },
+        "anothers": true
+      }
+    },
+    {
+      "name": "negative-a-cart-nobody-owns-is-nobody-to-steal",
+      "note": "The polarity rule, in the vehicle module: an absent owner is `anothers: false`, not true. Core does not invent a prohibition — a commons cart taken from the roadside is not a crime unless a world authored one, and an implementation that treats \"unowned\" as \"somebody else’s\" makes every abandoned rowboat a felony.",
+      "vehicle": {
+        "id": "cart",
+        "name": "A handcart",
+        "mode": "ride",
+        "location": "ford_path",
+        "seats": 1,
+        "actions": {
+          "drive": "take_reins"
+        }
+      },
+      "state": {
+        "id": "cart",
+        "location": "ford_path",
+        "occupants": []
+      },
+      "actor": "wren",
+      "at": "ford_path",
+      "verb": "board",
+      "expected": {
+        "resolution": {
+          "vehicle": "cart",
+          "actor": "wren",
+          "verb": "board",
+          "action": "board",
+          "available": true
+        },
+        "next": {
+          "id": "cart",
+          "location": "ford_path",
+          "occupants": [
+            "wren"
+          ]
+        },
+        "actions": {
+          "board": "board",
+          "drive": "take_reins",
+          "disembark": "disembark"
+        },
+        "seats": 1,
+        "modeFact": "vehicle_mode(cart, ride).",
+        "stateFacts": [
+          "at_location(cart, ford_path)."
+        ],
+        "delta": {
+          "retract": [],
+          "assert": [
+            "vehicle_occupant(cart, wren)."
+          ]
+        },
+        "anothers": false
+      }
+    }
+  ]
+}

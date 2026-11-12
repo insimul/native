@@ -1,0 +1,2133 @@
+{
+  "area": "traversal-affordances",
+  "description": "What the world affords an actor, what it costs, and the cheapest way from here to there (US-1 and US-4 of 122-traversal-and-travel). Each case carries the WHOLE input — the authored traversal_link/3 graph with its costs and requirements, every mode the actor is currently using, the runtime traversal_blocked/2 closures, what the host’s ITraversalProbe answered for each geometric link, the shared energy/3 meter, and the fully resolved TraversalTuning — so a harness in any language reproduces it with no defaults table, no world file and no KB. There is no position, no transform, no path and no frame anywhere in this file: core owns WHERE an actor may go and what it COSTS, and where they are this frame is the host’s entirely. `expected.affordances` is every authored link out of `from`, REFUSED ONES INCLUDED, sorted by (to, mode, id) — a UI greys the ford out and says why, and a corpus that saw only the survivors could not pin the refusal. The refusal is the FIRST that applies in TRAVERSAL_REFUSALS order (unreachable, blocked, mode, impassable, stamina, requires, forbidden), and that order is as much the contract as the refusals are; `requires` and `forbidden` never appear here because they are the rules layer’s and a pure function may not call a KB — an affordance that carries an authored goal is `available` AND `conditional`. `expected.best` is the cheapest available way to one destination; `expected.route` is uniform-cost search with a fully-specified tie-break (cost, then fewer legs, then the canonically-first destination, mode and link id), so reversing the link list must not move one byte. `expected.graphFacts` is the same graph in the 110 vocabulary, where traversal_link/3 is per LINK and traversal_cost/3 and traversal_requires/3 are per EDGE because neither fact takes a mode. Every cost is integer and floored. Regenerate with `npm run traversal-corpus`.",
+  "cases": [
+    {
+      "name": "the-mode-multiplier-is-the-whole-of-swimming-being-harder-than-walking",
+      "note": "THE case the module exists for. Two ways out of the camp, both authored, and what each takes out of the SHARED energy/3 meter is the link’s authored cost scaled by what the mode is worth: a 4 walked is 4, a 6 swum is 15. The boat link across the same edge is refused for `mode` and kept in the list anyway, because a UI wants to grey it out and say why. An implementation that charges the authored number and ignores the multiplier reproduces nothing else in this file.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim"
+        ],
+        "stamina": {
+          "current": 60,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "far_bank",
+      "route": null,
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": false,
+            "refusal": "mode",
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 15,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": {
+          "id": "riverside_camp>far_bank:swim",
+          "from": "riverside_camp",
+          "to": "far_bank",
+          "mode": "swim",
+          "action": "swim",
+          "cost": 15,
+          "available": true,
+          "requires": [
+            "has_item(rope, 1)"
+          ],
+          "conditional": true
+        },
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "the-cheapest-way-across-the-ford-wins-and-it-is-the-boat",
+      "note": "The same edge, two authored links, and the actor can use both. The boat costs 1 and the swim costs 15 because the hull is doing the work, so `bestAffordance` takes the boat — and the published `traversal_cost/3` for the edge is 1 for the same reason, while the swim affordance still says 15. Cost is per LINK; the fact is per EDGE, because the fact takes no mode. A port that publishes one number per link makes core and can_traverse/3 disagree.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "boat"
+        ],
+        "stamina": {
+          "current": 60,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "far_bank",
+      "route": null,
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 15,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": {
+          "id": "riverside_camp>far_bank:boat",
+          "from": "riverside_camp",
+          "to": "far_bank",
+          "mode": "boat",
+          "action": "row",
+          "cost": 1,
+          "available": true,
+          "requires": [
+            "has_item(rope, 1)"
+          ],
+          "conditional": true
+        },
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "an-authored-requirement-leaves-the-affordance-open-and-conditional",
+      "note": "The rope is a `traversal_requires/3` goal, which is authored PROLOG and cannot be evaluated by a pure function — so the swim resolves `available` AND `conditional`, meaning \"nothing core knows refuses it, and something core cannot evaluate might\". The goal is carried verbatim for the rules layer to rebind to the caller. It is keyed by the EDGE, so the boat link carries it too: §7 authors the rope once and means it either way.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "boat",
+          "swim"
+        ],
+        "stamina": {
+          "current": 60,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "far_bank",
+      "route": null,
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 15,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": false,
+            "refusal": "mode",
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": {
+          "id": "riverside_camp>far_bank:boat",
+          "from": "riverside_camp",
+          "to": "far_bank",
+          "mode": "boat",
+          "action": "row",
+          "cost": 1,
+          "available": true,
+          "requires": [
+            "has_item(rope, 1)"
+          ],
+          "conditional": true
+        },
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "a-landslide-closes-the-pass-one-way-and-leaves-the-other-way-open",
+      "note": "`traversal_blocked/2` is DIRECTED, exactly as the link is. The closure is authored on riverside_camp → ford_path and the actor is standing at ford_path, where the way back is untouched. An implementation that symmetrises a closure strands the player on the wrong side of a landslide they walked past, and it passes the case below and fails this one.",
+      "input": {
+        "actor": "wren",
+        "from": "ford_path",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "jump"
+        ],
+        "blocked": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path"
+          }
+        ],
+        "stamina": {
+          "current": 60,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "riverside_camp",
+      "route": null,
+      "expected": {
+        "affordances": [
+          {
+            "id": "ford_path>far_bank:jump",
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "action": "jump",
+            "cost": 6,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          },
+          {
+            "id": "ford_path>riverside_camp:walk",
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": {
+          "id": "ford_path>riverside_camp:walk",
+          "from": "ford_path",
+          "to": "riverside_camp",
+          "mode": "walk",
+          "action": "walk",
+          "cost": 4,
+          "available": true,
+          "requires": [],
+          "conditional": false
+        },
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "a-closed-link-is-refused-before-the-host-or-the-meter-is-consulted",
+      "note": "The same closure, from the other end. `blocked` is the first rung of TRAVERSAL_REFUSALS after `unreachable` because a landslide is not a matter of opinion — the actor has the mode, the geometry would have allowed it and the meter is full, and none of that is reached. The ORDER of the refusals is as much the contract as the refusals are.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "boat"
+        ],
+        "blocked": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path"
+          }
+        ],
+        "stamina": {
+          "current": 60,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "ford_path",
+      "route": null,
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 15,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": false,
+            "refusal": "blocked",
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": null,
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "the-host-answered-that-the-gap-is-not-jumpable-from-here",
+      "note": "The ONE thing an engine is asked, and the only case in this file where a host appears: a gap the world marked `geometric`, and a probe that said no from where this actor is standing. The answer is a boolean keyed by link id — no arc, no distance, no navmesh — and core prices the link from `traversal_cost/3` either way, so a host cannot make a jump cheaper or open a door a norm closed.",
+      "input": {
+        "actor": "wren",
+        "from": "ford_path",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "jump"
+        ],
+        "geometry": {
+          "ford_path>far_bank:jump": false
+        },
+        "stamina": {
+          "current": 60,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "far_bank",
+      "route": null,
+      "expected": {
+        "affordances": [
+          {
+            "id": "ford_path>far_bank:jump",
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "action": "jump",
+            "cost": 6,
+            "available": false,
+            "refusal": "impassable",
+            "requires": [],
+            "conditional": false
+          },
+          {
+            "id": "ford_path>riverside_camp:walk",
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": null,
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "a-geometric-link-nobody-answered-for-is-passable",
+      "note": "The documented degradation, pinned rather than promised. The identical case with no `geometry` at all — a headless simulation, a turn-based world, this corpus — affords the jump. A host that supplies no probe must not have every jump in the world refused, which is the direction `ITrajectoryProbe` degrades in too.",
+      "input": {
+        "actor": "wren",
+        "from": "ford_path",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "jump"
+        ],
+        "stamina": {
+          "current": 60,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "far_bank",
+      "route": null,
+      "expected": {
+        "affordances": [
+          {
+            "id": "ford_path>far_bank:jump",
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "action": "jump",
+            "cost": 6,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          },
+          {
+            "id": "ford_path>riverside_camp:walk",
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": {
+          "id": "ford_path>far_bank:jump",
+          "from": "ford_path",
+          "to": "far_bank",
+          "mode": "jump",
+          "action": "jump",
+          "cost": 6,
+          "available": true,
+          "requires": [],
+          "conditional": false
+        },
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "an-almost-empty-meter-refuses-the-swim-and-not-the-walk",
+      "note": "One meter, and it is 120’s. The actor has 5 left: the walk costs 4 and is still afforded, the swim costs 15 and is not. Both are in one case precisely so a port cannot pass by refusing everything once the meter is low — and there is no second resource anywhere in this file, because \"sprinting drains stamina\" and \"power attacks drain stamina\" being two numbers is exactly what one meter prevents.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim"
+        ],
+        "stamina": {
+          "current": 5,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "far_bank",
+      "route": null,
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": false,
+            "refusal": "mode",
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 15,
+            "available": false,
+            "refusal": "stamina",
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": null,
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "negative-every-authored-way-out-is-refused-and-not-one-is-filtered-away",
+      "note": "THE negative case, and the one that stops the corpus passing vacuously. The actor is standing at the camp, three links go out of it, and they have no mode at all — so all three are pinned, all three carry `mode`, nothing is available and there is no route. An implementation that returns only the usable ways produces an empty list here and passes every other case in this file; one that treats an authored link as an open one produces three available ways and fails only here.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [],
+        "stamina": {
+          "current": 60,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "far_bank",
+      "route": {
+        "to": "far_bank"
+      },
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": false,
+            "refusal": "mode",
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 15,
+            "available": false,
+            "refusal": "mode",
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": false,
+            "refusal": "mode",
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": null,
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "negative-a-place-with-nothing-authored-out-of-it-affords-nothing",
+      "note": "The other negative, and a genuinely different mechanism: the watchtower is a dead end, so there is no link to refuse and the list is empty rather than refused. `unreachable` is an absence and not a verdict — the route back to the camp is `null` for the same reason, because the graph is DIRECTED and nothing was authored the other way.",
+      "input": {
+        "actor": "wren",
+        "from": "watchtower",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "climb",
+          "swim",
+          "boat",
+          "jump"
+        ],
+        "stamina": {
+          "current": 60,
+          "max": 60
+        },
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "ridge",
+      "route": {
+        "to": "riverside_camp"
+      },
+      "expected": {
+        "affordances": [],
+        "best": null,
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "the-cheapest-route-is-two-legs-long-and-the-one-leg-route-loses",
+      "note": "Uniform-cost search, not breadth-first. Swimming straight across costs 15; walking to the ford and jumping the gap costs 4 + 6 = 10, so the LONGER route wins and the pinned steps say which links it used. A port that stops at the fewest legs agrees on the destination and disagrees on the price, which is the drift a shared save file cannot survive.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "jump"
+        ],
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": null,
+      "route": {
+        "to": "far_bank"
+      },
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": false,
+            "refusal": "mode",
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 15,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": null,
+        "route": {
+          "from": "riverside_camp",
+          "to": "far_bank",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            },
+            {
+              "id": "ford_path>far_bank:jump",
+              "from": "ford_path",
+              "to": "far_bank",
+              "mode": "jump",
+              "cost": 6,
+              "requires": []
+            }
+          ],
+          "cost": 10,
+          "conditional": false
+        },
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "a-route-carries-the-authored-goal-of-every-leg-that-asks-one",
+      "note": "The route to the ridge can only go through the water, so it is `conditional` and the rope goal rides on the leg that asks it. A caller plans over a conditional route freely — affordability and permission are settled leg by leg as each is taken — which is why a route the actor is currently too tired for is still offered: a rested actor was never going to be told the ridge does not exist.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb"
+        ],
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": null,
+      "route": {
+        "to": "ridge"
+      },
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": false,
+            "refusal": "mode",
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 15,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": null,
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>far_bank:swim",
+              "from": "riverside_camp",
+              "to": "far_bank",
+              "mode": "swim",
+              "cost": 15,
+              "requires": [
+                "has_item(rope, 1)"
+              ]
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 15,
+              "requires": []
+            }
+          ],
+          "cost": 30,
+          "conditional": true
+        },
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "the-route-search-is-bounded-and-a-bound-of-one-leg-finds-nothing",
+      "note": "A guard, not a rule. An unbounded search over an authored graph a creator got wrong is a hang, and the pack’s `reachable/3` is cycle-safe for exactly the same reason. The ridge is three legs away and `maxSteps: 1` finds no route — the honest answer, not a truncated one.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 3,
+            "swim": 2.5,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": null,
+      "route": {
+        "to": "ridge",
+        "maxSteps": 1
+      },
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": false,
+            "refusal": "mode",
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 15,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": null,
+        "route": null,
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 15).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    },
+    {
+      "name": "a-world-where-the-cliffs-are-gentle-prices-the-same-graph-differently",
+      "note": "Not one number in this module is a compiled constant. The identical authored graph under a world whose `modeCost` makes a climb cheap and the water punishing: the climb is 5 instead of 15, the swim is 24 instead of 15, and the cheapest route to the ridge changes because of it. A game tunes this in `WorldIR.traversal`; a port that hardcoded core’s defaults reproduces every other case in this file and fails this one.",
+      "input": {
+        "actor": "wren",
+        "from": "riverside_camp",
+        "links": [
+          {
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "ford_path",
+            "to": "riverside_camp",
+            "mode": "walk",
+            "cost": 4
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "cost": 6,
+            "requires": [
+              "has_item(rope, 1)"
+            ]
+          },
+          {
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "cost": 6
+          },
+          {
+            "from": "ford_path",
+            "to": "far_bank",
+            "mode": "jump",
+            "cost": 3,
+            "geometric": true
+          },
+          {
+            "from": "far_bank",
+            "to": "ridge",
+            "mode": "climb",
+            "cost": 5
+          },
+          {
+            "from": "ridge",
+            "to": "watchtower",
+            "mode": "walk",
+            "cost": 2
+          }
+        ],
+        "modes": [
+          "walk",
+          "swim",
+          "climb",
+          "jump"
+        ],
+        "tuning": {
+          "defaultCost": 5,
+          "modeCost": {
+            "walk": 1,
+            "climb": 1,
+            "swim": 4,
+            "jump": 2,
+            "ride": 0.2,
+            "boat": 0.2
+          },
+          "modeAction": {
+            "walk": "walk",
+            "climb": "climb",
+            "swim": "swim",
+            "jump": "jump",
+            "ride": "ride",
+            "boat": "row"
+          },
+          "defaultAction": "traverse"
+        }
+      },
+      "best": "far_bank",
+      "route": {
+        "to": "ridge"
+      },
+      "expected": {
+        "affordances": [
+          {
+            "id": "riverside_camp>far_bank:boat",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "boat",
+            "action": "row",
+            "cost": 1,
+            "available": false,
+            "refusal": "mode",
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>far_bank:swim",
+            "from": "riverside_camp",
+            "to": "far_bank",
+            "mode": "swim",
+            "action": "swim",
+            "cost": 24,
+            "available": true,
+            "requires": [
+              "has_item(rope, 1)"
+            ],
+            "conditional": true
+          },
+          {
+            "id": "riverside_camp>ford_path:walk",
+            "from": "riverside_camp",
+            "to": "ford_path",
+            "mode": "walk",
+            "action": "walk",
+            "cost": 4,
+            "available": true,
+            "requires": [],
+            "conditional": false
+          }
+        ],
+        "best": {
+          "id": "riverside_camp>far_bank:swim",
+          "from": "riverside_camp",
+          "to": "far_bank",
+          "mode": "swim",
+          "action": "swim",
+          "cost": 24,
+          "available": true,
+          "requires": [
+            "has_item(rope, 1)"
+          ],
+          "conditional": true
+        },
+        "route": {
+          "from": "riverside_camp",
+          "to": "ridge",
+          "steps": [
+            {
+              "id": "riverside_camp>ford_path:walk",
+              "from": "riverside_camp",
+              "to": "ford_path",
+              "mode": "walk",
+              "cost": 4,
+              "requires": []
+            },
+            {
+              "id": "ford_path>far_bank:jump",
+              "from": "ford_path",
+              "to": "far_bank",
+              "mode": "jump",
+              "cost": 6,
+              "requires": []
+            },
+            {
+              "id": "far_bank>ridge:climb",
+              "from": "far_bank",
+              "to": "ridge",
+              "mode": "climb",
+              "cost": 5,
+              "requires": []
+            }
+          ],
+          "cost": 15,
+          "conditional": false
+        },
+        "graphFacts": [
+          "traversal_link(riverside_camp, ford_path, walk).",
+          "traversal_link(ford_path, riverside_camp, walk).",
+          "traversal_link(riverside_camp, far_bank, swim).",
+          "traversal_link(riverside_camp, far_bank, boat).",
+          "traversal_link(ford_path, far_bank, jump).",
+          "traversal_link(far_bank, ridge, climb).",
+          "traversal_link(ridge, watchtower, walk).",
+          "traversal_cost(riverside_camp, ford_path, 4).",
+          "traversal_cost(ford_path, riverside_camp, 4).",
+          "traversal_cost(riverside_camp, far_bank, 1).",
+          "traversal_cost(ford_path, far_bank, 6).",
+          "traversal_cost(far_bank, ridge, 5).",
+          "traversal_cost(ridge, watchtower, 2).",
+          "traversal_requires(riverside_camp, far_bank, has_item(rope, 1))."
+        ]
+      }
+    }
+  ]
+}

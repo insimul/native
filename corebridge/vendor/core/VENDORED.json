@@ -83,6 +83,7 @@
     "src/game-genres/resolution.ts",
     "src/geo/region-predicates.ts",
     "src/geometry/plan-geometry.ts",
+    "src/ground-seating/ground-seat.ts",
     "src/identity/equivalence.ts",
     "src/identity/kinp.ts",
     "src/identity/worlds.ts",
@@ -155,9 +156,13 @@
     "src/system-packs/composer.ts",
     "src/system-packs/schema.ts",
     "src/time/clock.ts",
+    "src/traversal/fast-travel-facts.ts",
+    "src/traversal/fast-travel.ts",
     "src/traversal/mode-lending.ts",
     "src/traversal/traversal-facts.ts",
     "src/traversal/traversal.ts",
+    "src/traversal/vehicle-facts.ts",
+    "src/traversal/vehicles.ts",
     "src/ui/compass-model.ts",
     "src/ui/genre-hud-corpus.ts",
     "src/ui/genre-hud-model.ts",
@@ -231,11 +236,17 @@
     "conformance/survival/needs.json",
     "conformance/survival/stamina.json"
   ],
-  "bundleBytes": 1740440,
-  "bundleSha256": "bd1de17c7c4e584216cd184b9e400bf876ca0ce11f5ae94f6205f0bdb5cdf797",
+  "traversalCorpus": [
+    "conformance/traversal/affordances.json",
+    "conformance/traversal/fast-travel.json",
+    "conformance/traversal/ground-seating.json",
+    "conformance/traversal/vehicles.json"
+  ],
+  "bundleBytes": 1773586,
+  "bundleSha256": "ebc7d3e8fb0721784cc7fb124449944a9d3d833540ce500fe989e48b825b1d17",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "bd1de17c7c4e584216cd184b9e400bf876ca0ce11f5ae94f6205f0bdb5cdf797",
-    "vendor/core/insimul_core_bundle.c": "970b45cb5a86dd5d5bc4989768479559bd9637d5781e750d06a1a1638fcc0296",
+    "vendor/core/insimul-core-bundle.js": "ebc7d3e8fb0721784cc7fb124449944a9d3d833540ce500fe989e48b825b1d17",
+    "vendor/core/insimul_core_bundle.c": "fb35d673f6d6770174afe8ee461111e9d6276ad810269a0923701b4c1823c99b",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genres-recipes.json": "c092190e983d0a503d5ffcb2ad7bf120ebcbd1cd278931084cd1858d5342f1f1",
     "vendor/core/cases/core-genres-registry.json": "e1f019de52f14b89d18acbd33aeb4d176f27961d93dcad83bfec734a6444ddd2",
@@ -310,13 +321,17 @@
     "vendor/core/conformance/survival/hud.json": "cf22c30a868b1c2542523bdce0471e684da92ba164e8245f3f629785e39e269a",
     "vendor/core/conformance/survival/needs.json": "46c1d92c08a900ea65d1b9f0cea338a17ed30ef39a175014a6238f7e8492e578",
     "vendor/core/conformance/survival/stamina.json": "3f01a40b6912b48e33ef94c9eff3f04b14b40056dc0a869ad467ebfe7aef792e",
-    "js/entry.js": "2c6a497521aa9baa5f6c6f76072a498845faec17e4972d7d60f6ddd8ca97d6a4",
+    "vendor/core/conformance/traversal/affordances.json": "6ab4312ef3e589cd24981a1d781aa6143111680a1954fa53ebd775aa4ff86656",
+    "vendor/core/conformance/traversal/fast-travel.json": "d639c792291fafb4cd8f24970c811dd911360f62cec583f25e18fa8350100674",
+    "vendor/core/conformance/traversal/ground-seating.json": "e111912acc3939ab726efed41a8fd90f76694e51e0bfcf1b275c286cfb931229",
+    "vendor/core/conformance/traversal/vehicles.json": "1b03a951b6249a089ba2f09e6109cadbcdd79eb030b8871f114369bc04940b92",
+    "js/entry.js": "dcad91775f90a58e98ba83629c5d8fcbd21d1f4b10d8a38cd3cf08d432393f26",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a9c0626d616322c6072bdd95b841ccb0fc86249a35758ee9dd782a306dca71d2",
     "js/host-sessions.js": "d9fe6e0ceb8a763ced1929ddfe727687b5f56d16bb2d84936da94d2b8a14031b",
     "js/host-text-codec.js": "658423774903633c499e3510ed3f903209a91e2073b46585cd0f893557515b4e",
     "tools/emit-bridge-cases.mjs": "36e161b76830134d7c18a622a0a2e22b6871be9c436169ef4bb1cb3da3ffc49c",
-    "core-pin.json": "8836f507048933aeb403775ca505c0601c914a40ffdb3ca5d5b23e123d9bc22e"
+    "core-pin.json": "7438480249c472418b763bd0d457c1787e5a11d2b148a520a093c286dfdc8ecf"
   }
 }
