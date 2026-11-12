@@ -1,6 +1,6 @@
 {
   "area": "traversal",
-  "description": "Hand-written: the traversal.* kernel rows’ own contract (PL.native-traversal-rows slice 1, U106(1); core’s P9e kernels, P9e.core) — each row’s answer shape over core’s functions, the IR readers feeding the decision rows (the answer one row gives is what the next row is sent), core’s refusals as VALUES, the rows’ own refusals as errors coded [invalid-input], and the rows no corpus pins (the IR readers, a stated stamina on the route row, the ground-seat params on a settle). Every expectation here was computed by core’s own functions at the pin, not by these rows. Core’s own corpora (conformance/traversal/{affordances,vehicles,fast-travel,ground-seating}.json, 67 cases) are driven whole through these rows by the traversal_corpus ctest (tests/traversal_corpus.cpp), not transcribed here.",
+  "description": "Hand-written: the traversal.* kernel rows’ own contract (PL.native-traversal-rows slice 1, U106(1); core’s P9e kernels, P9e.core) — each row’s answer shape over core’s functions, the IR readers feeding the decision rows (the answer one row gives is what the next row is sent), core’s refusals as VALUES, the rows’ own refusals as errors coded [invalid-input], and the rows no corpus pins (the IR readers, a stated stamina on the route row, the ground-seat params on a settle, and the params ground, stand and a mid-settle retarget read, each step answering differently under core’s default tuning). Every expectation here was computed by core’s own functions at the pin, not by these rows. Core’s own corpora (conformance/traversal/{affordances,vehicles,fast-travel,ground-seating}.json, 67 cases) are driven whole through these rows by the traversal_corpus ctest (tests/traversal_corpus.cpp), not transcribed here.",
   "cases": [
     {
       "name": "traversal.affordances: a world IR block read into core’s tuning and links, then resolved, the best way and the route",
@@ -2270,6 +2270,224 @@
               "fromMm": 0,
               "wantMm": 0,
               "since": 0
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.groundSeating: the params ground, stand and a mid-settle retarget read change their answers (reach, look-from, max offset, level, settle rate and up factor)",
+      "steps": [
+        {
+          "call": "traversal.groundSeating.ground",
+          "args": {
+            "probes": [
+              [
+                {
+                  "heightMm": 200,
+                  "paved": true
+                }
+              ],
+              [
+                {
+                  "heightMm": 100,
+                  "paved": false
+                }
+              ]
+            ],
+            "fromMm": 1500,
+            "params": {
+              "reachMm": 1000
+            }
+          },
+          "expect": {
+            "found": false,
+            "heightMm": null,
+            "paved": false
+          }
+        },
+        {
+          "call": "traversal.groundSeating.ground",
+          "args": {
+            "probes": [
+              [
+                {
+                  "heightMm": 200,
+                  "paved": true
+                }
+              ],
+              [
+                {
+                  "heightMm": 100,
+                  "paved": false
+                }
+              ]
+            ],
+            "fromMm": 1500
+          },
+          "expect": {
+            "found": true,
+            "heightMm": 200,
+            "paved": true
+          }
+        },
+        {
+          "call": "traversal.groundSeating.stand",
+          "args": {
+            "bodyMm": 0,
+            "probes": [
+              [
+                {
+                  "heightMm": 300,
+                  "paved": true
+                }
+              ]
+            ],
+            "params": {
+              "lookFromMm": 100
+            }
+          },
+          "expect": {
+            "reason": "nothing_drawn",
+            "heightMm": 0,
+            "onPaving": null
+          }
+        },
+        {
+          "call": "traversal.groundSeating.stand",
+          "args": {
+            "bodyMm": 0,
+            "probes": [
+              [
+                {
+                  "heightMm": 300,
+                  "paved": true
+                }
+              ]
+            ],
+            "params": {
+              "maxOffsetMm": 200
+            }
+          },
+          "expect": {
+            "reason": "too_far",
+            "heightMm": 0,
+            "onPaving": null
+          }
+        },
+        {
+          "call": "traversal.groundSeating.stand",
+          "args": {
+            "bodyMm": 0,
+            "probes": [
+              [
+                {
+                  "heightMm": 300,
+                  "paved": true
+                }
+              ]
+            ]
+          },
+          "expect": {
+            "reason": "seated",
+            "heightMm": 300,
+            "onPaving": true
+          }
+        },
+        {
+          "call": "traversal.groundSeating.stand",
+          "args": {
+            "bodyMm": 0,
+            "probes": [
+              [
+                {
+                  "heightMm": 5,
+                  "paved": false
+                }
+              ]
+            ],
+            "params": {
+              "levelMm": 10
+            }
+          },
+          "expect": {
+            "reason": "level",
+            "heightMm": 0,
+            "onPaving": false
+          }
+        },
+        {
+          "call": "traversal.groundSeating.retarget",
+          "args": {
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            },
+            "state": {
+              "seated": true,
+              "fromMm": 40,
+              "wantMm": -60,
+              "since": 1000
+            },
+            "wantMm": 100,
+            "at": 1050
+          },
+          "expect": {
+            "state": {
+              "seated": true,
+              "fromMm": -10,
+              "wantMm": 100,
+              "since": 1050
+            }
+          }
+        },
+        {
+          "call": "traversal.groundSeating.retarget",
+          "args": {
+            "params": {
+              "footprintMm": 100,
+              "maxOffsetMm": 500,
+              "settleMmPerS": 1000,
+              "upFactor": 2
+            },
+            "state": {
+              "seated": true,
+              "fromMm": -10,
+              "wantMm": 100,
+              "since": 1050
+            },
+            "wantMm": 0,
+            "at": 1080
+          },
+          "expect": {
+            "state": {
+              "seated": true,
+              "fromMm": 50,
+              "wantMm": 0,
+              "since": 1080
+            }
+          }
+        },
+        {
+          "call": "traversal.groundSeating.retarget",
+          "args": {
+            "state": {
+              "seated": true,
+              "fromMm": 40,
+              "wantMm": -60,
+              "since": 1000
+            },
+            "wantMm": 100,
+            "at": 1050
+          },
+          "expect": {
+            "state": {
+              "seated": true,
+              "fromMm": -35,
+              "wantMm": 100,
+              "since": 1050
             }
           }
         }

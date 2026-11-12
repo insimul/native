@@ -1388,8 +1388,10 @@ ground-seating file's catalog, op list and settle steps must be core's.
 must see all 67 refused, as Unreal's `traversal_corpus_negative` does for its copy.
 The hand cases in `tests/cases/bridge-traversal.json` (every expectation computed
 by core's own functions at the pin) pin the IR readers, the answer of one row sent
-to the next, a stated `stamina` on the route row, the ground-seat `params` and the
-`[invalid-input]` errors.
+to the next, a stated `stamina` on the route row, the ground-seat `params` (on a
+settle; and on `ground`, `stand` and a mid-settle `retarget`, each with an answer
+core's default tuning would give differently, because no `ground-seating.json` case
+of those ops states `params`) and the `[invalid-input]` errors.
 
 **Cost.** Five core modules for the rows (`traversal/vehicles`,
 `traversal/vehicle-facts`, `traversal/fast-travel`, `traversal/fast-travel-facts`,
