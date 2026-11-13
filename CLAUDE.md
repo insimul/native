@@ -505,7 +505,7 @@
   SP.composer's composer and its corpus); before that, 4a46789 (2026-10-29, L.native-layout: it holds L1's layout rules and B9's
   composition rules); before that, c4b46c4 (the 2026-10-16 landing of tracks G and E and C0's wasm entry). To
   move it again: bump the pin, re-vendor, re-run `--check --core` and
-  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal and headless build ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
+  `ctest -R 'corebridge|core_vendor|layout|packs|corpus'` (every corpus ctest matches `corpus`: the P9a, saves-slots, props, pick-up, interactables, title-flow, tutorial, tutorial progress, camera movement, audio ground, survival, traversal, headless build and progression ones and their negatives; `core-pin.json`'s `coreRefNote` lists them by name), then regenerate the two pre-open
   reports (`node scripts/check-attribution.mjs . --report docs/pre-open/attribution.json`,
   `check-open-boundary.mjs . --rules scripts/open-boundary.rules.json --report docs/pre-open/open-boundary.json`) — NOTICE's `Pinned-Commit` must move too.
 - **The layout rows (L.native-layout, U36) run core's layout corpus UNCHANGED.**
@@ -754,6 +754,20 @@
   import `build/headless-build-corpus` (core's runner: it drags in the village-state
   comparator). Unreal's `Portable/InsimulHeadlessBuild` is the interim copy these
   rows retire (`P10.unreal.retire-headless-build-copy`).
+- **The progression and skill rows (PL.native-progression-rows, U106(7)) run core's
+  P9i corpora UNCHANGED**: `conformance/progression/*.json`, `conformance/skills/*.json`
+  and `conformance/prolog/mechanic-skill.json`, copied as one set
+  (`PROGRESSION_CORPUS_FILES`) and driven by `tests/progression_corpus.cpp` as
+  `progression_corpus` (+ `_negative`). `progression.<group>.<op>` and
+  `skill.<group>.<fn>` are one core function each, `{ ok: true, value }` with core's
+  refusals as values; the tracker is stateless (`progression.gamification.step` takes
+  the `run` the last answer carried). `skill.create` opens core's `SkillProgression`
+  as a session; with `kb` it owns a native KB (`host-prolog-engine.js`'s
+  `createPrologEngine`, the WHOLE `PrologEngine` seam, released by the session's
+  `onDispose` in `host-sessions.js`), so `skill.unlock` asks core's own
+  `skill_goal_met/2` there; with none, core's no-KB rule stands (a node that asks
+  anything stays locked). Never import `progression/systems-corpus` (core's runner).
+  The JS case leg has no Prolog: a KB-backed hand case is `"legs": ["c"]`.
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

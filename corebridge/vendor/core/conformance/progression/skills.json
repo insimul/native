@@ -1,0 +1,1242 @@
+{
+  "schema": "insimul.conformance.progression/1",
+  "area": "progression",
+  "file": "progression/skills",
+  "phase": "P9i",
+  "description": "The language and guild domain trees as a skill panel draws them, and a saved skills block restored into SkillProgression with the effects of the nodes taken (src/skills/, src/game-engine/logic/SkillProgression.ts).",
+  "runner": "src/progression/systems-corpus.ts (runProgressionSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "progression-skill-trees"
+  ],
+  "ops": [
+    "domain",
+    "restore"
+  ],
+  "steps": {},
+  "cases": [
+    {
+      "name": "domain: the language ladder and the guild tree, as a panel draws them for a new learner and for one on the way",
+      "op": "domain",
+      "note": "The domain trees core ships (src/skills/domain-trees.ts): the French ladder A1 to B2 and the smiths' guild. The KB's answers (unmet goals, forbidden nodes) are the host's, handed in.",
+      "input": {
+        "actors": [
+          {
+            "id": "player"
+          },
+          {
+            "id": "learner",
+            "levels": {
+              "french": 2
+            },
+            "xp": {
+              "french": 40
+            },
+            "points": {
+              "french_ladder": 1
+            },
+            "unlocked": [
+              "french_a1"
+            ],
+            "unmet": {
+              "french_b1": [
+                "did_in_language(Actor, order_food)"
+              ]
+            }
+          },
+          {
+            "id": "smith",
+            "levels": {
+              "smiths_guild_standing": 3
+            },
+            "points": {
+              "smiths_guild": 2
+            },
+            "unlocked": [
+              "guild_apprentice"
+            ],
+            "forbidden": [
+              "guild_master"
+            ]
+          }
+        ]
+      },
+      "expected": [
+        {
+          "actor": "player",
+          "trees": [
+            {
+              "id": "smiths_guild",
+              "skill": "smiths_guild_standing",
+              "label": "The Smiths’ Guild",
+              "level": 0,
+              "maxLevel": 3,
+              "capped": false,
+              "banked": 0,
+              "nextLevel": 1,
+              "nextLevelPrice": 0,
+              "affordable": true,
+              "points": 0,
+              "spent": 0,
+              "nodes": [
+                {
+                  "id": "guild_apprentice",
+                  "tree": "smiths_guild",
+                  "label": "Apprentice of the guild",
+                  "depth": 0,
+                  "cost": 1,
+                  "parents": [],
+                  "requires": [
+                    "guild_standing_at_least(Actor, smiths_guild, 20)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "permits",
+                      "args": [
+                        "use_guild_forge"
+                      ]
+                    }
+                  ],
+                  "unlocks": [],
+                  "permits": [
+                    "use_guild_forge"
+                  ],
+                  "modifies": [],
+                  "description": "Admitted to the hall, and to the small forge at the back of it.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "guild_journeyman",
+                  "tree": "smiths_guild",
+                  "label": "Journeyman of the guild",
+                  "depth": 1,
+                  "cost": 1,
+                  "parents": [
+                    "guild_apprentice"
+                  ],
+                  "requires": [
+                    "guild_dues_paid(Actor, 40)",
+                    "guild_standing_at_least(Actor, smiths_guild, 50)",
+                    "skill_unlocked(Actor, guild_apprentice)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "take_guild_commission"
+                      ]
+                    },
+                    {
+                      "kind": "modifies",
+                      "args": [
+                        "crafting",
+                        "quality",
+                        1
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "take_guild_commission"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Free of the guild’s work, and of its rates.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "guild_master",
+                  "tree": "smiths_guild",
+                  "label": "Master of the guild",
+                  "depth": 2,
+                  "cost": 2,
+                  "parents": [
+                    "guild_journeyman"
+                  ],
+                  "requires": [
+                    "guild_dues_paid(Actor, 200)",
+                    "guild_standing_at_least(Actor, smiths_guild, 80)",
+                    "skill_unlocked(Actor, guild_journeyman)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "permits",
+                      "args": [
+                        "stamp_guild_mark"
+                      ]
+                    },
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "take_apprentice"
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "take_apprentice"
+                  ],
+                  "permits": [
+                    "stamp_guild_mark"
+                  ],
+                  "modifies": [],
+                  "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                  "refusal": "points"
+                }
+              ],
+              "rows": [
+                [
+                  "guild_apprentice"
+                ],
+                [
+                  "guild_journeyman"
+                ],
+                [
+                  "guild_master"
+                ]
+              ],
+              "edges": [
+                {
+                  "from": "guild_apprentice",
+                  "to": "guild_journeyman"
+                },
+                {
+                  "from": "guild_journeyman",
+                  "to": "guild_master"
+                }
+              ],
+              "taken": 0,
+              "total": 3
+            },
+            {
+              "id": "french_ladder",
+              "skill": "french",
+              "label": "French",
+              "level": 0,
+              "maxLevel": 4,
+              "capped": false,
+              "banked": 0,
+              "nextLevel": 1,
+              "nextLevelPrice": 0,
+              "affordable": true,
+              "points": 0,
+              "spent": 0,
+              "nodes": [
+                {
+                  "id": "french_a1",
+                  "tree": "french_ladder",
+                  "label": "A1 — Breakthrough",
+                  "depth": 0,
+                  "cost": 1,
+                  "parents": [],
+                  "requires": [],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": false,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "introduce_self"
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "introduce_self"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Enough to greet somebody and say who you are.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "french_a2",
+                  "tree": "french_ladder",
+                  "label": "A2 — Waystage",
+                  "depth": 1,
+                  "cost": 1,
+                  "parents": [
+                    "french_a1"
+                  ],
+                  "requires": [
+                    "skill_unlocked(Actor, french_a1)",
+                    "words_used_at_least(Actor, 50)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "order_food"
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "order_food"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Enough to shop, and to be understood about it.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "french_b1",
+                  "tree": "french_ladder",
+                  "label": "B1 — Threshold",
+                  "depth": 2,
+                  "cost": 2,
+                  "parents": [
+                    "french_a2"
+                  ],
+                  "requires": [
+                    "did_in_language(Actor, order_food)",
+                    "skill_unlocked(Actor, french_a2)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "ask_for_directions"
+                      ]
+                    },
+                    {
+                      "kind": "modifies",
+                      "args": [
+                        "dialogue",
+                        "threshold",
+                        -20
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "ask_for_directions"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Enough to get by somewhere nobody speaks yours.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "french_b2",
+                  "tree": "french_ladder",
+                  "label": "B2 — Vantage",
+                  "depth": 3,
+                  "cost": 2,
+                  "parents": [
+                    "french_b1"
+                  ],
+                  "requires": [
+                    "did_in_language(Actor, ask_for_directions)",
+                    "skill_unlocked(Actor, french_b1)",
+                    "words_used_at_least(Actor, 200)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "permits",
+                      "args": [
+                        "haggle_price"
+                      ]
+                    },
+                    {
+                      "kind": "modifies",
+                      "args": [
+                        "dialogue",
+                        "threshold",
+                        -40
+                      ]
+                    }
+                  ],
+                  "unlocks": [],
+                  "permits": [
+                    "haggle_price"
+                  ],
+                  "modifies": [],
+                  "description": "Enough to argue, and to be argued with.",
+                  "refusal": "points"
+                }
+              ],
+              "rows": [
+                [
+                  "french_a1"
+                ],
+                [
+                  "french_a2"
+                ],
+                [
+                  "french_b1"
+                ],
+                [
+                  "french_b2"
+                ]
+              ],
+              "edges": [
+                {
+                  "from": "french_a1",
+                  "to": "french_a2"
+                },
+                {
+                  "from": "french_a2",
+                  "to": "french_b1"
+                },
+                {
+                  "from": "french_b1",
+                  "to": "french_b2"
+                }
+              ],
+              "taken": 0,
+              "total": 4
+            }
+          ]
+        },
+        {
+          "actor": "learner",
+          "trees": [
+            {
+              "id": "smiths_guild",
+              "skill": "smiths_guild_standing",
+              "label": "The Smiths’ Guild",
+              "level": 0,
+              "maxLevel": 3,
+              "capped": false,
+              "banked": 0,
+              "nextLevel": 1,
+              "nextLevelPrice": 0,
+              "affordable": true,
+              "points": 0,
+              "spent": 0,
+              "nodes": [
+                {
+                  "id": "guild_apprentice",
+                  "tree": "smiths_guild",
+                  "label": "Apprentice of the guild",
+                  "depth": 0,
+                  "cost": 1,
+                  "parents": [],
+                  "requires": [
+                    "guild_standing_at_least(Actor, smiths_guild, 20)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "permits",
+                      "args": [
+                        "use_guild_forge"
+                      ]
+                    }
+                  ],
+                  "unlocks": [],
+                  "permits": [
+                    "use_guild_forge"
+                  ],
+                  "modifies": [],
+                  "description": "Admitted to the hall, and to the small forge at the back of it.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "guild_journeyman",
+                  "tree": "smiths_guild",
+                  "label": "Journeyman of the guild",
+                  "depth": 1,
+                  "cost": 1,
+                  "parents": [
+                    "guild_apprentice"
+                  ],
+                  "requires": [
+                    "guild_dues_paid(Actor, 40)",
+                    "guild_standing_at_least(Actor, smiths_guild, 50)",
+                    "skill_unlocked(Actor, guild_apprentice)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "take_guild_commission"
+                      ]
+                    },
+                    {
+                      "kind": "modifies",
+                      "args": [
+                        "crafting",
+                        "quality",
+                        1
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "take_guild_commission"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Free of the guild’s work, and of its rates.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "guild_master",
+                  "tree": "smiths_guild",
+                  "label": "Master of the guild",
+                  "depth": 2,
+                  "cost": 2,
+                  "parents": [
+                    "guild_journeyman"
+                  ],
+                  "requires": [
+                    "guild_dues_paid(Actor, 200)",
+                    "guild_standing_at_least(Actor, smiths_guild, 80)",
+                    "skill_unlocked(Actor, guild_journeyman)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "permits",
+                      "args": [
+                        "stamp_guild_mark"
+                      ]
+                    },
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "take_apprentice"
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "take_apprentice"
+                  ],
+                  "permits": [
+                    "stamp_guild_mark"
+                  ],
+                  "modifies": [],
+                  "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                  "refusal": "points"
+                }
+              ],
+              "rows": [
+                [
+                  "guild_apprentice"
+                ],
+                [
+                  "guild_journeyman"
+                ],
+                [
+                  "guild_master"
+                ]
+              ],
+              "edges": [
+                {
+                  "from": "guild_apprentice",
+                  "to": "guild_journeyman"
+                },
+                {
+                  "from": "guild_journeyman",
+                  "to": "guild_master"
+                }
+              ],
+              "taken": 0,
+              "total": 3
+            },
+            {
+              "id": "french_ladder",
+              "skill": "french",
+              "label": "French",
+              "level": 2,
+              "maxLevel": 4,
+              "capped": false,
+              "banked": 40,
+              "nextLevel": 3,
+              "nextLevelPrice": 300,
+              "affordable": false,
+              "points": 1,
+              "spent": 1,
+              "nodes": [
+                {
+                  "id": "french_a1",
+                  "tree": "french_ladder",
+                  "label": "A1 — Breakthrough",
+                  "depth": 0,
+                  "cost": 1,
+                  "parents": [],
+                  "requires": [],
+                  "unmet": [],
+                  "taken": true,
+                  "available": false,
+                  "conditional": false,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "introduce_self"
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "introduce_self"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Enough to greet somebody and say who you are.",
+                  "refusal": "owned"
+                },
+                {
+                  "id": "french_a2",
+                  "tree": "french_ladder",
+                  "label": "A2 — Waystage",
+                  "depth": 1,
+                  "cost": 1,
+                  "parents": [
+                    "french_a1"
+                  ],
+                  "requires": [
+                    "skill_unlocked(Actor, french_a1)",
+                    "words_used_at_least(Actor, 50)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": true,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "order_food"
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "order_food"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Enough to shop, and to be understood about it."
+                },
+                {
+                  "id": "french_b1",
+                  "tree": "french_ladder",
+                  "label": "B1 — Threshold",
+                  "depth": 2,
+                  "cost": 2,
+                  "parents": [
+                    "french_a2"
+                  ],
+                  "requires": [
+                    "did_in_language(Actor, order_food)",
+                    "skill_unlocked(Actor, french_a2)"
+                  ],
+                  "unmet": [
+                    "did_in_language(Actor, order_food)"
+                  ],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "ask_for_directions"
+                      ]
+                    },
+                    {
+                      "kind": "modifies",
+                      "args": [
+                        "dialogue",
+                        "threshold",
+                        -20
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "ask_for_directions"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Enough to get by somewhere nobody speaks yours.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "french_b2",
+                  "tree": "french_ladder",
+                  "label": "B2 — Vantage",
+                  "depth": 3,
+                  "cost": 2,
+                  "parents": [
+                    "french_b1"
+                  ],
+                  "requires": [
+                    "did_in_language(Actor, ask_for_directions)",
+                    "skill_unlocked(Actor, french_b1)",
+                    "words_used_at_least(Actor, 200)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "permits",
+                      "args": [
+                        "haggle_price"
+                      ]
+                    },
+                    {
+                      "kind": "modifies",
+                      "args": [
+                        "dialogue",
+                        "threshold",
+                        -40
+                      ]
+                    }
+                  ],
+                  "unlocks": [],
+                  "permits": [
+                    "haggle_price"
+                  ],
+                  "modifies": [],
+                  "description": "Enough to argue, and to be argued with.",
+                  "refusal": "points"
+                }
+              ],
+              "rows": [
+                [
+                  "french_a1"
+                ],
+                [
+                  "french_a2"
+                ],
+                [
+                  "french_b1"
+                ],
+                [
+                  "french_b2"
+                ]
+              ],
+              "edges": [
+                {
+                  "from": "french_a1",
+                  "to": "french_a2"
+                },
+                {
+                  "from": "french_a2",
+                  "to": "french_b1"
+                },
+                {
+                  "from": "french_b1",
+                  "to": "french_b2"
+                }
+              ],
+              "taken": 1,
+              "total": 4
+            }
+          ]
+        },
+        {
+          "actor": "smith",
+          "trees": [
+            {
+              "id": "smiths_guild",
+              "skill": "smiths_guild_standing",
+              "label": "The Smiths’ Guild",
+              "level": 3,
+              "maxLevel": 3,
+              "capped": true,
+              "banked": 0,
+              "nextLevel": 3,
+              "nextLevelPrice": 0,
+              "affordable": false,
+              "points": 2,
+              "spent": 1,
+              "nodes": [
+                {
+                  "id": "guild_apprentice",
+                  "tree": "smiths_guild",
+                  "label": "Apprentice of the guild",
+                  "depth": 0,
+                  "cost": 1,
+                  "parents": [],
+                  "requires": [
+                    "guild_standing_at_least(Actor, smiths_guild, 20)"
+                  ],
+                  "unmet": [],
+                  "taken": true,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "permits",
+                      "args": [
+                        "use_guild_forge"
+                      ]
+                    }
+                  ],
+                  "unlocks": [],
+                  "permits": [
+                    "use_guild_forge"
+                  ],
+                  "modifies": [],
+                  "description": "Admitted to the hall, and to the small forge at the back of it.",
+                  "refusal": "owned"
+                },
+                {
+                  "id": "guild_journeyman",
+                  "tree": "smiths_guild",
+                  "label": "Journeyman of the guild",
+                  "depth": 1,
+                  "cost": 1,
+                  "parents": [
+                    "guild_apprentice"
+                  ],
+                  "requires": [
+                    "guild_dues_paid(Actor, 40)",
+                    "guild_standing_at_least(Actor, smiths_guild, 50)",
+                    "skill_unlocked(Actor, guild_apprentice)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": true,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "take_guild_commission"
+                      ]
+                    },
+                    {
+                      "kind": "modifies",
+                      "args": [
+                        "crafting",
+                        "quality",
+                        1
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "take_guild_commission"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Free of the guild’s work, and of its rates."
+                },
+                {
+                  "id": "guild_master",
+                  "tree": "smiths_guild",
+                  "label": "Master of the guild",
+                  "depth": 2,
+                  "cost": 2,
+                  "parents": [
+                    "guild_journeyman"
+                  ],
+                  "requires": [
+                    "guild_dues_paid(Actor, 200)",
+                    "guild_standing_at_least(Actor, smiths_guild, 80)",
+                    "skill_unlocked(Actor, guild_journeyman)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "permits",
+                      "args": [
+                        "stamp_guild_mark"
+                      ]
+                    },
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "take_apprentice"
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "take_apprentice"
+                  ],
+                  "permits": [
+                    "stamp_guild_mark"
+                  ],
+                  "modifies": [],
+                  "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                  "refusal": "forbidden"
+                }
+              ],
+              "rows": [
+                [
+                  "guild_apprentice"
+                ],
+                [
+                  "guild_journeyman"
+                ],
+                [
+                  "guild_master"
+                ]
+              ],
+              "edges": [
+                {
+                  "from": "guild_apprentice",
+                  "to": "guild_journeyman"
+                },
+                {
+                  "from": "guild_journeyman",
+                  "to": "guild_master"
+                }
+              ],
+              "taken": 1,
+              "total": 3
+            },
+            {
+              "id": "french_ladder",
+              "skill": "french",
+              "label": "French",
+              "level": 0,
+              "maxLevel": 4,
+              "capped": false,
+              "banked": 0,
+              "nextLevel": 1,
+              "nextLevelPrice": 0,
+              "affordable": true,
+              "points": 0,
+              "spent": 0,
+              "nodes": [
+                {
+                  "id": "french_a1",
+                  "tree": "french_ladder",
+                  "label": "A1 — Breakthrough",
+                  "depth": 0,
+                  "cost": 1,
+                  "parents": [],
+                  "requires": [],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": false,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "introduce_self"
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "introduce_self"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Enough to greet somebody and say who you are.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "french_a2",
+                  "tree": "french_ladder",
+                  "label": "A2 — Waystage",
+                  "depth": 1,
+                  "cost": 1,
+                  "parents": [
+                    "french_a1"
+                  ],
+                  "requires": [
+                    "skill_unlocked(Actor, french_a1)",
+                    "words_used_at_least(Actor, 50)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "order_food"
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "order_food"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Enough to shop, and to be understood about it.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "french_b1",
+                  "tree": "french_ladder",
+                  "label": "B1 — Threshold",
+                  "depth": 2,
+                  "cost": 2,
+                  "parents": [
+                    "french_a2"
+                  ],
+                  "requires": [
+                    "did_in_language(Actor, order_food)",
+                    "skill_unlocked(Actor, french_a2)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "unlocks",
+                      "args": [
+                        "ask_for_directions"
+                      ]
+                    },
+                    {
+                      "kind": "modifies",
+                      "args": [
+                        "dialogue",
+                        "threshold",
+                        -20
+                      ]
+                    }
+                  ],
+                  "unlocks": [
+                    "ask_for_directions"
+                  ],
+                  "permits": [],
+                  "modifies": [],
+                  "description": "Enough to get by somewhere nobody speaks yours.",
+                  "refusal": "points"
+                },
+                {
+                  "id": "french_b2",
+                  "tree": "french_ladder",
+                  "label": "B2 — Vantage",
+                  "depth": 3,
+                  "cost": 2,
+                  "parents": [
+                    "french_b1"
+                  ],
+                  "requires": [
+                    "did_in_language(Actor, ask_for_directions)",
+                    "skill_unlocked(Actor, french_b1)",
+                    "words_used_at_least(Actor, 200)"
+                  ],
+                  "unmet": [],
+                  "taken": false,
+                  "available": false,
+                  "conditional": true,
+                  "effects": [
+                    {
+                      "kind": "permits",
+                      "args": [
+                        "haggle_price"
+                      ]
+                    },
+                    {
+                      "kind": "modifies",
+                      "args": [
+                        "dialogue",
+                        "threshold",
+                        -40
+                      ]
+                    }
+                  ],
+                  "unlocks": [],
+                  "permits": [
+                    "haggle_price"
+                  ],
+                  "modifies": [],
+                  "description": "Enough to argue, and to be argued with.",
+                  "refusal": "points"
+                }
+              ],
+              "rows": [
+                [
+                  "french_a1"
+                ],
+                [
+                  "french_a2"
+                ],
+                [
+                  "french_b1"
+                ],
+                [
+                  "french_b2"
+                ]
+              ],
+              "edges": [
+                {
+                  "from": "french_a1",
+                  "to": "french_a2"
+                },
+                {
+                  "from": "french_a2",
+                  "to": "french_b1"
+                },
+                {
+                  "from": "french_b1",
+                  "to": "french_b2"
+                }
+              ],
+              "taken": 0,
+              "total": 4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "restore: a saved skills block back into SkillProgression, and the effects its taken nodes give",
+      "op": "restore",
+      "input": {
+        "skills": {
+          "actors": [
+            {
+              "id": "npc_bram",
+              "levels": {
+                "smiths_guild_standing": 2
+              },
+              "xp": {},
+              "points": {
+                "smiths_guild": 1
+              },
+              "unlocked": [
+                "guild_apprentice"
+              ]
+            },
+            {
+              "id": "player",
+              "levels": {
+                "french": 3
+              },
+              "xp": {
+                "french": 25
+              },
+              "points": {
+                "french_ladder": 0
+              },
+              "unlocked": [
+                "french_a2",
+                "french_a1",
+                "french_b1"
+              ]
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "serialize": {
+          "actors": [
+            {
+              "id": "npc_bram",
+              "levels": {
+                "smiths_guild_standing": 2
+              },
+              "xp": {},
+              "points": {
+                "smiths_guild": 1
+              },
+              "unlocked": [
+                "guild_apprentice"
+              ]
+            },
+            {
+              "id": "player",
+              "levels": {
+                "french": 3
+              },
+              "xp": {
+                "french": 25
+              },
+              "points": {
+                "french_ladder": 0
+              },
+              "unlocked": [
+                "french_a1",
+                "french_a2",
+                "french_b1"
+              ]
+            }
+          ]
+        },
+        "actors": [
+          {
+            "id": "npc_bram",
+            "effects": [
+              "permits(use_guild_forge)"
+            ],
+            "modifiers": {}
+          },
+          {
+            "id": "player",
+            "effects": [
+              "unlocks(introduce_self)",
+              "unlocks(order_food)",
+              "unlocks(ask_for_directions)",
+              "modifies(dialogue,threshold,-20)"
+            ],
+            "modifiers": {}
+          }
+        ]
+      }
+    },
+    {
+      "name": "restore: no block restores nobody",
+      "op": "restore",
+      "input": {},
+      "expected": {
+        "ok": true,
+        "serialize": {
+          "actors": []
+        },
+        "actors": []
+      }
+    },
+    {
+      "name": "restore refused: an unreadable skills block restores nothing",
+      "op": "restore",
+      "input": {
+        "skills": {
+          "actors": [
+            {
+              "id": "player",
+              "levels": {
+                "french": -1
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "skills.actors[0]"
+        ]
+      }
+    }
+  ]
+}

@@ -52,9 +52,17 @@ export function session(method, args, kind) {
 	return found;
 }
 
-/** Close a session. Returns whether one was open. */
+/**
+ * Close a session. Returns whether one was open. A session that holds something
+ * outside the JS heap (the skill session's native Prolog KB) names its release as
+ * `onDispose`, which runs once, here.
+ */
 export function disposeSession(handle) {
-	return SESSIONS.delete(handle);
+	const found = SESSIONS.get(handle);
+	if (!found) return false;
+	SESSIONS.delete(handle);
+	if (typeof found.onDispose === 'function') found.onDispose();
+	return true;
 }
 
 /** Every open session, in handle order. */

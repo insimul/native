@@ -1,0 +1,2135 @@
+{
+  "area": "skills-trees",
+  "description": "The tree a host DRAWS, built from authored data alone (US-3 of `123-skill-trees-and-progression`). This is the artifact that says a skill panel is a VALUE core returns and not a callback core invokes: `docs/module-contract.md` §3 forbids a UI hook on the C ABI, so what four engines share is this view-model and what differs is how each of them paints it. Each case carries the whole input — every authored tree, every authored skill, the fully resolved SkillTuning, and one actor’s levels, bank, pools, taken nodes and the two answers only a KB can give. Nothing in the expected output is authored twice: a node’s row (`depth`, and the `rows` a host lays out from) is derived from the authored parent edges rather than from a `tier` field that can disagree with them, a `label` falls back to the node’s own id so a half-authored tree is still inspectable, and `edges` is the same authored structure read the other way. `refusal` is the one place all five rungs of SKILL_UNLOCK_REFUSALS can appear, because the view is handed the KB’s two answers rather than guessing them. Regenerate with `npm run skill-resolution-corpus`.",
+  "cases": [
+    {
+      "name": "a-brand-new-character-opens-the-panel",
+      "note": "Nothing learned, nothing banked, nothing funded. Every node is refused `points` except the one the world priced at nothing, which is available out of an empty pool — the panel’s hardest state, and the one a port that special-cases “no progress yet” never draws.",
+      "input": {
+        "trees": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "name": "The Stonework",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "id": "true_chisel",
+                "tree": "stonework",
+                "name": "True Chisel",
+                "cost": 1
+              },
+              {
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "name": "Keystone Sense",
+                "cost": 2
+              },
+              {
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "id": "guild_seal",
+                "tree": "stonework"
+              },
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "cost": 0
+              }
+            ]
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "id": "chapter_key",
+                "tree": "guild_chapter"
+              }
+            ]
+          }
+        ],
+        "skills": [
+          {
+            "id": "masonry",
+            "category": "craft",
+            "maxLevel": 4,
+            "levelXp": [
+              0,
+              0,
+              40,
+              120,
+              300
+            ],
+            "requires": []
+          },
+          {
+            "id": "vaulting",
+            "category": "craft",
+            "maxLevel": 3,
+            "levelXp": [
+              0,
+              0,
+              90,
+              400
+            ],
+            "requires": [
+              {
+                "skill": "masonry",
+                "level": 2
+              }
+            ]
+          },
+          {
+            "id": "surveying",
+            "category": "lore",
+            "maxLevel": 2,
+            "requires": []
+          }
+        ],
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        },
+        "actor": {
+          "id": "wren"
+        }
+      },
+      "expected": {
+        "view": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "label": "The Stonework",
+            "level": 0,
+            "maxLevel": 4,
+            "capped": false,
+            "banked": 0,
+            "nextLevel": 1,
+            "nextLevelPrice": 0,
+            "affordable": true,
+            "points": 0,
+            "spent": 0,
+            "nodes": [
+              {
+                "id": "true_chisel",
+                "tree": "stonework",
+                "label": "True Chisel",
+                "depth": 0,
+                "cost": 1,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": false,
+                "available": false,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 2
+                  }
+                ],
+                "refusal": "points"
+              },
+              {
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "label": "Keystone Sense",
+                "depth": 1,
+                "cost": 2,
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [
+                  "skill_unlocked(Actor, true_chisel)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": false,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "unlocks": [
+                  "set_keystone"
+                ],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 1
+                  }
+                ],
+                "refusal": "points"
+              },
+              {
+                "id": "guild_seal",
+                "tree": "stonework",
+                "label": "guild_seal",
+                "depth": 2,
+                "cost": 1,
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)",
+                  "skill_unlocked(Actor, keystone_sense)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": false,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "seal_a_vault"
+                ],
+                "modifies": [],
+                "refusal": "points"
+              },
+              {
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "label": "apprentice_mark",
+                "depth": 0,
+                "cost": 0,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": []
+              }
+            ],
+            "rows": [
+              [
+                "apprentice_mark",
+                "true_chisel"
+              ],
+              [
+                "keystone_sense"
+              ],
+              [
+                "guild_seal"
+              ]
+            ],
+            "edges": [
+              {
+                "from": "keystone_sense",
+                "to": "guild_seal"
+              },
+              {
+                "from": "true_chisel",
+                "to": "keystone_sense"
+              }
+            ],
+            "taken": 0,
+            "total": 4
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "label": "guild_chapter",
+            "level": 0,
+            "maxLevel": 2,
+            "capped": false,
+            "banked": 0,
+            "nextLevel": 1,
+            "nextLevelPrice": 0,
+            "affordable": true,
+            "points": 0,
+            "spent": 0,
+            "nodes": [
+              {
+                "id": "chapter_key",
+                "tree": "guild_chapter",
+                "label": "chapter_key",
+                "depth": 0,
+                "cost": 1,
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": false,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "enter_chapter_house"
+                ],
+                "modifies": [],
+                "refusal": "points"
+              }
+            ],
+            "rows": [
+              [
+                "chapter_key"
+              ]
+            ],
+            "edges": [],
+            "taken": 0,
+            "total": 1
+          }
+        ],
+        "funded": [
+          "stonework"
+        ],
+        "depths": {
+          "true_chisel": 0,
+          "keystone_sense": 1,
+          "guild_seal": 2,
+          "apprentice_mark": 0,
+          "chapter_key": 0
+        }
+      }
+    },
+    {
+      "name": "a-tree-partway-up",
+      "note": "Two levels, a funded pool, the root taken. The row after it is open, the row after THAT is available and conditional, and `spent` reads back what the taken nodes cost — so a panel can show a pool without re-deriving it.",
+      "input": {
+        "trees": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "name": "The Stonework",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "id": "true_chisel",
+                "tree": "stonework",
+                "name": "True Chisel",
+                "cost": 1
+              },
+              {
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "name": "Keystone Sense",
+                "cost": 2
+              },
+              {
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "id": "guild_seal",
+                "tree": "stonework"
+              },
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "cost": 0
+              }
+            ]
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "id": "chapter_key",
+                "tree": "guild_chapter"
+              }
+            ]
+          }
+        ],
+        "skills": [
+          {
+            "id": "masonry",
+            "category": "craft",
+            "maxLevel": 4,
+            "levelXp": [
+              0,
+              0,
+              40,
+              120,
+              300
+            ],
+            "requires": []
+          },
+          {
+            "id": "vaulting",
+            "category": "craft",
+            "maxLevel": 3,
+            "levelXp": [
+              0,
+              0,
+              90,
+              400
+            ],
+            "requires": [
+              {
+                "skill": "masonry",
+                "level": 2
+              }
+            ]
+          },
+          {
+            "id": "surveying",
+            "category": "lore",
+            "maxLevel": 2,
+            "requires": []
+          }
+        ],
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        },
+        "actor": {
+          "id": "wren",
+          "levels": {
+            "masonry": 2,
+            "surveying": 1
+          },
+          "xp": {
+            "masonry": 30
+          },
+          "points": {
+            "stonework": 2,
+            "guild_chapter": 1
+          },
+          "unlocked": [
+            "true_chisel"
+          ]
+        }
+      },
+      "expected": {
+        "view": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "label": "The Stonework",
+            "level": 2,
+            "maxLevel": 4,
+            "capped": false,
+            "banked": 30,
+            "nextLevel": 3,
+            "nextLevelPrice": 120,
+            "affordable": false,
+            "points": 2,
+            "spent": 1,
+            "nodes": [
+              {
+                "id": "true_chisel",
+                "tree": "stonework",
+                "label": "True Chisel",
+                "depth": 0,
+                "cost": 1,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": true,
+                "available": false,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 2
+                  }
+                ],
+                "refusal": "owned"
+              },
+              {
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "label": "Keystone Sense",
+                "depth": 1,
+                "cost": 2,
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [
+                  "skill_unlocked(Actor, true_chisel)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "unlocks": [
+                  "set_keystone"
+                ],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 1
+                  }
+                ]
+              },
+              {
+                "id": "guild_seal",
+                "tree": "stonework",
+                "label": "guild_seal",
+                "depth": 2,
+                "cost": 1,
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)",
+                  "skill_unlocked(Actor, keystone_sense)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "seal_a_vault"
+                ],
+                "modifies": []
+              },
+              {
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "label": "apprentice_mark",
+                "depth": 0,
+                "cost": 0,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": []
+              }
+            ],
+            "rows": [
+              [
+                "apprentice_mark",
+                "true_chisel"
+              ],
+              [
+                "keystone_sense"
+              ],
+              [
+                "guild_seal"
+              ]
+            ],
+            "edges": [
+              {
+                "from": "keystone_sense",
+                "to": "guild_seal"
+              },
+              {
+                "from": "true_chisel",
+                "to": "keystone_sense"
+              }
+            ],
+            "taken": 1,
+            "total": 4
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "label": "guild_chapter",
+            "level": 1,
+            "maxLevel": 2,
+            "capped": false,
+            "banked": 0,
+            "nextLevel": 2,
+            "nextLevelPrice": 100,
+            "affordable": false,
+            "points": 1,
+            "spent": 0,
+            "nodes": [
+              {
+                "id": "chapter_key",
+                "tree": "guild_chapter",
+                "label": "chapter_key",
+                "depth": 0,
+                "cost": 1,
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "enter_chapter_house"
+                ],
+                "modifies": []
+              }
+            ],
+            "rows": [
+              [
+                "chapter_key"
+              ]
+            ],
+            "edges": [],
+            "taken": 0,
+            "total": 1
+          }
+        ],
+        "funded": [
+          "stonework"
+        ],
+        "depths": {
+          "true_chisel": 0,
+          "keystone_sense": 1,
+          "guild_seal": 2,
+          "apprentice_mark": 0,
+          "chapter_key": 0
+        }
+      }
+    },
+    {
+      "name": "the-KB’s-two-answers-reach-the-panel",
+      "note": "The view is the one place both rules-layer rungs appear, because the view is HANDED them: an unmet authored goal reads `requires` and a prohibited node reads `forbidden`, in the ladder’s own order. A pure resolution may pin neither.",
+      "input": {
+        "trees": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "name": "The Stonework",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "id": "true_chisel",
+                "tree": "stonework",
+                "name": "True Chisel",
+                "cost": 1
+              },
+              {
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "name": "Keystone Sense",
+                "cost": 2
+              },
+              {
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "id": "guild_seal",
+                "tree": "stonework"
+              },
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "cost": 0
+              }
+            ]
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "id": "chapter_key",
+                "tree": "guild_chapter"
+              }
+            ]
+          }
+        ],
+        "skills": [
+          {
+            "id": "masonry",
+            "category": "craft",
+            "maxLevel": 4,
+            "levelXp": [
+              0,
+              0,
+              40,
+              120,
+              300
+            ],
+            "requires": []
+          },
+          {
+            "id": "vaulting",
+            "category": "craft",
+            "maxLevel": 3,
+            "levelXp": [
+              0,
+              0,
+              90,
+              400
+            ],
+            "requires": [
+              {
+                "skill": "masonry",
+                "level": 2
+              }
+            ]
+          },
+          {
+            "id": "surveying",
+            "category": "lore",
+            "maxLevel": 2,
+            "requires": []
+          }
+        ],
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        },
+        "actor": {
+          "id": "corvin",
+          "levels": {
+            "masonry": 3
+          },
+          "points": {
+            "stonework": 9,
+            "guild_chapter": 9
+          },
+          "unlocked": [
+            "true_chisel",
+            "keystone_sense"
+          ],
+          "unmet": {
+            "chapter_key": [
+              "sworn_to(Actor, masons_guild)"
+            ]
+          },
+          "forbidden": [
+            "guild_seal"
+          ]
+        }
+      },
+      "expected": {
+        "view": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "label": "The Stonework",
+            "level": 3,
+            "maxLevel": 4,
+            "capped": false,
+            "banked": 0,
+            "nextLevel": 4,
+            "nextLevelPrice": 300,
+            "affordable": false,
+            "points": 9,
+            "spent": 3,
+            "nodes": [
+              {
+                "id": "true_chisel",
+                "tree": "stonework",
+                "label": "True Chisel",
+                "depth": 0,
+                "cost": 1,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": true,
+                "available": false,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 2
+                  }
+                ],
+                "refusal": "owned"
+              },
+              {
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "label": "Keystone Sense",
+                "depth": 1,
+                "cost": 2,
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [
+                  "skill_unlocked(Actor, true_chisel)"
+                ],
+                "unmet": [],
+                "taken": true,
+                "available": false,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "unlocks": [
+                  "set_keystone"
+                ],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 1
+                  }
+                ],
+                "refusal": "owned"
+              },
+              {
+                "id": "guild_seal",
+                "tree": "stonework",
+                "label": "guild_seal",
+                "depth": 2,
+                "cost": 1,
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)",
+                  "skill_unlocked(Actor, keystone_sense)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": false,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "seal_a_vault"
+                ],
+                "modifies": [],
+                "refusal": "forbidden"
+              },
+              {
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "label": "apprentice_mark",
+                "depth": 0,
+                "cost": 0,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": []
+              }
+            ],
+            "rows": [
+              [
+                "apprentice_mark",
+                "true_chisel"
+              ],
+              [
+                "keystone_sense"
+              ],
+              [
+                "guild_seal"
+              ]
+            ],
+            "edges": [
+              {
+                "from": "keystone_sense",
+                "to": "guild_seal"
+              },
+              {
+                "from": "true_chisel",
+                "to": "keystone_sense"
+              }
+            ],
+            "taken": 2,
+            "total": 4
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "label": "guild_chapter",
+            "level": 0,
+            "maxLevel": 2,
+            "capped": false,
+            "banked": 0,
+            "nextLevel": 1,
+            "nextLevelPrice": 0,
+            "affordable": true,
+            "points": 9,
+            "spent": 0,
+            "nodes": [
+              {
+                "id": "chapter_key",
+                "tree": "guild_chapter",
+                "label": "chapter_key",
+                "depth": 0,
+                "cost": 1,
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "unmet": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "taken": false,
+                "available": false,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "enter_chapter_house"
+                ],
+                "modifies": [],
+                "refusal": "requires"
+              }
+            ],
+            "rows": [
+              [
+                "chapter_key"
+              ]
+            ],
+            "edges": [],
+            "taken": 0,
+            "total": 1
+          }
+        ],
+        "funded": [
+          "stonework"
+        ],
+        "depths": {
+          "true_chisel": 0,
+          "keystone_sense": 1,
+          "guild_seal": 2,
+          "apprentice_mark": 0,
+          "chapter_key": 0
+        }
+      }
+    },
+    {
+      "name": "a-capped-skill-still-draws-its-tree",
+      "note": "At the cap the price is zeroed and `nextLevel` holds — a panel that printed the cost of a level nobody can take would be inventing a number. The nodes are unaffected: a capped skill is still spent from its pool.",
+      "input": {
+        "trees": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "name": "The Stonework",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "id": "true_chisel",
+                "tree": "stonework",
+                "name": "True Chisel",
+                "cost": 1
+              },
+              {
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "name": "Keystone Sense",
+                "cost": 2
+              },
+              {
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "id": "guild_seal",
+                "tree": "stonework"
+              },
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "cost": 0
+              }
+            ]
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "id": "chapter_key",
+                "tree": "guild_chapter"
+              }
+            ]
+          }
+        ],
+        "skills": [
+          {
+            "id": "masonry",
+            "category": "craft",
+            "maxLevel": 4,
+            "levelXp": [
+              0,
+              0,
+              40,
+              120,
+              300
+            ],
+            "requires": []
+          },
+          {
+            "id": "vaulting",
+            "category": "craft",
+            "maxLevel": 3,
+            "levelXp": [
+              0,
+              0,
+              90,
+              400
+            ],
+            "requires": [
+              {
+                "skill": "masonry",
+                "level": 2
+              }
+            ]
+          },
+          {
+            "id": "surveying",
+            "category": "lore",
+            "maxLevel": 2,
+            "requires": []
+          }
+        ],
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        },
+        "actor": {
+          "id": "wren",
+          "levels": {
+            "masonry": 4
+          },
+          "xp": {
+            "masonry": 9999
+          },
+          "points": {
+            "stonework": 5
+          },
+          "unlocked": [
+            "true_chisel",
+            "keystone_sense",
+            "apprentice_mark"
+          ]
+        }
+      },
+      "expected": {
+        "view": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "label": "The Stonework",
+            "level": 4,
+            "maxLevel": 4,
+            "capped": true,
+            "banked": 9999,
+            "nextLevel": 4,
+            "nextLevelPrice": 0,
+            "affordable": false,
+            "points": 5,
+            "spent": 3,
+            "nodes": [
+              {
+                "id": "true_chisel",
+                "tree": "stonework",
+                "label": "True Chisel",
+                "depth": 0,
+                "cost": 1,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": true,
+                "available": false,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 2
+                  }
+                ],
+                "refusal": "owned"
+              },
+              {
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "label": "Keystone Sense",
+                "depth": 1,
+                "cost": 2,
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [
+                  "skill_unlocked(Actor, true_chisel)"
+                ],
+                "unmet": [],
+                "taken": true,
+                "available": false,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "unlocks": [
+                  "set_keystone"
+                ],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 1
+                  }
+                ],
+                "refusal": "owned"
+              },
+              {
+                "id": "guild_seal",
+                "tree": "stonework",
+                "label": "guild_seal",
+                "depth": 2,
+                "cost": 1,
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)",
+                  "skill_unlocked(Actor, keystone_sense)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "seal_a_vault"
+                ],
+                "modifies": []
+              },
+              {
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "label": "apprentice_mark",
+                "depth": 0,
+                "cost": 0,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": true,
+                "available": false,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": [],
+                "refusal": "owned"
+              }
+            ],
+            "rows": [
+              [
+                "apprentice_mark",
+                "true_chisel"
+              ],
+              [
+                "keystone_sense"
+              ],
+              [
+                "guild_seal"
+              ]
+            ],
+            "edges": [
+              {
+                "from": "keystone_sense",
+                "to": "guild_seal"
+              },
+              {
+                "from": "true_chisel",
+                "to": "keystone_sense"
+              }
+            ],
+            "taken": 3,
+            "total": 4
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "label": "guild_chapter",
+            "level": 0,
+            "maxLevel": 2,
+            "capped": false,
+            "banked": 0,
+            "nextLevel": 1,
+            "nextLevelPrice": 0,
+            "affordable": true,
+            "points": 0,
+            "spent": 0,
+            "nodes": [
+              {
+                "id": "chapter_key",
+                "tree": "guild_chapter",
+                "label": "chapter_key",
+                "depth": 0,
+                "cost": 1,
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": false,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "enter_chapter_house"
+                ],
+                "modifies": [],
+                "refusal": "points"
+              }
+            ],
+            "rows": [
+              [
+                "chapter_key"
+              ]
+            ],
+            "edges": [],
+            "taken": 0,
+            "total": 1
+          }
+        ],
+        "funded": [
+          "stonework"
+        ],
+        "depths": {
+          "true_chisel": 0,
+          "keystone_sense": 1,
+          "guild_seal": 2,
+          "apprentice_mark": 0,
+          "chapter_key": 0
+        }
+      }
+    },
+    {
+      "name": "a-tree-under-a-world-that-tunes-everything",
+      "note": "The same authored trees under `STEEP`: a different default node cost, a different cap for the skill with none of its own, a different curve. Not one number of the panel is core’s.",
+      "input": {
+        "trees": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "name": "The Stonework",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "id": "true_chisel",
+                "tree": "stonework",
+                "name": "True Chisel",
+                "cost": 1
+              },
+              {
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "name": "Keystone Sense",
+                "cost": 2
+              },
+              {
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "id": "guild_seal",
+                "tree": "stonework"
+              },
+              {
+                "parents": [],
+                "requires": [],
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "cost": 0
+              }
+            ]
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "nodes": [
+              {
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "id": "chapter_key",
+                "tree": "guild_chapter"
+              }
+            ]
+          }
+        ],
+        "skills": [
+          {
+            "id": "masonry",
+            "category": "craft",
+            "maxLevel": 4,
+            "levelXp": [
+              0,
+              0,
+              40,
+              120,
+              300
+            ],
+            "requires": []
+          },
+          {
+            "id": "vaulting",
+            "category": "craft",
+            "maxLevel": 3,
+            "levelXp": [
+              0,
+              0,
+              90,
+              400
+            ],
+            "requires": [
+              {
+                "skill": "masonry",
+                "level": 2
+              }
+            ]
+          },
+          {
+            "id": "surveying",
+            "category": "lore",
+            "maxLevel": 2,
+            "requires": []
+          }
+        ],
+        "tuning": {
+          "pointsPerLevel": 3,
+          "defaultNodeCost": 2,
+          "defaultMaxLevel": 3,
+          "levelXp": [
+            0,
+            25,
+            150,
+            500
+          ],
+          "advanceAction": "study_under_master",
+          "unlockAction": "take_stonework_oath"
+        },
+        "actor": {
+          "id": "wren",
+          "levels": {
+            "masonry": 1,
+            "surveying": 1
+          },
+          "points": {
+            "stonework": 3
+          }
+        }
+      },
+      "expected": {
+        "view": [
+          {
+            "id": "stonework",
+            "skill": "masonry",
+            "label": "The Stonework",
+            "level": 1,
+            "maxLevel": 4,
+            "capped": false,
+            "banked": 0,
+            "nextLevel": 2,
+            "nextLevelPrice": 40,
+            "affordable": false,
+            "points": 3,
+            "spent": 0,
+            "nodes": [
+              {
+                "id": "true_chisel",
+                "tree": "stonework",
+                "label": "True Chisel",
+                "depth": 0,
+                "cost": 1,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      2
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 2
+                  }
+                ]
+              },
+              {
+                "id": "keystone_sense",
+                "tree": "stonework",
+                "label": "Keystone Sense",
+                "depth": 1,
+                "cost": 2,
+                "parents": [
+                  "true_chisel"
+                ],
+                "requires": [
+                  "skill_unlocked(Actor, true_chisel)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "unlocks",
+                    "args": [
+                      "set_keystone"
+                    ]
+                  },
+                  {
+                    "kind": "modifies",
+                    "args": [
+                      "damage",
+                      1
+                    ]
+                  }
+                ],
+                "unlocks": [
+                  "set_keystone"
+                ],
+                "permits": [],
+                "modifies": [
+                  {
+                    "param": "damage",
+                    "amount": 1
+                  }
+                ]
+              },
+              {
+                "id": "guild_seal",
+                "tree": "stonework",
+                "label": "guild_seal",
+                "depth": 2,
+                "cost": 2,
+                "parents": [
+                  "keystone_sense"
+                ],
+                "requires": [
+                  "reputation_at_least(Actor, masons_guild, 40)",
+                  "skill_unlocked(Actor, keystone_sense)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "seal_a_vault"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "seal_a_vault"
+                ],
+                "modifies": []
+              },
+              {
+                "id": "apprentice_mark",
+                "tree": "stonework",
+                "label": "apprentice_mark",
+                "depth": 0,
+                "cost": 0,
+                "parents": [],
+                "requires": [],
+                "unmet": [],
+                "taken": false,
+                "available": true,
+                "conditional": false,
+                "effects": [
+                  {
+                    "kind": "sings",
+                    "args": [
+                      "the_masons_round"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [],
+                "modifies": []
+              }
+            ],
+            "rows": [
+              [
+                "apprentice_mark",
+                "true_chisel"
+              ],
+              [
+                "keystone_sense"
+              ],
+              [
+                "guild_seal"
+              ]
+            ],
+            "edges": [
+              {
+                "from": "keystone_sense",
+                "to": "guild_seal"
+              },
+              {
+                "from": "true_chisel",
+                "to": "keystone_sense"
+              }
+            ],
+            "taken": 0,
+            "total": 4
+          },
+          {
+            "id": "guild_chapter",
+            "skill": "surveying",
+            "label": "guild_chapter",
+            "level": 1,
+            "maxLevel": 2,
+            "capped": false,
+            "banked": 0,
+            "nextLevel": 2,
+            "nextLevelPrice": 150,
+            "affordable": false,
+            "points": 0,
+            "spent": 0,
+            "nodes": [
+              {
+                "id": "chapter_key",
+                "tree": "guild_chapter",
+                "label": "chapter_key",
+                "depth": 0,
+                "cost": 2,
+                "parents": [],
+                "requires": [
+                  "sworn_to(Actor, masons_guild)"
+                ],
+                "unmet": [],
+                "taken": false,
+                "available": false,
+                "conditional": true,
+                "effects": [
+                  {
+                    "kind": "permits",
+                    "args": [
+                      "enter_chapter_house"
+                    ]
+                  }
+                ],
+                "unlocks": [],
+                "permits": [
+                  "enter_chapter_house"
+                ],
+                "modifies": [],
+                "refusal": "points"
+              }
+            ],
+            "rows": [
+              [
+                "chapter_key"
+              ]
+            ],
+            "edges": [],
+            "taken": 0,
+            "total": 1
+          }
+        ],
+        "funded": [
+          "stonework"
+        ],
+        "depths": {
+          "true_chisel": 0,
+          "keystone_sense": 1,
+          "guild_seal": 2,
+          "apprentice_mark": 0,
+          "chapter_key": 0
+        }
+      }
+    },
+    {
+      "name": "a-world-with-no-trees-at-all",
+      "note": "The empty case, which is the shape of every world that did not select this module: an empty panel rather than a crash, and nothing for a host to draw.",
+      "input": {
+        "trees": [],
+        "skills": [],
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        },
+        "actor": {
+          "id": "wren"
+        }
+      },
+      "expected": {
+        "view": [],
+        "funded": [],
+        "depths": {}
+      }
+    }
+  ]
+}

@@ -1,0 +1,855 @@
+{
+  "schema": "insimul.conformance.progression/1",
+  "area": "progression",
+  "file": "progression/save",
+  "phase": "P9i",
+  "description": "The progression save block in currentState.extensions.progression: built, read (every unreadable member named) and restored (src/progression/progression-save.ts).",
+  "runner": "src/progression/systems-corpus.ts (runProgressionSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "progression-xp-levels-achievements",
+    "progression-skill-trees"
+  ],
+  "ops": [
+    "block",
+    "read",
+    "restore"
+  ],
+  "steps": {},
+  "cases": [
+    {
+      "name": "block: XP, unlocks, the day's challenge, streaks and counters, and every actor's skills, as the writer stores them",
+      "op": "block",
+      "note": "Unlocks in catalogue order; counters all ten, in order; actors by id; maps by key; taken nodes sorted.",
+      "input": {
+        "steps": [
+          {
+            "do": "day",
+            "date": "2026-11-05"
+          },
+          {
+            "do": "quest",
+            "at": 500
+          },
+          {
+            "do": "event",
+            "event": {
+              "type": "puzzle_solved"
+            },
+            "at": 600
+          },
+          {
+            "do": "stats",
+            "stats": {
+              "wordsLearned": 10,
+              "conversations": 0,
+              "grammarMastered": 0,
+              "fluency": 0,
+              "streakDays": 2
+            },
+            "at": 700
+          }
+        ],
+        "skills": {
+          "actors": [
+            {
+              "id": "player",
+              "levels": {
+                "french": 2,
+                "carpentry": 1
+              },
+              "xp": {
+                "french": 40
+              },
+              "points": {
+                "french_ladder": 1
+              },
+              "unlocked": [
+                "french_a2",
+                "french_a1"
+              ]
+            },
+            {
+              "id": "npc_ada",
+              "levels": {},
+              "xp": {},
+              "points": {},
+              "unlocked": []
+            }
+          ]
+        }
+      },
+      "expected": {
+        "gamification": {
+          "xp": 95,
+          "unlocked": {
+            "first_words": 700
+          },
+          "daily": {
+            "dateKey": "2026-11-05",
+            "progress": 1,
+            "completed": false
+          },
+          "consecutiveDays": 2,
+          "dailyStreak": 0,
+          "lastDailyDate": null,
+          "counters": {
+            "questsCompleted": 1,
+            "navigationQuestsCompleted": 0,
+            "culturalQuestsCompleted": 0,
+            "articlesRead": 0,
+            "npcsTalked": 0,
+            "itemsCollected": 0,
+            "locationsDiscovered": 0,
+            "objectsExamined": 0,
+            "puzzlesSolved": 1
+          }
+        },
+        "skills": {
+          "actors": [
+            {
+              "id": "npc_ada",
+              "levels": {},
+              "xp": {},
+              "points": {},
+              "unlocked": []
+            },
+            {
+              "id": "player",
+              "levels": {
+                "carpentry": 1,
+                "french": 2
+              },
+              "xp": {
+                "french": 40
+              },
+              "points": {
+                "french_ladder": 1
+              },
+              "unlocked": [
+                "french_a1",
+                "french_a2"
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "block: a game that runs neither keeps both null",
+      "op": "block",
+      "input": {},
+      "expected": {
+        "gamification": null,
+        "skills": null
+      }
+    },
+    {
+      "name": "read: a block reads back",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": {
+            "xp": 1365,
+            "unlocked": {
+              "quest_hero": 7000,
+              "first_words": 10
+            },
+            "daily": {
+              "dateKey": "2026-11-05",
+              "progress": 1,
+              "completed": false
+            },
+            "consecutiveDays": 3,
+            "dailyStreak": 2,
+            "lastDailyDate": "2026-11-03",
+            "counters": {
+              "questsCompleted": 10,
+              "navigationQuestsCompleted": 0,
+              "culturalQuestsCompleted": 0,
+              "articlesRead": 0,
+              "npcsTalked": 0,
+              "itemsCollected": 0,
+              "locationsDiscovered": 0,
+              "objectsExamined": 0,
+              "puzzlesSolved": 2
+            }
+          },
+          "skills": {
+            "actors": [
+              {
+                "id": "player",
+                "levels": {
+                  "french": 2
+                },
+                "xp": {
+                  "french": 40
+                },
+                "points": {
+                  "french_ladder": 1
+                },
+                "unlocked": [
+                  "french_a1"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "gamification": {
+            "xp": 1365,
+            "unlocked": {
+              "first_words": 10,
+              "quest_hero": 7000
+            },
+            "daily": {
+              "dateKey": "2026-11-05",
+              "progress": 1,
+              "completed": false
+            },
+            "consecutiveDays": 3,
+            "dailyStreak": 2,
+            "lastDailyDate": "2026-11-03",
+            "counters": {
+              "questsCompleted": 10,
+              "navigationQuestsCompleted": 0,
+              "culturalQuestsCompleted": 0,
+              "articlesRead": 0,
+              "npcsTalked": 0,
+              "itemsCollected": 0,
+              "locationsDiscovered": 0,
+              "objectsExamined": 0,
+              "puzzlesSolved": 2
+            }
+          },
+          "skills": {
+            "actors": [
+              {
+                "id": "player",
+                "levels": {
+                  "french": 2
+                },
+                "xp": {
+                  "french": 40
+                },
+                "points": {
+                  "french_ladder": 1
+                },
+                "unlocked": [
+                  "french_a1"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "read: absent and null are no block",
+      "op": "read",
+      "input": {
+        "block": null
+      },
+      "expected": {
+        "ok": true,
+        "value": null
+      }
+    },
+    {
+      "name": "read: members may be null or missing; missing fields read as the empty tracker's",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": {
+            "xp": 5
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "gamification": {
+            "xp": 5,
+            "unlocked": {},
+            "daily": null,
+            "consecutiveDays": 0,
+            "dailyStreak": 0,
+            "lastDailyDate": null,
+            "counters": {
+              "questsCompleted": 0,
+              "navigationQuestsCompleted": 0,
+              "culturalQuestsCompleted": 0,
+              "articlesRead": 0,
+              "npcsTalked": 0,
+              "itemsCollected": 0,
+              "locationsDiscovered": 0,
+              "objectsExamined": 0,
+              "puzzlesSolved": 0
+            }
+          },
+          "skills": null
+        }
+      }
+    },
+    {
+      "name": "read refused: a block that is not an object",
+      "op": "read",
+      "input": {
+        "block": [
+          "gamification"
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "keys": []
+      }
+    },
+    {
+      "name": "read refused: every unreadable member is named, in ascending order",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": {
+            "xp": -1,
+            "unlocked": {
+              "first_words": 1.5,
+              "made_up": 3,
+              "chatterbox": 4
+            },
+            "daily": {
+              "dateKey": "2026-11-05",
+              "progress": 2,
+              "completed": false
+            },
+            "consecutiveDays": "x",
+            "dailyStreak": 1,
+            "lastDailyDate": "2026-13-01",
+            "counters": {
+              "questsCompleted": -1,
+              "kills": 2,
+              "puzzlesSolved": 1
+            }
+          },
+          "skills": {
+            "actors": [
+              {
+                "id": "player"
+              },
+              {
+                "id": "player"
+              },
+              {
+                "id": "",
+                "levels": {}
+              },
+              {
+                "id": "npc",
+                "unlocked": [
+                  "a",
+                  "a"
+                ]
+              },
+              {
+                "id": "npc2",
+                "xp": {
+                  "a": 0.5
+                }
+              },
+              {
+                "id": "npc3",
+                "points": []
+              },
+              7
+            ]
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "gamification.consecutiveDays",
+          "gamification.counters.kills",
+          "gamification.counters.questsCompleted",
+          "gamification.daily",
+          "gamification.lastDailyDate",
+          "gamification.unlocked.first_words",
+          "gamification.unlocked.made_up",
+          "gamification.xp",
+          "skills.actors[1]",
+          "skills.actors[2]",
+          "skills.actors[3]",
+          "skills.actors[4]",
+          "skills.actors[5]",
+          "skills.actors[6]"
+        ]
+      }
+    },
+    {
+      "name": "read refused: members of the wrong kind",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": "lots",
+          "skills": []
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "gamification",
+          "skills"
+        ]
+      }
+    },
+    {
+      "name": "read refused: skills with no actors list",
+      "op": "read",
+      "input": {
+        "block": {
+          "skills": {
+            "actors": {}
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "skills.actors"
+        ]
+      }
+    },
+    {
+      "name": "read refused: a daily challenge marked complete short of its target",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": {
+            "daily": {
+              "dateKey": "2026-11-05",
+              "progress": 1,
+              "completed": true
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "gamification.daily"
+        ]
+      }
+    },
+    {
+      "name": "read refused: an open challenge already at its target",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": {
+            "daily": {
+              "dateKey": "2026-11-05",
+              "progress": 2,
+              "completed": false
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "gamification.daily"
+        ]
+      }
+    },
+    {
+      "name": "read: a completed challenge past its target, and a daily of null",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": {
+            "daily": {
+              "dateKey": "2026-11-03",
+              "progress": 85,
+              "completed": true
+            },
+            "dailyStreak": 1,
+            "lastDailyDate": "2026-11-03"
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "gamification": {
+            "xp": 0,
+            "unlocked": {},
+            "daily": {
+              "dateKey": "2026-11-03",
+              "progress": 85,
+              "completed": true
+            },
+            "consecutiveDays": 0,
+            "dailyStreak": 1,
+            "lastDailyDate": "2026-11-03",
+            "counters": {
+              "questsCompleted": 0,
+              "navigationQuestsCompleted": 0,
+              "culturalQuestsCompleted": 0,
+              "articlesRead": 0,
+              "npcsTalked": 0,
+              "itemsCollected": 0,
+              "locationsDiscovered": 0,
+              "objectsExamined": 0,
+              "puzzlesSolved": 0
+            }
+          },
+          "skills": null
+        }
+      }
+    },
+    {
+      "name": "read refused: a streak with no last day",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": {
+            "dailyStreak": 2
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "gamification.dailyStreak"
+        ]
+      }
+    },
+    {
+      "name": "read refused: a last day with no streak",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": {
+            "lastDailyDate": "2026-11-03",
+            "daily": null
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "gamification.dailyStreak"
+        ]
+      }
+    },
+    {
+      "name": "read refused: a daily challenge with a bad date",
+      "op": "read",
+      "input": {
+        "block": {
+          "gamification": {
+            "daily": {
+              "dateKey": "today",
+              "progress": 0,
+              "completed": false
+            }
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "gamification.daily"
+        ]
+      }
+    },
+    {
+      "name": "restore: a load hands the tracker back; the level, tier and day's template are derived again",
+      "op": "restore",
+      "input": {
+        "block": {
+          "gamification": {
+            "xp": 1365,
+            "unlocked": {
+              "quest_hero": 7000,
+              "first_words": 10
+            },
+            "daily": {
+              "dateKey": "2026-11-05",
+              "progress": 1,
+              "completed": false
+            },
+            "consecutiveDays": 3,
+            "dailyStreak": 2,
+            "lastDailyDate": "2026-11-03",
+            "counters": {
+              "questsCompleted": 10,
+              "navigationQuestsCompleted": 0,
+              "culturalQuestsCompleted": 0,
+              "articlesRead": 0,
+              "npcsTalked": 0,
+              "itemsCollected": 0,
+              "locationsDiscovered": 0,
+              "objectsExamined": 0,
+              "puzzlesSolved": 2
+            }
+          },
+          "skills": {
+            "actors": [
+              {
+                "id": "player",
+                "levels": {
+                  "french": 2
+                },
+                "xp": {
+                  "french": 40
+                },
+                "points": {
+                  "french_ladder": 1
+                },
+                "unlocked": [
+                  "french_a1"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "ok": true,
+        "block": {
+          "gamification": {
+            "xp": 1365,
+            "unlocked": {
+              "first_words": 10,
+              "quest_hero": 7000
+            },
+            "daily": {
+              "dateKey": "2026-11-05",
+              "progress": 1,
+              "completed": false
+            },
+            "consecutiveDays": 3,
+            "dailyStreak": 2,
+            "lastDailyDate": "2026-11-03",
+            "counters": {
+              "questsCompleted": 10,
+              "navigationQuestsCompleted": 0,
+              "culturalQuestsCompleted": 0,
+              "articlesRead": 0,
+              "npcsTalked": 0,
+              "itemsCollected": 0,
+              "locationsDiscovered": 0,
+              "objectsExamined": 0,
+              "puzzlesSolved": 2
+            }
+          },
+          "skills": {
+            "actors": [
+              {
+                "id": "player",
+                "levels": {
+                  "french": 2
+                },
+                "xp": {
+                  "french": 40
+                },
+                "points": {
+                  "french_ladder": 1
+                },
+                "unlocked": [
+                  "french_a1"
+                ]
+              }
+            ]
+          }
+        },
+        "view": {
+          "totalXp": 1365,
+          "level": 9,
+          "nextLevelXp": 1670,
+          "levelXp": 65,
+          "progressPermille": 175,
+          "tier": "Elementary",
+          "achievements": [
+            {
+              "id": "first_words",
+              "name": "First Words",
+              "description": "Learn your first 10 words",
+              "icon": "📖",
+              "unlocked": true,
+              "unlockedAt": 10
+            },
+            {
+              "id": "chatterbox",
+              "name": "Chatterbox",
+              "description": "Complete 25 conversations",
+              "icon": "💬",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "grammar_guru",
+              "name": "Grammar Guru",
+              "description": "Master 5 grammar patterns",
+              "icon": "📝",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "polyglot",
+              "name": "Polyglot",
+              "description": "Reach intermediate fluency (level 11)",
+              "icon": "🌍",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "navigator",
+              "name": "Navigator",
+              "description": "Complete 5 navigation quests",
+              "icon": "🧭",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "streak_master",
+              "name": "Streak Master",
+              "description": "Maintain a 7-day learning streak",
+              "icon": "🔥",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "word_collector",
+              "name": "Word Collector",
+              "description": "Learn 50 words",
+              "icon": "📚",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "quest_hero",
+              "name": "Quest Hero",
+              "description": "Complete 10 language quests",
+              "icon": "🏆",
+              "unlocked": true,
+              "unlockedAt": 7000
+            },
+            {
+              "id": "cultural_explorer",
+              "name": "Cultural Explorer",
+              "description": "Complete 5 cultural quests",
+              "icon": "🎭",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "bookworm",
+              "name": "Bookworm",
+              "description": "Read 10 notice board articles",
+              "icon": "📰",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "social_butterfly",
+              "name": "Social Butterfly",
+              "description": "Talk to 10 different NPCs",
+              "icon": "🦋",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "treasure_hunter",
+              "name": "Treasure Hunter",
+              "description": "Collect 20 items",
+              "icon": "💎",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "cartographer",
+              "name": "Cartographer",
+              "description": "Discover 10 locations",
+              "icon": "🗺️",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "curious_mind",
+              "name": "Curious Mind",
+              "description": "Examine 15 objects",
+              "icon": "🔍",
+              "unlocked": false,
+              "unlockedAt": null
+            },
+            {
+              "id": "puzzle_master",
+              "name": "Puzzle Master",
+              "description": "Solve 10 puzzles",
+              "icon": "🧩",
+              "unlocked": false,
+              "unlockedAt": null
+            }
+          ],
+          "daily": {
+            "id": "daily_2026-11-05",
+            "dateKey": "2026-11-05",
+            "description": "Complete 2 quests",
+            "type": "quest_count",
+            "target": 2,
+            "xpReward": 35,
+            "progress": 1,
+            "completed": false
+          },
+          "consecutiveDays": 3,
+          "dailyStreak": 2,
+          "counters": {
+            "questsCompleted": 10,
+            "navigationQuestsCompleted": 0,
+            "culturalQuestsCompleted": 0,
+            "articlesRead": 0,
+            "npcsTalked": 0,
+            "itemsCollected": 0,
+            "locationsDiscovered": 0,
+            "objectsExamined": 0,
+            "puzzlesSolved": 2
+          }
+        }
+      }
+    },
+    {
+      "name": "restore: no block restores an empty one",
+      "op": "restore",
+      "input": {},
+      "expected": {
+        "ok": true,
+        "block": {
+          "gamification": null,
+          "skills": null
+        },
+        "view": null
+      }
+    },
+    {
+      "name": "restore refused: an unreadable block restores nothing",
+      "op": "restore",
+      "input": {
+        "block": {
+          "gamification": {
+            "unlocked": []
+          }
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "gamification.unlocked"
+        ]
+      }
+    }
+  ]
+}

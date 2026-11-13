@@ -1,0 +1,3869 @@
+{
+  "schema": "insimul.conformance.progression/1",
+  "area": "progression",
+  "file": "progression/modules",
+  "phase": "P9i",
+  "description": "The six feature-module definitions, a verdict for every module id, resolution of a bundle or a world's list (refusing the unimplemented and port-later ids) and the pause tabs it leaves, proficiency tiers and scores, adaptive difficulty parameters and the quest difficulty adjustment, in integers (src/progression/feature-modules.ts).",
+  "runner": "src/progression/systems-corpus.ts (runProgressionSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "progression-feature-modules",
+    "progression-performance-scoring-world-lore"
+  ],
+  "ops": [
+    "definitions",
+    "resolve",
+    "genre",
+    "proficiency",
+    "difficulty",
+    "performance",
+    "adjust",
+    "records"
+  ],
+  "steps": {},
+  "cases": [
+    {
+      "name": "definitions: the six module definitions and a verdict for each of the thirteen ids",
+      "op": "definitions",
+      "input": {},
+      "expected": {
+        "definitions": [
+          {
+            "id": "knowledge-acquisition",
+            "name": "Knowledge Acquisition",
+            "description": "Track discoverable knowledge entries with mastery progression and spaced repetition",
+            "dependencies": [],
+            "genreFeatureFlags": [
+              "knowledgeAcquisition"
+            ],
+            "questObjectiveTypes": [
+              "apply_knowledge",
+              "discover_knowledge",
+              "master_knowledge"
+            ],
+            "questRewardTypes": [
+              "knowledge_entry"
+            ],
+            "xpEventTypes": [
+              "knowledge_new_entry",
+              "knowledge_mastered"
+            ],
+            "skillTreeConditionTypes": [
+              "entries_learned",
+              "entries_mastered"
+            ]
+          },
+          {
+            "id": "proficiency",
+            "name": "Proficiency Tracking",
+            "description": "Track player proficiency across configurable dimensions with tier progression",
+            "dependencies": [],
+            "genreFeatureFlags": [
+              "proficiencyTracking"
+            ],
+            "questObjectiveTypes": [
+              "reach_proficiency",
+              "improve_dimension"
+            ],
+            "questRewardTypes": [
+              "proficiency_gain"
+            ],
+            "xpEventTypes": [
+              "proficiency_tier_up",
+              "dimension_improved"
+            ],
+            "skillTreeConditionTypes": [
+              "dimension_reached",
+              "tier_reached"
+            ]
+          },
+          {
+            "id": "pattern-recognition",
+            "name": "Pattern Recognition",
+            "description": "Track recurring patterns the player learns to recognize and apply",
+            "dependencies": [],
+            "genreFeatureFlags": [
+              "patternRecognition"
+            ],
+            "questObjectiveTypes": [
+              "demonstrate_pattern",
+              "master_pattern"
+            ],
+            "questRewardTypes": [],
+            "xpEventTypes": [
+              "pattern_correct",
+              "pattern_mastered"
+            ],
+            "skillTreeConditionTypes": [
+              "patterns_mastered"
+            ]
+          },
+          {
+            "id": "gamification",
+            "name": "Gamification",
+            "description": "XP, levels, achievements, and daily challenges",
+            "dependencies": [],
+            "genreFeatureFlags": [
+              "experience"
+            ],
+            "questObjectiveTypes": [],
+            "questRewardTypes": [
+              "experience"
+            ],
+            "xpEventTypes": [
+              "quest_complete",
+              "location_discovered",
+              "onboarding_step_complete",
+              "onboarding_complete",
+              "achievement_unlocked",
+              "daily_challenge_complete"
+            ]
+          },
+          {
+            "id": "adaptive-difficulty",
+            "name": "Adaptive Difficulty",
+            "description": "Dynamically adjust challenge level based on player proficiency",
+            "dependencies": [],
+            "genreFeatureFlags": [
+              "adaptiveDifficulty"
+            ],
+            "questObjectiveTypes": [],
+            "questRewardTypes": [],
+            "adaptiveDifficultyParams": {
+              "challengeIntensity": "number",
+              "hintFrequency": "number",
+              "assistanceLevel": "number"
+            }
+          },
+          {
+            "id": "conversation-analytics",
+            "name": "Conversation Analytics",
+            "description": "Track and analyze conversation metrics with genre-specific insights",
+            "dependencies": [],
+            "genreFeatureFlags": [
+              "conversationAnalytics"
+            ],
+            "questObjectiveTypes": [
+              "conversation_quality",
+              "conversation_count"
+            ],
+            "questRewardTypes": [],
+            "xpEventTypes": [
+              "conversation_complete",
+              "conversation_quality_bonus"
+            ],
+            "skillTreeConditionTypes": [
+              "conversations_completed"
+            ]
+          }
+        ],
+        "verdicts": [
+          {
+            "id": "knowledge-acquisition",
+            "verdict": "defined",
+            "servedBy": "src/language-learning (the language book, collection) and KnowledgeCollectionSystem",
+            "catalog": "progression-feature-modules"
+          },
+          {
+            "id": "proficiency",
+            "verdict": "defined",
+            "servedBy": "src/progression/feature-modules.ts (proficiencyOf)",
+            "catalog": "progression-feature-modules"
+          },
+          {
+            "id": "pattern-recognition",
+            "verdict": "defined",
+            "servedBy": "src/language-learning/progress.ts (grammar patterns)",
+            "catalog": "progression-feature-modules"
+          },
+          {
+            "id": "assessment",
+            "verdict": "port-later",
+            "servedBy": "language-assessment (P9h, port-later)",
+            "catalog": "language-assessment-arrival-departure"
+          },
+          {
+            "id": "npc-exams",
+            "verdict": "port-later",
+            "servedBy": "language-assessment (P9h, port-later)",
+            "catalog": "language-npc-exams"
+          },
+          {
+            "id": "performance-scoring",
+            "verdict": "unimplemented",
+            "servedBy": "",
+            "catalog": "progression-performance-scoring-world-lore"
+          },
+          {
+            "id": "voice",
+            "verdict": "served",
+            "servedBy": "src/conversation/history-voice.ts (voice input, the dialogue pack)",
+            "catalog": "dialogue-voice-input"
+          },
+          {
+            "id": "gamification",
+            "verdict": "defined",
+            "servedBy": "src/progression/gamification.ts",
+            "catalog": "progression-xp-levels-achievements"
+          },
+          {
+            "id": "skill-tree",
+            "verdict": "served",
+            "servedBy": "src/skills and SkillProgression (the skill mechanic module)",
+            "catalog": "progression-skill-trees"
+          },
+          {
+            "id": "adaptive-difficulty",
+            "verdict": "defined",
+            "servedBy": "src/progression/feature-modules.ts (difficultyParams, adjustDifficulty)",
+            "catalog": "progression-feature-modules"
+          },
+          {
+            "id": "world-lore",
+            "verdict": "unimplemented",
+            "servedBy": "",
+            "catalog": "progression-performance-scoring-world-lore"
+          },
+          {
+            "id": "conversation-analytics",
+            "verdict": "defined",
+            "servedBy": "src/language-learning/adaptation.ts (the conversation difficulty monitor)",
+            "catalog": "progression-feature-modules"
+          },
+          {
+            "id": "onboarding",
+            "verdict": "served",
+            "servedBy": "src/ui/title-flow.ts and the onboarding flow (P8)",
+            "catalog": "onboarding-flow"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resolve: each bundle's defaults; the unimplemented and port-later ids are refused with a reason",
+      "op": "resolve",
+      "note": "performance-scoring and world-lore: unimplemented (core-only, nothing implements them). assessment and npc-exams: port-later. voice, skill-tree and onboarding are served by systems core already has.",
+      "input": {
+        "cases": [
+          {
+            "bundle": "language-learning"
+          },
+          {
+            "bundle": "rpg"
+          },
+          {
+            "bundle": "platformer"
+          },
+          {
+            "bundle": "fighting"
+          },
+          {
+            "bundle": "survival"
+          },
+          {
+            "bundle": "nope"
+          }
+        ]
+      },
+      "expected": [
+        {
+          "bundle": "language-learning",
+          "ids": [
+            "knowledge-acquisition",
+            "proficiency",
+            "pattern-recognition",
+            "performance-scoring",
+            "voice",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "world-lore",
+            "conversation-analytics",
+            "assessment",
+            "npc-exams",
+            "onboarding"
+          ],
+          "enabled": [
+            "knowledge-acquisition",
+            "proficiency",
+            "pattern-recognition",
+            "voice",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "performance-scoring",
+              "code": "unimplemented",
+              "reason": "no repository implements 'performance-scoring'; core defines it before any engine shows it (progression-performance-scoring-world-lore, core-only)"
+            },
+            {
+              "id": "world-lore",
+              "code": "unimplemented",
+              "reason": "no repository implements 'world-lore'; core defines it before any engine shows it (progression-performance-scoring-world-lore, core-only)"
+            },
+            {
+              "id": "assessment",
+              "code": "port_later",
+              "reason": "'assessment' is approved for after parity (language-assessment (P9h, port-later)); nothing runs it yet"
+            },
+            {
+              "id": "npc-exams",
+              "code": "port_later",
+              "reason": "'npc-exams' is approved for after parity (language-assessment (P9h, port-later)); nothing runs it yet"
+            }
+          ],
+          "contributes": {
+            "genreFeatureFlags": [
+              "knowledgeAcquisition",
+              "proficiencyTracking",
+              "patternRecognition",
+              "experience",
+              "adaptiveDifficulty",
+              "conversationAnalytics"
+            ],
+            "questObjectiveTypes": [
+              "apply_knowledge",
+              "discover_knowledge",
+              "master_knowledge",
+              "reach_proficiency",
+              "improve_dimension",
+              "demonstrate_pattern",
+              "master_pattern",
+              "conversation_quality",
+              "conversation_count"
+            ],
+            "questRewardTypes": [
+              "knowledge_entry",
+              "proficiency_gain",
+              "experience"
+            ],
+            "xpEventTypes": [
+              "knowledge_new_entry",
+              "knowledge_mastered",
+              "proficiency_tier_up",
+              "dimension_improved",
+              "pattern_correct",
+              "pattern_mastered",
+              "quest_complete",
+              "location_discovered",
+              "onboarding_step_complete",
+              "onboarding_complete",
+              "achievement_unlocked",
+              "daily_challenge_complete",
+              "conversation_complete",
+              "conversation_quality_bonus"
+            ],
+            "proficiencyDimensions": [
+              "vocabulary",
+              "grammar",
+              "pronunciation",
+              "listening",
+              "communication"
+            ],
+            "skillTreeConditionTypes": [
+              "entries_learned",
+              "entries_mastered",
+              "dimension_reached",
+              "tier_reached",
+              "patterns_mastered",
+              "conversations_completed"
+            ]
+          }
+        },
+        {
+          "bundle": "rpg",
+          "ids": [
+            "knowledge-acquisition",
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "world-lore",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "enabled": [
+            "knowledge-acquisition",
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "world-lore",
+              "code": "unimplemented",
+              "reason": "no repository implements 'world-lore'; core defines it before any engine shows it (progression-performance-scoring-world-lore, core-only)"
+            }
+          ],
+          "contributes": {
+            "genreFeatureFlags": [
+              "knowledgeAcquisition",
+              "proficiencyTracking",
+              "experience",
+              "adaptiveDifficulty",
+              "conversationAnalytics"
+            ],
+            "questObjectiveTypes": [
+              "apply_knowledge",
+              "discover_knowledge",
+              "master_knowledge",
+              "reach_proficiency",
+              "improve_dimension",
+              "conversation_quality",
+              "conversation_count"
+            ],
+            "questRewardTypes": [
+              "knowledge_entry",
+              "proficiency_gain",
+              "experience"
+            ],
+            "xpEventTypes": [
+              "knowledge_new_entry",
+              "knowledge_mastered",
+              "proficiency_tier_up",
+              "dimension_improved",
+              "quest_complete",
+              "location_discovered",
+              "onboarding_step_complete",
+              "onboarding_complete",
+              "achievement_unlocked",
+              "daily_challenge_complete",
+              "conversation_complete",
+              "conversation_quality_bonus"
+            ],
+            "proficiencyDimensions": [
+              "melee",
+              "ranged",
+              "magic",
+              "stealth",
+              "diplomacy"
+            ],
+            "skillTreeConditionTypes": [
+              "entries_learned",
+              "entries_mastered",
+              "dimension_reached",
+              "tier_reached",
+              "conversations_completed"
+            ]
+          }
+        },
+        {
+          "bundle": "platformer",
+          "ids": [
+            "performance-scoring",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "enabled": [
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "performance-scoring",
+              "code": "unimplemented",
+              "reason": "no repository implements 'performance-scoring'; core defines it before any engine shows it (progression-performance-scoring-world-lore, core-only)"
+            }
+          ],
+          "contributes": {
+            "genreFeatureFlags": [
+              "experience",
+              "adaptiveDifficulty"
+            ],
+            "questObjectiveTypes": [],
+            "questRewardTypes": [
+              "experience"
+            ],
+            "xpEventTypes": [
+              "quest_complete",
+              "location_discovered",
+              "onboarding_step_complete",
+              "onboarding_complete",
+              "achievement_unlocked",
+              "daily_challenge_complete"
+            ],
+            "proficiencyDimensions": [],
+            "skillTreeConditionTypes": []
+          }
+        },
+        {
+          "bundle": "fighting",
+          "ids": [
+            "performance-scoring",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "enabled": [
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "performance-scoring",
+              "code": "unimplemented",
+              "reason": "no repository implements 'performance-scoring'; core defines it before any engine shows it (progression-performance-scoring-world-lore, core-only)"
+            }
+          ],
+          "contributes": {
+            "genreFeatureFlags": [
+              "experience",
+              "adaptiveDifficulty"
+            ],
+            "questObjectiveTypes": [],
+            "questRewardTypes": [
+              "experience"
+            ],
+            "xpEventTypes": [
+              "quest_complete",
+              "location_discovered",
+              "onboarding_step_complete",
+              "onboarding_complete",
+              "achievement_unlocked",
+              "daily_challenge_complete"
+            ],
+            "proficiencyDimensions": [],
+            "skillTreeConditionTypes": []
+          }
+        },
+        {
+          "bundle": "survival",
+          "ids": [
+            "knowledge-acquisition",
+            "proficiency",
+            "gamification",
+            "adaptive-difficulty",
+            "world-lore",
+            "onboarding"
+          ],
+          "enabled": [
+            "knowledge-acquisition",
+            "proficiency",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "world-lore",
+              "code": "unimplemented",
+              "reason": "no repository implements 'world-lore'; core defines it before any engine shows it (progression-performance-scoring-world-lore, core-only)"
+            }
+          ],
+          "contributes": {
+            "genreFeatureFlags": [
+              "knowledgeAcquisition",
+              "proficiencyTracking",
+              "experience",
+              "adaptiveDifficulty"
+            ],
+            "questObjectiveTypes": [
+              "apply_knowledge",
+              "discover_knowledge",
+              "master_knowledge",
+              "reach_proficiency",
+              "improve_dimension"
+            ],
+            "questRewardTypes": [
+              "knowledge_entry",
+              "proficiency_gain",
+              "experience"
+            ],
+            "xpEventTypes": [
+              "knowledge_new_entry",
+              "knowledge_mastered",
+              "proficiency_tier_up",
+              "dimension_improved",
+              "quest_complete",
+              "location_discovered",
+              "onboarding_step_complete",
+              "onboarding_complete",
+              "achievement_unlocked",
+              "daily_challenge_complete"
+            ],
+            "proficiencyDimensions": [
+              "foraging",
+              "crafting",
+              "navigation",
+              "combat",
+              "shelter"
+            ],
+            "skillTreeConditionTypes": [
+              "entries_learned",
+              "entries_mastered",
+              "dimension_reached",
+              "tier_reached"
+            ]
+          }
+        },
+        {
+          "bundle": "nope",
+          "ids": [],
+          "enabled": [],
+          "refused": [],
+          "contributes": {
+            "genreFeatureFlags": [],
+            "questObjectiveTypes": [],
+            "questRewardTypes": [],
+            "xpEventTypes": [],
+            "proficiencyDimensions": [],
+            "skillTreeConditionTypes": []
+          }
+        }
+      ]
+    },
+    {
+      "name": "resolve: a world's own list: a repeat, an unknown id and a non-string are refused; order is kept",
+      "op": "resolve",
+      "input": {
+        "cases": [
+          {
+            "ids": [
+              "gamification",
+              "proficiency",
+              "gamification",
+              "jetpack",
+              7,
+              "world-lore",
+              "skill-tree"
+            ]
+          },
+          {
+            "ids": [
+              [
+                "gamification"
+              ],
+              "gamification"
+            ]
+          },
+          {
+            "ids": [
+              "gamification"
+            ],
+            "bundle": "rpg"
+          },
+          {
+            "ids": []
+          },
+          {
+            "ids": [
+              "proficiency"
+            ],
+            "bundle": "action"
+          },
+          {
+            "ids": [
+              "knowledge-acquisition",
+              "pattern-recognition",
+              "conversation-analytics",
+              "adaptive-difficulty",
+              "voice",
+              "onboarding"
+            ]
+          }
+        ]
+      },
+      "expected": [
+        {
+          "bundle": null,
+          "ids": [
+            "gamification",
+            "proficiency",
+            "gamification",
+            "jetpack",
+            7,
+            "world-lore",
+            "skill-tree"
+          ],
+          "enabled": [
+            "gamification",
+            "proficiency",
+            "skill-tree"
+          ],
+          "refused": [
+            {
+              "id": "gamification",
+              "code": "duplicate",
+              "reason": "'gamification' is listed more than once"
+            },
+            {
+              "id": "jetpack",
+              "code": "unknown_module",
+              "reason": "'jetpack' is not a feature module id"
+            },
+            {
+              "id": "7",
+              "code": "unknown_module",
+              "reason": "7 is not a feature module id"
+            },
+            {
+              "id": "world-lore",
+              "code": "unimplemented",
+              "reason": "no repository implements 'world-lore'; core defines it before any engine shows it (progression-performance-scoring-world-lore, core-only)"
+            }
+          ],
+          "contributes": {
+            "genreFeatureFlags": [
+              "experience",
+              "proficiencyTracking"
+            ],
+            "questObjectiveTypes": [
+              "reach_proficiency",
+              "improve_dimension"
+            ],
+            "questRewardTypes": [
+              "experience",
+              "proficiency_gain"
+            ],
+            "xpEventTypes": [
+              "quest_complete",
+              "location_discovered",
+              "onboarding_step_complete",
+              "onboarding_complete",
+              "achievement_unlocked",
+              "daily_challenge_complete",
+              "proficiency_tier_up",
+              "dimension_improved"
+            ],
+            "proficiencyDimensions": [],
+            "skillTreeConditionTypes": [
+              "dimension_reached",
+              "tier_reached"
+            ]
+          }
+        },
+        {
+          "bundle": null,
+          "ids": [
+            [
+              "gamification"
+            ],
+            "gamification"
+          ],
+          "enabled": [
+            "gamification"
+          ],
+          "refused": [
+            {
+              "id": "gamification",
+              "code": "unknown_module",
+              "reason": "[\"gamification\"] is not a feature module id"
+            }
+          ],
+          "contributes": {
+            "genreFeatureFlags": [
+              "experience"
+            ],
+            "questObjectiveTypes": [],
+            "questRewardTypes": [
+              "experience"
+            ],
+            "xpEventTypes": [
+              "quest_complete",
+              "location_discovered",
+              "onboarding_step_complete",
+              "onboarding_complete",
+              "achievement_unlocked",
+              "daily_challenge_complete"
+            ],
+            "proficiencyDimensions": [],
+            "skillTreeConditionTypes": []
+          }
+        },
+        {
+          "bundle": "rpg",
+          "ids": [
+            "gamification"
+          ],
+          "enabled": [
+            "gamification"
+          ],
+          "refused": [],
+          "contributes": {
+            "genreFeatureFlags": [
+              "experience"
+            ],
+            "questObjectiveTypes": [],
+            "questRewardTypes": [
+              "experience"
+            ],
+            "xpEventTypes": [
+              "quest_complete",
+              "location_discovered",
+              "onboarding_step_complete",
+              "onboarding_complete",
+              "achievement_unlocked",
+              "daily_challenge_complete"
+            ],
+            "proficiencyDimensions": [],
+            "skillTreeConditionTypes": []
+          }
+        },
+        {
+          "bundle": null,
+          "ids": [],
+          "enabled": [],
+          "refused": [],
+          "contributes": {
+            "genreFeatureFlags": [],
+            "questObjectiveTypes": [],
+            "questRewardTypes": [],
+            "xpEventTypes": [],
+            "proficiencyDimensions": [],
+            "skillTreeConditionTypes": []
+          }
+        },
+        {
+          "bundle": "action",
+          "ids": [
+            "proficiency"
+          ],
+          "enabled": [
+            "proficiency"
+          ],
+          "refused": [],
+          "contributes": {
+            "genreFeatureFlags": [
+              "proficiencyTracking"
+            ],
+            "questObjectiveTypes": [
+              "reach_proficiency",
+              "improve_dimension"
+            ],
+            "questRewardTypes": [
+              "proficiency_gain"
+            ],
+            "xpEventTypes": [
+              "proficiency_tier_up",
+              "dimension_improved"
+            ],
+            "proficiencyDimensions": [
+              "melee",
+              "ranged",
+              "agility",
+              "defense"
+            ],
+            "skillTreeConditionTypes": [
+              "dimension_reached",
+              "tier_reached"
+            ]
+          }
+        },
+        {
+          "bundle": null,
+          "ids": [
+            "knowledge-acquisition",
+            "pattern-recognition",
+            "conversation-analytics",
+            "adaptive-difficulty",
+            "voice",
+            "onboarding"
+          ],
+          "enabled": [
+            "knowledge-acquisition",
+            "pattern-recognition",
+            "conversation-analytics",
+            "adaptive-difficulty",
+            "voice",
+            "onboarding"
+          ],
+          "refused": [],
+          "contributes": {
+            "genreFeatureFlags": [
+              "knowledgeAcquisition",
+              "patternRecognition",
+              "conversationAnalytics",
+              "adaptiveDifficulty"
+            ],
+            "questObjectiveTypes": [
+              "apply_knowledge",
+              "discover_knowledge",
+              "master_knowledge",
+              "demonstrate_pattern",
+              "master_pattern",
+              "conversation_quality",
+              "conversation_count"
+            ],
+            "questRewardTypes": [
+              "knowledge_entry"
+            ],
+            "xpEventTypes": [
+              "knowledge_new_entry",
+              "knowledge_mastered",
+              "pattern_correct",
+              "pattern_mastered",
+              "conversation_complete",
+              "conversation_quality_bonus"
+            ],
+            "proficiencyDimensions": [],
+            "skillTreeConditionTypes": [
+              "entries_learned",
+              "entries_mastered",
+              "patterns_mastered",
+              "conversations_completed"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "genre: every registry genre, an unknown one and none: the pause tabs a host shows once refused modules are dropped",
+      "op": "genre",
+      "note": "tabsDeclared is what the bundle alone would show; tabs is what shows once resolution drops the refused ids (the language bundle loses its Assessment tab, as assessment is port-later).",
+      "input": {
+        "genres": [
+          "language-learning",
+          "rpg",
+          "survival",
+          "strategy",
+          "puzzle",
+          "platformer",
+          "adventure",
+          "simulation",
+          "educational",
+          "action",
+          "fighting",
+          "shooter",
+          "sandbox",
+          "city-building",
+          "roguelike",
+          "zz-unknown",
+          null
+        ]
+      },
+      "expected": [
+        {
+          "genre": "language-learning",
+          "bundle": "language-learning",
+          "featureModules": [
+            "knowledge-acquisition",
+            "proficiency",
+            "pattern-recognition",
+            "performance-scoring",
+            "voice",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "world-lore",
+            "conversation-analytics",
+            "assessment",
+            "npc-exams",
+            "onboarding"
+          ],
+          "enabled": [
+            "knowledge-acquisition",
+            "proficiency",
+            "pattern-recognition",
+            "voice",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "performance-scoring",
+              "code": "unimplemented"
+            },
+            {
+              "id": "world-lore",
+              "code": "unimplemented"
+            },
+            {
+              "id": "assessment",
+              "code": "port_later"
+            },
+            {
+              "id": "npc-exams",
+              "code": "port_later"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "vocabulary",
+            "skills",
+            "analytics",
+            "assessment",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "vocabulary",
+            "skills",
+            "analytics",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "adaptive-difficulty": {
+              "tierLabels": [
+                "Beginner",
+                "Elementary",
+                "Intermediate",
+                "Advanced",
+                "Near-native"
+              ]
+            },
+            "gamification": {
+              "tierLabels": [
+                "Beginner",
+                "Elementary",
+                "Intermediate",
+                "Advanced",
+                "Near-native"
+              ]
+            },
+            "knowledge-acquisition": {
+              "entryLabel": "Vocabulary Word",
+              "entryLabelPlural": "Vocabulary Words",
+              "masteryLabels": [
+                "New",
+                "Learning",
+                "Familiar",
+                "Mastered"
+              ]
+            },
+            "proficiency": {
+              "tierLabels": [
+                "A1",
+                "A2",
+                "B1",
+                "B2"
+              ],
+              "dimensions": [
+                "vocabulary",
+                "grammar",
+                "pronunciation",
+                "listening",
+                "communication"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "rpg",
+          "bundle": "rpg",
+          "featureModules": [
+            "knowledge-acquisition",
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "world-lore",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "enabled": [
+            "knowledge-acquisition",
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "world-lore",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "vocabulary",
+            "skills",
+            "analytics",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "vocabulary",
+            "skills",
+            "analytics",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "adaptive-difficulty": {
+              "tierLabels": [
+                "Easy",
+                "Normal",
+                "Hard",
+                "Veteran",
+                "Legendary"
+              ]
+            },
+            "knowledge-acquisition": {
+              "entryLabel": "Lore Entry",
+              "entryLabelPlural": "Lore Entries",
+              "masteryLabels": [
+                "Unknown",
+                "Discovered",
+                "Studied",
+                "Mastered"
+              ]
+            },
+            "proficiency": {
+              "tierLabels": [
+                "Novice",
+                "Apprentice",
+                "Journeyman",
+                "Expert",
+                "Master"
+              ],
+              "dimensions": [
+                "melee",
+                "ranged",
+                "magic",
+                "stealth",
+                "diplomacy"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "survival",
+          "bundle": "survival",
+          "featureModules": [
+            "knowledge-acquisition",
+            "proficiency",
+            "gamification",
+            "adaptive-difficulty",
+            "world-lore",
+            "onboarding"
+          ],
+          "enabled": [
+            "knowledge-acquisition",
+            "proficiency",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "world-lore",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "vocabulary",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "vocabulary",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "adaptive-difficulty": {
+              "tierLabels": [
+                "Peaceful",
+                "Normal",
+                "Hard",
+                "Brutal",
+                "Nightmare"
+              ]
+            },
+            "knowledge-acquisition": {
+              "entryLabel": "Discovery",
+              "entryLabelPlural": "Discoveries",
+              "masteryLabels": [
+                "Unknown",
+                "Discovered",
+                "Practiced",
+                "Mastered"
+              ]
+            },
+            "proficiency": {
+              "tierLabels": [
+                "Greenhorn",
+                "Survivor",
+                "Woodsman",
+                "Ranger",
+                "Wilderness Master"
+              ],
+              "dimensions": [
+                "foraging",
+                "crafting",
+                "navigation",
+                "combat",
+                "shelter"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "strategy",
+          "bundle": "strategy",
+          "featureModules": [
+            "proficiency",
+            "gamification",
+            "adaptive-difficulty",
+            "world-lore",
+            "onboarding"
+          ],
+          "enabled": [
+            "proficiency",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "world-lore",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "adaptive-difficulty": {
+              "tierLabels": [
+                "Settler",
+                "Chieftain",
+                "Prince",
+                "Emperor",
+                "Deity"
+              ]
+            },
+            "proficiency": {
+              "tierLabels": [
+                "Recruit",
+                "Officer",
+                "Commander",
+                "General",
+                "Overlord"
+              ],
+              "dimensions": [
+                "economics",
+                "military",
+                "diplomacy",
+                "technology",
+                "espionage"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "puzzle",
+          "bundle": "puzzle",
+          "featureModules": [
+            "pattern-recognition",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "enabled": [
+            "pattern-recognition",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "adaptive-difficulty": {
+              "tierLabels": [
+                "Casual",
+                "Thinker",
+                "Puzzler",
+                "Genius",
+                "Mastermind"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "platformer",
+          "bundle": "platformer",
+          "featureModules": [
+            "performance-scoring",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "enabled": [
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "performance-scoring",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "adaptive-difficulty": {
+              "tierLabels": [
+                "Stroll",
+                "Hop",
+                "Leap",
+                "Sprint",
+                "Daredevil"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "adventure",
+          "bundle": "adventure",
+          "featureModules": [
+            "knowledge-acquisition",
+            "gamification",
+            "world-lore",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "enabled": [
+            "knowledge-acquisition",
+            "gamification",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "world-lore",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "vocabulary",
+            "analytics",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "vocabulary",
+            "analytics",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "knowledge-acquisition": {
+              "entryLabel": "Clue",
+              "entryLabelPlural": "Clues",
+              "masteryLabels": [
+                "Unknown",
+                "Found",
+                "Examined",
+                "Understood"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "simulation",
+          "bundle": "simulation",
+          "featureModules": [
+            "proficiency",
+            "gamification",
+            "world-lore",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "enabled": [
+            "proficiency",
+            "gamification",
+            "conversation-analytics",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "world-lore",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "analytics",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "analytics",
+            "settings",
+            "save"
+          ],
+          "configs": {}
+        },
+        {
+          "genre": "educational",
+          "bundle": "educational",
+          "featureModules": [
+            "knowledge-acquisition",
+            "proficiency",
+            "pattern-recognition",
+            "assessment",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "enabled": [
+            "knowledge-acquisition",
+            "proficiency",
+            "pattern-recognition",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "assessment",
+              "code": "port_later"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "vocabulary",
+            "skills",
+            "assessment",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "vocabulary",
+            "skills",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "knowledge-acquisition": {
+              "entryLabel": "Concept",
+              "entryLabelPlural": "Concepts",
+              "masteryLabels": [
+                "New",
+                "Learning",
+                "Familiar",
+                "Mastered"
+              ]
+            },
+            "proficiency": {
+              "tierLabels": [
+                "Novice",
+                "Beginner",
+                "Intermediate",
+                "Advanced",
+                "Expert"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "action",
+          "bundle": "action",
+          "featureModules": [
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "enabled": [
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "skills",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "skills",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "adaptive-difficulty": {
+              "tierLabels": [
+                "Easy",
+                "Normal",
+                "Hard",
+                "Brutal",
+                "Nightmare"
+              ]
+            },
+            "proficiency": {
+              "tierLabels": [
+                "Rookie",
+                "Fighter",
+                "Veteran",
+                "Elite",
+                "Champion"
+              ],
+              "dimensions": [
+                "melee",
+                "ranged",
+                "agility",
+                "defense"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "fighting",
+          "bundle": "fighting",
+          "featureModules": [
+            "performance-scoring",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "enabled": [
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "performance-scoring",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "adaptive-difficulty": {
+              "tierLabels": [
+                "Easy",
+                "Normal",
+                "Hard",
+                "Very Hard",
+                "Arcade"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "shooter",
+          "bundle": "shooter",
+          "featureModules": [
+            "proficiency",
+            "performance-scoring",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "enabled": [
+            "proficiency",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "performance-scoring",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "proficiency": {
+              "tierLabels": [
+                "Recruit",
+                "Marksman",
+                "Sharpshooter",
+                "Sniper",
+                "Legend"
+              ],
+              "dimensions": [
+                "accuracy",
+                "movement",
+                "tactics"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "sandbox",
+          "bundle": "sandbox",
+          "featureModules": [
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "world-lore",
+            "onboarding"
+          ],
+          "enabled": [
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "world-lore",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "skills",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "skills",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "proficiency": {
+              "tierLabels": [
+                "Novice",
+                "Builder",
+                "Crafter",
+                "Artisan",
+                "Master"
+              ],
+              "dimensions": [
+                "building",
+                "crafting",
+                "gathering",
+                "survival"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "city-building",
+          "bundle": "city-building",
+          "featureModules": [
+            "proficiency",
+            "gamification",
+            "adaptive-difficulty",
+            "world-lore",
+            "onboarding"
+          ],
+          "enabled": [
+            "proficiency",
+            "gamification",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [
+            {
+              "id": "world-lore",
+              "code": "unimplemented"
+            }
+          ],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "proficiency": {
+              "tierLabels": [
+                "Steward",
+                "Planner",
+                "Mayor",
+                "Governor",
+                "Founder"
+              ],
+              "dimensions": [
+                "economics",
+                "infrastructure",
+                "housing",
+                "services"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "roguelike",
+          "bundle": "roguelike",
+          "featureModules": [
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "enabled": [
+            "proficiency",
+            "gamification",
+            "skill-tree",
+            "adaptive-difficulty",
+            "onboarding"
+          ],
+          "refused": [],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "skills",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "character",
+            "skills",
+            "settings",
+            "save"
+          ],
+          "configs": {
+            "adaptive-difficulty": {
+              "tierLabels": [
+                "Easy",
+                "Normal",
+                "Hard",
+                "Ascension",
+                "Torment"
+              ]
+            }
+          }
+        },
+        {
+          "genre": "zz-unknown",
+          "bundle": null,
+          "featureModules": [],
+          "enabled": [],
+          "refused": [],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "configs": {}
+        },
+        {
+          "genre": null,
+          "bundle": null,
+          "featureModules": [],
+          "enabled": [],
+          "refused": [],
+          "tabsDeclared": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "tabs": [
+            "resume",
+            "journal",
+            "inventory",
+            "map",
+            "settings",
+            "save"
+          ],
+          "configs": {}
+        }
+      ]
+    },
+    {
+      "name": "proficiency: the overall percentage and tier at each edge, the ladder relabelled by a bundle",
+      "op": "proficiency",
+      "note": "Scores are thousandths of a point on a scale of 5. The tier is judged on the exact mean: 6249 over five dimensions is 24.996 % (Novice), 6250 is 25 % (Apprentice). The language bundle's four labels give four tiers, so 90 % is still B2.",
+      "input": {
+        "cases": [
+          {
+            "scores": []
+          },
+          {
+            "scores": [
+              {
+                "dimensionId": "melee",
+                "score": 1000
+              },
+              {
+                "dimensionId": "ranged",
+                "score": 1000
+              },
+              {
+                "dimensionId": "magic",
+                "score": 1000
+              },
+              {
+                "dimensionId": "stealth",
+                "score": 1000
+              },
+              {
+                "dimensionId": "diplomacy",
+                "score": 2249
+              }
+            ]
+          },
+          {
+            "scores": [
+              {
+                "dimensionId": "melee",
+                "score": 1000
+              },
+              {
+                "dimensionId": "ranged",
+                "score": 1000
+              },
+              {
+                "dimensionId": "magic",
+                "score": 1000
+              },
+              {
+                "dimensionId": "stealth",
+                "score": 1000
+              },
+              {
+                "dimensionId": "diplomacy",
+                "score": 2250
+              }
+            ]
+          },
+          {
+            "scores": [
+              {
+                "dimensionId": "a",
+                "score": 2500
+              }
+            ]
+          },
+          {
+            "scores": [
+              {
+                "dimensionId": "a",
+                "score": 3749
+              },
+              {
+                "dimensionId": "b",
+                "score": 3750
+              }
+            ]
+          },
+          {
+            "scores": [
+              {
+                "dimensionId": "a",
+                "score": 4500
+              }
+            ]
+          },
+          {
+            "scores": [
+              {
+                "dimensionId": "a",
+                "score": 4499
+              }
+            ]
+          },
+          {
+            "scores": [
+              {
+                "dimensionId": "a",
+                "score": 5000
+              },
+              {
+                "dimensionId": "b",
+                "score": 5000
+              }
+            ]
+          },
+          {
+            "bundle": "language-learning",
+            "scores": [
+              {
+                "dimensionId": "vocabulary",
+                "score": 4500
+              },
+              {
+                "dimensionId": "grammar",
+                "score": 4500
+              }
+            ]
+          },
+          {
+            "bundle": "language-learning",
+            "scores": [
+              {
+                "dimensionId": "vocabulary",
+                "score": 3749
+              }
+            ]
+          },
+          {
+            "bundle": "rpg",
+            "scores": [
+              {
+                "dimensionId": "melee",
+                "score": 2500
+              },
+              {
+                "dimensionId": "magic",
+                "score": 1
+              }
+            ]
+          },
+          {
+            "bundle": "fighting",
+            "scores": [
+              {
+                "dimensionId": "combo",
+                "score": 4000
+              }
+            ]
+          },
+          {
+            "tierLabels": [
+              "Low",
+              "High"
+            ],
+            "scale": 10,
+            "scores": [
+              {
+                "dimensionId": "a",
+                "score": 2500
+              },
+              {
+                "dimensionId": "b",
+                "score": 2499
+              }
+            ]
+          },
+          {
+            "scores": [
+              {
+                "dimensionId": "a",
+                "score": 1
+              },
+              {
+                "dimensionId": "b",
+                "score": 1
+              },
+              {
+                "dimensionId": "c",
+                "score": 0
+              }
+            ]
+          },
+          {
+            "note": "eight dimensions: 1 × 100 / 40 is 2.5, half up 3",
+            "scores": [
+              {
+                "dimensionId": "a",
+                "score": 1
+              },
+              {
+                "dimensionId": "b",
+                "score": 0
+              },
+              {
+                "dimensionId": "c",
+                "score": 0
+              },
+              {
+                "dimensionId": "d",
+                "score": 0
+              },
+              {
+                "dimensionId": "e",
+                "score": 0
+              },
+              {
+                "dimensionId": "f",
+                "score": 0
+              },
+              {
+                "dimensionId": "g",
+                "score": 0
+              },
+              {
+                "dimensionId": "h",
+                "score": 0
+              }
+            ]
+          }
+        ]
+      },
+      "expected": [
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 0,
+          "tierId": "tier-1",
+          "tierLabel": "Novice",
+          "dimensions": []
+        },
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 24996,
+          "tierId": "tier-1",
+          "tierLabel": "Novice",
+          "dimensions": [
+            {
+              "dimensionId": "melee",
+              "score": 1000
+            },
+            {
+              "dimensionId": "ranged",
+              "score": 1000
+            },
+            {
+              "dimensionId": "magic",
+              "score": 1000
+            },
+            {
+              "dimensionId": "stealth",
+              "score": 1000
+            },
+            {
+              "dimensionId": "diplomacy",
+              "score": 2249
+            }
+          ]
+        },
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 25000,
+          "tierId": "tier-2",
+          "tierLabel": "Apprentice",
+          "dimensions": [
+            {
+              "dimensionId": "melee",
+              "score": 1000
+            },
+            {
+              "dimensionId": "ranged",
+              "score": 1000
+            },
+            {
+              "dimensionId": "magic",
+              "score": 1000
+            },
+            {
+              "dimensionId": "stealth",
+              "score": 1000
+            },
+            {
+              "dimensionId": "diplomacy",
+              "score": 2250
+            }
+          ]
+        },
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 50000,
+          "tierId": "tier-3",
+          "tierLabel": "Journeyman",
+          "dimensions": [
+            {
+              "dimensionId": "a",
+              "score": 2500
+            }
+          ]
+        },
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 74990,
+          "tierId": "tier-3",
+          "tierLabel": "Journeyman",
+          "dimensions": [
+            {
+              "dimensionId": "a",
+              "score": 3749
+            },
+            {
+              "dimensionId": "b",
+              "score": 3750
+            }
+          ]
+        },
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 90000,
+          "tierId": "tier-5",
+          "tierLabel": "Master",
+          "dimensions": [
+            {
+              "dimensionId": "a",
+              "score": 4500
+            }
+          ]
+        },
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 89980,
+          "tierId": "tier-4",
+          "tierLabel": "Expert",
+          "dimensions": [
+            {
+              "dimensionId": "a",
+              "score": 4499
+            }
+          ]
+        },
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 100000,
+          "tierId": "tier-5",
+          "tierLabel": "Master",
+          "dimensions": [
+            {
+              "dimensionId": "a",
+              "score": 5000
+            },
+            {
+              "dimensionId": "b",
+              "score": 5000
+            }
+          ]
+        },
+        {
+          "bundle": "language-learning",
+          "tiers": [
+            "tier-1:A1:0",
+            "tier-2:A2:25",
+            "tier-3:B1:50",
+            "tier-4:B2:75"
+          ],
+          "overall": 90000,
+          "tierId": "tier-4",
+          "tierLabel": "B2",
+          "dimensions": [
+            {
+              "dimensionId": "vocabulary",
+              "score": 4500
+            },
+            {
+              "dimensionId": "grammar",
+              "score": 4500
+            }
+          ]
+        },
+        {
+          "bundle": "language-learning",
+          "tiers": [
+            "tier-1:A1:0",
+            "tier-2:A2:25",
+            "tier-3:B1:50",
+            "tier-4:B2:75"
+          ],
+          "overall": 74980,
+          "tierId": "tier-3",
+          "tierLabel": "B1",
+          "dimensions": [
+            {
+              "dimensionId": "vocabulary",
+              "score": 3749
+            }
+          ]
+        },
+        {
+          "bundle": "rpg",
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 25010,
+          "tierId": "tier-2",
+          "tierLabel": "Apprentice",
+          "dimensions": [
+            {
+              "dimensionId": "melee",
+              "score": 2500
+            },
+            {
+              "dimensionId": "magic",
+              "score": 1
+            }
+          ]
+        },
+        {
+          "bundle": "fighting",
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 80000,
+          "tierId": "tier-4",
+          "tierLabel": "Expert",
+          "dimensions": [
+            {
+              "dimensionId": "combo",
+              "score": 4000
+            }
+          ]
+        },
+        {
+          "tiers": [
+            "tier-1:Low:0",
+            "tier-2:High:25"
+          ],
+          "overall": 24995,
+          "tierId": "tier-1",
+          "tierLabel": "Low",
+          "dimensions": [
+            {
+              "dimensionId": "a",
+              "score": 2500
+            },
+            {
+              "dimensionId": "b",
+              "score": 2499
+            }
+          ]
+        },
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 13,
+          "tierId": "tier-1",
+          "tierLabel": "Novice",
+          "dimensions": [
+            {
+              "dimensionId": "a",
+              "score": 1
+            },
+            {
+              "dimensionId": "b",
+              "score": 1
+            },
+            {
+              "dimensionId": "c",
+              "score": 0
+            }
+          ]
+        },
+        {
+          "tiers": [
+            "tier-1:Novice:0",
+            "tier-2:Apprentice:25",
+            "tier-3:Journeyman:50",
+            "tier-4:Expert:75",
+            "tier-5:Master:90"
+          ],
+          "overall": 3,
+          "tierId": "tier-1",
+          "tierLabel": "Novice",
+          "dimensions": [
+            {
+              "dimensionId": "a",
+              "score": 1
+            },
+            {
+              "dimensionId": "b",
+              "score": 0
+            },
+            {
+              "dimensionId": "c",
+              "score": 0
+            },
+            {
+              "dimensionId": "d",
+              "score": 0
+            },
+            {
+              "dimensionId": "e",
+              "score": 0
+            },
+            {
+              "dimensionId": "f",
+              "score": 0
+            },
+            {
+              "dimensionId": "g",
+              "score": 0
+            },
+            {
+              "dimensionId": "h",
+              "score": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "difficulty: the tier and the three parameters at each edge, labels from the bundle",
+      "op": "difficulty",
+      "note": "Score in thousandths of a percent; intensity = score / 100 permille (half up), capped at 1000; hints and assistance its complement.",
+      "input": {
+        "cases": [
+          {
+            "score": 0
+          },
+          {
+            "score": 19999
+          },
+          {
+            "score": 20000
+          },
+          {
+            "score": 39999
+          },
+          {
+            "score": 40000
+          },
+          {
+            "score": 59999
+          },
+          {
+            "score": 60000
+          },
+          {
+            "score": 79999
+          },
+          {
+            "score": 80000
+          },
+          {
+            "score": 100000
+          },
+          {
+            "score": 120000
+          },
+          {
+            "score": 49
+          },
+          {
+            "score": 50
+          },
+          {
+            "bundle": "rpg",
+            "score": 85000
+          },
+          {
+            "bundle": "action",
+            "score": 60000
+          },
+          {
+            "bundle": "platformer",
+            "score": 20000
+          },
+          {
+            "bundle": "shooter",
+            "score": 20000
+          }
+        ]
+      },
+      "expected": [
+        {
+          "score": 0,
+          "tierId": "tier-1",
+          "tierLabel": "Easy",
+          "effectiveScore": 0,
+          "challengeIntensity": 0,
+          "hintFrequency": 1000,
+          "assistanceLevel": 1000
+        },
+        {
+          "score": 19999,
+          "tierId": "tier-1",
+          "tierLabel": "Easy",
+          "effectiveScore": 19999,
+          "challengeIntensity": 200,
+          "hintFrequency": 800,
+          "assistanceLevel": 800
+        },
+        {
+          "score": 20000,
+          "tierId": "tier-2",
+          "tierLabel": "Normal",
+          "effectiveScore": 20000,
+          "challengeIntensity": 200,
+          "hintFrequency": 800,
+          "assistanceLevel": 800
+        },
+        {
+          "score": 39999,
+          "tierId": "tier-2",
+          "tierLabel": "Normal",
+          "effectiveScore": 39999,
+          "challengeIntensity": 400,
+          "hintFrequency": 600,
+          "assistanceLevel": 600
+        },
+        {
+          "score": 40000,
+          "tierId": "tier-3",
+          "tierLabel": "Hard",
+          "effectiveScore": 40000,
+          "challengeIntensity": 400,
+          "hintFrequency": 600,
+          "assistanceLevel": 600
+        },
+        {
+          "score": 59999,
+          "tierId": "tier-3",
+          "tierLabel": "Hard",
+          "effectiveScore": 59999,
+          "challengeIntensity": 600,
+          "hintFrequency": 400,
+          "assistanceLevel": 400
+        },
+        {
+          "score": 60000,
+          "tierId": "tier-4",
+          "tierLabel": "Very Hard",
+          "effectiveScore": 60000,
+          "challengeIntensity": 600,
+          "hintFrequency": 400,
+          "assistanceLevel": 400
+        },
+        {
+          "score": 79999,
+          "tierId": "tier-4",
+          "tierLabel": "Very Hard",
+          "effectiveScore": 79999,
+          "challengeIntensity": 800,
+          "hintFrequency": 200,
+          "assistanceLevel": 200
+        },
+        {
+          "score": 80000,
+          "tierId": "tier-5",
+          "tierLabel": "Expert",
+          "effectiveScore": 80000,
+          "challengeIntensity": 800,
+          "hintFrequency": 200,
+          "assistanceLevel": 200
+        },
+        {
+          "score": 100000,
+          "tierId": "tier-5",
+          "tierLabel": "Expert",
+          "effectiveScore": 100000,
+          "challengeIntensity": 1000,
+          "hintFrequency": 0,
+          "assistanceLevel": 0
+        },
+        {
+          "score": 120000,
+          "tierId": "tier-5",
+          "tierLabel": "Expert",
+          "effectiveScore": 120000,
+          "challengeIntensity": 1000,
+          "hintFrequency": 0,
+          "assistanceLevel": 0
+        },
+        {
+          "score": 49,
+          "tierId": "tier-1",
+          "tierLabel": "Easy",
+          "effectiveScore": 49,
+          "challengeIntensity": 0,
+          "hintFrequency": 1000,
+          "assistanceLevel": 1000
+        },
+        {
+          "score": 50,
+          "tierId": "tier-1",
+          "tierLabel": "Easy",
+          "effectiveScore": 50,
+          "challengeIntensity": 1,
+          "hintFrequency": 999,
+          "assistanceLevel": 999
+        },
+        {
+          "bundle": "rpg",
+          "score": 85000,
+          "tierId": "tier-5",
+          "tierLabel": "Legendary",
+          "effectiveScore": 85000,
+          "challengeIntensity": 850,
+          "hintFrequency": 150,
+          "assistanceLevel": 150
+        },
+        {
+          "bundle": "action",
+          "score": 60000,
+          "tierId": "tier-4",
+          "tierLabel": "Brutal",
+          "effectiveScore": 60000,
+          "challengeIntensity": 600,
+          "hintFrequency": 400,
+          "assistanceLevel": 400
+        },
+        {
+          "bundle": "platformer",
+          "score": 20000,
+          "tierId": "tier-2",
+          "tierLabel": "Hop",
+          "effectiveScore": 20000,
+          "challengeIntensity": 200,
+          "hintFrequency": 800,
+          "assistanceLevel": 800
+        },
+        {
+          "bundle": "shooter",
+          "score": 20000,
+          "tierId": "tier-2",
+          "tierLabel": "Normal",
+          "effectiveScore": 20000,
+          "challengeIntensity": 200,
+          "hintFrequency": 800,
+          "assistanceLevel": 800
+        }
+      ]
+    },
+    {
+      "name": "performance: the composite score in permille, part by part",
+      "op": "performance",
+      "note": "success 40 %, objectives 30 %, attempt efficiency (n / total attempts) 20 %, time 10 % ((2000 − mean ratio) × 2 / 3, 500 untimed). No records is 500.",
+      "input": {
+        "windows": [
+          [],
+          [
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 1,
+              "completionMs": 300000,
+              "estimatedMs": 600000
+            },
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 1,
+              "completionMs": 600000,
+              "estimatedMs": 600000
+            },
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 1,
+              "completionMs": 1200000,
+              "estimatedMs": 600000
+            }
+          ],
+          [
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 1,
+              "completionMs": null,
+              "estimatedMs": null
+            },
+            {
+              "status": "failed",
+              "objectivePermille": 500,
+              "attempts": 2,
+              "completionMs": null,
+              "estimatedMs": null
+            },
+            {
+              "status": "abandoned",
+              "objectivePermille": 0,
+              "attempts": 3,
+              "completionMs": null,
+              "estimatedMs": null
+            }
+          ],
+          [
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 0,
+              "completionMs": null,
+              "estimatedMs": null
+            },
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 0,
+              "completionMs": null,
+              "estimatedMs": null
+            }
+          ],
+          [
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 1,
+              "completionMs": 1,
+              "estimatedMs": 1000000
+            },
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 1,
+              "completionMs": 2400000,
+              "estimatedMs": 600000
+            }
+          ],
+          [
+            {
+              "status": "completed",
+              "objectivePermille": 667,
+              "attempts": 1,
+              "completionMs": null,
+              "estimatedMs": 600000
+            },
+            {
+              "status": "failed",
+              "objectivePermille": 333,
+              "attempts": 1,
+              "completionMs": 1000,
+              "estimatedMs": 1000
+            }
+          ],
+          [
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 1,
+              "completionMs": 600000,
+              "estimatedMs": 0
+            }
+          ],
+          [
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 0,
+              "completionMs": null,
+              "estimatedMs": null
+            },
+            {
+              "status": "completed",
+              "objectivePermille": 1000,
+              "attempts": 1,
+              "completionMs": null,
+              "estimatedMs": null
+            }
+          ]
+        ]
+      },
+      "expected": [
+        {
+          "score": 500,
+          "success": 0,
+          "objectives": 0,
+          "attempts": 0,
+          "time": 500
+        },
+        {
+          "score": 956,
+          "success": 1000,
+          "objectives": 1000,
+          "attempts": 1000,
+          "time": 555
+        },
+        {
+          "score": 433,
+          "success": 333,
+          "objectives": 500,
+          "attempts": 500,
+          "time": 500
+        },
+        {
+          "score": 950,
+          "success": 1000,
+          "objectives": 1000,
+          "attempts": 1000,
+          "time": 500
+        },
+        {
+          "score": 900,
+          "success": 1000,
+          "objectives": 1000,
+          "attempts": 1000,
+          "time": 0
+        },
+        {
+          "score": 600,
+          "success": 500,
+          "objectives": 500,
+          "attempts": 1000,
+          "time": 500
+        },
+        {
+          "score": 950,
+          "success": 1000,
+          "objectives": 1000,
+          "attempts": 1000,
+          "time": 500
+        },
+        {
+          "score": 950,
+          "success": 1000,
+          "objectives": 1000,
+          "attempts": 1000,
+          "time": 500
+        }
+      ]
+    },
+    {
+      "name": "adjust: too few quests, harder, easier, at either end, and the flow zone",
+      "op": "adjust",
+      "input": {
+        "cases": [
+          {
+            "current": "intermediate",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "beginner",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              }
+            ],
+            "objectiveCount": 3,
+            "estimatedMinutes": 10
+          },
+          {
+            "current": "advanced",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              }
+            ],
+            "objectiveCount": 3,
+            "estimatedMinutes": 10
+          },
+          {
+            "current": "advanced",
+            "records": [
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 100,
+                "attempts": 2,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "abandoned",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ],
+            "objectiveCount": 5,
+            "estimatedMinutes": 10
+          },
+          {
+            "current": "beginner",
+            "records": [
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 100,
+                "attempts": 2,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "abandoned",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ],
+            "objectiveCount": 5,
+            "estimatedMinutes": 10
+          },
+          {
+            "current": "intermediate",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 400,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 400,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 400,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "intermediate",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 3,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 3,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 2,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "intermediate",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 3,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 2,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 2,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 3,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "intermediate",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 800,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 600,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 700,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "beginner",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "beginner",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "intermediate",
+            "note": "twelve quests: only the last ten count, so the two early failures drop out",
+            "records": [
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 4,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 4,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": 300000,
+                "estimatedMs": 600000
+              }
+            ]
+          },
+          {
+            "current": "beginner",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 500,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 500,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 500,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ],
+            "objectiveCount": 1,
+            "estimatedMinutes": 1
+          },
+          {
+            "current": "beginner",
+            "note": "exactly 850 with every quest done: harder",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 2,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 2,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 2,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "intermediate",
+            "note": "exactly 400: easier, on the score alone (objectives at half are not low, one try each is not many retries)",
+            "records": [
+              {
+                "status": "failed",
+                "objectivePermille": 500,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 500,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 500,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "intermediate",
+            "note": "two of five done is not a low success rate (under 40 %); the objectives are",
+            "records": [
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "completed",
+                "objectivePermille": 1000,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ]
+          },
+          {
+            "current": "beginner",
+            "note": "scaled counts round half up and never fall below one",
+            "records": [
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ],
+            "objectiveCount": 3,
+            "estimatedMinutes": 5
+          },
+          {
+            "current": "beginner",
+            "records": [
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              },
+              {
+                "status": "failed",
+                "objectivePermille": 0,
+                "attempts": 1,
+                "completionMs": null,
+                "estimatedMs": null
+              }
+            ],
+            "objectiveCount": 0,
+            "estimatedMinutes": 0
+          }
+        ]
+      },
+      "expected": [
+        {
+          "direction": 0,
+          "confidence": 0,
+          "reason": "Not enough quest history for adjustment",
+          "recommendedDifficulty": "intermediate",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "intermediate"
+          }
+        },
+        {
+          "direction": 1,
+          "confidence": 1000,
+          "reason": "High performance (100%) — player is ready for a challenge",
+          "recommendedDifficulty": "intermediate",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "intermediate"
+          }
+        },
+        {
+          "direction": 1,
+          "confidence": 1000,
+          "reason": "High performance (100%) — player is ready for a challenge",
+          "recommendedDifficulty": "advanced",
+          "objectiveCountMultiplier": 1200,
+          "timeMultiplier": 900,
+          "applied": {
+            "objectiveCount": 4,
+            "estimatedMinutes": 9,
+            "difficulty": "advanced"
+          }
+        },
+        {
+          "direction": -1,
+          "confidence": 775,
+          "reason": "Player struggling: low success rate (0%), low objective completion (3%)",
+          "recommendedDifficulty": "intermediate",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 5,
+            "estimatedMinutes": 10,
+            "difficulty": "intermediate"
+          }
+        },
+        {
+          "direction": -1,
+          "confidence": 775,
+          "reason": "Player struggling: low success rate (0%), low objective completion (3%)",
+          "recommendedDifficulty": "beginner",
+          "objectiveCountMultiplier": 800,
+          "timeMultiplier": 1300,
+          "applied": {
+            "objectiveCount": 4,
+            "estimatedMinutes": 13,
+            "difficulty": "beginner"
+          }
+        },
+        {
+          "direction": -1,
+          "confidence": -625,
+          "reason": "Player struggling: low objective completion (40%)",
+          "recommendedDifficulty": "beginner",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "beginner"
+          }
+        },
+        {
+          "direction": -1,
+          "confidence": -762,
+          "reason": "Player struggling: high retry rate (2.7 avg)",
+          "recommendedDifficulty": "beginner",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "beginner"
+          }
+        },
+        {
+          "direction": 0,
+          "confidence": 500,
+          "reason": "Performance in flow zone (83%)",
+          "recommendedDifficulty": "intermediate",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "intermediate"
+          }
+        },
+        {
+          "direction": 0,
+          "confidence": 500,
+          "reason": "Performance in flow zone (73%)",
+          "recommendedDifficulty": "intermediate",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "intermediate"
+          }
+        },
+        {
+          "direction": 1,
+          "confidence": 433,
+          "reason": "High performance (87%) — player is ready for a challenge",
+          "recommendedDifficulty": "intermediate",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "intermediate"
+          }
+        },
+        {
+          "direction": 0,
+          "confidence": 500,
+          "reason": "Performance in flow zone (79%)",
+          "recommendedDifficulty": "beginner",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "beginner"
+          }
+        },
+        {
+          "direction": 1,
+          "confidence": 1000,
+          "reason": "High performance (100%) — player is ready for a challenge",
+          "recommendedDifficulty": "advanced",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "advanced"
+          }
+        },
+        {
+          "direction": 0,
+          "confidence": 500,
+          "reason": "Performance in flow zone (80%)",
+          "recommendedDifficulty": "beginner",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 1,
+            "estimatedMinutes": 1,
+            "difficulty": "beginner"
+          }
+        },
+        {
+          "direction": 1,
+          "confidence": 300,
+          "reason": "High performance (85%) — player is ready for a challenge",
+          "recommendedDifficulty": "intermediate",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "intermediate"
+          }
+        },
+        {
+          "direction": -1,
+          "confidence": 300,
+          "reason": "Player struggling: low success rate (0%)",
+          "recommendedDifficulty": "beginner",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "beginner"
+          }
+        },
+        {
+          "direction": -1,
+          "confidence": -25,
+          "reason": "Player struggling: low objective completion (40%)",
+          "recommendedDifficulty": "beginner",
+          "objectiveCountMultiplier": 1000,
+          "timeMultiplier": 1000,
+          "applied": {
+            "objectiveCount": 3,
+            "estimatedMinutes": 10,
+            "difficulty": "beginner"
+          }
+        },
+        {
+          "direction": -1,
+          "confidence": 675,
+          "reason": "Player struggling: low success rate (0%), low objective completion (0%)",
+          "recommendedDifficulty": "beginner",
+          "objectiveCountMultiplier": 800,
+          "timeMultiplier": 1300,
+          "applied": {
+            "objectiveCount": 2,
+            "estimatedMinutes": 7,
+            "difficulty": "beginner"
+          }
+        },
+        {
+          "direction": -1,
+          "confidence": 675,
+          "reason": "Player struggling: low success rate (0%), low objective completion (0%)",
+          "recommendedDifficulty": "beginner",
+          "objectiveCountMultiplier": 800,
+          "timeMultiplier": 1300,
+          "applied": {
+            "objectiveCount": 1,
+            "estimatedMinutes": 1,
+            "difficulty": "beginner"
+          }
+        }
+      ]
+    },
+    {
+      "name": "records: finished quests only; the objective share, attempts and times as the adjustment reads them",
+      "op": "records",
+      "input": {
+        "quests": [
+          {
+            "status": "completed",
+            "objectives": [
+              {
+                "completed": true
+              },
+              {
+                "completed": true
+              },
+              {
+                "completed": false
+              }
+            ],
+            "attemptCount": 2,
+            "assignedAtMs": 1000,
+            "completedAtMs": 61000,
+            "estimatedMinutes": 2
+          },
+          {
+            "status": "active",
+            "objectives": [
+              {
+                "completed": true
+              }
+            ]
+          },
+          {
+            "status": "failed",
+            "objectives": [],
+            "assignedAtMs": 5000,
+            "completedAtMs": 5000
+          },
+          {
+            "status": "abandoned",
+            "objectives": null,
+            "assignedAtMs": 9000,
+            "completedAtMs": 1000,
+            "estimatedMinutes": null
+          },
+          {
+            "status": "completed",
+            "objectives": [
+              {
+                "completed": true
+              },
+              {
+                "completed": false
+              },
+              {
+                "completed": false
+              }
+            ]
+          }
+        ]
+      },
+      "expected": [
+        {
+          "status": "completed",
+          "objectivePermille": 667,
+          "attempts": 2,
+          "completionMs": 60000,
+          "estimatedMs": 120000
+        },
+        {
+          "status": "failed",
+          "objectivePermille": 0,
+          "attempts": 1,
+          "completionMs": null,
+          "estimatedMs": null
+        },
+        {
+          "status": "abandoned",
+          "objectivePermille": 0,
+          "attempts": 1,
+          "completionMs": null,
+          "estimatedMs": null
+        },
+        {
+          "status": "completed",
+          "objectivePermille": 333,
+          "attempts": 1,
+          "completionMs": null,
+          "estimatedMs": null
+        }
+      ]
+    }
+  ]
+}

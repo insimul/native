@@ -1,0 +1,451 @@
+{
+  "area": "skills-effects",
+  "description": "What a taken node DOES, and how it reaches the module it affects without forking it (US-2 and US-3 of `123-skill-trees-and-progression`). Three kinds and three existing seams: `unlocks(Action)` reaches `can_perform/2`, `permits(Thing)` reaches `forbids/4`, and `modifies(Param, Amount)` reaches the input snapshot the module was already going to resolve from — a combat action row, a combatant’s profile, a traversal mode’s multiplier, a recipe. The first two are the KB’s and ship as authored content (`SKILL_EFFECT_BRIDGE_PROLOG`); this file pins the third, plus the atom read-out a host with no KB uses for display. Modifiers are ADDITIVE and summed, because integers add identically in four engines and a stack of multipliers is a float whose last digit is where a native port stops matching a golden. A parameter naming no field of the snapshot is ignored and stays in the totals for whoever does own it — including the class that names a quantity only an ENGINE holds, which is what `ISkillModifierSink` exists for. A non-numeric amount is dropped rather than coerced, a non-numeric field is left alone, nothing is clamped or rounded, the snapshot is copied rather than mutated, and an effect kind core has never heard of rides through untouched. Regenerate with `npm run skill-resolution-corpus`.",
+  "cases": [
+    {
+      "name": "a-skill-changes-a-combat-number-with-no-branch-in-combat",
+      "note": "THE case the module architecture exists for. The snapshot is the row `resolveAttack` was going to be called with; the skill modifies the row, and combat resolves exactly as it always did from an input that is now different. No line of `120-combat-and-stamina` is involved.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "damage",
+              2
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "damage": 7,
+          "energyCost": 3
+        },
+        "parameter": "damage"
+      },
+      "expected": {
+        "modifiers": {
+          "damage": 2
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "damage": 9,
+          "energyCost": 3
+        },
+        "modifierOf": 2
+      }
+    },
+    {
+      "name": "two-nodes-that-modify-the-same-parameter-are-summed",
+      "note": "Additive, and summed. A multiplicative reading was the alternative and is worse where it matters: integers add identically in four engines, and a stack of multipliers is a float whose last digit is where a native port stops matching this file.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "damage",
+              2
+            ]
+          },
+          {
+            "kind": "modifies",
+            "args": [
+              "damage",
+              1
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "parameter": "damage"
+      },
+      "expected": {
+        "modifiers": {
+          "damage": 3
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "damage": 10
+        },
+        "modifierOf": 3
+      }
+    },
+    {
+      "name": "a-snake-case-atom-names-a-camel-case-field",
+      "note": "The KB’s vocabulary is snake_case atoms and a snapshot’s fields are camelCase, and the translation is one rule in one place. A per-module table would be the same table in four engines, drifting.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "energy_cost",
+              -1
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "energyCost": 3
+        },
+        "parameter": "energy_cost"
+      },
+      "expected": {
+        "modifiers": {
+          "energy_cost": -1
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "energyCost": 2
+        },
+        "modifierOf": -1
+      }
+    },
+    {
+      "name": "a-world-that-authored-the-field-spelling-directly",
+      "note": "A world may name the field as the snapshot spells it, and the literal spelling is tried FIRST. Both authorings reach the same number, which is what stops a creator having to know how core spells its own types.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "energyCost",
+              -1
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "energyCost": 3
+        },
+        "parameter": "energyCost"
+      },
+      "expected": {
+        "modifiers": {
+          "energyCost": -1
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "energyCost": 2
+        },
+        "modifierOf": -1
+      }
+    },
+    {
+      "name": "a-snapshot-carrying-both-spellings-takes-the-authored-key",
+      "note": "The snapshot has a field spelled exactly as the parameter (`energy_cost`) AND the camelCase field `parameterField` would name (`energyCost`). The authored key is tried first, so the modifier lands on `energy_cost` and `energyCost` is untouched. A port that translates first moves the other number.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "energy_cost",
+              -1
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "energy_cost": 3,
+          "energyCost": 5
+        },
+        "parameter": "energy_cost"
+      },
+      "expected": {
+        "modifiers": {
+          "energy_cost": -1
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "energy_cost": 2,
+          "energyCost": 5
+        },
+        "modifierOf": -1
+      }
+    },
+    {
+      "name": "a-digit-after-an-underscore-folds-too",
+      "note": "`parameterField` folds the character after every `_`, digit or letter: `tier_2_bonus` names the field `tier2Bonus`. A port whose rule folds only letters reads `tier_2Bonus`, finds no such field and silently drops the modifier.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "tier_2_bonus",
+              1
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "masons_hammer",
+          "tier2Bonus": 4
+        },
+        "parameter": "tier_2_bonus"
+      },
+      "expected": {
+        "modifiers": {
+          "tier_2_bonus": 1
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "masons_hammer",
+          "tier2Bonus": 5
+        },
+        "modifierOf": 1
+      }
+    },
+    {
+      "name": "a-parameter-for-somebody-else-is-ignored",
+      "note": "The set is open, so most parameters an actor carries belong to another module or to an authored rule. A crafting bonus reaching a combat row is content working correctly, not an error — and it stays in `modifiers` so the module that DOES own it still sees it.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "damage",
+              2
+            ]
+          },
+          {
+            "kind": "modifies",
+            "args": [
+              "mortar_strength",
+              5
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "parameter": "mortar_strength"
+      },
+      "expected": {
+        "modifiers": {
+          "damage": 2,
+          "mortar_strength": 5
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "damage": 9
+        },
+        "modifierOf": 5
+      }
+    },
+    {
+      "name": "a-field-that-is-not-a-number-is-left-alone",
+      "note": "An authored `modifies(id, 3)` may not corrupt an id. What a legal value is belongs to the module that owns the field; what this refuses to do is turn a string into `NaN`.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "id",
+              3
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "parameter": "id"
+      },
+      "expected": {
+        "modifiers": {
+          "id": 3
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "modifierOf": 3
+      }
+    },
+    {
+      "name": "a-non-numeric-amount-is-dropped-rather-than-coerced",
+      "note": "`modifies(damage, big)` is content that is wrong. Reading it as `NaN` would poison every number downstream of it, so it never enters the totals at all.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "damage",
+              "big"
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "parameter": "damage"
+      },
+      "expected": {
+        "modifiers": {},
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "modifierOf": 0
+      }
+    },
+    {
+      "name": "nothing-is-clamped-or-rounded-here",
+      "note": "A modifier can take a number below zero, and it is NOT floored here: combat floors a stamina cost, `traversalCost` floors a cost, `nodeCost` refuses a negative. Clamping here would be a second opinion about somebody else’s number.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "energyCost",
+              -9
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "sidestep",
+          "energyCost": 3
+        },
+        "parameter": "energyCost"
+      },
+      "expected": {
+        "modifiers": {
+          "energyCost": -9
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "sidestep",
+          "energyCost": -6
+        },
+        "modifierOf": -9
+      }
+    },
+    {
+      "name": "the-three-kinds-together-and-a-fourth-nobody-declared",
+      "note": "One actor’s whole effect list. `unlocks` and `permits` are read out as atoms for a host with no KB — the gate a world runs on is the bridge’s `can_perform/2` and `forbids/4` — and an effect kind core has never heard of rides along untouched, because a `switch` over a closed set of kinds is the fork this module exists to avoid.",
+      "input": {
+        "effects": [
+          {
+            "kind": "unlocks",
+            "args": [
+              "set_keystone"
+            ]
+          },
+          {
+            "kind": "permits",
+            "args": [
+              "seal_a_vault"
+            ]
+          },
+          {
+            "kind": "modifies",
+            "args": [
+              "damage",
+              2
+            ]
+          },
+          {
+            "kind": "sings",
+            "args": [
+              "the_masons_round"
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "parameter": "damage"
+      },
+      "expected": {
+        "modifiers": {
+          "damage": 2
+        },
+        "unlocks": [
+          "set_keystone"
+        ],
+        "permits": [
+          "seal_a_vault"
+        ],
+        "modified": {
+          "id": "heavy_swing",
+          "damage": 9
+        },
+        "modifierOf": 2
+      }
+    },
+    {
+      "name": "an-actor-with-no-effects-changes-nothing",
+      "note": "The negative case for application: an empty list leaves the snapshot equal to what it was, and the copy is still a copy — a world’s authored action table is read by every actor in the fight and an actor’s skills may not edit it.",
+      "input": {
+        "effects": [],
+        "snapshot": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "parameter": "damage"
+      },
+      "expected": {
+        "modifiers": {},
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "modifierOf": 0
+      }
+    },
+    {
+      "name": "a-parameter-the-engine-owns-and-core-has-no-snapshot-for",
+      "note": "The finding US-3 records, and the reason the module has a host interface at all: `move_speed` names nothing in any snapshot core resolves from, so it survives into `modifiers` and reaches `ISkillModifierSink` unchanged. A port that dropped an unmatched parameter would drop the whole class.",
+      "input": {
+        "effects": [
+          {
+            "kind": "modifies",
+            "args": [
+              "move_speed",
+              2
+            ]
+          }
+        ],
+        "snapshot": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "parameter": "move_speed"
+      },
+      "expected": {
+        "modifiers": {
+          "move_speed": 2
+        },
+        "unlocks": [],
+        "permits": [],
+        "modified": {
+          "id": "heavy_swing",
+          "damage": 7
+        },
+        "modifierOf": 2
+      }
+    }
+  ]
+}

@@ -977,6 +977,45 @@ add_test(NAME build_corpus_negative COMMAND insimulcore_build_corpus --negative 
 set_tests_properties(build_corpus_negative PROPERTIES
   PASS_REGULAR_EXPRESSION "negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*targeted: credential not caught [1-9][0-9]*/[0-9]+, credential shown [1-9][0-9]*/[0-9]+, credential shown [(]planted[)] [1-9][0-9]*/[0-9]+, escape under a fold [1-9][0-9]*/[0-9]+, artefact outside outDir [1-9][0-9]*/[0-9]+, path outside project [1-9][0-9]*/[0-9]+ refused\n.*escapes refused by fold: macOS only [1-9][0-9]*, Windows only [1-9][0-9]*, both [0-9]+\n.*build_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*build_corpus --negative: PASS")
 
+
+# progression_corpus (PL.native-progression-rows, rulings U106(7) and U36): core's P9i
+# progression (P9i.core: src/progression/gamification.ts, feature-modules.ts and
+# progression-save.ts) and core's skill trees (src/skills/ and
+# game-engine/logic/SkillProgression.ts) as libinsimulcore's `progression.*` and
+# `skill.*` rows, held to core's own corpora, COPIED byte for byte into
+# corebridge/vendor/core/conformance/{progression,skills,prolog}/ at the pin
+# (vendor-core-bundle.mjs PROGRESSION_CORPUS_FILES; hashed, and byte-compared under
+# --check --core). tests/progression_corpus.cpp composes each case's record from one
+# row per core function, as core's runner (progression/systems-corpus.ts) and core's
+# skills corpus test compose it from core's functions; the gamification `run` op one
+# progression.gamification.step per step. prolog/mechanic-skill.json's can_unlock/2
+# cases are replayed through a KB-backed skill.unlock (the case's KB behind a
+# skill.create session; the node's goals answered by core's skill_goal_met/2 there),
+# and every node the KB opens is asked again with no KB and must stay locked
+# (U106(7)). Unreal's interim P9i copy is what these rows retire. The regex demands
+# the refusal probes' line, each file's driven line with every op driven and 0
+# undriven, in file order, the run's step line and the no-KB control, then PASS. It
+# holds no ';': CMake reads one as a list separator, and a PASS_REGULAR_EXPRESSION
+# list passes when ANY of its parts matches (a regex split that way passed a red run).
+add_executable(insimulcore_progression_corpus tests/progression_corpus.cpp tests/radiant/json_value.cpp)
+target_include_directories(insimulcore_progression_corpus PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+target_link_libraries(insimulcore_progression_corpus PRIVATE insimulcore)
+set(INSIMUL_PROGRESSION_CORPORA ${INSIMUL_PROPS_CORPUS}/progression/gamification.json
+  ${INSIMUL_PROPS_CORPUS}/progression/modules.json ${INSIMUL_PROPS_CORPUS}/progression/skills.json
+  ${INSIMUL_PROPS_CORPUS}/progression/save.json ${INSIMUL_PROPS_CORPUS}/skills/advancement.json
+  ${INSIMUL_PROPS_CORPUS}/skills/unlocks.json ${INSIMUL_PROPS_CORPUS}/skills/effects.json
+  ${INSIMUL_PROPS_CORPUS}/skills/trees.json ${INSIMUL_PROPS_CORPUS}/skills/effect-terms.json
+  ${INSIMUL_PROPS_CORPUS}/prolog/mechanic-skill.json)
+add_test(NAME progression_corpus COMMAND insimulcore_progression_corpus ${INSIMUL_PROGRESSION_CORPORA})
+set_tests_properties(progression_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 9 of 9 unknown op[(]s[)], step[(]s[)], area[(]s[)] and row[(]s[)] refused\n.*progression/gamification: [^\n]*driven levels [1-9][0-9]*, table [1-9][0-9]*, achievements [1-9][0-9]*, daily [1-9][0-9]*, run [1-9][0-9]*. 0 undriven\n.*steps through progression.gamification.step: day [1-9][0-9]*,[^\n]* stats [1-9][0-9]*\n.*progression/modules: [^\n]*driven definitions [1-9][0-9]*, resolve [1-9][0-9]*, genre [1-9][0-9]*, proficiency [1-9][0-9]*, difficulty [1-9][0-9]*, performance [1-9][0-9]*, adjust [1-9][0-9]*, records [1-9][0-9]*. 0 undriven\n.*progression/skills: [^\n]*driven domain [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*progression/save: [^\n]*driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*skills-advancement: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-unlocks: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-effects: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-trees: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-effect-terms: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*mechanic-skill: [^\n]*driven can_unlock [1-9][0-9]* [^\n]*. 0 undriven\n.*no-KB control: [1-9][0-9]* node[(]s[)] the KB opened stay locked [(]requires[)] without it\n.*progression_corpus: PASS")
+# Its negative pass: every driven case's expectation perturbed (its last leaf) must be
+# refused, each file's count and the total stated; PASS only when every case of every
+# file was refused and none accepted.
+add_test(NAME progression_corpus_negative COMMAND insimulcore_progression_corpus --negative ${INSIMUL_PROGRESSION_CORPORA})
+set_tests_properties(progression_corpus_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "refusals: 9 of 9 unknown op[(]s[)], step[(]s[)], area[(]s[)] and row[(]s[)] refused\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*progression_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*progression_corpus --negative: PASS")
+
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest
 # (TutorialQuestSystem) and the onboarding flow on it (OnboardingManager) — as

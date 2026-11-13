@@ -1,0 +1,956 @@
+{
+  "area": "skills-advancement",
+  "description": "What a level PRICES and whether an actor may take it (US-3 of `123-skill-trees-and-progression`), pinned so four engines read one save the same way. Each case carries the whole input — the authored skill with its own curve and cap, the actor’s level, their banked XP, every level they hold for the `skill_requires/3` check, and the fully resolved SkillTuning — so a harness in any language reproduces it with no defaults table, no world file and no KB. `expected.curve` is what every level from 0 to one past the cap prices, read out of `skill_level_xp/3`: a PRICE and never a running total, because a save’s bank is what is UNSPENT and that reading stays true when a creator retunes the curve. Level 1 is priced like any other level, so a world can charge for an apprenticeship without a second mechanism, and a level past the end of the curve repeats the last entry rather than becoming free. `expected.resolution.refusal` is evaluated in SKILL_ADVANCE_REFUSALS order — unknown, prerequisite, capped, xp — and `forbidden` NEVER appears here: permissibility is `forbids/4`’s and a pure function may not call a KB, so a corpus that pinned one would be pinning a guess. Regenerate with `npm run skill-resolution-corpus`.",
+  "cases": [
+    {
+      "name": "learning-a-skill-is-advancing-from-zero",
+      "note": "THE case the design turns on. Level 1 is priced like any other level — `curve[1]`, which this world sets to 0 — so learning is gated by the skill’s `skill_requires/3` prerequisites and not by a bank. A port with a separate “learn” entry point has two answers to one question.",
+      "input": {
+        "actor": "wren",
+        "skill": {
+          "id": "masonry",
+          "category": "craft",
+          "maxLevel": 4,
+          "levelXp": [
+            0,
+            0,
+            40,
+            120,
+            300
+          ],
+          "requires": []
+        },
+        "level": 0,
+        "banked": 0,
+        "levels": {},
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "masonry",
+          "level": 0,
+          "next": 1,
+          "price": 0,
+          "banked": 0,
+          "action": "train_skill",
+          "available": true
+        },
+        "curve": [
+          0,
+          0,
+          40,
+          120,
+          300,
+          300
+        ],
+        "maxLevel": 4
+      }
+    },
+    {
+      "name": "an-apprenticeship-a-world-charges-for",
+      "note": "The same first level in a world whose curve prices it at 25. A creator who wants an apprenticeship to cost something authors a non-zero first entry rather than needing a second mechanism, and a port that hardcodes “level 1 is free” fails only here.",
+      "input": {
+        "actor": "wren",
+        "skill": {
+          "id": "masonry",
+          "category": "craft",
+          "maxLevel": 4,
+          "levelXp": [
+            0,
+            0,
+            40,
+            120,
+            300
+          ],
+          "requires": []
+        },
+        "skillId": "masonry",
+        "level": 0,
+        "banked": 10,
+        "levels": {},
+        "tuning": {
+          "pointsPerLevel": 3,
+          "defaultNodeCost": 2,
+          "defaultMaxLevel": 3,
+          "levelXp": [
+            0,
+            25,
+            150,
+            500
+          ],
+          "advanceAction": "study_under_master",
+          "unlockAction": "take_stonework_oath"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "masonry",
+          "level": 0,
+          "next": 1,
+          "price": 0,
+          "banked": 10,
+          "action": "study_under_master",
+          "available": true
+        },
+        "curve": [
+          0,
+          0,
+          40,
+          120,
+          300,
+          300
+        ],
+        "maxLevel": 4
+      }
+    },
+    {
+      "name": "the-bank-is-what-is-unspent",
+      "note": "Priced from `skill_level_xp(masonry, 2, 40)`, and the bank holds exactly that. A cumulative reading of the same save says this actor has 40 lifetime XP and is still level 1 — the divergence `docs/skill-progression.md` §3 exists to prevent.",
+      "input": {
+        "actor": "wren",
+        "skill": {
+          "id": "masonry",
+          "category": "craft",
+          "maxLevel": 4,
+          "levelXp": [
+            0,
+            0,
+            40,
+            120,
+            300
+          ],
+          "requires": []
+        },
+        "level": 1,
+        "banked": 40,
+        "levels": {
+          "masonry": 1
+        },
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "masonry",
+          "level": 1,
+          "next": 2,
+          "price": 40,
+          "banked": 40,
+          "action": "train_skill",
+          "available": true
+        },
+        "curve": [
+          0,
+          0,
+          40,
+          120,
+          300,
+          300
+        ],
+        "maxLevel": 4
+      }
+    },
+    {
+      "name": "one-short-of-the-price",
+      "note": "Refused `xp`, and the resolution still reports the price and the bank so a panel can print “39 / 40”. A port that returns only a boolean cannot draw the bar.",
+      "input": {
+        "actor": "wren",
+        "skill": {
+          "id": "masonry",
+          "category": "craft",
+          "maxLevel": 4,
+          "levelXp": [
+            0,
+            0,
+            40,
+            120,
+            300
+          ],
+          "requires": []
+        },
+        "level": 1,
+        "banked": 39,
+        "levels": {
+          "masonry": 1
+        },
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "masonry",
+          "level": 1,
+          "next": 2,
+          "price": 40,
+          "banked": 39,
+          "action": "train_skill",
+          "available": false,
+          "refusal": "xp"
+        },
+        "curve": [
+          0,
+          0,
+          40,
+          120,
+          300,
+          300
+        ],
+        "maxLevel": 4
+      }
+    },
+    {
+      "name": "a-skill-nobody-declared",
+      "note": "Refused `unknown`, and `next` stays at the current level rather than pointing one past a skill that does not exist. An absence, not a verdict.",
+      "input": {
+        "actor": "wren",
+        "skill": null,
+        "skillId": "thatching",
+        "level": 0,
+        "banked": 9999,
+        "levels": {},
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "thatching",
+          "level": 0,
+          "next": 0,
+          "price": 0,
+          "banked": 9999,
+          "action": "train_skill",
+          "available": false,
+          "refusal": "unknown"
+        },
+        "curve": [
+          0,
+          0,
+          100,
+          250,
+          450,
+          700,
+          1000,
+          1350,
+          1750,
+          2200,
+          2700,
+          2700
+        ],
+        "maxLevel": 10
+      }
+    },
+    {
+      "name": "a-prerequisite-skill-not-yet-learned",
+      "note": "Vaulting asks for masonry 2 and this actor has none, so it is refused `prerequisite` BEFORE the cap and before the bank — everything core settles alone, cheapest first, most definite first.",
+      "input": {
+        "actor": "corvin",
+        "skill": {
+          "id": "vaulting",
+          "category": "craft",
+          "maxLevel": 3,
+          "levelXp": [
+            0,
+            0,
+            90,
+            400
+          ],
+          "requires": [
+            {
+              "skill": "masonry",
+              "level": 2
+            }
+          ]
+        },
+        "level": 0,
+        "banked": 9999,
+        "levels": {},
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "corvin",
+          "skill": "vaulting",
+          "level": 0,
+          "next": 1,
+          "price": 0,
+          "banked": 9999,
+          "action": "train_skill",
+          "available": false,
+          "refusal": "prerequisite"
+        },
+        "curve": [
+          0,
+          0,
+          90,
+          400,
+          400
+        ],
+        "maxLevel": 3
+      }
+    },
+    {
+      "name": "a-prerequisite-skill-one-level-too-low",
+      "note": "The interesting half of the same gate: the prerequisite is HELD, at level 1, and the requirement is 2. A port that checks presence rather than level passes the case above and fails this one.",
+      "input": {
+        "actor": "corvin",
+        "skill": {
+          "id": "vaulting",
+          "category": "craft",
+          "maxLevel": 3,
+          "levelXp": [
+            0,
+            0,
+            90,
+            400
+          ],
+          "requires": [
+            {
+              "skill": "masonry",
+              "level": 2
+            }
+          ]
+        },
+        "level": 0,
+        "banked": 9999,
+        "levels": {
+          "masonry": 1
+        },
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "corvin",
+          "skill": "vaulting",
+          "level": 0,
+          "next": 1,
+          "price": 0,
+          "banked": 9999,
+          "action": "train_skill",
+          "available": false,
+          "refusal": "prerequisite"
+        },
+        "curve": [
+          0,
+          0,
+          90,
+          400,
+          400
+        ],
+        "maxLevel": 3
+      }
+    },
+    {
+      "name": "a-prerequisite-met-exactly",
+      "note": "And the boundary in the other direction — `>=`, not `>`. Three cases on one predicate because an off-by-one in a prerequisite is a world that quietly cannot be finished.",
+      "input": {
+        "actor": "corvin",
+        "skill": {
+          "id": "vaulting",
+          "category": "craft",
+          "maxLevel": 3,
+          "levelXp": [
+            0,
+            0,
+            90,
+            400
+          ],
+          "requires": [
+            {
+              "skill": "masonry",
+              "level": 2
+            }
+          ]
+        },
+        "level": 0,
+        "banked": 90,
+        "levels": {
+          "masonry": 2
+        },
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "corvin",
+          "skill": "vaulting",
+          "level": 0,
+          "next": 1,
+          "price": 0,
+          "banked": 90,
+          "action": "train_skill",
+          "available": true
+        },
+        "curve": [
+          0,
+          0,
+          90,
+          400,
+          400
+        ],
+        "maxLevel": 3
+      }
+    },
+    {
+      "name": "already-at-the-world-cap",
+      "note": "Refused `capped`, with `next` held at the current level and the price zeroed. Being capped is not a matter of opinion, so it outranks the bank.",
+      "input": {
+        "actor": "wren",
+        "skill": {
+          "id": "masonry",
+          "category": "craft",
+          "maxLevel": 4,
+          "levelXp": [
+            0,
+            0,
+            40,
+            120,
+            300
+          ],
+          "requires": []
+        },
+        "level": 4,
+        "banked": 9999,
+        "levels": {
+          "masonry": 4
+        },
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "masonry",
+          "level": 4,
+          "next": 4,
+          "price": 300,
+          "banked": 9999,
+          "action": "train_skill",
+          "available": false,
+          "refusal": "capped"
+        },
+        "curve": [
+          0,
+          0,
+          40,
+          120,
+          300,
+          300
+        ],
+        "maxLevel": 4
+      }
+    },
+    {
+      "name": "a-cap-the-world-tightened",
+      "note": "The same skill under a world whose `defaultMaxLevel` is 3 — and it does NOT apply, because the skill authored its own cap of 4. A port that lets the world default win over an authored `skill_max_level/2` re-caps every skill in the game.",
+      "input": {
+        "actor": "wren",
+        "skill": {
+          "id": "masonry",
+          "category": "craft",
+          "maxLevel": 4,
+          "levelXp": [
+            0,
+            0,
+            40,
+            120,
+            300
+          ],
+          "requires": []
+        },
+        "level": 3,
+        "banked": 300,
+        "levels": {
+          "masonry": 3
+        },
+        "tuning": {
+          "pointsPerLevel": 3,
+          "defaultNodeCost": 2,
+          "defaultMaxLevel": 3,
+          "levelXp": [
+            0,
+            25,
+            150,
+            500
+          ],
+          "advanceAction": "study_under_master",
+          "unlockAction": "take_stonework_oath"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "masonry",
+          "level": 3,
+          "next": 4,
+          "price": 300,
+          "banked": 300,
+          "action": "study_under_master",
+          "available": true
+        },
+        "curve": [
+          0,
+          0,
+          40,
+          120,
+          300,
+          300
+        ],
+        "maxLevel": 4
+      }
+    },
+    {
+      "name": "two-refusals-at-once-prerequisite-outranks-capped",
+      "note": "Vaulting asks for masonry 2, this actor holds masonry 1, AND they are already at vaulting’s cap of 3: two rungs hold and the answer is `prerequisite`, because SKILL_ADVANCE_REFUSALS is the order the ladder is evaluated in. The bank is deep, so only those two rungs hold. A port that checks the cap first refuses `capped` here.",
+      "input": {
+        "actor": "corvin",
+        "skill": {
+          "id": "vaulting",
+          "category": "craft",
+          "maxLevel": 3,
+          "levelXp": [
+            0,
+            0,
+            90,
+            400
+          ],
+          "requires": [
+            {
+              "skill": "masonry",
+              "level": 2
+            }
+          ]
+        },
+        "level": 3,
+        "banked": 9999,
+        "levels": {
+          "masonry": 1,
+          "vaulting": 3
+        },
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "corvin",
+          "skill": "vaulting",
+          "level": 3,
+          "next": 4,
+          "price": 400,
+          "banked": 9999,
+          "action": "train_skill",
+          "available": false,
+          "refusal": "prerequisite"
+        },
+        "curve": [
+          0,
+          0,
+          90,
+          400,
+          400
+        ],
+        "maxLevel": 3
+      }
+    },
+    {
+      "name": "two-refusals-at-once-capped-outranks-xp",
+      "note": "Masonry at its cap of 4 with an EMPTY bank — the next level would price at 300, so the bank is short too — and the answer is `capped`: a capped skill is not a matter of opinion, so it outranks the bank. A port that checks the bank first refuses `xp` and draws a progress bar toward a level that does not exist.",
+      "input": {
+        "actor": "wren",
+        "skill": {
+          "id": "masonry",
+          "category": "craft",
+          "maxLevel": 4,
+          "levelXp": [
+            0,
+            0,
+            40,
+            120,
+            300
+          ],
+          "requires": []
+        },
+        "level": 4,
+        "banked": 0,
+        "levels": {
+          "masonry": 4
+        },
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "masonry",
+          "level": 4,
+          "next": 4,
+          "price": 300,
+          "banked": 0,
+          "action": "train_skill",
+          "available": false,
+          "refusal": "capped"
+        },
+        "curve": [
+          0,
+          0,
+          40,
+          120,
+          300,
+          300
+        ],
+        "maxLevel": 4
+      }
+    },
+    {
+      "name": "an-undeclared-skill-a-save-still-holds",
+      "note": "A save that holds thatching at level 10 in a world that no longer declares it, with nothing banked: the world default cap and the default curve would also refuse it `capped` and `xp`, and the answer is `unknown`, the first rung — an absence outranks every verdict about the skill.",
+      "input": {
+        "actor": "wren",
+        "skill": null,
+        "skillId": "thatching",
+        "level": 10,
+        "banked": 0,
+        "levels": {
+          "thatching": 10
+        },
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "thatching",
+          "level": 10,
+          "next": 10,
+          "price": 0,
+          "banked": 0,
+          "action": "train_skill",
+          "available": false,
+          "refusal": "unknown"
+        },
+        "curve": [
+          0,
+          0,
+          100,
+          250,
+          450,
+          700,
+          1000,
+          1350,
+          1750,
+          2200,
+          2700,
+          2700
+        ],
+        "maxLevel": 10
+      }
+    },
+    {
+      "name": "a-skill-with-no-curve-of-its-own",
+      "note": "Surveying authors no `levelXp`, so it is priced by the WORLD’s curve. This is what makes a curve content: a port that falls back to a compiled constant reproduces core’s numbers and none of a real game’s.",
+      "input": {
+        "actor": "wren",
+        "skill": {
+          "id": "surveying",
+          "category": "lore",
+          "maxLevel": 2,
+          "requires": []
+        },
+        "level": 0,
+        "banked": 25,
+        "levels": {},
+        "tuning": {
+          "pointsPerLevel": 3,
+          "defaultNodeCost": 2,
+          "defaultMaxLevel": 3,
+          "levelXp": [
+            0,
+            25,
+            150,
+            500
+          ],
+          "advanceAction": "study_under_master",
+          "unlockAction": "take_stonework_oath"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "surveying",
+          "level": 0,
+          "next": 1,
+          "price": 25,
+          "banked": 25,
+          "action": "study_under_master",
+          "available": true
+        },
+        "curve": [
+          0,
+          25,
+          150,
+          500
+        ],
+        "maxLevel": 2
+      }
+    },
+    {
+      "name": "past-the-end-of-the-curve",
+      "note": "A world whose cap is higher than its curve is long. The last entry REPEATS rather than the level becoming free, because free is the failure that ships as an infinite levelling exploit.",
+      "input": {
+        "actor": "wren",
+        "skill": {
+          "id": "surveying",
+          "category": "lore",
+          "maxLevel": 6,
+          "requires": []
+        },
+        "level": 4,
+        "banked": 500,
+        "levels": {
+          "surveying": 4
+        },
+        "tuning": {
+          "pointsPerLevel": 3,
+          "defaultNodeCost": 2,
+          "defaultMaxLevel": 3,
+          "levelXp": [
+            0,
+            25,
+            150,
+            500
+          ],
+          "advanceAction": "study_under_master",
+          "unlockAction": "take_stonework_oath"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "skill": "surveying",
+          "level": 4,
+          "next": 5,
+          "price": 500,
+          "banked": 500,
+          "action": "study_under_master",
+          "available": true
+        },
+        "curve": [
+          0,
+          25,
+          150,
+          500,
+          500,
+          500,
+          500,
+          500
+        ],
+        "maxLevel": 6
+      }
+    }
+  ]
+}

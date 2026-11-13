@@ -571,6 +571,48 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   or waits on a ruling. Re-vendor `conformance/build/headless.json` from core at this
   library's pin and drive each case as `tests/build_corpus.cpp` does: expand the
   markers from the file's own `secretFixtures`, then one row per case.
+- **Progression and skill trees (Unreal's P9i retirement rows, after
+  PL.native-progression-rows; U106(7)).** Core's P9i logic is the `progression.*`
+  and `skill.*` rows (`README.md`, "The progression and skill rows"). The two
+  retirement rows bind them in place of the interim copy on the P9i cell's branch
+  (`origin/feat/p9i-unreal` `8dacd3c`, read only; not on unreal main):
+  `Portable/InsimulProgression.{h,cpp}` (209 + 1,202 lines, with the generated
+  `InsimulProgressionTables.generated.inl`), `Portable/InsimulSkillDecisions.{h,cpp}`
+  (129 + 302) and `Portable/InsimulSkillTreeModel.{h,cpp}` (314 + 743).
+
+  | Unreal's interim copy | Row |
+  |---|---|
+  | `FTuning` (`Merge`, `Get`, `CurveOrDefault`, `LabelsOrDefault`), `DefaultThresholds`, `DefaultTierLabels` | `progression.gamification.tuning { tuning? }` (every tracker row takes the pack's `tuning` and reads core's defaults under it: send the pack's parameters, never a merged tuning) |
+  | `LevelForXp`, `NextLevelXp`, `LevelProgressPermille`, `LevelTier` | `progression.gamification.levelForXp`, `.nextLevelXp`, `.progressPermille`, `.tier` |
+  | `XpEventTable` | `progression.gamification.table { bundle?, tuning?, overrides? }` |
+  | the achievement catalogue | `progression.gamification.achievements {}` |
+  | `IsDateKey`, `PreviousDateKey`, `DailyTemplateIndex`, `DailyChallengeView`, `StreakMultiplierTenths`, `StreakXp` | `progression.gamification.previousDate`, `.dailyIndex`, `.dailyChallenge`, `.streakTenths`, `.streakXp` (a bad date is the step's `bad_date` refusal) |
+  | `FGamState` (new), `ApplyStep` | `progression.gamification.initial {}`, `progression.gamification.step { run, step, tuning?, config?, at? }` → `{ run, events, signals, refusal? }`; keep the `run` the last answer carried and send it with the next step |
+  | `GamificationView` | `progression.gamification.view { state, config? }` |
+  | `GamificationBlock`, `GamificationFromBlock` | `progression.save.build { gamification, skills }` + `progression.save.write { block }`; `progression.save.read { block }` (an unreadable block is core's `{ ok: false, keys }`, a value) |
+  | `GenreBundle`, `ResolveFeatureModules`, `BundleModuleConfigs`, `MenuTabs` | `progression.modules.bundleModules`, `.resolve`, `.configs`, `.genre` (the pause tabs a genre's modules leave, as core's `modules` corpus states them) |
+  | `ProficiencyTiers`, `ProficiencyOf`, `DifficultyTiers`, `DifficultyParams`, `PerformanceScore`, `AdjustDifficulty`, `ApplyAdjustment`, `PerformanceRecords` | `progression.modules.proficiencyTiers`, `.proficiency`, `.difficultyTiers`, `.difficulty`, `.performance`, `.adjust`, `.applyAdjustment`, `.records` |
+  | `SkillNodeFromJson`, `SkillDefinitionFromJson` (a World IR `skills` section read) | `skill.ir.trees { ir }`, `skill.ir.skills { ir }`, `skill.ir.tuning { ir }` |
+  | `ResolveAdvance`, `MaxLevelOf`, `XpForLevel` | `skill.advancement.resolve`, `.maxLevel`, `.xpForLevel` |
+  | `ResolveUnlock`, `NodeRequirements`, `NodeCost` | `skill.unlocks.resolve`, `.requirements`, `.cost` |
+  | `SkillModifiers`, `ModifierOf`, `UnlockedActions`, `PermittedThings`, `WithSkillModifiers` (`ParameterField` inside it) | `skill.effects.modifiers`, `.modifierOf`, `.unlocks`, `.permits`, `.apply` |
+  | `FInsimulSkillTreeModel::BuildView`, `TreesFundedBy`, `NodeDepth`, `Depths` | `skill.trees.view`, `.funded`, `.depth` (one call per node) |
+  | `CanUnlockWithoutKb`, `UnmetWithoutKb`, `FindNode`, `PrologAtom`, `EffectTerm` and the binding's `TakeNode` / `CanTakeNode` | the session: `skill.create { skills, trees, tuning, state, kb? }`, then `skill.canUnlock` / `skill.unlock { session, actor, node }` (the `skill_node_unlocked` event, effects as `effectTerm` text, is in the answer's `events`); `skill.register`, `.award`, `.priceOfNextLevel`, `.canAdvance`, `.advance`, `.view`, `.effectsOf`, `.modifiersOf`, `.serialize`, `.restore`, `.publishWorld`, `.publishActors`, `.lastWriteRefusal`, `.unregister`; `session.dispose` |
+  | `ToProjection`, `ProjectionCanonical`, `JNull`…`JsString`, `IdLess` | none: corpus-runner and JSON helpers |
+  | `ComposeProgression`, `BuildCatalog`, `TuningFromParameters`, `ResolvePauseModules`, `NoticesOf`, the binding's tracker wrapper (`Start`, `Step`, `BusEvent`, `Quest`, `Article`, `View`, `Block`, `Load`) | engine-side: they stay Unreal's, calling the rows above in place of the copy's functions |
+
+  **What changes for the binding: the deeper nodes (p9i-unreal m7).** The copy
+  decides unlocks without a KB, so every node that asks anything stays "locked until
+  this world's rules open it" and a player can take only a tree's root. With the
+  rows, a host that has a KB passes it to `skill.create { kb }` (the world's program
+  with core's skill pack in it, as `prolog.packs { areas: ['skill'] }` answers it;
+  a string or a list of clauses): `skill.unlock` then asks core's own
+  `skill_goal_met/2` in that native KB for each authored goal, bound to the asking
+  actor, and writes the take's facts there. A host with no KB keeps core's stated
+  answer. The KB lives as long as the session; `session.dispose` destroys it.
+  Re-vendor `conformance/progression/*.json`, `conformance/skills/*.json` and
+  `conformance/prolog/mechanic-skill.json` from core at this library's pin and drive
+  each case as `tests/progression_corpus.cpp` does.
 - **Save slots: the disk can change under the session since the 72c658c pin**
   (core's PL.disk-changed-step). When the save files change outside the game,
   send the new listing as `saves.slots.apply` op `disk_changed { slots }` (the

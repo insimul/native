@@ -1,0 +1,867 @@
+{
+  "area": "skills-unlocks",
+  "description": "What a node COSTS, what it ASKS and whether an actor may take it (US-3 of `123-skill-trees-and-progression`). Each case carries the whole input — the authored node with its parents, its goals, its cost and its effects, the actor’s pool for that node’s tree, whether they already hold it, and the fully resolved SkillTuning. `expected.requirements` is the single gate this module evaluates: an authored `skill_node_requires/2` goal verbatim, plus one `skill_unlocked(Actor, Parent)` per authored parent edge, deduplicated and canonically sorted — tree STRUCTURE and a reputation check are the same mechanism, which is what lets a tree gate on anything the KB knows. `expected.resolution.conditional` is separate from `available` on purpose: a node may be both, meaning nothing core knows refuses it and something core cannot evaluate might. Refusals are evaluated in SKILL_UNLOCK_REFUSALS order — unknown, owned, points — and neither `requires` nor `forbidden` ever appears in a pinned resolution, because both are the rules layer’s; `trees.json` is where they show up, since a view is handed the KB’s answers rather than guessing them. Regenerate with `npm run skill-resolution-corpus`.",
+  "cases": [
+    {
+      "name": "a-root-node-with-nothing-in-its-way",
+      "note": "The base case: no parents, no authored goals, a pool that affords it. `conditional` is false, which is the only state in which core has settled an unlock entirely on its own.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [],
+          "requires": [],
+          "effects": [
+            {
+              "kind": "modifies",
+              "args": [
+                "damage",
+                2
+              ]
+            }
+          ],
+          "id": "true_chisel",
+          "tree": "stonework",
+          "name": "True Chisel",
+          "cost": 1
+        },
+        "points": 3,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "true_chisel",
+          "tree": "stonework",
+          "points": 3,
+          "action": "unlock_skill_node",
+          "cost": 1,
+          "requires": [],
+          "conditional": false,
+          "available": true
+        },
+        "requirements": [],
+        "cost": 1
+      }
+    },
+    {
+      "name": "a-parent-desugars-into-the-goal-gate",
+      "note": "THE case the vocabulary turns on. An authored `parents` edge becomes `skill_unlocked(Actor, true_chisel)` in `requires`, so there is ONE gate to evaluate and a host still gets the edge to draw. A port with a node-graph walker beside a goal evaluator has two.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [
+            "true_chisel"
+          ],
+          "requires": [],
+          "effects": [
+            {
+              "kind": "unlocks",
+              "args": [
+                "set_keystone"
+              ]
+            },
+            {
+              "kind": "modifies",
+              "args": [
+                "damage",
+                1
+              ]
+            }
+          ],
+          "id": "keystone_sense",
+          "tree": "stonework",
+          "name": "Keystone Sense",
+          "cost": 2
+        },
+        "points": 3,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "keystone_sense",
+          "tree": "stonework",
+          "points": 3,
+          "action": "unlock_skill_node",
+          "cost": 2,
+          "requires": [
+            "skill_unlocked(Actor, true_chisel)"
+          ],
+          "conditional": true,
+          "available": true
+        },
+        "requirements": [
+          "skill_unlocked(Actor, true_chisel)"
+        ],
+        "cost": 2
+      }
+    },
+    {
+      "name": "an-authored-goal-and-a-parent-together",
+      "note": "Both kinds of gate on one node, deduplicated and canonically sorted. The goal names a guild’s reputation, which is exactly what a prerequisite being a GOAL rather than a node id buys.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [
+            "keystone_sense"
+          ],
+          "requires": [
+            "reputation_at_least(Actor, masons_guild, 40)"
+          ],
+          "effects": [
+            {
+              "kind": "permits",
+              "args": [
+                "seal_a_vault"
+              ]
+            }
+          ],
+          "id": "guild_seal",
+          "tree": "stonework"
+        },
+        "points": 3,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "guild_seal",
+          "tree": "stonework",
+          "points": 3,
+          "action": "unlock_skill_node",
+          "cost": 1,
+          "requires": [
+            "reputation_at_least(Actor, masons_guild, 40)",
+            "skill_unlocked(Actor, keystone_sense)"
+          ],
+          "conditional": true,
+          "available": true
+        },
+        "requirements": [
+          "reputation_at_least(Actor, masons_guild, 40)",
+          "skill_unlocked(Actor, keystone_sense)"
+        ],
+        "cost": 1
+      }
+    },
+    {
+      "name": "available-and-conditional-at-once",
+      "note": "The state a panel has to be able to draw: nothing core knows refuses this node, and something core cannot evaluate might. A port that reads `available` as “go ahead” unlocks a gated node the moment the pool is funded.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [
+            "keystone_sense"
+          ],
+          "requires": [
+            "reputation_at_least(Actor, masons_guild, 40)"
+          ],
+          "effects": [
+            {
+              "kind": "permits",
+              "args": [
+                "seal_a_vault"
+              ]
+            }
+          ],
+          "id": "guild_seal",
+          "tree": "stonework"
+        },
+        "points": 9,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "guild_seal",
+          "tree": "stonework",
+          "points": 9,
+          "action": "unlock_skill_node",
+          "cost": 1,
+          "requires": [
+            "reputation_at_least(Actor, masons_guild, 40)",
+            "skill_unlocked(Actor, keystone_sense)"
+          ],
+          "conditional": true,
+          "available": true
+        },
+        "requirements": [
+          "reputation_at_least(Actor, masons_guild, 40)",
+          "skill_unlocked(Actor, keystone_sense)"
+        ],
+        "cost": 1
+      }
+    },
+    {
+      "name": "a-node-already-taken",
+      "note": "Refused `owned`. A node is taken once, and the refusal outranks the pool — a port that charges again for a node an actor already has drains a save over a session.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [],
+          "requires": [],
+          "effects": [
+            {
+              "kind": "modifies",
+              "args": [
+                "damage",
+                2
+              ]
+            }
+          ],
+          "id": "true_chisel",
+          "tree": "stonework",
+          "name": "True Chisel",
+          "cost": 1
+        },
+        "points": 9,
+        "unlocked": true,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "true_chisel",
+          "tree": "stonework",
+          "points": 9,
+          "action": "unlock_skill_node",
+          "cost": 1,
+          "requires": [],
+          "conditional": false,
+          "available": false,
+          "refusal": "owned"
+        },
+        "requirements": [],
+        "cost": 1
+      }
+    },
+    {
+      "name": "two-refusals-at-once-owned-outranks-points",
+      "note": "The node is already taken AND the pool is empty: two rungs hold and the answer is `owned`, because SKILL_UNLOCK_REFUSALS is the order the ladder is evaluated in. A port that checks the pool first refuses `points` and a panel tells the player to earn a point for a node they already have.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [],
+          "requires": [],
+          "effects": [
+            {
+              "kind": "modifies",
+              "args": [
+                "damage",
+                2
+              ]
+            }
+          ],
+          "id": "true_chisel",
+          "tree": "stonework",
+          "name": "True Chisel",
+          "cost": 1
+        },
+        "points": 0,
+        "unlocked": true,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "true_chisel",
+          "tree": "stonework",
+          "points": 0,
+          "action": "unlock_skill_node",
+          "cost": 1,
+          "requires": [],
+          "conditional": false,
+          "available": false,
+          "refusal": "owned"
+        },
+        "requirements": [],
+        "cost": 1
+      }
+    },
+    {
+      "name": "an-undeclared-node-a-save-says-was-taken",
+      "note": "A save that says `skill_unlocked(wren, flying_buttress)` in a world whose trees no longer declare it, with an empty pool. The answer is `unknown`, the first rung: an absence outranks `owned`, and there is no cost to be short of.",
+      "input": {
+        "actor": "wren",
+        "node": null,
+        "nodeId": "flying_buttress",
+        "points": 0,
+        "unlocked": true,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "flying_buttress",
+          "tree": "",
+          "points": 0,
+          "action": "unlock_skill_node",
+          "cost": 0,
+          "available": false,
+          "refusal": "unknown",
+          "requires": [],
+          "conditional": false
+        },
+        "requirements": [],
+        "cost": 0
+      }
+    },
+    {
+      "name": "an-empty-pool",
+      "note": "Refused `points`, with the cost and the pool both reported so a panel can say why. The pool is per TREE: an actor rich in another tree is still refused here.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [
+            "true_chisel"
+          ],
+          "requires": [],
+          "effects": [
+            {
+              "kind": "unlocks",
+              "args": [
+                "set_keystone"
+              ]
+            },
+            {
+              "kind": "modifies",
+              "args": [
+                "damage",
+                1
+              ]
+            }
+          ],
+          "id": "keystone_sense",
+          "tree": "stonework",
+          "name": "Keystone Sense",
+          "cost": 2
+        },
+        "points": 1,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "keystone_sense",
+          "tree": "stonework",
+          "points": 1,
+          "action": "unlock_skill_node",
+          "cost": 2,
+          "requires": [
+            "skill_unlocked(Actor, true_chisel)"
+          ],
+          "conditional": true,
+          "available": false,
+          "refusal": "points"
+        },
+        "requirements": [
+          "skill_unlocked(Actor, true_chisel)"
+        ],
+        "cost": 2
+      }
+    },
+    {
+      "name": "a-pool-that-affords-it-exactly",
+      "note": "The boundary — `>=`, not `>`. Spending the last point in a tree is legal.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [
+            "true_chisel"
+          ],
+          "requires": [],
+          "effects": [
+            {
+              "kind": "unlocks",
+              "args": [
+                "set_keystone"
+              ]
+            },
+            {
+              "kind": "modifies",
+              "args": [
+                "damage",
+                1
+              ]
+            }
+          ],
+          "id": "keystone_sense",
+          "tree": "stonework",
+          "name": "Keystone Sense",
+          "cost": 2
+        },
+        "points": 2,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "keystone_sense",
+          "tree": "stonework",
+          "points": 2,
+          "action": "unlock_skill_node",
+          "cost": 2,
+          "requires": [
+            "skill_unlocked(Actor, true_chisel)"
+          ],
+          "conditional": true,
+          "available": true
+        },
+        "requirements": [
+          "skill_unlocked(Actor, true_chisel)"
+        ],
+        "cost": 2
+      }
+    },
+    {
+      "name": "a-node-nothing-declares",
+      "note": "Refused `unknown`, with an empty tree, no cost and no requirements. An absence rather than a verdict — and the reason `nodeId` is carried separately, so the refusal can name what was asked for.",
+      "input": {
+        "actor": "wren",
+        "node": null,
+        "nodeId": "flying_buttress",
+        "points": 9,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "flying_buttress",
+          "tree": "",
+          "points": 9,
+          "action": "unlock_skill_node",
+          "cost": 0,
+          "available": false,
+          "refusal": "unknown",
+          "requires": [],
+          "conditional": false
+        },
+        "requirements": [],
+        "cost": 0
+      }
+    },
+    {
+      "name": "a-node-a-world-priced-at-nothing",
+      "note": "A legitimate authoring choice and a trap for a port: cost 0 is affordable out of an EMPTY pool. An implementation that guards with `points > 0` refuses a node the world meant to give away.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [],
+          "requires": [],
+          "effects": [
+            {
+              "kind": "sings",
+              "args": [
+                "the_masons_round"
+              ]
+            }
+          ],
+          "id": "apprentice_mark",
+          "tree": "stonework",
+          "cost": 0
+        },
+        "points": 0,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "apprentice_mark",
+          "tree": "stonework",
+          "points": 0,
+          "action": "unlock_skill_node",
+          "cost": 0,
+          "requires": [],
+          "conditional": false,
+          "available": true
+        },
+        "requirements": [],
+        "cost": 0
+      }
+    },
+    {
+      "name": "a-node-that-authored-no-cost",
+      "note": "Priced at the world’s `defaultNodeCost`, which this world sets to 2 rather than core’s 1. A port that falls back to a compiled 1 re-prices every unpriced node in the game.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [
+            "keystone_sense"
+          ],
+          "requires": [
+            "reputation_at_least(Actor, masons_guild, 40)"
+          ],
+          "effects": [
+            {
+              "kind": "permits",
+              "args": [
+                "seal_a_vault"
+              ]
+            }
+          ],
+          "id": "guild_seal",
+          "tree": "stonework"
+        },
+        "points": 2,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 3,
+          "defaultNodeCost": 2,
+          "defaultMaxLevel": 3,
+          "levelXp": [
+            0,
+            25,
+            150,
+            500
+          ],
+          "advanceAction": "study_under_master",
+          "unlockAction": "take_stonework_oath"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "guild_seal",
+          "tree": "stonework",
+          "points": 2,
+          "action": "take_stonework_oath",
+          "cost": 2,
+          "requires": [
+            "reputation_at_least(Actor, masons_guild, 40)",
+            "skill_unlocked(Actor, keystone_sense)"
+          ],
+          "conditional": true,
+          "available": true
+        },
+        "requirements": [
+          "reputation_at_least(Actor, masons_guild, 40)",
+          "skill_unlocked(Actor, keystone_sense)"
+        ],
+        "cost": 2
+      }
+    },
+    {
+      "name": "the-world-names-the-action-it-is-gated-as",
+      "note": "The action atom `permissible/3` is asked about is authored, not compiled: this world calls it `take_stonework_oath`. A law about that atom refuses the unlock, through the same clause that refuses a theft.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [],
+          "requires": [],
+          "effects": [
+            {
+              "kind": "modifies",
+              "args": [
+                "damage",
+                2
+              ]
+            }
+          ],
+          "id": "true_chisel",
+          "tree": "stonework",
+          "name": "True Chisel",
+          "cost": 1
+        },
+        "points": 3,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 3,
+          "defaultNodeCost": 2,
+          "defaultMaxLevel": 3,
+          "levelXp": [
+            0,
+            25,
+            150,
+            500
+          ],
+          "advanceAction": "study_under_master",
+          "unlockAction": "take_stonework_oath"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "true_chisel",
+          "tree": "stonework",
+          "points": 3,
+          "action": "take_stonework_oath",
+          "cost": 1,
+          "requires": [],
+          "conditional": false,
+          "available": true
+        },
+        "requirements": [],
+        "cost": 1
+      }
+    },
+    {
+      "name": "a-negative-cost-is-read-as-nothing",
+      "note": "Authored content can be wrong. A node priced below zero does not PAY an actor to take it — `nodeCost` floors at zero — because a tree that funds itself is an exploit a creator did not intend to ship.",
+      "input": {
+        "actor": "wren",
+        "node": {
+          "parents": [],
+          "requires": [],
+          "effects": [],
+          "id": "cracked_lintel",
+          "tree": "stonework",
+          "cost": -5
+        },
+        "points": 0,
+        "unlocked": false,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "resolution": {
+          "actor": "wren",
+          "node": "cracked_lintel",
+          "tree": "stonework",
+          "points": 0,
+          "action": "unlock_skill_node",
+          "cost": 0,
+          "requires": [],
+          "conditional": false,
+          "available": true
+        },
+        "requirements": [],
+        "cost": 0
+      }
+    }
+  ]
+}

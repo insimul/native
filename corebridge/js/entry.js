@@ -51,7 +51,7 @@ import {
 
 // ── in-game UI view-models ────────────────────────────────────────────────────
 import { KIND_COLOR, Notifications } from '@insimul/core/ui/notifications';
-import { PauseMenuModel } from '@insimul/core/ui/pause-menu-model';
+import { DEFAULT_MENU_TABS, PauseMenuModel } from '@insimul/core/ui/pause-menu-model';
 import { QuestJournalModel } from '@insimul/core/ui/quest-journal-model';
 import { SLOT_MESSAGES, SaveSlotModel } from '@insimul/core/ui/save-slot-model';
 import { LoadingScreenModel } from '@insimul/core/ui/loading-screen-model';
@@ -279,6 +279,72 @@ import {
 	resolveBuildPlatform,
 } from '@insimul/core/build/headless-build';
 import { SYSTEM_PACKS_LOCK_SCHEMA } from '@insimul/core/system-packs/schema';
+
+// ── progression and skill trees (P9i; PL.native-progression-rows, U106(7)) ────
+// Core's P9i logic (P9i.core: src/progression/, docs/progression-systems.md): the
+// gamification tracker (XP, levels and tiers, the XP tables, achievements, daily
+// challenges and streaks), the feature modules (definitions, verdicts, resolution,
+// proficiency, adaptive difficulty, the quest difficulty adjustment) and the
+// `progression` save block's reader, builder and writer; and core's skill trees
+// (src/skills/: advancement, unlocks, effects, the drawn tree and its facts) with
+// the decision layer over them (game-engine/logic/SkillProgression). One core
+// function per row. Never `progression/systems-corpus`, core's corpus runner:
+// tests/progression_corpus.cpp drives core's corpora through these rows as that
+// runner (and core's skills-corpus test) drives core.
+import {
+	ACHIEVEMENTS,
+	GAMIFICATION_TUNING,
+	applyGamification,
+	dailyChallengeView,
+	dailyTemplateIndex,
+	emptyGamification,
+	gamificationView,
+	levelForXp,
+	levelProgressPermille,
+	levelTier,
+	nextLevelXp,
+	previousDateKey,
+	streakMultiplierTenths,
+	streakXp,
+	xpEventTable,
+} from '@insimul/core/progression/gamification';
+import {
+	FEATURE_MODULE_DEFINITIONS,
+	FEATURE_MODULE_VERDICTS,
+	adjustDifficulty,
+	applyAdjustment,
+	bundleModuleConfigs,
+	difficultyParams,
+	difficultyTiers,
+	performanceRecords,
+	performanceScore,
+	proficiencyOf,
+	proficiencyTiers,
+	resolveFeatureModules,
+} from '@insimul/core/progression/feature-modules';
+import { progressionBlockOf, progressionSaveBlock, readProgressionBlock } from '@insimul/core/progression/progression-save';
+import { getDefaultModulesForGenre } from '@insimul/core/feature-modules/genre-bundles';
+import {
+	maxLevelOf,
+	nodeCost,
+	nodeDepth,
+	nodeRequirements,
+	resolveAdvance,
+	resolveUnlock,
+	skillDefinitionsFromIR,
+	skillTreesFromIR,
+	skillTuningFromIR,
+	treesFundedBy,
+	xpForLevel,
+} from '@insimul/core/skills/skills';
+import { modifierOf, permittedThings, skillModifiers, unlockedActions, withSkillModifiers } from '@insimul/core/skills/skill-effects';
+import { buildSkillView } from '@insimul/core/skills/skill-view';
+import { skillTreeFacts } from '@insimul/core/skills/skill-facts';
+import { DOMAIN_SKILL_TREES } from '@insimul/core/skills/domain-trees';
+import { SkillProgression } from '@insimul/core/game-engine/logic/SkillProgression';
+// The skill session's KB (`skill.create { kb }`) is a native Trealla KB, through the
+// same seam core's own `prolog-engine` import resolves to in this bundle.
+import { createPrologEngine } from './host-prolog-engine.js';
 
 // ── genre and module activation ───────────────────────────────────────────────
 import { CAMERA_MODES, DEFAULT_GENRE_ID, GENRE_IDS, getAllGenres } from '@insimul/core/game-genres/registry';
@@ -1673,6 +1739,61 @@ function noticeBoardInputOf(method, args) {
 		input.questStatus = status;
 	}
 	return input;
+}
+
+// ── progression and skill trees (PL.native-progression-rows) ──────────────────
+
+/** `{ ok: true, value }`: every progression and skill row's answer; a refusal core returns is IN the value. */
+function okValue(value) {
+	return { ok: true, value: plain(value) };
+}
+
+/** An optional JSON object (absent or null → undefined, core's default applies). */
+function optionalObject(method, value, name) {
+	return optionalArg(value, (v) => needObject(method, v, name));
+}
+
+/** An optional array (absent or null → undefined, core's default applies). */
+function optionalList(method, value, name) {
+	return optionalArg(value, (v) => needArray(method, v, name));
+}
+
+/**
+ * The tracker's numbers: `tuning` (the pack's parameters, any subset of core's
+ * `GamificationTuning`) over core's `GAMIFICATION_TUNING`, as the pack's
+ * parameters override core's defaults.
+ */
+function gamificationTuningOf(method, args) {
+	return { ...GAMIFICATION_TUNING, ...(optionalObject(method, args.tuning, 'tuning') ?? {}) };
+}
+
+/** A `SkillTuning` core reads unread (`levelXp`, the defaults): a JSON object. */
+function skillTuningArg(method, value, name = 'tuning') {
+	return coded('invalid-input', () => needObject(method, value, name));
+}
+
+/** A JSON null (core's runner's "nothing declares it") is core's `undefined`. */
+function orUndefined(value) {
+	return value === null ? undefined : value;
+}
+
+/**
+ * The skill session's own call: `fn(progression)`'s answer as `{ ok: true, value }`,
+ * with `events` — what core raised on the session's bus during THIS call, in order.
+ */
+async function skillCall(s, fn) {
+	s.events.length = 0;
+	const value = await fn(s.progression);
+	return { ok: true, value: plain(value), events: s.events.splice(0) };
+}
+
+/** `actor` (an id) and `field` (a skill or node id) as strings: core keys maps by them unread. */
+function skillActorArgs(method, args, field) {
+	return coded('invalid-input', () => {
+		needString(method, args.actor, 'actor');
+		if (field) needString(method, args[field], field);
+		return args;
+	});
 }
 
 // ── system packs ──────────────────────────────────────────────────────────────
@@ -4581,6 +4702,647 @@ const METHODS = {
 		});
 		return { primary: isPrimaryArtefactFor(args.platform, args.artefact) };
 	},
+
+	// ── progression: the tracker, the feature modules and the save block (P9i; PL.native-progression-rows, U106(7)) ──
+	// `progression.<group>.<op>` after core's corpus files (`progression/gamification`,
+	// `progression/modules`, `progression/skills`, `progression/save`), one core
+	// function per row; every answer is `{ ok: true, value }` and a refusal core
+	// returns (a tracker step's `refusal`, a module's `refused`, an unreadable save
+	// block's `{ ok: false, keys }`) is IN the value. The tracker is STATELESS here:
+	// `progression.gamification.step` takes the run the last answer carried and
+	// answers the next one (core's `applyGamification` does not change its input).
+	// tests/progression_corpus.cpp composes each corpus op's record from these rows as
+	// core's runner composes it from core's functions.
+
+	/** `progression.gamification.tuning { tuning? }` → core's `GAMIFICATION_TUNING` with the pack's `tuning` over it. */
+	'progression.gamification.tuning': (args) =>
+		okValue(coded('invalid-input', () => gamificationTuningOf('progression.gamification.tuning', args))),
+
+	/** `progression.gamification.levelForXp { total, thresholds? }` → core's `levelForXp` (absent thresholds: `LEVEL_THRESHOLDS`). */
+	'progression.gamification.levelForXp': (args) => {
+		const m = 'progression.gamification.levelForXp';
+		coded('invalid-input', () => {
+			needNumber(m, args.total, 'total');
+			optionalList(m, args.thresholds, 'thresholds');
+		});
+		return okValue(levelForXp(args.total, orUndefined(args.thresholds)));
+	},
+
+	/** `progression.gamification.nextLevelXp { level, thresholds? }` → core's `nextLevelXp` (0 at the top). */
+	'progression.gamification.nextLevelXp': (args) => {
+		const m = 'progression.gamification.nextLevelXp';
+		coded('invalid-input', () => {
+			needNumber(m, args.level, 'level');
+			optionalList(m, args.thresholds, 'thresholds');
+		});
+		return okValue(nextLevelXp(args.level, orUndefined(args.thresholds)));
+	},
+
+	/** `progression.gamification.progressPermille { total, thresholds? }` → core's `levelProgressPermille`. */
+	'progression.gamification.progressPermille': (args) => {
+		const m = 'progression.gamification.progressPermille';
+		coded('invalid-input', () => {
+			needNumber(m, args.total, 'total');
+			optionalList(m, args.thresholds, 'thresholds');
+		});
+		return okValue(levelProgressPermille(args.total, orUndefined(args.thresholds)));
+	},
+
+	/** `progression.gamification.tier { level, labels? }` → core's `levelTier` (absent labels: `DEFAULT_TIER_LABELS`). */
+	'progression.gamification.tier': (args) => {
+		const m = 'progression.gamification.tier';
+		coded('invalid-input', () => {
+			needNumber(m, args.level, 'level');
+			optionalList(m, args.labels, 'labels');
+		});
+		return okValue(levelTier(args.level, orUndefined(args.labels)));
+	},
+
+	/** `progression.gamification.table { bundle?, tuning?, overrides? }` → core's `xpEventTable` (bundle absent: the generic table). */
+	'progression.gamification.table': (args) => {
+		const m = 'progression.gamification.table';
+		const tuning = coded('invalid-input', () => {
+			if (args.bundle !== undefined && args.bundle !== null) needString(m, args.bundle, 'bundle');
+			optionalObject(m, args.overrides, 'overrides');
+			return gamificationTuningOf(m, args);
+		});
+		return okValue(xpEventTable(args.bundle ?? null, tuning, args.overrides ?? {}));
+	},
+
+	/** `progression.gamification.achievements {}` → core's `ACHIEVEMENTS`, the catalogue in order. */
+	'progression.gamification.achievements': () => okValue(ACHIEVEMENTS),
+
+	/** `progression.gamification.dailyIndex { date }` → core's `dailyTemplateIndex` (which template a day draws). */
+	'progression.gamification.dailyIndex': (args) => {
+		coded('invalid-input', () => needString('progression.gamification.dailyIndex', args.date, 'date'));
+		return okValue(dailyTemplateIndex(args.date));
+	},
+
+	/** `progression.gamification.previousDate { date }` → core's `previousDateKey` (the civil yesterday). */
+	'progression.gamification.previousDate': (args) => {
+		coded('invalid-input', () => needString('progression.gamification.previousDate', args.date, 'date'));
+		return okValue(previousDateKey(args.date));
+	},
+
+	/** `progression.gamification.dailyChallenge { daily: { dateKey, progress, completed } }` → core's `dailyChallengeView`. */
+	'progression.gamification.dailyChallenge': (args) => {
+		coded('invalid-input', () => needObject('progression.gamification.dailyChallenge', args.daily, 'daily'));
+		return okValue(dailyChallengeView(args.daily));
+	},
+
+	/** `progression.gamification.streakTenths { streak, tuning? }` → core's `streakMultiplierTenths`. */
+	'progression.gamification.streakTenths': (args) => {
+		const m = 'progression.gamification.streakTenths';
+		const tuning = coded('invalid-input', () => {
+			needNumber(m, args.streak, 'streak');
+			return gamificationTuningOf(m, args);
+		});
+		return okValue(streakMultiplierTenths(args.streak, tuning));
+	},
+
+	/** `progression.gamification.streakXp { reward, streak, tuning? }` → core's `streakXp` (a daily reward under the streak's multiplier). */
+	'progression.gamification.streakXp': (args) => {
+		const m = 'progression.gamification.streakXp';
+		const tuning = coded('invalid-input', () => {
+			needNumber(m, args.reward, 'reward');
+			needNumber(m, args.streak, 'streak');
+			return gamificationTuningOf(m, args);
+		});
+		return okValue(streakXp(args.reward, args.streak, tuning));
+	},
+
+	/** `progression.gamification.initial {}` → core's `emptyGamification()`, a new learner's state. */
+	'progression.gamification.initial': () => okValue(emptyGamification()),
+
+	/**
+	 * `progression.gamification.step { run: { state, date }, step: { do, … }, tuning?,
+	 * config?, at? }` → core's `applyGamification(run, step, { tuning, config, at })`:
+	 * `{ run, events, signals, refusal? }`. `step.do` is one of core's step kinds (`day`,
+	 * `conversation`, `word`, `mastered`, `grammar`, `pattern`, `quest`, `skillRewards`,
+	 * `category`, `article`, `award`, `listening`, `event`, `stats`); a step core refuses
+	 * (`bad_date`, `unknown_award`, `unknown_event`) answers its `refusal` as a value.
+	 * `at` is when an achievement unlocks (the host's integer ms; absent: 0).
+	 */
+	'progression.gamification.step': (args) => {
+		const m = 'progression.gamification.step';
+		const input = coded('invalid-input', () => {
+			const run = needObject(m, args.run, 'run');
+			needObject(m, run.state, 'run.state');
+			if (run.date !== undefined && run.date !== null) needString(m, run.date, 'run.date');
+			needObject(m, args.step, 'step');
+			const config = optionalObject(m, args.config, 'config');
+			return { run: { state: run.state, date: run.date ?? null }, tuning: gamificationTuningOf(m, args), config, at: optNumber(m, args.at, 'at') };
+		});
+		return okValue(applyGamification(input.run, args.step, { tuning: input.tuning, config: input.config, at: input.at }));
+	},
+
+	/** `progression.gamification.view { state, config? }` → core's `gamificationView` (what a progress panel draws). */
+	'progression.gamification.view': (args) => {
+		const m = 'progression.gamification.view';
+		const config = coded('invalid-input', () => {
+			needObject(m, args.state, 'state');
+			return optionalObject(m, args.config, 'config');
+		});
+		return okValue(gamificationView(args.state, config));
+	},
+
+	/** `progression.modules.definitions {}` → `{ definitions, verdicts }`: core's six definitions and a verdict for every module id. */
+	'progression.modules.definitions': () => okValue({ definitions: FEATURE_MODULE_DEFINITIONS, verdicts: FEATURE_MODULE_VERDICTS }),
+
+	/** `progression.modules.bundleModules { bundle }` → core's `getDefaultModulesForGenre` (a bundle's declared module ids; `[]` for an unknown one). */
+	'progression.modules.bundleModules': (args) => {
+		coded('invalid-input', () => needString('progression.modules.bundleModules', args.bundle, 'bundle'));
+		return okValue(getDefaultModulesForGenre(args.bundle));
+	},
+
+	/** `progression.modules.resolve { ids, bundle? }` → core's `resolveFeatureModules(ids, bundle)`: enabled, refused (as values) and the contributions. */
+	'progression.modules.resolve': (args) => {
+		const m = 'progression.modules.resolve';
+		coded('invalid-input', () => {
+			needArray(m, args.ids, 'ids');
+			if (args.bundle !== undefined && args.bundle !== null) needString(m, args.bundle, 'bundle');
+		});
+		return okValue(resolveFeatureModules(args.ids, args.bundle ?? null));
+	},
+
+	/**
+	 * `progression.modules.genre { genre }` → what a genre leaves running, as core's
+	 * `progression/modules` corpus states it: core's `resolveGenre` → its bundle's
+	 * declared modules → `resolveFeatureModules` → the pause tabs the declared list
+	 * gates on (`DEFAULT_MENU_TABS`) and the ones `PauseMenuModel` offers for the
+	 * enabled list → the bundle's `bundleModuleConfigs`. Answer: `{ genre, bundle,
+	 * featureModules, enabled, refused: [{ id, code }], tabsDeclared, tabs, configs }`.
+	 * The one composite row of this family: the record is the corpus's, and every part
+	 * of it is a core function's answer.
+	 */
+	'progression.modules.genre': (args) => {
+		const r = resolveGenre(args.genre);
+		const declared = r.bundle.id ? [...getDefaultModulesForGenre(r.bundle.id)] : [];
+		const res = resolveFeatureModules(declared, r.bundle.id);
+		return okValue({
+			genre: args.genre,
+			bundle: r.bundle.id,
+			featureModules: declared,
+			enabled: res.enabled,
+			refused: res.refused.map((x) => ({ id: x.id, code: x.code })),
+			tabsDeclared: DEFAULT_MENU_TABS.filter((t) => [t.requires ?? []].flat().every((mod) => declared.includes(mod))).map((t) => t.key),
+			tabs: new PauseMenuModel(res.enabled).visibleKeys(),
+			configs: r.bundle.id ? bundleModuleConfigs(r.bundle.id) : {},
+		});
+	},
+
+	/** `progression.modules.configs { bundle }` → core's `bundleModuleConfigs` (sorted keys; `{}` for an unknown bundle). */
+	'progression.modules.configs': (args) => {
+		coded('invalid-input', () => needString('progression.modules.configs', args.bundle, 'bundle'));
+		return okValue(bundleModuleConfigs(args.bundle));
+	},
+
+	/** `progression.modules.proficiencyTiers { tierLabels? }` → core's `proficiencyTiers` (labels relabel and cut the ladder). */
+	'progression.modules.proficiencyTiers': (args) => {
+		coded('invalid-input', () => optionalList('progression.modules.proficiencyTiers', args.tierLabels, 'tierLabels'));
+		return okValue(proficiencyTiers(orUndefined(args.tierLabels)));
+	},
+
+	/** `progression.modules.proficiency { scores, tiers?, scale? }` → core's `proficiencyOf`. */
+	'progression.modules.proficiency': (args) => {
+		const m = 'progression.modules.proficiency';
+		coded('invalid-input', () => {
+			objectList(m, args.scores, 'scores');
+			if (args.tiers !== undefined && args.tiers !== null) objectList(m, args.tiers, 'tiers');
+			optNumber(m, args.scale, 'scale');
+		});
+		return okValue(proficiencyOf(args.scores, orUndefined(args.tiers), orUndefined(args.scale)));
+	},
+
+	/** `progression.modules.difficultyTiers { tierLabels? }` → core's `difficultyTiers`. */
+	'progression.modules.difficultyTiers': (args) => {
+		coded('invalid-input', () => optionalList('progression.modules.difficultyTiers', args.tierLabels, 'tierLabels'));
+		return okValue(difficultyTiers(orUndefined(args.tierLabels)));
+	},
+
+	/** `progression.modules.difficulty { score, tiers? }` → core's `difficultyParams` (adaptive difficulty's parameters for a score). */
+	'progression.modules.difficulty': (args) => {
+		const m = 'progression.modules.difficulty';
+		coded('invalid-input', () => {
+			needNumber(m, args.score, 'score');
+			if (args.tiers !== undefined && args.tiers !== null) objectList(m, args.tiers, 'tiers');
+		});
+		return okValue(difficultyParams(args.score, orUndefined(args.tiers)));
+	},
+
+	/** `progression.modules.performance { records }` → core's `performanceScore` over a window of quest records. */
+	'progression.modules.performance': (args) => {
+		coded('invalid-input', () => objectList('progression.modules.performance', args.records, 'records'));
+		return okValue(performanceScore(args.records));
+	},
+
+	/** `progression.modules.adjust { records, current }` → core's `adjustDifficulty` (the quest difficulty adjustment). */
+	'progression.modules.adjust': (args) => {
+		const m = 'progression.modules.adjust';
+		coded('invalid-input', () => {
+			objectList(m, args.records, 'records');
+			needString(m, args.current, 'current');
+		});
+		return okValue(adjustDifficulty(args.records, args.current));
+	},
+
+	/** `progression.modules.applyAdjustment { adjustment, objectiveCount, estimatedMinutes }` → core's `applyAdjustment`. */
+	'progression.modules.applyAdjustment': (args) => {
+		const m = 'progression.modules.applyAdjustment';
+		coded('invalid-input', () => {
+			needObject(m, args.adjustment, 'adjustment');
+			needNumber(m, args.objectiveCount, 'objectiveCount');
+			needNumber(m, args.estimatedMinutes, 'estimatedMinutes');
+		});
+		return okValue(applyAdjustment(args.adjustment, args.objectiveCount, args.estimatedMinutes));
+	},
+
+	/** `progression.modules.records { quests }` → core's `performanceRecords` (finished quests as performance records). */
+	'progression.modules.records': (args) => {
+		coded('invalid-input', () => objectList('progression.modules.records', args.quests, 'quests'));
+		return okValue(performanceRecords(args.quests));
+	},
+
+	/** `progression.skills.domain {}` → core's `DOMAIN_SKILL_TREES`: the language and guild domain trees, as a World IR `skills` section. */
+	'progression.skills.domain': () => okValue(DOMAIN_SKILL_TREES),
+
+	/** `progression.save.build { gamification?, skills? }` → core's `progressionSaveBlock` (the block from the two kernels' states). */
+	'progression.save.build': (args) => {
+		const m = 'progression.save.build';
+		coded('invalid-input', () => {
+			optionalObject(m, args.gamification, 'gamification');
+			optionalObject(m, args.skills, 'skills');
+		});
+		return okValue(progressionSaveBlock({ gamification: args.gamification ?? null, skills: args.skills ?? null }));
+	},
+
+	/**
+	 * `progression.save.read { block }` → core's `readProgressionBlock(block)`, as core
+	 * answers: `{ ok: true, value: SavedProgression | null }`, or `{ ok: false, keys }`
+	 * naming every unreadable member in ascending order. Any JSON is an answer.
+	 */
+	'progression.save.read': (args) => okValue(readProgressionBlock(args.block)),
+
+	/** `progression.save.write { block }` → core's `progressionBlockOf` (the block as the writer stores it: catalogue order, sorted maps). */
+	'progression.save.write': (args) => {
+		coded('invalid-input', () => needObject('progression.save.write', args.block, 'block'));
+		return okValue(progressionBlockOf(args.block));
+	},
+
+	// ── skill trees: advancement, unlocks, effects and the drawn tree (P9i; PL.native-progression-rows, U106(7)) ──
+	// `skill.<group>.<function>` after core's `conformance/skills/` files (`skills-
+	// advancement`, `skills-unlocks`, `skills-effects`, `skills-trees`), one core
+	// function per row, `{ ok: true, value }`; a resolution's `refusal` is a value.
+	// Pure: a resolution never asks a KB (core's rule), so neither `requires` nor
+	// `forbidden` ever appears here — that is the session's (`skill.canUnlock`).
+
+	/** `skill.ir.tuning { ir }` → core's `skillTuningFromIR` (a World IR `skills` section's numbers; absent: core's defaults). */
+	'skill.ir.tuning': (args) => okValue(skillTuningFromIR(orUndefined(coded('invalid-input', () => optionalObject('skill.ir.tuning', args.ir, 'ir'))))),
+
+	/** `skill.ir.skills { ir, tuning? }` → core's `skillDefinitionsFromIR` (absent tuning: the IR's own). */
+	'skill.ir.skills': (args) => {
+		const m = 'skill.ir.skills';
+		coded('invalid-input', () => {
+			optionalObject(m, args.ir, 'ir');
+			optionalObject(m, args.tuning, 'tuning');
+		});
+		return okValue(skillDefinitionsFromIR(orUndefined(args.ir), orUndefined(args.tuning)));
+	},
+
+	/** `skill.ir.trees { ir }` → core's `skillTreesFromIR` (every authored tree, node ids settled against their tree). */
+	'skill.ir.trees': (args) => okValue(skillTreesFromIR(orUndefined(coded('invalid-input', () => optionalObject('skill.ir.trees', args.ir, 'ir'))))),
+
+	/**
+	 * `skill.advancement.resolve { actor, skill, skillId?, level, banked, levels, tuning }`
+	 * → core's `resolveAdvance`: what the next level PRICES and whether the actor may
+	 * take it (refusals `unknown`, `prerequisite`, `capped`, `xp`, in that order). A
+	 * null `skill` is one nothing declares.
+	 */
+	'skill.advancement.resolve': (args) => {
+		const m = 'skill.advancement.resolve';
+		coded('invalid-input', () => {
+			needString(m, args.actor, 'actor');
+			optionalObject(m, args.skill, 'skill');
+			needNumber(m, args.level, 'level');
+			needNumber(m, args.banked, 'banked');
+			needObject(m, args.levels, 'levels');
+			skillTuningArg(m, args.tuning);
+		});
+		return okValue(resolveAdvance({ ...args, skill: orUndefined(args.skill) }));
+	},
+
+	/** `skill.advancement.xpForLevel { skill, level, tuning }` → core's `xpForLevel`: one level's PRICE (never a running total). */
+	'skill.advancement.xpForLevel': (args) => {
+		const m = 'skill.advancement.xpForLevel';
+		coded('invalid-input', () => {
+			optionalObject(m, args.skill, 'skill');
+			needNumber(m, args.level, 'level');
+			skillTuningArg(m, args.tuning);
+		});
+		return okValue(xpForLevel(orUndefined(args.skill), args.level, args.tuning));
+	},
+
+	/** `skill.advancement.maxLevel { skill, tuning }` → core's `maxLevelOf` (the skill's cap, else the world's default). */
+	'skill.advancement.maxLevel': (args) => {
+		const m = 'skill.advancement.maxLevel';
+		coded('invalid-input', () => {
+			optionalObject(m, args.skill, 'skill');
+			skillTuningArg(m, args.tuning);
+		});
+		return okValue(maxLevelOf(orUndefined(args.skill), args.tuning));
+	},
+
+	/**
+	 * `skill.unlocks.resolve { actor, node, nodeId?, points, unlocked, tuning }` → core's
+	 * `resolveUnlock`: what a node costs, what it asks (`requires`, `conditional`) and
+	 * whether core alone refuses it (`unknown`, `owned`, `points`, in that order). A
+	 * null `node` is one nothing declares.
+	 */
+	'skill.unlocks.resolve': (args) => {
+		const m = 'skill.unlocks.resolve';
+		coded('invalid-input', () => {
+			needString(m, args.actor, 'actor');
+			optionalObject(m, args.node, 'node');
+			needNumber(m, args.points, 'points');
+			skillTuningArg(m, args.tuning);
+		});
+		return okValue(resolveUnlock({ ...args, node: orUndefined(args.node) }));
+	},
+
+	/** `skill.unlocks.requirements { node }` → core's `nodeRequirements`: its goals plus one `skill_unlocked(Actor, Parent)` per parent, sorted. */
+	'skill.unlocks.requirements': (args) => {
+		coded('invalid-input', () => needObject('skill.unlocks.requirements', args.node, 'node'));
+		return okValue(nodeRequirements(args.node));
+	},
+
+	/** `skill.unlocks.cost { node, tuning }` → core's `nodeCost` (the node's cost, else the world's default). */
+	'skill.unlocks.cost': (args) => {
+		const m = 'skill.unlocks.cost';
+		coded('invalid-input', () => {
+			needObject(m, args.node, 'node');
+			skillTuningArg(m, args.tuning);
+		});
+		return okValue(nodeCost(args.node, args.tuning));
+	},
+
+	/** `skill.effects.modifiers { effects }` → core's `skillModifiers` as `{ param: total }` (additive, summed). */
+	'skill.effects.modifiers': (args) => {
+		coded('invalid-input', () => objectList('skill.effects.modifiers', args.effects, 'effects'));
+		return okValue(Object.fromEntries(skillModifiers(args.effects)));
+	},
+
+	/** `skill.effects.unlocks { effects }` → core's `unlockedActions` (the actions `unlocks(Action)` opens). */
+	'skill.effects.unlocks': (args) => {
+		coded('invalid-input', () => objectList('skill.effects.unlocks', args.effects, 'effects'));
+		return okValue(unlockedActions(args.effects));
+	},
+
+	/** `skill.effects.permits { effects }` → core's `permittedThings` (what `permits(Thing)` allows). */
+	'skill.effects.permits': (args) => {
+		coded('invalid-input', () => objectList('skill.effects.permits', args.effects, 'effects'));
+		return okValue(permittedThings(args.effects));
+	},
+
+	/** `skill.effects.apply { snapshot, effects }` → core's `withSkillModifiers` (a copy of the snapshot, its numbers modified). */
+	'skill.effects.apply': (args) => {
+		const m = 'skill.effects.apply';
+		coded('invalid-input', () => {
+			needObject(m, args.snapshot, 'snapshot');
+			objectList(m, args.effects, 'effects');
+		});
+		return okValue(withSkillModifiers(args.snapshot, args.effects));
+	},
+
+	/** `skill.effects.modifierOf { effects, parameter }` → core's `modifierOf` (one parameter's total; 0 when nothing names it). */
+	'skill.effects.modifierOf': (args) => {
+		const m = 'skill.effects.modifierOf';
+		coded('invalid-input', () => {
+			objectList(m, args.effects, 'effects');
+			needString(m, args.parameter, 'parameter');
+		});
+		return okValue(modifierOf(args.effects, args.parameter));
+	},
+
+	/**
+	 * `skill.trees.view { trees, skills?, tuning?, actor }` → core's `buildSkillView`: the
+	 * tree a skill panel draws (rows, edges, each node's state and refusal). The actor's
+	 * `unmet` and `forbidden` are the KB's two answers, handed in.
+	 */
+	'skill.trees.view': (args) => {
+		const m = 'skill.trees.view';
+		coded('invalid-input', () => {
+			objectList(m, args.trees, 'trees');
+			if (args.skills !== undefined && args.skills !== null) objectList(m, args.skills, 'skills');
+			optionalObject(m, args.tuning, 'tuning');
+			needObject(m, args.actor, 'actor');
+		});
+		return okValue(buildSkillView({ trees: args.trees, skills: orUndefined(args.skills), tuning: orUndefined(args.tuning), actor: args.actor }));
+	},
+
+	/** `skill.trees.funded { trees, skill }` → core's `treesFundedBy` (the trees a skill's levels grant points to). */
+	'skill.trees.funded': (args) => {
+		const m = 'skill.trees.funded';
+		coded('invalid-input', () => {
+			objectList(m, args.trees, 'trees');
+			needString(m, args.skill, 'skill');
+		});
+		return okValue(treesFundedBy(args.trees, args.skill));
+	},
+
+	/** `skill.trees.depth { tree, node }` → core's `nodeDepth` (the row a node is drawn in, from its parent edges). */
+	'skill.trees.depth': (args) => {
+		const m = 'skill.trees.depth';
+		coded('invalid-input', () => {
+			needObject(m, args.tree, 'tree');
+			needString(m, args.node, 'node');
+		});
+		return okValue(nodeDepth(args.tree, args.node));
+	},
+
+	/** `skill.trees.facts { trees, tuning }` → core's `skillTreeFacts` (the authored tree as the KB carries it, one clause per line). */
+	'skill.trees.facts': (args) => {
+		const m = 'skill.trees.facts';
+		coded('invalid-input', () => {
+			objectList(m, args.trees, 'trees');
+			skillTuningArg(m, args.tuning);
+		});
+		return okValue(skillTreeFacts(args.trees, args.tuning));
+	},
+
+	// ── the skill decision layer: one playthrough's SkillProgression (P9i; PL.native-progression-rows, U106(7)) ──
+	// `skill.create` opens core's `SkillProgression`; each `skill.<method> { session, … }`
+	// row is one of its methods, answering `{ ok: true, value, events }` (`events`: what
+	// core raised on the session's bus during that call). With `kb`, the session's
+	// requirement gate is core's own `skill_goal_met/2` evaluated in a native KB
+	// holding that program, its permissibility gate is `forbidden_by/4` there, and its
+	// fact deltas are written there; without one, core's no-KB rule stands: every
+	// authored requirement is unmet ("locked until this world's rules open it") and
+	// nothing is forbidden.
+
+	/**
+	 * `skill.create { skills?, trees?, tuning?, state?, kb? }` → `{ session, view: { roster,
+	 * kb } }`. `skills`/`trees`/`tuning` are the world's, as `skill.ir.*` read them out of
+	 * a World IR (absent tuning: core's `DEFAULT_SKILL_TUNING`); `state` a saved roster
+	 * (core's `SkillProgressionState`, restored silently). `kb` is the KB program the
+	 * session consults (a string, or a list of clauses joined one per line): it carries
+	 * core's skill pack (`prolog.packs { areas: ['skill'] }`) and the world's facts and
+	 * rules; a program the KB refuses is `[invalid-input]`. The KB lives as long as the
+	 * session: `session.dispose` destroys it.
+	 */
+	'skill.create': async (args) => {
+		const m = 'skill.create';
+		const input = coded('invalid-input', () => ({
+			skills: optionalArg(args.skills, (v) => objectList(m, v, 'skills')),
+			trees: optionalArg(args.trees, (v) => objectList(m, v, 'trees')),
+			tuning: optionalObject(m, args.tuning, 'tuning'),
+			state: optionalObject(m, args.state, 'state'),
+			kb: optionalArg(args.kb, (v) => (Array.isArray(v) ? stringList(m, v, 'kb').join('\n') : needString(m, v, 'kb'))),
+		}));
+		let engine;
+		if (input.kb !== undefined) {
+			engine = await createPrologEngine();
+			const consulted = await engine.consult(input.kb);
+			if (!consulted.success) {
+				engine.destroy();
+				const err = refuse(m, `the KB refused \`kb\`: ${consulted.error}`);
+				err.code = 'invalid-input';
+				throw err;
+			}
+		}
+		const s = { events: [] };
+		const bus = new GameEventBus();
+		bus.onAny((event) => void s.events.push(plain(event)));
+		s.progression = new SkillProgression({
+			...(engine ? { engine } : {}),
+			...(input.skills ? { skills: input.skills } : {}),
+			...(input.trees ? { trees: input.trees } : {}),
+			...(input.tuning ? { tuning: input.tuning } : {}),
+			...(input.state ? { state: input.state } : {}),
+			eventBus: bus,
+		});
+		if (engine) s.onDispose = () => engine.destroy();
+		return { session: openSession('skill', s), view: { roster: plain(s.progression.roster()), kb: Boolean(engine) } };
+	},
+
+	/** `skill.register { session, actor: { id, levels?, xp?, points?, unlocked? } }` → core's `register`: the fact delta written. */
+	'skill.register': (args) => {
+		const m = 'skill.register';
+		const s = session(m, args, 'skill');
+		coded('invalid-input', () => needString(m, needObject(m, args.actor, 'actor').id, 'actor.id'));
+		return skillCall(s, (p) => p.register(args.actor));
+	},
+
+	/** `skill.unregister { session, actor }` → core's `unregister`: the actor's facts retracted (the delta). */
+	'skill.unregister': (args) => {
+		const m = 'skill.unregister';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args);
+		return skillCall(s, (p) => p.unregister(args.actor));
+	},
+
+	/** `skill.award { session, actor, skill, amount }` → core's `award` (banked, never levelled). */
+	'skill.award': (args) => {
+		const m = 'skill.award';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args, 'skill');
+		coded('invalid-input', () => needNumber(m, args.amount, 'amount'));
+		return skillCall(s, (p) => p.award(args.actor, args.skill, args.amount));
+	},
+
+	/** `skill.priceOfNextLevel { session, actor, skill }` → core's `priceOfNextLevel`. */
+	'skill.priceOfNextLevel': (args) => {
+		const m = 'skill.priceOfNextLevel';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args, 'skill');
+		return skillCall(s, (p) => p.priceOfNextLevel(args.actor, args.skill));
+	},
+
+	/** `skill.canAdvance { session, actor, skill }` → core's `canAdvance` (every gate, nothing taken). */
+	'skill.canAdvance': (args) => {
+		const m = 'skill.canAdvance';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args, 'skill');
+		return skillCall(s, (p) => p.canAdvance(args.actor, args.skill));
+	},
+
+	/** `skill.advance { session, actor, skill }` → core's `advance` (the level taken, its points granted, its facts written). */
+	'skill.advance': (args) => {
+		const m = 'skill.advance';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args, 'skill');
+		return skillCall(s, (p) => p.advance(args.actor, args.skill));
+	},
+
+	/**
+	 * `skill.canUnlock { session, actor, node }` → core's `canUnlock`: the resolution,
+	 * then the authored goals (`unmet`, through `skill_goal_met/2` in the session's KB;
+	 * with no KB every goal is unmet), then permissibility (`check`).
+	 */
+	'skill.canUnlock': (args) => {
+		const m = 'skill.canUnlock';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args, 'node');
+		return skillCall(s, (p) => p.canUnlock(args.actor, args.node));
+	},
+
+	/**
+	 * `skill.unlock { session, actor, node }` → core's `unlock`: every gate `canUnlock`
+	 * asks, then (only when all say yes) the points spent, the node recorded, its facts
+	 * written to the KB and `skill_node_unlocked` raised (in `events`). A refusal
+	 * (`unknown`, `owned`, `points`, `requires`, `forbidden`) is `performed: false` with
+	 * its `refusal`. With a KB, a node's authored goals are core's `skill_goal_met/2`'s
+	 * to answer (U106(7)); with none, a node that asks anything stays locked.
+	 */
+	'skill.unlock': (args) => {
+		const m = 'skill.unlock';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args, 'node');
+		return skillCall(s, (p) => p.unlock(args.actor, args.node));
+	},
+
+	/** `skill.view { session, actor }` → core's `viewOf`: the drawn trees with the KB's answers asked for this actor. */
+	'skill.view': (args) => {
+		const m = 'skill.view';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args);
+		return skillCall(s, (p) => p.viewOf(args.actor));
+	},
+
+	/** `skill.effectsOf { session, actor }` → core's `effectsOf` (every taken node's effects). */
+	'skill.effectsOf': (args) => {
+		const m = 'skill.effectsOf';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args);
+		return skillCall(s, (p) => p.effectsOf(args.actor));
+	},
+
+	/** `skill.modifiersOf { session, actor }` → core's `modifiersOf` as `{ param: total }`. */
+	'skill.modifiersOf': (args) => {
+		const m = 'skill.modifiersOf';
+		const s = session(m, args, 'skill');
+		skillActorArgs(m, args);
+		return skillCall(s, (p) => Object.fromEntries(p.modifiersOf(args.actor)));
+	},
+
+	/** `skill.serialize { session }` → core's `serialize()`: the roster a save carries. */
+	'skill.serialize': (args) => skillCall(session('skill.serialize', args, 'skill'), (p) => p.serialize()),
+
+	/** `skill.restore { session, state }` → core's `restore(state)` (silent: no events, no KB writes). */
+	'skill.restore': (args) => {
+		const m = 'skill.restore';
+		const s = session(m, args, 'skill');
+		coded('invalid-input', () => needObject(m, args.state, 'state'));
+		return skillCall(s, (p) => p.restore(args.state));
+	},
+
+	/** `skill.publishWorld { session }` → core's `publishWorld()`: the authored skills and trees asserted into the KB (how many; 0 with none). */
+	'skill.publishWorld': (args) => skillCall(session('skill.publishWorld', args, 'skill'), (p) => p.publishWorld()),
+
+	/** `skill.publishActors { session }` → core's `publishActors()`: the roster's facts asserted into the KB (how many; 0 with none). */
+	'skill.publishActors': (args) => skillCall(session('skill.publishActors', args, 'skill'), (p) => p.publishActors()),
+
+	/** `skill.lastWriteRefusal { session }` → core's `lastWriteRefusal()`: why the last write was refused, or null. */
+	'skill.lastWriteRefusal': (args) => skillCall(session('skill.lastWriteRefusal', args, 'skill'), (p) => p.lastWriteRefusal()),
 
 	// ── the genre HUD and the world rules panel (P9a) ──
 	// Each row is one of core's corpus runners and nothing else: the args are

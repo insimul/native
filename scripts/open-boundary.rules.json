@@ -884,6 +884,96 @@
     },
     {
       "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/progression/gamification",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the progression.gamification.* rows (core's P9i tracker: XP, levels and tiers, the XP tables, achievements, the daily challenge and streaks, applyGamification and gamificationView) (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/progression/feature-modules",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the progression.modules.* rows (core's P9i feature modules: definitions and verdicts, resolveFeatureModules, proficiency, adaptive difficulty and the quest difficulty adjustment); the module was already in the bundle through genre resolution, so this import adds no module (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/progression/progression-save",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the progression.save.* rows (core's P9i `progression` save block: progressionSaveBlock, readProgressionBlock, progressionBlockOf) (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/feature-modules/genre-bundles",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the progression.modules.bundleModules and progression.modules.genre rows, for one function: getDefaultModulesForGenre (a bundle's declared module ids); the module was already in the bundle through genre resolution, so this import adds no module (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/skills/skills",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the skill.ir.*, skill.advancement.*, skill.unlocks.* and skill.trees.funded/depth rows (core's skill-tree rules: resolveAdvance, resolveUnlock, the IR readers, costs, curves and depths) (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/skills/skill-effects",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the skill.effects.* rows (core's skill effects: skillModifiers, modifierOf, unlockedActions, permittedThings, withSkillModifiers) (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/skills/skill-view",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the skill.trees.view row (core's buildSkillView, the tree a skill panel draws) (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/skills/skill-facts",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the skill.trees.facts row (core's skillTreeFacts, the authored tree as the KB carries it) (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/skills/domain-trees",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the progression.skills.domain row (core's DOMAIN_SKILL_TREES, the language and guild domain trees) (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/game-engine/logic/SkillProgression",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the skill session rows (skill.create and the SkillProgression method rows: register, award, advance, canUnlock, unlock and the rest), whose KB-backed unlock asks core's skill_goal_met/2 in a native KB (U106(7)) (PL.native-progression-rows, rulings U106(7) and U36), exactly as the build.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-pl-native-progression-rows (Features Gauntlet PL.native-progression-rows)",
+      "reviewedAt": "2026-11-12"
+    },
+    {
+      "rule": "undeclared-dependency",
       "path": "tests/open_boundary_selftest.mjs",
       "specifier": "${CLOSED_BACKEND}",
       "classification": "keep",

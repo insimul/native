@@ -175,7 +175,11 @@
     return found;
   }
   function disposeSession(handle) {
-    return SESSIONS.delete(handle);
+    const found = SESSIONS.get(handle);
+    if (!found) return false;
+    SESSIONS.delete(handle);
+    if (typeof found.onDispose === "function") found.onDispose();
+    return true;
   }
   function listSessions() {
     return [...SESSIONS.entries()].sort((a, b) => a[0] - b[0]).map(([handle, s]) => ({ session: handle, kind: s.kind }));
@@ -238,16 +242,74 @@
     constructor(id) {
       this.kind = "wasm";
       this._id = id;
+      this._dynamic = /* @__PURE__ */ new Set();
+      this._programs = [];
+      this._facts = /* @__PURE__ */ new Map();
+      this._rules = [];
+      this._loadError = void 0;
     }
+    async declareDynamic(predicates) {
+      const fresh = predicates.filter((p) => !this._dynamic.has(p));
+      if (fresh.length === 0) return;
+      for (const p of fresh) this._dynamic.add(p);
+      await this._rebuild();
+    }
+    /** wasm-engine.ts `consult`: keep earlier programs; roll a failing one back. */
     async consult(program) {
-      const err = globalThis.__insimul_prolog_consult(this._id, program);
-      return err === null ? { success: true } : { success: false, error: err };
+      const trimmed = String(program).trim();
+      const addedProgram = Boolean(trimmed) && !this._programs.includes(trimmed);
+      if (addedProgram) this._programs.push(trimmed);
+      const addedDynamic = [];
+      const dynamicRegex = /:-\s*dynamic\s*\(?\s*([a-z_]\w*\s*\/\s*\d+)\s*\)?\s*\./g;
+      let match;
+      while ((match = dynamicRegex.exec(program)) !== null) {
+        const signature = match[1].replace(/\s/g, "");
+        if (!this._dynamic.has(signature)) {
+          this._dynamic.add(signature);
+          addedDynamic.push(signature);
+        }
+      }
+      const result2 = await this._rebuild();
+      if (!result2.success) {
+        if (addedProgram) this._programs.pop();
+        for (const signature of addedDynamic) this._dynamic.delete(signature);
+        const rolledBack = await this._rebuild();
+        if (rolledBack.success) this._loadError = void 0;
+      }
+      return result2;
+    }
+    async assertFact(fact) {
+      this._recordFact(fact);
+      return (await this._rebuild()).success;
+    }
+    async assertFacts(facts) {
+      for (const fact of facts) this._recordFact(fact);
+      return (await this._rebuild()).success;
+    }
+    async retractFact(fact) {
+      const normalized = String(fact).trim().replace(/\.\s*$/, "") + ".";
+      const sig = signatureOf(normalized.replace(/\.$/, ""));
+      const facts = this._facts.get(sig || "");
+      if (facts) {
+        facts.delete(normalized);
+        if (facts.size === 0) this._facts.delete(sig || "");
+      }
+      return (await this._rebuild()).success;
+    }
+    async addRule(rule2) {
+      this._recordRule(rule2);
+      return (await this._rebuild()).success;
+    }
+    async addRules(rules) {
+      for (const rule2 of rules) this._recordRule(rule2);
+      return (await this._rebuild()).success;
     }
     /**
      * @param {string} queryString goal text, with or without a trailing `.`
      * @param {number} [maxResults] defaults to 1000, as `WasmPrologEngine.query` does
      */
     async query(queryString, maxResults = 1e3) {
+      if (this._loadError) return { success: false, bindings: [], error: this._loadError };
       const goal = String(queryString).trim().replace(/\.\s*$/, "");
       let raw;
       try {
@@ -265,61 +327,125 @@
         })
       };
     }
+    /** wasm-engine.ts `queryOnce`: one solution asked for; true when one came back. */
+    async queryOnce(queryString) {
+      const result2 = await this.query(queryString, 1);
+      return result2.success && result2.bindings.length > 0;
+    }
+    getFactsForPredicate(predicateSignature) {
+      const facts = this._facts.get(predicateSignature);
+      return facts ? Array.from(facts) : [];
+    }
+    getAllFacts() {
+      const all = [];
+      for (const facts of this._facts.values()) for (const f of facts) all.push(f);
+      return all;
+    }
+    getAllRules() {
+      return [...this._rules];
+    }
+    async clear() {
+      this._dynamic.clear();
+      this._facts.clear();
+      this._rules = [];
+      this._programs = [];
+      this._loadError = void 0;
+      this._freshKb();
+    }
+    async clearFacts() {
+      this._facts.clear();
+      await this._rebuild();
+    }
+    getStats() {
+      let factCount = 0;
+      for (const facts of this._facts.values()) factCount += facts.size;
+      return { factCount, ruleCount: this._rules.length, dynamicPredicates: Array.from(this._dynamic) };
+    }
     destroy() {
       if (this._id < 0) return;
       globalThis.__insimul_prolog_destroy(this._id);
       this._id = -1;
     }
-    // ── Not reached by the adopted slice. Fail loudly if a future one gets here.
-    declareDynamic() {
-      return unimplemented("declareDynamic");
-    }
-    assertFact() {
-      return unimplemented("assertFact");
-    }
-    assertFacts() {
-      return unimplemented("assertFacts");
-    }
-    retractFact() {
-      return unimplemented("retractFact");
-    }
-    addRule() {
-      return unimplemented("addRule");
-    }
-    addRules() {
-      return unimplemented("addRules");
-    }
-    queryOnce() {
-      return unimplemented("queryOnce");
-    }
-    getFactsForPredicate() {
-      return unimplemented("getFactsForPredicate");
-    }
-    getAllFacts() {
-      return unimplemented("getAllFacts");
-    }
-    getAllRules() {
-      return unimplemented("getAllRules");
-    }
-    clear() {
-      return unimplemented("clear");
-    }
-    clearFacts() {
-      return unimplemented("clearFacts");
-    }
+    // ── Not reached by any adopted slice. Fail loudly if a future one gets here.
     export() {
       return unimplemented("export");
     }
     import() {
       return unimplemented("import");
     }
-    getStats() {
-      return unimplemented("getStats");
+    // ── wasm-engine.ts's internals, mirrored ─────────────────────────────────
+    _recordFact(fact) {
+      const normalized = String(fact).trim().replace(/\.\s*$/, "");
+      const sig = signatureOf(normalized);
+      if (sig && !this._dynamic.has(sig)) this._dynamic.add(sig);
+      if (!this._facts.has(sig || "")) this._facts.set(sig || "", /* @__PURE__ */ new Set());
+      this._facts.get(sig || "").add(normalized + ".");
+    }
+    _recordRule(rule2) {
+      const normalized = String(rule2).trim().replace(/\.\s*$/, "") + ".";
+      const headMatch = normalized.match(/^([a-z_]\w*)\s*\(/);
+      if (headMatch) {
+        const arityMatch = normalized.match(/^[^(]*\(([^)]*)\)/);
+        if (arityMatch) {
+          const sig = `${headMatch[1]}/${arityMatch[1].split(",").length}`;
+          if (!this._dynamic.has(sig)) this._dynamic.add(sig);
+        }
+      }
+      if (!this._rules.includes(normalized)) this._rules.push(normalized);
+    }
+    _freshKb() {
+      if (this._id >= 0) globalThis.__insimul_prolog_destroy(this._id);
+      const id = globalThis.__insimul_prolog_create();
+      if (id < 0) throw new Error("insimulcore: could not create a Prolog KB");
+      this._id = id;
+    }
+    /** wasm-engine.ts `rebuild()`: a fresh KB consulted with everything, in order. */
+    async _rebuild() {
+      const parts = [];
+      for (const p of this._dynamic) parts.push(`:- dynamic(${p}).`);
+      const consulted = this._programs.join("\n").trim();
+      if (consulted) parts.push(consulted);
+      for (const r of this._rules) parts.push(r);
+      for (const facts of this._facts.values()) for (const f of facts) parts.push(f);
+      const fullProgram = parts.join("\n");
+      this._freshKb();
+      this._loadError = void 0;
+      if (!fullProgram.trim()) return { success: true };
+      const err = globalThis.__insimul_prolog_consult(this._id, fullProgram);
+      if (err === null) return { success: true };
+      this._loadError = err;
+      return { success: false, error: err };
     }
   };
+  function signatureOf(fact) {
+    const match = fact.match(/^([a-z_]\w*)\s*\(([^)]*)\)/);
+    if (!match) {
+      const atomMatch = fact.match(/^([a-z_]\w*)\s*\.?$/);
+      if (atomMatch) return `${atomMatch[1]}/0`;
+      return "";
+    }
+    let depth = 0;
+    let arity = 1;
+    const argsStr = match[2];
+    for (let i = 0; i < argsStr.length; i++) {
+      const ch = argsStr[i];
+      if (ch === "(" || ch === "[") depth++;
+      else if (ch === ")" || ch === "]") depth--;
+      else if (ch === "," && depth === 0) arity++;
+      else if (ch === "'" || ch === '"') {
+        const quote = ch;
+        i++;
+        while (i < argsStr.length && argsStr[i] !== quote) {
+          if (argsStr[i] === "\\") i++;
+          i++;
+        }
+      }
+    }
+    return `${match[1]}/${arity}`;
+  }
   function unimplemented(member) {
     throw new Error(
-      `insimulcore: PrologEngine.${member}() is not implemented by the native bridge. The adopted slice does not use it \u2014 see gdextension/corebridge/js/host-prolog-engine.js.`
+      `insimulcore: PrologEngine.${member}() is not implemented by the native bridge. No adopted slice uses it \u2014 see corebridge/js/host-prolog-engine.js.`
     );
   }
   async function createPrologEngine(_options = {}) {
@@ -745,7 +871,7 @@
   function fillTitle(title, bindings) {
     return title.replace(
       /\{(\w+)\}/g,
-      (whole4, slot) => slot in bindings ? String(bindings[slot]) : whole4
+      (whole5, slot) => slot in bindings ? String(bindings[slot]) : whole5
     );
   }
   function evalAmount(arg, tpl, bindMap) {
@@ -3189,6 +3315,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function getGenreBundle(genreId) {
     return GENRE_BUNDLES[genreId];
   }
+  function getDefaultModulesForGenre(genreId) {
+    return GENRE_BUNDLES[genreId]?.defaultModules ?? [];
+  }
 
   // @insimul/core/src/progression/feature-modules.ts
   var KNOWLEDGE_ACQUISITION_MODULE = Object.freeze({
@@ -3281,7 +3410,52 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function featureModuleVerdict(id) {
     return FEATURE_MODULE_VERDICTS.find((v) => v.id === id);
   }
+  function featureModuleDefinition(id) {
+    return FEATURE_MODULE_DEFINITIONS.find((d) => d.id === id);
+  }
   var FEATURE_MODULE_REFUSALS = Object.freeze(["unimplemented", "port_later", "unknown_module", "duplicate"]);
+  function resolveFeatureModules(ids, bundleId = null) {
+    const enabled = [];
+    const refused = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (const raw of ids) {
+      const id = String(raw);
+      if (typeof raw !== "string") {
+        refused.push({ id, code: "unknown_module", reason: `${JSON.stringify(raw)} is not a feature module id` });
+        continue;
+      }
+      if (seen.has(id)) {
+        refused.push({ id, code: "duplicate", reason: `'${id}' is listed more than once` });
+        continue;
+      }
+      seen.add(id);
+      const v = featureModuleVerdict(raw);
+      if (!v) {
+        refused.push({ id, code: "unknown_module", reason: `'${id}' is not a feature module id` });
+      } else if (v.verdict === "port-later") {
+        refused.push({ id, code: "port_later", reason: `'${id}' is approved for after parity (${v.servedBy}); nothing runs it yet` });
+      } else if (v.verdict === "unimplemented") {
+        refused.push({ id, code: "unimplemented", reason: `no repository implements '${id}'; core defines it before any engine shows it (${v.catalog}, core-only)` });
+      } else {
+        enabled.push(v.id);
+      }
+    }
+    const defs = enabled.map((id) => featureModuleDefinition(id)).filter((d) => d !== void 0);
+    const bundle = bundleId ? getGenreBundle(bundleId) : void 0;
+    const dims = enabled.includes("proficiency") ? bundle?.moduleConfigs.proficiency?.dimensions ?? [] : [];
+    return {
+      enabled,
+      refused,
+      contributes: {
+        genreFeatureFlags: defs.flatMap((d) => d.genreFeatureFlags),
+        questObjectiveTypes: defs.flatMap((d) => d.questObjectiveTypes),
+        questRewardTypes: defs.flatMap((d) => d.questRewardTypes),
+        xpEventTypes: defs.flatMap((d) => d.xpEventTypes ?? []),
+        proficiencyDimensions: [...dims],
+        skillTreeConditionTypes: defs.flatMap((d) => d.skillTreeConditionTypes ?? [])
+      }
+    };
+  }
   var PROFICIENCY_TIERS = Object.freeze([
     { id: "tier-1", label: "Novice", color: "#e74c3c", minScore: 0 },
     { id: "tier-2", label: "Apprentice", color: "#e67e22", minScore: 25 },
@@ -3289,6 +3463,20 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     { id: "tier-4", label: "Expert", color: "#27ae60", minScore: 75 },
     { id: "tier-5", label: "Master", color: "#2ecc71", minScore: 90 }
   ]);
+  var PROFICIENCY_SCALE = 5;
+  function proficiencyTiers(tierLabels) {
+    if (!tierLabels || tierLabels.length === 0) return PROFICIENCY_TIERS.map((t) => ({ ...t }));
+    return PROFICIENCY_TIERS.slice(0, tierLabels.length).map((t, i) => ({ ...t, label: tierLabels[i] }));
+  }
+  function proficiencyOf(scores, tiers = PROFICIENCY_TIERS, scale = PROFICIENCY_SCALE) {
+    const n = scores.length;
+    const sum = scores.reduce((s, d) => s + d.score, 0);
+    const den = n * scale;
+    const overall = n === 0 ? 0 : Math.floor((sum * 100 * 2 + den) / (den * 2));
+    const sorted = [...tiers].sort((a, b) => b.minScore - a.minScore);
+    const tier = sorted.find((t) => n === 0 ? t.minScore <= 0 : sum >= t.minScore * 10 * den) ?? tiers[0];
+    return { overall, tierId: tier.id, tierLabel: tier.label, dimensions: scores.map((d) => ({ dimensionId: d.dimensionId, score: d.score })) };
+  }
   var DIFFICULTY_TIERS = Object.freeze([
     { id: "tier-1", label: "Easy", minScore: 0 },
     { id: "tier-2", label: "Normal", minScore: 20 },
@@ -3296,8 +3484,111 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     { id: "tier-4", label: "Very Hard", minScore: 60 },
     { id: "tier-5", label: "Expert", minScore: 80 }
   ]);
+  function difficultyTiers(tierLabels) {
+    return DIFFICULTY_TIERS.map((t, i) => ({ ...t, label: tierLabels?.[i] ?? t.label }));
+  }
+  function difficultyParams(score, tiers = DIFFICULTY_TIERS) {
+    const sorted = [...tiers].sort((a, b) => b.minScore - a.minScore);
+    const tier = sorted.find((t) => score >= t.minScore * 1e3) ?? tiers[0];
+    const intensity = Math.min(1e3, Math.floor((score + 50) / 100));
+    const rest = Math.max(0, 1e3 - intensity);
+    return { tierId: tier.id, tierLabel: tier.label, effectiveScore: score, challengeIntensity: intensity, hintFrequency: rest, assistanceLevel: rest };
+  }
   var QUEST_DIFFICULTIES = Object.freeze(["beginner", "intermediate", "advanced"]);
   var ADJUSTMENT_TUNING = Object.freeze({ minWindow: 3, window: 10, highScore: 850, lowScore: 400, lowObjective: 500, highAttemptsTenths: 25 });
+  var roundDiv = (num5, den) => Math.floor((num5 * 2 + den) / (den * 2));
+  function performanceScore(records) {
+    const n = records.length;
+    if (n === 0) return { score: 500, success: 0, objectives: 0, attempts: 0, time: 500 };
+    const completed = records.filter((r) => r.status === "completed").length;
+    const success = roundDiv(completed * 1e3, n);
+    const objectives = roundDiv(records.reduce((s, r) => s + r.objectivePermille, 0), n);
+    const sumAttempts = records.reduce((s, r) => s + r.attempts, 0);
+    const attempts = sumAttempts <= 0 ? 1e3 : Math.min(1e3, roundDiv(1e3 * n, sumAttempts));
+    const timed = records.filter((r) => r.status === "completed" && r.completionMs != null && r.estimatedMs != null && r.estimatedMs > 0);
+    let time = 500;
+    if (timed.length > 0) {
+      const ratio = roundDiv(timed.reduce((s, r) => s + roundDiv(r.completionMs * 1e3, r.estimatedMs), 0), timed.length);
+      time = Math.max(0, Math.min(1e3, roundDiv((2e3 - ratio) * 2, 3)));
+    }
+    const score = roundDiv(success * 4 + objectives * 3 + attempts * 2 + time, 10);
+    return { score, success, objectives, attempts, time };
+  }
+  var pct = (permille) => Math.floor((permille + 5) / 10);
+  function adjustDifficulty(records, current, tuning = ADJUSTMENT_TUNING) {
+    const win = records.slice(-tuning.window);
+    const idx = QUEST_DIFFICULTIES.indexOf(current);
+    if (win.length < tuning.minWindow) {
+      return { direction: 0, confidence: 0, reason: "Not enough quest history for adjustment", recommendedDifficulty: current, objectiveCountMultiplier: 1e3, timeMultiplier: 1e3 };
+    }
+    const p = performanceScore(win);
+    const n = win.length;
+    const completed = win.filter((r) => r.status === "completed").length;
+    const sumAttempts = win.reduce((s, r) => s + r.attempts, 0);
+    if (p.score >= tuning.highScore && completed * 5 >= n * 4) {
+      const harder = idx < QUEST_DIFFICULTIES.length - 1;
+      const confidence = Math.min(1e3, roundDiv((p.score - tuning.highScore) * 1e3, 1e3 - tuning.highScore) + 300);
+      return {
+        direction: 1,
+        confidence,
+        reason: `High performance (${pct(p.score)}%) \u2014 player is ready for a challenge`,
+        recommendedDifficulty: harder ? QUEST_DIFFICULTIES[idx + 1] : current,
+        objectiveCountMultiplier: harder ? 1e3 : 1200,
+        timeMultiplier: harder ? 1e3 : 900
+      };
+    }
+    const struggling = sumAttempts * 10 > n * tuning.highAttemptsTenths;
+    if (p.score <= tuning.lowScore || p.objectives < tuning.lowObjective || struggling) {
+      const easier = idx > 0;
+      const confidence = Math.min(1e3, roundDiv((tuning.lowScore - p.score) * 1e3, tuning.lowScore) + 300);
+      const reasons = [];
+      if (completed * 5 < n * 2) reasons.push(`low success rate (${pct(p.success)}%)`);
+      if (p.objectives < tuning.lowObjective) reasons.push(`low objective completion (${pct(p.objectives)}%)`);
+      if (struggling) {
+        const tenths = roundDiv(sumAttempts * 10, n);
+        reasons.push(`high retry rate (${Math.floor(tenths / 10)}.${tenths % 10} avg)`);
+      }
+      return {
+        direction: -1,
+        confidence,
+        reason: `Player struggling: ${reasons.join(", ")}`,
+        recommendedDifficulty: easier ? QUEST_DIFFICULTIES[idx - 1] : current,
+        objectiveCountMultiplier: easier ? 1e3 : 800,
+        timeMultiplier: easier ? 1e3 : 1300
+      };
+    }
+    return { direction: 0, confidence: 500, reason: `Performance in flow zone (${pct(p.score)}%)`, recommendedDifficulty: current, objectiveCountMultiplier: 1e3, timeMultiplier: 1e3 };
+  }
+  function applyAdjustment(a, objectiveCount, estimatedMinutes) {
+    return {
+      objectiveCount: Math.max(1, roundDiv(objectiveCount * a.objectiveCountMultiplier, 1e3)),
+      estimatedMinutes: Math.max(1, roundDiv(estimatedMinutes * a.timeMultiplier, 1e3)),
+      difficulty: a.recommendedDifficulty
+    };
+  }
+  function performanceRecords(quests) {
+    return quests.filter((q) => q.status === "completed" || q.status === "failed" || q.status === "abandoned").map((q) => {
+      const objs = q.objectives ?? [];
+      const done = objs.filter((o) => o.completed).length;
+      let completionMs = null;
+      if (q.assignedAtMs != null && q.completedAtMs != null) {
+        completionMs = q.completedAtMs - q.assignedAtMs;
+        if (completionMs <= 0) completionMs = null;
+      }
+      return {
+        status: q.status,
+        objectivePermille: objs.length > 0 ? roundDiv(done * 1e3, objs.length) : 0,
+        attempts: q.attemptCount ?? 1,
+        completionMs,
+        estimatedMs: q.estimatedMinutes != null ? q.estimatedMinutes * 6e4 : null
+      };
+    });
+  }
+  function bundleModuleConfigs(bundleId) {
+    const b = getGenreBundle(bundleId);
+    if (!b) return {};
+    return Object.fromEntries(Object.keys(b.moduleConfigs).sort(compareIds).map((k) => [k, JSON.parse(JSON.stringify(b.moduleConfigs[k]))]));
+  }
 
   // @insimul/core/src/game-genres/feature-readers.ts
   var composerGate = (flag) => ({
@@ -18554,6 +18845,2979 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     });
   }
 
+  // @insimul/core/src/progression/gamification.ts
+  var LEVEL_THRESHOLDS = Object.freeze([
+    0,
+    50,
+    120,
+    220,
+    350,
+    520,
+    730,
+    990,
+    1300,
+    1670,
+    2100,
+    2600,
+    3200,
+    3900,
+    4700,
+    5600,
+    6700,
+    8e3,
+    9500,
+    11200
+  ]);
+  var DEFAULT_TIER_LABELS = Object.freeze(["Beginner", "Elementary", "Intermediate", "Advanced", "Near-native"]);
+  var LEVELS_PER_TIER = 5;
+  function levelForXp(totalXp, thresholds = LEVEL_THRESHOLDS) {
+    for (let i = thresholds.length - 1; i >= 0; i--) if (totalXp >= thresholds[i]) return i + 1;
+    return 1;
+  }
+  function nextLevelXp(level, thresholds = LEVEL_THRESHOLDS) {
+    if (level >= thresholds.length) return 0;
+    return thresholds[level];
+  }
+  function levelTier(level, labels = DEFAULT_TIER_LABELS) {
+    if (labels.length === 0) return "";
+    const index = level <= LEVELS_PER_TIER ? 0 : Math.floor((level - 1) / LEVELS_PER_TIER);
+    return labels[Math.min(index, labels.length - 1)];
+  }
+  function levelProgressPermille(totalXp, thresholds = LEVEL_THRESHOLDS) {
+    const level = levelForXp(totalXp, thresholds);
+    if (level >= thresholds.length) return 1e3;
+    const from = thresholds[level - 1] ?? 0;
+    const to = thresholds[level] ?? from + 100;
+    return Math.floor((totalXp - from) * 1e3 / (to - from));
+  }
+  var GAMIFICATION_TUNING = Object.freeze({
+    conversationBase: 10,
+    conversationLong: 5,
+    longConversationTurns: 5,
+    questComplete: 25,
+    vocabularyNewWord: 3,
+    vocabularyMastered: 15,
+    grammarPatternCorrect: 2,
+    grammarPatternMastered: 20,
+    achievementUnlocked: 50,
+    assessmentPhaseComplete: 15,
+    assessmentComplete: 40,
+    onboardingStepComplete: 10,
+    onboardingComplete: 30,
+    puzzleSolved: 20,
+    locationDiscovered: 5,
+    listeningComprehensionComplete: 20,
+    skillRewardXpPerPoint: 2,
+    streakStepTenths: 1,
+    streakCapTenths: 20
+  });
+  var GAMIFICATION_AWARDS = Object.freeze({
+    assessment_phase_complete: { tuning: "assessmentPhaseComplete", reason: "Assessment phase complete" },
+    assessment_complete: { tuning: "assessmentComplete", reason: "Assessment complete" },
+    onboarding_step_complete: { tuning: "onboardingStepComplete", reason: "Onboarding step complete" },
+    onboarding_complete: { tuning: "onboardingComplete", reason: "Onboarding complete" }
+  });
+  var DEFAULT_XP_REWARDS = Object.freeze({
+    quest_complete: 25,
+    location_discovered: 5,
+    onboarding_step_complete: 10,
+    onboarding_complete: 30,
+    achievement_unlocked: 50,
+    daily_challenge_complete: 30
+  });
+  function xpEventTable(bundleId, tuning = GAMIFICATION_TUNING, overrides = {}) {
+    const base = bundleId === "language-learning" ? {
+      conversation_base: tuning.conversationBase,
+      conversation_long: tuning.conversationLong,
+      quest_complete: tuning.questComplete,
+      knowledge_new_entry: tuning.vocabularyNewWord,
+      knowledge_mastered: tuning.vocabularyMastered,
+      pattern_correct: tuning.grammarPatternCorrect,
+      pattern_mastered: tuning.grammarPatternMastered,
+      daily_challenge_complete: 30,
+      achievement_unlocked: tuning.achievementUnlocked,
+      assessment_phase_complete: tuning.assessmentPhaseComplete,
+      assessment_complete: tuning.assessmentComplete,
+      onboarding_step_complete: tuning.onboardingStepComplete,
+      onboarding_complete: tuning.onboardingComplete,
+      performance_graded: tuning.puzzleSolved,
+      location_discovered: tuning.locationDiscovered
+    } : { ...DEFAULT_XP_REWARDS };
+    const out = { ...base, ...overrides };
+    return Object.fromEntries(Object.keys(out).sort(compareIds).map((k) => [k, out[k]]));
+  }
+  var ACHIEVEMENT_CONDITIONS = Object.freeze([
+    "words_learned",
+    "conversations",
+    "grammar_mastered",
+    "quests_completed",
+    "fluency_reached",
+    "streak_days",
+    "navigation_quests",
+    "level_reached",
+    "cultural_quests",
+    "articles_read",
+    "npcs_talked",
+    "items_collected",
+    "locations_discovered",
+    "objects_examined",
+    "puzzles_solved"
+  ]);
+  var ACHIEVEMENTS = Object.freeze([
+    { id: "first_words", name: "First Words", description: "Learn your first 10 words", icon: "\u{1F4D6}", condition: { type: "words_learned", threshold: 10 } },
+    { id: "chatterbox", name: "Chatterbox", description: "Complete 25 conversations", icon: "\u{1F4AC}", condition: { type: "conversations", threshold: 25 } },
+    { id: "grammar_guru", name: "Grammar Guru", description: "Master 5 grammar patterns", icon: "\u{1F4DD}", condition: { type: "grammar_mastered", threshold: 5 } },
+    { id: "polyglot", name: "Polyglot", description: "Reach intermediate fluency (level 11)", icon: "\u{1F30D}", condition: { type: "level_reached", threshold: 11 } },
+    { id: "navigator", name: "Navigator", description: "Complete 5 navigation quests", icon: "\u{1F9ED}", condition: { type: "navigation_quests", threshold: 5 } },
+    { id: "streak_master", name: "Streak Master", description: "Maintain a 7-day learning streak", icon: "\u{1F525}", condition: { type: "streak_days", threshold: 7 } },
+    { id: "word_collector", name: "Word Collector", description: "Learn 50 words", icon: "\u{1F4DA}", condition: { type: "words_learned", threshold: 50 } },
+    { id: "quest_hero", name: "Quest Hero", description: "Complete 10 language quests", icon: "\u{1F3C6}", condition: { type: "quests_completed", threshold: 10 } },
+    { id: "cultural_explorer", name: "Cultural Explorer", description: "Complete 5 cultural quests", icon: "\u{1F3AD}", condition: { type: "cultural_quests", threshold: 5 } },
+    { id: "bookworm", name: "Bookworm", description: "Read 10 notice board articles", icon: "\u{1F4F0}", condition: { type: "articles_read", threshold: 10 } },
+    { id: "social_butterfly", name: "Social Butterfly", description: "Talk to 10 different NPCs", icon: "\u{1F98B}", condition: { type: "npcs_talked", threshold: 10 } },
+    { id: "treasure_hunter", name: "Treasure Hunter", description: "Collect 20 items", icon: "\u{1F48E}", condition: { type: "items_collected", threshold: 20 } },
+    { id: "cartographer", name: "Cartographer", description: "Discover 10 locations", icon: "\u{1F5FA}\uFE0F", condition: { type: "locations_discovered", threshold: 10 } },
+    { id: "curious_mind", name: "Curious Mind", description: "Examine 15 objects", icon: "\u{1F50D}", condition: { type: "objects_examined", threshold: 15 } },
+    { id: "puzzle_master", name: "Puzzle Master", description: "Solve 10 puzzles", icon: "\u{1F9E9}", condition: { type: "puzzles_solved", threshold: 10 } }
+  ]);
+  var GAMIFICATION_COUNTERS = Object.freeze([
+    "questsCompleted",
+    "navigationQuestsCompleted",
+    "culturalQuestsCompleted",
+    "articlesRead",
+    "npcsTalked",
+    "itemsCollected",
+    "locationsDiscovered",
+    "objectsExamined",
+    "puzzlesSolved"
+  ]);
+  var CONDITION_COUNTER = {
+    quests_completed: "questsCompleted",
+    navigation_quests: "navigationQuestsCompleted",
+    cultural_quests: "culturalQuestsCompleted",
+    articles_read: "articlesRead",
+    npcs_talked: "npcsTalked",
+    items_collected: "itemsCollected",
+    locations_discovered: "locationsDiscovered",
+    objects_examined: "objectsExamined",
+    puzzles_solved: "puzzlesSolved"
+  };
+  var STATS_CONDITIONS = Object.freeze(["words_learned", "conversations", "grammar_mastered", "fluency_reached", "streak_days"]);
+  var DAILY_CHALLENGE_TYPES = Object.freeze(["vocabulary_category", "conversation_count", "target_language_only", "grammar_accuracy", "new_words", "quest_count"]);
+  var DAILY_CHALLENGE_TEMPLATES = Object.freeze([
+    { description: "Use 5 food-related words", type: "vocabulary_category", target: 5, xpReward: 30 },
+    { description: "Have 3 conversations", type: "conversation_count", target: 3, xpReward: 30 },
+    { description: "Have a full conversation in the target language", type: "target_language_only", target: 1, xpReward: 40 },
+    { description: "Get 80%+ grammar accuracy in a conversation", type: "grammar_accuracy", target: 80, xpReward: 35 },
+    { description: "Learn 5 new words", type: "new_words", target: 5, xpReward: 30 },
+    { description: "Complete 2 quests", type: "quest_count", target: 2, xpReward: 35 },
+    { description: "Use 3 greeting words", type: "vocabulary_category", target: 3, xpReward: 25 },
+    { description: "Have 5 conversations", type: "conversation_count", target: 5, xpReward: 40 },
+    { description: "Learn 10 new words", type: "new_words", target: 10, xpReward: 45 },
+    { description: "Complete 3 quests", type: "quest_count", target: 3, xpReward: 40 }
+  ]);
+  var DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+  function isDateKey(key) {
+    if (typeof key !== "string") return false;
+    const m = DATE_RE.exec(key);
+    if (!m) return false;
+    const y = Number(m[1]);
+    const mo = Number(m[2]);
+    const d = Number(m[3]);
+    if (mo < 1 || mo > 12 || d < 1) return false;
+    return d <= daysInMonth(y, mo);
+  }
+  function daysInMonth(y, m) {
+    if (m === 2) return y % 4 === 0 && y % 100 !== 0 || y % 400 === 0 ? 29 : 28;
+    return [4, 6, 9, 11].includes(m) ? 30 : 31;
+  }
+  var pad = (n, w) => String(n).padStart(w, "0");
+  function previousDateKey(key) {
+    const m = DATE_RE.exec(key);
+    if (!m || !isDateKey(key)) throw new Error(`gamification: not a date ${key}`);
+    let y = Number(m[1]);
+    let mo = Number(m[2]);
+    let d = Number(m[3]) - 1;
+    if (d === 0) {
+      mo -= 1;
+      if (mo === 0) {
+        mo = 12;
+        y -= 1;
+      }
+      d = daysInMonth(y, mo);
+    }
+    return `${pad(y, 4)}-${pad(mo, 2)}-${pad(d, 2)}`;
+  }
+  function dailyTemplateIndex(dateKey) {
+    let hash = 0;
+    for (let i = 0; i < dateKey.length; i++) {
+      hash = (hash << 5) - hash + dateKey.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash) % DAILY_CHALLENGE_TEMPLATES.length;
+  }
+  function dailyChallengeView(daily) {
+    const t = DAILY_CHALLENGE_TEMPLATES[dailyTemplateIndex(daily.dateKey)];
+    return { id: `daily_${daily.dateKey}`, dateKey: daily.dateKey, description: t.description, type: t.type, target: t.target, xpReward: t.xpReward, progress: daily.progress, completed: daily.completed };
+  }
+  function streakMultiplierTenths(streak, tuning = GAMIFICATION_TUNING) {
+    return Math.min(tuning.streakCapTenths, 10 + (streak - 1) * tuning.streakStepTenths);
+  }
+  function streakXp(xpReward, streak, tuning = GAMIFICATION_TUNING) {
+    return Math.floor((xpReward * streakMultiplierTenths(streak, tuning) + 5) / 10);
+  }
+  function emptyGamification() {
+    return {
+      xp: 0,
+      unlocked: {},
+      daily: null,
+      consecutiveDays: 0,
+      dailyStreak: 0,
+      lastDailyDate: null,
+      counters: Object.fromEntries(GAMIFICATION_COUNTERS.map((c) => [c, 0]))
+    };
+  }
+  function cloneGamification(s) {
+    return { ...s, unlocked: { ...s.unlocked }, daily: s.daily ? { ...s.daily } : null, counters: { ...s.counters } };
+  }
+  var GAMIFICATION_BUS_EVENTS = Object.freeze([
+    "quest_completed",
+    "utterance_quest_completed",
+    "puzzle_solved",
+    "item_collected",
+    "location_discovered",
+    "npc_talked",
+    "object_examined",
+    "enemy_defeated"
+  ]);
+  var GAMIFICATION_REFUSALS = Object.freeze(["bad_date", "unknown_award", "unknown_event"]);
+  function applyGamification(run, step, ctx = {}) {
+    const t = new Tracker(run, ctx);
+    const refusal3 = t.step(step);
+    return { run: { state: t.s, date: t.date }, events: t.events, signals: t.signals, ...refusal3 ? { refusal: refusal3 } : {} };
+  }
+  var Tracker = class {
+    constructor(run, ctx) {
+      __publicField(this, "s");
+      __publicField(this, "date");
+      __publicField(this, "events", []);
+      __publicField(this, "signals", []);
+      __publicField(this, "tuning");
+      __publicField(this, "thresholds");
+      __publicField(this, "labels");
+      __publicField(this, "at");
+      this.s = cloneGamification(run.state);
+      this.date = run.date;
+      this.tuning = ctx.tuning ?? GAMIFICATION_TUNING;
+      this.thresholds = ctx.config?.levelThresholds ?? LEVEL_THRESHOLDS;
+      this.labels = ctx.config?.tierLabels ?? DEFAULT_TIER_LABELS;
+      this.at = ctx.at ?? 0;
+    }
+    step(st) {
+      const t = this.tuning;
+      switch (st.do) {
+        case "day":
+          if (!isDateKey(st.date)) return "bad_date";
+          this.date = st.date;
+          this.ensureDaily();
+          return null;
+        case "conversation": {
+          const turns = Math.floor((st.gain + 125) / 250);
+          let xp = t.conversationBase;
+          if (turns > t.longConversationTurns) xp += (turns - t.longConversationTurns) * t.conversationLong;
+          this.addXp(xp, "Conversation");
+          this.trackDaily("conversation_count", 1);
+          const grammar = st.grammarPercent ?? 0;
+          if (grammar >= 80) this.trackDaily("grammar_accuracy", grammar);
+          if ((st.targetPercent ?? 0) >= 90) this.trackDaily("target_language_only", 1);
+          this.checkAchievements();
+          return null;
+        }
+        case "word":
+          this.addXp(t.vocabularyNewWord, "New word");
+          this.trackDaily("new_words", 1);
+          this.checkAchievements();
+          return null;
+        case "mastered":
+          this.addXp(t.vocabularyMastered, "Word mastered");
+          return null;
+        case "grammar":
+          if (st.status === "correct") this.addXp(t.grammarPatternCorrect, "Grammar correct");
+          return null;
+        case "pattern":
+          this.addXp(t.grammarPatternMastered, "Grammar pattern mastered");
+          this.checkAchievements();
+          return null;
+        case "quest":
+          this.quest(st.category, st.experienceReward);
+          return null;
+        case "skillRewards": {
+          const total = st.rewards.reduce((sum, r) => sum + r.level, 0);
+          if (total > 0) this.addXp(total * t.skillRewardXpPerPoint, "Skill reward");
+          this.signals.push({ kind: "skill_rewards_applied", totalPoints: total });
+          return null;
+        }
+        case "category":
+          this.trackDaily("vocabulary_category", 1);
+          return null;
+        case "article":
+          this.s.counters.articlesRead += 1;
+          this.checkAchievements();
+          return null;
+        case "award": {
+          const a = GAMIFICATION_AWARDS[st.event];
+          if (!a) return "unknown_award";
+          this.addXp(t[a.tuning], a.reason);
+          return null;
+        }
+        case "listening":
+          if (st.passed) this.addXp(t.listeningComprehensionComplete, "Listening comprehension passed");
+          else this.addXp(Math.floor((t.listeningComprehensionComplete * 5 + 5) / 10), "Listening comprehension attempted");
+          return null;
+        case "event":
+          return this.busEvent(st.event);
+        case "stats":
+          this.stats(st.stats);
+          return null;
+      }
+      return "unknown_event";
+    }
+    busEvent(e) {
+      const c = this.s.counters;
+      switch (e.type) {
+        case "quest_completed":
+        case "utterance_quest_completed":
+          this.quest(void 0, void 0);
+          return null;
+        case "puzzle_solved":
+          c.puzzlesSolved += 1;
+          this.addXp(this.tuning.puzzleSolved, "Puzzle solved");
+          this.checkAchievements();
+          return null;
+        case "location_discovered":
+          c.locationsDiscovered += 1;
+          this.addXp(this.tuning.locationDiscovered, "Location discovered");
+          this.checkAchievements();
+          return null;
+        case "item_collected":
+          c.itemsCollected += 1;
+          this.checkAchievements();
+          return null;
+        case "npc_talked":
+          c.npcsTalked += 1;
+          this.checkAchievements();
+          return null;
+        case "object_examined":
+          c.objectsExamined += 1;
+          this.checkAchievements();
+          return null;
+        case "enemy_defeated":
+          this.checkAchievements();
+          return null;
+      }
+      return "unknown_event";
+    }
+    quest(category, experienceReward) {
+      const xp = experienceReward && experienceReward > 0 ? experienceReward : this.tuning.questComplete;
+      this.addXp(xp, "Quest complete");
+      this.s.counters.questsCompleted += 1;
+      if (category === "navigation" || category === "follow_instructions") this.s.counters.navigationQuestsCompleted += 1;
+      if (category === "cultural") this.s.counters.culturalQuestsCompleted += 1;
+      this.trackDaily("quest_count", 1);
+      this.checkAchievements();
+    }
+    addXp(amount, reason) {
+      const oldLevel = levelForXp(this.s.xp, this.thresholds);
+      this.s.xp += amount;
+      const level = levelForXp(this.s.xp, this.thresholds);
+      this.events.push({ type: "xp_gained", amount, reason, newTotal: this.s.xp, level });
+      if (level > oldLevel) {
+        this.events.push({ type: "level_up", oldLevel, newLevel: level, tier: levelTier(level, this.labels), rewards: [] });
+        this.checkAchievements();
+      }
+    }
+    unlock(a) {
+      this.s.unlocked[a.id] = this.at;
+      this.addXp(this.tuning.achievementUnlocked, `Achievement: ${a.name}`);
+      this.events.push({ type: "achievement_unlocked", achievementId: a.id, achievementName: a.name, description: a.description, icon: a.icon });
+    }
+    conditionMet(a) {
+      const { type, threshold } = a.condition;
+      if (type === "level_reached") return levelForXp(this.s.xp, this.thresholds) >= threshold;
+      if (type === "streak_days") return this.s.consecutiveDays >= threshold;
+      const counter = CONDITION_COUNTER[type];
+      return counter !== void 0 && this.s.counters[counter] >= threshold;
+    }
+    checkAchievements() {
+      for (const a of ACHIEVEMENTS) {
+        if (a.id in this.s.unlocked) continue;
+        if (this.conditionMet(a)) this.unlock(a);
+      }
+    }
+    stats(st) {
+      this.s.consecutiveDays = st.streakDays;
+      for (const a of ACHIEVEMENTS) {
+        if (a.id in this.s.unlocked) continue;
+        const { type, threshold } = a.condition;
+        let met = false;
+        if (type === "words_learned") met = st.wordsLearned >= threshold;
+        else if (type === "conversations") met = st.conversations >= threshold;
+        else if (type === "grammar_mastered") met = st.grammarMastered >= threshold;
+        else if (type === "fluency_reached") met = st.fluency >= threshold * 1e3;
+        else if (type === "streak_days") met = st.streakDays >= threshold;
+        if (met) this.unlock(a);
+      }
+    }
+    ensureDaily() {
+      if (this.date === null) return;
+      if (!this.s.daily || this.s.daily.dateKey !== this.date) this.s.daily = { dateKey: this.date, progress: 0, completed: false };
+    }
+    trackDaily(type, amount) {
+      this.ensureDaily();
+      const d = this.s.daily;
+      if (!d || d.completed || this.date === null) return;
+      const view2 = dailyChallengeView(d);
+      if (view2.type !== type) return;
+      d.progress += amount;
+      if (d.progress < view2.target) return;
+      d.completed = true;
+      const last = this.s.lastDailyDate;
+      if (last) {
+        if (last === previousDateKey(this.date)) this.s.dailyStreak += 1;
+        else if (last !== this.date) this.s.dailyStreak = 1;
+      } else {
+        this.s.dailyStreak = 1;
+      }
+      this.s.lastDailyDate = this.date;
+      const xp = streakXp(view2.xpReward, this.s.dailyStreak, this.tuning);
+      this.addXp(xp, `Daily challenge (${this.s.dailyStreak}-day streak)`);
+      this.signals.push({ kind: "daily_challenge_completed", challengeId: view2.id, description: view2.description, xpReward: view2.xpReward, streak: this.s.dailyStreak, xpAwarded: xp });
+    }
+  };
+  function gamificationView(s, config = {}) {
+    const thresholds = config.levelThresholds ?? LEVEL_THRESHOLDS;
+    const level = levelForXp(s.xp, thresholds);
+    return {
+      totalXp: s.xp,
+      level,
+      nextLevelXp: nextLevelXp(level, thresholds),
+      levelXp: s.xp - (thresholds[level - 1] ?? 0),
+      progressPermille: levelProgressPermille(s.xp, thresholds),
+      tier: levelTier(level, config.tierLabels ?? DEFAULT_TIER_LABELS),
+      achievements: ACHIEVEMENTS.map((a) => ({ id: a.id, name: a.name, description: a.description, icon: a.icon, unlocked: a.id in s.unlocked, unlockedAt: a.id in s.unlocked ? s.unlocked[a.id] : null })),
+      daily: s.daily ? dailyChallengeView(s.daily) : null,
+      consecutiveDays: s.consecutiveDays,
+      dailyStreak: s.dailyStreak,
+      counters: { ...s.counters }
+    };
+  }
+
+  // @insimul/core/src/progression/progression-save.ts
+  var PROGRESSION_BLOCK_MEMBERS = Object.freeze(["gamification", "skills"]);
+  var PROGRESSION_GAMIFICATION_KEYS = Object.freeze(["xp", "unlocked", "daily", "consecutiveDays", "dailyStreak", "lastDailyDate", "counters"]);
+  var PROGRESSION_DAILY_KEYS = Object.freeze(["dateKey", "progress", "completed"]);
+  var PROGRESSION_SKILL_ACTOR_KEYS = Object.freeze(["id", "levels", "xp", "points", "unlocked"]);
+  var isObj5 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var whole4 = (v) => typeof v === "number" && Number.isInteger(v) && v >= 0;
+  var ACHIEVEMENT_IDS = new Set(ACHIEVEMENTS.map((a) => a.id));
+  function readGamification(g, bad3) {
+    if (g === void 0 || g === null) return null;
+    if (!isObj5(g)) {
+      bad3.push("gamification");
+      return null;
+    }
+    const at = (k) => bad3.push(`gamification.${k}`);
+    const out = {
+      xp: 0,
+      unlocked: {},
+      daily: null,
+      consecutiveDays: 0,
+      dailyStreak: 0,
+      lastDailyDate: null,
+      counters: Object.fromEntries(GAMIFICATION_COUNTERS.map((c) => [c, 0]))
+    };
+    if (g.xp !== void 0) {
+      if (whole4(g.xp)) out.xp = g.xp;
+      else at("xp");
+    }
+    if (g.unlocked !== void 0) {
+      if (!isObj5(g.unlocked)) at("unlocked");
+      else
+        for (const [id, when] of Object.entries(g.unlocked)) {
+          if (ACHIEVEMENT_IDS.has(id) && typeof when === "number" && Number.isInteger(when)) out.unlocked[id] = when;
+          else at(`unlocked.${id}`);
+        }
+    }
+    if (g.daily !== void 0 && g.daily !== null) {
+      const d = g.daily;
+      if (isObj5(d) && isDateKey(d.dateKey) && whole4(d.progress) && typeof d.completed === "boolean" && d.completed === d.progress >= dailyChallengeView({ dateKey: d.dateKey, progress: 0, completed: false }).target) {
+        out.daily = { dateKey: d.dateKey, progress: d.progress, completed: d.completed };
+      } else at("daily");
+    }
+    if (g.consecutiveDays !== void 0) {
+      if (whole4(g.consecutiveDays)) out.consecutiveDays = g.consecutiveDays;
+      else at("consecutiveDays");
+    }
+    if (g.dailyStreak !== void 0) {
+      if (whole4(g.dailyStreak)) out.dailyStreak = g.dailyStreak;
+      else at("dailyStreak");
+    }
+    if (g.lastDailyDate !== void 0 && g.lastDailyDate !== null) {
+      if (isDateKey(g.lastDailyDate)) out.lastDailyDate = g.lastDailyDate;
+      else at("lastDailyDate");
+    }
+    if (g.counters !== void 0) {
+      if (!isObj5(g.counters)) at("counters");
+      else
+        for (const [k, n] of Object.entries(g.counters)) {
+          if (GAMIFICATION_COUNTERS.includes(k) && whole4(n)) out.counters[k] = n;
+          else at(`counters.${k}`);
+        }
+    }
+    if (out.dailyStreak > 0 !== (out.lastDailyDate !== null) && !bad3.includes("gamification.dailyStreak") && !bad3.includes("gamification.lastDailyDate")) at("dailyStreak");
+    return out;
+  }
+  function wholeMap(v) {
+    if (!isObj5(v)) return null;
+    for (const n of Object.values(v)) if (!whole4(n)) return null;
+    return { ...v };
+  }
+  function readSkills(s, bad3) {
+    if (s === void 0 || s === null) return null;
+    if (!isObj5(s) || !Array.isArray(s.actors)) {
+      bad3.push(isObj5(s) ? "skills.actors" : "skills");
+      return null;
+    }
+    const actors = [];
+    const seen = /* @__PURE__ */ new Set();
+    s.actors.forEach((a, i) => {
+      const levels = isObj5(a) ? wholeMap(a.levels ?? {}) : null;
+      const xp = isObj5(a) ? wholeMap(a.xp ?? {}) : null;
+      const points3 = isObj5(a) ? wholeMap(a.points ?? {}) : null;
+      const unlocked = isObj5(a) ? a.unlocked ?? [] : null;
+      const okUnlocked = Array.isArray(unlocked) && unlocked.every((n) => typeof n === "string" && n.length > 0) && new Set(unlocked).size === unlocked.length;
+      if (!isObj5(a) || typeof a.id !== "string" || a.id.length === 0 || seen.has(a.id) || !levels || !xp || !points3 || !okUnlocked) {
+        bad3.push(`skills.actors[${i}]`);
+        return;
+      }
+      seen.add(a.id);
+      actors.push({ id: a.id, levels, xp, points: points3, unlocked: [...unlocked] });
+    });
+    return { actors };
+  }
+  function readProgressionBlock(b) {
+    if (b === void 0 || b === null) return { ok: true, value: null };
+    if (!isObj5(b)) return { ok: false, keys: [] };
+    const bad3 = [];
+    const gamification = readGamification(b.gamification, bad3);
+    const skills = readSkills(b.skills, bad3);
+    if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
+    return { ok: true, value: { gamification, skills } };
+  }
+  function progressionSaveBlock(parts) {
+    return { gamification: parts.gamification ?? null, skills: parts.skills ?? null };
+  }
+  function progressionBlockOf(b) {
+    const sorted = (m) => Object.fromEntries(Object.keys(m).sort(compareIds).map((k) => [k, m[k]]));
+    const g = b.gamification;
+    return {
+      gamification: g ? {
+        xp: g.xp,
+        unlocked: Object.fromEntries(ACHIEVEMENTS.filter((a) => a.id in g.unlocked).map((a) => [a.id, g.unlocked[a.id]])),
+        daily: g.daily ? { dateKey: g.daily.dateKey, progress: g.daily.progress, completed: g.daily.completed } : null,
+        consecutiveDays: g.consecutiveDays,
+        dailyStreak: g.dailyStreak,
+        lastDailyDate: g.lastDailyDate,
+        counters: Object.fromEntries(GAMIFICATION_COUNTERS.map((c) => [c, g.counters[c] ?? 0]))
+      } : null,
+      skills: b.skills ? {
+        actors: [...b.skills.actors].sort((x, y) => compareIds(x.id, y.id)).map((a) => ({ id: a.id, levels: sorted(a.levels), xp: sorted(a.xp), points: sorted(a.points), unlocked: [...a.unlocked].sort(compareIds) }))
+      } : null
+    };
+  }
+
+  // @insimul/core/src/skills/skills.ts
+  var SKILL_EFFECT_KINDS = Object.freeze(["unlocks", "modifies", "permits"]);
+  var DEFAULT_SKILL_TUNING = Object.freeze({
+    pointsPerLevel: 1,
+    defaultNodeCost: 1,
+    defaultMaxLevel: 10,
+    // Index = level. 0 and 1 are unused: nobody buys level 0, and a learned skill
+    // starts at 1.
+    levelXp: Object.freeze([0, 0, 100, 250, 450, 700, 1e3, 1350, 1750, 2200, 2700]),
+    advanceAction: "train_skill",
+    unlockAction: "unlock_skill_node"
+  });
+  function skillTuningFromIR(ir) {
+    const d = DEFAULT_SKILL_TUNING;
+    if (!ir) return { ...d };
+    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    return {
+      pointsPerLevel: num5(ir.pointsPerLevel, d.pointsPerLevel),
+      defaultNodeCost: num5(ir.defaultNodeCost, d.defaultNodeCost),
+      defaultMaxLevel: num5(ir.defaultMaxLevel, d.defaultMaxLevel),
+      levelXp: ir.levelXp && ir.levelXp.length > 0 ? [...ir.levelXp] : d.levelXp,
+      advanceAction: ir.advanceAction ?? d.advanceAction,
+      unlockAction: ir.unlockAction ?? d.unlockAction
+    };
+  }
+  function skillDefinitionsFromIR(ir, tuning = skillTuningFromIR(ir)) {
+    return (ir?.skills ?? []).map((skill) => definitionFromIR(skill, tuning));
+  }
+  function definitionFromIR(skill, tuning) {
+    return {
+      id: skill.id,
+      category: skill.category ?? "general",
+      maxLevel: typeof skill.maxLevel === "number" && Number.isFinite(skill.maxLevel) ? skill.maxLevel : tuning.defaultMaxLevel,
+      levelXp: skill.levelXp ? [...skill.levelXp] : void 0,
+      requires: (skill.requires ?? []).map((prereq) => ({
+        skill: prereq.skill,
+        level: prereq.level
+      }))
+    };
+  }
+  function skillTreesFromIR(ir) {
+    return (ir?.trees ?? []).map((tree) => treeFromIR(tree));
+  }
+  function treeFromIR(tree) {
+    return {
+      id: tree.id,
+      skill: tree.skill,
+      name: tree.name,
+      nodes: (tree.nodes ?? []).map((node) => nodeFromIR(node, tree.id))
+    };
+  }
+  function nodeFromIR(node, tree) {
+    return {
+      id: node.id,
+      tree,
+      name: node.name,
+      description: node.description,
+      cost: node.cost,
+      parents: [...node.parents ?? []],
+      requires: [...node.requires ?? []],
+      effects: (node.effects ?? []).map((effect) => effectFromIR(effect))
+    };
+  }
+  function effectFromIR(effect) {
+    return { kind: effect.kind, args: [...effect.args ?? []] };
+  }
+  function nodeCost(node, tuning) {
+    const cost = Math.floor(node.cost ?? tuning.defaultNodeCost);
+    return Number.isFinite(cost) && cost > 0 ? cost : 0;
+  }
+  function nodeRequirements(node) {
+    const goals = /* @__PURE__ */ new Set();
+    for (const parent of node.parents) goals.add(`skill_unlocked(Actor, ${parent})`);
+    for (const goal of node.requires) goals.add(goal);
+    return [...goals].sort(compareIds);
+  }
+  function xpForLevel(skill, level, tuning) {
+    const curve = skill?.levelXp && skill.levelXp.length > 0 ? skill.levelXp : tuning.levelXp;
+    if (curve.length === 0 || level <= 0) return 0;
+    const price = level < curve.length ? curve[level] : curve[curve.length - 1];
+    const rounded = Math.floor(price);
+    return Number.isFinite(rounded) && rounded > 0 ? rounded : 0;
+  }
+  function maxLevelOf(skill, tuning) {
+    return skill?.maxLevel ?? tuning.defaultMaxLevel;
+  }
+  var SKILL_ADVANCE_REFUSALS = Object.freeze([
+    /** The world declares no such skill. Not a refusal so much as an absence. */
+    "unknown",
+    /** A `skill_requires/3` prerequisite skill is missing or too low. */
+    "prerequisite",
+    /** `skill_capped/2` — already at the world's cap. */
+    "capped",
+    /** Not enough banked `skill_xp/3` for the next level. */
+    "xp",
+    /** `permissible/3` refused it — a norm, a law, a guild that will not teach you. */
+    "forbidden"
+  ]);
+  function resolveAdvance(input) {
+    const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
+    const skill = input.skill;
+    const id = skill?.id ?? input.skillId ?? "";
+    const next = input.level + 1;
+    const price = xpForLevel(skill, next, tuning);
+    const base = {
+      actor: input.actor,
+      skill: id,
+      level: input.level,
+      next,
+      price,
+      banked: input.banked,
+      action: tuning.advanceAction
+    };
+    if (!skill) return { ...base, next: input.level, price: 0, available: false, refusal: "unknown" };
+    const unmet = skill.requires.some((prereq) => (input.levels[prereq.skill] ?? 0) < prereq.level);
+    if (unmet) return { ...base, available: false, refusal: "prerequisite" };
+    if (input.level >= maxLevelOf(skill, tuning)) {
+      return { ...base, next: input.level, available: false, refusal: "capped" };
+    }
+    if (input.banked < price) return { ...base, available: false, refusal: "xp" };
+    return { ...base, available: true };
+  }
+  var SKILL_UNLOCK_REFUSALS = Object.freeze([
+    /** No tree declares such a node. */
+    "unknown",
+    /** `skill_unlocked/2` already holds — a node is taken once. */
+    "owned",
+    /** `skill_points/3` — nothing left in the tree's pool. */
+    "points",
+    /** A `skill_node_requires/2` goal the rules layer did not satisfy. */
+    "requires",
+    /** `permissible/3` refused it — a norm, a law, a guild's own rules. */
+    "forbidden"
+  ]);
+  function resolveUnlock(input) {
+    const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
+    const node = input.node;
+    const base = {
+      actor: input.actor,
+      node: node?.id ?? input.nodeId ?? "",
+      tree: node?.tree ?? "",
+      points: input.points,
+      action: tuning.unlockAction
+    };
+    if (!node) {
+      return { ...base, cost: 0, available: false, refusal: "unknown", requires: [], conditional: false };
+    }
+    const cost = nodeCost(node, tuning);
+    const requires = nodeRequirements(node);
+    const resolution = { ...base, cost, requires, conditional: requires.length > 0 };
+    if (input.unlocked) return { ...resolution, available: false, refusal: "owned" };
+    if (input.points < cost) return { ...resolution, available: false, refusal: "points" };
+    return { ...resolution, available: true };
+  }
+  function treesFundedBy(trees, skill) {
+    return trees.filter((tree) => tree.skill === skill).map((tree) => tree.id).sort(compareIds);
+  }
+  function findNode(trees, nodeId) {
+    for (const tree of trees) {
+      for (const node of tree.nodes) if (node.id === nodeId) return { ...node, tree: tree.id };
+    }
+    return void 0;
+  }
+  function nodeDepth(tree, nodeId, seen = []) {
+    if (seen.includes(nodeId)) return 0;
+    const node = tree.nodes.find((candidate2) => candidate2.id === nodeId);
+    if (!node || node.parents.length === 0) return 0;
+    let deepest = 0;
+    for (const parent of node.parents) {
+      deepest = Math.max(deepest, 1 + nodeDepth(tree, parent, [...seen, nodeId]));
+    }
+    return deepest;
+  }
+
+  // @insimul/core/src/skills/skill-effects.ts
+  var SKILL_EFFECT_UNLOCKS = "unlocks";
+  var SKILL_EFFECT_MODIFIES = "modifies";
+  var SKILL_EFFECT_PERMITS = "permits";
+  function effectsOfKind(effects, kind) {
+    return effects.filter((effect) => effect.kind === kind);
+  }
+  function atomArguments(effects, kind) {
+    const atoms = /* @__PURE__ */ new Set();
+    for (const effect of effectsOfKind(effects, kind)) {
+      const first = effect.args[0];
+      if (first !== void 0) atoms.add(String(first));
+    }
+    return [...atoms].sort(compareIds);
+  }
+  function unlockedActions(effects) {
+    return atomArguments(effects, SKILL_EFFECT_UNLOCKS);
+  }
+  function permittedThings(effects) {
+    return atomArguments(effects, SKILL_EFFECT_PERMITS);
+  }
+  function skillModifiers(effects) {
+    const totals = /* @__PURE__ */ new Map();
+    for (const effect of effectsOfKind(effects, SKILL_EFFECT_MODIFIES)) {
+      const [param, amount] = effect.args;
+      if (param === void 0) continue;
+      if (typeof amount !== "number" || !Number.isFinite(amount)) continue;
+      const key = String(param);
+      totals.set(key, (totals.get(key) ?? 0) + amount);
+    }
+    return new Map([...totals].sort(([a], [b]) => compareIds(a, b)));
+  }
+  function modifierOf(effects, param) {
+    return skillModifiers(effects).get(param) ?? 0;
+  }
+  function parameterField(param) {
+    return param.replace(/_([a-z0-9])/g, (_, c) => c.toUpperCase());
+  }
+  function withSkillModifiers(snapshot2, effects) {
+    const modifiers = skillModifiers(effects);
+    if (modifiers.size === 0) return { ...snapshot2 };
+    const out = { ...snapshot2 };
+    for (const [param, amount] of modifiers) {
+      const field = param in out ? param : parameterField(param);
+      const current = out[field];
+      if (typeof current !== "number") continue;
+      out[field] = current + amount;
+    }
+    return out;
+  }
+
+  // @insimul/core/src/skills/skill-view.ts
+  function buildSkillView(input) {
+    const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
+    const definitions = new Map((input.skills ?? []).map((skill) => [skill.id, skill]));
+    const actor = input.actor;
+    const unlocked = new Set(actor.unlocked ?? []);
+    const forbidden = new Set(actor.forbidden ?? []);
+    return input.trees.map((tree) => {
+      const definition = definitions.get(tree.skill);
+      const level = actor.levels?.[tree.skill] ?? 0;
+      const maxLevel = maxLevelOf(definition, tuning);
+      const capped = level >= maxLevel;
+      const banked = actor.xp?.[tree.skill] ?? 0;
+      const nextLevel = capped ? level : level + 1;
+      const nextLevelPrice = capped ? 0 : xpForLevel(definition, nextLevel, tuning);
+      const points3 = actor.points?.[tree.id] ?? 0;
+      const nodes = tree.nodes.map(
+        (node) => nodeView({ ...node, tree: tree.id }, { tree, tuning, points: points3, unlocked, forbidden, actor })
+      );
+      return {
+        id: tree.id,
+        skill: tree.skill,
+        label: tree.name ?? tree.id,
+        level,
+        maxLevel,
+        capped,
+        banked,
+        nextLevel,
+        nextLevelPrice,
+        affordable: !capped && banked >= nextLevelPrice,
+        points: points3,
+        spent: nodes.filter((node) => node.taken).reduce((sum, node) => sum + node.cost, 0),
+        nodes,
+        rows: rowsOf(nodes),
+        edges: edgesOf(nodes),
+        taken: nodes.filter((node) => node.taken).length,
+        total: nodes.length
+      };
+    });
+  }
+  function nodeView(node, context) {
+    const resolution = resolveUnlock({
+      actor: context.actor.id,
+      node,
+      points: context.points,
+      unlocked: context.unlocked.has(node.id),
+      tuning: context.tuning
+    });
+    const unmet = [...context.actor.unmet?.[node.id] ?? []];
+    const modifiers = [...skillModifiers(node.effects)].map(([param, amount]) => ({ param, amount }));
+    const view2 = {
+      id: node.id,
+      tree: node.tree,
+      label: node.name ?? node.id,
+      depth: nodeDepth(context.tree, node.id),
+      cost: resolution.cost,
+      parents: [...node.parents],
+      requires: nodeRequirements(node),
+      unmet,
+      taken: context.unlocked.has(node.id),
+      available: resolution.available,
+      conditional: resolution.conditional,
+      effects: node.effects.map((effect) => ({ ...effect, args: [...effect.args] })),
+      unlocks: unlockedActions(node.effects),
+      permits: permittedThings(node.effects),
+      modifies: modifiers
+    };
+    if (node.description !== void 0) view2.description = node.description;
+    if (resolution.refusal !== void 0) view2.refusal = resolution.refusal;
+    if (view2.available && unmet.length > 0) {
+      return { ...view2, available: false, refusal: "requires" };
+    }
+    if (view2.available && context.forbidden.has(node.id)) {
+      return { ...view2, available: false, refusal: "forbidden" };
+    }
+    return view2;
+  }
+  function rowsOf(nodes) {
+    const byDepth = /* @__PURE__ */ new Map();
+    for (const node of nodes) {
+      byDepth.set(node.depth, [...byDepth.get(node.depth) ?? [], node.id]);
+    }
+    return [...byDepth.keys()].sort((a, b) => a - b).map((depth) => [...byDepth.get(depth)].sort(compareIds));
+  }
+  function edgesOf(nodes) {
+    return nodes.flatMap((node) => node.parents.map((parent) => ({ from: parent, to: node.id }))).sort((a, b) => compareIds(a.from, b.from) || compareIds(a.to, b.to));
+  }
+  function skillModifierTotals(effects) {
+    const out = {};
+    for (const [param, amount] of skillModifiers(effects)) out[param] = amount;
+    return out;
+  }
+
+  // @insimul/core/src/prolog/helper-predicates.ts
+  var HELPER_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Helper Predicates \u2014 base rules for action prerequisite evaluation
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 CEFR Level Comparison \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Maps CEFR language proficiency levels to integer ranks for comparison.
+% Usage: cefr_gte(ActualLevel, RequiredLevel) succeeds if ActualLevel >= RequiredLevel
+
+cefr_level_rank(a1, 1).
+cefr_level_rank(a2, 2).
+cefr_level_rank(b1, 3).
+cefr_level_rank(b2, 4).
+cefr_level_rank(c1, 5).
+cefr_level_rank(c2, 6).
+
+cefr_gte(Actual, Required) :-
+  cefr_level_rank(Actual, AR),
+  cefr_level_rank(Required, RR),
+  AR >= RR.
+
+% \u2500\u2500 Weapon Type Classification \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Checks if an item is a weapon of a given type.
+% Requires item_type/2 facts to be asserted for items in the KB.
+
+:- dynamic(item_type/2).
+
+is_weapon_type(ItemId, sword) :- item_type(ItemId, sword).
+is_weapon_type(ItemId, axe) :- item_type(ItemId, axe).
+is_weapon_type(ItemId, bow) :- item_type(ItemId, bow).
+is_weapon_type(ItemId, staff) :- item_type(ItemId, staff).
+is_weapon_type(ItemId, pistol) :- item_type(ItemId, pistol).
+
+% \u2500\u2500 Tool Type Classification \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Checks if an item is a tool of a given type.
+
+is_tool_type(ItemId, fishing_rod) :- item_type(ItemId, fishing_rod).
+is_tool_type(ItemId, pickaxe) :- item_type(ItemId, pickaxe).
+is_tool_type(ItemId, axe) :- item_type(ItemId, axe).
+is_tool_type(ItemId, hoe) :- item_type(ItemId, hoe).
+
+% \u2500\u2500 Skill Tier Names \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Maps integer skill levels to human-readable tier names.
+
+skill_tier_name(1, novice).
+skill_tier_name(2, novice).
+skill_tier_name(3, apprentice).
+skill_tier_name(4, apprentice).
+skill_tier_name(5, journeyman).
+skill_tier_name(6, journeyman).
+skill_tier_name(7, expert).
+skill_tier_name(8, expert).
+skill_tier_name(9, expert).
+skill_tier_name(10, master).
+
+% \u2500\u2500 Skill Level Comparison \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Succeeds if Actor has Skill at Level >= MinLevel.
+
+skill_gte(Actor, Skill, MinLevel) :-
+  has_skill(Actor, Skill, Level),
+  Level >= MinLevel.
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Quest Objective Completion Rules
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+%
+% Bridge between quest_objective/3 goals (generated by quest-converter.ts)
+% and game facts asserted by GamePrologEngine at runtime.
+%
+% objective_complete(Player, QuestId, ObjIndex) succeeds when the game state
+% satisfies the objective goal stored in quest_objective(QuestId, ObjIndex, Goal).
+%
+% This is the critical link that makes quest_complete/2 work:
+%   quest_complete(Player, QuestId) :-
+%       \\+ (quest_objective(QuestId, Idx, _), \\+ objective_complete(Player, QuestId, Idx)).
+
+:- dynamic(collected/3).
+:- dynamic(has/2).
+:- dynamic(has_item/3).
+:- dynamic(visited/2).
+:- dynamic(discovered/2).
+:- dynamic(talked_to/3).
+:- dynamic(delivered/3).
+:- dynamic(defeated/2).
+:- dynamic(crafted/3).
+:- dynamic(vocab_used/3).
+:- dynamic(puzzle_solved/2).
+:- dynamic(reputation_change/3).
+:- dynamic(escorted/3).
+:- dynamic(quest_progress/3).
+:- dynamic(quest_objective/3).
+:- dynamic(objective_complete/3).
+:- dynamic(text_found/2).
+:- dynamic(text_read/2).
+:- dynamic(sign_read/2).
+:- dynamic(scene_described/2).
+:- dynamic(response_written/2).
+:- dynamic(translation_completed/2).
+:- dynamic(pronunciation_passed/2).
+:- dynamic(photo_taken/2).
+:- dynamic(object_examined/2).
+:- dynamic(object_identified/2).
+:- dynamic(object_pointed_named/2).
+:- dynamic(direction_step_done/2).
+:- dynamic(gift_given/3).
+:- dynamic(food_ordered/2).
+:- dynamic(price_haggled/2).
+:- dynamic(npc_conversation_turns/3).
+:- dynamic(action_performed/2).
+:- dynamic(action_completes_objective/2).
+:- dynamic(physical_action_done/2).
+:- dynamic(conversational_action/4).
+:- dynamic(comprehension_done/2).
+:- dynamic(used/2).
+:- dynamic(purchased/3).
+:- dynamic(sold/3).
+:- dynamic(combat_action_done/3).
+:- dynamic(activity_observed/3).
+:- dynamic(assessment_phase_done/4).
+:- dynamic(friendship_tier/3).
+:- dynamic(assessment_completed/2).
+
+% \u2500\u2500 Radiant quest generation (runtime provenance + cooldown bookkeeping) \u2500\u2500
+% Asserted by the radiant slot-filling engine when it emits a quest, and
+% persisted into save.currentState.prologFacts. Declared dynamic so the engine
+% can assert/retract them and so the save-restore fact validator recognises
+% them. The authored template predicates (radiant_template/2 etc.) are
+% consulted from world data and catalogued in predicate-schema.ts instead.
+:- dynamic(radiant_generated/3).
+:- dynamic(radiant_cooldown_until/2).
+
+% \u2500\u2500 Collection objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% collect(Item, Count) \u2014 player collected enough of an item
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, collect(Item, Count)),
+    collected(Player, Item, Qty),
+    Qty >= Count.
+
+% collect with unspecified item \u2014 count total unique items collected
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, collect('', Count)),
+    aggregate_all(count, collected(Player, _, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Visit location \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, visit_location(Location)),
+    visited(Player, Location).
+
+% visit_location with empty target \u2014 any visit counts
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, visit_location('')),
+    visited(Player, _).
+
+% \u2500\u2500 Discover location \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, discover_location(Location)),
+    discovered(Player, Location).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, discover_location('')),
+    discovered(Player, _).
+
+% \u2500\u2500 Talk to NPC \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% talk_to(NPC) \u2014 single conversation
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, talk_to(NPC)),
+    talked_to(Player, NPC, _).
+
+% talk_to(NPC, RequiredTurns) \u2014 conversation with minimum turns
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, talk_to(NPC, RequiredTurns)),
+    talked_to(Player, NPC, Turns),
+    Turns >= RequiredTurns.
+
+% talk_to with empty NPC \u2014 any NPC conversation counts
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, talk_to('')),
+    talked_to(Player, _, _).
+
+% \u2500\u2500 Conversation turns (aggregate) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)),
+    aggregate_all(sum(T), talked_to(Player, _, T), Total),
+    Total >= RequiredTurns.
+
+% Also support npc_conversation_turns for more granular tracking
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)),
+    aggregate_all(sum(T), npc_conversation_turns(Player, _, T), Total),
+    Total >= RequiredTurns.
+
+% \u2500\u2500 Deliver item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, deliver(Item, NPC)),
+    delivered(Player, NPC, Item).
+
+% \u2500\u2500 Defeat enemies \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, defeat(EnemyType, Count)),
+    aggregate_all(count, defeated(Player, EnemyType), Total),
+    Total >= Count.
+
+% defeat with empty type \u2014 any enemy counts
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, defeat('', Count)),
+    aggregate_all(count, defeated(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Vocabulary / learn words \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% learn_words_count(Count) \u2014 player used enough distinct vocabulary words
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, learn_words_count(Count)),
+    aggregate_all(count, vocab_used(Player, _, 1), Total),
+    Total >= Count.
+
+% learn_words([WordList]) \u2014 player used specific words
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, learn_words(WordList)),
+    is_list(WordList),
+    forall(member(Word, WordList), vocab_used(Player, Word, _)).
+
+% \u2500\u2500 Grammar practice \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, practice_grammar(_, Count)),
+    quest_progress(Player, QuestId, Progress),
+    Progress >= Count.
+
+% \u2500\u2500 Craft item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, craft_item(Item, Count)),
+    crafted(Player, Item, Qty),
+    Qty >= Count.
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, craft_item('', Count)),
+    aggregate_all(sum(Q), crafted(Player, _, Q), Total),
+    Total >= Count.
+
+% \u2500\u2500 Escort NPC \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, escort(NPC, Dest)),
+    escorted(Player, NPC, Dest).
+
+% \u2500\u2500 Reputation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, gain_reputation(Faction, Amount)),
+    aggregate_all(sum(D), reputation_change(Player, Faction, D), Total),
+    Total >= Amount.
+
+% \u2500\u2500 Solve puzzle \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, solve_puzzle(PuzzleId)),
+    puzzle_solved(Player, PuzzleId).
+
+% \u2500\u2500 Use item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, use_item(Item)),
+    used(Player, Item).
+
+% \u2500\u2500 Reach skill level \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, reach_level(Skill, Level)),
+    has_skill(Player, Skill, CurrentLevel),
+    CurrentLevel >= Level.
+
+% \u2500\u2500 Survive duration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, survive(Duration)),
+    survived(Player, ActualDuration),
+    ActualDuration >= Duration.
+
+% \u2500\u2500 Reading, finding and clue evidence, quest by quest \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% (PL.prolog-helper-align, U90(10); docs/quest-host-contract.md "The helper
+% clauses".) These clauses say what core's quest lifecycle says
+% (src/quests/quest-lifecycle.ts, conformance/quests/lifecycle.json readRule,
+% clueRule, findTextRule, signRule): a read, a clue, a found text or a read sign
+% counts only for the quests ACTIVE WHEN IT HAPPENS, each id once per quest, so
+% one id counts for every quest active then, and one met with no active quest is
+% not remembered for a quest accepted later.
+%
+% quest_evidence(Player, QuestId, Kind, Id): Id reached Player while QuestId was
+% active. Kind is the event: text_read (a read), clue_found (a clue), text_found
+% (a text found) or sign_read (a sign read).
+%
+% A host asserts it from outside the KB (assertFact), one fact per answer of
+% quest_evidence_due(Player, Kind, Id, QuestId), asked when the event happens
+% and before the quest statuses the event changes are updated. Never from inside
+% a clause: a fact a clause asserts is not in the engine's fact list, so it is
+% neither exported nor saved.
+%
+% The world-wide text_read/2, clue_found/2, text_found/2 and sign_read/2 stay
+% declared as the player's record, but no objective reads them any more: they
+% hold no quest, so read_text(any) needed a literal text_read(Player, any) and
+% collect_clue counted clues found before the quest was active.
+:- dynamic(quest_evidence/4).
+
+quest_evidence_due(Player, Kind, Id, QuestId) :-
+    memberchk(Kind, [text_read, clue_found, text_found, sign_read]),
+    atomic(Id),
+    findall(Q, quest_status(Player, Q, active), Active),
+    sort(Active, Distinct),
+    member(QuestId, Distinct),
+    \\+ quest_evidence(Player, QuestId, Kind, Id).
+
+% quest_evidence_count(Player, QuestId, Kind, Total): distinct ids of Kind
+% counted for QuestId.
+quest_evidence_count(Player, QuestId, Kind, Total) :-
+    findall(Id, quest_evidence(Player, QuestId, Kind, Id), Ids),
+    sort(Ids, Distinct),
+    length(Distinct, Total).
+
+% \u2500\u2500 What evidence cannot decide (PL.quest-converter-gaps, U91(1)) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% The converter writes what an objective's goal does not carry as facts beside
+% it: quest_objective_field(QuestId, Idx, Field, Value) (text_title, text_id,
+% text_category, item_name, clue_category, clue_source, completion_trigger),
+% quest_objective_order(QuestId, Idx, Order) and
+% quest_objective_depends_on(QuestId, Idx, OtherIdx). The hydrator reads them
+% back, so the lifecycle keeps them; these clauses read what quest_evidence/4
+% can decide (docs/quest-host-contract.md, "What the converter keeps"):
+%  - text_id on a find_text: the evidence is the id, so it is read below;
+%  - completion_trigger clue_discovered: any clue found while the quest was
+%    active, read below; no other trigger has evidence here;
+%  - a lock (a dependsOn, or a sibling with a lower order): the lifecycle counts
+%    nothing for an objective while it is locked, and evidence holds an id per
+%    quest, not when it came, so a read while locked would count later;
+%  - text_title, text_category, item_name, clue_category, clue_source: the
+%    lifecycle matches them against what the event carried, and evidence holds
+%    the id only.
+% quest_objective_undecided(QuestId, Idx) names the last two: no clause below
+% completes such an objective, and core's objective_complete/3 delta is the
+% answer for it.
+:- dynamic(quest_objective_field/4).
+:- dynamic(quest_objective_order/3).
+:- dynamic(quest_objective_depends_on/3).
+
+quest_objective_locked(QuestId, Idx) :-
+    quest_objective_depends_on(QuestId, Idx, _).
+quest_objective_locked(QuestId, Idx) :-
+    quest_objective_order(QuestId, Idx, Order),
+    quest_objective_order(QuestId, Other, OtherOrder),
+    Other \\== Idx,
+    OtherOrder < Order.
+
+quest_objective_undecided(QuestId, Idx) :-
+    quest_objective_locked(QuestId, Idx).
+quest_objective_undecided(QuestId, Idx) :-
+    quest_objective_field(QuestId, Idx, Field, _),
+    memberchk(Field, [text_title, text_category, item_name, clue_category, clue_source]).
+
+% A completionTrigger objective completes on its trigger whatever its type says
+% (QuestCompletionEngine.trackByTrigger). clue_discovered is a find_clue: any
+% clue found while the quest was active.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective_field(QuestId, Idx, completion_trigger, clue_discovered),
+    \\+ quest_objective_locked(QuestId, Idx),
+    once(quest_evidence(Player, QuestId, clue_found, _)).
+
+% \u2500\u2500 Read text \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% read_text(TextId): a text read while the quest was active whose id equals
+% TextId exactly. read_text(any), the converter's form when no text is named,
+% and read_text('') take every text. The converter names the objective's
+% textId, else its target.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, read_text(TextId)),
+    atomic(TextId), TextId \\== any, TextId \\== '',
+    \\+ quest_objective_undecided(QuestId, Idx),
+    quest_evidence(Player, QuestId, text_read, TextId).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, read_text(TextId)),
+    ( TextId == any ; TextId == '' ),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    once(quest_evidence(Player, QuestId, text_read, _)).
+
+% read_text(TextId, Count), the converter's form for a requiredCount above one:
+% Count distinct texts read while the quest was active. A named text is one
+% text, so it never reaches a Count above one, as in the lifecycle.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, read_text(TextId, Count)),
+    atomic(TextId), integer(Count),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    (   ( TextId == any ; TextId == '' )
+    ->  quest_evidence_count(Player, QuestId, text_read, Total)
+    ;   ( quest_evidence(Player, QuestId, text_read, TextId) -> Total = 1 ; Total = 0 )
+    ),
+    Total >= Count.
+
+% \u2500\u2500 Find text \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% find_text(Count): Count distinct texts found while the quest was active; with
+% a text_id field, only that text, so a Count above one is never reached.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, find_text(Count)),
+    integer(Count),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    (   quest_objective_field(QuestId, Idx, text_id, TextId)
+    ->  ( quest_evidence(Player, QuestId, text_found, TextId) -> Total = 1 ; Total = 0 )
+    ;   quest_evidence_count(Player, QuestId, text_found, Total)
+    ),
+    Total >= Count.
+
+% \u2500\u2500 Examine object \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, examine_object(Count)),
+    aggregate_all(count, object_examined(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Read sign \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% read_sign(Count): Count distinct signs read while the quest was active.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, read_sign(Count)),
+    integer(Count),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    quest_evidence_count(Player, QuestId, sign_read, Total),
+    Total >= Count.
+
+% \u2500\u2500 Write response / describe scene \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, write_response(Count)),
+    aggregate_all(count, response_written(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Listen and repeat \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, listen_and_repeat(Count)),
+    aggregate_all(count, pronunciation_passed(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Pronunciation check \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, pronunciation_check(Count)),
+    aggregate_all(count, pronunciation_passed(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Identify / point-and-name \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, identify_object(Count)),
+    aggregate_all(count, object_pointed_named(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Order food \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, order_food(Count)),
+    aggregate_all(count, food_ordered(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Haggle price \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, haggle_price(Count)),
+    aggregate_all(count, price_haggled(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Buy item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, buy_item(Count)),
+    aggregate_all(count, action_performed(Player, buy_item), Total),
+    Total >= Count.
+
+% \u2500\u2500 Sell item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, sell_item(Count)),
+    aggregate_all(count, action_performed(Player, sell_item), Total),
+    Total >= Count.
+
+% \u2500\u2500 Give gift \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, give_gift(NPC)),
+    NPC \\= any,
+    gift_given(Player, NPC, _).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, give_gift(any)),
+    gift_given(Player, _, _).
+
+% \u2500\u2500 Photograph subject \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, photograph(Subject, Count)),
+    Subject \\= any,
+    aggregate_all(count, photo_taken(Player, Subject), Total),
+    Total >= Count.
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, photograph(any, Count)),
+    aggregate_all(count, photo_taken(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Physical action \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, physical_action(Action, Count)),
+    Action \\= '',
+    aggregate_all(count, physical_action_done(Player, Action), Total),
+    Total >= Count.
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, physical_action('', Count)),
+    aggregate_all(count, physical_action_done(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Introduce self \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, introduce_self),
+    conversational_action(Player, _, introduce_self, _).
+
+% \u2500\u2500 Ask for directions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, ask_for_directions(Count)),
+    aggregate_all(count, action_performed(Player, ask_for_directions), Total),
+    Total >= Count.
+
+% \u2500\u2500 Comprehension quiz \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, comprehension_quiz(Count)),
+    aggregate_all(count, comprehension_done(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Translation challenge \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, translation_challenge(Count)),
+    aggregate_all(count, translation_completed(Player, correct), Total),
+    Total >= Count.
+
+% \u2500\u2500 Follow directions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, follow_directions(Count)),
+    aggregate_all(count, direction_step_done(Player, QuestId, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Listening comprehension \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, listening_comprehension(Count)),
+    aggregate_all(count, pronunciation_passed(Player, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Collect vocabulary \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, collect_vocabulary(Count)),
+    aggregate_all(count, vocab_used(Player, _, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Eavesdrop \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(overheard_conversation/4).
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, eavesdrop(Topic)),
+    overheard_conversation(Player, _, _, Topic).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, eavesdrop),
+    overheard_conversation(Player, _, _, _).
+
+% \u2500\u2500 Build friendship \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(friendship_level/3).
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, build_friendship(Count)),
+    aggregate_all(count, (friendship_level(Player, _, Level), Level >= 3), Total),
+    Total >= Count.
+
+% \u2500\u2500 Collect clue \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% collect_clue(Count): Count distinct clues found while the quest was active
+% (a clue id is the world's; the counting is the quest's).
+:- dynamic(clue_found/2).
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, collect_clue(Count)),
+    integer(Count),
+    \\+ quest_objective_undecided(QuestId, Idx),
+    quest_evidence_count(Player, QuestId, clue_found, Total),
+    Total >= Count.
+
+% \u2500\u2500 Assessment objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, complete_assessment),
+    assessment_result(Player, _, _, _, _, _).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, assessment_phase(PhaseType, _Trigger)),
+    quest_progress(Player, QuestId, Progress),
+    Progress >= 100.
+
+% \u2500\u2500 Meta / aggregation objectives (chapter quests) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% vocabulary_activities(Count) \u2014 player completed enough vocab-related actions
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, vocabulary_activities(Count)),
+    aggregate_all(count, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Total),
+    Total >= Count.
+
+% conversation_activities(Count) \u2014 player had enough conversations
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, conversation_activities(Count)),
+    aggregate_all(sum(T), talked_to(Player, _, T), Total),
+    Total >= Count.
+
+% grammar_activities(Count) \u2014 player practiced grammar enough times
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, grammar_activities(Count)),
+    quest_progress(Player, QuestId, Progress),
+    Progress >= Count.
+
+% sustained_conversation(Count) \u2014 long conversation turns
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, sustained_conversation(Count)),
+    npc_conversation_turns(Player, _, Turns),
+    Turns >= Count.
+
+% master_words(Count) \u2014 vocab words used correctly multiple times
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, master_words(Count)),
+    aggregate_all(count, vocab_used(Player, _, 1), Total),
+    Total >= Count.
+
+% learn_new_words(Count) \u2014 distinct vocab words encountered
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, learn_new_words(Count)),
+    aggregate_all(count, vocab_used(Player, _, _), Total),
+    Total >= Count.
+
+% find_vocabulary_items(Count) \u2014 objects examined/identified for vocab
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, find_vocabulary_items(Count)),
+    aggregate_all(count, (object_examined(Player, _) ; object_pointed_named(Player, _)), Total),
+    Total >= Count.
+
+% \u2500\u2500 Equip item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, equip_item(Item)),
+    Item \\= any,
+    equipped(Player, Item, _).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, equip_item(any)),
+    equipped(Player, _, _).
+
+% \u2500\u2500 Drop item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(dropped/2).
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, drop_item(Item)),
+    Item \\= any,
+    action_performed(Player, drop_item).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, drop_item(any)),
+    action_performed(Player, drop_item).
+
+% \u2500\u2500 Combat action (individual moves) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, combat_action(Count)),
+    aggregate_all(count, combat_action_done(Player, _, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Accept quest \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, accept_quest(TargetQuestId)),
+    TargetQuestId \\= any,
+    quest_active(Player, TargetQuestId).
+
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, accept_quest(any)),
+    quest_active(Player, _).
+
+% \u2500\u2500 Observe activity \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, observe_activity(Count)),
+    aggregate_all(count, activity_observed(Player, _, _), Total),
+    Total >= Count.
+
+% \u2500\u2500 Generic description-based objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Fallback: if quest_progress has been tracked for this quest, check it
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, objective(_)),
+    quest_progress(Player, QuestId, Progress),
+    Progress >= 100.
+
+% \u2500\u2500 All-objectives-complete meta-rule \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Used by quest_complete when completionCriteria is 'all_objectives'
+all_objectives_done(Player, QuestId) :-
+    \\+ (quest_objective(QuestId, Idx, _),
+         \\+ objective_complete(Player, QuestId, Idx)).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Quest Status & Prerequisite System
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+%
+% quest_status/3 bridges the lifecycle facts asserted by GamePrologEngine
+% (quest_active/2, quest_completed/2, quest_failed/2, quest_abandoned/2)
+% to the status checks used by quest_available/2 rules.
+
+:- dynamic(quest_active/2).
+:- dynamic(quest_completed/2).
+:- dynamic(quest_failed/2).
+:- dynamic(quest_abandoned/2).
+:- dynamic(quest_status/3).
+
+% Derive quest_status from lifecycle facts if not directly asserted
+quest_status(Player, QuestId, active) :-
+    quest_active(Player, QuestId).
+quest_status(Player, QuestId, completed) :-
+    quest_completed(Player, QuestId).
+quest_status(Player, QuestId, failed) :-
+    quest_failed(Player, QuestId).
+quest_status(Player, QuestId, abandoned) :-
+    quest_abandoned(Player, QuestId).
+
+% \u2500\u2500 Cross-quest prerequisite checking \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% all_prereqs_met(Player, QuestId) succeeds if every prerequisite quest
+% has been completed by the player.
+all_prereqs_met(Player, QuestId) :-
+    \\+ (quest_prerequisite(QuestId, PrereqId),
+         PrereqId \\= none,
+         \\+ quest_status(Player, PrereqId, completed)).
+
+% \u2500\u2500 Quest chain ordering \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% next_in_chain(Player, QuestId) \u2014 the next quest in a chain the player
+% can take (all prior chain quests completed).
+next_in_chain(Player, QuestId) :-
+    quest_chain(QuestId, ChainId),
+    quest_chain_order(QuestId, Order),
+    PrevOrder is Order - 1,
+    (PrevOrder < 0 ->
+        true  % first quest in chain
+    ;
+        quest_chain_order(PrevQuest, PrevOrder),
+        quest_chain(PrevQuest, ChainId),
+        quest_status(Player, PrevQuest, completed)
+    ).
+
+% \u2500\u2500 Conditional reward evaluation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% quest_bonus_reward(Player, QuestId, RewardType, Value) \u2014 additional
+% rewards granted based on how the quest was completed.
+:- dynamic(quest_bonus_reward/4).
+
+% Bonus for completing all objectives (not just the minimum)
+quest_bonus_reward(Player, QuestId, bonus_xp, 50) :-
+    all_objectives_done(Player, QuestId).
+
+% Bonus for completing a quest chain
+quest_bonus_reward(Player, QuestId, chain_complete_xp, BonusXP) :-
+    quest_chain(QuestId, ChainId),
+    chain_bonus_xp(ChainId, BonusXP),
+    \\+ (quest_chain(OtherQuest, ChainId),
+         OtherQuest \\= QuestId,
+         \\+ quest_status(Player, OtherQuest, completed)).
+
+:- dynamic(chain_bonus_xp/2).
+
+% \u2500\u2500 Reconciliation helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% quest_should_be_complete(Player, QuestId) \u2014 Prolog believes this quest
+% is done based on game state, even if not yet marked as completed.
+quest_should_be_complete(Player, QuestId) :-
+    quest_active(Player, QuestId),
+    all_objectives_done(Player, QuestId).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Reputation Aggregation
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% reputation(Player, Faction, Total) \u2014 sums all reputation_change/3 facts.
+
+:- dynamic(reputation_record/3).
+
+reputation(Player, Faction, Total) :-
+    aggregate_all(sum(D), reputation_change(Player, Faction, D), Total).
+reputation(Player, Faction, 0) :-
+    \\+ reputation_change(Player, Faction, _).
+
+% reputation_at_least(Player, Faction, MinRep) \u2014 convenience check
+reputation_at_least(Player, Faction, MinRep) :-
+    reputation(Player, Faction, Rep),
+    Rep >= MinRep.
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Text & Reading Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(game_text/1).
+:- dynamic(text_title/2).
+:- dynamic(text_category/2).
+:- dynamic(text_cefr_level/2).
+:- dynamic(text_spawn_location/2).
+:- dynamic(text_chapter/2).
+:- dynamic(text_clue/2).
+:- dynamic(text_vocabulary/4).
+
+% text_available_at(TextId, LocationType) \u2014 texts that can appear at a location type
+text_available_at(TextId, LocationType) :-
+    game_text(TextId),
+    text_spawn_location(TextId, LocationType).
+
+% text_for_level(TextId, CefrLevel) \u2014 texts appropriate for a CEFR level
+text_for_level(TextId, Level) :-
+    game_text(TextId),
+    text_cefr_level(TextId, Level).
+
+% text_has_clue(TextId) \u2014 texts that reveal main quest clues
+text_has_clue(TextId) :-
+    text_clue(TextId, _).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Container Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(container/1).
+:- dynamic(container_type/2).
+:- dynamic(container_locked/1).
+:- dynamic(container_key/2).
+:- dynamic(container_contains/3).
+:- dynamic(container_at_business/2).
+:- dynamic(container_at_residence/2).
+
+% container_accessible(Player, ContainerId) \u2014 can the player open this container?
+container_accessible(Player, ContainerId) :-
+    container(ContainerId),
+    \\+ container_locked(ContainerId).
+container_accessible(Player, ContainerId) :-
+    container(ContainerId),
+    container_locked(ContainerId),
+    container_key(ContainerId, KeyItem),
+    has(Player, KeyItem).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Residence & NPC Location Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(residence/1).
+:- dynamic(residence_owner/2).
+:- dynamic(lives_at/2).
+:- dynamic(home/2).
+:- dynamic(workplace/2).
+:- dynamic(friends/2).
+:- dynamic(coworker/2).
+:- dynamic(enemies/2).
+:- dynamic(knows/2).
+:- dynamic(knows/3).
+:- dynamic(believes/3).
+
+:- dynamic(physical_trait/2).
+:- dynamic(physical_trait/3).
+:- dynamic(mental_trait/2).
+:- dynamic(mental_trait/3).
+:- dynamic(social_attribute/3).
+:- dynamic(has_thought/2).
+:- dynamic(believes_about/3).
+:- dynamic(believes_about/4).
+:- dynamic(college_graduate/1).
+:- dynamic(retired/1).
+:- dynamic(departure_year/2).
+:- dynamic(current_location/2).
+:- dynamic(character_status/2).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Public Building Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(public_building/1).
+:- dynamic(public_building_name/2).
+:- dynamic(public_building_type/2).
+:- dynamic(public_building_of_settlement/2).
+:- dynamic(public_building_on_lot/2).
+:- dynamic(public_building_operational/2).
+:- dynamic(public_building_capacity/2).
+:- dynamic(public_building_employee/2).
+
+% Find buildings of a specific type in a settlement
+public_building_in(SettlementId, BuildingId, Type) :-
+    public_building(BuildingId),
+    public_building_of_settlement(BuildingId, SettlementId),
+    public_building_type(BuildingId, Type).
+
+% Check if a public building is operational
+building_open(BuildingId) :-
+    public_building(BuildingId),
+    public_building_operational(BuildingId, true).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Settlement Detail Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(settlement_district/2).
+:- dynamic(settlement_street/2).
+:- dynamic(settlement_landmark/2).
+:- dynamic(landmark_type/2).
+:- dynamic(settlement_unemployed_count/2).
+:- dynamic(settlement_deceased_count/2).
+:- dynamic(settlement_vacant_lots/2).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Country & State Relationship Helpers
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(country_ally/2).
+:- dynamic(country_enemy/2).
+:- dynamic(country_culture/3).
+:- dynamic(cultural_value/3).
+:- dynamic(country_law/2).
+:- dynamic(social_structure/3).
+:- dynamic(state_governor/2).
+:- dynamic(state_local_government/2).
+:- dynamic(state_previous_country/2).
+
+% countries_at_war(A, B) \u2014 bidirectional enemy check
+countries_at_war(A, B) :- country_enemy(A, B).
+countries_at_war(A, B) :- country_enemy(B, A).
+
+% countries_allied(A, B) \u2014 bidirectional alliance check
+countries_allied(A, B) :- country_ally(A, B).
+countries_allied(A, B) :- country_ally(B, A).
+
+% npc_at_home(NpcId) \u2014 NPC is currently at their home residence
+npc_at_home(NpcId) :-
+    home(NpcId, ResId),
+    current_location(NpcId, ResId).
+
+% npc_at_work(NpcId) \u2014 NPC is currently at their workplace
+npc_at_work(NpcId) :-
+    workplace(NpcId, WorkId),
+    current_location(NpcId, WorkId).
+
+% lives_near(Char1, Char2) \u2014 two characters share the same residence
+lives_near(Char1, Char2) :-
+    lives_at(Char1, Res),
+    lives_at(Char2, Res),
+    Char1 \\= Char2.
+
+% knows_about(NpcId, Topic) \u2014 NPC has knowledge about a topic
+knows_about(NpcId, Topic) :-
+    knows(NpcId, Topic).
+knows_about(NpcId, Topic) :-
+    knows(NpcId, Topic, _).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Pronunciation Tracking
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(pronunciation_score/4).
+:- dynamic(pronunciation_passed/2).
+
+% player_avg_pronunciation(Player, Avg) \u2014 average score across all attempts
+player_avg_pronunciation(Player, Avg) :-
+    findall(S, pronunciation_score(Player, _, S, _), Scores),
+    Scores \\= [],
+    insimul_sum_list(Scores, Total),
+    length(Scores, Count),
+    Avg is Total / Count.
+
+% pronunciation_count(Player, Count) \u2014 number of distinct phrases practiced
+pronunciation_count(Player, Count) :-
+    findall(P, pronunciation_passed(Player, P), Phrases),
+    length(Phrases, Count).
+
+% pronunciation_above(Player, Threshold, Count) \u2014 phrases scoring above threshold
+pronunciation_above(Player, Threshold, Count) :-
+    findall(P, (pronunciation_score(Player, P, S, _), S >= Threshold), Phrases),
+    length(Phrases, Count).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Assessment & NPC Exam Results
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+:- dynamic(assessment_result/6).
+:- dynamic(player_cefr_level/2).
+:- dynamic(player_cefr_snapshot/3).
+:- dynamic(player_dimension_score/3).
+:- dynamic(phase_score/3).
+:- dynamic(dimension_score/4).
+
+% player_has_assessment(Player, ExamId) \u2014 has the player completed this exam?
+player_has_assessment(Player, ExamId) :-
+    assessment_result(Player, ExamId, _, _, _, _).
+
+% assessment_score_pct(Player, ExamId, Pct) \u2014 score as percentage
+assessment_score_pct(Player, ExamId, Pct) :-
+    assessment_result(Player, ExamId, Score, MaxScore, _, _),
+    MaxScore > 0,
+    Pct is (Score * 100) / MaxScore.
+
+% player_meets_cefr(Player, RequiredLevel) \u2014 does player meet a minimum CEFR?
+% Uses CEFR level ordering (a1 < a2 < b1 < b2 < c1 < c2) via cefr_gte/2.
+player_meets_cefr(Player, RequiredLevel) :-
+    player_cefr_level(Player, ActualLevel),
+    cefr_gte(ActualLevel, RequiredLevel).
+`.trim();
+
+  // @insimul/core/src/prolog/advanced-predicates.ts
+  var DYNAMIC_DECLARATIONS = [
+    // Resource constraints
+    "resource/3",
+    "resource_capacity/3",
+    "resource_production/3",
+    "resource_consumption/3",
+    "resource_trade/4",
+    "resource_price/3",
+    "resource_deficit/3",
+    "resource_surplus/3",
+    // Probabilistic
+    "probability/2",
+    "npc_preference/3",
+    "weighted_choice/3",
+    "decision_factor/4",
+    // Abductive / Mystery
+    "clue/4",
+    "suspect/2",
+    "motive/3",
+    "alibi/3",
+    "evidence_for/3",
+    "evidence_against/3",
+    "mystery/2",
+    "solved/2",
+    "accused/3",
+    "witness/3",
+    "crime/3",
+    // Meta / Governance
+    "law/3",
+    "law_active/2",
+    "law_penalty/3",
+    "law_enforcer/2",
+    "vote/3",
+    "council_member/2",
+    "authority/3",
+    "tax_rate/3",
+    "tax_exempt/2",
+    // Procedural generation
+    "generated_name/2",
+    "name_pattern/2",
+    "terrain_type/2",
+    "biome/2",
+    "climate/2",
+    "building_template/3",
+    "npc_archetype/2",
+    "quest_template/3"
+  ];
+  function getAdvancedDynamicPredicates() {
+    return [...DYNAMIC_DECLARATIONS];
+  }
+
+  // @insimul/core/src/prolog/tott-predicates.ts
+  var DYNAMIC_DECLARATIONS2 = [
+    // Hiring
+    "qualified_for/2",
+    "has_experience/3",
+    "available_position/2",
+    "position_skill_requirement/3",
+    "employed_at/3",
+    "job_level/2",
+    "salary/2",
+    "years_experience/3",
+    // Social dynamics
+    "compatibility/3",
+    "charge/3",
+    "spark/3",
+    "trust/3",
+    "salience/3",
+    "social_desire/2",
+    // Economics
+    "wealth/2",
+    "economic_class/2",
+    "owns_business/2",
+    "market_price/3",
+    "supply/3",
+    "demand/3",
+    "debt/3",
+    "income/2",
+    // Lifecycle
+    "romantic_status/3",
+    "pregnant/3",
+    "education/4",
+    "life_stage/2",
+    "death_probability/2",
+    "dating/3",
+    "married_to/2",
+    "divorced_from/3",
+    "attracted_to/2",
+    // Simulation per-timestep state (asserted by the simulation loop)
+    "birth_chance/2",
+    // birth_chance(MotherId, Probability) — fertility adjusted by child count
+    "random_chance/1",
+    // random_chance(P) — succeeds with probability P (implemented as JS bridge)
+    // General state
+    "current_timestep/1",
+    "current_year/1"
+  ];
+  function getTotTDynamicPredicates() {
+    return [...DYNAMIC_DECLARATIONS2];
+  }
+
+  // @insimul/core/src/prolog/npc-reasoning.ts
+  var DYNAMIC_DECLARATIONS3 = [
+    // Lifecycle
+    "attracted_to/2",
+    "dating/3",
+    "married_to/2",
+    "marriage_date/3",
+    "divorced_from/3",
+    "pregnant/3",
+    "gave_birth/3",
+    "birth_parent/2",
+    "primary_caregiver/2",
+    "stepparent/2",
+    "student/1",
+    "student_of/3",
+    "graduated/3",
+    "mentor/3",
+    "apprentice/3",
+    "has_skill/3",
+    "learning/3",
+    "came_of_age/2",
+    "eligible_for_marriage/1",
+    "eligible_for_work/1",
+    "deceased/3",
+    "cause_of_death/2",
+    "inherits_from/3",
+    "estate_of/2",
+    // Social
+    "friends/2",
+    "enemies/2",
+    "rival/2",
+    "conversation_count/3",
+    "relationship_charge/3",
+    "relationship_trust/3",
+    "current_timestep/1",
+    // Emotional
+    "mood/2",
+    "stress_level/2",
+    "social_desire/2",
+    // Action/dialogue
+    "npc_action_preference/3",
+    "dialogue_topic_preference/3",
+    // Personality
+    "personality/3",
+    // Employment
+    "employed/1",
+    "employed_at/3",
+    "business_needs_worker/2",
+    // Daily schedule
+    "schedule/4",
+    "time_of_day/1",
+    // Quest memory
+    "npc_gave_quest/3",
+    "quest_outcome/3",
+    "npc_quest_count/3",
+    "npc_quest_completed_count/3",
+    "npc_quest_failed_count/3",
+    "npc_quest_abandoned_count/3",
+    // Environment awareness
+    "weather/1",
+    "game_hour/1",
+    "time_period/1",
+    "season/1",
+    // Player progress
+    "player_quests_completed/1",
+    "player_reputation/1",
+    "player_is_new/0",
+    // Active quests
+    "quest_active/2",
+    "quest_completed/2",
+    "quest_failed/2",
+    // Recent events
+    "recent_event/2"
+  ];
+  function getNPCDynamicPredicates() {
+    return [...DYNAMIC_DECLARATIONS3];
+  }
+
+  // @insimul/core/src/prolog/mechanics/combat-predicates.ts
+  var COMBAT_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Combat \u2014 reach, legality and effectiveness
+% docs/mechanic-predicates.md \xA74
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% faction(EntityId, FactionId).
+% faction_stance(FactionA, FactionB, hostile|neutral|allied).
+% resists_damage(EntityId, DamageType) / vulnerable_to(EntityId, DamageType) \u2014
+%   DamageType is an atom the WORLD declares (slashing, fire, silver, \u2026); core
+%   fixes no list, because the set is content.
+:- dynamic(faction/2).
+:- dynamic(faction_stance/3).
+:- dynamic(resists_damage/2).
+:- dynamic(vulnerable_to/2).
+
+% \u2500\u2500 Runtime facts (per playthrough \u2014 save.currentState.prologFacts) \u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% in_combat/1, combat_target/2, threat/3 and incapacitated/1 differ between two
+% playthroughs of the same world, so authoring any of them on a world template
+% is a design error, not a schema entry (\xA73).
+:- dynamic(in_combat/1).
+:- dynamic(combat_target/2).
+:- dynamic(threat/3).
+:- dynamic(incapacitated/1).
+
+% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% alive/1 is the character block's (see the module header); near/3 and
+% has_equipped/3 are runtime gameplay state (\xA710.1); item_range/2 and
+% item_damage_type/2 are authored weapon stats on the item block.
+% Declared here so this pack answers "no" instead of raising in a KB that
+% carries none of them.
+:- dynamic(alive/1).
+:- dynamic(near/3).
+:- dynamic(has_equipped/3).
+:- dynamic(item_range/2).
+:- dynamic(item_damage_type/2).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% Hostility is a property of the factions, not of the pair: two members of
+% mutually hostile factions are hostile without anyone authoring the pair.
+hostile_to(A, B) :-
+  faction(A, FA),
+  faction(B, FB),
+  faction_stance(FA, FB, hostile).
+
+% A legal target: still standing, not already down, and an enemy. incapacitated/1
+% is deliberately distinct from dead/1 \u2014 "down but not dead" is its own decision
+% state (lootable, untalkable, and NOT a legal attack target).
+can_attack(A, T) :-
+  alive(T),
+  \\+ incapacitated(T),
+  hostile_to(A, T).
+
+% "You may only swing at something you can actually reach with what you're
+% holding." W is the weapon that reaches, so a caller can name it.
+in_reach(A, T, W) :-
+  has_equipped(A, weapon, W),
+  item_range(W, R),
+  near(A, T, R).
+
+% The weapon's damage type means something against this target. The world
+% authors what resists what; core owns no damage formula.
+effective_against(W, T) :-
+  item_damage_type(W, DT),
+  \\+ resists_damage(T, DT).
+`;
+  var COMBAT_RUNTIME_PREDICATES = [
+    "in_combat/1",
+    "combat_target/2",
+    "threat/3",
+    "incapacitated/1"
+  ];
+
+  // @insimul/core/src/prolog/mechanics/perception-predicates.ts
+  var PERCEPTION_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Stealth and perception \u2014 detection and trespass
+% docs/mechanic-predicates.md \xA75
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% senses(EntityId, sight|hearing|smell, Range) \u2014 what this creature can use.
+% restricted_area(LocationId) / access_permitted(Actor, LocationId): "the
+%   innkeeper's family may enter the back room" is a fact about the WORLD, not
+%   about a playthrough, so both are authored. A key picked up mid-game asserts
+%   nothing here \u2014 a trespass rule reads has/2 separately.
+:- dynamic(senses/3).
+:- dynamic(restricted_area/1).
+:- dynamic(access_permitted/2).
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% line_of_sight/2 is HOST-SUPPLIED: the engine raycasts and asserts it.
+% light_level/2 is runtime and not authored on purpose (\xA73's test case): a cave's
+%   darkness looks like template data, but the value that decides the query is
+%   the one at query time \u2014 night, a doused torch, a spell.
+% Level is 0\u2013100 for both noise_level/2 and light_level/2.
+:- dynamic(line_of_sight/2).
+:- dynamic(concealed/1).
+:- dynamic(noise_level/2).
+:- dynamic(light_level/2).
+:- dynamic(alerted/2).
+
+% \u2500\u2500 The graded detection state (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% awareness(Observer, Target, Level) \u2014 0\u2013100, accumulated over ticks by
+%   game-engine/logic/DetectionTracker.ts out of what the host's senses reported.
+% detection_state(Observer, Target, unaware|suspicious|searching|alerted).
+:- dynamic(awareness/3).
+:- dynamic(detection_state/3).
+
+% \u2500\u2500 Authored bands (world content \u2014 published at load, never in a save) \u2500\u2500\u2500\u2500
+% detection_threshold(suspicious|searching|alerted, Level) \u2014 the world's
+%   thresholds, out of WorldIR.perception, the way stamina_threshold/2 is (\xA79).
+:- dynamic(detection_threshold/2).
+
+% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(near/3).
+:- dynamic(at_location/2).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% Detection, and the sense that produced it. detects_via/3 is the one that
+% carries the reason; detects/2 is the question every authored rule asks.
+detects(O, T) :- detects_via(O, T, _).
+
+detects_via(O, T, sight) :-
+  senses(O, sight, R),
+  near(O, T, R),
+  line_of_sight(O, T),
+  \\+ concealed(T),
+  at_location(T, L),
+  light_level(L, Lx),
+  Lx >= 20.
+
+detects_via(O, T, hearing) :-
+  senses(O, hearing, R),
+  near(O, T, R),
+  noise_level(T, N),
+  N >= 30.
+
+% Nobody detects T. Written over detects/2 so a new sense clause tightens it
+% automatically.
+unseen(T) :- \\+ detects(_, T).
+
+% Somewhere you are not allowed to be. Being SEEN there is a separate question \u2014
+% the guard's rule conjoins trespassing/2 with detects/2 (\xA75).
+trespassing(A, L) :-
+  at_location(A, L),
+  restricted_area(L),
+  \\+ access_permitted(A, L).
+
+% \u2500\u2500 The rungs of the ladder \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Named, so an authored rule says "the guard is searching for the thief" rather
+% than comparing a number to a band it would have to know the value of.
+suspicious_of(O, T) :- detection_state(O, T, suspicious).
+
+searching_for(O, T) :- detection_state(O, T, searching).
+
+% alerted/2 stays dynamic \u2014 a scripted alarm or a quest script asserts it \u2014 AND
+% is derived from the ladder, so a graded state and the boolean every existing
+% rule already asks can never contradict each other.
+alerted(O, T) :- detection_state(O, T, alerted).
+
+% Noticed at all: any rung above unaware. Written over detection_state/3 so a
+% world that adds a rung gets it here for free.
+noticed(O, T) :-
+  detection_state(O, T, S),
+  S \\== unaware.
+
+% Nobody has noticed T. unseen/1 asks that of THIS instant's sensing;
+% undetected/1 asks it of the accumulated state, which is the one a stealth
+% mechanic actually pays out on.
+undetected(T) :- \\+ noticed(_, T).
+`;
+  var PERCEPTION_RUNTIME_PREDICATES = [
+    "line_of_sight/2",
+    "concealed/1",
+    "noise_level/2",
+    "light_level/2",
+    "alerted/2",
+    "awareness/3",
+    "detection_state/3"
+  ];
+
+  // @insimul/core/src/prolog/mechanics/skill-predicates.ts
+  var SKILL_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Skills \u2014 what exists, what it costs, what it requires
+% docs/mechanic-predicates.md \xA76
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% skill_defined(SkillId, Category).
+% skill_max_level(SkillId, Max).
+% skill_requires(SkillId, PrereqSkillId, MinLevel).
+% skill_level_xp(SkillId, Level, XpNeeded) \u2014 the progression CURVE, kept in
+%   content. Without it the curve is a constant in four engines and the same
+%   save levels up in three of them.
+:- dynamic(skill_defined/2).
+:- dynamic(skill_max_level/2).
+:- dynamic(skill_requires/3).
+:- dynamic(skill_level_xp/3).
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(skill_xp/3).
+
+% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(has_skill/3).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% At the world's cap for this skill.
+skill_capped(A, S) :-
+  has_skill(A, S, L),
+  skill_max_level(S, L).
+
+% A skill the world declares, that this actor does not have yet, and whose every
+% prerequisite is met. The double negation is "no prerequisite is unmet", so a
+% skill with no skill_requires/3 facts qualifies.
+can_learn_skill(A, S) :-
+  skill_defined(S, _),
+  \\+ has_skill(A, S, _),
+  \\+ (skill_requires(S, P, Min), \\+ (has_skill(A, P, L), L >= Min)).
+
+% Enough XP banked for the next level, and not already capped.
+can_advance(A, S) :-
+  has_skill(A, S, L),
+  \\+ skill_capped(A, S),
+  Next is L + 1,
+  skill_level_xp(S, Next, Need),
+  skill_xp(A, S, X),
+  X >= Need.
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Skill trees \u2014 nodes, what they ask, what they cost, what they do
+% US-1 of 123-skill-trees-and-progression
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% skill_tree(TreeId, SkillId) \u2014 the skill whose levels FUND this tree. It is
+%   the whole coupling between the two halves of progression: advancing
+%   smithing grants points to the trees rooted on smithing, and nothing else
+%   does. A guild or faction tree is authored the same way over a standing.
+% skill_node(NodeId, TreeId).
+% skill_node_cost(NodeId, Points).
+% skill_node_requires(NodeId, Goal) \u2014 Goal is a Prolog goal evaluated with the
+%   actor bound, the convention traversal_requires/3 uses. An authored parent
+%   edge arrives here as skill_node_requires(N, skill_unlocked(Actor, Parent)),
+%   so tree structure and an arbitrary condition are ONE gate.
+% skill_node_effect(NodeId, Effect) \u2014 what taking it does, as a term:
+%   unlocks(Action), modifies(Param, Amount), permits(Thing). The set is
+%   authored; a world that wants a fourth writes it and a rule reads it.
+:- dynamic(skill_tree/2).
+:- dynamic(skill_node/2).
+:- dynamic(skill_node_cost/2).
+:- dynamic(skill_node_requires/2).
+:- dynamic(skill_node_effect/2).
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% What is unspent, per tree, and what has been taken. Both are per-playthrough:
+% two saves of one world differ by exactly this (\xA73).
+:- dynamic(skill_points/3).
+:- dynamic(skill_unlocked/2).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% An authored requirement is written with the ACTOR as its first argument \u2014
+% skill_node_requires(guild_forge, reputation(Actor, smiths_guild, 50)). That
+% variable is a FRESH one every time the fact is read, so it is not the caller's
+% actor and call/1 on the term as stored would be satisfied by anybody at all
+% with the standing \u2014 one guild member's reputation unlocking the whole roster's
+% node. The goal is therefore rebuilt with A in the first argument position
+% before it is called. A requirement authored as a plain atom (bridge_repaired)
+% says nothing about the actor and is called as written.
+skill_goal_met(_, Goal) :-
+  atom(Goal),
+  !,
+  call(Goal).
+skill_goal_met(A, Goal) :-
+  Goal =.. [F, _ | Rest],
+  Bound =.. [F, A | Rest],
+  call(Bound).
+
+% What a node costs. A loaded world publishes a cost for every node (the
+% world's default applied), so the second clause is what keeps the pack
+% answerable about a tree asserted by hand.
+skill_node_price(N, C) :- skill_node_cost(N, C), !.
+skill_node_price(N, 0) :- skill_node(N, _).
+
+% What is unspent in a tree the actor has never earned a point in.
+skill_points_held(A, T, P) :- skill_points(A, T, P), !.
+skill_points_held(_, T, 0) :- skill_tree(T, _).
+
+% A node this actor has not taken, can pay for, and whose every requirement
+% holds. The double negation is "no requirement is unmet", so a node with no
+% skill_node_requires/2 fact qualifies. Whether it is PERMITTED is forbids/4's,
+% exactly as a climb's is: a guild's own rules refuse an unlock without this
+% rule knowing that guilds exist.
+can_unlock(A, N) :-
+  skill_node(N, T),
+  \\+ skill_unlocked(A, N),
+  skill_node_price(N, C),
+  skill_points_held(A, T, P),
+  P >= C,
+  \\+ (skill_node_requires(N, G), \\+ skill_goal_met(A, G)).
+
+% What an actor's skills DO \u2014 the one thing another module asks. A module reads
+% effects; it never reads nodes, which is what keeps a skill tree data over
+% combat, traversal and crafting rather than a system inside them.
+skill_effect(A, E) :- skill_unlocked(A, N), skill_node_effect(N, E).
+`;
+  var SKILL_RUNTIME_PREDICATES = [
+    "skill_xp/3",
+    "skill_points/3",
+    "skill_unlocked/2"
+  ];
+
+  // @insimul/core/src/prolog/mechanics/traversal-predicates.ts
+  var TRAVERSAL_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Traversal \u2014 links, blockage, and reachability
+% docs/mechanic-predicates.md \xA77
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% traversal_link(FromLoc, ToLoc, walk|climb|swim|ride|boat) \u2014 DIRECTED. Mode is
+%   authored, and it is where mounts and boats land: the decision layer's whole
+%   interest in a boat is "this link needs boat and you have it", so there is no
+%   vehicle vocabulary (\xA712).
+% traversal_cost(FromLoc, ToLoc, Cost) \u2014 read by authored rules (travel time,
+%   stamina spend); the pack imposes no cost model of its own.
+% traversal_requires(FromLoc, ToLoc, Goal) \u2014 Goal is a Prolog goal evaluated
+%   with Actor bound, the same convention radiant_precondition/3 uses.
+:- dynamic(traversal_link/3).
+:- dynamic(traversal_cost/3).
+:- dynamic(traversal_requires/3).
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% "The landslide closed the pass" is a playthrough event, never world content.
+:- dynamic(traversal_blocked/2).
+:- dynamic(movement_mode/2).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% Pack-local, library-free membership (see the module header).
+traversal_member(X, [X|_]).
+traversal_member(X, [_|T]) :- traversal_member(X, T).
+
+% An authored requirement is written with the ACTOR as its first argument \u2014
+% traversal_requires(camp, ford, has_item(Actor, rope, 1)). That variable is a
+% FRESH one every time the fact is read, so it is not the caller's actor and
+% call/1 on the term as stored would be satisfied by anyone at all holding a
+% rope. The goal is therefore rebuilt with A in the first argument position
+% before it is called. A requirement authored as a plain atom (bridge_repaired)
+% says nothing about the actor and is called as written.
+traversal_goal_met(_, Goal) :-
+  atom(Goal),
+  !,
+  call(Goal).
+traversal_goal_met(A, Goal) :-
+  Goal =.. [F, _ | Rest],
+  Bound =.. [F, A | Rest],
+  call(Bound).
+
+% One link, open, in a mode this actor is using, whose requirement (if any)
+% holds. The \\+ (Requirement, \\+ Met) shape means a link with no
+% traversal_requires/3 fact passes; calling an authored goal is the trust
+% boundary radiant_precondition/3 already accepts.
+can_traverse(A, From, To) :-
+  traversal_link(From, To, Mode),
+  \\+ traversal_blocked(From, To),
+  movement_mode(A, Mode),
+  \\+ (traversal_requires(From, To, Goal), \\+ traversal_goal_met(A, Goal)).
+
+% Reachability over one or more links. Cycle-safe by carrying the visited set,
+% so a loop of links terminates instead of spinning.
+reachable(A, From, To) :- reachable_via(A, From, To, [From]).
+
+reachable_via(A, From, To, _) :- can_traverse(A, From, To).
+reachable_via(A, From, To, Seen) :-
+  can_traverse(A, From, Mid),
+  \\+ traversal_member(Mid, Seen),
+  reachable_via(A, Mid, To, [Mid | Seen]).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Vehicles \u2014 ridden entities, in the same vocabulary
+% US-2 of 122-traversal-and-travel
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% vehicle_mode(VehicleId, ride|boat|...) \u2014 what the thing IS, said as the
+%   traversal mode it lends whoever is driving it. \xA712 cut vehicle/1 and that cut
+%   stands: a kind predicate would say strictly less than this one does.
+:- dynamic(vehicle_mode/2).
+
+% \u2500\u2500 Runtime (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Ownership is runtime because a horse is bought, inherited, confiscated and
+% stolen; the world's authored owner is where the playthrough STARTS (\xA73).
+% at_location/2 is the world-state predicate, not a vehicle-private one: a
+% vehicle is an entity, and a rule asking what is at the dock must see the boat.
+:- dynamic(vehicle_owner/2).
+:- dynamic(vehicle_occupant/2).
+:- dynamic(vehicle_driver/2).
+:- dynamic(at_location/2).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% The mode a vehicle lends its driver \u2014 the ONLY thing a vehicle changes about
+% traversal, and the reason there is no vehicle mechanic beside this one. A
+% passenger is carried; the driver is the one movement_mode/2 becomes true of.
+riding_mode(A, Mode) :- vehicle_driver(V, A), vehicle_mode(V, Mode).
+
+% Boarding: same place, not already aboard. Colocation is asked of the location
+% ATOMS \u2014 "three metres from the horse" is the host's question, not this one's.
+% Capacity is deliberately absent: \xA712 cut vehicle_capacity/2, so a world that
+% wants to know whether the cart is full counts vehicle_occupant/2 itself.
+can_board(A, V) :-
+  vehicle_mode(V, _),
+  at_location(V, L),
+  at_location(A, L),
+  \\+ vehicle_occupant(V, A).
+
+% Taking the reins: aboard, and nobody else at the helm. Permission is NOT here
+% \u2014 whether taking somebody else's cart is a crime is forbids/4's answer, which
+% is what lets one world police the roads and another leave them common.
+can_drive(A, V) :-
+  vehicle_occupant(V, A),
+  \\+ (vehicle_driver(V, Other), Other \\== A).
+
+% Nobody has the reins \u2014 what an NPC's candidate_action/3 keys on to notice that
+% the cart at the mill is there for the taking.
+vehicle_unattended(V) :- vehicle_mode(V, _), \\+ vehicle_driver(V, _).
+
+% "It is not theirs" \u2014 the FACT a theft norm is authored over
+% (rule_applies(cart_theft, Actor, V) :- vehicle_not_owned_by(Actor, V)). A
+% vehicle nobody owns is nobody's to steal, so an absent owner FAILS rather than
+% succeeds: core states ownership and never invents a prohibition.
+vehicle_not_owned_by(A, V) :- vehicle_owner(V, Owner), Owner \\== A.
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Fast travel \u2014 you may go where you have BEEN and can still GET to
+% US-3 of 122-traversal-and-travel
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% location_discovered/1 is gameplay-predicates.ts's, already asserted whenever a
+% player reaches somewhere. It is DECLARED here rather than re-minted as a
+% traversal-private "known destination" fact, for \xA710.1's reason: two vocabularies
+% for one fact is how a place discovered through a rumour, a map or a quest stops
+% counting as discovered for travel.
+:- dynamic(location_discovered/1).
+
+% \xA77's own worked example, promoted from an authored can_perform/2 clause to a
+% pack rule because the decision layer asks it: fast travel is gated by DISCOVERY
+% and by REACHABILITY, and reachability is what makes it a world operation rather
+% than a teleport \u2014 you cannot fast travel past a landslide you could not have
+% walked past, and a route that needs a rope needs the rope either way.
+%
+% Whether it is PERMITTED is forbids/4's, exactly as a climb's is, and is not here:
+% a closed border, a quarantine and 123's skill gates refuse a journey without this
+% rule knowing they exist. What is also not here is time \u2014 how long the journey
+% takes is arithmetic over traversal_cost/3 and belongs in src/traversal/, never in
+% a predicate a save could carry a stale copy of.
+can_fast_travel(A, Dest) :-
+  location_discovered(Dest),
+  at_location(A, Here),
+  Here \\== Dest,
+  reachable(A, Here, Dest).
+`;
+  var TRAVERSAL_RUNTIME_PREDICATES = [
+    "traversal_blocked/2",
+    "movement_mode/2",
+    "vehicle_owner/2",
+    "vehicle_occupant/2",
+    "vehicle_driver/2"
+  ];
+
+  // @insimul/core/src/prolog/mechanics/equipment-predicates.ts
+  var EQUIPMENT_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Equipment \u2014 slots, requirements, weight and armour
+% docs/mechanic-predicates.md \xA78
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% equip_slot(ItemId, Slot) / equip_slot_capacity(Slot, N) \u2014 "two rings, not five".
+% item_requires(ItemId, SkillId, MinLevel) \u2014 "heavy plate isn't something you
+%   just put on".
+:- dynamic(equip_slot/2).
+:- dynamic(equip_slot_capacity/2).
+:- dynamic(item_requires/3).
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+:- dynamic(carry_capacity/2).
+:- dynamic(item_condition/2).
+
+% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% has_equipped/3 and has_item/3 are runtime gameplay state; item_weight/2 and
+% item_armor/2 are authored stats on the item block.
+:- dynamic(has_equipped/3).
+:- dynamic(has_item/3).
+:- dynamic(has_skill/3).
+:- dynamic(item_weight/2).
+:- dynamic(item_armor/2).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% The compat bridge for helper-predicates.ts's objective_complete/3 clauses \u2014
+% note the argument order differs from has_equipped/3, which is why this rule
+% exists at all (\xA710.3).
+equipped(Actor, Item, Slot) :- has_equipped(Actor, Slot, Item).
+
+% Pack-local total. findall/3 and length/2 are ISO builtins the shared engine
+% has; aggregate_all/3 is NOT (it lives in library(aggregate), which a pack may
+% not depend on \u2014 see the module header), and the name is prefixed so this pack
+% cannot shadow a builtin the way sum_list/2 once did.
+equipment_sum([], 0).
+equipment_sum([X | T], S) :-
+  equipment_sum(T, S0),
+  S is S0 + X.
+
+% Room left in a slot the world gave a capacity to.
+slot_free(A, Slot) :-
+  equip_slot_capacity(Slot, N),
+  findall(I, has_equipped(A, Slot, I), Equipped),
+  length(Equipped, Used),
+  Used < N.
+
+% Held, has a slot, the slot has room, and every skill requirement is met. The
+% comparison is inline rather than helper-predicates.ts's skill_gte/3 so this
+% pack consults standalone (see the module header).
+can_equip(A, I) :-
+  has_item(A, I, _),
+  equip_slot(I, Slot),
+  slot_free(A, Slot),
+  \\+ (item_requires(I, S, Min), \\+ (has_skill(A, S, L), L >= Min)).
+
+% Everything carried, by weight. A rule and not a fact: a stored total goes
+% stale against has_item/3 the moment anything is picked up (\xA712). An actor
+% carrying nothing weighs 0 rather than failing, so a caller never has to
+% distinguish "empty" from "unknown".
+carried_weight(A, W) :-
+  findall(Wi, (has_item(A, I, Q), item_weight(I, U), Wi is U * Q), Weights),
+  equipment_sum(Weights, W).
+
+encumbered(A) :-
+  carried_weight(A, W),
+  carry_capacity(A, Max),
+  W > Max.
+
+% Armour from everything worn, whatever slot it is in.
+armor_value(A, V) :-
+  findall(Av, (has_equipped(A, _, I), item_armor(I, Av)), Values),
+  equipment_sum(Values, V).
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Trade \u2014 who sells what, whether the shelf is bare, and who is paid
+% docs/mechanic-predicates.md \xA78, US-2 of 124-items-equipment-economy
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% vendor(VendorId, BusinessId) \u2014 who trades, and on whose behalf. A vendor
+%   trading for themselves is said with their own atom in both places, so
+%   vendor(V, B), business_owner(B, O) is one query rather than two shapes.
+% vendor_markup(BusinessId, Percent) \u2014 the SHOP's margin: the business sets the
+%   price and the clerk does not.
+% item_stock_normal(ItemId, Qty) \u2014 what a well-supplied shelf carries. Scarcity
+%   is meaningless without it: three left is a glut of warhorses and a famine of
+%   arrows.
+% item_loot_weight(ItemId, Weight) \u2014 how likely the thing is to turn up at all.
+:- dynamic(vendor/2).
+:- dynamic(vendor_markup/2).
+:- dynamic(item_stock_normal/2).
+:- dynamic(item_loot_weight/2).
+
+% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% gold/2 belongs to the gameplay-state block and predates this pack; it is
+% declared here so this pack stands alone, exactly as has_item/3 above is, and
+% gameplay-state-predicates.ts is what OWNS the signature (\xA710.1).
+:- dynamic(gold/2).
+% A merchant's shelf is a CONTAINER: container_contains/3 already says "this
+% many of that, in that place", and a shelf is a place \u2014 so trade mints no
+% stock predicate of its own. business_owner/2 is the business block's.
+:- dynamic(container_contains/3).
+:- dynamic(business_owner/2).
+:- dynamic(item_tradeable/1).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% What is on the shelf, with "none" as an answer rather than a failure \u2014 the
+% same stance carried_weight/2 takes, so a caller never has to distinguish
+% "empty" from "unknown".
+stock_level(V, I, Q) :-
+  container_contains(V, I, Q),
+  !.
+stock_level(_, _, 0).
+
+in_stock(V, I, Q) :-
+  vendor(V, _),
+  stock_level(V, I, Q),
+  Q > 0.
+
+% Availability: they have one AND it is merchandise. A quest letter in a
+% merchant's pack is not for sale.
+sells(V, I) :-
+  in_stock(V, I, _),
+  item_tradeable(I).
+
+% Fewer on the shelf than the world calls a normal stock. HOW MUCH that costs is
+% arithmetic and stays out of the vocabulary (\xA711) \u2014 src/items/economy.ts \u2014 for
+% the reason \xA712 gives: a stored price goes stale the moment a shelf moves.
+scarce(V, I) :-
+  vendor(V, _),
+  item_stock_normal(I, N),
+  stock_level(V, I, Q),
+  Q < N.
+
+% Who the money belongs to. A vendor with no separate owner is their own.
+proceeds_to(V, Owner) :-
+  vendor(V, B),
+  business_owner(B, Owner),
+  !.
+proceeds_to(V, V) :-
+  vendor(V, _).
+
+% Whether a purse covers an amount. Named can_pay/2 rather than can_afford/2
+% because the latter belongs to the ToTT economics vocabulary and a pack may not
+% quietly redefine another's rule.
+can_pay(A, Amount) :-
+  gold(A, G),
+  G >= Amount.
+
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Placement \u2014 things in the world before anybody owns them
+% docs/mechanic-predicates.md \xA78, US-3 of 124-items-equipment-economy
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% item_at(ItemId, LocationId, Qty) \u2014 lying in the world, owned by nobody. The
+%   fourth place an item can be and the ONLY one that had no predicate: carried
+%   is has_item/3, in a chest is container_contains/3, worn is has_equipped/3.
+%   It carries a quantity because those two do and because the ledger holds one:
+%   forty arrows on a barrow floor said as item_at(arrow, barrow) would be a KB
+%   that means "some arrows" about a stack core knows the size of.
+%   Runtime, not authored: where the world STARTS its things is the template's,
+%   where they are on the fortieth day is the playthrough's (\xA73).
+:- dynamic(item_at/3).
+
+% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Containers already had a vocabulary \u2014 helper-predicates.ts declares five
+% container predicates and reasons over them with container_accessible/2 \u2014 so
+% placement mints none of its own and declares them the way it declares
+% has_item/3 above. at_location/2 is the world-state predicate, not a
+% placement-private one: a chest is an entity, and a rule asking what is in the
+% crypt must see it (traversal-predicates.ts makes the same call for a boat).
+:- dynamic(container/1).
+:- dynamic(container_locked/1).
+:- dynamic(at_location/2).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% Something lying where this actor is standing \u2014 what a "take" is offered over.
+% Whether they MAY take it is permissible/3's answer, asked by whoever takes it.
+item_here(A, I) :-
+  at_location(A, L),
+  item_at(I, L, _).
+
+% A container within reach. Whether it opens is container_accessible/2, which
+% belongs to helper-predicates.ts and is not called here: a pack that calls
+% another pack's rule is unusable without it (the AC4 coupling \xA78 refuses).
+container_here(A, C) :-
+  at_location(A, L),
+  container(C),
+  at_location(C, L).
+`;
+  var EQUIPMENT_RUNTIME_PREDICATES = [
+    "carry_capacity/2",
+    "item_condition/2",
+    // US-3's one minted predicate — the fourth place, and the one US-1 and US-2
+    // each deferred to placement so its shape would be decided by the story that
+    // needed it. Everything else placement writes belongs to somebody else:
+    // containers are `helper-predicates.ts`'s, `at_location/2` is the world's.
+    "item_at/3"
+  ];
+
+  // @insimul/core/src/prolog/mechanics/stamina-predicates.ts
+  var STAMINA_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Stamina \u2014 thresholds, affordability and regeneration
+% docs/mechanic-predicates.md \xA79
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% stamina_regen_base(EntityId, RatePerTick) \u2014 the rate the HOST applies per tick.
+% stamina_threshold(winded|exhausted, Pct) \u2014 the world's balance numbers.
+:- dynamic(stamina_regen_base/2).
+:- dynamic(stamina_threshold/2).
+
+% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% energy/3 is runtime gameplay state, in_combat/1 is \xA74's runtime fact, and
+% action/4 is the authored action catalogue whose 4th argument IS the energy
+% cost \u2014 which is why no stamina_cost/2 exists (\xA712).
+:- dynamic(energy/3).
+:- dynamic(in_combat/1).
+:- dynamic(action/4).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% Integer arithmetic on both sides (C * 100 =< M * P), so no float rounding can
+% make two engines disagree about who is winded. M > 0 keeps a zero-max actor
+% out of the comparison instead of dividing by it.
+winded(A) :-
+  energy(A, C, M),
+  M > 0,
+  stamina_threshold(winded, P),
+  C * 100 =< M * P.
+
+exhausted(A) :-
+  energy(A, C, M),
+  M > 0,
+  stamina_threshold(exhausted, P),
+  C * 100 =< M * P.
+
+% Enough in the tank for what action/4 says this action costs.
+can_afford_stamina(A, ActionId) :-
+  action(ActionId, _, _, Cost),
+  energy(A, C, _),
+  C >= Cost.
+
+% The rate the host applies per tick; core decides only the modifier. You don't
+% catch your breath mid-fight \u2014 hence the cut on the first clause.
+stamina_regen(A, 0) :- in_combat(A), !.
+stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
+`;
+  var STAMINA_RUNTIME_PREDICATES = [];
+
+  // @insimul/core/src/prolog/mechanics/gameplay-state-predicates.ts
+  var GAMEPLAY_STATE_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Runtime gameplay state \u2014 declarations only, no rules
+% docs/mechanic-predicates.md \xA710.1
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+%
+% Declared so a KB that carries none of them FAILS a query rather than raising
+% existence_error, and so a fact restored from a save validates instead of being
+% dropped. Per-playthrough state: these belong in save.currentState.prologFacts
+% and never on a world template (\xA73).
+
+:- dynamic(health/3).            % health(Actor, Current, Max).
+:- dynamic(energy/3).            % energy(Actor, Current, Max).
+:- dynamic(has_equipped/3).      % has_equipped(Actor, Slot, ItemId).
+:- dynamic(has_status/3).        % has_status(Actor, Status, Duration).
+:- dynamic(has_ability/2).       % has_ability(Actor, Ability).
+:- dynamic(near/3).              % near(Actor, Target, Distance).
+:- dynamic(at_location_type/2).  % at_location_type(Actor, LocationType).
+:- dynamic(level/2).             % level(Actor, Level).
+:- dynamic(xp/3).                % xp(Actor, Current, Max).
+:- dynamic(gold/2).              % gold(Actor, Amount).
+`;
+  var GAMEPLAY_STATE_RUNTIME_PREDICATES = [
+    "health/3",
+    "energy/3",
+    "has_equipped/3",
+    "has_status/3",
+    "has_ability/2",
+    "near/3",
+    "at_location_type/2",
+    "level/2",
+    "xp/3",
+    "gold/2"
+  ];
+
+  // @insimul/core/src/prolog/mechanics/index.ts
+  var MECHANIC_PREDICATE_PACKS = [
+    { area: "combat", prolog: COMBAT_PREDICATES_PROLOG, runtimePredicates: COMBAT_RUNTIME_PREDICATES },
+    {
+      area: "perception",
+      prolog: PERCEPTION_PREDICATES_PROLOG,
+      runtimePredicates: PERCEPTION_RUNTIME_PREDICATES
+    },
+    { area: "skill", prolog: SKILL_PREDICATES_PROLOG, runtimePredicates: SKILL_RUNTIME_PREDICATES },
+    {
+      area: "traversal",
+      prolog: TRAVERSAL_PREDICATES_PROLOG,
+      runtimePredicates: TRAVERSAL_RUNTIME_PREDICATES
+    },
+    {
+      area: "equipment",
+      prolog: EQUIPMENT_PREDICATES_PROLOG,
+      runtimePredicates: EQUIPMENT_RUNTIME_PREDICATES
+    },
+    {
+      area: "stamina",
+      prolog: STAMINA_PREDICATES_PROLOG,
+      runtimePredicates: STAMINA_RUNTIME_PREDICATES
+    },
+    {
+      area: "gameplayState",
+      prolog: GAMEPLAY_STATE_PREDICATES_PROLOG,
+      runtimePredicates: GAMEPLAY_STATE_RUNTIME_PREDICATES
+    }
+  ];
+  var MECHANIC_RUNTIME_PREDICATES = Array.from(
+    new Set(MECHANIC_PREDICATE_PACKS.flatMap((pack) => pack.runtimePredicates))
+  );
+
+  // @insimul/core/src/ai/perception-predicates.ts
+  var AI_PERCEPTION_PREDICATES_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Game-AI substrate \u2014 perception provenance
+% packages/core/docs/game-ai-substrate.md \xA72
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% agent_belief_world(Agent, World) \u2014 the world an agent's beliefs are claimed
+%   at. Emitted by beliefWorldFacts/2; one per agent that can believe anything.
+% percept(PerceptId, Subject, Predicate, Object) \u2014 an observable published this
+%   tick: the SPO triple an observer would learn from perceiving it.
+% percept_channel(PerceptId, sight|hearing|smell|touch) \u2014 the sense it presents
+%   on. percept_actor(PerceptId, Actor) \u2014 who is responsible, when the percept
+%   is an act; that is the hook a witnessing rule hangs on.
+% perceived(Agent, PerceptId, Channel, clear|partial) \u2014 core's decision that
+%   this agent perceived it, and how well. Written by perceive/1, never by hand.
+:- dynamic(agent_belief_world/2).
+:- dynamic(percept/4).
+:- dynamic(percept_channel/2).
+:- dynamic(percept_actor/2).
+:- dynamic(perceived/4).
+
+% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% "Did this agent perceive it at all?" \u2014 the question most rules ask, written
+% over perceived/4 so a new fidelity band tightens nothing.
+perceived(A, E) :- perceived(A, E, _, _).
+
+perceived_clearly(A, E) :- perceived(A, E, _, clear).
+
+% Through which sense. Distinct from the fidelity so "the guard HEARD something"
+% and "the guard saw it clearly" are different answers.
+perceived_via(A, E, Channel) :- perceived(A, E, Channel, _).
+
+% A witness is someone OTHER than the actor who perceived the act. The actor
+% perceiving their own act is not a witness to it \u2014 otherwise every crime is
+% self-reported and nothing is ever secret.
+witness(A, E) :-
+  perceived(A, E, _, _),
+  percept_actor(E, Actor),
+  A \\== Actor.
+
+% Nobody saw it. This is the predicate that makes stealth mean something: an
+% enforcement rule that conjoins a violation with witness/2 has no consequence
+% to produce when this holds.
+unwitnessed(E) :- percept_actor(E, _), \\+ witness(_, E).
+
+% The triple an agent would have learned, restricted to what it actually
+% perceived. The BELIEF it produces is claimed at the agent's belief world \u2014
+% see the bridge pack \u2014 this is only the perceived content.
+perceived_content(A, S, P, O) :-
+  perceived(A, E, _, _),
+  percept(E, S, P, O).
+`;
+  var AI_PERCEPTION_RUNTIME_PREDICATES = [
+    "agent_belief_world/2",
+    "percept/4",
+    "percept_channel/2",
+    "percept_actor/2",
+    "perceived/4"
+  ];
+  var AI_BELIEF_BRIDGE_PROLOG = `
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+% Game-AI substrate \u2014 belief as a world (composition pack)
+% packages/core/docs/game-ai-substrate.md \xA71
+% Requires: identity/world-predicates.ts (holds/4) + ai/perception-predicates.ts
+% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+% What the agent holds true, reasoning in its own world. A belief world is a
+% ROOT world, so this returns what the agent has been told or has perceived \u2014
+% never the world's truths by default.
+believes(A, S, P, O) :-
+  agent_belief_world(A, W),
+  holds(S, P, O, '@world'(W)).
+
+% The agent has no belief about (S, P) at all. Ignorance, as distinct from
+% believing something false. A must be bound.
+unaware_of(A, S, P) :-
+  agent_belief_world(A, _),
+  \\+ believes(A, S, P, _).
+
+% The agent believes something the world does not: the predicate stealth,
+% deception and every "he thinks the ledger is still in the drawer" plot depend
+% on. Truth is read at the world the caller names, so "mistaken about canon" and
+% "mistaken about this playthrough" are different questions.
+mistaken(A, TruthWorld, S, P, Believed, Actual) :-
+  believes(A, S, P, Believed),
+  holds(S, P, Actual, '@world'(TruthWorld)),
+  Believed \\== Actual.
+
+% True in the world, and this agent does not know it.
+ignorant_of(A, TruthWorld, S, P, O) :-
+  holds(S, P, O, '@world'(TruthWorld)),
+  agent_belief_world(A, _),
+  \\+ believes(A, S, P, O).
+`;
+
   // @insimul/core/src/ai/action-predicates.ts
   var AI_ACTION_SELECTION_PROLOG = `
 % \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -18889,104 +22153,6 @@ agent_atom(Id, Local) :- nonvar(Id), \\+ atom(Id), \\+ curie(Id, _), id_local(Id
     "violation_record/4"
   ];
 
-  // @insimul/core/src/ai/perception-predicates.ts
-  var AI_PERCEPTION_PREDICATES_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Game-AI substrate \u2014 perception provenance
-% packages/core/docs/game-ai-substrate.md \xA72
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% agent_belief_world(Agent, World) \u2014 the world an agent's beliefs are claimed
-%   at. Emitted by beliefWorldFacts/2; one per agent that can believe anything.
-% percept(PerceptId, Subject, Predicate, Object) \u2014 an observable published this
-%   tick: the SPO triple an observer would learn from perceiving it.
-% percept_channel(PerceptId, sight|hearing|smell|touch) \u2014 the sense it presents
-%   on. percept_actor(PerceptId, Actor) \u2014 who is responsible, when the percept
-%   is an act; that is the hook a witnessing rule hangs on.
-% perceived(Agent, PerceptId, Channel, clear|partial) \u2014 core's decision that
-%   this agent perceived it, and how well. Written by perceive/1, never by hand.
-:- dynamic(agent_belief_world/2).
-:- dynamic(percept/4).
-:- dynamic(percept_channel/2).
-:- dynamic(percept_actor/2).
-:- dynamic(perceived/4).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% "Did this agent perceive it at all?" \u2014 the question most rules ask, written
-% over perceived/4 so a new fidelity band tightens nothing.
-perceived(A, E) :- perceived(A, E, _, _).
-
-perceived_clearly(A, E) :- perceived(A, E, _, clear).
-
-% Through which sense. Distinct from the fidelity so "the guard HEARD something"
-% and "the guard saw it clearly" are different answers.
-perceived_via(A, E, Channel) :- perceived(A, E, Channel, _).
-
-% A witness is someone OTHER than the actor who perceived the act. The actor
-% perceiving their own act is not a witness to it \u2014 otherwise every crime is
-% self-reported and nothing is ever secret.
-witness(A, E) :-
-  perceived(A, E, _, _),
-  percept_actor(E, Actor),
-  A \\== Actor.
-
-% Nobody saw it. This is the predicate that makes stealth mean something: an
-% enforcement rule that conjoins a violation with witness/2 has no consequence
-% to produce when this holds.
-unwitnessed(E) :- percept_actor(E, _), \\+ witness(_, E).
-
-% The triple an agent would have learned, restricted to what it actually
-% perceived. The BELIEF it produces is claimed at the agent's belief world \u2014
-% see the bridge pack \u2014 this is only the perceived content.
-perceived_content(A, S, P, O) :-
-  perceived(A, E, _, _),
-  percept(E, S, P, O).
-`;
-  var AI_PERCEPTION_RUNTIME_PREDICATES = [
-    "agent_belief_world/2",
-    "percept/4",
-    "percept_channel/2",
-    "percept_actor/2",
-    "perceived/4"
-  ];
-  var AI_BELIEF_BRIDGE_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Game-AI substrate \u2014 belief as a world (composition pack)
-% packages/core/docs/game-ai-substrate.md \xA71
-% Requires: identity/world-predicates.ts (holds/4) + ai/perception-predicates.ts
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% What the agent holds true, reasoning in its own world. A belief world is a
-% ROOT world, so this returns what the agent has been told or has perceived \u2014
-% never the world's truths by default.
-believes(A, S, P, O) :-
-  agent_belief_world(A, W),
-  holds(S, P, O, '@world'(W)).
-
-% The agent has no belief about (S, P) at all. Ignorance, as distinct from
-% believing something false. A must be bound.
-unaware_of(A, S, P) :-
-  agent_belief_world(A, _),
-  \\+ believes(A, S, P, _).
-
-% The agent believes something the world does not: the predicate stealth,
-% deception and every "he thinks the ledger is still in the drawer" plot depend
-% on. Truth is read at the world the caller names, so "mistaken about canon" and
-% "mistaken about this playthrough" are different questions.
-mistaken(A, TruthWorld, S, P, Believed, Actual) :-
-  believes(A, S, P, Believed),
-  holds(S, P, Actual, '@world'(TruthWorld)),
-  Believed \\== Actual.
-
-% True in the world, and this agent does not know it.
-ignorant_of(A, TruthWorld, S, P, O) :-
-  holds(S, P, O, '@world'(TruthWorld)),
-  agent_belief_world(A, _),
-  \\+ believes(A, S, P, O).
-`;
-
   // @insimul/core/src/ai/planning-predicates.ts
   var AI_PLANNING_PROLOG = `
 % \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -19102,6 +22268,1100 @@ goal_step(A, G, Act, T, C) :-
     "agent_goal/3",
     "condition_met/2"
   ];
+
+  // @insimul/core/src/prolog/prolog-fact-validator.ts
+  function parseFactSignature(fact) {
+    const trimmed = fact.trim().replace(/\.\s*$/, "").trim();
+    if (!trimmed) return null;
+    if (trimmed.startsWith("%")) return null;
+    if (/:-/.test(trimmed)) return null;
+    const atomMatch = trimmed.match(/^([a-z_][\w]*)$/);
+    if (atomMatch) {
+      return { predicate: atomMatch[1], arity: 0, args: [] };
+    }
+    const headMatch = trimmed.match(/^([a-z_][\w]*)\s*\(/);
+    if (!headMatch) return null;
+    const predicate = headMatch[1];
+    const argsStart = headMatch[0].length;
+    const args = splitTopLevelArgs(trimmed.slice(argsStart));
+    if (!args) return null;
+    return { predicate, arity: args.length, args };
+  }
+  function splitTopLevelArgs(body2) {
+    const args = [];
+    let depth = 1;
+    let current = "";
+    let i = 0;
+    while (i < body2.length) {
+      const ch = body2[i];
+      if (ch === "'" || ch === '"') {
+        const quote = ch;
+        current += ch;
+        i++;
+        while (i < body2.length && body2[i] !== quote) {
+          if (body2[i] === "\\" && i + 1 < body2.length) {
+            current += body2[i] + body2[i + 1];
+            i += 2;
+            continue;
+          }
+          current += body2[i];
+          i++;
+        }
+        if (i >= body2.length) return null;
+        current += body2[i];
+        i++;
+        continue;
+      }
+      if (ch === "(" || ch === "[" || ch === "{") {
+        depth++;
+        current += ch;
+        i++;
+        continue;
+      }
+      if (ch === ")" || ch === "]" || ch === "}") {
+        depth--;
+        if (depth === 0) {
+          if (ch !== ")") return null;
+          const rest = body2.slice(i + 1).trim();
+          if (rest.length > 0) return null;
+          const arg = current.trim();
+          if (args.length === 0 && arg.length === 0) return [];
+          args.push(arg);
+          return args;
+        }
+        current += ch;
+        i++;
+        continue;
+      }
+      if (ch === "," && depth === 1) {
+        args.push(current.trim());
+        current = "";
+        i++;
+        continue;
+      }
+      current += ch;
+      i++;
+    }
+    return null;
+  }
+  function inferArgType(raw) {
+    const s = raw.trim();
+    if (!s) return "empty";
+    if (/^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(s)) return "number";
+    if (/^'(?:[^'\\]|\\.)*'$/.test(s)) return "quoted-string";
+    if (/^"(?:[^"\\]|\\.)*"$/.test(s)) return "quoted-string";
+    if (/^[a-z_][\w]*\s*\(/.test(s) && s.endsWith(")")) return "compound";
+    if (/^'(?:[^'\\]|\\.)*'\s*\(/.test(s) && s.endsWith(")")) return "compound";
+    if (s.startsWith("[") && s.endsWith("]")) return "list";
+    if (/^[A-Z_][\w]*$/.test(s)) return "variable";
+    if (/^[a-z][\w]*$/.test(s)) return "atom";
+    return "unknown";
+  }
+  function extractDynamicDeclarations(program) {
+    const out = [];
+    const re = /:-\s*dynamic\s*\(\s*([a-z_][\w]*)\s*\/\s*(\d+)\s*\)/g;
+    let m;
+    while ((m = re.exec(program)) !== null) {
+      out.push(`${m[1]}/${m[2]}`);
+    }
+    return out;
+  }
+  function extractRuleHeads(program) {
+    const out = [];
+    const lines2 = program.split(/\r?\n/);
+    for (const rawLine of lines2) {
+      const line = rawLine.replace(/^\s+/, "");
+      if (!line || line.startsWith("%") || line.startsWith(":-")) continue;
+      const m = line.match(/^([a-z_][\w]*)\s*\(/);
+      if (!m) continue;
+      const parsed = parseFactSignature(line.replace(/\s*:-.*$/, "").replace(/\s*\.\s*$/, ""));
+      if (parsed) out.push(`${parsed.predicate}/${parsed.arity}`);
+    }
+    return out;
+  }
+  function buildKnownPredicateSignatures(extra = []) {
+    const sigs = /* @__PURE__ */ new Set();
+    for (const p of getAdvancedDynamicPredicates()) sigs.add(p);
+    for (const p of getTotTDynamicPredicates()) sigs.add(p);
+    for (const p of getNPCDynamicPredicates()) sigs.add(p);
+    for (const p of extractDynamicDeclarations(HELPER_PREDICATES_PROLOG)) sigs.add(p);
+    for (const p of extractRuleHeads(HELPER_PREDICATES_PROLOG)) sigs.add(p);
+    for (const p of MECHANIC_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of AI_PERCEPTION_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of AI_ACTION_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of AI_ENFORCEMENT_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of AI_PLANNING_RUNTIME_PREDICATES) sigs.add(p);
+    for (const p of extra) sigs.add(p);
+    return sigs;
+  }
+  function validatePrologFact(fact, knownSignatures) {
+    const parsed = parseFactSignature(fact);
+    if (!parsed) {
+      return { valid: false, reason: "unparseable fact" };
+    }
+    const { predicate, arity, args } = parsed;
+    const sig = `${predicate}/${arity}`;
+    if (!knownSignatures.has(sig)) {
+      const arityMatches = Array.from(knownSignatures).filter((s) => s.startsWith(`${predicate}/`));
+      const reason = arityMatches.length > 0 ? `arity ${arity} does not match known ${arityMatches.join(", ")}` : "predicate not in current schema";
+      return { valid: false, reason, predicate, arity };
+    }
+    for (const arg of args) {
+      const type = inferArgType(arg);
+      if (type === "variable") {
+        return { valid: false, reason: `unbound variable "${arg}"`, predicate, arity };
+      }
+      if (type === "empty" || type === "unknown") {
+        return { valid: false, reason: `unrecognized argument "${arg}"`, predicate, arity };
+      }
+    }
+    return { valid: true, predicate, arity };
+  }
+
+  // @insimul/core/src/skills/skill-facts.ts
+  function emptySkillDelta() {
+    return { retract: [], assert: [] };
+  }
+  function mergeSkillDeltas(...deltas) {
+    const merged = emptySkillDelta();
+    for (const delta of deltas) {
+      merged.retract.push(...delta.retract);
+      merged.assert.push(...delta.assert);
+    }
+    return merged;
+  }
+  var SKILL_RESOLUTION_PREDICATES = Object.freeze([
+    "skill_xp/3",
+    "skill_points/3",
+    "skill_unlocked/2",
+    "has_skill/3"
+  ]);
+  var SKILL_AUTHORED_PREDICATES = Object.freeze([
+    "skill_defined/2",
+    "skill_max_level/2",
+    "skill_requires/3",
+    "skill_level_xp/3",
+    "skill_tree/2",
+    "skill_node/2",
+    "skill_node_cost/2",
+    "skill_node_requires/2",
+    "skill_node_effect/2"
+  ]);
+  function skillDefinitionFacts(skills, tuning) {
+    const facts = [];
+    for (const skill of skills) {
+      const id = prologAtom(skill.id);
+      facts.push(`skill_defined(${id}, ${prologAtom(skill.category)}).`);
+      facts.push(`skill_max_level(${id}, ${skill.maxLevel}).`);
+      for (const prereq of skill.requires) {
+        facts.push(`skill_requires(${id}, ${prologAtom(prereq.skill)}, ${prereq.level}).`);
+      }
+      for (let level = 2; level <= skill.maxLevel; level += 1) {
+        facts.push(`skill_level_xp(${id}, ${level}, ${xpForLevel(skill, level, tuning)}).`);
+      }
+    }
+    return facts;
+  }
+  function skillTreeFacts(trees, tuning) {
+    const facts = [];
+    for (const tree of trees) {
+      facts.push(`skill_tree(${prologAtom(tree.id)}, ${prologAtom(tree.skill)}).`);
+      for (const node of tree.nodes) {
+        const id = prologAtom(node.id);
+        facts.push(`skill_node(${id}, ${prologAtom(tree.id)}).`);
+        facts.push(`skill_node_cost(${id}, ${nodeCost(node, tuning)}).`);
+        for (const goal of nodeRequirements(node)) {
+          facts.push(`skill_node_requires(${id}, ${goal}).`);
+        }
+        for (const effect of node.effects) {
+          facts.push(`skill_node_effect(${id}, ${effectTerm(effect)}).`);
+        }
+      }
+    }
+    return facts;
+  }
+  function effectTerm(effect) {
+    if (effect.args.length === 0) return prologAtom(effect.kind);
+    const args = effect.args.map(
+      (arg) => typeof arg === "number" ? String(arg) : prologAtom(arg)
+    );
+    return `${prologAtom(effect.kind)}(${args.join(", ")})`;
+  }
+  function skillXpFact(actor, skill, xp) {
+    return `skill_xp(${prologAtom(actor)}, ${prologAtom(skill)}, ${xp}).`;
+  }
+  function hasSkillFact(actor, skill, level) {
+    return `has_skill(${prologAtom(actor)}, ${prologAtom(skill)}, ${level}).`;
+  }
+  function skillPointsFact(actor, tree, points3) {
+    return `skill_points(${prologAtom(actor)}, ${prologAtom(tree)}, ${points3}).`;
+  }
+  function skillUnlockedFact(actor, node) {
+    return `skill_unlocked(${prologAtom(actor)}, ${prologAtom(node)}).`;
+  }
+  function balanceDelta(fact, before, after) {
+    if (before === after) return emptySkillDelta();
+    return {
+      retract: before === void 0 ? [] : [fact(before)],
+      assert: [fact(after)]
+    };
+  }
+  function skillXpDelta(actor, skill, before, after) {
+    return balanceDelta((value) => skillXpFact(actor, skill, value), before, after);
+  }
+  function skillLevelDelta(actor, skill, before, after) {
+    return balanceDelta(
+      (value) => hasSkillFact(actor, skill, value),
+      before === 0 ? void 0 : before,
+      after
+    );
+  }
+  function skillPointsDelta(actor, tree, before, after) {
+    return balanceDelta((value) => skillPointsFact(actor, tree, value), before, after);
+  }
+  function skillUnlockDelta(actor, node) {
+    return { retract: [], assert: [skillUnlockedFact(actor, node)] };
+  }
+  function checkSkillDelta(delta) {
+    const known = buildKnownPredicateSignatures(SKILL_RESOLUTION_PREDICATES);
+    const allowed = new Set(SKILL_RESOLUTION_PREDICATES);
+    for (const clause of [...delta.retract, ...delta.assert]) {
+      const verdict = validatePrologFact(clause, known);
+      if (!verdict.valid) {
+        return {
+          ok: false,
+          reason: `"${clause}" is not a fact this build can carry: ${verdict.reason}`,
+          offending: clause
+        };
+      }
+      const signature = `${verdict.predicate}/${verdict.arity}`;
+      if (!allowed.has(signature)) {
+        return {
+          ok: false,
+          reason: `"${clause}" writes ${signature}, which progression does not own (docs/skill-progression.md \xA78)`,
+          offending: clause
+        };
+      }
+    }
+    return { ok: true, reason: null };
+  }
+
+  // @insimul/core/src/skills/domain-trees.ts
+  var GUILD_LADDER_CONTENT = `
+:- dynamic(reputation/3).
+:- dynamic(gold/2).
+guild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.
+guild_dues_paid(A, N) :- gold(A, G), G >= N.
+`;
+  var GUILD_SKILL_TREES = Object.freeze({
+    pointsPerLevel: 1,
+    defaultNodeCost: 1,
+    skills: [
+      {
+        id: "smiths_guild_standing",
+        category: "faction",
+        maxLevel: 3,
+        // Three levels and a steepening price: what a guild asks of a member goes
+        // up, which is a curve rather than a rule.
+        levelXp: [0, 0, 200, 600]
+      }
+    ],
+    trees: [
+      {
+        id: "smiths_guild",
+        skill: "smiths_guild_standing",
+        name: "The Smiths\u2019 Guild",
+        nodes: [
+          {
+            id: "guild_apprentice",
+            name: "Apprentice of the guild",
+            description: "Admitted to the hall, and to the small forge at the back of it.",
+            cost: 1,
+            requires: ["guild_standing_at_least(Actor, smiths_guild, 20)"],
+            effects: [{ kind: "permits", args: ["use_guild_forge"] }]
+          },
+          {
+            id: "guild_journeyman",
+            name: "Journeyman of the guild",
+            description: "Free of the guild\u2019s work, and of its rates.",
+            cost: 1,
+            parents: ["guild_apprentice"],
+            requires: [
+              "guild_standing_at_least(Actor, smiths_guild, 50)",
+              "guild_dues_paid(Actor, 40)"
+            ],
+            effects: [
+              { kind: "unlocks", args: ["take_guild_commission"] },
+              // A journeyman's work is worth more. `modifies` is the third effect
+              // kind and the only one core applies to a snapshot rather than to a
+              // permission — the module that owns the parameter reads it and this
+              // file names neither that module nor its code path.
+              { kind: "modifies", args: ["crafting", "quality", 1] }
+            ]
+          },
+          {
+            id: "guild_master",
+            name: "Master of the guild",
+            description: "Entitled to a mark, a bench, and an apprentice of your own.",
+            cost: 2,
+            parents: ["guild_journeyman"],
+            requires: [
+              "guild_standing_at_least(Actor, smiths_guild, 80)",
+              "guild_dues_paid(Actor, 200)"
+            ],
+            effects: [
+              { kind: "permits", args: ["stamp_guild_mark"] },
+              { kind: "unlocks", args: ["take_apprentice"] }
+            ]
+          }
+        ]
+      }
+    ]
+  });
+  var LANGUAGE_LADDER_CONTENT = `
+:- dynamic(conversational_action/4).
+:- dynamic(vocab_used/3).
+did_in_language(A, Act) :- conversational_action(A, _, Act, _).
+words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C), C >= N.
+`;
+  var LANGUAGE_SKILL_TREES = Object.freeze({
+    pointsPerLevel: 1,
+    defaultNodeCost: 1,
+    skills: [
+      {
+        id: "french",
+        category: "language",
+        maxLevel: 4,
+        levelXp: [0, 0, 100, 300, 700]
+      }
+    ],
+    trees: [
+      {
+        id: "french_ladder",
+        skill: "french",
+        name: "French",
+        nodes: [
+          {
+            id: "french_a1",
+            name: "A1 \u2014 Breakthrough",
+            description: "Enough to greet somebody and say who you are.",
+            cost: 1,
+            effects: [{ kind: "unlocks", args: ["introduce_self"] }]
+          },
+          {
+            id: "french_a2",
+            name: "A2 \u2014 Waystage",
+            description: "Enough to shop, and to be understood about it.",
+            cost: 1,
+            parents: ["french_a1"],
+            requires: ["words_used_at_least(Actor, 50)"],
+            effects: [{ kind: "unlocks", args: ["order_food"] }]
+          },
+          {
+            id: "french_b1",
+            name: "B1 \u2014 Threshold",
+            description: "Enough to get by somewhere nobody speaks yours.",
+            cost: 2,
+            parents: ["french_a2"],
+            // The join to the other half of this tasklist: a satisfied dialogue
+            // goal is `conversational_action/4`, and this is an authored goal
+            // reading it. No import; one predicate.
+            requires: ["did_in_language(Actor, order_food)"],
+            effects: [
+              { kind: "unlocks", args: ["ask_for_directions"] },
+              { kind: "modifies", args: ["dialogue", "threshold", -20] }
+            ]
+          },
+          {
+            id: "french_b2",
+            name: "B2 \u2014 Vantage",
+            description: "Enough to argue, and to be argued with.",
+            cost: 2,
+            parents: ["french_b1"],
+            requires: [
+              "did_in_language(Actor, ask_for_directions)",
+              "words_used_at_least(Actor, 200)"
+            ],
+            effects: [
+              { kind: "permits", args: ["haggle_price"] },
+              { kind: "modifies", args: ["dialogue", "threshold", -40] }
+            ]
+          }
+        ]
+      }
+    ]
+  });
+  var DOMAIN_SKILL_TREES = Object.freeze({
+    pointsPerLevel: 1,
+    defaultNodeCost: 1,
+    skills: [...GUILD_SKILL_TREES.skills ?? [], ...LANGUAGE_SKILL_TREES.skills ?? []],
+    trees: [...GUILD_SKILL_TREES.trees ?? [], ...LANGUAGE_SKILL_TREES.trees ?? []]
+  });
+  var DOMAIN_LADDER_CONTENT = `${GUILD_LADDER_CONTENT}${LANGUAGE_LADDER_CONTENT}`;
+
+  // @insimul/core/src/game-engine/logic/SkillProgression.ts
+  var SkillProgression = class {
+    constructor(config = {}) {
+      __publicField(this, "engine");
+      __publicField(this, "tuning");
+      __publicField(this, "eventBus");
+      /** Resolved once at construction, so it cannot be swapped out mid-session. */
+      __publicField(this, "modifierSink");
+      /** Why the last write was refused by the schema gate, or `null`. */
+      __publicField(this, "writeRefusal", null);
+      /** The world's authored content. Never written to by gameplay. */
+      __publicField(this, "skills", /* @__PURE__ */ new Map());
+      __publicField(this, "trees", []);
+      __publicField(this, "actors", /* @__PURE__ */ new Map());
+      this.engine = config.engine;
+      this.tuning = config.tuning ?? { ...DEFAULT_SKILL_TUNING };
+      this.eventBus = config.eventBus;
+      this.modifierSink = config.skillModifiers ?? config.host?.skillModifiers;
+      if (config.skills) this.loadSkills(config.skills);
+      if (config.trees) this.loadTrees(config.trees);
+      if (config.state) this.restore(config.state);
+    }
+    setEventBus(bus) {
+      this.eventBus = bus;
+    }
+    /** The world's authored numbers, as this instance read them. */
+    getTuning() {
+      return { ...this.tuning };
+    }
+    // ── The authored world ─────────────────────────────────────────────────
+    /** Replace the authored skills. */
+    loadSkills(skills) {
+      this.skills = new Map(skills.map((skill) => [skill.id, skill]));
+    }
+    /** Replace the authored trees. Node ids are settled against their tree here. */
+    loadTrees(trees) {
+      this.trees = trees.map((tree) => ({
+        ...tree,
+        nodes: tree.nodes.map((node) => ({ ...node, tree: tree.id }))
+      }));
+    }
+    /** The authored skills, as this instance read them. */
+    getSkills() {
+      return [...this.skills.values()].map((skill) => ({ ...skill }));
+    }
+    /** The authored trees, as this instance read them. */
+    getTrees() {
+      return this.trees.map((tree) => ({ ...tree, nodes: tree.nodes.map((node) => ({ ...node })) }));
+    }
+    /**
+     * Publish the world's authored skills and trees into the KB.
+     *
+     * Authored data, asserted at load the way `TraversalPlanner.publishGraph`
+     * asserts the link graph — so a rule that asks `can_unlock/2` walks the same
+     * tree core resolves over, and an authored quest objective can name a node
+     * without a second export of it. Returns how many facts were written.
+     */
+    async publishWorld(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const fact of [
+        ...skillDefinitionFacts([...this.skills.values()], this.tuning),
+        ...skillTreeFacts(this.trees, this.tuning)
+      ]) {
+        await engine.assertFact(stripPeriod5(fact));
+        written += 1;
+      }
+      return written;
+    }
+    // ── Roster ─────────────────────────────────────────────────────────────
+    /** Add or replace an actor, and write their facts. */
+    async register(registration) {
+      const before = this.actors.get(registration.id);
+      const after = {
+        id: registration.id,
+        levels: { ...registration.levels ?? {} },
+        xp: { ...registration.xp ?? {} },
+        points: { ...registration.points ?? {} },
+        unlocked: [...registration.unlocked ?? []]
+      };
+      this.actors.set(registration.id, after);
+      const deltas = [];
+      for (const skill of union(before?.levels, after.levels)) {
+        deltas.push(
+          skillLevelDelta(after.id, skill, before?.levels[skill], after.levels[skill] ?? 0)
+        );
+      }
+      for (const skill of union(before?.xp, after.xp)) {
+        deltas.push(skillXpDelta(after.id, skill, before?.xp[skill], after.xp[skill] ?? 0));
+      }
+      for (const tree of union(before?.points, after.points)) {
+        deltas.push(skillPointsDelta(after.id, tree, before?.points[tree], after.points[tree] ?? 0));
+      }
+      for (const node of after.unlocked) {
+        if (!before?.unlocked.includes(node)) deltas.push(skillUnlockDelta(after.id, node));
+      }
+      const delta = mergeSkillDeltas(...deltas);
+      await this.writeDelta(delta);
+      this.publishModifiers(after.id);
+      return delta;
+    }
+    /**
+     * Forget an actor. Their facts are retracted; the authored world is untouched.
+     *
+     * Retract-only: an actor who left the world has no facts, not facts reading
+     * zero — a `has_skill(gone, smithing, 0)` left behind is a character the rules
+     * layer still thinks is present and merely unskilled.
+     */
+    async unregister(actorId) {
+      const actor = this.actors.get(actorId);
+      if (!actor) return emptySkillDelta();
+      this.actors.delete(actorId);
+      const delta = { retract: [], assert: [] };
+      for (const [skill, level] of Object.entries(actor.levels)) {
+        delta.retract.push(hasSkillFact(actorId, skill, level));
+      }
+      for (const [skill, xp] of Object.entries(actor.xp)) {
+        delta.retract.push(skillXpFact(actorId, skill, xp));
+      }
+      for (const [tree, points3] of Object.entries(actor.points)) {
+        delta.retract.push(skillPointsFact(actorId, tree, points3));
+      }
+      for (const node of actor.unlocked) delta.retract.push(skillUnlockedFact(actorId, node));
+      await this.writeDelta(delta);
+      if (this.modifierSink) {
+        try {
+          this.modifierSink.applyModifiers(actorId, {});
+        } catch {
+        }
+      }
+      return delta;
+    }
+    /** This actor's level in a skill. `0` for one they have not learned. */
+    levelOf(actorId, skill) {
+      return this.actors.get(actorId)?.levels[skill] ?? 0;
+    }
+    /** This actor's banked, unspent XP in a skill. */
+    xpOf(actorId, skill) {
+      return this.actors.get(actorId)?.xp[skill] ?? 0;
+    }
+    /** What this actor has left to spend in a tree. */
+    pointsOf(actorId, tree) {
+      return this.actors.get(actorId)?.points[tree] ?? 0;
+    }
+    /** Every node this actor has taken, in canonical order. */
+    unlockedNodes(actorId) {
+      return [...this.actors.get(actorId)?.unlocked ?? []].sort(compareIds);
+    }
+    /** Whether `skill_unlocked(Actor, Node)` holds. */
+    hasUnlocked(actorId, node) {
+      return this.actors.get(actorId)?.unlocked.includes(node) ?? false;
+    }
+    /**
+     * What this actor's taken nodes DO — `skill_effect/2` in TypeScript.
+     *
+     * The read every other module makes (US-2), and the reason none of them needs
+     * to know what a tree is: an effect is an authored term, and a module that
+     * cares about `modifies(reach, 2)` asks for effects rather than for nodes.
+     * Canonically ordered by node, so two engines applying them apply them in one
+     * order.
+     */
+    effectsOf(actorId) {
+      const effects = [];
+      for (const node of this.unlockedNodes(actorId)) {
+        const authored = findNode(this.trees, node);
+        if (authored) effects.push(...authored.effects.map((effect) => ({ ...effect })));
+      }
+      return effects;
+    }
+    /**
+     * Every numeric parameter this actor's taken nodes modify, summed (US-2).
+     *
+     * The convenience form of `skillModifiers(effectsOf(actor))`, for a caller that
+     * is about to build a resolution input — `withSkillModifiers` is what applies
+     * it. Reported rather than applied: this module does not know which module a
+     * parameter belongs to, and the one that does is the one already holding the
+     * snapshot.
+     */
+    modifiersOf(actorId) {
+      return skillModifiers(this.effectsOf(actorId));
+    }
+    // ── The host ───────────────────────────────────────────────────────────
+    /** Whether an engine supplied a modifier sink. `false` in a headless world. */
+    hasModifierSink() {
+      return this.modifierSink !== void 0;
+    }
+    /**
+     * Hand an actor's whole current modifier set to the host (US-3).
+     *
+     * The module's only outbound call, and the only one it will ever have: an
+     * effect whose parameter names a field of a snapshot core resolves from is
+     * applied by the module that owns the snapshot (`withSkillModifiers`, US-2),
+     * and an effect whose parameter names a quantity the ENGINE holds — how fast a
+     * body moves, how far it reaches — can only be applied there.
+     *
+     * **Absolute, never a delta.** The whole set is sent every time, so re-applying
+     * it is a no-op and a save load, a re-registration or a replayed unlock cannot
+     * leave the host drifting from core. A host that throws is ignored: an engine
+     * failing to move a speed number may not stop a node from being taken.
+     *
+     * With no actor named, every registered actor is published — what a caller
+     * that has just restored a save wants, and the counterpart of
+     * {@link publishActors}. Returns how many actors were published.
+     */
+    publishModifiers(actorId) {
+      const sink = this.modifierSink;
+      if (!sink) return 0;
+      const actors = actorId === void 0 ? this.roster().map((a) => a.id) : [actorId];
+      let published = 0;
+      for (const id of actors) {
+        if (actorId !== void 0 && !this.actors.has(id)) continue;
+        try {
+          sink.applyModifiers(id, skillModifierTotals(this.effectsOf(id)));
+        } catch {
+        }
+        published += 1;
+      }
+      return published;
+    }
+    /**
+     * The tree a host draws, for one actor — every authored tree, every node's
+     * state, the rows and the edges (US-3).
+     *
+     * A VALUE rather than a hook, which is the whole of `docs/skill-progression.md`
+     * §5: a panel is layout, layout differs legitimately between four engines, and
+     * what may not differ is which nodes are open, what they cost and why the rest
+     * are not. `buildSkillView` is the pure half; this is the half that asks the KB
+     * the two questions a pure function may not — which authored goals are unmet,
+     * and which nodes `permissible/3` refuses.
+     *
+     * One round trip per node, on the decision path: a player opening a screen,
+     * never a frame. A caller with no KB can call `buildSkillView` directly and
+     * gets a view whose gated nodes read `conditional` instead.
+     */
+    async viewOf(actorId) {
+      const actor = this.actors.get(actorId);
+      const unmet = {};
+      const forbidden = [];
+      for (const tree of this.trees) {
+        for (const node of tree.nodes) {
+          const goals = await this.unmetRequirements(actorId, nodeRequirements(node));
+          if (goals.length > 0) unmet[node.id] = goals;
+          const check = await this.checkPermission(actorId, this.tuning.unlockAction, node.id);
+          if (!check.permitted) forbidden.push(node.id);
+        }
+      }
+      const view2 = {
+        id: actorId,
+        levels: actor?.levels ?? {},
+        xp: actor?.xp ?? {},
+        points: actor?.points ?? {},
+        unlocked: this.unlockedNodes(actorId),
+        unmet,
+        forbidden
+      };
+      return buildSkillView({ trees: this.trees, skills: this.getSkills(), tuning: this.tuning, actor: view2 });
+    }
+    // ── XP ─────────────────────────────────────────────────────────────────
+    /**
+     * Bank XP against a skill — what practising, questing or being taught pays.
+     *
+     * How MUCH an action is worth is not decided here and gets no predicate: it is
+     * a property of the action the world authored, handed in by whoever raised the
+     * event. A negative award is read as zero rather than as a punishment; a world
+     * that wants to take skill away authors that, and silently draining a bank is
+     * the bug that would hide.
+     */
+    async award(actorId, skill, amount) {
+      const actor = this.actors.get(actorId);
+      const awarded = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 0;
+      if (!actor || awarded === 0) {
+        return {
+          actor: actorId,
+          skill,
+          awarded: 0,
+          banked: this.xpOf(actorId, skill),
+          advanceable: (await this.canAdvance(actorId, skill)).available,
+          facts: emptySkillDelta(),
+          applied: false
+        };
+      }
+      const before = actor.xp[skill];
+      const banked = (before ?? 0) + awarded;
+      actor.xp[skill] = banked;
+      const facts = skillXpDelta(actorId, skill, before, banked);
+      const applied = await this.writeDelta(facts);
+      return {
+        actor: actorId,
+        skill,
+        awarded,
+        banked,
+        advanceable: (await this.canAdvance(actorId, skill)).available,
+        facts,
+        applied
+      };
+    }
+    /**
+     * Whether this actor may take the next level of a skill, without taking it.
+     *
+     * Every gate in {@link SKILL_ADVANCE_REFUSALS} order: what core knows first —
+     * the skill exists, its `skill_requires/3` prerequisites are met, it is not
+     * capped, the bank affords it — then permissibility. Advancing from 0 to 1 is
+     * LEARNING, which is why `can_learn_skill/2` and `can_advance/2` are one
+     * operation here rather than two entry points a caller has to choose between.
+     */
+    async canAdvance(actorId, skill) {
+      const actor = this.actors.get(actorId);
+      const resolution = resolveAdvance({
+        actor: actorId,
+        skill: this.skills.get(skill),
+        skillId: skill,
+        level: actor?.levels[skill] ?? 0,
+        banked: actor?.xp[skill] ?? 0,
+        levels: actor?.levels ?? {},
+        tuning: this.tuning
+      });
+      if (!resolution.available) return { ...resolution, permitted: false };
+      const check = await this.checkPermission(actorId, this.tuning.advanceAction, skill);
+      if (!check.permitted) {
+        return { ...resolution, available: false, refusal: "forbidden", check, permitted: false };
+      }
+      return { ...resolution, check, permitted: true };
+    }
+    /**
+     * Take the next level of a skill, if every gate allows it.
+     *
+     * The order is the module's discipline, and each step is where it is for a
+     * reason:
+     *
+     *  1. **Decide** ({@link canAdvance}). Nothing has happened yet.
+     *  2. **Spend** the banked XP. The bank is a currency, not a running total —
+     *     `docs/skill-progression.md` §3.
+     *  3. **Raise** `has_skill/3`, which is the fact the rest of the world already
+     *     reads.
+     *  4. **Grant** points to every tree the skill funds, so there is something to
+     *     spend them on.
+     */
+    async advance(actorId, skill) {
+      const decision = await this.canAdvance(actorId, skill);
+      const actor = this.actors.get(actorId);
+      const level = actor?.levels[skill] ?? 0;
+      if (!decision.permitted || !actor) {
+        return {
+          ...decision,
+          performed: false,
+          level,
+          spent: 0,
+          granted: [],
+          facts: emptySkillDelta(),
+          applied: false
+        };
+      }
+      const banked = actor.xp[skill] ?? 0;
+      const remaining = banked - decision.price;
+      const raised = level + 1;
+      actor.xp[skill] = remaining;
+      actor.levels[skill] = raised;
+      const granted = [];
+      const pointDeltas = [];
+      for (const treeId of treesFundedBy(this.trees, skill)) {
+        const before = actor.points[treeId];
+        const after = (before ?? 0) + this.tuning.pointsPerLevel;
+        actor.points[treeId] = after;
+        granted.push({ treeId, points: this.tuning.pointsPerLevel });
+        pointDeltas.push(skillPointsDelta(actorId, treeId, before, after));
+      }
+      const facts = mergeSkillDeltas(
+        skillXpDelta(actorId, skill, banked, remaining),
+        skillLevelDelta(actorId, skill, level, raised),
+        ...pointDeltas
+      );
+      const applied = await this.writeDelta(facts);
+      this.eventBus?.emit({
+        type: "skill_advanced",
+        actorId,
+        skillId: skill,
+        level: raised,
+        spent: decision.price,
+        granted
+      });
+      return {
+        ...decision,
+        performed: true,
+        level: raised,
+        spent: decision.price,
+        granted,
+        facts,
+        applied
+      };
+    }
+    /** What the next level of this skill would cost, or `0` past the cap. */
+    priceOfNextLevel(actorId, skill) {
+      const definition = this.skills.get(skill);
+      const level = this.levelOf(actorId, skill);
+      if (level >= maxLevelOf(definition, this.tuning)) return 0;
+      return xpForLevel(definition, level + 1, this.tuning);
+    }
+    // ── Nodes ──────────────────────────────────────────────────────────────
+    /**
+     * Whether this actor may take a node, without taking it.
+     *
+     * Every gate in {@link SKILL_UNLOCK_REFUSALS} order: the node exists, it is not
+     * already taken, the pool affords it, its authored goals hold, and nothing
+     * forbids it. The two rules-layer rungs come last because they cost a round
+     * trip and because a node nobody can pay for is refused for a reason nobody
+     * needs the KB to explain.
+     */
+    async canUnlock(actorId, nodeId) {
+      const node = findNode(this.trees, nodeId);
+      const resolution = resolveUnlock({
+        actor: actorId,
+        node,
+        nodeId,
+        points: node ? this.pointsOf(actorId, node.tree) : 0,
+        unlocked: this.hasUnlocked(actorId, nodeId),
+        tuning: this.tuning
+      });
+      if (!resolution.available) return { ...resolution, unmet: [], permitted: false };
+      const unmet = await this.unmetRequirements(actorId, resolution.requires);
+      if (unmet.length > 0) {
+        return { ...resolution, available: false, refusal: "requires", unmet, permitted: false };
+      }
+      const check = await this.checkPermission(actorId, resolution.action, nodeId);
+      if (!check.permitted) {
+        return {
+          ...resolution,
+          available: false,
+          refusal: "forbidden",
+          unmet,
+          check,
+          permitted: false
+        };
+      }
+      return { ...resolution, unmet, check, permitted: true };
+    }
+    /**
+     * Take a node, if every gate allows it.
+     *
+     * Spend, then record. What the node DOES is not applied here and never will be:
+     * an effect is an authored term the KB carries, and the module it affects reads
+     * it (US-2). A `SkillProgression` that reached into `CombatResolver` would be
+     * the fork this whole design exists to avoid.
+     */
+    async unlock(actorId, nodeId) {
+      const decision = await this.canUnlock(actorId, nodeId);
+      const actor = this.actors.get(actorId);
+      const node = findNode(this.trees, nodeId);
+      const effects = node?.effects ?? [];
+      if (!decision.permitted || !actor || !node) {
+        return {
+          ...decision,
+          performed: false,
+          remaining: decision.points,
+          effects,
+          facts: emptySkillDelta(),
+          applied: false
+        };
+      }
+      const before = actor.points[node.tree];
+      const remaining = (before ?? 0) - decision.cost;
+      actor.points[node.tree] = remaining;
+      actor.unlocked.push(nodeId);
+      const facts = mergeSkillDeltas(
+        skillPointsDelta(actorId, node.tree, before, remaining),
+        skillUnlockDelta(actorId, nodeId)
+      );
+      const applied = await this.writeDelta(facts);
+      this.publishModifiers(actorId);
+      this.eventBus?.emit({
+        type: "skill_node_unlocked",
+        actorId,
+        nodeId,
+        treeId: node.tree,
+        cost: decision.cost,
+        // `effectTerm` text, never the effect objects: pinned by conformance/skills/effect-terms.json.
+        effects: effects.map((effect) => effectTerm(effect))
+      });
+      return { ...decision, performed: true, remaining, effects, facts, applied };
+    }
+    // ── The gates ──────────────────────────────────────────────────────────
+    /**
+     * The authored goals a node asks that the KB did not satisfy.
+     *
+     * Evaluated by the PACK's own `skill_goal_met/2`, not by a second
+     * implementation here: the pack rebuilds the goal with the actor bound (`=..`),
+     * and reproducing that rebuild in TypeScript is how one guild member's
+     * reputation ends up unlocking the whole roster's node — the correction
+     * `traversal_goal_met/2` already carries.
+     *
+     * With no KB wired every goal is unmet — see the module header for why this
+     * gate fails closed and permissibility fails open.
+     */
+    async unmetRequirements(actorId, requires) {
+      if (requires.length === 0) return [];
+      if (!this.engine) return [...requires];
+      const unmet = [];
+      for (const goal of requires) {
+        let met = false;
+        try {
+          met = await this.engine.queryOnce(`skill_goal_met(${prologAtom(actorId)}, ${goal})`);
+        } catch {
+          met = false;
+        }
+        if (!met) unmet.push(goal);
+      }
+      return unmet;
+    }
+    /**
+     * `permissible/3`'s own input, forwarded with the attempt spelled as the action
+     * it is.
+     *
+     * There is deliberately no progression-private gate: a guild that will not
+     * teach an outsider, a law against training in a besieged city and a norm
+     * against taking the assassin's node are all refused by whatever `forbids/4`
+     * refuses them with, which is the same clause that refuses a theft. With no KB
+     * wired every advancement is permitted; core does not invent a prohibition it
+     * cannot read.
+     */
+    async checkPermission(actorId, action, target) {
+      const subject = target || NO_TARGET;
+      if (!this.engine) {
+        return { agent: actorId, action, target: subject, permitted: true, breached: [] };
+      }
+      return checkAction(this.engine, { agent: actorId, action, target: subject });
+    }
+    // ── The KB ─────────────────────────────────────────────────────────────
+    /**
+     * The last refusal, if the most recent write was refused by the schema gate.
+     *
+     * A refused write returns `false` exactly as a write with no KB behind it
+     * does, so the reason has to be readable somewhere; this is where. It is
+     * cleared by the next write that passes.
+     */
+    lastWriteRefusal() {
+      return this.writeRefusal;
+    }
+    /**
+     * Validate a whole delta and apply it, or apply none of it.
+     *
+     * Public for `BusinessDirector.applyDelta`'s reason: "nothing is partially
+     * written" is the claim a stateful layer most needs falsified against a real
+     * KB rather than taken on trust.
+     */
+    async applyDelta(delta) {
+      return this.writeDelta(delta);
+    }
+    /**
+     * Write one delta into the KB, retracting first — after checking the whole of
+     * it (US-1 of `195-module-v2-narrative-placement-skills`).
+     *
+     * `checkSkillDelta` runs over every clause before the KB is asked for
+     * anything, so a delta that reached outside progression's own vocabulary or
+     * carried an unbound variable is refused **whole** and leaves the KB
+     * byte-identical. Progression is the module that most needs that gate and was
+     * the last of the four to get it: an unlock is a `skill_unlocked/2` that
+     * `skill_effect/2` reads, and `skill_effect/2` is read by combat, traversal
+     * and crafting alike — so a half-written unlock is a modifier applied to every
+     * actor in the world (`docs/skill-progression.md` §8).
+     *
+     * Retracting a fact the KB never carried is a no-op rather than a failure: a
+     * host with its own persistence, a restored save and an actor registered before
+     * the engine was wired all produce one, and none of them is an error.
+     */
+    async writeDelta(delta) {
+      const verdict = checkSkillDelta(delta);
+      if (!verdict.ok) {
+        this.writeRefusal = verdict.reason;
+        return false;
+      }
+      this.writeRefusal = null;
+      if (!this.engine) return false;
+      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
+      for (const fact of delta.retract) {
+        try {
+          await this.engine.retractFact(stripPeriod5(fact));
+        } catch {
+        }
+      }
+      for (const fact of delta.assert) {
+        await this.engine.assertFact(stripPeriod5(fact));
+      }
+      return true;
+    }
+    /**
+     * Publish every registered actor's levels, banks, pools and taken nodes.
+     *
+     * For a caller that wired the KB after the roster — a save restore, a host that
+     * builds its world before its engine. Returns how many facts were written.
+     */
+    async publishActors(engine = this.engine) {
+      if (!engine) return 0;
+      let written = 0;
+      for (const actor of this.roster()) {
+        const delta = mergeSkillDeltas(
+          ...Object.entries(actor.levels).map(
+            ([skill, level]) => skillLevelDelta(actor.id, skill, void 0, level)
+          ),
+          ...Object.entries(actor.xp).map(([skill, xp]) => skillXpDelta(actor.id, skill, void 0, xp)),
+          ...Object.entries(actor.points).map(
+            ([tree, points3]) => skillPointsDelta(actor.id, tree, void 0, points3)
+          ),
+          ...actor.unlocked.map((node) => skillUnlockDelta(actor.id, node))
+        );
+        for (const fact of delta.assert) {
+          await engine.assertFact(stripPeriod5(fact));
+          written += 1;
+        }
+      }
+      return written;
+    }
+    // ── Save/restore ───────────────────────────────────────────────────────
+    /** Every actor this module knows, in canonical order. */
+    roster() {
+      return [...this.actors.values()].map((actor) => ({
+        id: actor.id,
+        levels: sortedRecord(actor.levels),
+        xp: sortedRecord(actor.xp),
+        points: sortedRecord(actor.points),
+        unlocked: [...actor.unlocked].sort(compareIds)
+      })).sort((a, b) => compareIds(a.id, b.id));
+    }
+    /**
+     * The per-playthrough state, and only that: what each actor has learned,
+     * banked, been granted and taken. The skills, the trees, the curve, the costs
+     * and the effects are authored and are NOT here — a tuning number inside a save
+     * file is world-template data leaking into a playthrough
+     * (`docs/mechanic-predicates.md` §3).
+     */
+    serialize() {
+      return { actors: this.roster() };
+    }
+    /**
+     * Restore a saved playthrough. Silent — no events, because loading a save is
+     * not somebody levelling up, no KB writes, because restoring a save is what
+     * `publishActors` is for once the engine exists, and no host call, because
+     * {@link publishModifiers} is its counterpart on the other seam. A caller that
+     * restores into a live world calls both; one that restores into a world it is
+     * still building calls neither yet.
+     */
+    restore(state) {
+      this.actors = /* @__PURE__ */ new Map();
+      for (const actor of state.actors ?? []) {
+        this.actors.set(actor.id, {
+          id: actor.id,
+          levels: { ...actor.levels ?? {} },
+          xp: { ...actor.xp ?? {} },
+          points: { ...actor.points ?? {} },
+          unlocked: [...actor.unlocked ?? []]
+        });
+      }
+    }
+  };
+  function stripPeriod5(clause) {
+    return clause.replace(/\.$/, "");
+  }
+  function union(before, after) {
+    return [.../* @__PURE__ */ new Set([...Object.keys(before ?? {}), ...Object.keys(after)])].sort(compareIds);
+  }
+  function sortedRecord(record) {
+    const out = {};
+    for (const key of Object.keys(record).sort(compareIds)) out[key] = record[key];
+    return out;
+  }
 
   // @insimul/core/src/ai/substrate-pack.ts
   var AI_SUBSTRATE_AREA = "agentAi";
@@ -22119,813 +26379,6 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     SCAFFOLD_PACK
   ]);
 
-  // @insimul/core/src/prolog/mechanics/combat-predicates.ts
-  var COMBAT_PREDICATES_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Combat \u2014 reach, legality and effectiveness
-% docs/mechanic-predicates.md \xA74
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% faction(EntityId, FactionId).
-% faction_stance(FactionA, FactionB, hostile|neutral|allied).
-% resists_damage(EntityId, DamageType) / vulnerable_to(EntityId, DamageType) \u2014
-%   DamageType is an atom the WORLD declares (slashing, fire, silver, \u2026); core
-%   fixes no list, because the set is content.
-:- dynamic(faction/2).
-:- dynamic(faction_stance/3).
-:- dynamic(resists_damage/2).
-:- dynamic(vulnerable_to/2).
-
-% \u2500\u2500 Runtime facts (per playthrough \u2014 save.currentState.prologFacts) \u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% in_combat/1, combat_target/2, threat/3 and incapacitated/1 differ between two
-% playthroughs of the same world, so authoring any of them on a world template
-% is a design error, not a schema entry (\xA73).
-:- dynamic(in_combat/1).
-:- dynamic(combat_target/2).
-:- dynamic(threat/3).
-:- dynamic(incapacitated/1).
-
-% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% alive/1 is the character block's (see the module header); near/3 and
-% has_equipped/3 are runtime gameplay state (\xA710.1); item_range/2 and
-% item_damage_type/2 are authored weapon stats on the item block.
-% Declared here so this pack answers "no" instead of raising in a KB that
-% carries none of them.
-:- dynamic(alive/1).
-:- dynamic(near/3).
-:- dynamic(has_equipped/3).
-:- dynamic(item_range/2).
-:- dynamic(item_damage_type/2).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% Hostility is a property of the factions, not of the pair: two members of
-% mutually hostile factions are hostile without anyone authoring the pair.
-hostile_to(A, B) :-
-  faction(A, FA),
-  faction(B, FB),
-  faction_stance(FA, FB, hostile).
-
-% A legal target: still standing, not already down, and an enemy. incapacitated/1
-% is deliberately distinct from dead/1 \u2014 "down but not dead" is its own decision
-% state (lootable, untalkable, and NOT a legal attack target).
-can_attack(A, T) :-
-  alive(T),
-  \\+ incapacitated(T),
-  hostile_to(A, T).
-
-% "You may only swing at something you can actually reach with what you're
-% holding." W is the weapon that reaches, so a caller can name it.
-in_reach(A, T, W) :-
-  has_equipped(A, weapon, W),
-  item_range(W, R),
-  near(A, T, R).
-
-% The weapon's damage type means something against this target. The world
-% authors what resists what; core owns no damage formula.
-effective_against(W, T) :-
-  item_damage_type(W, DT),
-  \\+ resists_damage(T, DT).
-`;
-  var COMBAT_RUNTIME_PREDICATES = [
-    "in_combat/1",
-    "combat_target/2",
-    "threat/3",
-    "incapacitated/1"
-  ];
-
-  // @insimul/core/src/prolog/mechanics/perception-predicates.ts
-  var PERCEPTION_PREDICATES_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Stealth and perception \u2014 detection and trespass
-% docs/mechanic-predicates.md \xA75
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% senses(EntityId, sight|hearing|smell, Range) \u2014 what this creature can use.
-% restricted_area(LocationId) / access_permitted(Actor, LocationId): "the
-%   innkeeper's family may enter the back room" is a fact about the WORLD, not
-%   about a playthrough, so both are authored. A key picked up mid-game asserts
-%   nothing here \u2014 a trespass rule reads has/2 separately.
-:- dynamic(senses/3).
-:- dynamic(restricted_area/1).
-:- dynamic(access_permitted/2).
-
-% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% line_of_sight/2 is HOST-SUPPLIED: the engine raycasts and asserts it.
-% light_level/2 is runtime and not authored on purpose (\xA73's test case): a cave's
-%   darkness looks like template data, but the value that decides the query is
-%   the one at query time \u2014 night, a doused torch, a spell.
-% Level is 0\u2013100 for both noise_level/2 and light_level/2.
-:- dynamic(line_of_sight/2).
-:- dynamic(concealed/1).
-:- dynamic(noise_level/2).
-:- dynamic(light_level/2).
-:- dynamic(alerted/2).
-
-% \u2500\u2500 The graded detection state (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% awareness(Observer, Target, Level) \u2014 0\u2013100, accumulated over ticks by
-%   game-engine/logic/DetectionTracker.ts out of what the host's senses reported.
-% detection_state(Observer, Target, unaware|suspicious|searching|alerted).
-:- dynamic(awareness/3).
-:- dynamic(detection_state/3).
-
-% \u2500\u2500 Authored bands (world content \u2014 published at load, never in a save) \u2500\u2500\u2500\u2500
-% detection_threshold(suspicious|searching|alerted, Level) \u2014 the world's
-%   thresholds, out of WorldIR.perception, the way stamina_threshold/2 is (\xA79).
-:- dynamic(detection_threshold/2).
-
-% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-:- dynamic(near/3).
-:- dynamic(at_location/2).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% Detection, and the sense that produced it. detects_via/3 is the one that
-% carries the reason; detects/2 is the question every authored rule asks.
-detects(O, T) :- detects_via(O, T, _).
-
-detects_via(O, T, sight) :-
-  senses(O, sight, R),
-  near(O, T, R),
-  line_of_sight(O, T),
-  \\+ concealed(T),
-  at_location(T, L),
-  light_level(L, Lx),
-  Lx >= 20.
-
-detects_via(O, T, hearing) :-
-  senses(O, hearing, R),
-  near(O, T, R),
-  noise_level(T, N),
-  N >= 30.
-
-% Nobody detects T. Written over detects/2 so a new sense clause tightens it
-% automatically.
-unseen(T) :- \\+ detects(_, T).
-
-% Somewhere you are not allowed to be. Being SEEN there is a separate question \u2014
-% the guard's rule conjoins trespassing/2 with detects/2 (\xA75).
-trespassing(A, L) :-
-  at_location(A, L),
-  restricted_area(L),
-  \\+ access_permitted(A, L).
-
-% \u2500\u2500 The rungs of the ladder \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Named, so an authored rule says "the guard is searching for the thief" rather
-% than comparing a number to a band it would have to know the value of.
-suspicious_of(O, T) :- detection_state(O, T, suspicious).
-
-searching_for(O, T) :- detection_state(O, T, searching).
-
-% alerted/2 stays dynamic \u2014 a scripted alarm or a quest script asserts it \u2014 AND
-% is derived from the ladder, so a graded state and the boolean every existing
-% rule already asks can never contradict each other.
-alerted(O, T) :- detection_state(O, T, alerted).
-
-% Noticed at all: any rung above unaware. Written over detection_state/3 so a
-% world that adds a rung gets it here for free.
-noticed(O, T) :-
-  detection_state(O, T, S),
-  S \\== unaware.
-
-% Nobody has noticed T. unseen/1 asks that of THIS instant's sensing;
-% undetected/1 asks it of the accumulated state, which is the one a stealth
-% mechanic actually pays out on.
-undetected(T) :- \\+ noticed(_, T).
-`;
-  var PERCEPTION_RUNTIME_PREDICATES = [
-    "line_of_sight/2",
-    "concealed/1",
-    "noise_level/2",
-    "light_level/2",
-    "alerted/2",
-    "awareness/3",
-    "detection_state/3"
-  ];
-
-  // @insimul/core/src/prolog/mechanics/skill-predicates.ts
-  var SKILL_PREDICATES_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Skills \u2014 what exists, what it costs, what it requires
-% docs/mechanic-predicates.md \xA76
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% skill_defined(SkillId, Category).
-% skill_max_level(SkillId, Max).
-% skill_requires(SkillId, PrereqSkillId, MinLevel).
-% skill_level_xp(SkillId, Level, XpNeeded) \u2014 the progression CURVE, kept in
-%   content. Without it the curve is a constant in four engines and the same
-%   save levels up in three of them.
-:- dynamic(skill_defined/2).
-:- dynamic(skill_max_level/2).
-:- dynamic(skill_requires/3).
-:- dynamic(skill_level_xp/3).
-
-% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-:- dynamic(skill_xp/3).
-
-% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-:- dynamic(has_skill/3).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% At the world's cap for this skill.
-skill_capped(A, S) :-
-  has_skill(A, S, L),
-  skill_max_level(S, L).
-
-% A skill the world declares, that this actor does not have yet, and whose every
-% prerequisite is met. The double negation is "no prerequisite is unmet", so a
-% skill with no skill_requires/3 facts qualifies.
-can_learn_skill(A, S) :-
-  skill_defined(S, _),
-  \\+ has_skill(A, S, _),
-  \\+ (skill_requires(S, P, Min), \\+ (has_skill(A, P, L), L >= Min)).
-
-% Enough XP banked for the next level, and not already capped.
-can_advance(A, S) :-
-  has_skill(A, S, L),
-  \\+ skill_capped(A, S),
-  Next is L + 1,
-  skill_level_xp(S, Next, Need),
-  skill_xp(A, S, X),
-  X >= Need.
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Skill trees \u2014 nodes, what they ask, what they cost, what they do
-% US-1 of 123-skill-trees-and-progression
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% skill_tree(TreeId, SkillId) \u2014 the skill whose levels FUND this tree. It is
-%   the whole coupling between the two halves of progression: advancing
-%   smithing grants points to the trees rooted on smithing, and nothing else
-%   does. A guild or faction tree is authored the same way over a standing.
-% skill_node(NodeId, TreeId).
-% skill_node_cost(NodeId, Points).
-% skill_node_requires(NodeId, Goal) \u2014 Goal is a Prolog goal evaluated with the
-%   actor bound, the convention traversal_requires/3 uses. An authored parent
-%   edge arrives here as skill_node_requires(N, skill_unlocked(Actor, Parent)),
-%   so tree structure and an arbitrary condition are ONE gate.
-% skill_node_effect(NodeId, Effect) \u2014 what taking it does, as a term:
-%   unlocks(Action), modifies(Param, Amount), permits(Thing). The set is
-%   authored; a world that wants a fourth writes it and a rule reads it.
-:- dynamic(skill_tree/2).
-:- dynamic(skill_node/2).
-:- dynamic(skill_node_cost/2).
-:- dynamic(skill_node_requires/2).
-:- dynamic(skill_node_effect/2).
-
-% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% What is unspent, per tree, and what has been taken. Both are per-playthrough:
-% two saves of one world differ by exactly this (\xA73).
-:- dynamic(skill_points/3).
-:- dynamic(skill_unlocked/2).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% An authored requirement is written with the ACTOR as its first argument \u2014
-% skill_node_requires(guild_forge, reputation(Actor, smiths_guild, 50)). That
-% variable is a FRESH one every time the fact is read, so it is not the caller's
-% actor and call/1 on the term as stored would be satisfied by anybody at all
-% with the standing \u2014 one guild member's reputation unlocking the whole roster's
-% node. The goal is therefore rebuilt with A in the first argument position
-% before it is called. A requirement authored as a plain atom (bridge_repaired)
-% says nothing about the actor and is called as written.
-skill_goal_met(_, Goal) :-
-  atom(Goal),
-  !,
-  call(Goal).
-skill_goal_met(A, Goal) :-
-  Goal =.. [F, _ | Rest],
-  Bound =.. [F, A | Rest],
-  call(Bound).
-
-% What a node costs. A loaded world publishes a cost for every node (the
-% world's default applied), so the second clause is what keeps the pack
-% answerable about a tree asserted by hand.
-skill_node_price(N, C) :- skill_node_cost(N, C), !.
-skill_node_price(N, 0) :- skill_node(N, _).
-
-% What is unspent in a tree the actor has never earned a point in.
-skill_points_held(A, T, P) :- skill_points(A, T, P), !.
-skill_points_held(_, T, 0) :- skill_tree(T, _).
-
-% A node this actor has not taken, can pay for, and whose every requirement
-% holds. The double negation is "no requirement is unmet", so a node with no
-% skill_node_requires/2 fact qualifies. Whether it is PERMITTED is forbids/4's,
-% exactly as a climb's is: a guild's own rules refuse an unlock without this
-% rule knowing that guilds exist.
-can_unlock(A, N) :-
-  skill_node(N, T),
-  \\+ skill_unlocked(A, N),
-  skill_node_price(N, C),
-  skill_points_held(A, T, P),
-  P >= C,
-  \\+ (skill_node_requires(N, G), \\+ skill_goal_met(A, G)).
-
-% What an actor's skills DO \u2014 the one thing another module asks. A module reads
-% effects; it never reads nodes, which is what keeps a skill tree data over
-% combat, traversal and crafting rather than a system inside them.
-skill_effect(A, E) :- skill_unlocked(A, N), skill_node_effect(N, E).
-`;
-  var SKILL_RUNTIME_PREDICATES = [
-    "skill_xp/3",
-    "skill_points/3",
-    "skill_unlocked/2"
-  ];
-
-  // @insimul/core/src/prolog/mechanics/traversal-predicates.ts
-  var TRAVERSAL_PREDICATES_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Traversal \u2014 links, blockage, and reachability
-% docs/mechanic-predicates.md \xA77
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% traversal_link(FromLoc, ToLoc, walk|climb|swim|ride|boat) \u2014 DIRECTED. Mode is
-%   authored, and it is where mounts and boats land: the decision layer's whole
-%   interest in a boat is "this link needs boat and you have it", so there is no
-%   vehicle vocabulary (\xA712).
-% traversal_cost(FromLoc, ToLoc, Cost) \u2014 read by authored rules (travel time,
-%   stamina spend); the pack imposes no cost model of its own.
-% traversal_requires(FromLoc, ToLoc, Goal) \u2014 Goal is a Prolog goal evaluated
-%   with Actor bound, the same convention radiant_precondition/3 uses.
-:- dynamic(traversal_link/3).
-:- dynamic(traversal_cost/3).
-:- dynamic(traversal_requires/3).
-
-% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% "The landslide closed the pass" is a playthrough event, never world content.
-:- dynamic(traversal_blocked/2).
-:- dynamic(movement_mode/2).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% Pack-local, library-free membership (see the module header).
-traversal_member(X, [X|_]).
-traversal_member(X, [_|T]) :- traversal_member(X, T).
-
-% An authored requirement is written with the ACTOR as its first argument \u2014
-% traversal_requires(camp, ford, has_item(Actor, rope, 1)). That variable is a
-% FRESH one every time the fact is read, so it is not the caller's actor and
-% call/1 on the term as stored would be satisfied by anyone at all holding a
-% rope. The goal is therefore rebuilt with A in the first argument position
-% before it is called. A requirement authored as a plain atom (bridge_repaired)
-% says nothing about the actor and is called as written.
-traversal_goal_met(_, Goal) :-
-  atom(Goal),
-  !,
-  call(Goal).
-traversal_goal_met(A, Goal) :-
-  Goal =.. [F, _ | Rest],
-  Bound =.. [F, A | Rest],
-  call(Bound).
-
-% One link, open, in a mode this actor is using, whose requirement (if any)
-% holds. The \\+ (Requirement, \\+ Met) shape means a link with no
-% traversal_requires/3 fact passes; calling an authored goal is the trust
-% boundary radiant_precondition/3 already accepts.
-can_traverse(A, From, To) :-
-  traversal_link(From, To, Mode),
-  \\+ traversal_blocked(From, To),
-  movement_mode(A, Mode),
-  \\+ (traversal_requires(From, To, Goal), \\+ traversal_goal_met(A, Goal)).
-
-% Reachability over one or more links. Cycle-safe by carrying the visited set,
-% so a loop of links terminates instead of spinning.
-reachable(A, From, To) :- reachable_via(A, From, To, [From]).
-
-reachable_via(A, From, To, _) :- can_traverse(A, From, To).
-reachable_via(A, From, To, Seen) :-
-  can_traverse(A, From, Mid),
-  \\+ traversal_member(Mid, Seen),
-  reachable_via(A, Mid, To, [Mid | Seen]).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Vehicles \u2014 ridden entities, in the same vocabulary
-% US-2 of 122-traversal-and-travel
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Authored \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% vehicle_mode(VehicleId, ride|boat|...) \u2014 what the thing IS, said as the
-%   traversal mode it lends whoever is driving it. \xA712 cut vehicle/1 and that cut
-%   stands: a kind predicate would say strictly less than this one does.
-:- dynamic(vehicle_mode/2).
-
-% \u2500\u2500 Runtime (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Ownership is runtime because a horse is bought, inherited, confiscated and
-% stolen; the world's authored owner is where the playthrough STARTS (\xA73).
-% at_location/2 is the world-state predicate, not a vehicle-private one: a
-% vehicle is an entity, and a rule asking what is at the dock must see the boat.
-:- dynamic(vehicle_owner/2).
-:- dynamic(vehicle_occupant/2).
-:- dynamic(vehicle_driver/2).
-:- dynamic(at_location/2).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% The mode a vehicle lends its driver \u2014 the ONLY thing a vehicle changes about
-% traversal, and the reason there is no vehicle mechanic beside this one. A
-% passenger is carried; the driver is the one movement_mode/2 becomes true of.
-riding_mode(A, Mode) :- vehicle_driver(V, A), vehicle_mode(V, Mode).
-
-% Boarding: same place, not already aboard. Colocation is asked of the location
-% ATOMS \u2014 "three metres from the horse" is the host's question, not this one's.
-% Capacity is deliberately absent: \xA712 cut vehicle_capacity/2, so a world that
-% wants to know whether the cart is full counts vehicle_occupant/2 itself.
-can_board(A, V) :-
-  vehicle_mode(V, _),
-  at_location(V, L),
-  at_location(A, L),
-  \\+ vehicle_occupant(V, A).
-
-% Taking the reins: aboard, and nobody else at the helm. Permission is NOT here
-% \u2014 whether taking somebody else's cart is a crime is forbids/4's answer, which
-% is what lets one world police the roads and another leave them common.
-can_drive(A, V) :-
-  vehicle_occupant(V, A),
-  \\+ (vehicle_driver(V, Other), Other \\== A).
-
-% Nobody has the reins \u2014 what an NPC's candidate_action/3 keys on to notice that
-% the cart at the mill is there for the taking.
-vehicle_unattended(V) :- vehicle_mode(V, _), \\+ vehicle_driver(V, _).
-
-% "It is not theirs" \u2014 the FACT a theft norm is authored over
-% (rule_applies(cart_theft, Actor, V) :- vehicle_not_owned_by(Actor, V)). A
-% vehicle nobody owns is nobody's to steal, so an absent owner FAILS rather than
-% succeeds: core states ownership and never invents a prohibition.
-vehicle_not_owned_by(A, V) :- vehicle_owner(V, Owner), Owner \\== A.
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Fast travel \u2014 you may go where you have BEEN and can still GET to
-% US-3 of 122-traversal-and-travel
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% location_discovered/1 is gameplay-predicates.ts's, already asserted whenever a
-% player reaches somewhere. It is DECLARED here rather than re-minted as a
-% traversal-private "known destination" fact, for \xA710.1's reason: two vocabularies
-% for one fact is how a place discovered through a rumour, a map or a quest stops
-% counting as discovered for travel.
-:- dynamic(location_discovered/1).
-
-% \xA77's own worked example, promoted from an authored can_perform/2 clause to a
-% pack rule because the decision layer asks it: fast travel is gated by DISCOVERY
-% and by REACHABILITY, and reachability is what makes it a world operation rather
-% than a teleport \u2014 you cannot fast travel past a landslide you could not have
-% walked past, and a route that needs a rope needs the rope either way.
-%
-% Whether it is PERMITTED is forbids/4's, exactly as a climb's is, and is not here:
-% a closed border, a quarantine and 123's skill gates refuse a journey without this
-% rule knowing they exist. What is also not here is time \u2014 how long the journey
-% takes is arithmetic over traversal_cost/3 and belongs in src/traversal/, never in
-% a predicate a save could carry a stale copy of.
-can_fast_travel(A, Dest) :-
-  location_discovered(Dest),
-  at_location(A, Here),
-  Here \\== Dest,
-  reachable(A, Here, Dest).
-`;
-  var TRAVERSAL_RUNTIME_PREDICATES = [
-    "traversal_blocked/2",
-    "movement_mode/2",
-    "vehicle_owner/2",
-    "vehicle_occupant/2",
-    "vehicle_driver/2"
-  ];
-
-  // @insimul/core/src/prolog/mechanics/equipment-predicates.ts
-  var EQUIPMENT_PREDICATES_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Equipment \u2014 slots, requirements, weight and armour
-% docs/mechanic-predicates.md \xA78
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% equip_slot(ItemId, Slot) / equip_slot_capacity(Slot, N) \u2014 "two rings, not five".
-% item_requires(ItemId, SkillId, MinLevel) \u2014 "heavy plate isn't something you
-%   just put on".
-:- dynamic(equip_slot/2).
-:- dynamic(equip_slot_capacity/2).
-:- dynamic(item_requires/3).
-
-% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-:- dynamic(carry_capacity/2).
-:- dynamic(item_condition/2).
-
-% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% has_equipped/3 and has_item/3 are runtime gameplay state; item_weight/2 and
-% item_armor/2 are authored stats on the item block.
-:- dynamic(has_equipped/3).
-:- dynamic(has_item/3).
-:- dynamic(has_skill/3).
-:- dynamic(item_weight/2).
-:- dynamic(item_armor/2).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% The compat bridge for helper-predicates.ts's objective_complete/3 clauses \u2014
-% note the argument order differs from has_equipped/3, which is why this rule
-% exists at all (\xA710.3).
-equipped(Actor, Item, Slot) :- has_equipped(Actor, Slot, Item).
-
-% Pack-local total. findall/3 and length/2 are ISO builtins the shared engine
-% has; aggregate_all/3 is NOT (it lives in library(aggregate), which a pack may
-% not depend on \u2014 see the module header), and the name is prefixed so this pack
-% cannot shadow a builtin the way sum_list/2 once did.
-equipment_sum([], 0).
-equipment_sum([X | T], S) :-
-  equipment_sum(T, S0),
-  S is S0 + X.
-
-% Room left in a slot the world gave a capacity to.
-slot_free(A, Slot) :-
-  equip_slot_capacity(Slot, N),
-  findall(I, has_equipped(A, Slot, I), Equipped),
-  length(Equipped, Used),
-  Used < N.
-
-% Held, has a slot, the slot has room, and every skill requirement is met. The
-% comparison is inline rather than helper-predicates.ts's skill_gte/3 so this
-% pack consults standalone (see the module header).
-can_equip(A, I) :-
-  has_item(A, I, _),
-  equip_slot(I, Slot),
-  slot_free(A, Slot),
-  \\+ (item_requires(I, S, Min), \\+ (has_skill(A, S, L), L >= Min)).
-
-% Everything carried, by weight. A rule and not a fact: a stored total goes
-% stale against has_item/3 the moment anything is picked up (\xA712). An actor
-% carrying nothing weighs 0 rather than failing, so a caller never has to
-% distinguish "empty" from "unknown".
-carried_weight(A, W) :-
-  findall(Wi, (has_item(A, I, Q), item_weight(I, U), Wi is U * Q), Weights),
-  equipment_sum(Weights, W).
-
-encumbered(A) :-
-  carried_weight(A, W),
-  carry_capacity(A, Max),
-  W > Max.
-
-% Armour from everything worn, whatever slot it is in.
-armor_value(A, V) :-
-  findall(Av, (has_equipped(A, _, I), item_armor(I, Av)), Values),
-  equipment_sum(Values, V).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Trade \u2014 who sells what, whether the shelf is bare, and who is paid
-% docs/mechanic-predicates.md \xA78, US-2 of 124-items-equipment-economy
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% vendor(VendorId, BusinessId) \u2014 who trades, and on whose behalf. A vendor
-%   trading for themselves is said with their own atom in both places, so
-%   vendor(V, B), business_owner(B, O) is one query rather than two shapes.
-% vendor_markup(BusinessId, Percent) \u2014 the SHOP's margin: the business sets the
-%   price and the clerk does not.
-% item_stock_normal(ItemId, Qty) \u2014 what a well-supplied shelf carries. Scarcity
-%   is meaningless without it: three left is a glut of warhorses and a famine of
-%   arrows.
-% item_loot_weight(ItemId, Weight) \u2014 how likely the thing is to turn up at all.
-:- dynamic(vendor/2).
-:- dynamic(vendor_markup/2).
-:- dynamic(item_stock_normal/2).
-:- dynamic(item_loot_weight/2).
-
-% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% gold/2 belongs to the gameplay-state block and predates this pack; it is
-% declared here so this pack stands alone, exactly as has_item/3 above is, and
-% gameplay-state-predicates.ts is what OWNS the signature (\xA710.1).
-:- dynamic(gold/2).
-% A merchant's shelf is a CONTAINER: container_contains/3 already says "this
-% many of that, in that place", and a shelf is a place \u2014 so trade mints no
-% stock predicate of its own. business_owner/2 is the business block's.
-:- dynamic(container_contains/3).
-:- dynamic(business_owner/2).
-:- dynamic(item_tradeable/1).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% What is on the shelf, with "none" as an answer rather than a failure \u2014 the
-% same stance carried_weight/2 takes, so a caller never has to distinguish
-% "empty" from "unknown".
-stock_level(V, I, Q) :-
-  container_contains(V, I, Q),
-  !.
-stock_level(_, _, 0).
-
-in_stock(V, I, Q) :-
-  vendor(V, _),
-  stock_level(V, I, Q),
-  Q > 0.
-
-% Availability: they have one AND it is merchandise. A quest letter in a
-% merchant's pack is not for sale.
-sells(V, I) :-
-  in_stock(V, I, _),
-  item_tradeable(I).
-
-% Fewer on the shelf than the world calls a normal stock. HOW MUCH that costs is
-% arithmetic and stays out of the vocabulary (\xA711) \u2014 src/items/economy.ts \u2014 for
-% the reason \xA712 gives: a stored price goes stale the moment a shelf moves.
-scarce(V, I) :-
-  vendor(V, _),
-  item_stock_normal(I, N),
-  stock_level(V, I, Q),
-  Q < N.
-
-% Who the money belongs to. A vendor with no separate owner is their own.
-proceeds_to(V, Owner) :-
-  vendor(V, B),
-  business_owner(B, Owner),
-  !.
-proceeds_to(V, V) :-
-  vendor(V, _).
-
-% Whether a purse covers an amount. Named can_pay/2 rather than can_afford/2
-% because the latter belongs to the ToTT economics vocabulary and a pack may not
-% quietly redefine another's rule.
-can_pay(A, Amount) :-
-  gold(A, G),
-  G >= Amount.
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Placement \u2014 things in the world before anybody owns them
-% docs/mechanic-predicates.md \xA78, US-3 of 124-items-equipment-economy
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Runtime facts (per playthrough) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% item_at(ItemId, LocationId, Qty) \u2014 lying in the world, owned by nobody. The
-%   fourth place an item can be and the ONLY one that had no predicate: carried
-%   is has_item/3, in a chest is container_contains/3, worn is has_equipped/3.
-%   It carries a quantity because those two do and because the ledger holds one:
-%   forty arrows on a barrow floor said as item_at(arrow, barrow) would be a KB
-%   that means "some arrows" about a stack core knows the size of.
-%   Runtime, not authored: where the world STARTS its things is the template's,
-%   where they are on the fortieth day is the playthrough's (\xA73).
-:- dynamic(item_at/3).
-
-% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Containers already had a vocabulary \u2014 helper-predicates.ts declares five
-% container predicates and reasons over them with container_accessible/2 \u2014 so
-% placement mints none of its own and declares them the way it declares
-% has_item/3 above. at_location/2 is the world-state predicate, not a
-% placement-private one: a chest is an entity, and a rule asking what is in the
-% crypt must see it (traversal-predicates.ts makes the same call for a boat).
-:- dynamic(container/1).
-:- dynamic(container_locked/1).
-:- dynamic(at_location/2).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% Something lying where this actor is standing \u2014 what a "take" is offered over.
-% Whether they MAY take it is permissible/3's answer, asked by whoever takes it.
-item_here(A, I) :-
-  at_location(A, L),
-  item_at(I, L, _).
-
-% A container within reach. Whether it opens is container_accessible/2, which
-% belongs to helper-predicates.ts and is not called here: a pack that calls
-% another pack's rule is unusable without it (the AC4 coupling \xA78 refuses).
-container_here(A, C) :-
-  at_location(A, L),
-  container(C),
-  at_location(C, L).
-`;
-  var EQUIPMENT_RUNTIME_PREDICATES = [
-    "carry_capacity/2",
-    "item_condition/2",
-    // US-3's one minted predicate — the fourth place, and the one US-1 and US-2
-    // each deferred to placement so its shape would be decided by the story that
-    // needed it. Everything else placement writes belongs to somebody else:
-    // containers are `helper-predicates.ts`'s, `at_location/2` is the world's.
-    "item_at/3"
-  ];
-
-  // @insimul/core/src/prolog/mechanics/stamina-predicates.ts
-  var STAMINA_PREDICATES_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Stamina \u2014 thresholds, affordability and regeneration
-% docs/mechanic-predicates.md \xA79
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 Authored facts (world content \u2014 never in a save) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% stamina_regen_base(EntityId, RatePerTick) \u2014 the rate the HOST applies per tick.
-% stamina_threshold(winded|exhausted, Pct) \u2014 the world's balance numbers.
-:- dynamic(stamina_regen_base/2).
-:- dynamic(stamina_threshold/2).
-
-% \u2500\u2500 Facts owned elsewhere that these rules read \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% energy/3 is runtime gameplay state, in_combat/1 is \xA74's runtime fact, and
-% action/4 is the authored action catalogue whose 4th argument IS the energy
-% cost \u2014 which is why no stamina_cost/2 exists (\xA712).
-:- dynamic(energy/3).
-:- dynamic(in_combat/1).
-:- dynamic(action/4).
-
-% \u2500\u2500 Rules \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-
-% Integer arithmetic on both sides (C * 100 =< M * P), so no float rounding can
-% make two engines disagree about who is winded. M > 0 keeps a zero-max actor
-% out of the comparison instead of dividing by it.
-winded(A) :-
-  energy(A, C, M),
-  M > 0,
-  stamina_threshold(winded, P),
-  C * 100 =< M * P.
-
-exhausted(A) :-
-  energy(A, C, M),
-  M > 0,
-  stamina_threshold(exhausted, P),
-  C * 100 =< M * P.
-
-% Enough in the tank for what action/4 says this action costs.
-can_afford_stamina(A, ActionId) :-
-  action(ActionId, _, _, Cost),
-  energy(A, C, _),
-  C >= Cost.
-
-% The rate the host applies per tick; core decides only the modifier. You don't
-% catch your breath mid-fight \u2014 hence the cut on the first clause.
-stamina_regen(A, 0) :- in_combat(A), !.
-stamina_regen(A, Rate) :- stamina_regen_base(A, Rate).
-`;
-  var STAMINA_RUNTIME_PREDICATES = [];
-
-  // @insimul/core/src/prolog/mechanics/gameplay-state-predicates.ts
-  var GAMEPLAY_STATE_PREDICATES_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Runtime gameplay state \u2014 declarations only, no rules
-% docs/mechanic-predicates.md \xA710.1
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-%
-% Declared so a KB that carries none of them FAILS a query rather than raising
-% existence_error, and so a fact restored from a save validates instead of being
-% dropped. Per-playthrough state: these belong in save.currentState.prologFacts
-% and never on a world template (\xA73).
-
-:- dynamic(health/3).            % health(Actor, Current, Max).
-:- dynamic(energy/3).            % energy(Actor, Current, Max).
-:- dynamic(has_equipped/3).      % has_equipped(Actor, Slot, ItemId).
-:- dynamic(has_status/3).        % has_status(Actor, Status, Duration).
-:- dynamic(has_ability/2).       % has_ability(Actor, Ability).
-:- dynamic(near/3).              % near(Actor, Target, Distance).
-:- dynamic(at_location_type/2).  % at_location_type(Actor, LocationType).
-:- dynamic(level/2).             % level(Actor, Level).
-:- dynamic(xp/3).                % xp(Actor, Current, Max).
-:- dynamic(gold/2).              % gold(Actor, Amount).
-`;
-  var GAMEPLAY_STATE_RUNTIME_PREDICATES = [
-    "health/3",
-    "energy/3",
-    "has_equipped/3",
-    "has_status/3",
-    "has_ability/2",
-    "near/3",
-    "at_location_type/2",
-    "level/2",
-    "xp/3",
-    "gold/2"
-  ];
-
-  // @insimul/core/src/prolog/mechanics/index.ts
-  var MECHANIC_PREDICATE_PACKS = [
-    { area: "combat", prolog: COMBAT_PREDICATES_PROLOG, runtimePredicates: COMBAT_RUNTIME_PREDICATES },
-    {
-      area: "perception",
-      prolog: PERCEPTION_PREDICATES_PROLOG,
-      runtimePredicates: PERCEPTION_RUNTIME_PREDICATES
-    },
-    { area: "skill", prolog: SKILL_PREDICATES_PROLOG, runtimePredicates: SKILL_RUNTIME_PREDICATES },
-    {
-      area: "traversal",
-      prolog: TRAVERSAL_PREDICATES_PROLOG,
-      runtimePredicates: TRAVERSAL_RUNTIME_PREDICATES
-    },
-    {
-      area: "equipment",
-      prolog: EQUIPMENT_PREDICATES_PROLOG,
-      runtimePredicates: EQUIPMENT_RUNTIME_PREDICATES
-    },
-    {
-      area: "stamina",
-      prolog: STAMINA_PREDICATES_PROLOG,
-      runtimePredicates: STAMINA_RUNTIME_PREDICATES
-    },
-    {
-      area: "gameplayState",
-      prolog: GAMEPLAY_STATE_PREDICATES_PROLOG,
-      runtimePredicates: GAMEPLAY_STATE_RUNTIME_PREDICATES
-    }
-  ];
-  var MECHANIC_RUNTIME_PREDICATES = Array.from(
-    new Set(MECHANIC_PREDICATE_PACKS.flatMap((pack) => pack.runtimePredicates))
-  );
-
   // @insimul/core/src/prolog/predicate-packs.ts
   var PREDICATE_PACKS = Object.freeze([
     ...MECHANIC_PREDICATE_PACKS,
@@ -24927,154 +28380,6 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     { name: "isActive: an unknown rule", op: "isActive", input: { rules: WORLD, ruleId: "nope" } }
   ];
 
-  // @insimul/core/src/skills/skills.ts
-  var SKILL_EFFECT_KINDS = Object.freeze(["unlocks", "modifies", "permits"]);
-  var DEFAULT_SKILL_TUNING = Object.freeze({
-    pointsPerLevel: 1,
-    defaultNodeCost: 1,
-    defaultMaxLevel: 10,
-    // Index = level. 0 and 1 are unused: nobody buys level 0, and a learned skill
-    // starts at 1.
-    levelXp: Object.freeze([0, 0, 100, 250, 450, 700, 1e3, 1350, 1750, 2200, 2700]),
-    advanceAction: "train_skill",
-    unlockAction: "unlock_skill_node"
-  });
-  function skillTuningFromIR(ir) {
-    const d = DEFAULT_SKILL_TUNING;
-    if (!ir) return { ...d };
-    const num5 = (value, fallback) => typeof value === "number" && Number.isFinite(value) ? value : fallback;
-    return {
-      pointsPerLevel: num5(ir.pointsPerLevel, d.pointsPerLevel),
-      defaultNodeCost: num5(ir.defaultNodeCost, d.defaultNodeCost),
-      defaultMaxLevel: num5(ir.defaultMaxLevel, d.defaultMaxLevel),
-      levelXp: ir.levelXp && ir.levelXp.length > 0 ? [...ir.levelXp] : d.levelXp,
-      advanceAction: ir.advanceAction ?? d.advanceAction,
-      unlockAction: ir.unlockAction ?? d.unlockAction
-    };
-  }
-  function skillDefinitionsFromIR(ir, tuning = skillTuningFromIR(ir)) {
-    return (ir?.skills ?? []).map((skill) => definitionFromIR(skill, tuning));
-  }
-  function definitionFromIR(skill, tuning) {
-    return {
-      id: skill.id,
-      category: skill.category ?? "general",
-      maxLevel: typeof skill.maxLevel === "number" && Number.isFinite(skill.maxLevel) ? skill.maxLevel : tuning.defaultMaxLevel,
-      levelXp: skill.levelXp ? [...skill.levelXp] : void 0,
-      requires: (skill.requires ?? []).map((prereq) => ({
-        skill: prereq.skill,
-        level: prereq.level
-      }))
-    };
-  }
-  function nodeCost(node, tuning) {
-    const cost = Math.floor(node.cost ?? tuning.defaultNodeCost);
-    return Number.isFinite(cost) && cost > 0 ? cost : 0;
-  }
-  function nodeRequirements(node) {
-    const goals = /* @__PURE__ */ new Set();
-    for (const parent of node.parents) goals.add(`skill_unlocked(Actor, ${parent})`);
-    for (const goal of node.requires) goals.add(goal);
-    return [...goals].sort(compareIds);
-  }
-  function xpForLevel(skill, level, tuning) {
-    const curve = skill?.levelXp && skill.levelXp.length > 0 ? skill.levelXp : tuning.levelXp;
-    if (curve.length === 0 || level <= 0) return 0;
-    const price = level < curve.length ? curve[level] : curve[curve.length - 1];
-    const rounded = Math.floor(price);
-    return Number.isFinite(rounded) && rounded > 0 ? rounded : 0;
-  }
-  function maxLevelOf(skill, tuning) {
-    return skill?.maxLevel ?? tuning.defaultMaxLevel;
-  }
-  var SKILL_ADVANCE_REFUSALS = Object.freeze([
-    /** The world declares no such skill. Not a refusal so much as an absence. */
-    "unknown",
-    /** A `skill_requires/3` prerequisite skill is missing or too low. */
-    "prerequisite",
-    /** `skill_capped/2` — already at the world's cap. */
-    "capped",
-    /** Not enough banked `skill_xp/3` for the next level. */
-    "xp",
-    /** `permissible/3` refused it — a norm, a law, a guild that will not teach you. */
-    "forbidden"
-  ]);
-  function resolveAdvance(input) {
-    const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
-    const skill = input.skill;
-    const id = skill?.id ?? input.skillId ?? "";
-    const next = input.level + 1;
-    const price = xpForLevel(skill, next, tuning);
-    const base = {
-      actor: input.actor,
-      skill: id,
-      level: input.level,
-      next,
-      price,
-      banked: input.banked,
-      action: tuning.advanceAction
-    };
-    if (!skill) return { ...base, next: input.level, price: 0, available: false, refusal: "unknown" };
-    const unmet = skill.requires.some((prereq) => (input.levels[prereq.skill] ?? 0) < prereq.level);
-    if (unmet) return { ...base, available: false, refusal: "prerequisite" };
-    if (input.level >= maxLevelOf(skill, tuning)) {
-      return { ...base, next: input.level, available: false, refusal: "capped" };
-    }
-    if (input.banked < price) return { ...base, available: false, refusal: "xp" };
-    return { ...base, available: true };
-  }
-  var SKILL_UNLOCK_REFUSALS = Object.freeze([
-    /** No tree declares such a node. */
-    "unknown",
-    /** `skill_unlocked/2` already holds — a node is taken once. */
-    "owned",
-    /** `skill_points/3` — nothing left in the tree's pool. */
-    "points",
-    /** A `skill_node_requires/2` goal the rules layer did not satisfy. */
-    "requires",
-    /** `permissible/3` refused it — a norm, a law, a guild's own rules. */
-    "forbidden"
-  ]);
-  function resolveUnlock(input) {
-    const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
-    const node = input.node;
-    const base = {
-      actor: input.actor,
-      node: node?.id ?? input.nodeId ?? "",
-      tree: node?.tree ?? "",
-      points: input.points,
-      action: tuning.unlockAction
-    };
-    if (!node) {
-      return { ...base, cost: 0, available: false, refusal: "unknown", requires: [], conditional: false };
-    }
-    const cost = nodeCost(node, tuning);
-    const requires = nodeRequirements(node);
-    const resolution = { ...base, cost, requires, conditional: requires.length > 0 };
-    if (input.unlocked) return { ...resolution, available: false, refusal: "owned" };
-    if (input.points < cost) return { ...resolution, available: false, refusal: "points" };
-    return { ...resolution, available: true };
-  }
-  function treesFundedBy(trees, skill) {
-    return trees.filter((tree) => tree.skill === skill).map((tree) => tree.id).sort(compareIds);
-  }
-  function findNode(trees, nodeId) {
-    for (const tree of trees) {
-      for (const node of tree.nodes) if (node.id === nodeId) return { ...node, tree: tree.id };
-    }
-    return void 0;
-  }
-  function nodeDepth(tree, nodeId, seen = []) {
-    if (seen.includes(nodeId)) return 0;
-    const node = tree.nodes.find((candidate2) => candidate2.id === nodeId);
-    if (!node || node.parents.length === 0) return 0;
-    let deepest = 0;
-    for (const parent of node.parents) {
-      deepest = Math.max(deepest, 1 + nodeDepth(tree, parent, [...seen, nodeId]));
-    }
-    return deepest;
-  }
-
   // @insimul/core/src/combat/resolution.ts
   var DEFAULT_COMBAT_TUNING = Object.freeze({
     baseDamage: 10,
@@ -26747,7 +30052,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         playthrough: this.playthrough
       });
       for (const fact of result2.consequenceFacts) {
-        await this.engine.assertFact(stripPeriod5(fact));
+        await this.engine.assertFact(stripPeriod6(fact));
       }
       return result2;
     }
@@ -27016,7 +30321,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       if (!engine) return 0;
       let written = 0;
       for (const fact of detectionThresholdFacts(this.tuning)) {
-        await engine.assertFact(stripPeriod5(fact));
+        await engine.assertFact(stripPeriod6(fact));
         written += 1;
       }
       return written;
@@ -27034,12 +30339,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       if (delta.retract.length === 0 && delta.assert.length === 0) return false;
       for (const fact of delta.retract) {
         try {
-          await this.engine.retractFact(stripPeriod5(fact));
+          await this.engine.retractFact(stripPeriod6(fact));
         } catch {
         }
       }
       for (const fact of delta.assert) {
-        await this.engine.assertFact(stripPeriod5(fact));
+        await this.engine.assertFact(stripPeriod6(fact));
       }
       return true;
     }
@@ -27191,11 +30496,11 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function pairKey(observerCurie, targetCurie) {
     return `${observerCurie.length}:${observerCurie}${targetCurie.length}:${targetCurie}`;
   }
-  function stripPeriod5(clause) {
+  function stripPeriod6(clause) {
     return clause.replace(/\.$/, "");
   }
   function term3(fact) {
-    return stripPeriod5(serializedFactToProlog(fact));
+    return stripPeriod6(serializedFactToProlog(fact));
   }
 
   // @insimul/core/src/game-engine/logic/GameEventBus.ts
@@ -27836,7 +31141,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       if (!engine) return 0;
       const ordered = [...this.routines.values()].sort((a, b) => compareIds(a.id, b.id));
       const facts = routineGraphFacts(ordered, this.tuning);
-      for (const fact of facts) await engine.assertFact(stripPeriod6(fact));
+      for (const fact of facts) await engine.assertFact(stripPeriod7(fact));
       return facts.length;
     }
     // ── The roster ────────────────────────────────────────────────────────────
@@ -28013,12 +31318,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       if (delta.retract.length === 0 && delta.assert.length === 0) return false;
       for (const fact of delta.retract) {
         try {
-          await this.engine.retractFact(stripPeriod6(fact));
+          await this.engine.retractFact(stripPeriod7(fact));
         } catch {
         }
       }
       for (const fact of delta.assert) {
-        await this.engine.assertFact(stripPeriod6(fact));
+        await this.engine.assertFact(stripPeriod7(fact));
       }
       return true;
     }
@@ -28036,7 +31341,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
           facts.push(routineSuspendedFact(state.agent, state.suspension.reason));
         }
         for (const fact of facts) {
-          await engine.assertFact(stripPeriod6(fact));
+          await engine.assertFact(stripPeriod7(fact));
           written += 1;
         }
       }
@@ -28087,2234 +31392,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function goalOf(block) {
     return { goal: block.goal, priority: block.priority };
   }
-  function stripPeriod6(clause) {
-    return clause.replace(/\.$/, "");
-  }
-
-  // @insimul/core/src/skills/skill-effects.ts
-  var SKILL_EFFECT_UNLOCKS = "unlocks";
-  var SKILL_EFFECT_MODIFIES = "modifies";
-  var SKILL_EFFECT_PERMITS = "permits";
-  function effectsOfKind(effects, kind) {
-    return effects.filter((effect) => effect.kind === kind);
-  }
-  function atomArguments(effects, kind) {
-    const atoms = /* @__PURE__ */ new Set();
-    for (const effect of effectsOfKind(effects, kind)) {
-      const first = effect.args[0];
-      if (first !== void 0) atoms.add(String(first));
-    }
-    return [...atoms].sort(compareIds);
-  }
-  function unlockedActions(effects) {
-    return atomArguments(effects, SKILL_EFFECT_UNLOCKS);
-  }
-  function permittedThings(effects) {
-    return atomArguments(effects, SKILL_EFFECT_PERMITS);
-  }
-  function skillModifiers(effects) {
-    const totals = /* @__PURE__ */ new Map();
-    for (const effect of effectsOfKind(effects, SKILL_EFFECT_MODIFIES)) {
-      const [param, amount] = effect.args;
-      if (param === void 0) continue;
-      if (typeof amount !== "number" || !Number.isFinite(amount)) continue;
-      const key = String(param);
-      totals.set(key, (totals.get(key) ?? 0) + amount);
-    }
-    return new Map([...totals].sort(([a], [b]) => compareIds(a, b)));
-  }
-
-  // @insimul/core/src/skills/skill-view.ts
-  function buildSkillView(input) {
-    const tuning = input.tuning ?? DEFAULT_SKILL_TUNING;
-    const definitions = new Map((input.skills ?? []).map((skill) => [skill.id, skill]));
-    const actor = input.actor;
-    const unlocked = new Set(actor.unlocked ?? []);
-    const forbidden = new Set(actor.forbidden ?? []);
-    return input.trees.map((tree) => {
-      const definition = definitions.get(tree.skill);
-      const level = actor.levels?.[tree.skill] ?? 0;
-      const maxLevel = maxLevelOf(definition, tuning);
-      const capped = level >= maxLevel;
-      const banked = actor.xp?.[tree.skill] ?? 0;
-      const nextLevel = capped ? level : level + 1;
-      const nextLevelPrice = capped ? 0 : xpForLevel(definition, nextLevel, tuning);
-      const points3 = actor.points?.[tree.id] ?? 0;
-      const nodes = tree.nodes.map(
-        (node) => nodeView({ ...node, tree: tree.id }, { tree, tuning, points: points3, unlocked, forbidden, actor })
-      );
-      return {
-        id: tree.id,
-        skill: tree.skill,
-        label: tree.name ?? tree.id,
-        level,
-        maxLevel,
-        capped,
-        banked,
-        nextLevel,
-        nextLevelPrice,
-        affordable: !capped && banked >= nextLevelPrice,
-        points: points3,
-        spent: nodes.filter((node) => node.taken).reduce((sum, node) => sum + node.cost, 0),
-        nodes,
-        rows: rowsOf(nodes),
-        edges: edgesOf(nodes),
-        taken: nodes.filter((node) => node.taken).length,
-        total: nodes.length
-      };
-    });
-  }
-  function nodeView(node, context) {
-    const resolution = resolveUnlock({
-      actor: context.actor.id,
-      node,
-      points: context.points,
-      unlocked: context.unlocked.has(node.id),
-      tuning: context.tuning
-    });
-    const unmet = [...context.actor.unmet?.[node.id] ?? []];
-    const modifiers = [...skillModifiers(node.effects)].map(([param, amount]) => ({ param, amount }));
-    const view2 = {
-      id: node.id,
-      tree: node.tree,
-      label: node.name ?? node.id,
-      depth: nodeDepth(context.tree, node.id),
-      cost: resolution.cost,
-      parents: [...node.parents],
-      requires: nodeRequirements(node),
-      unmet,
-      taken: context.unlocked.has(node.id),
-      available: resolution.available,
-      conditional: resolution.conditional,
-      effects: node.effects.map((effect) => ({ ...effect, args: [...effect.args] })),
-      unlocks: unlockedActions(node.effects),
-      permits: permittedThings(node.effects),
-      modifies: modifiers
-    };
-    if (node.description !== void 0) view2.description = node.description;
-    if (resolution.refusal !== void 0) view2.refusal = resolution.refusal;
-    if (view2.available && unmet.length > 0) {
-      return { ...view2, available: false, refusal: "requires" };
-    }
-    if (view2.available && context.forbidden.has(node.id)) {
-      return { ...view2, available: false, refusal: "forbidden" };
-    }
-    return view2;
-  }
-  function rowsOf(nodes) {
-    const byDepth = /* @__PURE__ */ new Map();
-    for (const node of nodes) {
-      byDepth.set(node.depth, [...byDepth.get(node.depth) ?? [], node.id]);
-    }
-    return [...byDepth.keys()].sort((a, b) => a - b).map((depth) => [...byDepth.get(depth)].sort(compareIds));
-  }
-  function edgesOf(nodes) {
-    return nodes.flatMap((node) => node.parents.map((parent) => ({ from: parent, to: node.id }))).sort((a, b) => compareIds(a.from, b.from) || compareIds(a.to, b.to));
-  }
-  function skillModifierTotals(effects) {
-    const out = {};
-    for (const [param, amount] of skillModifiers(effects)) out[param] = amount;
-    return out;
-  }
-
-  // @insimul/core/src/prolog/helper-predicates.ts
-  var HELPER_PREDICATES_PROLOG = `
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Helper Predicates \u2014 base rules for action prerequisite evaluation
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-% \u2500\u2500 CEFR Level Comparison \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Maps CEFR language proficiency levels to integer ranks for comparison.
-% Usage: cefr_gte(ActualLevel, RequiredLevel) succeeds if ActualLevel >= RequiredLevel
-
-cefr_level_rank(a1, 1).
-cefr_level_rank(a2, 2).
-cefr_level_rank(b1, 3).
-cefr_level_rank(b2, 4).
-cefr_level_rank(c1, 5).
-cefr_level_rank(c2, 6).
-
-cefr_gte(Actual, Required) :-
-  cefr_level_rank(Actual, AR),
-  cefr_level_rank(Required, RR),
-  AR >= RR.
-
-% \u2500\u2500 Weapon Type Classification \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Checks if an item is a weapon of a given type.
-% Requires item_type/2 facts to be asserted for items in the KB.
-
-:- dynamic(item_type/2).
-
-is_weapon_type(ItemId, sword) :- item_type(ItemId, sword).
-is_weapon_type(ItemId, axe) :- item_type(ItemId, axe).
-is_weapon_type(ItemId, bow) :- item_type(ItemId, bow).
-is_weapon_type(ItemId, staff) :- item_type(ItemId, staff).
-is_weapon_type(ItemId, pistol) :- item_type(ItemId, pistol).
-
-% \u2500\u2500 Tool Type Classification \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Checks if an item is a tool of a given type.
-
-is_tool_type(ItemId, fishing_rod) :- item_type(ItemId, fishing_rod).
-is_tool_type(ItemId, pickaxe) :- item_type(ItemId, pickaxe).
-is_tool_type(ItemId, axe) :- item_type(ItemId, axe).
-is_tool_type(ItemId, hoe) :- item_type(ItemId, hoe).
-
-% \u2500\u2500 Skill Tier Names \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Maps integer skill levels to human-readable tier names.
-
-skill_tier_name(1, novice).
-skill_tier_name(2, novice).
-skill_tier_name(3, apprentice).
-skill_tier_name(4, apprentice).
-skill_tier_name(5, journeyman).
-skill_tier_name(6, journeyman).
-skill_tier_name(7, expert).
-skill_tier_name(8, expert).
-skill_tier_name(9, expert).
-skill_tier_name(10, master).
-
-% \u2500\u2500 Skill Level Comparison \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Succeeds if Actor has Skill at Level >= MinLevel.
-
-skill_gte(Actor, Skill, MinLevel) :-
-  has_skill(Actor, Skill, Level),
-  Level >= MinLevel.
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Quest Objective Completion Rules
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-%
-% Bridge between quest_objective/3 goals (generated by quest-converter.ts)
-% and game facts asserted by GamePrologEngine at runtime.
-%
-% objective_complete(Player, QuestId, ObjIndex) succeeds when the game state
-% satisfies the objective goal stored in quest_objective(QuestId, ObjIndex, Goal).
-%
-% This is the critical link that makes quest_complete/2 work:
-%   quest_complete(Player, QuestId) :-
-%       \\+ (quest_objective(QuestId, Idx, _), \\+ objective_complete(Player, QuestId, Idx)).
-
-:- dynamic(collected/3).
-:- dynamic(has/2).
-:- dynamic(has_item/3).
-:- dynamic(visited/2).
-:- dynamic(discovered/2).
-:- dynamic(talked_to/3).
-:- dynamic(delivered/3).
-:- dynamic(defeated/2).
-:- dynamic(crafted/3).
-:- dynamic(vocab_used/3).
-:- dynamic(puzzle_solved/2).
-:- dynamic(reputation_change/3).
-:- dynamic(escorted/3).
-:- dynamic(quest_progress/3).
-:- dynamic(quest_objective/3).
-:- dynamic(objective_complete/3).
-:- dynamic(text_found/2).
-:- dynamic(text_read/2).
-:- dynamic(sign_read/2).
-:- dynamic(scene_described/2).
-:- dynamic(response_written/2).
-:- dynamic(translation_completed/2).
-:- dynamic(pronunciation_passed/2).
-:- dynamic(photo_taken/2).
-:- dynamic(object_examined/2).
-:- dynamic(object_identified/2).
-:- dynamic(object_pointed_named/2).
-:- dynamic(direction_step_done/2).
-:- dynamic(gift_given/3).
-:- dynamic(food_ordered/2).
-:- dynamic(price_haggled/2).
-:- dynamic(npc_conversation_turns/3).
-:- dynamic(action_performed/2).
-:- dynamic(action_completes_objective/2).
-:- dynamic(physical_action_done/2).
-:- dynamic(conversational_action/4).
-:- dynamic(comprehension_done/2).
-:- dynamic(used/2).
-:- dynamic(purchased/3).
-:- dynamic(sold/3).
-:- dynamic(combat_action_done/3).
-:- dynamic(activity_observed/3).
-:- dynamic(assessment_phase_done/4).
-:- dynamic(friendship_tier/3).
-:- dynamic(assessment_completed/2).
-
-% \u2500\u2500 Radiant quest generation (runtime provenance + cooldown bookkeeping) \u2500\u2500
-% Asserted by the radiant slot-filling engine when it emits a quest, and
-% persisted into save.currentState.prologFacts. Declared dynamic so the engine
-% can assert/retract them and so the save-restore fact validator recognises
-% them. The authored template predicates (radiant_template/2 etc.) are
-% consulted from world data and catalogued in predicate-schema.ts instead.
-:- dynamic(radiant_generated/3).
-:- dynamic(radiant_cooldown_until/2).
-
-% \u2500\u2500 Collection objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% collect(Item, Count) \u2014 player collected enough of an item
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, collect(Item, Count)),
-    collected(Player, Item, Qty),
-    Qty >= Count.
-
-% collect with unspecified item \u2014 count total unique items collected
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, collect('', Count)),
-    aggregate_all(count, collected(Player, _, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Visit location \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, visit_location(Location)),
-    visited(Player, Location).
-
-% visit_location with empty target \u2014 any visit counts
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, visit_location('')),
-    visited(Player, _).
-
-% \u2500\u2500 Discover location \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, discover_location(Location)),
-    discovered(Player, Location).
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, discover_location('')),
-    discovered(Player, _).
-
-% \u2500\u2500 Talk to NPC \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% talk_to(NPC) \u2014 single conversation
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, talk_to(NPC)),
-    talked_to(Player, NPC, _).
-
-% talk_to(NPC, RequiredTurns) \u2014 conversation with minimum turns
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, talk_to(NPC, RequiredTurns)),
-    talked_to(Player, NPC, Turns),
-    Turns >= RequiredTurns.
-
-% talk_to with empty NPC \u2014 any NPC conversation counts
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, talk_to('')),
-    talked_to(Player, _, _).
-
-% \u2500\u2500 Conversation turns (aggregate) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)),
-    aggregate_all(sum(T), talked_to(Player, _, T), Total),
-    Total >= RequiredTurns.
-
-% Also support npc_conversation_turns for more granular tracking
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)),
-    aggregate_all(sum(T), npc_conversation_turns(Player, _, T), Total),
-    Total >= RequiredTurns.
-
-% \u2500\u2500 Deliver item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, deliver(Item, NPC)),
-    delivered(Player, NPC, Item).
-
-% \u2500\u2500 Defeat enemies \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, defeat(EnemyType, Count)),
-    aggregate_all(count, defeated(Player, EnemyType), Total),
-    Total >= Count.
-
-% defeat with empty type \u2014 any enemy counts
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, defeat('', Count)),
-    aggregate_all(count, defeated(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Vocabulary / learn words \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% learn_words_count(Count) \u2014 player used enough distinct vocabulary words
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, learn_words_count(Count)),
-    aggregate_all(count, vocab_used(Player, _, 1), Total),
-    Total >= Count.
-
-% learn_words([WordList]) \u2014 player used specific words
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, learn_words(WordList)),
-    is_list(WordList),
-    forall(member(Word, WordList), vocab_used(Player, Word, _)).
-
-% \u2500\u2500 Grammar practice \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, practice_grammar(_, Count)),
-    quest_progress(Player, QuestId, Progress),
-    Progress >= Count.
-
-% \u2500\u2500 Craft item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, craft_item(Item, Count)),
-    crafted(Player, Item, Qty),
-    Qty >= Count.
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, craft_item('', Count)),
-    aggregate_all(sum(Q), crafted(Player, _, Q), Total),
-    Total >= Count.
-
-% \u2500\u2500 Escort NPC \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, escort(NPC, Dest)),
-    escorted(Player, NPC, Dest).
-
-% \u2500\u2500 Reputation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, gain_reputation(Faction, Amount)),
-    aggregate_all(sum(D), reputation_change(Player, Faction, D), Total),
-    Total >= Amount.
-
-% \u2500\u2500 Solve puzzle \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, solve_puzzle(PuzzleId)),
-    puzzle_solved(Player, PuzzleId).
-
-% \u2500\u2500 Use item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, use_item(Item)),
-    used(Player, Item).
-
-% \u2500\u2500 Reach skill level \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, reach_level(Skill, Level)),
-    has_skill(Player, Skill, CurrentLevel),
-    CurrentLevel >= Level.
-
-% \u2500\u2500 Survive duration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, survive(Duration)),
-    survived(Player, ActualDuration),
-    ActualDuration >= Duration.
-
-% \u2500\u2500 Reading, finding and clue evidence, quest by quest \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% (PL.prolog-helper-align, U90(10); docs/quest-host-contract.md "The helper
-% clauses".) These clauses say what core's quest lifecycle says
-% (src/quests/quest-lifecycle.ts, conformance/quests/lifecycle.json readRule,
-% clueRule, findTextRule, signRule): a read, a clue, a found text or a read sign
-% counts only for the quests ACTIVE WHEN IT HAPPENS, each id once per quest, so
-% one id counts for every quest active then, and one met with no active quest is
-% not remembered for a quest accepted later.
-%
-% quest_evidence(Player, QuestId, Kind, Id): Id reached Player while QuestId was
-% active. Kind is the event: text_read (a read), clue_found (a clue), text_found
-% (a text found) or sign_read (a sign read).
-%
-% A host asserts it from outside the KB (assertFact), one fact per answer of
-% quest_evidence_due(Player, Kind, Id, QuestId), asked when the event happens
-% and before the quest statuses the event changes are updated. Never from inside
-% a clause: a fact a clause asserts is not in the engine's fact list, so it is
-% neither exported nor saved.
-%
-% The world-wide text_read/2, clue_found/2, text_found/2 and sign_read/2 stay
-% declared as the player's record, but no objective reads them any more: they
-% hold no quest, so read_text(any) needed a literal text_read(Player, any) and
-% collect_clue counted clues found before the quest was active.
-:- dynamic(quest_evidence/4).
-
-quest_evidence_due(Player, Kind, Id, QuestId) :-
-    memberchk(Kind, [text_read, clue_found, text_found, sign_read]),
-    atomic(Id),
-    findall(Q, quest_status(Player, Q, active), Active),
-    sort(Active, Distinct),
-    member(QuestId, Distinct),
-    \\+ quest_evidence(Player, QuestId, Kind, Id).
-
-% quest_evidence_count(Player, QuestId, Kind, Total): distinct ids of Kind
-% counted for QuestId.
-quest_evidence_count(Player, QuestId, Kind, Total) :-
-    findall(Id, quest_evidence(Player, QuestId, Kind, Id), Ids),
-    sort(Ids, Distinct),
-    length(Distinct, Total).
-
-% \u2500\u2500 What evidence cannot decide (PL.quest-converter-gaps, U91(1)) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% The converter writes what an objective's goal does not carry as facts beside
-% it: quest_objective_field(QuestId, Idx, Field, Value) (text_title, text_id,
-% text_category, item_name, clue_category, clue_source, completion_trigger),
-% quest_objective_order(QuestId, Idx, Order) and
-% quest_objective_depends_on(QuestId, Idx, OtherIdx). The hydrator reads them
-% back, so the lifecycle keeps them; these clauses read what quest_evidence/4
-% can decide (docs/quest-host-contract.md, "What the converter keeps"):
-%  - text_id on a find_text: the evidence is the id, so it is read below;
-%  - completion_trigger clue_discovered: any clue found while the quest was
-%    active, read below; no other trigger has evidence here;
-%  - a lock (a dependsOn, or a sibling with a lower order): the lifecycle counts
-%    nothing for an objective while it is locked, and evidence holds an id per
-%    quest, not when it came, so a read while locked would count later;
-%  - text_title, text_category, item_name, clue_category, clue_source: the
-%    lifecycle matches them against what the event carried, and evidence holds
-%    the id only.
-% quest_objective_undecided(QuestId, Idx) names the last two: no clause below
-% completes such an objective, and core's objective_complete/3 delta is the
-% answer for it.
-:- dynamic(quest_objective_field/4).
-:- dynamic(quest_objective_order/3).
-:- dynamic(quest_objective_depends_on/3).
-
-quest_objective_locked(QuestId, Idx) :-
-    quest_objective_depends_on(QuestId, Idx, _).
-quest_objective_locked(QuestId, Idx) :-
-    quest_objective_order(QuestId, Idx, Order),
-    quest_objective_order(QuestId, Other, OtherOrder),
-    Other \\== Idx,
-    OtherOrder < Order.
-
-quest_objective_undecided(QuestId, Idx) :-
-    quest_objective_locked(QuestId, Idx).
-quest_objective_undecided(QuestId, Idx) :-
-    quest_objective_field(QuestId, Idx, Field, _),
-    memberchk(Field, [text_title, text_category, item_name, clue_category, clue_source]).
-
-% A completionTrigger objective completes on its trigger whatever its type says
-% (QuestCompletionEngine.trackByTrigger). clue_discovered is a find_clue: any
-% clue found while the quest was active.
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective_field(QuestId, Idx, completion_trigger, clue_discovered),
-    \\+ quest_objective_locked(QuestId, Idx),
-    once(quest_evidence(Player, QuestId, clue_found, _)).
-
-% \u2500\u2500 Read text \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% read_text(TextId): a text read while the quest was active whose id equals
-% TextId exactly. read_text(any), the converter's form when no text is named,
-% and read_text('') take every text. The converter names the objective's
-% textId, else its target.
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, read_text(TextId)),
-    atomic(TextId), TextId \\== any, TextId \\== '',
-    \\+ quest_objective_undecided(QuestId, Idx),
-    quest_evidence(Player, QuestId, text_read, TextId).
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, read_text(TextId)),
-    ( TextId == any ; TextId == '' ),
-    \\+ quest_objective_undecided(QuestId, Idx),
-    once(quest_evidence(Player, QuestId, text_read, _)).
-
-% read_text(TextId, Count), the converter's form for a requiredCount above one:
-% Count distinct texts read while the quest was active. A named text is one
-% text, so it never reaches a Count above one, as in the lifecycle.
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, read_text(TextId, Count)),
-    atomic(TextId), integer(Count),
-    \\+ quest_objective_undecided(QuestId, Idx),
-    (   ( TextId == any ; TextId == '' )
-    ->  quest_evidence_count(Player, QuestId, text_read, Total)
-    ;   ( quest_evidence(Player, QuestId, text_read, TextId) -> Total = 1 ; Total = 0 )
-    ),
-    Total >= Count.
-
-% \u2500\u2500 Find text \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% find_text(Count): Count distinct texts found while the quest was active; with
-% a text_id field, only that text, so a Count above one is never reached.
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, find_text(Count)),
-    integer(Count),
-    \\+ quest_objective_undecided(QuestId, Idx),
-    (   quest_objective_field(QuestId, Idx, text_id, TextId)
-    ->  ( quest_evidence(Player, QuestId, text_found, TextId) -> Total = 1 ; Total = 0 )
-    ;   quest_evidence_count(Player, QuestId, text_found, Total)
-    ),
-    Total >= Count.
-
-% \u2500\u2500 Examine object \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, examine_object(Count)),
-    aggregate_all(count, object_examined(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Read sign \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% read_sign(Count): Count distinct signs read while the quest was active.
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, read_sign(Count)),
-    integer(Count),
-    \\+ quest_objective_undecided(QuestId, Idx),
-    quest_evidence_count(Player, QuestId, sign_read, Total),
-    Total >= Count.
-
-% \u2500\u2500 Write response / describe scene \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, write_response(Count)),
-    aggregate_all(count, response_written(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Listen and repeat \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, listen_and_repeat(Count)),
-    aggregate_all(count, pronunciation_passed(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Pronunciation check \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, pronunciation_check(Count)),
-    aggregate_all(count, pronunciation_passed(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Identify / point-and-name \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, identify_object(Count)),
-    aggregate_all(count, object_pointed_named(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Order food \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, order_food(Count)),
-    aggregate_all(count, food_ordered(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Haggle price \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, haggle_price(Count)),
-    aggregate_all(count, price_haggled(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Buy item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, buy_item(Count)),
-    aggregate_all(count, action_performed(Player, buy_item), Total),
-    Total >= Count.
-
-% \u2500\u2500 Sell item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, sell_item(Count)),
-    aggregate_all(count, action_performed(Player, sell_item), Total),
-    Total >= Count.
-
-% \u2500\u2500 Give gift \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, give_gift(NPC)),
-    NPC \\= any,
-    gift_given(Player, NPC, _).
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, give_gift(any)),
-    gift_given(Player, _, _).
-
-% \u2500\u2500 Photograph subject \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, photograph(Subject, Count)),
-    Subject \\= any,
-    aggregate_all(count, photo_taken(Player, Subject), Total),
-    Total >= Count.
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, photograph(any, Count)),
-    aggregate_all(count, photo_taken(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Physical action \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, physical_action(Action, Count)),
-    Action \\= '',
-    aggregate_all(count, physical_action_done(Player, Action), Total),
-    Total >= Count.
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, physical_action('', Count)),
-    aggregate_all(count, physical_action_done(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Introduce self \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, introduce_self),
-    conversational_action(Player, _, introduce_self, _).
-
-% \u2500\u2500 Ask for directions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, ask_for_directions(Count)),
-    aggregate_all(count, action_performed(Player, ask_for_directions), Total),
-    Total >= Count.
-
-% \u2500\u2500 Comprehension quiz \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, comprehension_quiz(Count)),
-    aggregate_all(count, comprehension_done(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Translation challenge \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, translation_challenge(Count)),
-    aggregate_all(count, translation_completed(Player, correct), Total),
-    Total >= Count.
-
-% \u2500\u2500 Follow directions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, follow_directions(Count)),
-    aggregate_all(count, direction_step_done(Player, QuestId, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Listening comprehension \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, listening_comprehension(Count)),
-    aggregate_all(count, pronunciation_passed(Player, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Collect vocabulary \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, collect_vocabulary(Count)),
-    aggregate_all(count, vocab_used(Player, _, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Eavesdrop \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-:- dynamic(overheard_conversation/4).
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, eavesdrop(Topic)),
-    overheard_conversation(Player, _, _, Topic).
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, eavesdrop),
-    overheard_conversation(Player, _, _, _).
-
-% \u2500\u2500 Build friendship \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-:- dynamic(friendship_level/3).
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, build_friendship(Count)),
-    aggregate_all(count, (friendship_level(Player, _, Level), Level >= 3), Total),
-    Total >= Count.
-
-% \u2500\u2500 Collect clue \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% collect_clue(Count): Count distinct clues found while the quest was active
-% (a clue id is the world's; the counting is the quest's).
-:- dynamic(clue_found/2).
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, collect_clue(Count)),
-    integer(Count),
-    \\+ quest_objective_undecided(QuestId, Idx),
-    quest_evidence_count(Player, QuestId, clue_found, Total),
-    Total >= Count.
-
-% \u2500\u2500 Assessment objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, complete_assessment),
-    assessment_result(Player, _, _, _, _, _).
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, assessment_phase(PhaseType, _Trigger)),
-    quest_progress(Player, QuestId, Progress),
-    Progress >= 100.
-
-% \u2500\u2500 Meta / aggregation objectives (chapter quests) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% vocabulary_activities(Count) \u2014 player completed enough vocab-related actions
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, vocabulary_activities(Count)),
-    aggregate_all(count, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Total),
-    Total >= Count.
-
-% conversation_activities(Count) \u2014 player had enough conversations
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, conversation_activities(Count)),
-    aggregate_all(sum(T), talked_to(Player, _, T), Total),
-    Total >= Count.
-
-% grammar_activities(Count) \u2014 player practiced grammar enough times
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, grammar_activities(Count)),
-    quest_progress(Player, QuestId, Progress),
-    Progress >= Count.
-
-% sustained_conversation(Count) \u2014 long conversation turns
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, sustained_conversation(Count)),
-    npc_conversation_turns(Player, _, Turns),
-    Turns >= Count.
-
-% master_words(Count) \u2014 vocab words used correctly multiple times
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, master_words(Count)),
-    aggregate_all(count, vocab_used(Player, _, 1), Total),
-    Total >= Count.
-
-% learn_new_words(Count) \u2014 distinct vocab words encountered
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, learn_new_words(Count)),
-    aggregate_all(count, vocab_used(Player, _, _), Total),
-    Total >= Count.
-
-% find_vocabulary_items(Count) \u2014 objects examined/identified for vocab
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, find_vocabulary_items(Count)),
-    aggregate_all(count, (object_examined(Player, _) ; object_pointed_named(Player, _)), Total),
-    Total >= Count.
-
-% \u2500\u2500 Equip item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, equip_item(Item)),
-    Item \\= any,
-    equipped(Player, Item, _).
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, equip_item(any)),
-    equipped(Player, _, _).
-
-% \u2500\u2500 Drop item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-:- dynamic(dropped/2).
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, drop_item(Item)),
-    Item \\= any,
-    action_performed(Player, drop_item).
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, drop_item(any)),
-    action_performed(Player, drop_item).
-
-% \u2500\u2500 Combat action (individual moves) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, combat_action(Count)),
-    aggregate_all(count, combat_action_done(Player, _, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Accept quest \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, accept_quest(TargetQuestId)),
-    TargetQuestId \\= any,
-    quest_active(Player, TargetQuestId).
-
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, accept_quest(any)),
-    quest_active(Player, _).
-
-% \u2500\u2500 Observe activity \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, observe_activity(Count)),
-    aggregate_all(count, activity_observed(Player, _, _), Total),
-    Total >= Count.
-
-% \u2500\u2500 Generic description-based objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Fallback: if quest_progress has been tracked for this quest, check it
-objective_complete(Player, QuestId, Idx) :-
-    quest_objective(QuestId, Idx, objective(_)),
-    quest_progress(Player, QuestId, Progress),
-    Progress >= 100.
-
-% \u2500\u2500 All-objectives-complete meta-rule \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% Used by quest_complete when completionCriteria is 'all_objectives'
-all_objectives_done(Player, QuestId) :-
-    \\+ (quest_objective(QuestId, Idx, _),
-         \\+ objective_complete(Player, QuestId, Idx)).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Quest Status & Prerequisite System
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-%
-% quest_status/3 bridges the lifecycle facts asserted by GamePrologEngine
-% (quest_active/2, quest_completed/2, quest_failed/2, quest_abandoned/2)
-% to the status checks used by quest_available/2 rules.
-
-:- dynamic(quest_active/2).
-:- dynamic(quest_completed/2).
-:- dynamic(quest_failed/2).
-:- dynamic(quest_abandoned/2).
-:- dynamic(quest_status/3).
-
-% Derive quest_status from lifecycle facts if not directly asserted
-quest_status(Player, QuestId, active) :-
-    quest_active(Player, QuestId).
-quest_status(Player, QuestId, completed) :-
-    quest_completed(Player, QuestId).
-quest_status(Player, QuestId, failed) :-
-    quest_failed(Player, QuestId).
-quest_status(Player, QuestId, abandoned) :-
-    quest_abandoned(Player, QuestId).
-
-% \u2500\u2500 Cross-quest prerequisite checking \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% all_prereqs_met(Player, QuestId) succeeds if every prerequisite quest
-% has been completed by the player.
-all_prereqs_met(Player, QuestId) :-
-    \\+ (quest_prerequisite(QuestId, PrereqId),
-         PrereqId \\= none,
-         \\+ quest_status(Player, PrereqId, completed)).
-
-% \u2500\u2500 Quest chain ordering \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% next_in_chain(Player, QuestId) \u2014 the next quest in a chain the player
-% can take (all prior chain quests completed).
-next_in_chain(Player, QuestId) :-
-    quest_chain(QuestId, ChainId),
-    quest_chain_order(QuestId, Order),
-    PrevOrder is Order - 1,
-    (PrevOrder < 0 ->
-        true  % first quest in chain
-    ;
-        quest_chain_order(PrevQuest, PrevOrder),
-        quest_chain(PrevQuest, ChainId),
-        quest_status(Player, PrevQuest, completed)
-    ).
-
-% \u2500\u2500 Conditional reward evaluation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% quest_bonus_reward(Player, QuestId, RewardType, Value) \u2014 additional
-% rewards granted based on how the quest was completed.
-:- dynamic(quest_bonus_reward/4).
-
-% Bonus for completing all objectives (not just the minimum)
-quest_bonus_reward(Player, QuestId, bonus_xp, 50) :-
-    all_objectives_done(Player, QuestId).
-
-% Bonus for completing a quest chain
-quest_bonus_reward(Player, QuestId, chain_complete_xp, BonusXP) :-
-    quest_chain(QuestId, ChainId),
-    chain_bonus_xp(ChainId, BonusXP),
-    \\+ (quest_chain(OtherQuest, ChainId),
-         OtherQuest \\= QuestId,
-         \\+ quest_status(Player, OtherQuest, completed)).
-
-:- dynamic(chain_bonus_xp/2).
-
-% \u2500\u2500 Reconciliation helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% quest_should_be_complete(Player, QuestId) \u2014 Prolog believes this quest
-% is done based on game state, even if not yet marked as completed.
-quest_should_be_complete(Player, QuestId) :-
-    quest_active(Player, QuestId),
-    all_objectives_done(Player, QuestId).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Reputation Aggregation
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% reputation(Player, Faction, Total) \u2014 sums all reputation_change/3 facts.
-
-:- dynamic(reputation_record/3).
-
-reputation(Player, Faction, Total) :-
-    aggregate_all(sum(D), reputation_change(Player, Faction, D), Total).
-reputation(Player, Faction, 0) :-
-    \\+ reputation_change(Player, Faction, _).
-
-% reputation_at_least(Player, Faction, MinRep) \u2014 convenience check
-reputation_at_least(Player, Faction, MinRep) :-
-    reputation(Player, Faction, Rep),
-    Rep >= MinRep.
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Text & Reading Helpers
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-:- dynamic(game_text/1).
-:- dynamic(text_title/2).
-:- dynamic(text_category/2).
-:- dynamic(text_cefr_level/2).
-:- dynamic(text_spawn_location/2).
-:- dynamic(text_chapter/2).
-:- dynamic(text_clue/2).
-:- dynamic(text_vocabulary/4).
-
-% text_available_at(TextId, LocationType) \u2014 texts that can appear at a location type
-text_available_at(TextId, LocationType) :-
-    game_text(TextId),
-    text_spawn_location(TextId, LocationType).
-
-% text_for_level(TextId, CefrLevel) \u2014 texts appropriate for a CEFR level
-text_for_level(TextId, Level) :-
-    game_text(TextId),
-    text_cefr_level(TextId, Level).
-
-% text_has_clue(TextId) \u2014 texts that reveal main quest clues
-text_has_clue(TextId) :-
-    text_clue(TextId, _).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Container Helpers
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-:- dynamic(container/1).
-:- dynamic(container_type/2).
-:- dynamic(container_locked/1).
-:- dynamic(container_key/2).
-:- dynamic(container_contains/3).
-:- dynamic(container_at_business/2).
-:- dynamic(container_at_residence/2).
-
-% container_accessible(Player, ContainerId) \u2014 can the player open this container?
-container_accessible(Player, ContainerId) :-
-    container(ContainerId),
-    \\+ container_locked(ContainerId).
-container_accessible(Player, ContainerId) :-
-    container(ContainerId),
-    container_locked(ContainerId),
-    container_key(ContainerId, KeyItem),
-    has(Player, KeyItem).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Residence & NPC Location Helpers
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-:- dynamic(residence/1).
-:- dynamic(residence_owner/2).
-:- dynamic(lives_at/2).
-:- dynamic(home/2).
-:- dynamic(workplace/2).
-:- dynamic(friends/2).
-:- dynamic(coworker/2).
-:- dynamic(enemies/2).
-:- dynamic(knows/2).
-:- dynamic(knows/3).
-:- dynamic(believes/3).
-
-:- dynamic(physical_trait/2).
-:- dynamic(physical_trait/3).
-:- dynamic(mental_trait/2).
-:- dynamic(mental_trait/3).
-:- dynamic(social_attribute/3).
-:- dynamic(has_thought/2).
-:- dynamic(believes_about/3).
-:- dynamic(believes_about/4).
-:- dynamic(college_graduate/1).
-:- dynamic(retired/1).
-:- dynamic(departure_year/2).
-:- dynamic(current_location/2).
-:- dynamic(character_status/2).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Public Building Helpers
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-:- dynamic(public_building/1).
-:- dynamic(public_building_name/2).
-:- dynamic(public_building_type/2).
-:- dynamic(public_building_of_settlement/2).
-:- dynamic(public_building_on_lot/2).
-:- dynamic(public_building_operational/2).
-:- dynamic(public_building_capacity/2).
-:- dynamic(public_building_employee/2).
-
-% Find buildings of a specific type in a settlement
-public_building_in(SettlementId, BuildingId, Type) :-
-    public_building(BuildingId),
-    public_building_of_settlement(BuildingId, SettlementId),
-    public_building_type(BuildingId, Type).
-
-% Check if a public building is operational
-building_open(BuildingId) :-
-    public_building(BuildingId),
-    public_building_operational(BuildingId, true).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Settlement Detail Helpers
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-:- dynamic(settlement_district/2).
-:- dynamic(settlement_street/2).
-:- dynamic(settlement_landmark/2).
-:- dynamic(landmark_type/2).
-:- dynamic(settlement_unemployed_count/2).
-:- dynamic(settlement_deceased_count/2).
-:- dynamic(settlement_vacant_lots/2).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Country & State Relationship Helpers
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-:- dynamic(country_ally/2).
-:- dynamic(country_enemy/2).
-:- dynamic(country_culture/3).
-:- dynamic(cultural_value/3).
-:- dynamic(country_law/2).
-:- dynamic(social_structure/3).
-:- dynamic(state_governor/2).
-:- dynamic(state_local_government/2).
-:- dynamic(state_previous_country/2).
-
-% countries_at_war(A, B) \u2014 bidirectional enemy check
-countries_at_war(A, B) :- country_enemy(A, B).
-countries_at_war(A, B) :- country_enemy(B, A).
-
-% countries_allied(A, B) \u2014 bidirectional alliance check
-countries_allied(A, B) :- country_ally(A, B).
-countries_allied(A, B) :- country_ally(B, A).
-
-% npc_at_home(NpcId) \u2014 NPC is currently at their home residence
-npc_at_home(NpcId) :-
-    home(NpcId, ResId),
-    current_location(NpcId, ResId).
-
-% npc_at_work(NpcId) \u2014 NPC is currently at their workplace
-npc_at_work(NpcId) :-
-    workplace(NpcId, WorkId),
-    current_location(NpcId, WorkId).
-
-% lives_near(Char1, Char2) \u2014 two characters share the same residence
-lives_near(Char1, Char2) :-
-    lives_at(Char1, Res),
-    lives_at(Char2, Res),
-    Char1 \\= Char2.
-
-% knows_about(NpcId, Topic) \u2014 NPC has knowledge about a topic
-knows_about(NpcId, Topic) :-
-    knows(NpcId, Topic).
-knows_about(NpcId, Topic) :-
-    knows(NpcId, Topic, _).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Pronunciation Tracking
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-:- dynamic(pronunciation_score/4).
-:- dynamic(pronunciation_passed/2).
-
-% player_avg_pronunciation(Player, Avg) \u2014 average score across all attempts
-player_avg_pronunciation(Player, Avg) :-
-    findall(S, pronunciation_score(Player, _, S, _), Scores),
-    Scores \\= [],
-    insimul_sum_list(Scores, Total),
-    length(Scores, Count),
-    Avg is Total / Count.
-
-% pronunciation_count(Player, Count) \u2014 number of distinct phrases practiced
-pronunciation_count(Player, Count) :-
-    findall(P, pronunciation_passed(Player, P), Phrases),
-    length(Phrases, Count).
-
-% pronunciation_above(Player, Threshold, Count) \u2014 phrases scoring above threshold
-pronunciation_above(Player, Threshold, Count) :-
-    findall(P, (pronunciation_score(Player, P, S, _), S >= Threshold), Phrases),
-    length(Phrases, Count).
-
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-% Assessment & NPC Exam Results
-% \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
-
-:- dynamic(assessment_result/6).
-:- dynamic(player_cefr_level/2).
-:- dynamic(player_cefr_snapshot/3).
-:- dynamic(player_dimension_score/3).
-:- dynamic(phase_score/3).
-:- dynamic(dimension_score/4).
-
-% player_has_assessment(Player, ExamId) \u2014 has the player completed this exam?
-player_has_assessment(Player, ExamId) :-
-    assessment_result(Player, ExamId, _, _, _, _).
-
-% assessment_score_pct(Player, ExamId, Pct) \u2014 score as percentage
-assessment_score_pct(Player, ExamId, Pct) :-
-    assessment_result(Player, ExamId, Score, MaxScore, _, _),
-    MaxScore > 0,
-    Pct is (Score * 100) / MaxScore.
-
-% player_meets_cefr(Player, RequiredLevel) \u2014 does player meet a minimum CEFR?
-% Uses CEFR level ordering (a1 < a2 < b1 < b2 < c1 < c2) via cefr_gte/2.
-player_meets_cefr(Player, RequiredLevel) :-
-    player_cefr_level(Player, ActualLevel),
-    cefr_gte(ActualLevel, RequiredLevel).
-`.trim();
-
-  // @insimul/core/src/prolog/advanced-predicates.ts
-  var DYNAMIC_DECLARATIONS = [
-    // Resource constraints
-    "resource/3",
-    "resource_capacity/3",
-    "resource_production/3",
-    "resource_consumption/3",
-    "resource_trade/4",
-    "resource_price/3",
-    "resource_deficit/3",
-    "resource_surplus/3",
-    // Probabilistic
-    "probability/2",
-    "npc_preference/3",
-    "weighted_choice/3",
-    "decision_factor/4",
-    // Abductive / Mystery
-    "clue/4",
-    "suspect/2",
-    "motive/3",
-    "alibi/3",
-    "evidence_for/3",
-    "evidence_against/3",
-    "mystery/2",
-    "solved/2",
-    "accused/3",
-    "witness/3",
-    "crime/3",
-    // Meta / Governance
-    "law/3",
-    "law_active/2",
-    "law_penalty/3",
-    "law_enforcer/2",
-    "vote/3",
-    "council_member/2",
-    "authority/3",
-    "tax_rate/3",
-    "tax_exempt/2",
-    // Procedural generation
-    "generated_name/2",
-    "name_pattern/2",
-    "terrain_type/2",
-    "biome/2",
-    "climate/2",
-    "building_template/3",
-    "npc_archetype/2",
-    "quest_template/3"
-  ];
-  function getAdvancedDynamicPredicates() {
-    return [...DYNAMIC_DECLARATIONS];
-  }
-
-  // @insimul/core/src/prolog/tott-predicates.ts
-  var DYNAMIC_DECLARATIONS2 = [
-    // Hiring
-    "qualified_for/2",
-    "has_experience/3",
-    "available_position/2",
-    "position_skill_requirement/3",
-    "employed_at/3",
-    "job_level/2",
-    "salary/2",
-    "years_experience/3",
-    // Social dynamics
-    "compatibility/3",
-    "charge/3",
-    "spark/3",
-    "trust/3",
-    "salience/3",
-    "social_desire/2",
-    // Economics
-    "wealth/2",
-    "economic_class/2",
-    "owns_business/2",
-    "market_price/3",
-    "supply/3",
-    "demand/3",
-    "debt/3",
-    "income/2",
-    // Lifecycle
-    "romantic_status/3",
-    "pregnant/3",
-    "education/4",
-    "life_stage/2",
-    "death_probability/2",
-    "dating/3",
-    "married_to/2",
-    "divorced_from/3",
-    "attracted_to/2",
-    // Simulation per-timestep state (asserted by the simulation loop)
-    "birth_chance/2",
-    // birth_chance(MotherId, Probability) — fertility adjusted by child count
-    "random_chance/1",
-    // random_chance(P) — succeeds with probability P (implemented as JS bridge)
-    // General state
-    "current_timestep/1",
-    "current_year/1"
-  ];
-  function getTotTDynamicPredicates() {
-    return [...DYNAMIC_DECLARATIONS2];
-  }
-
-  // @insimul/core/src/prolog/npc-reasoning.ts
-  var DYNAMIC_DECLARATIONS3 = [
-    // Lifecycle
-    "attracted_to/2",
-    "dating/3",
-    "married_to/2",
-    "marriage_date/3",
-    "divorced_from/3",
-    "pregnant/3",
-    "gave_birth/3",
-    "birth_parent/2",
-    "primary_caregiver/2",
-    "stepparent/2",
-    "student/1",
-    "student_of/3",
-    "graduated/3",
-    "mentor/3",
-    "apprentice/3",
-    "has_skill/3",
-    "learning/3",
-    "came_of_age/2",
-    "eligible_for_marriage/1",
-    "eligible_for_work/1",
-    "deceased/3",
-    "cause_of_death/2",
-    "inherits_from/3",
-    "estate_of/2",
-    // Social
-    "friends/2",
-    "enemies/2",
-    "rival/2",
-    "conversation_count/3",
-    "relationship_charge/3",
-    "relationship_trust/3",
-    "current_timestep/1",
-    // Emotional
-    "mood/2",
-    "stress_level/2",
-    "social_desire/2",
-    // Action/dialogue
-    "npc_action_preference/3",
-    "dialogue_topic_preference/3",
-    // Personality
-    "personality/3",
-    // Employment
-    "employed/1",
-    "employed_at/3",
-    "business_needs_worker/2",
-    // Daily schedule
-    "schedule/4",
-    "time_of_day/1",
-    // Quest memory
-    "npc_gave_quest/3",
-    "quest_outcome/3",
-    "npc_quest_count/3",
-    "npc_quest_completed_count/3",
-    "npc_quest_failed_count/3",
-    "npc_quest_abandoned_count/3",
-    // Environment awareness
-    "weather/1",
-    "game_hour/1",
-    "time_period/1",
-    "season/1",
-    // Player progress
-    "player_quests_completed/1",
-    "player_reputation/1",
-    "player_is_new/0",
-    // Active quests
-    "quest_active/2",
-    "quest_completed/2",
-    "quest_failed/2",
-    // Recent events
-    "recent_event/2"
-  ];
-  function getNPCDynamicPredicates() {
-    return [...DYNAMIC_DECLARATIONS3];
-  }
-
-  // @insimul/core/src/prolog/prolog-fact-validator.ts
-  function parseFactSignature(fact) {
-    const trimmed = fact.trim().replace(/\.\s*$/, "").trim();
-    if (!trimmed) return null;
-    if (trimmed.startsWith("%")) return null;
-    if (/:-/.test(trimmed)) return null;
-    const atomMatch = trimmed.match(/^([a-z_][\w]*)$/);
-    if (atomMatch) {
-      return { predicate: atomMatch[1], arity: 0, args: [] };
-    }
-    const headMatch = trimmed.match(/^([a-z_][\w]*)\s*\(/);
-    if (!headMatch) return null;
-    const predicate = headMatch[1];
-    const argsStart = headMatch[0].length;
-    const args = splitTopLevelArgs(trimmed.slice(argsStart));
-    if (!args) return null;
-    return { predicate, arity: args.length, args };
-  }
-  function splitTopLevelArgs(body2) {
-    const args = [];
-    let depth = 1;
-    let current = "";
-    let i = 0;
-    while (i < body2.length) {
-      const ch = body2[i];
-      if (ch === "'" || ch === '"') {
-        const quote = ch;
-        current += ch;
-        i++;
-        while (i < body2.length && body2[i] !== quote) {
-          if (body2[i] === "\\" && i + 1 < body2.length) {
-            current += body2[i] + body2[i + 1];
-            i += 2;
-            continue;
-          }
-          current += body2[i];
-          i++;
-        }
-        if (i >= body2.length) return null;
-        current += body2[i];
-        i++;
-        continue;
-      }
-      if (ch === "(" || ch === "[" || ch === "{") {
-        depth++;
-        current += ch;
-        i++;
-        continue;
-      }
-      if (ch === ")" || ch === "]" || ch === "}") {
-        depth--;
-        if (depth === 0) {
-          if (ch !== ")") return null;
-          const rest = body2.slice(i + 1).trim();
-          if (rest.length > 0) return null;
-          const arg = current.trim();
-          if (args.length === 0 && arg.length === 0) return [];
-          args.push(arg);
-          return args;
-        }
-        current += ch;
-        i++;
-        continue;
-      }
-      if (ch === "," && depth === 1) {
-        args.push(current.trim());
-        current = "";
-        i++;
-        continue;
-      }
-      current += ch;
-      i++;
-    }
-    return null;
-  }
-  function inferArgType(raw) {
-    const s = raw.trim();
-    if (!s) return "empty";
-    if (/^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(s)) return "number";
-    if (/^'(?:[^'\\]|\\.)*'$/.test(s)) return "quoted-string";
-    if (/^"(?:[^"\\]|\\.)*"$/.test(s)) return "quoted-string";
-    if (/^[a-z_][\w]*\s*\(/.test(s) && s.endsWith(")")) return "compound";
-    if (/^'(?:[^'\\]|\\.)*'\s*\(/.test(s) && s.endsWith(")")) return "compound";
-    if (s.startsWith("[") && s.endsWith("]")) return "list";
-    if (/^[A-Z_][\w]*$/.test(s)) return "variable";
-    if (/^[a-z][\w]*$/.test(s)) return "atom";
-    return "unknown";
-  }
-  function extractDynamicDeclarations(program) {
-    const out = [];
-    const re = /:-\s*dynamic\s*\(\s*([a-z_][\w]*)\s*\/\s*(\d+)\s*\)/g;
-    let m;
-    while ((m = re.exec(program)) !== null) {
-      out.push(`${m[1]}/${m[2]}`);
-    }
-    return out;
-  }
-  function extractRuleHeads(program) {
-    const out = [];
-    const lines2 = program.split(/\r?\n/);
-    for (const rawLine of lines2) {
-      const line = rawLine.replace(/^\s+/, "");
-      if (!line || line.startsWith("%") || line.startsWith(":-")) continue;
-      const m = line.match(/^([a-z_][\w]*)\s*\(/);
-      if (!m) continue;
-      const parsed = parseFactSignature(line.replace(/\s*:-.*$/, "").replace(/\s*\.\s*$/, ""));
-      if (parsed) out.push(`${parsed.predicate}/${parsed.arity}`);
-    }
-    return out;
-  }
-  function buildKnownPredicateSignatures(extra = []) {
-    const sigs = /* @__PURE__ */ new Set();
-    for (const p of getAdvancedDynamicPredicates()) sigs.add(p);
-    for (const p of getTotTDynamicPredicates()) sigs.add(p);
-    for (const p of getNPCDynamicPredicates()) sigs.add(p);
-    for (const p of extractDynamicDeclarations(HELPER_PREDICATES_PROLOG)) sigs.add(p);
-    for (const p of extractRuleHeads(HELPER_PREDICATES_PROLOG)) sigs.add(p);
-    for (const p of MECHANIC_RUNTIME_PREDICATES) sigs.add(p);
-    for (const p of AI_PERCEPTION_RUNTIME_PREDICATES) sigs.add(p);
-    for (const p of AI_ACTION_RUNTIME_PREDICATES) sigs.add(p);
-    for (const p of AI_ENFORCEMENT_RUNTIME_PREDICATES) sigs.add(p);
-    for (const p of AI_PLANNING_RUNTIME_PREDICATES) sigs.add(p);
-    for (const p of extra) sigs.add(p);
-    return sigs;
-  }
-  function validatePrologFact(fact, knownSignatures) {
-    const parsed = parseFactSignature(fact);
-    if (!parsed) {
-      return { valid: false, reason: "unparseable fact" };
-    }
-    const { predicate, arity, args } = parsed;
-    const sig = `${predicate}/${arity}`;
-    if (!knownSignatures.has(sig)) {
-      const arityMatches = Array.from(knownSignatures).filter((s) => s.startsWith(`${predicate}/`));
-      const reason = arityMatches.length > 0 ? `arity ${arity} does not match known ${arityMatches.join(", ")}` : "predicate not in current schema";
-      return { valid: false, reason, predicate, arity };
-    }
-    for (const arg of args) {
-      const type = inferArgType(arg);
-      if (type === "variable") {
-        return { valid: false, reason: `unbound variable "${arg}"`, predicate, arity };
-      }
-      if (type === "empty" || type === "unknown") {
-        return { valid: false, reason: `unrecognized argument "${arg}"`, predicate, arity };
-      }
-    }
-    return { valid: true, predicate, arity };
-  }
-
-  // @insimul/core/src/skills/skill-facts.ts
-  function emptySkillDelta() {
-    return { retract: [], assert: [] };
-  }
-  function mergeSkillDeltas(...deltas) {
-    const merged = emptySkillDelta();
-    for (const delta of deltas) {
-      merged.retract.push(...delta.retract);
-      merged.assert.push(...delta.assert);
-    }
-    return merged;
-  }
-  var SKILL_RESOLUTION_PREDICATES = Object.freeze([
-    "skill_xp/3",
-    "skill_points/3",
-    "skill_unlocked/2",
-    "has_skill/3"
-  ]);
-  var SKILL_AUTHORED_PREDICATES = Object.freeze([
-    "skill_defined/2",
-    "skill_max_level/2",
-    "skill_requires/3",
-    "skill_level_xp/3",
-    "skill_tree/2",
-    "skill_node/2",
-    "skill_node_cost/2",
-    "skill_node_requires/2",
-    "skill_node_effect/2"
-  ]);
-  function skillDefinitionFacts(skills, tuning) {
-    const facts = [];
-    for (const skill of skills) {
-      const id = prologAtom(skill.id);
-      facts.push(`skill_defined(${id}, ${prologAtom(skill.category)}).`);
-      facts.push(`skill_max_level(${id}, ${skill.maxLevel}).`);
-      for (const prereq of skill.requires) {
-        facts.push(`skill_requires(${id}, ${prologAtom(prereq.skill)}, ${prereq.level}).`);
-      }
-      for (let level = 2; level <= skill.maxLevel; level += 1) {
-        facts.push(`skill_level_xp(${id}, ${level}, ${xpForLevel(skill, level, tuning)}).`);
-      }
-    }
-    return facts;
-  }
-  function skillTreeFacts(trees, tuning) {
-    const facts = [];
-    for (const tree of trees) {
-      facts.push(`skill_tree(${prologAtom(tree.id)}, ${prologAtom(tree.skill)}).`);
-      for (const node of tree.nodes) {
-        const id = prologAtom(node.id);
-        facts.push(`skill_node(${id}, ${prologAtom(tree.id)}).`);
-        facts.push(`skill_node_cost(${id}, ${nodeCost(node, tuning)}).`);
-        for (const goal of nodeRequirements(node)) {
-          facts.push(`skill_node_requires(${id}, ${goal}).`);
-        }
-        for (const effect of node.effects) {
-          facts.push(`skill_node_effect(${id}, ${effectTerm(effect)}).`);
-        }
-      }
-    }
-    return facts;
-  }
-  function effectTerm(effect) {
-    if (effect.args.length === 0) return prologAtom(effect.kind);
-    const args = effect.args.map(
-      (arg) => typeof arg === "number" ? String(arg) : prologAtom(arg)
-    );
-    return `${prologAtom(effect.kind)}(${args.join(", ")})`;
-  }
-  function skillXpFact(actor, skill, xp) {
-    return `skill_xp(${prologAtom(actor)}, ${prologAtom(skill)}, ${xp}).`;
-  }
-  function hasSkillFact(actor, skill, level) {
-    return `has_skill(${prologAtom(actor)}, ${prologAtom(skill)}, ${level}).`;
-  }
-  function skillPointsFact(actor, tree, points3) {
-    return `skill_points(${prologAtom(actor)}, ${prologAtom(tree)}, ${points3}).`;
-  }
-  function skillUnlockedFact(actor, node) {
-    return `skill_unlocked(${prologAtom(actor)}, ${prologAtom(node)}).`;
-  }
-  function balanceDelta(fact, before, after) {
-    if (before === after) return emptySkillDelta();
-    return {
-      retract: before === void 0 ? [] : [fact(before)],
-      assert: [fact(after)]
-    };
-  }
-  function skillXpDelta(actor, skill, before, after) {
-    return balanceDelta((value) => skillXpFact(actor, skill, value), before, after);
-  }
-  function skillLevelDelta(actor, skill, before, after) {
-    return balanceDelta(
-      (value) => hasSkillFact(actor, skill, value),
-      before === 0 ? void 0 : before,
-      after
-    );
-  }
-  function skillPointsDelta(actor, tree, before, after) {
-    return balanceDelta((value) => skillPointsFact(actor, tree, value), before, after);
-  }
-  function skillUnlockDelta(actor, node) {
-    return { retract: [], assert: [skillUnlockedFact(actor, node)] };
-  }
-  function checkSkillDelta(delta) {
-    const known = buildKnownPredicateSignatures(SKILL_RESOLUTION_PREDICATES);
-    const allowed = new Set(SKILL_RESOLUTION_PREDICATES);
-    for (const clause of [...delta.retract, ...delta.assert]) {
-      const verdict = validatePrologFact(clause, known);
-      if (!verdict.valid) {
-        return {
-          ok: false,
-          reason: `"${clause}" is not a fact this build can carry: ${verdict.reason}`,
-          offending: clause
-        };
-      }
-      const signature = `${verdict.predicate}/${verdict.arity}`;
-      if (!allowed.has(signature)) {
-        return {
-          ok: false,
-          reason: `"${clause}" writes ${signature}, which progression does not own (docs/skill-progression.md \xA78)`,
-          offending: clause
-        };
-      }
-    }
-    return { ok: true, reason: null };
-  }
-
-  // @insimul/core/src/game-engine/logic/SkillProgression.ts
-  var SkillProgression = class {
-    constructor(config = {}) {
-      __publicField(this, "engine");
-      __publicField(this, "tuning");
-      __publicField(this, "eventBus");
-      /** Resolved once at construction, so it cannot be swapped out mid-session. */
-      __publicField(this, "modifierSink");
-      /** Why the last write was refused by the schema gate, or `null`. */
-      __publicField(this, "writeRefusal", null);
-      /** The world's authored content. Never written to by gameplay. */
-      __publicField(this, "skills", /* @__PURE__ */ new Map());
-      __publicField(this, "trees", []);
-      __publicField(this, "actors", /* @__PURE__ */ new Map());
-      this.engine = config.engine;
-      this.tuning = config.tuning ?? { ...DEFAULT_SKILL_TUNING };
-      this.eventBus = config.eventBus;
-      this.modifierSink = config.skillModifiers ?? config.host?.skillModifiers;
-      if (config.skills) this.loadSkills(config.skills);
-      if (config.trees) this.loadTrees(config.trees);
-      if (config.state) this.restore(config.state);
-    }
-    setEventBus(bus) {
-      this.eventBus = bus;
-    }
-    /** The world's authored numbers, as this instance read them. */
-    getTuning() {
-      return { ...this.tuning };
-    }
-    // ── The authored world ─────────────────────────────────────────────────
-    /** Replace the authored skills. */
-    loadSkills(skills) {
-      this.skills = new Map(skills.map((skill) => [skill.id, skill]));
-    }
-    /** Replace the authored trees. Node ids are settled against their tree here. */
-    loadTrees(trees) {
-      this.trees = trees.map((tree) => ({
-        ...tree,
-        nodes: tree.nodes.map((node) => ({ ...node, tree: tree.id }))
-      }));
-    }
-    /** The authored skills, as this instance read them. */
-    getSkills() {
-      return [...this.skills.values()].map((skill) => ({ ...skill }));
-    }
-    /** The authored trees, as this instance read them. */
-    getTrees() {
-      return this.trees.map((tree) => ({ ...tree, nodes: tree.nodes.map((node) => ({ ...node })) }));
-    }
-    /**
-     * Publish the world's authored skills and trees into the KB.
-     *
-     * Authored data, asserted at load the way `TraversalPlanner.publishGraph`
-     * asserts the link graph — so a rule that asks `can_unlock/2` walks the same
-     * tree core resolves over, and an authored quest objective can name a node
-     * without a second export of it. Returns how many facts were written.
-     */
-    async publishWorld(engine = this.engine) {
-      if (!engine) return 0;
-      let written = 0;
-      for (const fact of [
-        ...skillDefinitionFacts([...this.skills.values()], this.tuning),
-        ...skillTreeFacts(this.trees, this.tuning)
-      ]) {
-        await engine.assertFact(stripPeriod7(fact));
-        written += 1;
-      }
-      return written;
-    }
-    // ── Roster ─────────────────────────────────────────────────────────────
-    /** Add or replace an actor, and write their facts. */
-    async register(registration) {
-      const before = this.actors.get(registration.id);
-      const after = {
-        id: registration.id,
-        levels: { ...registration.levels ?? {} },
-        xp: { ...registration.xp ?? {} },
-        points: { ...registration.points ?? {} },
-        unlocked: [...registration.unlocked ?? []]
-      };
-      this.actors.set(registration.id, after);
-      const deltas = [];
-      for (const skill of union(before?.levels, after.levels)) {
-        deltas.push(
-          skillLevelDelta(after.id, skill, before?.levels[skill], after.levels[skill] ?? 0)
-        );
-      }
-      for (const skill of union(before?.xp, after.xp)) {
-        deltas.push(skillXpDelta(after.id, skill, before?.xp[skill], after.xp[skill] ?? 0));
-      }
-      for (const tree of union(before?.points, after.points)) {
-        deltas.push(skillPointsDelta(after.id, tree, before?.points[tree], after.points[tree] ?? 0));
-      }
-      for (const node of after.unlocked) {
-        if (!before?.unlocked.includes(node)) deltas.push(skillUnlockDelta(after.id, node));
-      }
-      const delta = mergeSkillDeltas(...deltas);
-      await this.writeDelta(delta);
-      this.publishModifiers(after.id);
-      return delta;
-    }
-    /**
-     * Forget an actor. Their facts are retracted; the authored world is untouched.
-     *
-     * Retract-only: an actor who left the world has no facts, not facts reading
-     * zero — a `has_skill(gone, smithing, 0)` left behind is a character the rules
-     * layer still thinks is present and merely unskilled.
-     */
-    async unregister(actorId) {
-      const actor = this.actors.get(actorId);
-      if (!actor) return emptySkillDelta();
-      this.actors.delete(actorId);
-      const delta = { retract: [], assert: [] };
-      for (const [skill, level] of Object.entries(actor.levels)) {
-        delta.retract.push(hasSkillFact(actorId, skill, level));
-      }
-      for (const [skill, xp] of Object.entries(actor.xp)) {
-        delta.retract.push(skillXpFact(actorId, skill, xp));
-      }
-      for (const [tree, points3] of Object.entries(actor.points)) {
-        delta.retract.push(skillPointsFact(actorId, tree, points3));
-      }
-      for (const node of actor.unlocked) delta.retract.push(skillUnlockedFact(actorId, node));
-      await this.writeDelta(delta);
-      if (this.modifierSink) {
-        try {
-          this.modifierSink.applyModifiers(actorId, {});
-        } catch {
-        }
-      }
-      return delta;
-    }
-    /** This actor's level in a skill. `0` for one they have not learned. */
-    levelOf(actorId, skill) {
-      return this.actors.get(actorId)?.levels[skill] ?? 0;
-    }
-    /** This actor's banked, unspent XP in a skill. */
-    xpOf(actorId, skill) {
-      return this.actors.get(actorId)?.xp[skill] ?? 0;
-    }
-    /** What this actor has left to spend in a tree. */
-    pointsOf(actorId, tree) {
-      return this.actors.get(actorId)?.points[tree] ?? 0;
-    }
-    /** Every node this actor has taken, in canonical order. */
-    unlockedNodes(actorId) {
-      return [...this.actors.get(actorId)?.unlocked ?? []].sort(compareIds);
-    }
-    /** Whether `skill_unlocked(Actor, Node)` holds. */
-    hasUnlocked(actorId, node) {
-      return this.actors.get(actorId)?.unlocked.includes(node) ?? false;
-    }
-    /**
-     * What this actor's taken nodes DO — `skill_effect/2` in TypeScript.
-     *
-     * The read every other module makes (US-2), and the reason none of them needs
-     * to know what a tree is: an effect is an authored term, and a module that
-     * cares about `modifies(reach, 2)` asks for effects rather than for nodes.
-     * Canonically ordered by node, so two engines applying them apply them in one
-     * order.
-     */
-    effectsOf(actorId) {
-      const effects = [];
-      for (const node of this.unlockedNodes(actorId)) {
-        const authored = findNode(this.trees, node);
-        if (authored) effects.push(...authored.effects.map((effect) => ({ ...effect })));
-      }
-      return effects;
-    }
-    /**
-     * Every numeric parameter this actor's taken nodes modify, summed (US-2).
-     *
-     * The convenience form of `skillModifiers(effectsOf(actor))`, for a caller that
-     * is about to build a resolution input — `withSkillModifiers` is what applies
-     * it. Reported rather than applied: this module does not know which module a
-     * parameter belongs to, and the one that does is the one already holding the
-     * snapshot.
-     */
-    modifiersOf(actorId) {
-      return skillModifiers(this.effectsOf(actorId));
-    }
-    // ── The host ───────────────────────────────────────────────────────────
-    /** Whether an engine supplied a modifier sink. `false` in a headless world. */
-    hasModifierSink() {
-      return this.modifierSink !== void 0;
-    }
-    /**
-     * Hand an actor's whole current modifier set to the host (US-3).
-     *
-     * The module's only outbound call, and the only one it will ever have: an
-     * effect whose parameter names a field of a snapshot core resolves from is
-     * applied by the module that owns the snapshot (`withSkillModifiers`, US-2),
-     * and an effect whose parameter names a quantity the ENGINE holds — how fast a
-     * body moves, how far it reaches — can only be applied there.
-     *
-     * **Absolute, never a delta.** The whole set is sent every time, so re-applying
-     * it is a no-op and a save load, a re-registration or a replayed unlock cannot
-     * leave the host drifting from core. A host that throws is ignored: an engine
-     * failing to move a speed number may not stop a node from being taken.
-     *
-     * With no actor named, every registered actor is published — what a caller
-     * that has just restored a save wants, and the counterpart of
-     * {@link publishActors}. Returns how many actors were published.
-     */
-    publishModifiers(actorId) {
-      const sink = this.modifierSink;
-      if (!sink) return 0;
-      const actors = actorId === void 0 ? this.roster().map((a) => a.id) : [actorId];
-      let published = 0;
-      for (const id of actors) {
-        if (actorId !== void 0 && !this.actors.has(id)) continue;
-        try {
-          sink.applyModifiers(id, skillModifierTotals(this.effectsOf(id)));
-        } catch {
-        }
-        published += 1;
-      }
-      return published;
-    }
-    /**
-     * The tree a host draws, for one actor — every authored tree, every node's
-     * state, the rows and the edges (US-3).
-     *
-     * A VALUE rather than a hook, which is the whole of `docs/skill-progression.md`
-     * §5: a panel is layout, layout differs legitimately between four engines, and
-     * what may not differ is which nodes are open, what they cost and why the rest
-     * are not. `buildSkillView` is the pure half; this is the half that asks the KB
-     * the two questions a pure function may not — which authored goals are unmet,
-     * and which nodes `permissible/3` refuses.
-     *
-     * One round trip per node, on the decision path: a player opening a screen,
-     * never a frame. A caller with no KB can call `buildSkillView` directly and
-     * gets a view whose gated nodes read `conditional` instead.
-     */
-    async viewOf(actorId) {
-      const actor = this.actors.get(actorId);
-      const unmet = {};
-      const forbidden = [];
-      for (const tree of this.trees) {
-        for (const node of tree.nodes) {
-          const goals = await this.unmetRequirements(actorId, nodeRequirements(node));
-          if (goals.length > 0) unmet[node.id] = goals;
-          const check = await this.checkPermission(actorId, this.tuning.unlockAction, node.id);
-          if (!check.permitted) forbidden.push(node.id);
-        }
-      }
-      const view2 = {
-        id: actorId,
-        levels: actor?.levels ?? {},
-        xp: actor?.xp ?? {},
-        points: actor?.points ?? {},
-        unlocked: this.unlockedNodes(actorId),
-        unmet,
-        forbidden
-      };
-      return buildSkillView({ trees: this.trees, skills: this.getSkills(), tuning: this.tuning, actor: view2 });
-    }
-    // ── XP ─────────────────────────────────────────────────────────────────
-    /**
-     * Bank XP against a skill — what practising, questing or being taught pays.
-     *
-     * How MUCH an action is worth is not decided here and gets no predicate: it is
-     * a property of the action the world authored, handed in by whoever raised the
-     * event. A negative award is read as zero rather than as a punishment; a world
-     * that wants to take skill away authors that, and silently draining a bank is
-     * the bug that would hide.
-     */
-    async award(actorId, skill, amount) {
-      const actor = this.actors.get(actorId);
-      const awarded = Number.isFinite(amount) && amount > 0 ? Math.floor(amount) : 0;
-      if (!actor || awarded === 0) {
-        return {
-          actor: actorId,
-          skill,
-          awarded: 0,
-          banked: this.xpOf(actorId, skill),
-          advanceable: (await this.canAdvance(actorId, skill)).available,
-          facts: emptySkillDelta(),
-          applied: false
-        };
-      }
-      const before = actor.xp[skill];
-      const banked = (before ?? 0) + awarded;
-      actor.xp[skill] = banked;
-      const facts = skillXpDelta(actorId, skill, before, banked);
-      const applied = await this.writeDelta(facts);
-      return {
-        actor: actorId,
-        skill,
-        awarded,
-        banked,
-        advanceable: (await this.canAdvance(actorId, skill)).available,
-        facts,
-        applied
-      };
-    }
-    /**
-     * Whether this actor may take the next level of a skill, without taking it.
-     *
-     * Every gate in {@link SKILL_ADVANCE_REFUSALS} order: what core knows first —
-     * the skill exists, its `skill_requires/3` prerequisites are met, it is not
-     * capped, the bank affords it — then permissibility. Advancing from 0 to 1 is
-     * LEARNING, which is why `can_learn_skill/2` and `can_advance/2` are one
-     * operation here rather than two entry points a caller has to choose between.
-     */
-    async canAdvance(actorId, skill) {
-      const actor = this.actors.get(actorId);
-      const resolution = resolveAdvance({
-        actor: actorId,
-        skill: this.skills.get(skill),
-        skillId: skill,
-        level: actor?.levels[skill] ?? 0,
-        banked: actor?.xp[skill] ?? 0,
-        levels: actor?.levels ?? {},
-        tuning: this.tuning
-      });
-      if (!resolution.available) return { ...resolution, permitted: false };
-      const check = await this.checkPermission(actorId, this.tuning.advanceAction, skill);
-      if (!check.permitted) {
-        return { ...resolution, available: false, refusal: "forbidden", check, permitted: false };
-      }
-      return { ...resolution, check, permitted: true };
-    }
-    /**
-     * Take the next level of a skill, if every gate allows it.
-     *
-     * The order is the module's discipline, and each step is where it is for a
-     * reason:
-     *
-     *  1. **Decide** ({@link canAdvance}). Nothing has happened yet.
-     *  2. **Spend** the banked XP. The bank is a currency, not a running total —
-     *     `docs/skill-progression.md` §3.
-     *  3. **Raise** `has_skill/3`, which is the fact the rest of the world already
-     *     reads.
-     *  4. **Grant** points to every tree the skill funds, so there is something to
-     *     spend them on.
-     */
-    async advance(actorId, skill) {
-      const decision = await this.canAdvance(actorId, skill);
-      const actor = this.actors.get(actorId);
-      const level = actor?.levels[skill] ?? 0;
-      if (!decision.permitted || !actor) {
-        return {
-          ...decision,
-          performed: false,
-          level,
-          spent: 0,
-          granted: [],
-          facts: emptySkillDelta(),
-          applied: false
-        };
-      }
-      const banked = actor.xp[skill] ?? 0;
-      const remaining = banked - decision.price;
-      const raised = level + 1;
-      actor.xp[skill] = remaining;
-      actor.levels[skill] = raised;
-      const granted = [];
-      const pointDeltas = [];
-      for (const treeId of treesFundedBy(this.trees, skill)) {
-        const before = actor.points[treeId];
-        const after = (before ?? 0) + this.tuning.pointsPerLevel;
-        actor.points[treeId] = after;
-        granted.push({ treeId, points: this.tuning.pointsPerLevel });
-        pointDeltas.push(skillPointsDelta(actorId, treeId, before, after));
-      }
-      const facts = mergeSkillDeltas(
-        skillXpDelta(actorId, skill, banked, remaining),
-        skillLevelDelta(actorId, skill, level, raised),
-        ...pointDeltas
-      );
-      const applied = await this.writeDelta(facts);
-      this.eventBus?.emit({
-        type: "skill_advanced",
-        actorId,
-        skillId: skill,
-        level: raised,
-        spent: decision.price,
-        granted
-      });
-      return {
-        ...decision,
-        performed: true,
-        level: raised,
-        spent: decision.price,
-        granted,
-        facts,
-        applied
-      };
-    }
-    /** What the next level of this skill would cost, or `0` past the cap. */
-    priceOfNextLevel(actorId, skill) {
-      const definition = this.skills.get(skill);
-      const level = this.levelOf(actorId, skill);
-      if (level >= maxLevelOf(definition, this.tuning)) return 0;
-      return xpForLevel(definition, level + 1, this.tuning);
-    }
-    // ── Nodes ──────────────────────────────────────────────────────────────
-    /**
-     * Whether this actor may take a node, without taking it.
-     *
-     * Every gate in {@link SKILL_UNLOCK_REFUSALS} order: the node exists, it is not
-     * already taken, the pool affords it, its authored goals hold, and nothing
-     * forbids it. The two rules-layer rungs come last because they cost a round
-     * trip and because a node nobody can pay for is refused for a reason nobody
-     * needs the KB to explain.
-     */
-    async canUnlock(actorId, nodeId) {
-      const node = findNode(this.trees, nodeId);
-      const resolution = resolveUnlock({
-        actor: actorId,
-        node,
-        nodeId,
-        points: node ? this.pointsOf(actorId, node.tree) : 0,
-        unlocked: this.hasUnlocked(actorId, nodeId),
-        tuning: this.tuning
-      });
-      if (!resolution.available) return { ...resolution, unmet: [], permitted: false };
-      const unmet = await this.unmetRequirements(actorId, resolution.requires);
-      if (unmet.length > 0) {
-        return { ...resolution, available: false, refusal: "requires", unmet, permitted: false };
-      }
-      const check = await this.checkPermission(actorId, resolution.action, nodeId);
-      if (!check.permitted) {
-        return {
-          ...resolution,
-          available: false,
-          refusal: "forbidden",
-          unmet,
-          check,
-          permitted: false
-        };
-      }
-      return { ...resolution, unmet, check, permitted: true };
-    }
-    /**
-     * Take a node, if every gate allows it.
-     *
-     * Spend, then record. What the node DOES is not applied here and never will be:
-     * an effect is an authored term the KB carries, and the module it affects reads
-     * it (US-2). A `SkillProgression` that reached into `CombatResolver` would be
-     * the fork this whole design exists to avoid.
-     */
-    async unlock(actorId, nodeId) {
-      const decision = await this.canUnlock(actorId, nodeId);
-      const actor = this.actors.get(actorId);
-      const node = findNode(this.trees, nodeId);
-      const effects = node?.effects ?? [];
-      if (!decision.permitted || !actor || !node) {
-        return {
-          ...decision,
-          performed: false,
-          remaining: decision.points,
-          effects,
-          facts: emptySkillDelta(),
-          applied: false
-        };
-      }
-      const before = actor.points[node.tree];
-      const remaining = (before ?? 0) - decision.cost;
-      actor.points[node.tree] = remaining;
-      actor.unlocked.push(nodeId);
-      const facts = mergeSkillDeltas(
-        skillPointsDelta(actorId, node.tree, before, remaining),
-        skillUnlockDelta(actorId, nodeId)
-      );
-      const applied = await this.writeDelta(facts);
-      this.publishModifiers(actorId);
-      this.eventBus?.emit({
-        type: "skill_node_unlocked",
-        actorId,
-        nodeId,
-        treeId: node.tree,
-        cost: decision.cost,
-        // `effectTerm` text, never the effect objects: pinned by conformance/skills/effect-terms.json.
-        effects: effects.map((effect) => effectTerm(effect))
-      });
-      return { ...decision, performed: true, remaining, effects, facts, applied };
-    }
-    // ── The gates ──────────────────────────────────────────────────────────
-    /**
-     * The authored goals a node asks that the KB did not satisfy.
-     *
-     * Evaluated by the PACK's own `skill_goal_met/2`, not by a second
-     * implementation here: the pack rebuilds the goal with the actor bound (`=..`),
-     * and reproducing that rebuild in TypeScript is how one guild member's
-     * reputation ends up unlocking the whole roster's node — the correction
-     * `traversal_goal_met/2` already carries.
-     *
-     * With no KB wired every goal is unmet — see the module header for why this
-     * gate fails closed and permissibility fails open.
-     */
-    async unmetRequirements(actorId, requires) {
-      if (requires.length === 0) return [];
-      if (!this.engine) return [...requires];
-      const unmet = [];
-      for (const goal of requires) {
-        let met = false;
-        try {
-          met = await this.engine.queryOnce(`skill_goal_met(${prologAtom(actorId)}, ${goal})`);
-        } catch {
-          met = false;
-        }
-        if (!met) unmet.push(goal);
-      }
-      return unmet;
-    }
-    /**
-     * `permissible/3`'s own input, forwarded with the attempt spelled as the action
-     * it is.
-     *
-     * There is deliberately no progression-private gate: a guild that will not
-     * teach an outsider, a law against training in a besieged city and a norm
-     * against taking the assassin's node are all refused by whatever `forbids/4`
-     * refuses them with, which is the same clause that refuses a theft. With no KB
-     * wired every advancement is permitted; core does not invent a prohibition it
-     * cannot read.
-     */
-    async checkPermission(actorId, action, target) {
-      const subject = target || NO_TARGET;
-      if (!this.engine) {
-        return { agent: actorId, action, target: subject, permitted: true, breached: [] };
-      }
-      return checkAction(this.engine, { agent: actorId, action, target: subject });
-    }
-    // ── The KB ─────────────────────────────────────────────────────────────
-    /**
-     * The last refusal, if the most recent write was refused by the schema gate.
-     *
-     * A refused write returns `false` exactly as a write with no KB behind it
-     * does, so the reason has to be readable somewhere; this is where. It is
-     * cleared by the next write that passes.
-     */
-    lastWriteRefusal() {
-      return this.writeRefusal;
-    }
-    /**
-     * Validate a whole delta and apply it, or apply none of it.
-     *
-     * Public for `BusinessDirector.applyDelta`'s reason: "nothing is partially
-     * written" is the claim a stateful layer most needs falsified against a real
-     * KB rather than taken on trust.
-     */
-    async applyDelta(delta) {
-      return this.writeDelta(delta);
-    }
-    /**
-     * Write one delta into the KB, retracting first — after checking the whole of
-     * it (US-1 of `195-module-v2-narrative-placement-skills`).
-     *
-     * `checkSkillDelta` runs over every clause before the KB is asked for
-     * anything, so a delta that reached outside progression's own vocabulary or
-     * carried an unbound variable is refused **whole** and leaves the KB
-     * byte-identical. Progression is the module that most needs that gate and was
-     * the last of the four to get it: an unlock is a `skill_unlocked/2` that
-     * `skill_effect/2` reads, and `skill_effect/2` is read by combat, traversal
-     * and crafting alike — so a half-written unlock is a modifier applied to every
-     * actor in the world (`docs/skill-progression.md` §8).
-     *
-     * Retracting a fact the KB never carried is a no-op rather than a failure: a
-     * host with its own persistence, a restored save and an actor registered before
-     * the engine was wired all produce one, and none of them is an error.
-     */
-    async writeDelta(delta) {
-      const verdict = checkSkillDelta(delta);
-      if (!verdict.ok) {
-        this.writeRefusal = verdict.reason;
-        return false;
-      }
-      this.writeRefusal = null;
-      if (!this.engine) return false;
-      if (delta.retract.length === 0 && delta.assert.length === 0) return false;
-      for (const fact of delta.retract) {
-        try {
-          await this.engine.retractFact(stripPeriod7(fact));
-        } catch {
-        }
-      }
-      for (const fact of delta.assert) {
-        await this.engine.assertFact(stripPeriod7(fact));
-      }
-      return true;
-    }
-    /**
-     * Publish every registered actor's levels, banks, pools and taken nodes.
-     *
-     * For a caller that wired the KB after the roster — a save restore, a host that
-     * builds its world before its engine. Returns how many facts were written.
-     */
-    async publishActors(engine = this.engine) {
-      if (!engine) return 0;
-      let written = 0;
-      for (const actor of this.roster()) {
-        const delta = mergeSkillDeltas(
-          ...Object.entries(actor.levels).map(
-            ([skill, level]) => skillLevelDelta(actor.id, skill, void 0, level)
-          ),
-          ...Object.entries(actor.xp).map(([skill, xp]) => skillXpDelta(actor.id, skill, void 0, xp)),
-          ...Object.entries(actor.points).map(
-            ([tree, points3]) => skillPointsDelta(actor.id, tree, void 0, points3)
-          ),
-          ...actor.unlocked.map((node) => skillUnlockDelta(actor.id, node))
-        );
-        for (const fact of delta.assert) {
-          await engine.assertFact(stripPeriod7(fact));
-          written += 1;
-        }
-      }
-      return written;
-    }
-    // ── Save/restore ───────────────────────────────────────────────────────
-    /** Every actor this module knows, in canonical order. */
-    roster() {
-      return [...this.actors.values()].map((actor) => ({
-        id: actor.id,
-        levels: sortedRecord(actor.levels),
-        xp: sortedRecord(actor.xp),
-        points: sortedRecord(actor.points),
-        unlocked: [...actor.unlocked].sort(compareIds)
-      })).sort((a, b) => compareIds(a.id, b.id));
-    }
-    /**
-     * The per-playthrough state, and only that: what each actor has learned,
-     * banked, been granted and taken. The skills, the trees, the curve, the costs
-     * and the effects are authored and are NOT here — a tuning number inside a save
-     * file is world-template data leaking into a playthrough
-     * (`docs/mechanic-predicates.md` §3).
-     */
-    serialize() {
-      return { actors: this.roster() };
-    }
-    /**
-     * Restore a saved playthrough. Silent — no events, because loading a save is
-     * not somebody levelling up, no KB writes, because restoring a save is what
-     * `publishActors` is for once the engine exists, and no host call, because
-     * {@link publishModifiers} is its counterpart on the other seam. A caller that
-     * restores into a live world calls both; one that restores into a world it is
-     * still building calls neither yet.
-     */
-    restore(state) {
-      this.actors = /* @__PURE__ */ new Map();
-      for (const actor of state.actors ?? []) {
-        this.actors.set(actor.id, {
-          id: actor.id,
-          levels: { ...actor.levels ?? {} },
-          xp: { ...actor.xp ?? {} },
-          points: { ...actor.points ?? {} },
-          unlocked: [...actor.unlocked ?? []]
-        });
-      }
-    }
-  };
   function stripPeriod7(clause) {
     return clause.replace(/\.$/, "");
-  }
-  function union(before, after) {
-    return [.../* @__PURE__ */ new Set([...Object.keys(before ?? {}), ...Object.keys(after)])].sort(compareIds);
-  }
-  function sortedRecord(record) {
-    const out = {};
-    for (const key of Object.keys(record).sort(compareIds)) out[key] = record[key];
-    return out;
   }
 
   // @insimul/core/src/game-engine/mechanic-runtime.ts
@@ -31919,7 +32998,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   // @insimul/core/src/quests/tutorial-save.ts
   var TUTORIAL_EXTENSION_KEY = "tutorial";
   var TUTORIAL_BLOCK_MEMBERS = Object.freeze(["completed", "skipped", "current", "endedBySkip"]);
-  var isObj5 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var isObj6 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
   var isId = (v) => typeof v === "string" && v.length > 0;
   function readIds(v, name, bad3, taken = /* @__PURE__ */ new Set()) {
     if (v === void 0) return [];
@@ -31941,7 +33020,7 @@ player_meets_cefr(Player, RequiredLevel) :-
   }
   function readTutorialBlock(b) {
     if (b === void 0 || b === null) return { ok: true, value: null };
-    if (!isObj5(b)) return { ok: false, keys: [] };
+    if (!isObj6(b)) return { ok: false, keys: [] };
     const bad3 = [];
     const completed = readIds(b.completed, "completed", bad3);
     const skipped = readIds(b.skipped, "skipped", bad3, new Set(completed ?? []));
@@ -35980,10 +37059,10 @@ player_meets_cefr(Player, RequiredLevel) :-
   var LOOK_PI = Math.fround(Math.PI);
   function lookNeighbours(layerId, row, look, terrain, plan2, paving, obstacles2, radius) {
     const density = Math.max(0, look.density);
-    const whole4 = Math.floor(density);
-    const frac = density - whole4;
+    const whole5 = Math.floor(density);
+    const frac = density - whole5;
     const key = layerInstanceKey(layerId, row.x, row.z);
-    const evenCopies = whole4 + (lookHash01(key, 0) < frac ? 1 : 0);
+    const evenCopies = whole5 + (lookHash01(key, 0) < frac ? 1 : 0);
     let copies = evenCopies;
     if (look.clumping > 0 && density > 1) {
       const d = density * clumpWeight(row.x, row.z, look.clumping, look.clumpCell);
@@ -39717,6 +40796,36 @@ player_meets_cefr(Player, RequiredLevel) :-
     }
     return input;
   }
+  function okValue(value) {
+    return { ok: true, value: plain(value) };
+  }
+  function optionalObject(method, value, name) {
+    return optionalArg(value, (v) => needObject(method, v, name));
+  }
+  function optionalList(method, value, name) {
+    return optionalArg(value, (v) => needArray(method, v, name));
+  }
+  function gamificationTuningOf(method, args) {
+    return { ...GAMIFICATION_TUNING, ...optionalObject(method, args.tuning, "tuning") ?? {} };
+  }
+  function skillTuningArg(method, value, name = "tuning") {
+    return coded("invalid-input", () => needObject(method, value, name));
+  }
+  function orUndefined(value) {
+    return value === null ? void 0 : value;
+  }
+  async function skillCall(s, fn) {
+    s.events.length = 0;
+    const value = await fn(s.progression);
+    return { ok: true, value: plain(value), events: s.events.splice(0) };
+  }
+  function skillActorArgs(method, args, field) {
+    return coded("invalid-input", () => {
+      needString(method, args.actor, "actor");
+      if (field) needString(method, args[field], field);
+      return args;
+    });
+  }
   function catalogOf(method, value) {
     const catalog = needObject(method, value, "catalog");
     const index = needObject(method, catalog.index, "catalog.index");
@@ -42332,6 +43441,576 @@ player_meets_cefr(Player, RequiredLevel) :-
       });
       return { primary: isPrimaryArtefactFor(args.platform, args.artefact) };
     },
+    // ── progression: the tracker, the feature modules and the save block (P9i; PL.native-progression-rows, U106(7)) ──
+    // `progression.<group>.<op>` after core's corpus files (`progression/gamification`,
+    // `progression/modules`, `progression/skills`, `progression/save`), one core
+    // function per row; every answer is `{ ok: true, value }` and a refusal core
+    // returns (a tracker step's `refusal`, a module's `refused`, an unreadable save
+    // block's `{ ok: false, keys }`) is IN the value. The tracker is STATELESS here:
+    // `progression.gamification.step` takes the run the last answer carried and
+    // answers the next one (core's `applyGamification` does not change its input).
+    // tests/progression_corpus.cpp composes each corpus op's record from these rows as
+    // core's runner composes it from core's functions.
+    /** `progression.gamification.tuning { tuning? }` → core's `GAMIFICATION_TUNING` with the pack's `tuning` over it. */
+    "progression.gamification.tuning": (args) => okValue(coded("invalid-input", () => gamificationTuningOf("progression.gamification.tuning", args))),
+    /** `progression.gamification.levelForXp { total, thresholds? }` → core's `levelForXp` (absent thresholds: `LEVEL_THRESHOLDS`). */
+    "progression.gamification.levelForXp": (args) => {
+      const m = "progression.gamification.levelForXp";
+      coded("invalid-input", () => {
+        needNumber(m, args.total, "total");
+        optionalList(m, args.thresholds, "thresholds");
+      });
+      return okValue(levelForXp(args.total, orUndefined(args.thresholds)));
+    },
+    /** `progression.gamification.nextLevelXp { level, thresholds? }` → core's `nextLevelXp` (0 at the top). */
+    "progression.gamification.nextLevelXp": (args) => {
+      const m = "progression.gamification.nextLevelXp";
+      coded("invalid-input", () => {
+        needNumber(m, args.level, "level");
+        optionalList(m, args.thresholds, "thresholds");
+      });
+      return okValue(nextLevelXp(args.level, orUndefined(args.thresholds)));
+    },
+    /** `progression.gamification.progressPermille { total, thresholds? }` → core's `levelProgressPermille`. */
+    "progression.gamification.progressPermille": (args) => {
+      const m = "progression.gamification.progressPermille";
+      coded("invalid-input", () => {
+        needNumber(m, args.total, "total");
+        optionalList(m, args.thresholds, "thresholds");
+      });
+      return okValue(levelProgressPermille(args.total, orUndefined(args.thresholds)));
+    },
+    /** `progression.gamification.tier { level, labels? }` → core's `levelTier` (absent labels: `DEFAULT_TIER_LABELS`). */
+    "progression.gamification.tier": (args) => {
+      const m = "progression.gamification.tier";
+      coded("invalid-input", () => {
+        needNumber(m, args.level, "level");
+        optionalList(m, args.labels, "labels");
+      });
+      return okValue(levelTier(args.level, orUndefined(args.labels)));
+    },
+    /** `progression.gamification.table { bundle?, tuning?, overrides? }` → core's `xpEventTable` (bundle absent: the generic table). */
+    "progression.gamification.table": (args) => {
+      const m = "progression.gamification.table";
+      const tuning = coded("invalid-input", () => {
+        if (args.bundle !== void 0 && args.bundle !== null) needString(m, args.bundle, "bundle");
+        optionalObject(m, args.overrides, "overrides");
+        return gamificationTuningOf(m, args);
+      });
+      return okValue(xpEventTable(args.bundle ?? null, tuning, args.overrides ?? {}));
+    },
+    /** `progression.gamification.achievements {}` → core's `ACHIEVEMENTS`, the catalogue in order. */
+    "progression.gamification.achievements": () => okValue(ACHIEVEMENTS),
+    /** `progression.gamification.dailyIndex { date }` → core's `dailyTemplateIndex` (which template a day draws). */
+    "progression.gamification.dailyIndex": (args) => {
+      coded("invalid-input", () => needString("progression.gamification.dailyIndex", args.date, "date"));
+      return okValue(dailyTemplateIndex(args.date));
+    },
+    /** `progression.gamification.previousDate { date }` → core's `previousDateKey` (the civil yesterday). */
+    "progression.gamification.previousDate": (args) => {
+      coded("invalid-input", () => needString("progression.gamification.previousDate", args.date, "date"));
+      return okValue(previousDateKey(args.date));
+    },
+    /** `progression.gamification.dailyChallenge { daily: { dateKey, progress, completed } }` → core's `dailyChallengeView`. */
+    "progression.gamification.dailyChallenge": (args) => {
+      coded("invalid-input", () => needObject("progression.gamification.dailyChallenge", args.daily, "daily"));
+      return okValue(dailyChallengeView(args.daily));
+    },
+    /** `progression.gamification.streakTenths { streak, tuning? }` → core's `streakMultiplierTenths`. */
+    "progression.gamification.streakTenths": (args) => {
+      const m = "progression.gamification.streakTenths";
+      const tuning = coded("invalid-input", () => {
+        needNumber(m, args.streak, "streak");
+        return gamificationTuningOf(m, args);
+      });
+      return okValue(streakMultiplierTenths(args.streak, tuning));
+    },
+    /** `progression.gamification.streakXp { reward, streak, tuning? }` → core's `streakXp` (a daily reward under the streak's multiplier). */
+    "progression.gamification.streakXp": (args) => {
+      const m = "progression.gamification.streakXp";
+      const tuning = coded("invalid-input", () => {
+        needNumber(m, args.reward, "reward");
+        needNumber(m, args.streak, "streak");
+        return gamificationTuningOf(m, args);
+      });
+      return okValue(streakXp(args.reward, args.streak, tuning));
+    },
+    /** `progression.gamification.initial {}` → core's `emptyGamification()`, a new learner's state. */
+    "progression.gamification.initial": () => okValue(emptyGamification()),
+    /**
+     * `progression.gamification.step { run: { state, date }, step: { do, … }, tuning?,
+     * config?, at? }` → core's `applyGamification(run, step, { tuning, config, at })`:
+     * `{ run, events, signals, refusal? }`. `step.do` is one of core's step kinds (`day`,
+     * `conversation`, `word`, `mastered`, `grammar`, `pattern`, `quest`, `skillRewards`,
+     * `category`, `article`, `award`, `listening`, `event`, `stats`); a step core refuses
+     * (`bad_date`, `unknown_award`, `unknown_event`) answers its `refusal` as a value.
+     * `at` is when an achievement unlocks (the host's integer ms; absent: 0).
+     */
+    "progression.gamification.step": (args) => {
+      const m = "progression.gamification.step";
+      const input = coded("invalid-input", () => {
+        const run = needObject(m, args.run, "run");
+        needObject(m, run.state, "run.state");
+        if (run.date !== void 0 && run.date !== null) needString(m, run.date, "run.date");
+        needObject(m, args.step, "step");
+        const config = optionalObject(m, args.config, "config");
+        return { run: { state: run.state, date: run.date ?? null }, tuning: gamificationTuningOf(m, args), config, at: optNumber(m, args.at, "at") };
+      });
+      return okValue(applyGamification(input.run, args.step, { tuning: input.tuning, config: input.config, at: input.at }));
+    },
+    /** `progression.gamification.view { state, config? }` → core's `gamificationView` (what a progress panel draws). */
+    "progression.gamification.view": (args) => {
+      const m = "progression.gamification.view";
+      const config = coded("invalid-input", () => {
+        needObject(m, args.state, "state");
+        return optionalObject(m, args.config, "config");
+      });
+      return okValue(gamificationView(args.state, config));
+    },
+    /** `progression.modules.definitions {}` → `{ definitions, verdicts }`: core's six definitions and a verdict for every module id. */
+    "progression.modules.definitions": () => okValue({ definitions: FEATURE_MODULE_DEFINITIONS, verdicts: FEATURE_MODULE_VERDICTS }),
+    /** `progression.modules.bundleModules { bundle }` → core's `getDefaultModulesForGenre` (a bundle's declared module ids; `[]` for an unknown one). */
+    "progression.modules.bundleModules": (args) => {
+      coded("invalid-input", () => needString("progression.modules.bundleModules", args.bundle, "bundle"));
+      return okValue(getDefaultModulesForGenre(args.bundle));
+    },
+    /** `progression.modules.resolve { ids, bundle? }` → core's `resolveFeatureModules(ids, bundle)`: enabled, refused (as values) and the contributions. */
+    "progression.modules.resolve": (args) => {
+      const m = "progression.modules.resolve";
+      coded("invalid-input", () => {
+        needArray(m, args.ids, "ids");
+        if (args.bundle !== void 0 && args.bundle !== null) needString(m, args.bundle, "bundle");
+      });
+      return okValue(resolveFeatureModules(args.ids, args.bundle ?? null));
+    },
+    /**
+     * `progression.modules.genre { genre }` → what a genre leaves running, as core's
+     * `progression/modules` corpus states it: core's `resolveGenre` → its bundle's
+     * declared modules → `resolveFeatureModules` → the pause tabs the declared list
+     * gates on (`DEFAULT_MENU_TABS`) and the ones `PauseMenuModel` offers for the
+     * enabled list → the bundle's `bundleModuleConfigs`. Answer: `{ genre, bundle,
+     * featureModules, enabled, refused: [{ id, code }], tabsDeclared, tabs, configs }`.
+     * The one composite row of this family: the record is the corpus's, and every part
+     * of it is a core function's answer.
+     */
+    "progression.modules.genre": (args) => {
+      const r = resolveGenre(args.genre);
+      const declared = r.bundle.id ? [...getDefaultModulesForGenre(r.bundle.id)] : [];
+      const res = resolveFeatureModules(declared, r.bundle.id);
+      return okValue({
+        genre: args.genre,
+        bundle: r.bundle.id,
+        featureModules: declared,
+        enabled: res.enabled,
+        refused: res.refused.map((x) => ({ id: x.id, code: x.code })),
+        tabsDeclared: DEFAULT_MENU_TABS.filter((t) => [t.requires ?? []].flat().every((mod) => declared.includes(mod))).map((t) => t.key),
+        tabs: new PauseMenuModel(res.enabled).visibleKeys(),
+        configs: r.bundle.id ? bundleModuleConfigs(r.bundle.id) : {}
+      });
+    },
+    /** `progression.modules.configs { bundle }` → core's `bundleModuleConfigs` (sorted keys; `{}` for an unknown bundle). */
+    "progression.modules.configs": (args) => {
+      coded("invalid-input", () => needString("progression.modules.configs", args.bundle, "bundle"));
+      return okValue(bundleModuleConfigs(args.bundle));
+    },
+    /** `progression.modules.proficiencyTiers { tierLabels? }` → core's `proficiencyTiers` (labels relabel and cut the ladder). */
+    "progression.modules.proficiencyTiers": (args) => {
+      coded("invalid-input", () => optionalList("progression.modules.proficiencyTiers", args.tierLabels, "tierLabels"));
+      return okValue(proficiencyTiers(orUndefined(args.tierLabels)));
+    },
+    /** `progression.modules.proficiency { scores, tiers?, scale? }` → core's `proficiencyOf`. */
+    "progression.modules.proficiency": (args) => {
+      const m = "progression.modules.proficiency";
+      coded("invalid-input", () => {
+        objectList(m, args.scores, "scores");
+        if (args.tiers !== void 0 && args.tiers !== null) objectList(m, args.tiers, "tiers");
+        optNumber(m, args.scale, "scale");
+      });
+      return okValue(proficiencyOf(args.scores, orUndefined(args.tiers), orUndefined(args.scale)));
+    },
+    /** `progression.modules.difficultyTiers { tierLabels? }` → core's `difficultyTiers`. */
+    "progression.modules.difficultyTiers": (args) => {
+      coded("invalid-input", () => optionalList("progression.modules.difficultyTiers", args.tierLabels, "tierLabels"));
+      return okValue(difficultyTiers(orUndefined(args.tierLabels)));
+    },
+    /** `progression.modules.difficulty { score, tiers? }` → core's `difficultyParams` (adaptive difficulty's parameters for a score). */
+    "progression.modules.difficulty": (args) => {
+      const m = "progression.modules.difficulty";
+      coded("invalid-input", () => {
+        needNumber(m, args.score, "score");
+        if (args.tiers !== void 0 && args.tiers !== null) objectList(m, args.tiers, "tiers");
+      });
+      return okValue(difficultyParams(args.score, orUndefined(args.tiers)));
+    },
+    /** `progression.modules.performance { records }` → core's `performanceScore` over a window of quest records. */
+    "progression.modules.performance": (args) => {
+      coded("invalid-input", () => objectList("progression.modules.performance", args.records, "records"));
+      return okValue(performanceScore(args.records));
+    },
+    /** `progression.modules.adjust { records, current }` → core's `adjustDifficulty` (the quest difficulty adjustment). */
+    "progression.modules.adjust": (args) => {
+      const m = "progression.modules.adjust";
+      coded("invalid-input", () => {
+        objectList(m, args.records, "records");
+        needString(m, args.current, "current");
+      });
+      return okValue(adjustDifficulty(args.records, args.current));
+    },
+    /** `progression.modules.applyAdjustment { adjustment, objectiveCount, estimatedMinutes }` → core's `applyAdjustment`. */
+    "progression.modules.applyAdjustment": (args) => {
+      const m = "progression.modules.applyAdjustment";
+      coded("invalid-input", () => {
+        needObject(m, args.adjustment, "adjustment");
+        needNumber(m, args.objectiveCount, "objectiveCount");
+        needNumber(m, args.estimatedMinutes, "estimatedMinutes");
+      });
+      return okValue(applyAdjustment(args.adjustment, args.objectiveCount, args.estimatedMinutes));
+    },
+    /** `progression.modules.records { quests }` → core's `performanceRecords` (finished quests as performance records). */
+    "progression.modules.records": (args) => {
+      coded("invalid-input", () => objectList("progression.modules.records", args.quests, "quests"));
+      return okValue(performanceRecords(args.quests));
+    },
+    /** `progression.skills.domain {}` → core's `DOMAIN_SKILL_TREES`: the language and guild domain trees, as a World IR `skills` section. */
+    "progression.skills.domain": () => okValue(DOMAIN_SKILL_TREES),
+    /** `progression.save.build { gamification?, skills? }` → core's `progressionSaveBlock` (the block from the two kernels' states). */
+    "progression.save.build": (args) => {
+      const m = "progression.save.build";
+      coded("invalid-input", () => {
+        optionalObject(m, args.gamification, "gamification");
+        optionalObject(m, args.skills, "skills");
+      });
+      return okValue(progressionSaveBlock({ gamification: args.gamification ?? null, skills: args.skills ?? null }));
+    },
+    /**
+     * `progression.save.read { block }` → core's `readProgressionBlock(block)`, as core
+     * answers: `{ ok: true, value: SavedProgression | null }`, or `{ ok: false, keys }`
+     * naming every unreadable member in ascending order. Any JSON is an answer.
+     */
+    "progression.save.read": (args) => okValue(readProgressionBlock(args.block)),
+    /** `progression.save.write { block }` → core's `progressionBlockOf` (the block as the writer stores it: catalogue order, sorted maps). */
+    "progression.save.write": (args) => {
+      coded("invalid-input", () => needObject("progression.save.write", args.block, "block"));
+      return okValue(progressionBlockOf(args.block));
+    },
+    // ── skill trees: advancement, unlocks, effects and the drawn tree (P9i; PL.native-progression-rows, U106(7)) ──
+    // `skill.<group>.<function>` after core's `conformance/skills/` files (`skills-
+    // advancement`, `skills-unlocks`, `skills-effects`, `skills-trees`), one core
+    // function per row, `{ ok: true, value }`; a resolution's `refusal` is a value.
+    // Pure: a resolution never asks a KB (core's rule), so neither `requires` nor
+    // `forbidden` ever appears here — that is the session's (`skill.canUnlock`).
+    /** `skill.ir.tuning { ir }` → core's `skillTuningFromIR` (a World IR `skills` section's numbers; absent: core's defaults). */
+    "skill.ir.tuning": (args) => okValue(skillTuningFromIR(orUndefined(coded("invalid-input", () => optionalObject("skill.ir.tuning", args.ir, "ir"))))),
+    /** `skill.ir.skills { ir, tuning? }` → core's `skillDefinitionsFromIR` (absent tuning: the IR's own). */
+    "skill.ir.skills": (args) => {
+      const m = "skill.ir.skills";
+      coded("invalid-input", () => {
+        optionalObject(m, args.ir, "ir");
+        optionalObject(m, args.tuning, "tuning");
+      });
+      return okValue(skillDefinitionsFromIR(orUndefined(args.ir), orUndefined(args.tuning)));
+    },
+    /** `skill.ir.trees { ir }` → core's `skillTreesFromIR` (every authored tree, node ids settled against their tree). */
+    "skill.ir.trees": (args) => okValue(skillTreesFromIR(orUndefined(coded("invalid-input", () => optionalObject("skill.ir.trees", args.ir, "ir"))))),
+    /**
+     * `skill.advancement.resolve { actor, skill, skillId?, level, banked, levels, tuning }`
+     * → core's `resolveAdvance`: what the next level PRICES and whether the actor may
+     * take it (refusals `unknown`, `prerequisite`, `capped`, `xp`, in that order). A
+     * null `skill` is one nothing declares.
+     */
+    "skill.advancement.resolve": (args) => {
+      const m = "skill.advancement.resolve";
+      coded("invalid-input", () => {
+        needString(m, args.actor, "actor");
+        optionalObject(m, args.skill, "skill");
+        needNumber(m, args.level, "level");
+        needNumber(m, args.banked, "banked");
+        needObject(m, args.levels, "levels");
+        skillTuningArg(m, args.tuning);
+      });
+      return okValue(resolveAdvance({ ...args, skill: orUndefined(args.skill) }));
+    },
+    /** `skill.advancement.xpForLevel { skill, level, tuning }` → core's `xpForLevel`: one level's PRICE (never a running total). */
+    "skill.advancement.xpForLevel": (args) => {
+      const m = "skill.advancement.xpForLevel";
+      coded("invalid-input", () => {
+        optionalObject(m, args.skill, "skill");
+        needNumber(m, args.level, "level");
+        skillTuningArg(m, args.tuning);
+      });
+      return okValue(xpForLevel(orUndefined(args.skill), args.level, args.tuning));
+    },
+    /** `skill.advancement.maxLevel { skill, tuning }` → core's `maxLevelOf` (the skill's cap, else the world's default). */
+    "skill.advancement.maxLevel": (args) => {
+      const m = "skill.advancement.maxLevel";
+      coded("invalid-input", () => {
+        optionalObject(m, args.skill, "skill");
+        skillTuningArg(m, args.tuning);
+      });
+      return okValue(maxLevelOf(orUndefined(args.skill), args.tuning));
+    },
+    /**
+     * `skill.unlocks.resolve { actor, node, nodeId?, points, unlocked, tuning }` → core's
+     * `resolveUnlock`: what a node costs, what it asks (`requires`, `conditional`) and
+     * whether core alone refuses it (`unknown`, `owned`, `points`, in that order). A
+     * null `node` is one nothing declares.
+     */
+    "skill.unlocks.resolve": (args) => {
+      const m = "skill.unlocks.resolve";
+      coded("invalid-input", () => {
+        needString(m, args.actor, "actor");
+        optionalObject(m, args.node, "node");
+        needNumber(m, args.points, "points");
+        skillTuningArg(m, args.tuning);
+      });
+      return okValue(resolveUnlock({ ...args, node: orUndefined(args.node) }));
+    },
+    /** `skill.unlocks.requirements { node }` → core's `nodeRequirements`: its goals plus one `skill_unlocked(Actor, Parent)` per parent, sorted. */
+    "skill.unlocks.requirements": (args) => {
+      coded("invalid-input", () => needObject("skill.unlocks.requirements", args.node, "node"));
+      return okValue(nodeRequirements(args.node));
+    },
+    /** `skill.unlocks.cost { node, tuning }` → core's `nodeCost` (the node's cost, else the world's default). */
+    "skill.unlocks.cost": (args) => {
+      const m = "skill.unlocks.cost";
+      coded("invalid-input", () => {
+        needObject(m, args.node, "node");
+        skillTuningArg(m, args.tuning);
+      });
+      return okValue(nodeCost(args.node, args.tuning));
+    },
+    /** `skill.effects.modifiers { effects }` → core's `skillModifiers` as `{ param: total }` (additive, summed). */
+    "skill.effects.modifiers": (args) => {
+      coded("invalid-input", () => objectList("skill.effects.modifiers", args.effects, "effects"));
+      return okValue(Object.fromEntries(skillModifiers(args.effects)));
+    },
+    /** `skill.effects.unlocks { effects }` → core's `unlockedActions` (the actions `unlocks(Action)` opens). */
+    "skill.effects.unlocks": (args) => {
+      coded("invalid-input", () => objectList("skill.effects.unlocks", args.effects, "effects"));
+      return okValue(unlockedActions(args.effects));
+    },
+    /** `skill.effects.permits { effects }` → core's `permittedThings` (what `permits(Thing)` allows). */
+    "skill.effects.permits": (args) => {
+      coded("invalid-input", () => objectList("skill.effects.permits", args.effects, "effects"));
+      return okValue(permittedThings(args.effects));
+    },
+    /** `skill.effects.apply { snapshot, effects }` → core's `withSkillModifiers` (a copy of the snapshot, its numbers modified). */
+    "skill.effects.apply": (args) => {
+      const m = "skill.effects.apply";
+      coded("invalid-input", () => {
+        needObject(m, args.snapshot, "snapshot");
+        objectList(m, args.effects, "effects");
+      });
+      return okValue(withSkillModifiers(args.snapshot, args.effects));
+    },
+    /** `skill.effects.modifierOf { effects, parameter }` → core's `modifierOf` (one parameter's total; 0 when nothing names it). */
+    "skill.effects.modifierOf": (args) => {
+      const m = "skill.effects.modifierOf";
+      coded("invalid-input", () => {
+        objectList(m, args.effects, "effects");
+        needString(m, args.parameter, "parameter");
+      });
+      return okValue(modifierOf(args.effects, args.parameter));
+    },
+    /**
+     * `skill.trees.view { trees, skills?, tuning?, actor }` → core's `buildSkillView`: the
+     * tree a skill panel draws (rows, edges, each node's state and refusal). The actor's
+     * `unmet` and `forbidden` are the KB's two answers, handed in.
+     */
+    "skill.trees.view": (args) => {
+      const m = "skill.trees.view";
+      coded("invalid-input", () => {
+        objectList(m, args.trees, "trees");
+        if (args.skills !== void 0 && args.skills !== null) objectList(m, args.skills, "skills");
+        optionalObject(m, args.tuning, "tuning");
+        needObject(m, args.actor, "actor");
+      });
+      return okValue(buildSkillView({ trees: args.trees, skills: orUndefined(args.skills), tuning: orUndefined(args.tuning), actor: args.actor }));
+    },
+    /** `skill.trees.funded { trees, skill }` → core's `treesFundedBy` (the trees a skill's levels grant points to). */
+    "skill.trees.funded": (args) => {
+      const m = "skill.trees.funded";
+      coded("invalid-input", () => {
+        objectList(m, args.trees, "trees");
+        needString(m, args.skill, "skill");
+      });
+      return okValue(treesFundedBy(args.trees, args.skill));
+    },
+    /** `skill.trees.depth { tree, node }` → core's `nodeDepth` (the row a node is drawn in, from its parent edges). */
+    "skill.trees.depth": (args) => {
+      const m = "skill.trees.depth";
+      coded("invalid-input", () => {
+        needObject(m, args.tree, "tree");
+        needString(m, args.node, "node");
+      });
+      return okValue(nodeDepth(args.tree, args.node));
+    },
+    /** `skill.trees.facts { trees, tuning }` → core's `skillTreeFacts` (the authored tree as the KB carries it, one clause per line). */
+    "skill.trees.facts": (args) => {
+      const m = "skill.trees.facts";
+      coded("invalid-input", () => {
+        objectList(m, args.trees, "trees");
+        skillTuningArg(m, args.tuning);
+      });
+      return okValue(skillTreeFacts(args.trees, args.tuning));
+    },
+    // ── the skill decision layer: one playthrough's SkillProgression (P9i; PL.native-progression-rows, U106(7)) ──
+    // `skill.create` opens core's `SkillProgression`; each `skill.<method> { session, … }`
+    // row is one of its methods, answering `{ ok: true, value, events }` (`events`: what
+    // core raised on the session's bus during that call). With `kb`, the session's
+    // requirement gate is core's own `skill_goal_met/2` evaluated in a native KB
+    // holding that program, its permissibility gate is `forbidden_by/4` there, and its
+    // fact deltas are written there; without one, core's no-KB rule stands: every
+    // authored requirement is unmet ("locked until this world's rules open it") and
+    // nothing is forbidden.
+    /**
+     * `skill.create { skills?, trees?, tuning?, state?, kb? }` → `{ session, view: { roster,
+     * kb } }`. `skills`/`trees`/`tuning` are the world's, as `skill.ir.*` read them out of
+     * a World IR (absent tuning: core's `DEFAULT_SKILL_TUNING`); `state` a saved roster
+     * (core's `SkillProgressionState`, restored silently). `kb` is the KB program the
+     * session consults (a string, or a list of clauses joined one per line): it carries
+     * core's skill pack (`prolog.packs { areas: ['skill'] }`) and the world's facts and
+     * rules; a program the KB refuses is `[invalid-input]`. The KB lives as long as the
+     * session: `session.dispose` destroys it.
+     */
+    "skill.create": async (args) => {
+      const m = "skill.create";
+      const input = coded("invalid-input", () => ({
+        skills: optionalArg(args.skills, (v) => objectList(m, v, "skills")),
+        trees: optionalArg(args.trees, (v) => objectList(m, v, "trees")),
+        tuning: optionalObject(m, args.tuning, "tuning"),
+        state: optionalObject(m, args.state, "state"),
+        kb: optionalArg(args.kb, (v) => Array.isArray(v) ? stringList(m, v, "kb").join("\n") : needString(m, v, "kb"))
+      }));
+      let engine;
+      if (input.kb !== void 0) {
+        engine = await createPrologEngine();
+        const consulted = await engine.consult(input.kb);
+        if (!consulted.success) {
+          engine.destroy();
+          const err = refuse2(m, `the KB refused \`kb\`: ${consulted.error}`);
+          err.code = "invalid-input";
+          throw err;
+        }
+      }
+      const s = { events: [] };
+      const bus = new GameEventBus();
+      bus.onAny((event) => void s.events.push(plain(event)));
+      s.progression = new SkillProgression({
+        ...engine ? { engine } : {},
+        ...input.skills ? { skills: input.skills } : {},
+        ...input.trees ? { trees: input.trees } : {},
+        ...input.tuning ? { tuning: input.tuning } : {},
+        ...input.state ? { state: input.state } : {},
+        eventBus: bus
+      });
+      if (engine) s.onDispose = () => engine.destroy();
+      return { session: openSession("skill", s), view: { roster: plain(s.progression.roster()), kb: Boolean(engine) } };
+    },
+    /** `skill.register { session, actor: { id, levels?, xp?, points?, unlocked? } }` → core's `register`: the fact delta written. */
+    "skill.register": (args) => {
+      const m = "skill.register";
+      const s = session(m, args, "skill");
+      coded("invalid-input", () => needString(m, needObject(m, args.actor, "actor").id, "actor.id"));
+      return skillCall(s, (p) => p.register(args.actor));
+    },
+    /** `skill.unregister { session, actor }` → core's `unregister`: the actor's facts retracted (the delta). */
+    "skill.unregister": (args) => {
+      const m = "skill.unregister";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args);
+      return skillCall(s, (p) => p.unregister(args.actor));
+    },
+    /** `skill.award { session, actor, skill, amount }` → core's `award` (banked, never levelled). */
+    "skill.award": (args) => {
+      const m = "skill.award";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args, "skill");
+      coded("invalid-input", () => needNumber(m, args.amount, "amount"));
+      return skillCall(s, (p) => p.award(args.actor, args.skill, args.amount));
+    },
+    /** `skill.priceOfNextLevel { session, actor, skill }` → core's `priceOfNextLevel`. */
+    "skill.priceOfNextLevel": (args) => {
+      const m = "skill.priceOfNextLevel";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args, "skill");
+      return skillCall(s, (p) => p.priceOfNextLevel(args.actor, args.skill));
+    },
+    /** `skill.canAdvance { session, actor, skill }` → core's `canAdvance` (every gate, nothing taken). */
+    "skill.canAdvance": (args) => {
+      const m = "skill.canAdvance";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args, "skill");
+      return skillCall(s, (p) => p.canAdvance(args.actor, args.skill));
+    },
+    /** `skill.advance { session, actor, skill }` → core's `advance` (the level taken, its points granted, its facts written). */
+    "skill.advance": (args) => {
+      const m = "skill.advance";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args, "skill");
+      return skillCall(s, (p) => p.advance(args.actor, args.skill));
+    },
+    /**
+     * `skill.canUnlock { session, actor, node }` → core's `canUnlock`: the resolution,
+     * then the authored goals (`unmet`, through `skill_goal_met/2` in the session's KB;
+     * with no KB every goal is unmet), then permissibility (`check`).
+     */
+    "skill.canUnlock": (args) => {
+      const m = "skill.canUnlock";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args, "node");
+      return skillCall(s, (p) => p.canUnlock(args.actor, args.node));
+    },
+    /**
+     * `skill.unlock { session, actor, node }` → core's `unlock`: every gate `canUnlock`
+     * asks, then (only when all say yes) the points spent, the node recorded, its facts
+     * written to the KB and `skill_node_unlocked` raised (in `events`). A refusal
+     * (`unknown`, `owned`, `points`, `requires`, `forbidden`) is `performed: false` with
+     * its `refusal`. With a KB, a node's authored goals are core's `skill_goal_met/2`'s
+     * to answer (U106(7)); with none, a node that asks anything stays locked.
+     */
+    "skill.unlock": (args) => {
+      const m = "skill.unlock";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args, "node");
+      return skillCall(s, (p) => p.unlock(args.actor, args.node));
+    },
+    /** `skill.view { session, actor }` → core's `viewOf`: the drawn trees with the KB's answers asked for this actor. */
+    "skill.view": (args) => {
+      const m = "skill.view";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args);
+      return skillCall(s, (p) => p.viewOf(args.actor));
+    },
+    /** `skill.effectsOf { session, actor }` → core's `effectsOf` (every taken node's effects). */
+    "skill.effectsOf": (args) => {
+      const m = "skill.effectsOf";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args);
+      return skillCall(s, (p) => p.effectsOf(args.actor));
+    },
+    /** `skill.modifiersOf { session, actor }` → core's `modifiersOf` as `{ param: total }`. */
+    "skill.modifiersOf": (args) => {
+      const m = "skill.modifiersOf";
+      const s = session(m, args, "skill");
+      skillActorArgs(m, args);
+      return skillCall(s, (p) => Object.fromEntries(p.modifiersOf(args.actor)));
+    },
+    /** `skill.serialize { session }` → core's `serialize()`: the roster a save carries. */
+    "skill.serialize": (args) => skillCall(session("skill.serialize", args, "skill"), (p) => p.serialize()),
+    /** `skill.restore { session, state }` → core's `restore(state)` (silent: no events, no KB writes). */
+    "skill.restore": (args) => {
+      const m = "skill.restore";
+      const s = session(m, args, "skill");
+      coded("invalid-input", () => needObject(m, args.state, "state"));
+      return skillCall(s, (p) => p.restore(args.state));
+    },
+    /** `skill.publishWorld { session }` → core's `publishWorld()`: the authored skills and trees asserted into the KB (how many; 0 with none). */
+    "skill.publishWorld": (args) => skillCall(session("skill.publishWorld", args, "skill"), (p) => p.publishWorld()),
+    /** `skill.publishActors { session }` → core's `publishActors()`: the roster's facts asserted into the KB (how many; 0 with none). */
+    "skill.publishActors": (args) => skillCall(session("skill.publishActors", args, "skill"), (p) => p.publishActors()),
+    /** `skill.lastWriteRefusal { session }` → core's `lastWriteRefusal()`: why the last write was refused, or null. */
+    "skill.lastWriteRefusal": (args) => skillCall(session("skill.lastWriteRefusal", args, "skill"), (p) => p.lastWriteRefusal()),
     // ── the genre HUD and the world rules panel (P9a) ──
     // Each row is one of core's corpus runners and nothing else: the args are
     // `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and

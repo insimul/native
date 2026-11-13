@@ -296,6 +296,73 @@ game; **meta** = about the bridge itself.
 | `build.compareCodeUnits` | `{ a, b }` → `{ order }` (-1, 0, 1) | `build/headless-build` `compareCodeUnits` | P10 headless build |
 | `build.resolvePlatform` | `{ platform, host }` → `{ platform }` | `build/headless-build` `resolveBuildPlatform` | P10 headless build |
 | `build.isPrimaryArtefact` | `{ platform, artefact: { path, kind } }` → `{ primary }` | `build/headless-build` `isPrimaryArtefactFor` | P10 headless build |
+| `progression.gamification.tuning` | `{ tuning? }` → `{ ok: true, value }`: core's tuning with the pack's `tuning` over it | `progression/gamification` `GAMIFICATION_TUNING` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.levelForXp` | `{ total, thresholds? }` → `{ ok: true, value }` | `progression/gamification` `levelForXp` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.nextLevelXp` | `{ level, thresholds? }` → `{ ok: true, value }` (0 at the top) | `progression/gamification` `nextLevelXp` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.progressPermille` | `{ total, thresholds? }` → `{ ok: true, value }` | `progression/gamification` `levelProgressPermille` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.tier` | `{ level, labels? }` → `{ ok: true, value }` | `progression/gamification` `levelTier` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.table` | `{ bundle?, tuning?, overrides? }` → `{ ok: true, value }`: the XP event table | `progression/gamification` `xpEventTable` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.achievements` | `{}` → `{ ok: true, value }`: the catalogue in order | `progression/gamification` `ACHIEVEMENTS` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.dailyIndex` | `{ date }` → `{ ok: true, value }` | `progression/gamification` `dailyTemplateIndex` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.previousDate` | `{ date }` → `{ ok: true, value }` | `progression/gamification` `previousDateKey` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.dailyChallenge` | `{ daily: { dateKey, progress, completed } }` → `{ ok: true, value }` | `progression/gamification` `dailyChallengeView` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.streakTenths` | `{ streak, tuning? }` → `{ ok: true, value }` | `progression/gamification` `streakMultiplierTenths` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.streakXp` | `{ reward, streak, tuning? }` → `{ ok: true, value }` | `progression/gamification` `streakXp` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.initial` | `{}` → `{ ok: true, value }`: a new learner's state | `progression/gamification` `emptyGamification` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.step` | `{ run: { state, date }, step: { do, … }, tuning?, config?, at? }` → `{ ok: true, value }` with `{ run, events, signals, refusal? }`; a refused step (`bad_date`, `unknown_award`, `unknown_event`, which an unknown step kind also answers) is a value | `progression/gamification` `applyGamification` | P9i progression (PL.native-progression-rows) |
+| `progression.gamification.view` | `{ state, config? }` → `{ ok: true, value }`: what a progress panel draws | `progression/gamification` `gamificationView` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.definitions` | `{}` → `{ ok: true, value }` with `{ definitions, verdicts }` | `progression/feature-modules` `FEATURE_MODULE_DEFINITIONS`, `FEATURE_MODULE_VERDICTS` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.bundleModules` | `{ bundle }` → `{ ok: true, value }` (`[]` for an unknown bundle) | `feature-modules/genre-bundles` `getDefaultModulesForGenre` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.resolve` | `{ ids, bundle? }` → `{ ok: true, value }`: enabled, refused (values) and the contributions | `progression/feature-modules` `resolveFeatureModules` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.genre` | `{ genre }` → `{ ok: true, value }` with `{ genre, bundle, featureModules, enabled, refused, tabsDeclared, tabs, configs }` (the corpus's `genre` record) | `game-genres/resolution` `resolveGenre`, `getDefaultModulesForGenre`, `resolveFeatureModules`, `ui/pause-menu-model` `DEFAULT_MENU_TABS` and `PauseMenuModel`, `bundleModuleConfigs` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.configs` | `{ bundle }` → `{ ok: true, value }` | `progression/feature-modules` `bundleModuleConfigs` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.proficiencyTiers` | `{ tierLabels? }` → `{ ok: true, value }` | `progression/feature-modules` `proficiencyTiers` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.proficiency` | `{ scores, tiers?, scale? }` → `{ ok: true, value }` | `progression/feature-modules` `proficiencyOf` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.difficultyTiers` | `{ tierLabels? }` → `{ ok: true, value }` | `progression/feature-modules` `difficultyTiers` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.difficulty` | `{ score, tiers? }` → `{ ok: true, value }` | `progression/feature-modules` `difficultyParams` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.performance` | `{ records }` → `{ ok: true, value }` | `progression/feature-modules` `performanceScore` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.adjust` | `{ records, current }` → `{ ok: true, value }` | `progression/feature-modules` `adjustDifficulty` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.applyAdjustment` | `{ adjustment, objectiveCount, estimatedMinutes }` → `{ ok: true, value }` | `progression/feature-modules` `applyAdjustment` | P9i progression (PL.native-progression-rows) |
+| `progression.modules.records` | `{ quests }` → `{ ok: true, value }` | `progression/feature-modules` `performanceRecords` | P9i progression (PL.native-progression-rows) |
+| `progression.skills.domain` | `{}` → `{ ok: true, value }`: the language and guild domain trees as a World IR `skills` section | `skills/domain-trees` `DOMAIN_SKILL_TREES` | P9i progression (PL.native-progression-rows) |
+| `progression.save.build` | `{ gamification?, skills? }` → `{ ok: true, value }`: the `progression` save block | `progression/progression-save` `progressionSaveBlock` | P9i progression (PL.native-progression-rows) |
+| `progression.save.read` | `{ block }` → `{ ok: true, value }` with core's `{ ok: true, value }` or `{ ok: false, keys }` | `progression/progression-save` `readProgressionBlock` | P9i progression (PL.native-progression-rows) |
+| `progression.save.write` | `{ block }` → `{ ok: true, value }`: the block as the writer stores it | `progression/progression-save` `progressionBlockOf` | P9i progression (PL.native-progression-rows) |
+| `skill.ir.tuning` | `{ ir? }` → `{ ok: true, value }` | `skills/skills` `skillTuningFromIR` | P9i skill trees (PL.native-progression-rows) |
+| `skill.ir.skills` | `{ ir?, tuning? }` → `{ ok: true, value }` | `skills/skills` `skillDefinitionsFromIR` | P9i skill trees (PL.native-progression-rows) |
+| `skill.ir.trees` | `{ ir? }` → `{ ok: true, value }` | `skills/skills` `skillTreesFromIR` | P9i skill trees (PL.native-progression-rows) |
+| `skill.advancement.resolve` | `{ actor, skill, skillId?, level, banked, levels, tuning }` → `{ ok: true, value }`: the price and the verdict (refusal a value) | `skills/skills` `resolveAdvance` | P9i skill trees (PL.native-progression-rows) |
+| `skill.advancement.xpForLevel` | `{ skill, level, tuning }` → `{ ok: true, value }`: one level's price | `skills/skills` `xpForLevel` | P9i skill trees (PL.native-progression-rows) |
+| `skill.advancement.maxLevel` | `{ skill, tuning }` → `{ ok: true, value }` | `skills/skills` `maxLevelOf` | P9i skill trees (PL.native-progression-rows) |
+| `skill.unlocks.resolve` | `{ actor, node, nodeId?, points, unlocked, tuning }` → `{ ok: true, value }`: cost, `requires`, `conditional` and core's own refusal (a value) | `skills/skills` `resolveUnlock` | P9i skill trees (PL.native-progression-rows) |
+| `skill.unlocks.requirements` | `{ node }` → `{ ok: true, value }` | `skills/skills` `nodeRequirements` | P9i skill trees (PL.native-progression-rows) |
+| `skill.unlocks.cost` | `{ node, tuning }` → `{ ok: true, value }` | `skills/skills` `nodeCost` | P9i skill trees (PL.native-progression-rows) |
+| `skill.effects.modifiers` | `{ effects }` → `{ ok: true, value }` as `{ param: total }` | `skills/skill-effects` `skillModifiers` | P9i skill trees (PL.native-progression-rows) |
+| `skill.effects.unlocks` | `{ effects }` → `{ ok: true, value }` | `skills/skill-effects` `unlockedActions` | P9i skill trees (PL.native-progression-rows) |
+| `skill.effects.permits` | `{ effects }` → `{ ok: true, value }` | `skills/skill-effects` `permittedThings` | P9i skill trees (PL.native-progression-rows) |
+| `skill.effects.apply` | `{ snapshot, effects }` → `{ ok: true, value }`: the snapshot modified | `skills/skill-effects` `withSkillModifiers` | P9i skill trees (PL.native-progression-rows) |
+| `skill.effects.modifierOf` | `{ effects, parameter }` → `{ ok: true, value }` | `skills/skill-effects` `modifierOf` | P9i skill trees (PL.native-progression-rows) |
+| `skill.trees.view` | `{ trees, skills?, tuning?, actor }` → `{ ok: true, value }`: the tree a skill panel draws | `skills/skill-view` `buildSkillView` | P9i skill trees (PL.native-progression-rows) |
+| `skill.trees.funded` | `{ trees, skill }` → `{ ok: true, value }` | `skills/skills` `treesFundedBy` | P9i skill trees (PL.native-progression-rows) |
+| `skill.trees.depth` | `{ tree, node }` → `{ ok: true, value }` | `skills/skills` `nodeDepth` | P9i skill trees (PL.native-progression-rows) |
+| `skill.trees.facts` | `{ trees, tuning }` → `{ ok: true, value }`: one clause per line | `skills/skill-facts` `skillTreeFacts` | P9i skill trees (PL.native-progression-rows) |
+| `skill.create` | `{ skills?, trees?, tuning?, state?, kb? }` → `{ session, view: { roster, kb } }`; `kb` (a program, or a list of clauses) is a native KB the session consults and owns; a program the KB refuses is `[invalid-input]` | `game-engine/logic/SkillProgression` `new SkillProgression` | P9i skill trees (PL.native-progression-rows) |
+| `skill.register` | `{ session, actor: { id, levels?, xp?, points?, unlocked? } }` → `{ ok: true, value, events }`: the fact delta | `game-engine/logic/SkillProgression` `register` | P9i skill trees (PL.native-progression-rows) |
+| `skill.unregister` | `{ session, actor }` → `{ ok: true, value, events }` | `game-engine/logic/SkillProgression` `unregister` | P9i skill trees (PL.native-progression-rows) |
+| `skill.award` | `{ session, actor, skill, amount }` → `{ ok: true, value, events }` | `game-engine/logic/SkillProgression` `award` | P9i skill trees (PL.native-progression-rows) |
+| `skill.priceOfNextLevel` | `{ session, actor, skill }` → `{ ok: true, value, events }` | `game-engine/logic/SkillProgression` `priceOfNextLevel` | P9i skill trees (PL.native-progression-rows) |
+| `skill.canAdvance` | `{ session, actor, skill }` → `{ ok: true, value, events }` | `game-engine/logic/SkillProgression` `canAdvance` | P9i skill trees (PL.native-progression-rows) |
+| `skill.advance` | `{ session, actor, skill }` → `{ ok: true, value, events }` | `game-engine/logic/SkillProgression` `advance` | P9i skill trees (PL.native-progression-rows) |
+| `skill.canUnlock` | `{ session, actor, node }` → `{ ok: true, value, events }`: resolution, then `skill_goal_met/2` in the KB (no KB: every goal unmet), then permissibility | `game-engine/logic/SkillProgression` `canUnlock` | P9i skill trees (PL.native-progression-rows) |
+| `skill.unlock` | `{ session, actor, node }` → `{ ok: true, value, events }`: `performed`, or a refusal value (`unknown`, `owned`, `points`, `requires`, `forbidden`); with a KB a node's goals are core's `skill_goal_met/2`'s (U106(7)), with none a node that asks anything stays locked | `game-engine/logic/SkillProgression` `unlock` | P9i skill trees (PL.native-progression-rows) |
+| `skill.view` | `{ session, actor }` → `{ ok: true, value, events }` | `game-engine/logic/SkillProgression` `viewOf` | P9i skill trees (PL.native-progression-rows) |
+| `skill.effectsOf` | `{ session, actor }` → `{ ok: true, value, events }` | `game-engine/logic/SkillProgression` `effectsOf` | P9i skill trees (PL.native-progression-rows) |
+| `skill.modifiersOf` | `{ session, actor }` → `{ ok: true, value, events }` with `{ param: total }` | `game-engine/logic/SkillProgression` `modifiersOf` | P9i skill trees (PL.native-progression-rows) |
+| `skill.serialize` | `{ session }` → `{ ok: true, value, events }`: the roster a save carries | `game-engine/logic/SkillProgression` `serialize` | P9i skill trees (PL.native-progression-rows) |
+| `skill.restore` | `{ session, state }` → `{ ok: true, value, events }` (silent) | `game-engine/logic/SkillProgression` `restore` | P9i skill trees (PL.native-progression-rows) |
+| `skill.publishWorld` | `{ session }` → `{ ok: true, value, events }`: clauses asserted (0 with no KB) | `game-engine/logic/SkillProgression` `publishWorld` | P9i skill trees (PL.native-progression-rows) |
+| `skill.publishActors` | `{ session }` → `{ ok: true, value, events }`: clauses asserted (0 with no KB) | `game-engine/logic/SkillProgression` `publishActors` | P9i skill trees (PL.native-progression-rows) |
+| `skill.lastWriteRefusal` | `{ session }` → `{ ok: true, value, events }`: why the last write was refused, or null | `game-engine/logic/SkillProgression` `lastWriteRefusal` | P9i skill trees (PL.native-progression-rows) |
 | `ui.genreHud` | `{ op: config, view, genre_view, config_of or view_of, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`; `config_of` / `view_of` take a game's own settings, `{ genreConfig }` or `{ recipe, world? }`, plus `state?` for `view_of`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }` (`unresolved_recipe` also carries `reason`); an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`, `genreHudConfigOf`; `game-genres/resolution` `resolveGameGenre` for a recipe) | P9a.native (U84); `config_of` / `view_of` PL.native-genre-hud-config (U92(2)) |
 | `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
@@ -1594,6 +1661,63 @@ credential not caught, a credential shown (as an expectation, and planted in an
 answer the leak check must catch), a path escaping the build folder (by fold), an
 artefact outside it and a path outside the project; all must be refused.
 
+### The progression and skill rows: XP, modules, the save block, skill trees (PL.native-progression-rows)
+
+Core's P9i progression (P9i.core: `src/progression/gamification.ts`,
+`feature-modules.ts` and `progression-save.ts`, `docs/progression-systems.md`) and
+core's skill trees (`src/skills/`, with the decision layer
+`game-engine/logic/SkillProgression`) are rows (U106(7)), so an engine binds them
+instead of keeping a copy (Unreal's interim P9i copy, which its retirement rows
+retire; `ENGINE_BINDINGS.md` maps it row by row).
+
+- **`progression.<group>.<op>`, one core function each**, groups after core's corpus
+  files: `progression.gamification.*` (levels, tiers, the XP table, achievements, the
+  daily challenge and streaks, and the tracker), `progression.modules.*` (the module
+  definitions and verdicts, resolution, proficiency, adaptive difficulty and the quest
+  difficulty adjustment), `progression.skills.domain` (core's language and guild
+  domain trees) and `progression.save.*` (the `progression` save block's builder,
+  reader and writer). Every answer is `{ ok: true, value }`, and a refusal core
+  returns is IN the value: a tracker step's `refusal` (`bad_date`, `unknown_award`,
+  `unknown_event`, which an unknown step kind also answers), a module's `refused`,
+  an unreadable block's `{ ok: false, keys }`. One row is a composite:
+  `progression.modules.genre` answers the record core's `modules` corpus states for a
+  genre (its bundle, declared and enabled modules, refusals, pause tabs and configs),
+  each part a core function's answer.
+- **The tracker is stateless here**: `progression.gamification.step { run, step,
+  tuning?, config?, at? }` is core's `applyGamification`, which does not change its
+  input; keep the `run` the answer carried and send it with the next step. `tuning` is
+  the pack's parameters over core's `GAMIFICATION_TUNING`, read on every call.
+- **`skill.<group>.<fn>` are the pure skill-tree functions** (`skill.ir.*`,
+  `skill.advancement.*`, `skill.unlocks.*`, `skill.effects.*`, `skill.trees.*`): a
+  resolution's refusal is a value, and a pure resolution never asks a KB.
+- **`skill.create` opens core's `SkillProgression`**; each `skill.<method> { session,
+  … }` row is one of its methods and answers `{ ok: true, value, events }`, `events`
+  being what core raised on the session's bus during that call (a take's
+  `skill_node_unlocked`, its effects as `effectTerm` text). **With `kb`** (a program,
+  or a list of clauses, holding core's skill pack from `prolog.packs { areas:
+  ['skill'] }` and the world's facts and rules), the session's KB is a native Prolog
+  KB: `skill.unlock` and `skill.canUnlock` ask core's own `skill_goal_met/2` there for
+  each authored goal, bound to the asking actor, permissibility is asked there, and
+  the take's facts are written there. **With none**, core's rule stands: a node that
+  asks anything stays locked until this world's rules open it (refusal `requires`),
+  and nothing is forbidden. A program the KB refuses is `[invalid-input]`; the KB
+  lives as long as the session and `session.dispose` destroys it.
+
+Evidence: `progression_corpus` (`tests/progression_corpus.cpp`) drives core's
+`conformance/progression/{gamification,modules,skills,save}.json` (73 cases at
+6cd4b4e), `conformance/skills/{advancement,unlocks,effects,trees,effect-terms}.json`
+(52) and the three `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json`
+through the rows, each copied byte for byte at the pin; a KB-backed unlock replays
+each `can_unlock` case with the case's KB behind the session, and every node the KB
+opens is asked again with no KB and must stay locked. Its refusal probes show that an
+unknown op, step or area is refused (a failed case, never a skip), that
+`progression.gamification.step` answers an unknown step kind with core's
+`unknown_event`, and that an unknown row is the method table's error.
+`progression_corpus_negative` perturbs every case's expectation. Hand cases:
+`tests/cases/bridge-progression.json` (every row, the threaded tracker run, the
+`[invalid-input]` errors, the no-KB session and, on the C leg, a KB-backed unlock),
+every expectation computed by core's own functions at the pin.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
@@ -1689,6 +1813,7 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |
 | `traversal_corpus`, `traversal_corpus_negative` | core's seven P9e corpora (the kernels' `affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`, and the layers' `session.json`, `mounts.json`, `save.json`; 129 cases at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step, a session case one `traversal.session` with one apply per step, a mounts run one personal row per step; each systems file's catalog, ops and steps held to core's and every step driven), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does |
 | `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
+| `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 73 cases at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's

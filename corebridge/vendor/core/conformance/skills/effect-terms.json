@@ -1,0 +1,329 @@
+{
+  "area": "skills-effect-terms",
+  "description": "How a taken node’s effects leave the module as TEXT (PL.core-unpinned-corpus-cases, U106(6)): the `skill_node_unlocked` event’s `effects: string[]` that `SkillProgression.unlock` raises and the `skill_node_effect/2` facts `skillTreeFacts` publishes, both written by `effectTerm`. Each case carries one authored tree, the node an actor takes from it, the actor’s pool for that tree and the fully resolved SkillTuning; the nodes ask nothing a KB must answer, so a harness reproduces the take with no KB. `expected.event` is the whole event, its `effects` one term per authored effect in authored order — `unlocks(introduce_self)`, never a JSON object; `expected.facts` is every `skill_node_effect(Node, Term).` line for the tree, in authored order. Atoms and the node id are quoted by `prologAtom` (single quotes unless the text is an unquoted-atom token, a backslash and an apostrophe escaped with a backslash), numbers are written as `String` writes them, and an effect with no arguments is its bare kind. Regenerate with `npm run skill-resolution-corpus`.",
+  "cases": [
+    {
+      "name": "an-action-atom-is-written-bare",
+      "note": "THE case: `unlocks(introduce_self)` leaves the module as the TEXT `unlocks(introduce_self)`, in the event and in the fact alike — a Prolog term, not a JSON object. A number is written as the number it is, a negative one with its sign and a fraction as the shortest decimal that reads back to it (`String`), and arguments are separated by a comma and one space.",
+      "input": {
+        "actor": "wren",
+        "tree": {
+          "id": "first_words",
+          "skill": "speaking",
+          "nodes": [
+            {
+              "parents": [],
+              "requires": [],
+              "effects": [
+                {
+                  "kind": "unlocks",
+                  "args": [
+                    "introduce_self"
+                  ]
+                },
+                {
+                  "kind": "modifies",
+                  "args": [
+                    "reach",
+                    2
+                  ]
+                },
+                {
+                  "kind": "modifies",
+                  "args": [
+                    "energy_cost",
+                    -1
+                  ]
+                },
+                {
+                  "kind": "modifies",
+                  "args": [
+                    "stride",
+                    0.5
+                  ]
+                }
+              ],
+              "id": "greetings",
+              "tree": "first_words",
+              "cost": 1
+            }
+          ]
+        },
+        "node": "greetings",
+        "points": 1,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "event": {
+          "type": "skill_node_unlocked",
+          "actorId": "wren",
+          "nodeId": "greetings",
+          "treeId": "first_words",
+          "cost": 1,
+          "effects": [
+            "unlocks(introduce_self)",
+            "modifies(reach, 2)",
+            "modifies(energy_cost, -1)",
+            "modifies(stride, 0.5)"
+          ]
+        },
+        "facts": [
+          "skill_node_effect(greetings, unlocks(introduce_self)).",
+          "skill_node_effect(greetings, modifies(reach, 2)).",
+          "skill_node_effect(greetings, modifies(energy_cost, -1)).",
+          "skill_node_effect(greetings, modifies(stride, 0.5))."
+        ]
+      }
+    },
+    {
+      "name": "an-argument-that-is-not-an-atom-token-is-quoted",
+      "note": "An argument that is not an unquoted-atom token (`^[a-z][a-zA-Z0-9_]*$`) is single-quoted by `prologAtom`, and an apostrophe inside it is escaped as `\\'`: a space (`Old Mill`), a capital first letter (`Riposte`, which unquoted is a Prolog VARIABLE and would unify with anything), an apostrophe (`smith’s_mark` spelled with a plain one) and a leading digit (`2nd_wind`). A port that writes them bare publishes a fact the KB reads as something else, or cannot read at all.",
+      "input": {
+        "actor": "wren",
+        "tree": {
+          "id": "first_words",
+          "skill": "speaking",
+          "nodes": [
+            {
+              "parents": [],
+              "requires": [],
+              "effects": [
+                {
+                  "kind": "permits",
+                  "args": [
+                    "Old Mill"
+                  ]
+                },
+                {
+                  "kind": "unlocks",
+                  "args": [
+                    "Riposte"
+                  ]
+                },
+                {
+                  "kind": "permits",
+                  "args": [
+                    "smith's_mark"
+                  ]
+                },
+                {
+                  "kind": "unlocks",
+                  "args": [
+                    "2nd_wind"
+                  ]
+                }
+              ],
+              "id": "market_talk",
+              "tree": "first_words",
+              "cost": 1
+            }
+          ]
+        },
+        "node": "market_talk",
+        "points": 1,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "event": {
+          "type": "skill_node_unlocked",
+          "actorId": "wren",
+          "nodeId": "market_talk",
+          "treeId": "first_words",
+          "cost": 1,
+          "effects": [
+            "permits('Old Mill')",
+            "unlocks('Riposte')",
+            "permits('smith\\'s_mark')",
+            "unlocks('2nd_wind')"
+          ]
+        },
+        "facts": [
+          "skill_node_effect(market_talk, permits('Old Mill')).",
+          "skill_node_effect(market_talk, unlocks('Riposte')).",
+          "skill_node_effect(market_talk, permits('smith\\'s_mark')).",
+          "skill_node_effect(market_talk, unlocks('2nd_wind'))."
+        ]
+      }
+    },
+    {
+      "name": "an-effect-with-no-arguments-is-a-bare-atom",
+      "note": "An effect with no arguments is the bare atom (`silent_step`), never `silent_step()`, a term Prolog will not read; the KIND is quoted by the same rule as an argument (`Keen Eye`), and a kind core never declared (`sings`) is written exactly like the three it did.",
+      "input": {
+        "actor": "wren",
+        "tree": {
+          "id": "first_words",
+          "skill": "speaking",
+          "nodes": [
+            {
+              "parents": [],
+              "requires": [],
+              "effects": [
+                {
+                  "kind": "silent_step",
+                  "args": []
+                },
+                {
+                  "kind": "Keen Eye",
+                  "args": []
+                },
+                {
+                  "kind": "sings",
+                  "args": [
+                    "the_masons_round"
+                  ]
+                }
+              ],
+              "id": "quiet_feet",
+              "tree": "first_words",
+              "cost": 1
+            }
+          ]
+        },
+        "node": "quiet_feet",
+        "points": 1,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "event": {
+          "type": "skill_node_unlocked",
+          "actorId": "wren",
+          "nodeId": "quiet_feet",
+          "treeId": "first_words",
+          "cost": 1,
+          "effects": [
+            "silent_step",
+            "'Keen Eye'",
+            "sings(the_masons_round)"
+          ]
+        },
+        "facts": [
+          "skill_node_effect(quiet_feet, silent_step).",
+          "skill_node_effect(quiet_feet, 'Keen Eye').",
+          "skill_node_effect(quiet_feet, sings(the_masons_round))."
+        ]
+      }
+    },
+    {
+      "name": "a-node-id-that-needs-quotes-is-quoted-in-the-fact",
+      "note": "The node id is quoted in `skill_node_effect/2` by the same rule (`Guild’s Seal`, with a plain apostrophe), while the event carries the id as the raw string it is — the event is data for a host, the fact is Prolog source for the KB.",
+      "input": {
+        "actor": "wren",
+        "tree": {
+          "id": "first_words",
+          "skill": "speaking",
+          "nodes": [
+            {
+              "parents": [],
+              "requires": [],
+              "effects": [
+                {
+                  "kind": "unlocks",
+                  "args": [
+                    "introduce_self"
+                  ]
+                }
+              ],
+              "id": "Guild's Seal",
+              "tree": "first_words",
+              "cost": 1
+            }
+          ]
+        },
+        "node": "Guild's Seal",
+        "points": 1,
+        "tuning": {
+          "pointsPerLevel": 1,
+          "defaultNodeCost": 1,
+          "defaultMaxLevel": 10,
+          "levelXp": [
+            0,
+            0,
+            100,
+            250,
+            450,
+            700,
+            1000,
+            1350,
+            1750,
+            2200,
+            2700
+          ],
+          "advanceAction": "train_skill",
+          "unlockAction": "unlock_skill_node"
+        }
+      },
+      "expected": {
+        "event": {
+          "type": "skill_node_unlocked",
+          "actorId": "wren",
+          "nodeId": "Guild's Seal",
+          "treeId": "first_words",
+          "cost": 1,
+          "effects": [
+            "unlocks(introduce_self)"
+          ]
+        },
+        "facts": [
+          "skill_node_effect('Guild\\'s Seal', unlocks(introduce_self))."
+        ]
+      }
+    }
+  ]
+}

@@ -234,6 +234,28 @@ const TRAVERSAL_CORPUS_FILES = [
 const BUILD_CORPUS_FROM = { 'conformance/headless-build/headless.json': 'conformance/build/headless.json' };
 const BUILD_CORPUS_FILES = Object.keys(BUILD_CORPUS_FROM);
 
+// core's P9i progression corpora and its skill-tree corpora (PL.native-progression-rows,
+// U106(7); core's P9i.core and its skills program), copied verbatim the same way and
+// driven through the `progression.*` and `skill.*` rows by tests/progression_corpus.cpp:
+// the tracker, the feature modules, the domain trees and the save block
+// (conformance/progression/), advancement, unlocks, effects, the drawn tree and the
+// effect terms (conformance/skills/), and the skill pack's KB corpus
+// (conformance/prolog/mechanic-skill.json), whose `can_unlock/2` cases a KB-backed
+// `skill.unlock` replays. The three folders are this set's alone, so a file an earlier
+// pin left there is seen, hashed and removed by the next write.
+const PROGRESSION_CORPUS_FILES = [
+  'conformance/progression/gamification.json',
+  'conformance/progression/modules.json',
+  'conformance/progression/save.json',
+  'conformance/progression/skills.json',
+  'conformance/prolog/mechanic-skill.json',
+  'conformance/skills/advancement.json',
+  'conformance/skills/effect-terms.json',
+  'conformance/skills/effects.json',
+  'conformance/skills/trees.json',
+  'conformance/skills/unlocks.json',
+];
+
 // Core modules the bundle must NOT carry (PL.native-interact-target, U94(2)/(3)): core's
 // village-state comparator and the save-file game state behind it. No row needs them;
 // they came in only through a corpus RUNNER module's comparator import (the P8 rows
@@ -508,6 +530,16 @@ function traversalFilesOnDisk() {
 /** core's P9e traversal corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
 function traversalFilesAtPin(src) {
   return filesAtPin(src, TRAVERSAL_CORPUS_FILES, 'the traversal.* rows');
+}
+
+/** The vendored progression and skill corpus files on disk: the camera set's rule (no other set copies into their folders). */
+function progressionFilesOnDisk() {
+  return ownDirFilesOnDisk(PROGRESSION_CORPUS_FILES);
+}
+
+/** core's P9i progression and skill-tree corpora at the pin, as { 'vendor/core/<path>': Buffer }. */
+function progressionFilesAtPin(src) {
+  return filesAtPin(src, PROGRESSION_CORPUS_FILES, 'the progression.* and skill.* rows');
 }
 
 /** The vendored headless build corpus on disk: the camera set's rule (no other set copies into `conformance/build/`). */
@@ -923,6 +955,14 @@ async function write(coreDir) {
       fs.writeFileSync(path.join(BRIDGE, rel), bytes);
     }
 
+    // The progression and skill corpora: the same exact-set replacement (only the listed files).
+    const progression = progressionFilesAtPin(src);
+    for (const rel of progressionFilesOnDisk()) if (!(rel in progression)) fs.rmSync(path.join(BRIDGE, rel));
+    for (const [rel, bytes] of Object.entries(progression)) {
+      fs.mkdirSync(path.dirname(path.join(BRIDGE, rel)), { recursive: true });
+      fs.writeFileSync(path.join(BRIDGE, rel), bytes);
+    }
+
     const js = fs.readFileSync(BUNDLE_JS, 'utf8');
     const manifest = {
       description:
@@ -948,6 +988,7 @@ async function write(coreDir) {
       survivalCorpus: SURVIVAL_CORPUS_FILES,
       traversalCorpus: TRAVERSAL_CORPUS_FILES,
       buildCorpus: BUILD_CORPUS_FROM,
+      progressionCorpus: PROGRESSION_CORPUS_FILES,
       bundleBytes: Buffer.byteLength(js, 'utf8'),
       bundleSha256: sha256(js),
     };
@@ -969,6 +1010,7 @@ async function write(coreDir) {
       ...survivalFilesOnDisk(),
       ...traversalFilesOnDisk(),
       ...buildFilesOnDisk(),
+      ...progressionFilesOnDisk(),
       ...ADAPTER_MODULES,
       ...TOOL_INPUTS,
     ]);
@@ -988,6 +1030,7 @@ async function write(coreDir) {
     console.log(`  survival corpus files (${Object.keys(survival).length}), copied unchanged`);
     console.log(`  traversal corpus files (${Object.keys(traversal).length}), copied unchanged`);
     console.log(`  headless build corpus files (${Object.keys(build).length}), copied unchanged`);
+    console.log(`  progression and skill corpus files (${Object.keys(progression).length}), copied unchanged`);
   } finally {
     src.cleanup();
   }
@@ -1068,6 +1111,10 @@ async function check(coreDir) {
   for (const rel of BUILD_CORPUS_FILES) {
     if (!buildFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the build corpus gate would run nothing`);
   }
+  const progressionFiles = progressionFilesOnDisk();
+  for (const rel of PROGRESSION_CORPUS_FILES) {
+    if (!progressionFiles.includes(`vendor/core/${rel}`)) fail(`vendor/core/${rel} is missing — the progression corpus gate would run nothing`);
+  }
   // conformance/ui/ is shared by the P9a, P6 and P8 sets: a file belongs to exactly one.
   const claimedTwice = propsFiles.filter((rel) => p9aFiles.includes(rel));
   if (claimedTwice.length) fail(`${claimedTwice.join(', ')} is listed as both a P9a and a P6 corpus file`);
@@ -1087,6 +1134,7 @@ async function check(coreDir) {
     ...survivalFiles,
     ...traversalFiles,
     ...buildFiles,
+    ...progressionFiles,
     ...ADAPTER_MODULES,
     ...TOOL_INPUTS,
   ];
@@ -1133,7 +1181,7 @@ async function check(coreDir) {
       `${packFiles.length} pack corpus/catalog file(s), ${p9aFiles.length} P9a corpus file(s), ` +
       `${savesFiles.length} saves (slots, tutorial progress), ${propsFiles.length} P6 props/inventory, ${titleFiles.length} P8 title/tutorial, ` +
       `${cameraFiles.length} camera movement, ${audioFiles.length} audio ground, ${survivalFiles.length} survival, ` +
-      `${traversalFiles.length} traversal and ${buildFiles.length} headless build corpus file(s), ` +
+      `${traversalFiles.length} traversal, ${buildFiles.length} headless build and ${progressionFiles.length} progression/skill corpus file(s), ` +
       `core ${manifest.coreCommit}, ` +
       `esbuild ${manifest.esbuild})`,
   );
@@ -1274,6 +1322,16 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${BUILD_CORPUS_FROM[rel.slice('vendor/core/'.length)]}`);
         }
       }
+      const progression = progressionFilesAtPin(src);
+      const wantProgression = Object.keys(progression).sort();
+      if (JSON.stringify(wantProgression) !== JSON.stringify(progressionFiles)) {
+        fail(`DRIFT: core ${pin.coreCommit}'s progression and skill corpora are ${wantProgression.join(', ')} but vendor/core/ holds ${progressionFiles.join(', ')}`);
+      }
+      for (const rel of wantProgression) {
+        if (!fs.readFileSync(path.join(BRIDGE, rel)).equals(progression[rel])) {
+          fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
+        }
+      }
       console.log(
         `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
           `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s), all ` +
@@ -1281,7 +1339,8 @@ async function check(coreDir) {
           `${wantProps.length} P6 props/inventory corpus file(s), all ${wantTitle.length} P8 title/tutorial ` +
           `corpus file(s), all ${wantCamera.length} camera movement corpus file(s), all ${wantAudio.length} audio ground ` +
           `corpus file(s), all ${wantSurvival.length} survival corpus file(s), all ${wantTraversal.length} traversal ` +
-          `corpus file(s) and all ${wantBuild.length} headless build corpus file(s) byte for byte`,
+          `corpus file(s), all ${wantBuild.length} headless build corpus file(s) and all ${wantProgression.length} progression/skill ` +
+          `corpus file(s) byte for byte`,
       );
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
