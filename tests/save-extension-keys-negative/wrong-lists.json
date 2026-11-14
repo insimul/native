@@ -1,0 +1,156 @@
+{
+ "area": "saves",
+ "description": "The negative control for the save.rules extensionKeys check (core_vendor_extension_keys_negative): each case states the list WRONGLY, and `vendor-core-bundle.mjs --check-extension-keys` must name every one and fail. Not a corpus an engine replays: these answers are deliberately wrong.",
+ "cases": [
+  {
+   "name": "drops strategy (the P9j.core drift this check exists for: 21 keys where core registers 22)",
+   "steps": [
+    {
+     "call": "save.rules",
+     "expect": {
+      "extensionKeys": [
+       "achievements",
+       "aiBlackboards",
+       "detectionStates",
+       "droppedFacts",
+       "evaluations",
+       "gamification",
+       "gathering",
+       "introShown",
+       "languageLearning",
+       "npcLife",
+       "platformer",
+       "playthroughTelemetry",
+       "progression",
+       "puzzle",
+       "sessions",
+       "skillTree",
+       "social",
+       "survivalNeeds",
+       "traversal",
+       "tutorial",
+       "weather"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "the right names out of sorted order",
+   "steps": [
+    {
+     "call": "save.rules",
+     "expect": {
+      "extensionKeys": [
+       "aiBlackboards",
+       "achievements",
+       "detectionStates",
+       "droppedFacts",
+       "evaluations",
+       "gamification",
+       "gathering",
+       "introShown",
+       "languageLearning",
+       "npcLife",
+       "platformer",
+       "playthroughTelemetry",
+       "progression",
+       "puzzle",
+       "sessions",
+       "skillTree",
+       "social",
+       "strategy",
+       "survivalNeeds",
+       "traversal",
+       "tutorial",
+       "weather"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "a key core does not register",
+   "steps": [
+    {
+     "call": "save.rules",
+     "expect": {
+      "extensionKeys": [
+       "achievements",
+       "aiBlackboards",
+       "detectionStates",
+       "droppedFacts",
+       "evaluations",
+       "gamification",
+       "gathering",
+       "introShown",
+       "languageLearning",
+       "npcLife",
+       "platformer",
+       "playthroughTelemetry",
+       "progression",
+       "puzzle",
+       "questLog",
+       "sessions",
+       "skillTree",
+       "social",
+       "strategy",
+       "survivalNeeds",
+       "traversal",
+       "tutorial",
+       "weather"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "loosened back to any array",
+   "steps": [
+    {
+     "call": "save.rules",
+     "expect": {
+      "extensionKeys": {
+       "$type": "array"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "inside $subset, drops puzzle",
+   "steps": [
+    {
+     "call": "save.rules",
+     "expect": {
+      "$subset": {
+       "extensionKeys": [
+        "achievements",
+        "aiBlackboards",
+        "detectionStates",
+        "droppedFacts",
+        "evaluations",
+        "gamification",
+        "gathering",
+        "introShown",
+        "languageLearning",
+        "npcLife",
+        "platformer",
+        "playthroughTelemetry",
+        "progression",
+        "sessions",
+        "skillTree",
+        "social",
+        "strategy",
+        "survivalNeeds",
+        "traversal",
+        "tutorial",
+        "weather"
+       ]
+      }
+     }
+    }
+   ]
+  }
+ ]
+}

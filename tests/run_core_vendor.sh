@@ -17,12 +17,17 @@
 #
 # Args (baked as an absolute path by CMakeLists.txt):
 #   $1 = vendor-core-bundle.mjs
+#   $2 $3 (optional) = --check-extension-keys <case dir>: run ONLY the save.rules
+#        extensionKeys check over <case dir> (the core_vendor_extension_keys_negative
+#        ctest, PL.native-save-extension-keys). Its [SKIP] line names that ctest.
 set -u
 
 TOOL="$1"
+NAME=core_vendor
+[ "${2:-}" = "--check-extension-keys" ] && NAME=core_vendor_extension_keys_negative
 
 if ! command -v node >/dev/null 2>&1; then
-  echo "  [SKIP] core_vendor: 'node' not found — the vendored @insimul/core bundle"
+  echo "  [SKIP] $NAME: 'node' not found — the vendored @insimul/core bundle"
   echo "         was NOT checked for drift. Install node to run this gate."
   exit 0
 fi
@@ -32,6 +37,9 @@ if [ ! -f "$TOOL" ]; then
   exit 1
 fi
 
+if [ "$NAME" = core_vendor_extension_keys_negative ]; then
+  exec node "$TOOL" --check-extension-keys "$3"
+fi
 if [ -n "${INSIMUL_CORE_DIR:-}" ]; then
   exec node "$TOOL" --check --core "$INSIMUL_CORE_DIR"
 fi

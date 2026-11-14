@@ -595,6 +595,20 @@ add_test(NAME corebridge_radiant_none COMMAND
 add_test(NAME core_vendor COMMAND
   bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs)
+# core_vendor also holds save.rules' extensionKeys (PL.native-save-extension-keys,
+# U110): every save.rules case under corebridge/tests/cases/ must state exactly the
+# sorted keys of the vendored bundle's extensionRegistry (22 at core 6cd4b4e), so a
+# core pin that registers a new extension is red until the cases change on purpose.
+# Its negative control runs that check alone over tests/save-extension-keys-negative/
+# (a dropped key, a reordered list, an unregistered key, a list loosened to any array,
+# a dropped key inside $subset) and passes only when all five are named and the run
+# fails — not on any non-zero exit. The [SKIP] alternative is node's absence, as above.
+add_test(NAME core_vendor_extension_keys_negative COMMAND
+  bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/run_core_vendor.sh
+       ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs
+       --check-extension-keys ${CMAKE_CURRENT_SOURCE_DIR}/tests/save-extension-keys-negative)
+set_tests_properties(core_vendor_extension_keys_negative PROPERTIES
+  PASS_REGULAR_EXPRESSION "extensionKeys drift \\(5 problem\\(s\\)\\)[^\n]*\n[^\n]*case 1 [^\n]*missing from the case: strategy\n[^\n]*case 2 [^\n]*not in sorted order\n[^\n]*case 3 [^\n]*not registered: questLog\n[^\n]*case 4 [^\n]*not the literal list of names\n[^\n]*case 5 [^\n]*missing from the case: puzzle\n|\\[SKIP\\] core_vendor_extension_keys_negative")
 
 # corebridge_cases (Features Round C0): every method of libinsimulcore's table,
 # called from C through insimulcore.h, over two case directories — the corpus

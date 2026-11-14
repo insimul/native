@@ -84,10 +84,15 @@
 //       and diffs the bundle AND the derived cases byte for byte — that is the
 //       real reproducibility check.
 //
+//   node corebridge/tools/vendor-core-bundle.mjs --check-extension-keys <case dir>
+//       Only the save.rules extensionKeys check (below, SAVE_RULES_CASES_DIR) over
+//       <case dir> instead of corebridge/tests/cases/ — the negative control's mode.
+//
 // WHAT --check (no --core) ACTUALLY VERIFIES: a sha256 per file over the
 // generated artifacts AND the inputs bundled into them (the adapter JS, the case
-// emitter), and that VENDORED.json records the pinned commit and esbuild. It
-// cannot see core changing underneath the bundle — only --core can, because that
+// emitter), that VENDORED.json records the pinned commit and esbuild, and that
+// every save.rules case states exactly the extension keys the bundle's registry
+// answers (PL.native-save-extension-keys). It cannot see core changing underneath the bundle — only --core can, because that
 // requires core. Say so rather than implying otherwise.
 //
 // THE IMPORT RESOLUTION IS THE INTERESTING PART. onResolve hooks implement the
@@ -286,6 +291,122 @@ function unbundledIn(coreModules) {
 /** Each forbidden module with the import to repoint, for a failure message. */
 function unbundledReport(modules) {
   return modules.map((m) => `${m} (${UNBUNDLED_REMEDY[m] ?? UNBUNDLED_REMEDY_DEFAULT})`).join('; ');
+}
+
+// The save extension keys (PL.native-save-extension-keys, U110). `save.rules` answers
+// `extensionKeys` as core's `extensionRegistry` keys, sorted (js/entry.js), so the list
+// moves whenever a core pin adds a registered extension — P9j.core's puzzle, platformer
+// and strategy took it from 19 to 22, and an engine's own copy of the registry fell
+// behind unseen. The hand cases state the list EXACTLY: every `save.rules` step under
+// corebridge/tests/cases/ that names `extensionKeys` (directly or inside `$subset`) must
+// give the literal sorted array, and that array must be what the vendored bundle's
+// registry answers. So a pin bump that changes the registry turns `core_vendor` red until
+// the cases are updated on purpose, and loosening a case to `{"$type": "array"}` is red
+// too. With --core the bundle's keys are also held to the top-level keys of
+// `extensionRegistry` in core's src/save-extensions.ts at the pin.
+const SAVE_RULES_CASES_DIR = path.join(BRIDGE, 'tests', 'cases');
+
+/** The vendored bundle's `save.rules` extensionKeys, evaluated in a Node vm. */
+async function bundleExtensionKeys(js) {
+  const vm = await import('node:vm');
+  const noProlog = () => {
+    throw new Error('vendor-core-bundle has no Prolog engine');
+  };
+  const context = vm.createContext({
+    __insimul_sha256_hex: (text) => createHash('sha256').update(String(text), 'utf8').digest('hex'),
+    __insimul_prolog_create: noProlog,
+    __insimul_prolog_consult: noProlog,
+    __insimul_prolog_query: noProlog,
+    __insimul_prolog_destroy: noProlog,
+  });
+  new vm.Script(js, { filename: 'insimul-core-bundle.js' }).runInContext(context);
+  const dispatch = context.__insimul_core_dispatch;
+  if (typeof dispatch !== 'function') fail('the vendored bundle did not install __insimul_core_dispatch');
+  const rules = await dispatch('save.rules', '{}');
+  const keys = rules?.extensionKeys;
+  if (!Array.isArray(keys) || keys.length === 0 || !keys.every((k) => typeof k === 'string')) {
+    fail(`the vendored bundle's save.rules answers extensionKeys ${JSON.stringify(keys)}, not a non-empty list of names`);
+  }
+  // A plain array copied out of the vm's realm, so JSON comparisons below read the same.
+  return JSON.parse(JSON.stringify(keys));
+}
+
+/** Every `save.rules` step under `dir` that names extensionKeys: { where, stated }. */
+function statedExtensionKeyLists(dir) {
+  if (!fs.existsSync(dir)) fail(`case directory missing: ${dir}`);
+  const out = [];
+  for (const name of fs.readdirSync(dir).filter((f) => f.endsWith('.json')).sort()) {
+    const doc = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
+    for (const [ci, kase] of (doc.cases ?? []).entries()) {
+      for (const [si, step] of (kase.steps ?? []).entries()) {
+        if (step?.call !== 'save.rules' || step.expect === null || typeof step.expect !== 'object') continue;
+        const holder = step.expect.$subset && typeof step.expect.$subset === 'object' ? step.expect.$subset : step.expect;
+        if (!Object.prototype.hasOwnProperty.call(holder, 'extensionKeys')) continue;
+        out.push({ where: `${name} case ${ci + 1} ("${kase.name ?? ''}") step ${si + 1}`, stated: holder.extensionKeys });
+      }
+    }
+  }
+  return out;
+}
+
+/** Problems with the stated lists against the bundle's keys (empty = they agree). */
+function extensionKeyProblems(bundleKeys, stated) {
+  const problems = [];
+  if (stated.length === 0) problems.push('no save.rules step states extensionKeys, so nothing pins the registered extension keys');
+  for (const { where, stated: list } of stated) {
+    if (!Array.isArray(list) || !list.every((k) => typeof k === 'string')) {
+      problems.push(`${where} states extensionKeys as ${JSON.stringify(list)}, not the literal list of names`);
+      continue;
+    }
+    if (JSON.stringify(list) === JSON.stringify(bundleKeys)) continue;
+    const missing = bundleKeys.filter((k) => !list.includes(k));
+    const extra = list.filter((k) => !bundleKeys.includes(k));
+    problems.push(
+      `${where} states ${list.length} extension key(s) but the vendored bundle's registry has ${bundleKeys.length}` +
+        (missing.length ? `; missing from the case: ${missing.join(', ')}` : '') +
+        (extra.length ? `; not registered: ${extra.join(', ')}` : '') +
+        (!missing.length && !extra.length ? '; same names, not in sorted order' : ''),
+    );
+  }
+  return problems;
+}
+
+/** The top-level keys of `extensionRegistry` in core's src/save-extensions.ts. */
+function registryKeysInSource(text) {
+  const lines = text.split('\n');
+  const start = lines.findIndex((l) => /^export const extensionRegistry\b/.test(l));
+  if (start < 0) fail("core's src/save-extensions.ts at the pin declares no `export const extensionRegistry`");
+  const keys = [];
+  for (let i = start + 1; i < lines.length && !/^};/.test(lines[i]); i++) {
+    const m = /^ {2}([A-Za-z_$][\w$]*): \{/.exec(lines[i]);
+    if (m) keys.push(m[1]);
+  }
+  if (keys.length === 0) fail("no key found in core's extensionRegistry at the pin — the reader no longer matches its layout");
+  return keys.sort();
+}
+
+/** The check `--check` runs; `--check-extension-keys <dir>` runs it alone over another case directory. */
+async function checkExtensionKeys(js, dir, coreSrcRoot = null) {
+  const bundleKeys = await bundleExtensionKeys(js);
+  const stated = statedExtensionKeyLists(dir);
+  const problems = extensionKeyProblems(bundleKeys, stated);
+  if (coreSrcRoot) {
+    const sourceKeys = registryKeysInSource(fs.readFileSync(path.join(coreSrcRoot, 'src', 'save-extensions.ts'), 'utf8'));
+    if (JSON.stringify(sourceKeys) !== JSON.stringify(bundleKeys)) {
+      problems.push(
+        `core's src/save-extensions.ts at the pin registers ${sourceKeys.join(', ')} but the vendored bundle answers ${bundleKeys.join(', ')}`,
+      );
+    }
+  }
+  if (problems.length) {
+    fail(
+      `save.rules extensionKeys drift (${problems.length} problem(s)):\n` +
+        problems.map((p) => `  - ${p}`).join('\n') +
+        `\n  The vendored bundle registers ${bundleKeys.length}: ${bundleKeys.join(', ')}.\n` +
+        '  A core pin that changes the registry must update every save.rules case under corebridge/tests/cases/ ON PURPOSE.',
+    );
+  }
+  return { count: bundleKeys.length, steps: stated.length, fromSource: Boolean(coreSrcRoot) };
 }
 
 // The adapter JS that is BUNDLED IN — inputs, not outputs, and hashed for the
@@ -1185,6 +1306,11 @@ async function check(coreDir) {
       `core ${manifest.coreCommit}, ` +
       `esbuild ${manifest.esbuild})`,
   );
+  const keys = await checkExtensionKeys(js, SAVE_RULES_CASES_DIR);
+  console.log(
+    `vendor-core-bundle: save.rules extensionKeys — the vendored bundle registers ${keys.count}, and all ` +
+      `${keys.steps} save.rules step(s) under corebridge/tests/cases/ state exactly that list`,
+  );
 
   if (coreDir) {
     const src = materialize(coreDir, pin);
@@ -1332,6 +1458,11 @@ async function check(coreDir) {
           fail(`DRIFT: corebridge/${rel} is not byte-identical to core ${pin.coreCommit}'s ${rel.slice('vendor/core/'.length)}`);
         }
       }
+      const keysAtPin = await checkExtensionKeys(js, SAVE_RULES_CASES_DIR, src.root);
+      console.log(
+        `vendor-core-bundle: core ${pin.coreCommit}'s src/save-extensions.ts registers the same ${keysAtPin.count} ` +
+          'extension key(s) the vendored bundle answers',
+      );
       console.log(
         `vendor-core-bundle: re-bundling and re-deriving at the pin reproduces the bundle, all ${names.length} case file(s), ` +
           `all ${want.length} layout corpus file(s), all ${wantPacks.length} pack corpus/catalog file(s), all ` +
@@ -1351,10 +1482,17 @@ async function check(coreDir) {
   }
 }
 
-if (checkOnly) {
+if (argValue('--check-extension-keys')) {
+  // The save.rules extensionKeys check alone, over another case directory: the
+  // core_vendor_extension_keys_negative ctest points it at tests/save-extension-keys-negative/,
+  // whose cases drop a key, reorder, add one and loosen the list, and must see each named.
+  if (!fs.existsSync(BUNDLE_JS)) fail(`missing vendored artifact ${path.relative(REPO, BUNDLE_JS)}`);
+  const keys = await checkExtensionKeys(fs.readFileSync(BUNDLE_JS, 'utf8'), path.resolve(argValue('--check-extension-keys')));
+  console.log(`vendor-core-bundle: save.rules extensionKeys — ${keys.steps} step(s) state the bundle's ${keys.count} key(s)`);
+} else if (checkOnly) {
   await check(coreArg);
 } else if (coreArg) {
   await write(coreArg);
 } else {
-  fail('usage: vendor-core-bundle.mjs --core <core git checkout> | --check [--core <checkout>]');
+  fail('usage: vendor-core-bundle.mjs --core <core git checkout> | --check [--core <checkout>] | --check-extension-keys <case dir>');
 }

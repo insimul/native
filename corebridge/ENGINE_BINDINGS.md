@@ -74,7 +74,18 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
    `sha256.cpp`) must either retire it for these rows or keep it pinned to
    `conformance/saves/integrity-vectors.json` — two hashers that disagree make a
    save written by one engine unloadable in another (the cross-engine save check in
-   `PLAN.md` §4).
+   `PLAN.md` §4). **Registered extensions:** an engine that keeps its own list of
+   registered save extensions (Unreal's `RegisteredExtensions()` in its interim
+   village save) holds it to `save.rules`' `extensionKeys`, which is core's
+   `extensionRegistry` at this library's pin, sorted: **22 keys at core 6cd4b4e**
+   (`achievements`, `aiBlackboards`, `detectionStates`, `droppedFacts`,
+   `evaluations`, `gamification`, `gathering`, `introShown`, `languageLearning`,
+   `npcLife`, `platformer`, `playthroughTelemetry`, `progression`, `puzzle`,
+   `sessions`, `skillTree`, `social`, `strategy`, `survivalNeeds`, `traversal`,
+   `tutorial`, `weather`; P9j.core's `puzzle`, `platformer` and `strategy` took
+   it from 19). `tests/cases/bridge-saves.json` states that exact list and
+   `core_vendor` fails when it and the vendored registry disagree, so the count
+   moves only with a re-pin that updates it on purpose (PL.native-save-extension-keys).
 9. **An editor-free corpus runner** (track C0's gate). Each binding runs
    `corebridge/vendor/core/cases/*.json` and `corebridge/tests/cases/*.json`
    through its own wrapper (Unity: a dotnet test over `InsimulCore`; Unreal:

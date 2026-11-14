@@ -1718,6 +1718,28 @@ unknown op, step or area is refused (a failed case, never a skip), that
 `[invalid-input]` errors, the no-KB session and, on the C leg, a KB-backed unlock),
 every expectation computed by core's own functions at the pin.
 
+### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
+
+`save.rules`' `extensionKeys` is `Object.keys(extensionRegistry).sort()` over core's
+`src/save-extensions.ts` at the pin, so it moves with every pin that registers an
+extension. At 6cd4b4e it is **22 keys**: `achievements`, `aiBlackboards`,
+`detectionStates`, `droppedFacts`, `evaluations`, `gamification`, `gathering`,
+`introShown`, `languageLearning`, `npcLife`, `platformer`, `playthroughTelemetry`,
+`progression`, `puzzle`, `sessions`, `skillTree`, `social`, `strategy`,
+`survivalNeeds`, `traversal`, `tutorial`, `weather` (P9j.core's `puzzle`,
+`platformer` and `strategy` took it from 19 to 22). The rules case in
+`tests/cases/bridge-saves.json` states that exact list (it used to accept any
+array, so a drop back to 19 passed), as `bridge-tutorial-save.json`'s re-pin case
+does inside `$subset`; both legs replay them. `core_vendor` evaluates the vendored
+bundle, asks it `save.rules`, and fails unless every `save.rules` step under
+`tests/cases/` that names `extensionKeys` states exactly that sorted list; so the
+next pin that changes the registry is red until those cases are updated on purpose.
+With `--check --core` it also reads the top-level keys of core's
+`extensionRegistry` at the pin and needs the bundle to answer the same.
+`core_vendor_extension_keys_negative` must see five wrong statements named. An
+engine's own registry (Unreal's `RegisteredExtensions()` in its interim village
+save) should equal this list; `save.rules` is the row to hold it to.
+
 ### What the feature phases asked for and core does not have yet
 
 Exposed "as core has them" — so a few UI view-models in the brief are not rows,
@@ -1802,7 +1824,8 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `corebridge_cases_parity` | the C and JS legs' RAW result strings are byte-identical for every step |
 | `corebridge_sha256` | the C SHA-256 against the NIST vectors, at every split point |
 | `corebridge_radiant`, `corebridge_radiant_none` | the radiant corpus through core's real radiant engine on the native Prolog engine |
-| `core_vendor` | every vendored file matches its recorded sha256 and the pin |
+| `core_vendor` | every vendored file matches its recorded sha256 and the pin; every `save.rules` case under `tests/cases/` states exactly the sorted extension keys the vendored bundle's registry answers (22 at 6cd4b4e; with `--check --core`, also the keys of core's `extensionRegistry` in `src/save-extensions.ts` at the pin) |
+| `core_vendor_extension_keys_negative` | that extension-key check alone over `tests/save-extension-keys-negative/`: a dropped key, a reordered list, an unregistered key, a list loosened to any array and a dropped key inside `$subset`, each named, and the run failed |
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (132 of 147 cases at 72c658c; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (129 cases at 431c95b, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |

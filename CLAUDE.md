@@ -443,6 +443,13 @@
   running the old code while the source reads as the new — invisible to any
   output-only check. Only `--check --core <packages/core>` can see core drifting
   underneath the bundle; say so rather than implying the cheap check covers it.
+- **`core_vendor` also pins `save.rules`' `extensionKeys`** (PL.native-save-extension-keys,
+  U110): it evaluates the vendored bundle and fails unless every `save.rules` step under
+  `corebridge/tests/cases/` naming `extensionKeys` states exactly the sorted registry
+  keys (22 at 6cd4b4e); `--check --core` also holds them to core's `extensionRegistry`
+  source at the pin. A re-pin that registers an extension must update those cases on
+  purpose. `core_vendor_extension_keys_negative` (`tests/save-extension-keys-negative/`)
+  must see five wrong statements named.
 
 ## The feature-phase method table (Features Round C0, 2026-10-15)
 - **The bundle has an INPUT pin now: `corebridge/core-pin.json`** (`coreCommit`,

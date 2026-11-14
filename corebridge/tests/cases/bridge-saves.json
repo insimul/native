@@ -3,7 +3,7 @@
  "description": "Hand-written: the save codec end to end (encode → decode, tampering, malformed input), the rules row, unregistered extension keys (core's outcome unchanged), lone-surrogate integrity, the slot view over real envelopes, and SHA-256 over non-ASCII text (expected digests computed with Node's crypto over core's canonical JSON, so the C leg's SHA-256 is checked against an independent implementation). core-saves.json holds core's own corpus.",
  "cases": [
   {
-   "name": "save.rules: version, envelope format, the contiguous migration chain, the registered extension keys",
+   "name": "save.rules: version, envelope format, the contiguous migration chain, and exactly the extension keys core registers at the pin (src/save-extensions.ts extensionRegistry, sorted; 22 at core 6cd4b4e, puzzle, platformer and strategy from P9j.core included; core_vendor fails when the vendored bundle's registry and this list disagree)",
    "steps": [
     {
      "call": "save.rules",
@@ -14,7 +14,7 @@
        {"$subset": {"name": "v1_to_v2_populate_language_progress", "fromVersion": 1, "toVersion": 2, "description": {"$type": "string"}}},
        {"$subset": {"name": "v2_to_v3_backfill_snapshot_versioning", "fromVersion": 2, "toVersion": 3, "description": {"$type": "string"}}}
       ],
-      "extensionKeys": {"$type": "array"}
+      "extensionKeys": ["achievements", "aiBlackboards", "detectionStates", "droppedFacts", "evaluations", "gamification", "gathering", "introShown", "languageLearning", "npcLife", "platformer", "playthroughTelemetry", "progression", "puzzle", "sessions", "skillTree", "social", "strategy", "survivalNeeds", "traversal", "tutorial", "weather"]
      }
     }
    ]
