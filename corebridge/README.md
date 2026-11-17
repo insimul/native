@@ -1619,10 +1619,23 @@ The rows are named `build.<fn>`, one core function each, plus the contract's tab
   "Building… 3 of 7") and `build.size { bytes }` ("999 kB", "1 MB").
 - **The credential scan**: `build.isSecretKey`, `build.looksLikeSecret` and
   `build.findSecrets` (dotted fields, code-unit sorted, a key that is itself a
-  credential named `<credential>`, `secretKeyStandIn`). A credential key is matched
-  after JavaScript's `toLowerCase`, as core's code does; core's corpus states no key
-  that lower-cases through a non-ASCII letter (the Kelvin sign, `İ`, `ſ`), so the
-  rows answer what core's function answers and a hand case pins it on both legs.
+  credential named `<credential>`, `secretKeyStandIn`). **What "lower-cased" means
+  for a credential key** (PL.native-headless-fold-rules): core's own code, the key
+  through JavaScript's `toLowerCase` as the rows run it in QuickJS, `_` and `-`
+  dropped, then a match on one of core's endings. That is full Unicode lower case,
+  not a case fold: the Kelvin sign (U+212A) lower-cases to `k`, so `TOKEN` spelt with
+  it is a credential key (and `ACCESS_KEY` with it); the long s (U+017F) is already
+  lower case and stays `ſ`, so `PAſSWORD` and `ſECRET` are not (a case fold would
+  make them `s`); dotted capital `İ` (U+0130) lower-cases to `i` + U+0307, so
+  `APİKEY` and `SESSİONİD` are not; dotless `ı` (U+0131) stays `ı`, so `APıKEY` is
+  not. No letter Unicode 17.0 added lower-cases into ASCII, so these answers are the
+  same under QuickJS's 16.0 tables and V8's 17.0 (a key holding U+A7CE or U+16EA0
+  before `TOKEN` is a credential key on both; after it, on neither). Core's rule text
+  says only "lower-cased" and its corpus holds no such key, so this is the rows'
+  current behaviour stated as the contract (U101(4)); whether core means a case fold
+  is core's to answer (U49(3)), unanswered. Hand cases in
+  `tests/cases/bridge-build.json` pin each key, and `build.findSecrets` over them, on
+  both legs.
   Unreal's engine-side `RedactCredentialAssignment` (a build log's `NAME=value`
   lines) stays Unreal's and calls these.
 - **The path rules**: `build.pathProblem`, the two case folds `build.foldMacos`
@@ -1637,8 +1650,23 @@ The rows are named `build.<fn>`, one core function each, plus the contract's tab
   measured over every code point against Node 26 (Unicode 17.0), both folds differ on
   28 code points, all case pairs Unicode 17.0 added (U+A7CE, U+A7D2, U+A7D4,
   U+16EA0–U+16EB8), and the macOS fold also on strings holding marks 17.0 added (their
-  combining classes). Core names no Unicode version and its corpus holds none of these,
-  so the rows answer what this engine's tables say.
+  combining classes). **The 9 fold differences** (PL.native-headless-fold-rules):
+  against Unreal's `fold-vectors.json` (1,593 strings as V8 folded them, Unicode
+  17.0), the rows answer differently on 6 strings, 9 folds: the macOS fold of all 6
+  (#29, #72 and #79 hold marks 17.0 added, U+1ACF–U+1AEB, U+10EFA–U+10EFB and
+  U+1E6E3–U+1E6F5, which 17.0's combining classes order under NFC and which 16.0's
+  tables call unassigned, class 0; #55 holds the case pairs U+A7CE, U+A7D2 and
+  U+A7D4; #76 and #77 hold Beria Erfe, U+16EA0–U+16EB8) and the Windows fold of 3
+  (#55, #76, #77, the case pairs; the Windows fold does not normalise, so the marks
+  agree). Core names no Unicode version and no ruling pins one, so **the rows'
+  current answers are the contract** (U101(4)): a fold is what this library's QuickJS
+  tables say, and a letter or mark newer than Unicode 16.0 is left as it is.
+  Whether core pins a Unicode version (and native then updates QuickJS's tables, or
+  an engine's own suite skips code points newer than the library's) is core's
+  question under U49(3), unanswered. `tests/cases/bridge-build.json` states each of
+  the 9 as a **library-version answer** (`tests/README.md`): the row's answer in
+  `expect`, V8's in `libraryVersion.v8`; `corebridge_cases_parity` holds every other
+  step to V8 byte for byte and fails if a declared one starts agreeing.
 - **`build.contract`** answers the tables `conformance/build/headless.json`'s
   `contract` states, less the corpus's own `secretFixtures` and `rules` and
   `schemas.jsonSchemas` (core's file names).

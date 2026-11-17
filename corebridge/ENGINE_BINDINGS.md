@@ -574,12 +574,49 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   rows, so the copy's Unicode tables (measured from node 20.20.2's, Unicode 17.0)
   give way to the library's QuickJS tables (Unicode 16.0); `corebridge_cases_parity`
   holds QuickJS's folds to V8's on the hand cases' vectors, and `build_corpus` runs
-  every fold case of core's corpus through QuickJS. Measured against the copy's own
-  `fold-vectors.json` (1,593 strings): the rows agree on all but 9 (6 macOS-fold, 3
-  Windows-fold), every one a string holding a Unicode 17.0 addition (the case pairs
-  U+A7CE, U+A7D2, U+A7D4, U+16EA0–U+16EB8, and new combining marks). Core names no
-  Unicode version, so that suite's `headless_build_fold` either skips those strings
-  or waits on a ruling. Re-vendor `conformance/build/headless.json` from core at this
+  every fold case of core's corpus through QuickJS. **The 9 fold differences**
+  (PL.native-headless-fold-rules, U115), measured against the copy's own
+  `fold-vectors.json` (1,593 strings as V8 folded them, Unicode 17.0): the rows agree
+  on every fold but 9, over 6 strings, every one holding a Unicode 17.0 addition.
+
+  | Vector | `build.foldMacos` | `build.foldWindows` | What 17.0 added |
+  |---|---|---|---|
+  | #29 | differs | agrees | marks U+1ACF–U+1ADD, U+1AE0–U+1AEB: 17.0's combining classes order them under NFC; to 16.0 they are unassigned (class 0) |
+  | #55 | differs | differs | case pairs U+A7CE/U+A7CF, U+A7D2/U+A7D3, U+A7D4/U+A7D5 |
+  | #72 | differs | agrees | marks U+10EFA, U+10EFB (NFC order, as #29) |
+  | #76 | differs | differs | Beria Erfe capitals U+16EA0–U+16EA2 (lower case U+16EBB–U+16EBD) |
+  | #77 | differs | differs | Beria Erfe capitals U+16EA3–U+16EB8 (lower case U+16EBE–U+16ED3) |
+  | #79 | differs | agrees | marks U+1E6E3, U+1E6E6, U+1E6EE, U+1E6EF, U+1E6F5 (NFC order, as #29) |
+
+  That is the 6 macOS folds `headless_build_fold` declares by index, and the 3
+  Windows folds of the same strings (the Windows fold does not normalise, so only the
+  case pairs reach it). No ruling pins a Unicode version or a case fold, so **the
+  rows' current answers are the contract** (U101(4)'s builder default): a fold is
+  what this library's QuickJS 2025-04-26 tables (Unicode 16.0) say, a letter or mark
+  newer than them is left as it is, and a binding takes the row's answer, never its
+  own tables'. Each of the 9 is in `tests/cases/bridge-build.json` as a declared
+  library-version answer (the row's answer in `expect`, V8's in
+  `libraryVersion.v8`; `tests/README.md`): `corebridge_cases_parity` holds every
+  other step to V8 and fails if a declared one starts agreeing, so an engine suite
+  that keeps V8's vectors declares these 9 the same way, both ways. **Whether core
+  pins a Unicode version** (native then updating QuickJS's tables, or an engine's
+  suite skipping code points newer than the library's) **is core's question under
+  U49(3), unanswered.**
+
+  **What "lower-cased" means for a credential key** (`build.isSecretKey`, and
+  `build.findSecrets`, which asks it of every key): core's code, the key through
+  JavaScript's `toLowerCase` run in QuickJS, `_` and `-` dropped, then core's
+  endings. Full lower case, not a case fold: the Kelvin-sign spelling of `TOKEN`
+  (U+212A) is a credential key, `PAſSWORD` (U+017F stays `ſ`) is not, `APİKEY`
+  (U+0130 becomes `i` + U+0307) is not, and `APıKEY` (U+0131 stays `ı`) is not. No
+  17.0 letter lower-cases into ASCII, so these answers do not change with the
+  Unicode version (a key with U+A7CE or U+16EA0 in front of `TOKEN` is a credential
+  key on QuickJS and V8 alike). This is the rows' current behaviour stated as the
+  contract (U101(4)); core's text says only "lower-cased", and whether it means a
+  case fold is core's to state (U49(3)), unanswered. A binding that redacts a build
+  log (`RedactCredentialAssignment`) asks the row and lower-cases nothing itself.
+
+  Re-vendor `conformance/build/headless.json` from core at this
   library's pin and drive each case as `tests/build_corpus.cpp` does: expand the
   markers from the file's own `secretFixtures`, then one row per case.
 - **Progression and skill trees (Unreal's P9i retirement rows, after

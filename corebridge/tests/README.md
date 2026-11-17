@@ -12,7 +12,7 @@ the files and the rules on this page:
 |---|---|---|
 | `../../tests/corebridge_cases.c` | `insimulcore.h` → QuickJS, the C SHA-256, the native Prolog seam | `corebridge_cases` |
 | `../../tests/corebridge_cases.mjs` | the same bundle in a Node `vm` context → V8, Node's `crypto`, no Prolog | `corebridge_cases_js` |
-| both, raw results diffed | | `corebridge_cases_parity` |
+| both, raw results diffed | | `corebridge_cases_parity` (a step declared as a library-version answer must differ instead, below) |
 
 Every case runs on a FRESH runtime (a new `insimul_core` handle; a new `vm`
 context), so session handles start at 1 in every case and can be written
@@ -51,6 +51,33 @@ literally.
   bound result (path segments are object keys or array indices), and an optional
   `"$set": { "dotted.path": value, … }` beside it edits the copy (tampering a
   bound envelope, say).
+
+## Library-version answers
+
+A step may carry `libraryVersion` where the row's answer depends on a table this
+library's engine ships, and V8's differs: today the two case folds on letters and
+marks Unicode 17.0 added, which QuickJS 2025-04-26's Unicode 16.0 tables do not
+know (`cases/bridge-build.json`, PL.native-headless-fold-rules).
+
+```json
+{ "call": "build.foldMacos", "args": { "path": "…" },
+  "expect": { "folded": "<the row's answer: this library's tables>" },
+  "libraryVersion": {
+    "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+    "v8": { "folded": "<V8's answer: Unicode 17.0>" },
+    "why": "what the two tables disagree on" } }
+```
+
+- `expect` is the ROW's answer and the contract an engine binding the rows gets;
+  the C leg holds QuickJS to it, and fails if QuickJS answers `v8` instead.
+- `libraryVersion.v8` is V8's answer; the JS leg holds V8 to it, and fails if V8
+  answers `expect`.
+- `corebridge_cases_parity` requires the two raw answers to DIFFER on a declared
+  step (every other step must be byte-identical), so a declaration fails the moment
+  its cause goes (core names a Unicode version, QuickJS moves to 17.0, Node's tables
+  change) and an undeclared difference fails as before.
+- A declaration needs `library`, `v8` and a `why`, and `expect` (never
+  `expectError`); `v8` equal to `expect` is a bad case.
 
 ## The matcher
 

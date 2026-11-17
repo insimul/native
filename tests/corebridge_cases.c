@@ -863,7 +863,7 @@ int main(int argc, char **argv) {
 	}
 
 	strlist called = {0};
-	int n_cases = 0, n_steps = 0, failed = 0, js_only = 0;
+	int n_cases = 0, n_steps = 0, failed = 0, js_only = 0, n_declared = 0;
 	for (size_t fi = 0; fi < files.n; fi++) {
 		size_t len;
 		char *text = read_file(files.v[fi], &len);
@@ -948,6 +948,22 @@ int main(int argc, char **argv) {
 				const jval *expect_error = jget(step, "expectError");
 				const jval *expect = jget(step, "expect");
 				const jval *bind = jget(step, "bind");
+				/* A declared library-version answer (corebridge/tests/README.md):
+				 * `expect` is the row's answer, held here as usual; V8's
+				 * (`libraryVersion.v8`) is the JS leg's to hold, and the row
+				 * must not answer it. */
+				const jval *lv = jget(step, "libraryVersion");
+				const jval *lv_v8 = NULL;
+				if (lv) {
+					const jval *lv_why = jget(lv, "why");
+					const jval *lv_lib = jget(lv, "library");
+					lv_v8 = jget(lv, "v8");
+					if (lv->t != J_OBJ || !lv_v8 || !lv_why || lv_why->t != J_STR || lv_why->slen < 20 || !lv_lib ||
+							lv_lib->t != J_STR || lv_lib->slen == 0)
+						bad_case(where, "libraryVersion needs `library`, `v8` and a `why`");
+					if (!expect || expect_error) bad_case(where, "libraryVersion needs `expect` (the row's answer) and no expectError");
+					n_declared++;
+				}
 				problems_printed = 0;
 				problems_total = 0;
 				int bad = 0;
@@ -981,6 +997,10 @@ int main(int argc, char **argv) {
 									printf("         … %d more\n", problems_total - problems_printed);
 								bad = 1;
 							}
+						}
+						if (lv_v8 && match(lv_v8, value, "", 0) == 0) {
+							printf("  [FAIL] %s\n         declared library-version answer, but the row answers V8's: the declaration outlived its cause\n", where);
+							bad = 1;
 						}
 						if (bind && bind->t == J_STR && nbound < 64) {
 							bound[nbound].name = (char *)xmalloc(bind->slen + 1);
@@ -1038,6 +1058,7 @@ int main(int argc, char **argv) {
 	jfree(methods_doc);
 	insimul_core_destroy(core);
 
+	printf("corebridge_cases(c): %d step(s) declared as library-version answers (held here to the row's answer)\n", n_declared);
 	printf("corebridge_cases(c): %zu files, %d cases, %d steps, %d passed, %d failed, %d JS-only; %zu methods, all covered: %s\n",
 			files.n, n_cases, n_steps, n_cases - failed - js_only, failed, js_only, n_methods, surface_bad ? "NO" : "yes");
 	return failed == 0 && surface_bad == 0 ? 0 : 1;

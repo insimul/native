@@ -1,6 +1,6 @@
 {
   "area": "build",
-  "description": "Hand-written: the build.* rows’ own contract (PL.native-headless-build, U106(1), U107; core’s headless build contract, P10.core) — each row’s answer shape over core’s functions, the details core’s corpus does not pin (refusal, note and issue sentences, which the rows answer whole), the plan’s refusals sent back as a refused result’s, the line, size, credential-scan, fold, containment, order, platform and primary-artefact rows no corpus case calls directly (including keys that lower-case through a non-ASCII letter, which core’s corpus does not state), and the rows’ own refusals as errors coded [invalid-input]. Every expectation here was computed by core’s own functions at the pin, not by these rows. Core’s own corpus (conformance/build/headless.json, 233 cases) is driven whole through these rows by the build_corpus ctest (tests/build_corpus.cpp), not transcribed here.",
+  "description": "Hand-written: the build.* rows’ own contract (PL.native-headless-build, U106(1), U107; core’s headless build contract, P10.core) — each row’s answer shape over core’s functions, the details core’s corpus does not pin (refusal, note and issue sentences, which the rows answer whole), the plan’s refusals sent back as a refused result’s, the line, size, credential-scan, fold, containment, order, platform and primary-artefact rows no corpus case calls directly (including keys that lower-case through a non-ASCII letter, which core’s corpus does not state), and the rows’ own refusals as errors coded [invalid-input]. Every expectation here was computed by core’s own functions at the pin, not by these rows, except a declared library-version answer’s `expect`, which is the row’s own. PL.native-headless-fold-rules (U115) adds the 9 folds where this library’s Unicode 16.0 tables (QuickJS 2025-04-26) answer differently from V8’s 17.0 on Unreal’s fold vectors, each declared as a library-version answer (the row’s answer is `expect`, recorded from QuickJS; V8’s is `libraryVersion.v8`), and the credential keys that state what lower-cased means (core’s toLowerCase, not a case fold). Core’s own corpus (conformance/build/headless.json, 233 cases) is driven whole through these rows by the build_corpus ctest (tests/build_corpus.cpp), not transcribed here.",
   "cases": [
     {
       "name": "build.plan answers core’s whole answer (details included); the plan’s refusals, bound and sent as a refused result’s, are what build.checkResult accepts",
@@ -2765,6 +2765,360 @@
           },
           "expect": {
             "primary": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "build.foldMacos and build.foldWindows: the 9 folds where the library’s Unicode 16.0 tables (QuickJS 2025-04-26) answer differently from V8’s Unicode 17.0, declared as library-version answers (the row’s answer is the contract; the other 3 folds of the same 6 strings agree)",
+      "steps": [
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "᫊᫆᫇᫈᫉᫋ᫌᫍᫎ᫏᫐᫑᫒᫓᫔᫕᫖᫗᫘᫙᫚᫛᫜᫝᫠᫡᫢᫣᫤᫥᫦᫧᫨᫩᫪᫫ᬅᬆᬇᬈᬉᬊᬋᬌᬍᬎᬑᬒ"
+          },
+          "expect": {
+            "folded": "᫊᫆᫇᫈᫉᫋ᫌᫍᫎ᫏᫐᫑᫒᫓᫔᫕᫖᫗᫘᫙᫚᫛᫜᫝᫠᫡᫢᫣᫤᫥᫦᫧᫨᫩᫪᫫ᬅᬆᬇᬈᬉᬊᬋᬌᬍᬎᬑᬒ"
+          },
+          "libraryVersion": {
+            "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+            "v8": {
+              "folded": "᫊᫝᫦᫆᫇᫈᫉᫋ᫌᫍᫎ᫏᫐᫑᫒᫓᫔᫕᫖᫗᫘᫙᫚᫛᫜᫠᫡᫢᫣᫤᫥᫧᫨᫩᫪᫫ᬅᬆᬇᬈᬉᬊᬋᬌᬍᬎᬑᬒ"
+            },
+            "why": "Unreal’s fold-vectors.json #29 (V8, Unicode 17.0), macOS fold: marks Unicode 17.0 added (U+1ACF..U+1ADD, U+1AE0..U+1AEB): 17.0 gives them combining classes, so NFC orders the marks differently; to the library’s 16.0 tables they are unassigned (class 0)"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "᫊᫆᫇᫈᫉᫋ᫌᫍᫎ᫏᫐᫑᫒᫓᫔᫕᫖᫗᫘᫙᫚᫛᫜᫝᫠᫡᫢᫣᫤᫥᫦᫧᫨᫩᫪᫫ᬅᬆᬇᬈᬉᬊᬋᬌᬍᬎᬑᬒ"
+          },
+          "expect": {
+            "folded": "᫊᫆᫇᫈᫉᫋ᫌᫍᫎ᫏᫐᫑᫒᫓᫔᫕᫖᫗᫘᫙᫚᫛᫜᫝᫠᫡᫢᫣᫤᫥᫦᫧᫨᫩᫪᫫ᬅᬆᬇᬈᬉᬊᬋᬌᬍᬎᬑᬒ"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "ꞭꞮꞰꞱꞲꞳꞴꞶꞸꞺꞼꞾꟀꟂꟄꟅꟆꟇꟉꟋꟌ꟎Ꟑ꟒꟔ꟖꟘꟚꟜꟵ꠆꠬꣄꣠꣡꣢꣣꣤꣥꣦꣧꣨꣩꣪꣫꣬꣭꣮"
+          },
+          "expect": {
+            "folded": "ɬɪʞʇʝꭓꞵꞷꞹꞻꞽꞿꟁꟃꞔʂᶎꟈꟊɤꟍ꟎ꟑ꟒꟔ꟗꟙꟛƛꟶ꠆꠬꣄꣠꣡꣢꣣꣤꣥꣦꣧꣨꣩꣪꣫꣬꣭꣮"
+          },
+          "libraryVersion": {
+            "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+            "v8": {
+              "folded": "ɬɪʞʇʝꭓꞵꞷꞹꞻꞽꞿꟁꟃꞔʂᶎꟈꟊɤꟍ꟏ꟑꟓꟕꟗꟙꟛƛꟶ꠆꠬꣄꣠꣡꣢꣣꣤꣥꣦꣧꣨꣩꣪꣫꣬꣭꣮"
+            },
+            "why": "Unreal’s fold-vectors.json #55 (V8, Unicode 17.0), macOS fold: case pairs Unicode 17.0 added (U+A7CE/U+A7CF, U+A7D2/U+A7D3, U+A7D4/U+A7D5): the library’s 16.0 tables leave the capitals as they are"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "ꞭꞮꞰꞱꞲꞳꞴꞶꞸꞺꞼꞾꟀꟂꟄꟅꟆꟇꟉꟋꟌ꟎Ꟑ꟒꟔ꟖꟘꟚꟜꟵ꠆꠬꣄꣠꣡꣢꣣꣤꣥꣦꣧꣨꣩꣪꣫꣬꣭꣮"
+          },
+          "expect": {
+            "folded": "ɬɪʞʇʝꭓꞵꞷꞹꞻꞽꞿꟁꟃꞔʂᶎꟈꟊɤꟍ꟎ꟑ꟒꟔ꟗꟙꟛƛꟶ꠆꠬꣄꣠꣡꣢꣣꣤꣥꣦꣧꣨꣩꣪꣫꣬꣭꣮"
+          },
+          "libraryVersion": {
+            "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+            "v8": {
+              "folded": "ɬɪʞʇʝꭓꞵꞷꞹꞻꞽꞿꟁꟃꞔʂᶎꟈꟊɤꟍ꟏ꟑꟓꟕꟗꟙꟛƛꟶ꠆꠬꣄꣠꣡꣢꣣꣤꣥꣦꣧꣨꣩꣪꣫꣬꣭꣮"
+            },
+            "why": "Unreal’s fold-vectors.json #55 (V8, Unicode 17.0), Windows fold: case pairs Unicode 17.0 added (U+A7CE/U+A7CF, U+A7D2/U+A7D3, U+A7D4/U+A7D5): the library’s 16.0 tables leave the capitals as they are"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "𐵞𐵟𐵠𐵡𐵢𐵣𐵤𐵥𐵩𐵪𐵫𐵬𐵭𐺫𐺬𐻺𐻻𑁆𑁰𑁿𐻽𐻾𐻿𐽆𐽇𐽋𐽍𐽎𐽏𐽐𐾃𐾅𐽈𐽉𐽊𐽌𐾂𐾄𑂙𑂚𑂛𑂜𑂥𑂫𑂺𑂹𑄀𑄁"
+          },
+          "expect": {
+            "folded": "𐵾𐵿𐶀𐶁𐶂𐶃𐶄𐶅𐵩𐵪𐵫𐵬𐵭𐺫𐺬𐻺𐻻𑁆𑁰𑁿𐻽𐻾𐻿𐽆𐽇𐽋𐽍𐽎𐽏𐽐𐾃𐾅𐽈𐽉𐽊𐽌𐾂𐾄𑂙𑂚𑂛𑂜𑂥𑂫𑂺𑂹𑄀𑄁"
+          },
+          "libraryVersion": {
+            "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+            "v8": {
+              "folded": "𐵾𐵿𐶀𐶁𐶂𐶃𐶄𐶅𑁆𑁰𑁿𐻺𐻻𐻽𐻾𐻿𐽆𐽇𐽋𐽍𐽎𐽏𐽐𐾃𐾅𐵩𐵪𐵫𐵬𐵭𐺫𐺬𐽈𐽉𐽊𐽌𐾂𐾄𑂙𑂚𑂛𑂜𑂥𑂫𑂺𑂹𑄀𑄁"
+            },
+            "why": "Unreal’s fold-vectors.json #72 (V8, Unicode 17.0), macOS fold: marks Unicode 17.0 added (U+10EFA, U+10EFB): 17.0 gives them combining classes, so NFC orders the marks around them differently; to the library’s 16.0 tables they are unassigned (class 0)"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "𐵞𐵟𐵠𐵡𐵢𐵣𐵤𐵥𐵩𐵪𐵫𐵬𐵭𐺫𐺬𐻺𐻻𑁆𑁰𑁿𐻽𐻾𐻿𐽆𐽇𐽋𐽍𐽎𐽏𐽐𐾃𐾅𐽈𐽉𐽊𐽌𐾂𐾄𑂙𑂚𑂛𑂜𑂥𑂫𑂺𑂹𑄀𑄁"
+          },
+          "expect": {
+            "folded": "𐵾𐵿𐶀𐶁𐶂𐶃𐶄𐶅𐵩𐵪𐵫𐵬𐵭𐺫𐺬𐻺𐻻𑁆𑁰𑁿𐻽𐻾𐻿𐽆𐽇𐽋𐽍𐽎𐽏𐽐𐾃𐾅𐽈𐽉𐽊𐽌𐾂𐾄𑂙𑂚𑂛𑂜𑂥𑂫𑂺𑂹𑄀𑄁"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "𖫴𖬰𖬱𖬲𖬳𖬴𖬵𖬶𖵪𖵧𖵩𖵪𖹀𖹁𖹂𖹃𖹄𖹅𖹆𖹇𖹈𖹉𖹊𖹋𖹌𖹍𖹎𖹏𖹐𖹑𖹒𖹓𖹔𖹕𖹖𖹗𖹘𖹙𖹚𖹛𖹜𖹝𖹞𖹟𖺠𖺡𖺢"
+          },
+          "expect": {
+            "folded": "𖫴𖬰𖬱𖬲𖬳𖬴𖬵𖬶𖵪𖵧𖵩𖵪𖹠𖹡𖹢𖹣𖹤𖹥𖹦𖹧𖹨𖹩𖹪𖹫𖹬𖹭𖹮𖹯𖹰𖹱𖹲𖹳𖹴𖹵𖹶𖹷𖹸𖹹𖹺𖹻𖹼𖹽𖹾𖹿𖺠𖺡𖺢"
+          },
+          "libraryVersion": {
+            "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+            "v8": {
+              "folded": "𖫴𖬰𖬱𖬲𖬳𖬴𖬵𖬶𖵪𖵧𖵩𖵪𖹠𖹡𖹢𖹣𖹤𖹥𖹦𖹧𖹨𖹩𖹪𖹫𖹬𖹭𖹮𖹯𖹰𖹱𖹲𖹳𖹴𖹵𖹶𖹷𖹸𖹹𖹺𖹻𖹼𖹽𖹾𖹿𖺻𖺼𖺽"
+            },
+            "why": "Unreal’s fold-vectors.json #76 (V8, Unicode 17.0), macOS fold: Beria Erfe capitals U+16EA0..U+16EA2 (Unicode 17.0, lower case U+16EBB..U+16EBD): the library’s 16.0 tables leave them as they are"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "𖫴𖬰𖬱𖬲𖬳𖬴𖬵𖬶𖵪𖵧𖵩𖵪𖹀𖹁𖹂𖹃𖹄𖹅𖹆𖹇𖹈𖹉𖹊𖹋𖹌𖹍𖹎𖹏𖹐𖹑𖹒𖹓𖹔𖹕𖹖𖹗𖹘𖹙𖹚𖹛𖹜𖹝𖹞𖹟𖺠𖺡𖺢"
+          },
+          "expect": {
+            "folded": "𖫴𖬰𖬱𖬲𖬳𖬴𖬵𖬶𖵪𖵧𖵩𖵪𖹠𖹡𖹢𖹣𖹤𖹥𖹦𖹧𖹨𖹩𖹪𖹫𖹬𖹭𖹮𖹯𖹰𖹱𖹲𖹳𖹴𖹵𖹶𖹷𖹸𖹹𖹺𖹻𖹼𖹽𖹾𖹿𖺠𖺡𖺢"
+          },
+          "libraryVersion": {
+            "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+            "v8": {
+              "folded": "𖫴𖬰𖬱𖬲𖬳𖬴𖬵𖬶𖵪𖵧𖵩𖵪𖹠𖹡𖹢𖹣𖹤𖹥𖹦𖹧𖹨𖹩𖹪𖹫𖹬𖹭𖹮𖹯𖹰𖹱𖹲𖹳𖹴𖹵𖹶𖹷𖹸𖹹𖹺𖹻𖹼𖹽𖹾𖹿𖺻𖺼𖺽"
+            },
+            "why": "Unreal’s fold-vectors.json #76 (V8, Unicode 17.0), Windows fold: Beria Erfe capitals U+16EA0..U+16EA2 (Unicode 17.0, lower case U+16EBB..U+16EBD): the library’s 16.0 tables leave them as they are"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "𖺣𖺤𖺥𖺦𖺧𖺨𖺩𖺪𖺫𖺬𖺭𖺮𖺯𖺰𖺱𖺲𖺳𖺴𖺵𖺶𖺷𖺸𛲞𖿰𖿱𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅧𝅨𝅩𝅥𝅲𝅥𝅦𝅮𝅯𝅰𝅱𝅲𝅻𝅼𝅽𝅾𝅿𝅭"
+          },
+          "expect": {
+            "folded": "𖺣𖺤𖺥𖺦𖺧𖺨𖺩𖺪𖺫𖺬𖺭𖺮𖺯𖺰𖺱𖺲𖺳𖺴𖺵𖺶𖺷𖺸𛲞𖿰𖿱𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅧𝅨𝅩𝅥𝅲𝅥𝅦𝅮𝅯𝅰𝅱𝅲𝅻𝅼𝅽𝅾𝅿𝅭"
+          },
+          "libraryVersion": {
+            "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+            "v8": {
+              "folded": "𖺾𖺿𖻀𖻁𖻂𖻃𖻄𖻅𖻆𖻇𖻈𖻉𖻊𖻋𖻌𖻍𖻎𖻏𖻐𖻑𖻒𖻓𛲞𖿰𖿱𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅧𝅨𝅩𝅥𝅲𝅥𝅦𝅮𝅯𝅰𝅱𝅲𝅻𝅼𝅽𝅾𝅿𝅭"
+            },
+            "why": "Unreal’s fold-vectors.json #77 (V8, Unicode 17.0), macOS fold: Beria Erfe capitals U+16EA3..U+16EB8 (Unicode 17.0, lower case U+16EBE..U+16ED3): the library’s 16.0 tables leave them as they are"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "𖺣𖺤𖺥𖺦𖺧𖺨𖺩𖺪𖺫𖺬𖺭𖺮𖺯𖺰𖺱𖺲𖺳𖺴𖺵𖺶𖺷𖺸𛲞𖿰𖿱𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅧𝅨𝅩𝅥𝅲𝅥𝅦𝅮𝅯𝅰𝅱𝅲𝅻𝅼𝅽𝅾𝅿𝅭"
+          },
+          "expect": {
+            "folded": "𖺣𖺤𖺥𖺦𖺧𖺨𖺩𖺪𖺫𖺬𖺭𖺮𖺯𖺰𖺱𖺲𖺳𖺴𖺵𖺶𖺷𖺸𛲞𖿰𖿱𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅧𝅨𝅩𝅥𝅲𝅥𝅦𝅮𝅯𝅰𝅱𝅲𝅻𝅼𝅽𝅾𝅿𝅭"
+          },
+          "libraryVersion": {
+            "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+            "v8": {
+              "folded": "𖺾𖺿𖻀𖻁𖻂𖻃𖻄𖻅𖻆𖻇𖻈𖻉𖻊𖻋𖻌𖻍𖻎𖻏𖻐𖻑𖻒𖻓𛲞𖿰𖿱𝅗𝅥𝅘𝅥𝅘𝅥𝅮𝅘𝅥𝅯𝅘𝅥𝅰𝅘𝅥𝅱𝅘𝅧𝅨𝅩𝅥𝅲𝅥𝅦𝅮𝅯𝅰𝅱𝅲𝅻𝅼𝅽𝅾𝅿𝅭"
+            },
+            "why": "Unreal’s fold-vectors.json #77 (V8, Unicode 17.0), Windows fold: Beria Erfe capitals U+16EA3..U+16EB8 (Unicode 17.0, lower case U+16EBE..U+16ED3): the library’s 16.0 tables leave them as they are"
+          }
+        },
+        {
+          "call": "build.foldMacos",
+          "args": {
+            "path": "𞓮𞗯𞀜𞀝𞀞𞀟𞀠𞀡𞀣𞀤𞀦𞀧𞀨𞀩𞀪𞂏𞄰𞄱𞄲𞄳𞄴𞄵𞄶𞊮𞋬𞋭𞋮𞋯𞓯𞗮𞓬𞓭𞛣𞛦𞛮𞛯𞛵𞣐𞣑𞣒𞣓𞣔𞣕𞣖𞤀𞤁𞤂𞤃"
+          },
+          "expect": {
+            "folded": "𞓮𞗯𞀜𞀝𞀞𞀟𞀠𞀡𞀣𞀤𞀦𞀧𞀨𞀩𞀪𞂏𞄰𞄱𞄲𞄳𞄴𞄵𞄶𞊮𞋬𞋭𞋮𞋯𞓯𞗮𞓬𞓭𞛣𞛦𞛮𞛯𞛵𞣐𞣑𞣒𞣓𞣔𞣕𞣖𞤢𞤣𞤤𞤥"
+          },
+          "libraryVersion": {
+            "library": "QuickJS 2025-04-26 (Unicode 16.0)",
+            "v8": {
+              "folded": "𞓮𞗯𞣐𞣑𞣒𞣓𞣔𞣕𞣖𞀜𞀝𞀞𞀟𞀠𞀡𞀣𞀤𞀦𞀧𞀨𞀩𞀪𞂏𞄰𞄱𞄲𞄳𞄴𞄵𞄶𞊮𞋬𞋭𞋮𞋯𞓯𞗮𞛣𞛦𞛮𞛯𞛵𞓬𞓭𞤢𞤣𞤤𞤥"
+            },
+            "why": "Unreal’s fold-vectors.json #79 (V8, Unicode 17.0), macOS fold: marks Unicode 17.0 added (U+1E6E3, U+1E6E6, U+1E6EE, U+1E6EF, U+1E6F5): 17.0 gives them combining classes, so NFC orders the marks around them differently; to the library’s 16.0 tables they are unassigned (class 0)"
+          }
+        },
+        {
+          "call": "build.foldWindows",
+          "args": {
+            "path": "𞓮𞗯𞀜𞀝𞀞𞀟𞀠𞀡𞀣𞀤𞀦𞀧𞀨𞀩𞀪𞂏𞄰𞄱𞄲𞄳𞄴𞄵𞄶𞊮𞋬𞋭𞋮𞋯𞓯𞗮𞓬𞓭𞛣𞛦𞛮𞛯𞛵𞣐𞣑𞣒𞣓𞣔𞣕𞣖𞤀𞤁𞤂𞤃"
+          },
+          "expect": {
+            "folded": "𞓮𞗯𞀜𞀝𞀞𞀟𞀠𞀡𞀣𞀤𞀦𞀧𞀨𞀩𞀪𞂏𞄰𞄱𞄲𞄳𞄴𞄵𞄶𞊮𞋬𞋭𞋮𞋯𞓯𞗮𞓬𞓭𞛣𞛦𞛮𞛯𞛵𞣐𞣑𞣒𞣓𞣔𞣕𞣖𞤢𞤣𞤤𞤥"
+          }
+        }
+      ]
+    },
+    {
+      "name": "build.isSecretKey and build.findSecrets: what lower-cased means for a credential key — core’s JavaScript toLowerCase as the rows run it in QuickJS (full lower case, not a case fold: the Kelvin sign is k, ſ and ı stay as they are, İ becomes i + U+0307), the same under Unicode 16.0 and 17.0",
+      "steps": [
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "token"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "TOKEN"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "ACCESS_KEY"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "PAſSWORD"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "ſECRET"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "APİKEY"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "SESSİONİD"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "APıKEY"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "İ"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "ı"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "꟎"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "꟎TOKEN"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "TOKEN꟎"
+          },
+          "expect": {
+            "secret": false
+          }
+        },
+        {
+          "call": "build.isSecretKey",
+          "args": {
+            "key": "𖺠_TOKEN"
+          },
+          "expect": {
+            "secret": true
+          }
+        },
+        {
+          "call": "build.findSecrets",
+          "args": {
+            "value": {
+              "TOKEN": "hand",
+              "ACCESS_KEY": "hand",
+              "PAſSWORD": "hand",
+              "ſECRET": "hand",
+              "APİKEY": "hand",
+              "SESSİONİD": "hand",
+              "APıKEY": "hand",
+              "İ": "hand",
+              "ı": "hand",
+              "꟎": "hand",
+              "꟎TOKEN": "hand",
+              "TOKEN꟎": "hand",
+              "𖺠_TOKEN": "hand"
+            }
+          },
+          "expect": {
+            "fields": [
+              "ACCESS_KEY",
+              "TOKEN",
+              "꟎TOKEN",
+              "𖺠_TOKEN"
+            ]
+          }
+        },
+        {
+          "call": "build.findSecrets",
+          "args": {
+            "value": {
+              "build": {
+                "env": {
+                  "DB_PAſSWORD": "hand",
+                  "GITHUB_TOKEN": "hand",
+                  "API_İKEY": "hand"
+                }
+              }
+            }
+          },
+          "expect": {
+            "fields": [
+              "build.env.GITHUB_TOKEN"
+            ]
           }
         }
       ]

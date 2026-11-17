@@ -760,7 +760,14 @@
   file: hand cases use shapes core's scan names and no history-scan rule does). Never
   import `build/headless-build-corpus` (core's runner: it drags in the village-state
   comparator). Unreal's `Portable/InsimulHeadlessBuild` is the interim copy these
-  rows retire (`P10.unreal.retire-headless-build-copy`).
+  rows retire (`P10.unreal.retire-headless-build-copy`). Core names no Unicode
+  version and no case fold, so the rows' current answers are the contract
+  (PL.native-headless-fold-rules, U115, U101(4)): the folds are QuickJS 2025-04-26's
+  Unicode 16.0 tables (9 folds of Unreal's V8 vectors differ, each a declared
+  library-version answer in `bridge-build.json`), and a credential key is lower-cased
+  by JavaScript's `toLowerCase` (Kelvin-sign `TOKEN` is one, `PAſSWORD` is not).
+  Whether core pins either is core's question (U49(3)); do not "fix" the rows' answers
+  toward V8's or a fold without that ruling.
 - **The progression and skill rows (PL.native-progression-rows, U106(7)) run core's
   P9i corpora UNCHANGED**: `conformance/progression/*.json`, `conformance/skills/*.json`
   and `conformance/prolog/mechanic-skill.json`, copied as one set
@@ -796,7 +803,11 @@
   pins. `tests/corebridge_cases.c` (C ABI → QuickJS) and
   `tests/corebridge_cases.mjs` (the same bundle in a Node `vm`, V8 + Node crypto)
   implement the matcher in `corebridge/tests/README.md` INDEPENDENTLY;
-  `corebridge_cases_parity` diffs their raw result strings. Both fail on a method
+  `corebridge_cases_parity` diffs their raw result strings, except a step declared
+  as a library-version answer (`libraryVersion`: the row's answer in `expect`, V8's
+  in `libraryVersion.v8`), which must DIFFER, so a declaration fails the moment the
+  engines agree; declare one only where a ruling or a builder default makes the
+  row's answer the contract (today the 9 Unicode 17.0 folds). Both fail on a method
   with no case; the JS leg fails when `corebridge/README.md`'s table (between the
   BEGIN/END METHOD TABLE markers) is not exactly `core.methods`.
 - **SHA-256 is real now and lives in C** (`corebridge/src/insimulcore_sha256.c`,

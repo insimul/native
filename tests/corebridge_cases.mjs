@@ -22,7 +22,11 @@
  * raw result string on both runtimes (and to have failed on both where it
  * failed) — a diff, not two green checkmarks. Error TEXT is not compared: a
  * JSON.parse message is the engine's, not the bridge's (cases assert the part
- * that is the bridge's with expectError).
+ * that is the bridge's with expectError). The one exception is a step DECLARED
+ * as a library-version answer (`libraryVersion`, corebridge/tests/README.md):
+ * there the row's answer (QuickJS's tables) and V8's are both stated, this leg
+ * holds V8 to `libraryVersion.v8`, and parity requires the raw answers to
+ * DIFFER, so a declaration fails the moment the two engines start agreeing.
  *
  * The Prolog seam is NOT wired here (there is no native engine in Node): a case
  * that reaches Prolog fails loudly with "the JS harness has no Prolog engine".
@@ -244,6 +248,7 @@ const cOnly = new Set();
 const records = [];
 let nCases = 0;
 let nSteps = 0;
+let nDeclared = 0;
 let failed = 0;
 
 for (const file of files) {
@@ -275,10 +280,33 @@ for (const file of files) {
 			} catch (e) {
 				hard(e.message);
 			}
+			const lv = step.libraryVersion;
+			if (lv !== undefined) {
+				// A declared library-version answer (README "Library-version answers"):
+				// `expect` is the row's answer (this library's QuickJS tables), held by
+				// the C leg; `libraryVersion.v8` is V8's, held here; parity requires the
+				// two raw answers to DIFFER.
+				if (lv === null || typeof lv !== 'object' || Array.isArray(lv)) hard(`${where}: libraryVersion must be an object`);
+				if (!('v8' in lv)) hard(`${where}: libraryVersion without \`v8\` (V8's answer)`);
+				if (typeof lv.library !== 'string' || lv.library.length === 0) hard(`${where}: libraryVersion without \`library\``);
+				if (typeof lv.why !== 'string' || lv.why.length < 20) hard(`${where}: libraryVersion without a \`why\``);
+				if (step.expect === undefined || step.expectError !== undefined) hard(`${where}: libraryVersion needs \`expect\` (the row's answer) and no expectError`);
+				if (deepEqual(step.expect, lv.v8)) hard(`${where}: libraryVersion.v8 is the row's answer; nothing is declared`);
+				nDeclared++;
+			}
 			const res = await call(step.call, argsJson);
-			records.push({ file: rel, case: c.name, step: i, method: step.call, ok: res.ok, ...(res.ok ? { raw: res.raw } : {}) });
+			records.push({ file: rel, case: c.name, step: i, method: step.call, ok: res.ok, ...(res.ok ? { raw: res.raw } : {}), ...(lv !== undefined ? { declared: true } : {}) });
 			const problems = [];
-			if (step.expectError !== undefined) {
+			if (lv !== undefined) {
+				if (!res.ok) problems.push(`call failed: ${res.error}`);
+				else {
+					const value = JSON.parse(res.raw);
+					if (step.bind) bound[step.bind] = value;
+					const asRow = match(step.expect, value, '');
+					if (asRow.length === 0) problems.push(`declared library-version answer, but V8 answers the row's answer: the declaration outlived its cause (${lv.library})`);
+					else problems.push(...match(lv.v8, value, '').map((p) => `V8's declared answer: ${p}`));
+				}
+			} else if (step.expectError !== undefined) {
 				if (res.ok) problems.push(`expected an error containing ${JSON.stringify(step.expectError)}, got ${res.raw.slice(0, 200)}`);
 				else if (!res.error.includes(step.expectError)) problems.push(`error ${JSON.stringify(res.error)} lacks ${JSON.stringify(step.expectError)}`);
 			} else if (!res.ok) {
@@ -305,6 +333,7 @@ for (const file of files) {
 	}
 }
 if (nSteps === 0) hard('executed no step');
+console.log(`corebridge_cases(js): ${nDeclared} step(s) declared as library-version answers (held here to V8's declared answer, and to differing from the row's)`);
 
 // ── the table against its tests and its documentation ────────────────────────
 
@@ -346,11 +375,21 @@ if (parityFile) {
 		console.log(`  [FAIL] parity: the C leg recorded ${cRecords.length} step(s), this leg ${records.length}`);
 		parityProblems++;
 	}
+	let declaredDiffer = 0;
 	for (const r of records) {
 		const other = cBy.get(key(r));
 		if (!other) {
 			console.log(`  [FAIL] parity: no C record for ${r.file} :: ${r.case} :: step ${r.step}`);
 			parityProblems++;
+		} else if (r.declared) {
+			// Pinned both ways: a declared library-version answer must still differ.
+			if (!other.ok || !r.ok) {
+				console.log(`  [FAIL] parity: ${r.file} :: ${r.case} :: step ${r.step} (${r.method}) is declared and failed on a leg`);
+				parityProblems++;
+			} else if (other.raw === r.raw) {
+				console.log(`  [FAIL] parity: ${r.file} :: ${r.case} :: step ${r.step} (${r.method}) is declared as a library-version answer, but QuickJS and V8 now agree: the declaration outlived its cause`);
+				parityProblems++;
+			} else declaredDiffer++;
 		} else if (other.ok !== r.ok || (r.ok && other.raw !== r.raw)) {
 			console.log(`  [FAIL] parity: ${r.file} :: ${r.case} :: step ${r.step} (${r.method}) differs between QuickJS and V8`);
 			console.log(`         C : ${other.ok ? other.raw.slice(0, 300) : 'error'}`);
@@ -358,7 +397,8 @@ if (parityFile) {
 			parityProblems++;
 		}
 	}
-	console.log(`corebridge_cases(js): parity with the C leg over ${records.length} step(s): ${parityProblems === 0 ? 'byte-identical' : `${parityProblems} difference(s)`}`);
+	console.log(`corebridge_cases(js): parity with the C leg over ${records.length} step(s): ${parityProblems === 0 ? `byte-identical${declaredDiffer ? ` outside the ${declaredDiffer} declared library-version answer(s)` : ''}` : `${parityProblems} difference(s)`}`);
+	console.log(`corebridge_cases(js): ${declaredDiffer} of ${nDeclared} declared library-version answer(s) differ as declared`);
 }
 
 console.log(
