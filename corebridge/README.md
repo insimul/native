@@ -544,6 +544,21 @@ outcome `significant`. Filling them is core work with a core corpus case; the
 bridge picks it up by re-pinning, and no binding (Babylon's included) fills them
 itself.
 
+**A re-save keeps the villagers' blackboards (PL.native-slot9-digest, U115).** `save.decode`,
+`save.migrate` and `save.encode` carry `currentState.extensions.aiBlackboards` byte for byte: core
+registers the key with no migrator, so `migrateExtensions` hands every board back as it was, and an
+envelope decoded and re-encoded has the integrity it was loaded with. Two hand cases in
+`tests/cases/bridge-saves.json` pin it over four villagers whose slots hold `state` walking or idle and
+`runtimeState` walking or active: the round trip through the envelope, its text and `save.migrate`, a
+tampered villager `state` (`integrity_mismatch`) and the walking/idle-swapped save's different digest; and
+an older build's save with 19 extension keys, which decodes with `puzzle`, `platformer` and `strategy`
+added as `null` and its boards unchanged, so its first re-save moves the ENVELOPE integrity (to the
+22-key save's) and never the village state. Every expected digest is core's `computeSaveFileIntegrity`
+run in Node outside the bridge. Core's village mapping (`save-file-game-state.ts`, which this bundle
+leaves out) copies `state` and `runtimeState` verbatim both ways as well. So a village digest that moves
+when a binding re-saves a slot it has just loaded is the binding re-deriving villager state on capture,
+not the codec, and it is the binding's to fix (U49(3)).
+
 ### The P9a rows: the genre HUD, the rules panel, the mechanic runtime (P9a.native, U84)
 
 Three of core's P9a corpus runners are rows, each core's own JSON boundary and

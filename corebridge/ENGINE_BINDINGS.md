@@ -86,6 +86,11 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
    it from 19). `tests/cases/bridge-saves.json` states that exact list and
    `core_vendor` fails when it and the vendored registry disagree, so the count
    moves only with a re-pin that updates it on purpose (PL.native-save-extension-keys).
+   **Villager blackboards:** the rows carry `currentState.extensions.aiBlackboards`
+   unchanged (core registers it with no migrator), so re-saving a slot just loaded
+   must give back its digest. A re-save whose villager `state` / `runtimeState`
+   differ from the loaded slot's is the binding re-deriving them on capture, not the
+   rows (`tests/cases/bridge-saves.json`, PL.native-slot9-digest, U115).
 9. **An editor-free corpus runner** (track C0's gate). Each binding runs
    `corebridge/vendor/core/cases/*.json` and `corebridge/tests/cases/*.json`
    through its own wrapper (Unity: a dotnet test over `InsimulCore`; Unreal:
