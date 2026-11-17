@@ -208,7 +208,7 @@ import {
 import { TraversalPlanner } from '@insimul/core/game-engine/logic/TraversalPlanner';
 import { VehicleRegistry } from '@insimul/core/game-engine/logic/VehicleRegistry';
 import { FastTravelDirector } from '@insimul/core/game-engine/logic/FastTravelDirector';
-import { MOVEMENT_STANCES, MOVEMENT_URGENCIES } from '@insimul/core/game-engine/host-contracts';
+import { ANIMATION_INTENTS, MOVEMENT_STANCES, MOVEMENT_URGENCIES } from '@insimul/core/game-engine/host-contracts';
 import {
 	cyclePersonalVehicle,
 	dismountPersonalVehicle,
@@ -223,6 +223,9 @@ import {
 } from '@insimul/core/traversal/personal-vehicles';
 import { canonicalLent, lendMode, personalLender, returnMode, vehicleLender } from '@insimul/core/traversal/mode-lending';
 import { TRAVERSAL_EXTENSION_KEY, readTraversalBlock, traversalBlockOf, traversalSaveBlock } from '@insimul/core/traversal/traversal-save';
+// The rider's intent (core's PL.core-ride-intent, 844020e, U106(4); bound here by PL.native-bundle-core):
+// the `traversal.rider.*` rows and the session's `riderIntent` and `riders` ops.
+import { bodyIntent, riderIntent, riderPostureOf, vehicleRiderIntents } from '@insimul/core/traversal/rider-intent';
 
 // ── headless builds (P10; PL.native-headless-build, U106(1), U107) ────────────
 // Core's headless build contract (P10.core: src/build/headless-build.ts, doc
@@ -558,6 +561,7 @@ import {
 	INTERACT_LOOK_TIER,
 	INTERACT_RANGES_M,
 	INTERACT_REFUSALS,
+	INTERACT_VEHICLE_TIER,
 	PROP_ACTIONS,
 	PROP_NOT_OFFERED_ARCHETYPES,
 	PROP_NOT_OFFERED_REASONS,
@@ -1068,12 +1072,14 @@ function propsContract() {
 		// PL.native-interact-target: the data tables of conformance/props/interactables.json
 		// (core's scripts/emit-props-corpora.ts). Its prose keys (segments, meaning,
 		// noun, text, host, read, examine, board, notOfferedResult, target, ranges,
-		// notHere) are rules written out, not data, and are not here.
+		// vehicles, notHere, gathering) are rules written out, not data, and are not here.
 		'props-interactables': {
 			propActions: PROP_ACTIONS,
 			actions: INTERACT_ACTIONS,
 			actionTier: INTERACT_ACTION_TIER,
 			lookTier: INTERACT_LOOK_TIER,
+			// core's PL.core-vehicle-rules: `board`, reached only where nothing else is.
+			vehicleTier: INTERACT_VEHICLE_TIER,
 			notOffered: PROP_NOT_OFFERED_ARCHETYPES,
 			notOfferedReasons: PROP_NOT_OFFERED_REASONS,
 			signArchetypes: PROP_SIGN_ARCHETYPES,
@@ -1130,6 +1136,17 @@ function interactInputOf(method, args) {
 	optObject(method, args.villager, 'villager');
 	optObject(method, args.board, 'board');
 	if (args.panel !== undefined && args.panel !== null) needString(method, args.panel, 'panel');
+	// The vehicles pack's inputs (core's PL.core-vehicle-rules) and the gathering pack's
+	// (PL.core-gather-reach-tier): core walks each list and reads `aboard.id`,
+	// `actionTable.actions` and `busy` unread, so each is the JSON type core reads.
+	optObject(method, args.aboard, 'aboard');
+	for (const key of ['vehicles', 'nodes', 'hotspots']) {
+		(optArrayValue(method, args[key], key) ?? []).forEach((item, i) => needObject(method, item, `${key}[${i}]`));
+	}
+	if (optObject(method, args.actionTable, 'actionTable') !== undefined) {
+		optionalArg(args.actionTable.actions, (v) => objectList(method, v, 'actionTable.actions'));
+	}
+	optBoolean(method, args.busy, 'busy');
 	const ranges = optObject(method, args.ranges, 'ranges') ?? {};
 	for (const [k, v] of Object.entries(ranges)) needNumber(method, v, `ranges.${k}`);
 	return [args, ranges];
@@ -1323,6 +1340,27 @@ function vehicleStateArg(method, value, name) {
 	needObject(method, value, name);
 	needArray(method, value.occupants, `${name}.occupants`);
 	return value;
+}
+
+/**
+ * A `VehicleState` the rider rows read: core sorts the vehicles that carry a body by
+ * `id` (`compareIds`) and its occupants likewise, so both must be strings here.
+ */
+function riderVehicleArg(method, value, name) {
+	vehicleStateArg(method, value, name);
+	needString(method, value.id, `${name}.id`);
+	stringList(method, value.occupants, `${name}.occupants`);
+	return value;
+}
+
+/** An animation intent: one of core's `ANIMATION_INTENTS` (`game-engine/host-contracts`). */
+function animationIntentArg(method, value, name) {
+	return oneOf(method, value, ANIMATION_INTENTS, name);
+}
+
+/** A rider intent as `traversal.rider.intent` answers it: null (aboard nothing) or an animation intent. */
+function riderIntentArg(method, value, name) {
+	return value === undefined || value === null ? null : animationIntentArg(method, value, name);
 }
 
 /** A route as `findRoute` answers it: core walks `steps` and each step's `requires`. */
@@ -3002,7 +3040,8 @@ const METHODS = {
 
 	/**
 	 * `props.interactables.target { at, panel?, villager?, pickups?, containers?,
-	 * buildings?, props?, board?, ranges? }` → core's `interactTarget`: `{ ok:
+	 * buildings?, props?, board?, ranges?, aboard?, vehicles?, nodes?, hotspots?,
+	 * actionTable?, busy?, now? }` → core's `interactTarget`: `{ ok:
 	 * true, target: { action, kind, id, prompt, distance } | null }` or `{ ok:
 	 * false, refusal: { code: 'bad_position', field: 'at' } }`. The ONE thing a
 	 * press of E acts on: an open props `panel` closes (`close_panel`); else the
@@ -3013,6 +3052,13 @@ const METHODS = {
 	 * only with no action in range the nearest `read_sign` or `examine` prop.
 	 * `prompt` is the words after the key glyph ("Talk to Ada", "Read the sign").
 	 * `ranges` overrides any of `props.contract`'s `rangesM` for this call.
+	 * A game that runs the vehicles pack also states `aboard` (E gets off it, `get_off`,
+	 * second only to an open panel) and `vehicles` (`board` the nearest, only when
+	 * nothing else is in range; core's PL.core-vehicle-rules); one that runs the
+	 * gathering pack states `nodes` (`gather`), `hotspots` (`perform`, prompted from
+	 * `actionTable`, core's defaults when absent), `busy` and `now` (core's
+	 * PL.core-gather-reach-tier: both rows in the actions tier after `enter`). Absent,
+	 * nothing above changes; `props.contract` states the tiers and ranges.
 	 */
 	'props.interactables.target': (args) => {
 		const [input, ranges] = coded('invalid-input', () => interactInputOf('props.interactables.target', args));
@@ -4262,6 +4308,57 @@ const METHODS = {
 	/** `traversal.lending.personalLender { kind }` → `{ lender }` — core's `personalLender`: `personal:<kind>`. */
 	'traversal.lending.personalLender': (args) => ({ lender: personalLender(args.kind) }),
 
+	// ── the rider's intent (core's PL.core-ride-intent, 844020e, U106(4); PL.native-bundle-core) ──
+	// What a body aboard a vehicle is DRAWN as: core's `traversal/rider-intent`, one row per
+	// function. An order is one decision, so the order that put a body on a horse is long
+	// gone while it rides; a host asks these after a mount, a board, a disembark or a load
+	// and draws `body`. One atom for every vehicle (`ride`, the atom core's catalogue
+	// declares for `drive` and `mount_vehicle`); getting off gives the body's own `prior`
+	// back. Nothing here is a clip or a seat. A session asks the same through its
+	// `riderIntent` and `riders` ops (`traversal.session.apply`).
+
+	/**
+	 * `traversal.rider.posture { actor, state?, vehicles? }` → `{ posture: { kind, aboard } }`
+	 * — core's `riderPostureOf`: the personal kind `actor` rides in `state` (a
+	 * `traversal.personal.*` state; absent or null: nobody rides) and the first world
+	 * vehicle of `vehicles` (each a `VehicleState`, as `stateOf` and `roster` answer them;
+	 * absent: none), in canonical id order, that lists `actor` among its occupants, driver
+	 * or passenger. Both may be set.
+	 */
+	'traversal.rider.posture': (args) => {
+		const m = 'traversal.rider.posture';
+		const [actor, state, vehicles] = coded('invalid-input', () => [
+			needString(m, args.actor, 'actor'),
+			optionalArg(args.state, (v) => personalStateArg(m, v)) ?? null,
+			(optionalArg(args.vehicles, (v) => needArray(m, v, 'vehicles')) ?? []).map((v, i) => riderVehicleArg(m, v, `vehicles[${i}]`)),
+		]);
+		return { posture: plain(riderPostureOf(actor, state, vehicles)) };
+	},
+
+	/** `traversal.rider.intent { posture: { kind, aboard } }` → `{ rider }` — core's `riderIntent`: `ride` aboard anything (a kind or a world vehicle), null aboard nothing. */
+	'traversal.rider.intent': (args) => {
+		const m = 'traversal.rider.intent';
+		const posture = coded('invalid-input', () => {
+			needObject(m, args.posture, 'posture');
+			return { kind: kindOrNull(m, args.posture.kind, 'posture.kind'), aboard: kindOrNull(m, args.posture.aboard, 'posture.aboard') };
+		});
+		return { rider: riderIntent(posture) };
+	},
+
+	/** `traversal.rider.body { prior, rider? }` → `{ body }` — core's `bodyIntent`: what the host draws, the rider intent while there is one (`rider`, as `traversal.rider.intent` answers it), else `prior`, the body's own (its order's intent, or the host's locomotion for the player). Both are animation intents. */
+	'traversal.rider.body': (args) => {
+		const m = 'traversal.rider.body';
+		const [prior, rider] = coded('invalid-input', () => [animationIntentArg(m, args.prior, 'prior'), riderIntentArg(m, args.rider, 'rider')]);
+		return { body: bodyIntent(prior, rider) };
+	},
+
+	/** `traversal.rider.vehicleRiders { state }` → `{ riders }` — core's `vehicleRiderIntents`: every body a world vehicle carries (`state`, a `VehicleState`), occupant → `ride`, in canonical order; a parked vehicle gives `{}`, whoever owns it. */
+	'traversal.rider.vehicleRiders': (args) => {
+		const m = 'traversal.rider.vehicleRiders';
+		const state = coded('invalid-input', () => riderVehicleArg(m, args.state, 'state'));
+		return { riders: plain(vehicleRiderIntents(state)) };
+	},
+
 	/**
 	 * `traversal.save.block { planner?, vehicles?, fastTravel?, riding? }` → `{ key, block }`
 	 * — the block a save stores at `currentState.extensions[key]` (`key` is core's
@@ -4394,6 +4491,12 @@ const METHODS = {
 	 *    for an actor it does not hold).
 	 *  - personal vehicles: `mount { actor, kind }`, `dismount { actor }`, `cycle { actor }`
 	 *    → `{ result, delta }` (`personalSessionVerb`, core's doc §8 wiring).
+	 *  - the rider's intent (core's PL.core-ride-intent): `riderIntent { actor, prior }` →
+	 *    `{ posture, rider, body }` (the `traversal.rider.*` rows over the session's riders
+	 *    and its registry's roster: what `actor` is aboard, the rider intent and what the
+	 *    host draws given `prior`, an animation intent); `riders { vehicle }` → `{ riders }`
+	 *    (every body the world vehicle carries with its intent; `{}` parked or unknown).
+	 *    Neither changes any state.
 	 *  - save: `save` → `{ key, block }` (the four layers' block, as `traversal.save.block`
 	 *    writes it); `load { block? }` → `{ ok: true, dropped }` after core's
 	 *    `readTraversalBlock` hands each member to its layer's `restore()` and `riding` to
@@ -4460,6 +4563,16 @@ const METHODS = {
 			canFastTravel: async ({ director }, op) => ({ decision: await director.canFastTravel(op.actor, op.to) }),
 			fastTravel: async ({ director }, op) => ({ report: await director.fastTravel(op.actor, op.to) }),
 			meter: ({ pool }, op) => ({ meter: pool.get(op.actor) ?? null }),
+			riderIntent: (st, op) => {
+				const [actor, prior] = coded('invalid-input', () => [needString(m, op.actor, 'actor'), animationIntentArg(m, op.prior, 'prior')]);
+				const posture = riderPostureOf(actor, st.riding, st.registry.roster());
+				const rider = riderIntent(posture);
+				return { posture, rider, body: bodyIntent(prior, rider) };
+			},
+			riders: ({ registry }, op) => {
+				const state = registry.stateOf(coded('invalid-input', () => needString(m, op.vehicle, 'vehicle')));
+				return { riders: state === undefined || state === null ? {} : vehicleRiderIntents(state) };
+			},
 			mount: (st, op) => personalSessionVerb(st, 'mount', op),
 			dismount: (st, op) => personalSessionVerb(st, 'dismount', op),
 			cycle: (st, op) => personalSessionVerb(st, 'cycle', op),

@@ -624,6 +624,15 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/traversal/rider-intent",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the traversal.rider.* rows and the session's riderIntent and riders ops (core's rider intent, PL.core-ride-intent: what a body aboard a vehicle is drawn as) (PL.native-bundle-core, rulings U115(1), U116(3) and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-bundle-core (Features Gauntlet PL.native-bundle-core)",
+      "reviewedAt": "2026-11-16"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/stamina/stamina",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the survival.stamina.* rows (core's stamina meter: tuning, bands, spend, regen and the rest clock) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

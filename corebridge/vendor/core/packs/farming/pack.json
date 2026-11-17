@@ -23,13 +23,15 @@
   ],
   "extensionPoints": [
     { "id": "crops", "kind": "prolog-facts", "signature": "WorldIR.production.farming {crops, plots} (crop_yield/3, crop_growth/2)", "doc": "what a world grows" },
-    { "id": "refuse-farming", "kind": "prolog-forbid", "signature": "forbids/4 on ProductionTuning.plantAction / waterAction / harvestAction" }
+    { "id": "refuse-farming", "kind": "prolog-forbid", "signature": "forbids/4 on ProductionTuning.plantAction / waterAction / harvestAction" },
+    { "id": "crop-choice", "kind": "binding-hook", "signature": "ProductionDirector.plant(actor, plot, crop?) (src/game-engine/logic/ProductionDirector.ts)", "doc": "the crop a planting pane picked; none stated = core's chooseCrop (the plot's refusals, then the first sowable crop in id order, else nothing-to-sow); a parameter-level hook, not Prolog facts" }
   ],
   "events": { "emits": ["production_yielded"] },
   "styles": { "art": ["prop.farm.*"] },
   "checks": [{ "id": "corpus", "kind": "corpus" }],
   "assistant": {
     "summary": "Farming is core's farming module (src/production/farming.ts) remembered by ProductionDirector; the day comes from the time pack (ProductionDirector.setDay).",
+    "notes": ["With no crop stated, core chooses: after the plot's own refusals, the first crop of the book in id order whose seed, tool and skill the actor has, else nothing-to-sow (PL.core-craft-chooser, docs/native-production.md section 3.6)."],
     "doNot": ["Pick the crop at harvest: a plot yields what was planted."]
   }
 }

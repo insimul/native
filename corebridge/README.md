@@ -149,7 +149,7 @@ game; **meta** = about the bridge itself.
 | `props.pickups.clearance` | `{ spot, groundY?, settled?, obstacles?, roads?, clearance? }` → `{ ok: true, clearanceM, nearest }` or `{ ok: false, code: bad-spot }` | `props/pickup-placement` `pickupClearance` | P6 pick-up settle |
 | `props.pickups.pattern` | `{ search? }` → `{ rings: [{ radiusM, points }] }` | `props/pickup-placement` `pickupSearchPattern` | P6 pick-up settle |
 | `props.pickups.ring` | `{ ring, search? }` → `{ points: [{ x, z }] }` | `props/pickup-placement` `pickupSearchRing` | P6 pick-up settle |
-| `props.interactables.target` | `{ at, panel?, villager?, pickups?, containers?, buildings?, props?, board?, ranges? }` → `{ ok: true, target: { action, kind, id, prompt, distance } or null }`, or the refusal value `{ ok: false, refusal: { code: bad_position, field: at } }` | `props/interactables` `interactTarget` | P8 interact (PL.native-interact-target, U94(3); core's PL.examine-props, U49(3)) |
+| `props.interactables.target` | `{ at, panel?, villager?, pickups?, containers?, buildings?, props?, board?, ranges?, aboard?, vehicles?, nodes?, hotspots?, actionTable?, busy?, now? }` → `{ ok: true, target: { action, kind, id, prompt, distance } or null }`, or the refusal value `{ ok: false, refusal: { code: bad_position, field: at } }` | `props/interactables` `interactTarget` | P8 interact (PL.native-interact-target, U94(3); core's PL.examine-props, U49(3)) |
 | `props.interactables.interact` | `{ prop, board? }` → `{ ok: true, action, line, events }`, or the refusal value `{ ok: false, refusal: { code: not_offered, field: archetype, reason } }` | `props/interactables` `interactWithProp` | P8 interact |
 | `props.interactables.meaning` | `{ prop, board? }` → `{ id, action, noun, prompt, text }` or `{ id, action: null, reason }` | `props/interactables` `propInteraction` | P8 interact |
 | `props.interactables.host` | `{ props, settlement }` → `{ host }` (null: no board) | `props/interactables` `noticeBoardHost` | P8 interact |
@@ -274,6 +274,10 @@ game; **meta** = about the bridge itself.
 | `traversal.lending.canonical` | `{ lent?, modes }` → `{ lent }` | `traversal/mode-lending` `canonicalLent` | P9e traversal layers |
 | `traversal.lending.vehicleLender` | `{ vehicle }` → `{ lender }` (`vehicle:<id>`) | `traversal/mode-lending` `vehicleLender` | P9e traversal layers |
 | `traversal.lending.personalLender` | `{ kind }` → `{ lender }` (`personal:<kind>`) | `traversal/mode-lending` `personalLender` | P9e traversal layers |
+| `traversal.rider.posture` | `{ actor, state?, vehicles? }` → `{ posture: { kind, aboard } }` (the personal kind ridden in `state`; the first world vehicle of `vehicles`, in canonical id order, that carries `actor`) | `traversal/rider-intent` `riderPostureOf` | P9e rider intent (PL.native-bundle-core; core's PL.core-ride-intent, U106(4)) |
+| `traversal.rider.intent` | `{ posture: { kind, aboard } }` → `{ rider }` (`ride` aboard anything, null aboard nothing) | `traversal/rider-intent` `riderIntent` | P9e rider intent |
+| `traversal.rider.body` | `{ prior, rider? }` → `{ body }` (the rider intent while there is one, else `prior`; both animation intents) | `traversal/rider-intent` `bodyIntent` | P9e rider intent |
+| `traversal.rider.vehicleRiders` | `{ state }` → `{ riders }` (occupant → `ride`, canonical order; `{}` parked) | `traversal/rider-intent` `vehicleRiderIntents` | P9e rider intent |
 | `traversal.save.block` | `{ planner?, vehicles?, fastTravel?, riding? }` → `{ key, block }` (the block stored at `currentState.extensions[key]`) | `traversal/traversal-save` `traversalSaveBlock`, `traversalBlockOf`, `TRAVERSAL_EXTENSION_KEY` | P9e traversal layers |
 | `traversal.save.read` | `{ block? }` → `{ ok: true, value }` or `{ ok: false, keys }` | `traversal/traversal-save` `readTraversalBlock` | P9e traversal layers |
 | `traversal.session.create` | `{ links?, tuning?, vehicles?, fastTravel?, seed?, stamina?, probe?, locomotion?, personal? }` → `{ session, view }` (view: the four layers' state) | `game-engine/logic/TraversalPlanner`, `VehicleRegistry`, `FastTravelDirector`, `StaminaPool`, `GameEventBus` (wired as core's doc §1) | P9e traversal layers (a session) |
@@ -942,10 +946,19 @@ nothing:
   "object").
 - **`props.contract`'s `props-interactables`** — the corpus's data tables from
   core's constants: `propActions`, `actions`, `actionTier`, `lookTier`,
-  `notOffered`, `notOfferedReasons`, `signArchetypes`, `rangesM`,
+  `vehicleTier`, `notOffered`, `notOfferedReasons`, `signArchetypes`, `rangesM`,
   `doorPromptRadiusM`, `refusals` and the `deviations` from Unreal's interim
-  rules (ten, each with Unreal's reading, core's and why). The prose keys are
-  rules written out and stay in the corpus.
+  rules (eighteen at the d88b6f0 pin, each with Unreal's reading, core's and why).
+  The prose keys are rules written out and stay in the corpus.
+- **The vehicles and gathering packs' inputs** (core's PL.core-vehicle-rules and
+  PL.core-gather-reach-tier, in at the d88b6f0 pin; bound by PL.native-bundle-core).
+  A game that runs the vehicles pack also sends `aboard { id, name? }` (E gets off
+  it, `get_off`, second only to an open panel) and `vehicles [{ id, name?,
+  position }]` (`board` the nearest within `rangesM.board`, only when nothing else
+  is in range); one that runs the gathering pack sends `nodes`, `hotspots`,
+  `actionTable` (absent: core's default physical actions), `busy` and `now`
+  (`gather` 2.0 m and `perform` 2.5 m, both in the actions tier after `enter`;
+  `busy` offers neither). The row passes them to core as sent, like the rest.
 
 What stays the host's: the villager it would talk to (sight and facing), which
 containers are reachable, the panel that is open, the E press inside an interior
@@ -956,14 +969,19 @@ world's translated objects (`examineNearest`, m4).
 declare: `props`, `pickups`, `containers` or `buildings` that is not an array, a
 building that is not an object, `villager`, `board`, `settlement`, `prop` or
 `ranges` that is not an object, a range that is not a number, a `panel` or an
-`archetype` that is not a string. Every value core reads itself goes to core,
+`archetype` that is not a string; and of the packs' inputs, `vehicles`, `nodes` or
+`hotspots` that is not an array of objects, `aboard` or `actionTable` that is not
+an object, `actionTable.actions` that is not an array of objects, `busy` that is
+not a boolean. Every value core reads itself goes to core,
 which answers it as its corpus pins: a position that is not a finite point (`at`:
 `bad_position`; a candidate's: skipped), a null or id-less list entry, a taken
 pick-up (skipped), an archetype or text that is not a non-empty string (no
 archetype: not offered; no text: blank).
 
-**The evidence** is core's `conformance/props/interactables.json` (33 cases at
-431c95b over `noun` 1, `meanings` 4, `host` 5, `interact` 4, `target` 19, after core's
+**The evidence** is core's `conformance/props/interactables.json` (53 cases at
+d88b6f0 over `noun` 1, `meanings` 4, `host` 5, `interact` 4, `target` 39, after core's
+PL.core-vehicle-rules and PL.core-gather-reach-tier added 20 `target` cases, none
+of an earlier case's answer changed; 33 at 431c95b with `target` 19, after core's
 PL.interactables-cases added four `target` cases whose answer depends on the stated
 `ranges` and two `interact` cases with a lone `prop`; 27 at 72c658c; Brightwater's 78
 stated props among them), copied byte for byte with the other props corpora
@@ -1545,7 +1563,12 @@ With slice 1's kernels these rows hold everything Unreal's interim copy does, so
   `cycle` → `{ result, delta }` — core's verb with the rider's registry vehicle as
   `inVehicle`, and when performed `personalVehicleModes` of the planner's modes and
   lent record handed to `setModes(actor, modes, lent)`, the wiring core's doc §8
-  states (the result is core's without `state`, which the session holds). Save:
+  states (the result is core's without `state`, which the session holds). The
+  rider's intent (core's PL.core-ride-intent, bound by PL.native-bundle-core):
+  `riderIntent { actor, prior }` → `{ posture, rider, body }` (what `actor` is
+  aboard over the session's riders and its registry's roster, the rider intent, and
+  what the host draws given `prior`, the body's own animation intent), `riders
+  { vehicle }` → `{ riders }` (`{}` parked or unknown); neither changes state. Save:
   `save` → `{ key, block }`; `load { block? }` hands each member core's reader read
   to its layer's `restore()` and `riding` to `personalVehiclesFromSave` → `{ ok,
   dropped }`, or the VALUE `{ ok: false, keys }` with nothing changed. Every op
@@ -1555,9 +1578,12 @@ With slice 1's kernels these rows hold everything Unreal's interim copy does, so
   the state they are sent: `traversal.personal.*` (`tuning`, `pace`, `label`,
   `modes`, `initial`, `mount`, `dismount`, `cycle`, `saveRows`, `fromSave`; each
   reads the pack's `params`), `traversal.lending.*` (`lend`, `giveBack`,
-  `canonical`, `vehicleLender`, `personalLender`) and `traversal.save.*` (`block`,
+  `canonical`, `vehicleLender`, `personalLender`), `traversal.save.*` (`block`,
   the writer at core's `TRAVERSAL_EXTENSION_KEY`; `read`, core's reader, whose
-  refusal is a value).
+  refusal is a value) and `traversal.rider.*` (`posture`, `intent`, `body`,
+  `vehicleRiders`: core's `traversal/rider-intent`, what a body aboard a vehicle is
+  drawn as; one atom, `ride`, for every vehicle, driver and passenger alike, and
+  getting off gives the body's own intent back).
 
 Checked as `[invalid-input]` errors, as slice 1: the lists core iterates or spreads
 (`links`, `vehicles`, `stamina.actors`, `modes`, a save part's rows, each actor's
@@ -1574,10 +1600,12 @@ FastTravelDirector}`, `game-engine/host-contracts`, `traversal/personal-vehicles
 `traversal/mode-lending` and `traversal/traversal-save`, never
 `traversal/systems-corpus` (core's runner).
 
-**The evidence** is core's three systems corpora (62 cases at the 6cd4b4e pin:
-`session.json` 22 runs over all 19 of its steps, `mounts.json` 24 over `tuning` 3,
-`pace` 5, `modes` 9 and `run` 7, `save.json` 16 over `block` 4, `read` 8 and
-`restore` 4), copied byte for byte into the same set as slice 1's and driven by the
+**The evidence** is core's three systems corpora (69 cases at the d88b6f0 pin:
+`session.json` 26 runs over all 21 of its steps, `mounts.json` 27 over `tuning` 3,
+`pace` 5, `modes` 9 and `run` 10, `save.json` 16 over `block` 4, `read` 8 and
+`restore` 4; core's PL.core-ride-intent added the `intent` and `riders` steps and
+the 7 cases that use them, which a mounts run drives through `traversal.rider.*`
+with the stated `inVehicle` as `aboard`, as core's runner does), copied byte for byte into the same set as slice 1's and driven by the
 same runner, `tests/traversal_corpus.cpp` (129 cases in all, 0 undriven). Each
 session case is ONE session, each step one `traversal.session.apply` whose ops'
 answers compose core's runner's record; the hosts' recordings stay pending until a
@@ -1765,7 +1793,7 @@ every expectation computed by core's own functions at the pin.
 
 `save.rules`' `extensionKeys` is `Object.keys(extensionRegistry).sort()` over core's
 `src/save-extensions.ts` at the pin, so it moves with every pin that registers an
-extension. At 6cd4b4e it is **22 keys**: `achievements`, `aiBlackboards`,
+extension. At d88b6f0 (as at 6cd4b4e) it is **22 keys**: `achievements`, `aiBlackboards`,
 `detectionStates`, `droppedFacts`, `evaluations`, `gamification`, `gathering`,
 `introShown`, `languageLearning`, `npcLife`, `platformer`, `playthroughTelemetry`,
 `progression`, `puzzle`, `sessions`, `skillTree`, `social`, `strategy`,
@@ -1867,17 +1895,17 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `corebridge_cases_parity` | the C and JS legs' RAW result strings are byte-identical for every step |
 | `corebridge_sha256` | the C SHA-256 against the NIST vectors, at every split point |
 | `corebridge_radiant`, `corebridge_radiant_none` | the radiant corpus through core's real radiant engine on the native Prolog engine |
-| `core_vendor` | every vendored file matches its recorded sha256 and the pin; every `save.rules` case under `tests/cases/` states exactly the sorted extension keys the vendored bundle's registry answers (22 at 6cd4b4e; with `--check --core`, also the keys of core's `extensionRegistry` in `src/save-extensions.ts` at the pin) |
+| `core_vendor` | every vendored file matches its recorded sha256 and the pin; every `save.rules` case under `tests/cases/` states exactly the sorted extension keys the vendored bundle's registry answers (22 at d88b6f0; with `--check --core`, also the keys of core's `extensionRegistry` in `src/save-extensions.ts` at the pin) |
 | `core_vendor_extension_keys_negative` | that extension-key check alone over `tests/save-extension-keys-negative/`: a dropped key, a reordered list, an unregistered key, a list loosened to any array and a dropped key inside `$subset`, each named, and the run failed |
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (132 of 147 cases at 72c658c; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (129 cases at 431c95b, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
-| `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (33 cases at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give and two runner controls (a case's `ranges`, a lone `prop`) seen as wrong |
+| `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (53 cases at d88b6f0, 33 at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give and two runner controls (a case's `ranges`, a lone `prop`) seen as wrong |
 | `audio_ground_corpus`, `audio_ground_corpus_negative` | core's ground reading corpus driven whole through the `audio.ground.*` rows (48 cases, 0 undriven; every case whose world lists two or more settlements, ground surfaces or roads driven again with them reversed; its contract's data held to `audio.ground.contract`), and Unreal's sidewalk for a footpath in the contract, an undriven op and six answers an engine keeping one of its interim readings would give seen as wrong |
 | `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (95 cases at 6cd4b4e, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 | `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |
-| `traversal_corpus`, `traversal_corpus_negative` | core's seven P9e corpora (the kernels' `affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`, and the layers' `session.json`, `mounts.json`, `save.json`; 129 cases at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step, a session case one `traversal.session` with one apply per step, a mounts run one personal row per step; each systems file's catalog, ops and steps held to core's and every step driven), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does |
+| `traversal_corpus`, `traversal_corpus_negative` | core's seven P9e corpora (the kernels' `affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`, and the layers' `session.json`, `mounts.json`, `save.json`; 136 cases at d88b6f0, 129 at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step, a session case one `traversal.session` with one apply per step, a mounts run one personal row per step; each systems file's catalog, ops and steps held to core's and every step driven), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does |
 | `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
 | `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 73 cases at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |

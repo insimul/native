@@ -1,6 +1,6 @@
 {
   "area": "layout-building-fit",
-  "description": "Buildings fitted to their lots (core src/editor/layout/building-fit.ts; the Unreal plugin's BYOA B2/B7/B8 fit, characterised from its Portable code before core implemented it). The door finder's part rule, a body's stature for the door hold, the fit itself (one uniform factor within the binding's limits, held up so the door leaf is doorClearance x the tallest body, the footprint centred on its lot plus the settle, the door turned to the street, the seat on the ground) and the overlaps of fitted footprints with each other and the paving. Brightwater Vale's seven lots carry the B8 pairing's houses as the editor measured them in the village it builds (House_01, BP_House_01, for the farm, the smithy and the third home; House_03 standing for BP_House_02 on the bakery and two homes, with BP_House_02's own bounds and door parts; House_Large, BP_House_Large_03, for the restaurant), the 6 m neighbour gap, the seat sinks the pairing writes and the 2.01 m cast; the rest are the degraded cases. Plan frame: IR (x, z) metres, y up, a heading points along (cos h, sin h); asset-local geometry in core's convention (x right, y up, z forward, metres), placed forward along the heading and right along heading + pi/2. Since PL.fit-front-line: a lot that states a build-to line has a building area (buildingAreaOf: the building's IR spec box at its position, the lot's frontage, and the lot's front edge and buildTo.front as a front line), and a fit given that front line stands the footprint's front on the facade line, but at least FIT_FRONT_CLEARANCE_M (0.25 m, the settle's paving clearance) behind the lot's front edge, and answers where (facade {line, front}, metres forward of lotCentre along the street heading, before the settle).",
+  "description": "Buildings fitted to their lots (core src/editor/layout/building-fit.ts; the Unreal plugin's BYOA B2/B7/B8 fit, characterised from its Portable code before core implemented it). The door finder's part rule, a body's stature for the door hold, the fit itself (one uniform factor within the binding's limits, held up so the door leaf is doorClearance x the tallest body, the footprint centred on its lot plus the settle, the door turned to the street, the seat on the ground) and the overlaps of fitted footprints with each other and the paving. Brightwater Vale's seven lots carry the B8 pairing's houses as the editor measured them in the village it builds (House_01, BP_House_01, for the farm, the smithy and the third home; House_03 standing for BP_House_02 on the bakery and two homes, with BP_House_02's own bounds and door parts; House_Large, BP_House_Large_03, for the restaurant), the 6 m neighbour gap, the seat sinks the pairing writes and the 2.01 m cast; the rest are the degraded cases. Plan frame: IR (x, z) metres, y up, a heading points along (cos h, sin h); asset-local geometry in core's convention (x right, y up, z forward, metres), placed forward along the heading and right along heading + pi/2. Since PL.fit-front-line: a lot that states a build-to line has a building area (buildingAreaOf: the building's IR spec box at its position, the lot's frontage, and the lot's front edge and buildTo.front as a front line), and a fit given that front line stands the footprint's front on the facade line, but at least FIT_FRONT_CLEARANCE_M (0.25 m, the settle's paving clearance) behind the lot's front edge, and answers where (facade {line, front}, metres forward of lotCentre along the street heading, before the settle). Since PL.core-placement-building-area (operator ruling U108(3)): on a room the fit can measure (a bounded lot, or the building area an engine hands as that lot, and measured bounds) the room wins over the door hold: the factor stays the room's, doorHeld is false, doorFactor still states what the hold wanted and the note door-yields says the door has to move to fit (how is a pending ruling; the door is answered where the asset has it). The hold still raises the factor where nothing bounds it. The B8 door-held run back is gone.",
   "version": 1,
   "sources": [
     {
@@ -15,6 +15,11 @@
       "writtenBy": "core src/editor/layout/building-fit.ts buildingAreaOf, and fitBuildingToLot given a frontLine (npm run layout-corpus -- --check replays them)",
       "measuredBy": "unreal origin/feat/b9-fit a3a5f04 tools/verify-unreal/fixtures/brightwater-l3/: brightwater-l3.ir.json (sha256 65208501b178658c36e94c389838b280c8ba912a33073613e1e75d13aff5219a; the Village WorldIR 6abb84ae… exported 2026-11-10T02:16Z, trimmed) and smoke-1015-houses.json (sha256 10e99f4ff606406bab18bafaf89fd3b1e098a5e87b023f334435f375cf18f600; the seven houses as the editor measures them, and the SYNTHETIC inputAsStated twins)",
       "frame": "building area: the IR plan as the world states it; front line: the placement frame, IR (x, z) + terrainSize / 2 (256 m), as the other Brightwater cases; nodeHeading = -rotation"
+    },
+    {
+      "cases": "the 'area wins' cases (PL.core-placement-building-area, operator ruling U108(3); the B9.fit round-1 verdict's m2, round-2 m1); and, re-answered on purpose, every earlier door-held case: the 'brightwater:' and 'brightwater settled:' houses, 'fit: a lot with no frontage', 'fit: a giant's door', 'fit: fixups, a zone scale and no ground', 'fit: the large house, held over a wider range', 'fit: a policy that states nothing takes the defaults', 'fit: a settle shift of 0.47 mm is not noted', 'fit: a settle shift of 0.53 mm is noted settled', 'seat: sunk 1.5 cm', 'seat: sunk 2.5 cm', 'front line: a door-held house deeper than its area runs back from the line', and the chain the stand-ins re-derive from them ('overlaps: Brightwater's houses as the fit alone puts them', 'overlaps: after the settle', and the B8 policy's seatSink)",
+      "writtenBy": "core src/editor/layout/building-fit.ts fitBuildingToLot (npm run layout-corpus -- --check replays them); the chain by scripts/restand-layout-corpus.ts --write",
+      "measuredBy": "the house of each 'brightwater: <id>' case (bounds, door, cast, policy, fixups) on the room, centre, node, heading and front line of 'front line: Brightwater L3 <id>', as Unreal's B9.fit DECLARED B8 pin hands it (unreal tools/verify-unreal/test_village_building_fit.cpp HouseInput, ERoom::AreaFronted); core main de10a09 put those houses ±5.602–5.944 m across their ±5.000 m areas (inn ±7.898 of ±7.500) and back to −5.569/−5.915 of −5.000 (inn −6.277 of −6.000), the numbers B9.fit round 2 measured"
     },
     {
       "cases": "'door: House_03, a leaf wins over its wall's opening; a flat hatch is no door' (renamed from 'door: House_03, a leaf wins over a nearer side opening': the side opening is not in BP_House_02), the two 'door: House_Large' cases, the seven 'brightwater:' and seven 'brightwater settled:' fits, 'fit: the large house, held over a wider range' and the two Brightwater 'overlaps:' cases (PL.layout-standins, operator ruling U80(3))",
@@ -1306,92 +1311,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.67
         },
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.971
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.725268,
+        "factor": 0.725268,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.6906722348000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.67,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "fixupScale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.78957799911416,
+          "y": 13.232564153642084,
+          "z": 434.3343404359673
+        },
+        "offsetFromNode": {
+          "x": 0.789577999114158,
+          "y": 3.1195163006789084,
+          "z": 0.3343404359673059
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 445.89203734104234,
-          "y": 10.369541833183217,
-          "z": 434.03444800904737
+          "x": 446.406703877587,
+          "y": 10.264042229642083,
+          "z": 434.0147789033217
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[456.5557265751901, 439.8565758613559], [445.8908519719944, 439.85440371213343], [445.89327341101693, 427.96555958132456], [456.55814801421263, 427.96773173054703]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 452.2916092824258,
-          "y": 13.898747455183216,
-          "z": 434.414367169647
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": 1.2916092824257817,
-          "y": 3.78569960222004,
-          "z": 0.4143671696469937
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.889,
-          "away": 10.665
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303798,
-          "groundMax": 10.369541833183217,
-          "groundMin": 9.572455463315285,
           "sampled": true,
-          "sink": 0.29254400993206886
+          "groundMin": 9.60710093515386,
+          "groundMax": 10.264042229642085,
+          "foundation": 0.9165211716,
+          "float": 0,
+          "sink": 0.25957987711177566
         },
+        "footprint": [[455.37625642645526, 438.9119472819991], [446.4057068277169, 438.91012022138557], [446.40774357354474, 428.9100527180008], [455.37829317228307, 428.91187977861443]],
         "settleShift": [0, 0],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.725268
+        "notes": ["door-yields"]
       }
     },
     {
@@ -1466,92 +1471,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.69
         },
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.7849986584462,
+          "y": 13.283471030188219,
+          "z": 415.930428225042
+        },
+        "offsetFromNode": {
+          "x": -1.2150013415537728,
+          "y": 3.3911948896665844,
+          "z": -0.0695717749579785
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -0.00020367320510339404,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 423.89202278678465,
-          "y": 10.166978175348358,
-          "z": 416.24994728359997
+          "x": 423.4973725615523,
+          "y": 10.133314045188218,
+          "z": 416.26721589403394
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[413.5718037050012, 410.81036412885874], [423.8909144613684, 410.8082624024681], [423.8931963016153, 422.01170084289316], [413.574085545248, 422.0138025692839]],
-        "heading": -0.00020367320510339404,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 417.4922966176433,
-          "y": 13.696183797348358,
-          "z": 415.87263499710565
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": -1.5077033823567034,
-          "y": 3.803907656826724,
-          "z": -0.1273650028943666
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -0.00020367320510339404,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.166978175348358,
-          "groundMin": 9.838656946305615,
           "sampled": true,
-          "sink": 0.7613091507572562
+          "groundMin": 9.826639491553127,
+          "groundMax": 10.133314045188218,
+          "foundation": 0.9726003865,
+          "float": 0,
+          "sink": 0.6659258328649091
         },
+        "footprint": [[414.28557996308444, 411.4118623936375], [423.4963832740396, 411.4099863997796], [423.49842003691555, 421.4101376063626], [414.2876167259604, 421.41201360022046]],
         "settleShift": [0, 0],
-        "streetHeading": -0.00020367320510339404,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields"]
       }
     },
     {
@@ -1626,92 +1631,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.67
         },
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.971
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.725268,
+        "factor": 0.725268,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.6906722348000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.67,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "fixupScale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 439.9684767602267,
+          "y": 13.457248132808495,
+          "z": 445.3084917573943
+        },
+        "offsetFromNode": {
+          "x": -0.031523239773321166,
+          "y": 3.5365868225284984,
+          "z": 1.308491757394279
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -1.5703889803846898,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 440.2695703519262,
-          "y": 10.329798180543103,
-          "z": 439.41101230169704
+          "x": 440.2891346334615,
+          "y": 10.488726208808494,
+          "z": 439.92568283363653
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[434.4452707126271, 450.073515503233], [434.44961501098203, 439.4086415636502], [446.3384584020175, 439.4134844415949], [446.3341141036626, 450.07835838117774]],
-        "heading": -1.5703889803846898,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 439.888347777887,
-          "y": 13.859003802543102,
-          "z": 445.81050673099185
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": -0.11165222211297987,
-          "y": 3.9383424922631054,
-          "z": 1.8105067309918468
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.889,
-          "away": 10.665
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -1.5703889803846898,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303798,
-          "groundMax": 10.329798180543103,
-          "groundMin": 9.72894007105088,
           "sampled": true,
-          "sink": 0.4887722703077788
+          "groundMin": 9.751897985862776,
+          "groundMax": 10.488726208808494,
+          "foundation": 0.9165211716,
+          "float": 0,
+          "sink": 0.17969294865428154
         },
+        "footprint": [[435.39013949885486, 448.8942377744911], [435.3937936200062, 439.9236887339377], [445.3938605011451, 439.92776222550884], [445.39020637999374, 448.89831126606225]],
         "settleShift": [0, 0],
-        "streetHeading": -1.5703889803846898,
-        "wantedFactor": 0.725268
+        "notes": ["door-yields"]
       }
     },
     {
@@ -1786,92 +1791,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.69
         },
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.9988054905288,
+          "y": 13.518658576740597,
+          "z": 423.3920226680972
+        },
+        "offsetFromNode": {
+          "x": 0.9988054905288095,
+          "y": 3.8224975200249727,
+          "z": 0.39202266809718367
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 445.89191202380084,
-          "y": 10.311544213182508,
-          "z": 423.0700159617614
+          "x": 446.28656925059715,
+          "y": 10.368501591740596,
+          "z": 423.05290811210824
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[456.2099144547519, 428.5138025692839], [445.8908036983846, 428.5117008428933], [445.8930855386315, 417.3082624024681], [456.2121962949988, 417.31036412885874]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 452.2914839651842,
-          "y": 13.840749835182507,
-          "z": 423.449935122361
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": 1.291483965184234,
-          "y": 4.144588778466884,
-          "z": 0.44993512236098465
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.311544213182508,
-          "groundMin": 9.691408671969109,
           "sampled": true,
-          "sink": 0.46949483858660074
+          "groundMin": 9.703081301939285,
+          "groundMax": 10.368501591740596,
+          "foundation": 0.9726003865,
+          "float": 0,
+          "sink": 0.30718009669868884
         },
+        "footprint": [[455.4963832740396, 427.9120136002204], [446.28557996308444, 427.9101376063625], [446.2876167259604, 417.90998639977954], [455.49842003691555, 417.9118623936374]],
         "settleShift": [0, 0],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields"]
       }
     },
     {
@@ -1946,92 +1951,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.69
         },
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 428.91075191525977,
+          "y": 13.558563301970818,
+          "z": 445.5177074961443
+        },
+        "offsetFromNode": {
+          "x": -0.08924808474023394,
+          "y": 3.3455198928405903,
+          "z": 1.5177074961442827
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -1.5703889803846898,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 429.23400242547365,
-          "y": 10.39019828994652,
-          "z": 439.4108797402192
+          "x": 429.25102989367025,
+          "y": 10.408406316970817,
+          "z": 439.8055404432404
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[423.78811443025205, 449.72777320370204], [423.79231788294607, 439.40866308943276], [434.9957556262466, 439.4132267698318], [434.9915521735526, 449.7323368841012]],
-        "heading": -1.5703889803846898,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 428.85277985143455,
-          "y": 13.91940391194652,
-          "z": 445.81037416951403
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": -0.14722014856546595,
-          "y": 3.706360502816292,
-          "z": 1.8103741695140343
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -1.5703889803846898,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.39019828994652,
-          "groundMin": 9.596878745136303,
           "sampled": true,
-          "sink": 0.2963108349897823
+          "groundMin": 9.70846684138669,
+          "groundMax": 10.408406316970817,
+          "foundation": 0.9726003865,
+          "float": 0,
+          "sink": 0.27266091091587263
         },
+        "footprint": [[424.3900487140151, 449.01436460607664], [424.393800701653, 439.803561868256], [434.39395128598494, 439.80763539392336], [434.39019929834706, 449.018438131744]],
         "settleShift": [0, 0],
-        "streetHeading": -1.5703889803846898,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields"]
       }
     },
     {
@@ -2106,92 +2111,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.71
         },
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 11.147,
+          "away": 10
+        },
+        "aligned": true,
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.808473,
+        "factor": 0.808473,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.8846314103000001,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.71,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.808473,
+          "y": 0.808473,
+          "z": 0.808473
+        },
+        "fixupScale": {
+          "x": 0.808473,
+          "y": 0.808473,
+          "z": 0.808473
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.89125691527715,
+          "y": 13.590048402000589,
+          "z": 427.9395002429206
+        },
+        "offsetFromNode": {
+          "x": -1.108743084722846,
+          "y": 3.6252645871495623,
+          "z": -0.060499757079412575
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -0.00020367320510339404,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 423.8919119580311,
-          "y": 10.275517279829561,
-          "z": 428.28551528441056
+          "x": 423.8918157009067,
+          "y": 10.28096841300059,
+          "z": 428.2932785915266
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[413.22585198578736, 422.46773173054703], [423.89072658898306, 422.46555958132456], [423.89314802800567, 434.35440371213343], [413.22827342480997, 434.3565758613559]],
-        "heading": -0.00020367320510339404,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 417.4921857888897,
-          "y": 13.80472290182956,
-          "z": 427.90820299791625
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 12
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": -1.5078142111103148,
-          "y": 3.839939086978534,
-          "z": -0.09179700208375152
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.889,
-          "away": 10.665
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -0.00020367320510339404,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303798,
-          "groundMax": 10.13469546061403,
-          "groundMin": 9.97042077348556,
           "sampled": true,
-          "sink": 0.7845338734560006
+          "groundMin": 9.98468488727159,
+          "groundMax": 10.176264039087945,
+          "foundation": 1.0216673301,
+          "float": 0,
+          "sink": 0.7253838043710008
         },
+        "footprint": [[413.89102532598264, 422.8383651632993], [423.89070426637545, 422.8363284966113], [423.8929746740174, 433.98363483670073], [413.8932957336246, 433.9856715033887]],
         "settleShift": [0, 0],
-        "streetHeading": -0.00020367320510339404,
-        "wantedFactor": 0.808473
+        "notes": ["door-yields"]
       }
     },
     {
@@ -2266,92 +2271,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.66
+          "seatSink": 0.64
         },
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 15,
+          "away": 11.42
+        },
+        "aligned": true,
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.848368,
+        "factor": 0.848368,
+        "limited": false,
+        "doorFactor": 0.893452,
+        "doorHeld": false,
+        "doorHeight": 1.9085734896,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.64,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
+        },
+        "fixupScale": {
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.9557829544,
+          "y": 11.387540716154506,
+          "z": 410.8541736632
+        },
+        "offsetFromNode": {
+          "x": 0.9557829543999787,
+          "y": 0.9502242872263125,
+          "z": -0.1458263367999848
+        },
         "door": {
-          "candidates": 5,
-          "hasPosition": true,
-          "height": 2.2497,
+          "source": "component",
           "name": "SM_Door_B2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": -4.28385,
             "y": -1.1457,
             "z": 5.33465
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 5,
+          "height": 2.2497
         },
-        "doorFactor": 0.893452,
-        "doorHeading": 1.5707963267948966,
-        "doorHeight": 2.0100012141,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 440.8131628252,
-          "y": 10.415877448711091,
-          "z": 417.4107513985501
+          "x": 440.5900642112,
+          "y": 10.415565498554505,
+          "z": 417.12081356880003
         },
-        "factor": 0.893453,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.893453,
-          "y": 0.893453,
-          "z": 0.893453
-        },
-        "footprint": [[444.29043722855, 405.38424860145], [444.29043722855, 417.4107513985501], [428.49356277145, 417.4107513985501], [428.49356277145, 405.38424860145]],
-        "heading": 1.5707963267948966,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 436.98574419115,
-          "y": 11.439506550811092,
-          "z": 410.81108212345003
-        },
-        "lot": {
-          "depth": 12,
-          "hasFrontage": true,
-          "width": 15
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": 0.9857441911499905,
-          "y": 1.0021901218829,
-          "z": -0.18891787654996733
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.66
-        },
-        "required": {
-          "across": 15.797,
-          "away": 12.027
-        },
-        "scale": {
-          "x": 0.893453,
-          "y": 0.893453,
-          "z": 0.893453
-        },
+        "doorHeading": 1.5707963267948966,
         "seat": {
-          "float": 0,
-          "foundation": 0.8731716169000002,
-          "groundMax": 10.415877448711091,
-          "groundMin": 9.672607822959016,
           "sampled": true,
-          "sink": 0.1299019911479229
+          "groundMin": 9.718615588288301,
+          "groundMax": 10.415565498554505,
+          "foundation": 0.8291100464000003,
+          "float": 0,
+          "sink": 0.13216013613379474
         },
+        "footprint": [[443.8918700488, 405.70118643120003], [443.8918700488, 417.12081356880003], [428.8921299512, 417.12081356880003], [428.8921299512, 405.70118643120003]],
         "settleShift": [0, 0],
-        "streetHeading": 1.5707963267948966,
-        "wantedFactor": 0.848368
+        "notes": ["door-yields"]
       }
     },
     {
@@ -2426,92 +2431,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.67
         },
-        "settleShift": [0.003, 0.912]
+        "settleShift": [0.001, 0.006]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.971
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.725268,
+        "factor": 0.725268,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.6906722348000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.67,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "fixupScale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.79057799911413,
+          "y": 13.231987037267707,
+          "z": 434.3403404359673
+        },
+        "offsetFromNode": {
+          "x": 0.7905779991141344,
+          "y": 3.1189391843045318,
+          "z": 0.3403404359672777
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 445.8950373410423,
-          "y": 10.28378473180578,
-          "z": 434.94644800904734
+          "x": 446.407703877587,
+          "y": 10.263465113267706,
+          "z": 434.0207789033217
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[456.55872657519006, 440.7685758613559], [445.89385197199437, 440.7664037121334], [445.8962734110169, 428.87755958132453], [456.5611480142126, 428.879731730547]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 452.29460928242577,
-          "y": 13.812990353805779,
-          "z": 435.32636716964697
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held", "settled"],
-        "offsetFromNode": {
-          "x": 1.2946092824257676,
-          "y": 3.699942500842603,
-          "z": 1.3263671696469714
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.889,
-          "away": 10.665
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303798,
-          "groundMax": 10.28378473180578,
-          "groundMin": 9.55284086214899,
           "sampled": true,
-          "sink": 0.35868651014321173
+          "groundMin": 9.607156358858024,
+          "groundMax": 10.263465113267706,
+          "foundation": 0.9165211716,
+          "float": 0,
+          "sink": 0.26021241719031707
         },
-        "settleShift": [0.003, 0.912],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.725268
+        "footprint": [[455.37725642645523, 438.9179472819991], [446.4067068277169, 438.91612022138554], [446.4087435735447, 428.9160527180008], [455.37929317228304, 428.9178797786144]],
+        "settleShift": [0.001, 0.006],
+        "notes": ["door-yields", "settled"]
       }
     },
     {
@@ -2586,92 +2591,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.69
         },
-        "settleShift": [-0.751, -5.742]
+        "settleShift": [-0.356, -4.399]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.42899865844623,
+          "y": 13.30353468602745,
+          "z": 411.531428225042
+        },
+        "offsetFromNode": {
+          "x": -1.5710013415537674,
+          "y": 3.4112585455058166,
+          "z": -4.468571774957979
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -0.00020367320510339404,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 423.1410227867847,
-          "y": 10.300101847686205,
-          "z": 410.50794728359995
+          "x": 423.1413725615523,
+          "y": 10.15337770102745,
+          "z": 411.86821589403394
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[412.82080370500114, 405.0683641288587], [423.13991446136845, 405.06626240246806], [423.14219630161534, 416.2697008428932], [412.82308554524803, 416.2718025692838]],
-        "heading": -0.00020367320510339404,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 416.7412966176433,
-          "y": 13.829307469686205,
-          "z": 410.13063499710563
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held", "settled"],
-        "offsetFromNode": {
-          "x": -2.258703382356689,
-          "y": 3.9370313291645704,
-          "z": -5.869365002894369
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -0.00020367320510339404,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.300101847686205,
-          "groundMin": 9.746073814409096,
           "sampled": true,
-          "sink": 0.5356023465228912
+          "groundMin": 9.614979069887783,
+          "groundMax": 10.15337770102745,
+          "foundation": 0.9726003865,
+          "float": 0,
+          "sink": 0.43420175536033234
         },
-        "settleShift": [-0.7509999999999999, -5.742],
-        "streetHeading": -0.00020367320510339404,
-        "wantedFactor": 0.769645
+        "footprint": [[413.92957996308445, 407.0128623936375], [423.1403832740396, 407.0109863997796], [423.14242003691555, 417.0111376063626], [413.9316167259604, 417.01301360022046]],
+        "settleShift": [-0.356, -4.399],
+        "notes": ["door-yields", "settled"]
       }
     },
     {
@@ -2746,92 +2751,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.67
         },
-        "settleShift": [1.814, 7.277]
+        "settleShift": [2.498, 4.989]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.971
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.725268,
+        "factor": 0.725268,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.6906722348000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.67,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "fixupScale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 442.46647676022667,
+          "y": 13.239239273383784,
+          "z": 450.29749175739425
+        },
+        "offsetFromNode": {
+          "x": 2.4664767602266693,
+          "y": 3.318577963103788,
+          "z": 6.297491757394255
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -1.5703889803846898,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 442.0835703519262,
-          "y": 10.407588084129237,
-          "z": 446.68801230169703
+          "x": 442.7871346334615,
+          "y": 10.270717349383784,
+          "z": 444.9146828336365
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[436.25927071262714, 457.350515503233], [436.26361501098205, 446.68564156365017], [448.15245840201754, 446.6904844415949], [448.14811410366264, 457.3553583811777]],
-        "heading": -1.5703889803846898,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 441.70234777788704,
-          "y": 13.936793706129237,
-          "z": 453.08750673099183
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held", "settled"],
-        "offsetFromNode": {
-          "x": 1.7023477778870415,
-          "y": 4.01613239584924,
-          "z": 9.087506730991834
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.889,
-          "away": 10.665
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -1.5703889803846898,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303798,
-          "groundMax": 10.407588084129237,
-          "groundMin": 9.817658233736848,
           "sampled": true,
-          "sink": 0.4997005294076118
+          "groundMin": 9.71866840134786,
+          "groundMax": 10.270717349383784,
+          "foundation": 0.9165211716,
+          "float": 0,
+          "sink": 0.3644722235640767
         },
-        "settleShift": [1.814, 7.277],
-        "streetHeading": -1.5703889803846898,
-        "wantedFactor": 0.725268
+        "footprint": [[437.8881394988548, 453.8832377744911], [437.8917936200062, 444.91268873393767], [447.8918605011451, 444.9167622255088], [447.88820637999373, 453.8873112660622]],
+        "settleShift": [2.498, 4.989],
+        "notes": ["door-yields", "settled"]
       }
     },
     {
@@ -2906,92 +2911,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.69
         },
-        "settleShift": [4.996, -5.594]
+        "settleShift": [3.855, -4.993]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 455.8538054905288,
+          "y": 13.528788665495252,
+          "z": 418.3990226680972
+        },
+        "offsetFromNode": {
+          "x": 4.853805490528828,
+          "y": 3.832627608779628,
+          "z": -4.600977331902811
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 450.8879120238008,
-          "y": 10.257603881357552,
-          "z": 417.47601596176133
+          "x": 450.1415692505972,
+          "y": 10.378631680495252,
+          "z": 418.05990811210825
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[461.20591445475196, 422.9198025692839], [450.8868036983846, 422.9177008428932], [450.8890855386315, 411.7142624024681], [461.20819629499886, 411.71636412885874]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 457.28748396518426,
-          "y": 13.786809503357551,
-          "z": 417.85593512236096
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held", "settled"],
-        "offsetFromNode": {
-          "x": 6.287483965184265,
-          "y": 4.090648446641927,
-          "z": -5.144064877639039
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.257603881357552,
-          "groundMin": 9.703491974018991,
           "sampled": true,
-          "sink": 0.5355184724614404
+          "groundMin": 9.7579636828691,
+          "groundMax": 10.378631680495252,
+          "foundation": 0.9726003865,
+          "float": 0,
+          "sink": 0.35193238887384837
         },
-        "settleShift": [4.996, -5.594],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.769645
+        "footprint": [[459.3513832740396, 422.9190136002204], [450.14057996308446, 422.91713760636253], [450.1426167259604, 412.91698639977955], [459.35342003691557, 412.9188623936374]],
+        "settleShift": [3.855, -4.993],
+        "notes": ["door-yields", "settled"]
       }
     },
     {
@@ -3066,92 +3071,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.69
         },
-        "settleShift": [-4.73, 2.047]
+        "settleShift": [-2.5, 1.322]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 426.41075191525977,
+          "y": 13.390757103518297,
+          "z": 446.8397074961443
+        },
+        "offsetFromNode": {
+          "x": -2.589248084740234,
+          "y": 3.1777136943880695,
+          "z": 2.8397074961442854
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -1.5703889803846898,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 424.5040024254737,
-          "y": 10.634094028696346,
-          "z": 441.4578797402193
+          "x": 426.75102989367025,
+          "y": 10.240600118518296,
+          "z": 441.1275404432404
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[419.058114430252, 451.7747732037021], [419.06231788294605, 441.4556630894328], [430.26575562624663, 441.46022676983193], [430.26155217355256, 451.7793368841012]],
-        "heading": -1.5703889803846898,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 424.12277985143453,
-          "y": 14.163299650696345,
-          "z": 447.8573741695141
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held", "settled"],
-        "offsetFromNode": {
-          "x": -4.8772201485654705,
-          "y": 3.9502562415661178,
-          "z": 3.8573741695141166
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -1.5703889803846898,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.634094028696346,
-          "groundMin": 9.891256315989835,
           "sampled": true,
-          "sink": 0.34679266709349044
+          "groundMin": 9.939093998703296,
+          "groundMax": 10.238537700200746,
+          "foundation": 0.9726003865,
+          "float": 0,
+          "sink": 0.6710942666849995
         },
-        "settleShift": [-4.73, 2.047],
-        "streetHeading": -1.5703889803846898,
-        "wantedFactor": 0.769645
+        "footprint": [[421.8900487140151, 450.33636460607664], [421.893800701653, 441.125561868256], [431.89395128598494, 441.12963539392337], [431.89019929834706, 450.340438131744]],
+        "settleShift": [-2.5, 1.322],
+        "notes": ["door-yields", "settled"]
       }
     },
     {
@@ -3226,92 +3231,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.72
+          "seatSink": 0.71
         },
-        "settleShift": [-1.054, -0.195]
+        "settleShift": [-0.858, 0.175]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 11.147,
+          "away": 10
+        },
+        "aligned": true,
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.808473,
+        "factor": 0.808473,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.8846314103000001,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.71,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.808473,
+          "y": 0.808473,
+          "z": 0.808473
+        },
+        "fixupScale": {
+          "x": 0.808473,
+          "y": 0.808473,
+          "z": 0.808473
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.03325691527715,
+          "y": 13.569961603249304,
+          "z": 428.1145002429206
+        },
+        "offsetFromNode": {
+          "x": -1.9667430847228502,
+          "y": 3.6051777883982776,
+          "z": 0.1145002429205988
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -0.00020367320510339404,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 422.8379119580311,
-          "y": 10.235374873248452,
-          "z": 428.09051528441057
+          "x": 423.0338157009067,
+          "y": 10.260881614249303,
+          "z": 428.4682785915266
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[412.1718519857874, 422.27273173054704], [422.8367265889831, 422.27055958132456], [422.8391480280057, 434.15940371213344], [412.17427342481, 434.1615758613559]],
-        "heading": -0.00020367320510339404,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 416.4381857888897,
-          "y": 13.76458049524845,
-          "z": 427.71320299791626
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 12
-        },
-        "notes": ["door-held", "settled"],
-        "offsetFromNode": {
-          "x": -2.5618142111102884,
-          "y": 3.7997966803974244,
-          "z": -0.2867970020837447
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.72
-        },
-        "required": {
-          "across": 11.889,
-          "away": 10.665
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -0.00020367320510339404,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303798,
-          "groundMax": 10.092143848905353,
-          "groundMin": 9.930278366904451,
           "sampled": true,
-          "sink": 0.7845338734560006
+          "groundMin": 9.964598088520304,
+          "groundMax": 10.130994271364345,
+          "foundation": 1.0216673301,
+          "float": 0,
+          "sink": 0.7253838043710008
         },
-        "settleShift": [-1.054, -0.195],
-        "streetHeading": -0.00020367320510339404,
-        "wantedFactor": 0.808473
+        "footprint": [[413.03302532598263, 423.0133651632993], [423.03270426637545, 423.0113284966113], [423.0349746740174, 434.15863483670074], [413.0352957336246, 434.1606715033887]],
+        "settleShift": [-0.858, 0.175],
+        "notes": ["door-yields", "settled"]
       }
     },
     {
@@ -3386,92 +3391,92 @@
           "neighbourGap": 6,
           "scaleMax": 1,
           "scaleMin": 0.5,
-          "seatSink": 0.66
+          "seatSink": 0.64
         },
-        "settleShift": [0.649, -0.21]
+        "settleShift": [0.25, -0.001]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 15,
+          "away": 11.42
+        },
+        "aligned": true,
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.848368,
+        "factor": 0.848368,
+        "limited": false,
+        "doorFactor": 0.893452,
+        "doorHeld": false,
+        "doorHeight": 1.9085734896,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.64,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
+        },
+        "fixupScale": {
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 437.2057829544,
+          "y": 11.36220502503149,
+          "z": 410.85317366320004
+        },
+        "offsetFromNode": {
+          "x": 1.2057829543999787,
+          "y": 0.9248885961032958,
+          "z": -0.14682633679996115
+        },
         "door": {
-          "candidates": 5,
-          "hasPosition": true,
-          "height": 2.2497,
+          "source": "component",
           "name": "SM_Door_B2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": -4.28385,
             "y": -1.1457,
             "z": 5.33465
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 5,
+          "height": 2.2497
         },
-        "doorFactor": 0.893452,
-        "doorHeading": 1.5707963267948966,
-        "doorHeight": 2.0100012141,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 441.4621628252,
-          "y": 10.346851715941904,
-          "z": 417.20075139855
+          "x": 440.8400642112,
+          "y": 10.390229807431488,
+          "z": 417.11981356880005
         },
-        "factor": 0.893453,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.893453,
-          "y": 0.893453,
-          "z": 0.893453
-        },
-        "footprint": [[444.93943722855, 405.17424860145], [444.93943722855, 417.20075139855], [429.14256277145, 417.20075139855], [429.14256277145, 405.17424860145]],
-        "heading": 1.5707963267948966,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 437.63474419115,
-          "y": 11.370480818041903,
-          "z": 410.60108212345
-        },
-        "lot": {
-          "depth": 12,
-          "hasFrontage": true,
-          "width": 15
-        },
-        "notes": ["door-held", "settled"],
-        "offsetFromNode": {
-          "x": 1.6347441911499914,
-          "y": 0.9331643891137098,
-          "z": -0.39891787655000144
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 6,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.66
-        },
-        "required": {
-          "across": 15.797,
-          "away": 12.027
-        },
-        "scale": {
-          "x": 0.893453,
-          "y": 0.893453,
-          "z": 0.893453
-        },
+        "doorHeading": 1.5707963267948966,
         "seat": {
-          "float": 0,
-          "foundation": 0.8731716169000002,
-          "groundMax": 10.346851715941904,
-          "groundMin": 9.74127325361517,
           "sampled": true,
-          "sink": 0.26759315457326593
+          "groundMin": 9.746793748623373,
+          "groundMax": 10.390229807431488,
+          "foundation": 0.8291100464000003,
+          "float": 0,
+          "sink": 0.18567398759188514
         },
-        "settleShift": [0.649, -0.21],
-        "streetHeading": 1.5707963267948966,
-        "wantedFactor": 0.848368
+        "footprint": [[444.1418700488, 405.70018643120005], [444.1418700488, 417.11981356880005], [429.1421299512, 417.11981356880005], [429.1421299512, 405.70018643120005]],
+        "settleShift": [0.25, -0.001],
+        "notes": ["door-yields", "settled"]
       }
     },
     {
@@ -3868,87 +3873,87 @@
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": false,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": false,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": false
+        },
+        "streetHeading": 0,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": 1.571,
+        "fixupHeading": 0,
+        "location": {
+          "x": 451.3730226680972,
+          "y": 13.825838673439286,
+          "z": 421.8041945094712
+        },
+        "offsetFromNode": {
+          "x": 0.3730226680971782,
+          "y": 4.1296776167236615,
+          "z": -1.1958054905288122
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": 1.571,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 451.05098347588535,
-          "y": 10.792711681739286,
-          "z": 428.07058797289085
+          "x": 451.03390811210824,
+          "y": 10.675681688439285,
+          "z": 427.51643074940284
         },
-        "factor": 0.862254,
-        "fixupHeading": 0,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[456.49477008340784, 417.75258554193977], [456.49266835701724, 428.0716962983071], [445.2892299165921, 428.0694144580602], [445.29133164298275, 417.7503037016929]],
-        "heading": 1.571,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 451.430902636485,
-          "y": 14.321917303739285,
-          "z": 421.67101603150746
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": false,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": 0.43090263648497057,
-          "y": 4.625756247023661,
-          "z": -1.328983968492539
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 1,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": 1.571,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.351823682650366,
-          "groundMin": 9.703081301939285,
           "sampled": true,
+          "groundMin": 9.703081301939285,
+          "groundMax": 10.409774009704158,
+          "foundation": 0.9726003865,
+          "float": 0,
           "sink": 0
         },
+        "footprint": [[455.8930136002204, 418.3066167259604], [455.8911376063625, 427.51742003691555], [445.89098639977954, 427.5153832740396], [445.8928623936374, 418.30457996308445]],
         "settleShift": [0, 0],
-        "streetHeading": 0,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields"]
       }
     },
     {
@@ -4344,87 +4349,87 @@
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "misfit",
+        "issues": ["door-below-body"],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 1.501437,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 3.5,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.9988054905288,
+          "y": 13.825838673439286,
+          "z": 423.3920226680972
+        },
+        "offsetFromNode": {
+          "x": 0.9988054905288095,
+          "y": 4.1296776167236615,
+          "z": 0.39202266809718367
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 1.501437,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.3311,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 445.89216230195615,
-          "y": 10.971745574286386,
-          "z": 423.0955816708665
+          "x": 446.28656925059715,
+          "y": 10.675681688439285,
+          "z": 423.05290811210824
         },
-        "factor": 1,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
-        },
-        "footprint": [[457.858476672143, 429.4090190194002], [445.8908769203676, 429.40658153996765], [445.89352328703785, 416.4133818094646], [457.8611230388132, 416.4158192888972]],
-        "heading": -3.1413889803846904,
-        "issues": ["door-below-body", "too-large"],
-        "limited": false,
-        "location": {
-          "x": 453.3140727151098,
-          "y": 15.064745574286384,
-          "z": 423.53619332427684
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held", "door-below-body"],
-        "offsetFromNode": {
-          "x": 2.314072715109796,
-          "y": 5.368584517570761,
-          "z": 0.5361933242768282
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 1,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0
-        },
-        "required": {
-          "across": 12.993,
-          "away": 11.968
-        },
-        "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.2636999999999994,
-          "groundMax": 10.211213257888405,
-          "groundMin": 9.708045574286386,
           "sampled": true,
+          "groundMin": 9.703081301939285,
+          "groundMax": 10.368501591740596,
+          "foundation": 0.9726003865,
+          "float": 0,
           "sink": 0
         },
+        "footprint": [[455.4963832740396, 427.9120136002204], [446.28557996308444, 427.9101376063625], [446.2876167259604, 417.90998639977954], [455.49842003691555, 417.9118623936374]],
         "settleShift": [0, 0],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields", "door-below-body"]
       }
     },
     {
@@ -5285,87 +5290,87 @@
         "settleShift": [0.4, -1.1]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "misfit",
+        "issues": ["too-large"],
+        "required": {
+          "across": 10.914,
+          "away": 10.053
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.458106,
+        "factor": 0.5,
+        "limited": true,
+        "doorFactor": 0.513246,
+        "doorHeld": false,
+        "doorHeight": 1.9581239999999998,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.84,
+          "y": 0.84,
+          "z": 0.84
+        },
+        "fixupScale": {
+          "x": 0.7,
+          "y": 0.7,
+          "z": 0.7
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 452.2479468859649,
+          "y": 14.321789056715623,
+          "z": 422.5039427151374
+        },
+        "offsetFromNode": {
+          "x": 1.2479468859648932,
+          "y": 4.625627999999999,
+          "z": -0.4960572848626157
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.513246,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.010002537256,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 446.0331946730359,
-          "y": 10.915130893667625,
-          "z": 422.1424144417214
+          "x": 446.0135421389158,
+          "y": 10.883669056715624,
+          "z": 422.13382892627277
         },
-        "factor": 0.513247,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.7185458,
-          "y": 0.7185458,
-          "z": 0.7185458
-        },
-        "footprint": [[456.35120859164886, 427.5862071101438], [446.0320863463857, 427.58410538141317], [446.0343681891731, 416.3806544675163], [456.35349043443625, 416.38275619624693]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": true,
-        "location": {
-          "x": 452.43277373945335,
-          "y": 14.444340444947624,
-          "z": 422.5223340253082
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held", "limited", "settled"],
-        "offsetFromNode": {
-          "x": 1.4327737394533324,
-          "y": 4.748179388232001,
-          "z": -0.47766597469177213
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 1,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.86225496,
-          "y": 0.86225496,
-          "z": 0.86225496
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 0,
-          "groundMax": 0,
-          "groundMin": 0,
           "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
           "sink": 0
         },
+        "footprint": [[456.0652462098728, 427.437116299041], [446.01246241838146, 427.43506881631765], [446.01468536638447, 416.52078104269515], [456.0674691578758, 416.5228285254185]],
         "settleShift": [0.4, -1.1],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.458106
+        "notes": ["door-yields", "limited", "settled"]
       }
     },
     {
@@ -5445,87 +5450,87 @@
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 15,
+          "away": 11.42
+        },
+        "aligned": true,
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.848368,
+        "factor": 0.848368,
+        "limited": false,
+        "doorFactor": 0.893452,
+        "doorHeld": false,
+        "doorHeight": 1.9085734896,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.25,
+          "scaleMax": 1.6,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
+        },
+        "fixupScale": {
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.9557829544,
+          "y": 11.519700852288302,
+          "z": 410.8541736632
+        },
+        "offsetFromNode": {
+          "x": 0.9557829543999787,
+          "y": 1.082384423360109,
+          "z": -0.1458263367999848
+        },
         "door": {
-          "candidates": 5,
-          "hasPosition": true,
-          "height": 2.2497,
+          "source": "component",
           "name": "SM_Door_B2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": -4.28385,
             "y": -1.1457,
             "z": 5.33465
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 5,
+          "height": 2.2497
         },
-        "doorFactor": 0.893452,
-        "doorHeading": 1.5707963267948966,
-        "doorHeight": 2.0100012141,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 440.8131628252,
-          "y": 10.545779439859013,
-          "z": 417.4107513985501
+          "x": 440.5900642112,
+          "y": 10.547725634688302,
+          "z": 417.12081356880003
         },
-        "factor": 0.893453,
-        "fixupHeading": 1.5707963267948966,
-        "fixupScale": {
-          "x": 0.893453,
-          "y": 0.893453,
-          "z": 0.893453
-        },
-        "footprint": [[444.29043722855, 405.38424860145], [444.29043722855, 417.4107513985501], [428.49356277145, 417.4107513985501], [428.49356277145, 405.38424860145]],
-        "heading": 1.5707963267948966,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 436.98574419115,
-          "y": 11.569408541959014,
-          "z": 410.81108212345003
-        },
-        "lot": {
-          "depth": 12,
-          "hasFrontage": true,
-          "width": 15
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": 0.9857441911499905,
-          "y": 1.1320921130308215,
-          "z": -0.18891787654996733
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 1,
-          "scaleMax": 1.6,
-          "scaleMin": 0.25,
-          "seatSink": 0
-        },
-        "required": {
-          "across": 15.797,
-          "away": 12.027
-        },
-        "scale": {
-          "x": 0.893453,
-          "y": 0.893453,
-          "z": 0.893453
-        },
+        "doorHeading": 1.5707963267948966,
         "seat": {
-          "float": 0,
-          "foundation": 0.8731716169000002,
-          "groundMax": 10.415877448711091,
-          "groundMin": 9.672607822959016,
           "sampled": true,
+          "groundMin": 9.718615588288301,
+          "groundMax": 10.415565498554505,
+          "foundation": 0.8291100464000003,
+          "float": 0,
           "sink": 0
         },
+        "footprint": [[443.8918700488, 405.70118643120003], [443.8918700488, 417.12081356880003], [428.8921299512, 417.12081356880003], [428.8921299512, 405.70118643120003]],
         "settleShift": [0, 0],
-        "streetHeading": 1.5707963267948966,
-        "wantedFactor": 0.848368
+        "notes": ["door-yields"]
       }
     },
     {
@@ -5598,87 +5603,87 @@
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.9988054905288,
+          "y": 13.825838673439286,
+          "z": 423.3920226680972
+        },
+        "offsetFromNode": {
+          "x": 0.9988054905288095,
+          "y": 4.1296776167236615,
+          "z": 0.39202266809718367
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 445.89191202380084,
-          "y": 10.78103905176911,
-          "z": 423.0700159617614
+          "x": 446.28656925059715,
+          "y": 10.675681688439285,
+          "z": 423.05290811210824
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[456.2099144547519, 428.5138025692839], [445.8908036983846, 428.5117008428933], [445.8930855386315, 417.3082624024681], [456.2121962949988, 417.31036412885874]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 452.2914839651842,
-          "y": 14.310244673769109,
-          "z": 423.449935122361
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": 1.291483965184234,
-          "y": 4.614083617053485,
-          "z": 0.44993512236098465
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 1,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.311544213182508,
-          "groundMin": 9.691408671969109,
           "sampled": true,
+          "groundMin": 9.703081301939285,
+          "groundMax": 10.368501591740596,
+          "foundation": 0.9726003865,
+          "float": 0,
           "sink": 0
         },
+        "footprint": [[455.4963832740396, 427.9120136002204], [446.28557996308444, 427.9101376063625], [446.2876167259604, 417.90998639977954], [455.49842003691555, 417.9118623936374]],
         "settleShift": [0, 0],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields"]
       }
     },
     {
@@ -5758,87 +5763,87 @@
         "settleShift": [0.00047, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.9992754905288,
+          "y": 13.825804276692656,
+          "z": 423.3920226680972
+        },
+        "offsetFromNode": {
+          "x": 0.9992754905288166,
+          "y": 4.129643219977032,
+          "z": 0.39202266809718367
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 445.8923820238008,
-          "y": 10.781004655481857,
-          "z": 423.0700159617614
+          "x": 446.28703925059716,
+          "y": 10.675647291692655,
+          "z": 423.05290811210824
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[456.21038445475193, 428.5138025692839], [445.8912736983846, 428.5117008428933], [445.89355553863146, 417.3082624024681], [456.21266629499877, 417.31036412885874]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 452.29195396518423,
-          "y": 14.310210277481856,
-          "z": 423.449935122361
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": 1.2919539651842207,
-          "y": 4.614049220766232,
-          "z": 0.44993512236098465
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 1,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.311561792525795,
-          "groundMin": 9.691374275681856,
           "sampled": true,
+          "groundMin": 9.703046905192656,
+          "groundMax": 10.368510401910097,
+          "foundation": 0.9726003865,
+          "float": 0,
           "sink": 0
         },
+        "footprint": [[455.4968532740396, 427.9120136002204], [446.28604996308445, 427.9101376063625], [446.2880867259604, 417.90998639977954], [455.49889003691555, 417.9118623936374]],
         "settleShift": [0.00047, 0],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields"]
       }
     },
     {
@@ -5918,87 +5923,87 @@
         "settleShift": [0.00053, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.99933549052884,
+          "y": 13.825799885618617,
+          "z": 423.3920226680972
+        },
+        "offsetFromNode": {
+          "x": 0.9993354905288356,
+          "y": 4.129638828902992,
+          "z": 0.39202266809718367
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 445.8924420238008,
-          "y": 10.781000264466458,
-          "z": 423.0700159617614
+          "x": 446.2870992505972,
+          "y": 10.675642900618616,
+          "z": 423.05290811210824
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[456.21044445475195, 428.5138025692839], [445.89133369838464, 428.5117008428933], [445.8936155386315, 417.3082624024681], [456.2127262949988, 417.31036412885874]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 452.29201396518425,
-          "y": 14.310205886466457,
-          "z": 423.449935122361
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held", "settled"],
-        "offsetFromNode": {
-          "x": 1.2920139651842328,
-          "y": 4.614044829750834,
-          "z": 0.44993512236098465
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 1,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 10.311564036697277,
-          "groundMin": 9.691369884666459,
           "sampled": true,
+          "groundMin": 9.703042514118616,
+          "groundMax": 10.368511526612586,
+          "foundation": 0.9726003865,
+          "float": 0,
           "sink": 0
         },
+        "footprint": [[455.4969132740396, 427.9120136002204], [446.28610996308447, 427.9101376063625], [446.2881467259604, 417.90998639977954], [455.4989500369156, 417.9118623936374]],
         "settleShift": [0.00053, 0],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields", "settled"]
       }
     },
     {
@@ -6727,87 +6732,87 @@
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.013766136001781846,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.9988054905288,
+          "y": 4.109368422304056,
+          "z": 423.3920226680972
+        },
+        "offsetFromNode": {
+          "x": 0.9988054905288095,
+          "y": -5.586792634411569,
+          "z": 0.39202266809718367
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 445.89191202380084,
-          "y": 1.0746303797999999,
-          "z": 423.0700159617614
+          "x": 446.28656925059715,
+          "y": 0.9592114373040554,
+          "z": 423.05290811210824
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[456.2099144547519, 428.5138025692839], [445.8908036983846, 428.5117008428933], [445.8930855386315, 417.3082624024681], [456.2121962949988, 417.31036412885874]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 452.2914839651842,
-          "y": 4.6038360017999995,
-          "z": 423.449935122361
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": 1.291483965184234,
-          "y": -5.092325054915625,
-          "z": 0.44993512236098465
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 1,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.013766136001781846
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 0,
-          "groundMin": 0,
           "sampled": true,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0.9726003865,
+          "float": 0,
           "sink": 0
         },
+        "footprint": [[455.4963832740396, 427.9120136002204], [446.28557996308444, 427.9101376063625], [446.2876167259604, 417.90998639977954], [455.49842003691555, 417.9118623936374]],
         "settleShift": [0, 0],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields"]
       }
     },
     {
@@ -6890,87 +6895,87 @@
         "settleShift": [0, 0]
       },
       "expected": {
-        "aligned": true,
         "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
         "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.022943560002969744,
+          "neighbourGap": 1
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 451.9988054905288,
+          "y": 4.100442456173426,
+          "z": 423.3920226680972
+        },
+        "offsetFromNode": {
+          "x": 0.9988054905288095,
+          "y": -5.595718600542198,
+          "z": 0.39202266809718367
+        },
         "door": {
-          "candidates": 3,
-          "hasPosition": true,
-          "height": 2.3311,
+          "source": "component",
           "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
           "position": {
             "x": 0.43910000000000005,
             "y": -4.093,
             "z": 4.18645
           },
-          "source": "component",
-          "yaw": 0
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
         },
-        "doorFactor": 0.862254,
-        "doorHeading": -3.1413889803846904,
-        "doorHeight": 2.0100002993999997,
-        "doorHeld": true,
         "doorWorld": {
-          "x": 445.89191202380084,
-          "y": 1.0646303797999999,
-          "z": 423.0700159617614
+          "x": 446.28656925059715,
+          "y": 0.9502854711734261,
+          "z": 423.05290811210824
         },
-        "factor": 0.862254,
-        "fixupHeading": 1.5707963267948957,
-        "fixupScale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
-        "footprint": [[456.2099144547519, 428.5138025692839], [445.8908036983846, 428.5117008428933], [445.8930855386315, 417.3082624024681], [456.2121962949988, 417.31036412885874]],
-        "heading": -3.1413889803846904,
-        "issues": ["too-large"],
-        "limited": false,
-        "location": {
-          "x": 452.2914839651842,
-          "y": 4.5938360018,
-          "z": 423.449935122361
-        },
-        "lot": {
-          "depth": 10,
-          "hasFrontage": true,
-          "width": 10
-        },
-        "notes": ["door-held"],
-        "offsetFromNode": {
-          "x": 1.291483965184234,
-          "y": -5.1023250549156245,
-          "z": 0.44993512236098465
-        },
-        "outcome": "misfit",
-        "policy": {
-          "doorClearance": 1,
-          "mode": "lot",
-          "neighbourGap": 1,
-          "scaleMax": 1,
-          "scaleMin": 0.5,
-          "seatSink": 0.022943560002969744
-        },
-        "required": {
-          "across": 11.203,
-          "away": 10.319
-        },
-        "scale": {
-          "x": 0.862254,
-          "y": 0.862254,
-          "z": 0.862254
-        },
+        "doorHeading": -3.14138898038469,
         "seat": {
-          "float": 0,
-          "foundation": 1.0896303797999995,
-          "groundMax": 0,
-          "groundMin": 0,
           "sampled": true,
-          "sink": 0.024999999999999724
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0.9726003865,
+          "float": 0,
+          "sink": 0.02231491532657426
         },
+        "footprint": [[455.4963832740396, 427.9120136002204], [446.28557996308444, 427.9101376063625], [446.2876167259604, 417.90998639977954], [455.49842003691555, 417.9118623936374]],
         "settleShift": [0, 0],
-        "streetHeading": -3.1413889803846904,
-        "wantedFactor": 0.769645
+        "notes": ["door-yields"]
       }
     },
     {
@@ -7294,37 +7299,37 @@
       "input": {
         "buildings": [
           {
-            "corners": [[456.5557265751901, 439.8565758613559], [445.8908519719944, 439.85440371213343], [445.89327341101693, 427.96555958132456], [456.55814801421263, 427.96773173054703]],
+            "corners": [[455.37625642645526, 438.9119472819991], [446.4057068277169, 438.91012022138557], [446.40774357354474, 428.9100527180008], [455.37829317228307, 428.91187977861443]],
             "entityId": "bld_6abb84bcf2e499b951eece64_4",
             "lotId": "6abb84eef2e499b951eecec4"
           },
           {
-            "corners": [[413.5718037050012, 410.81036412885874], [423.8909144613684, 410.8082624024681], [423.8931963016153, 422.01170084289316], [413.574085545248, 422.0138025692839]],
+            "corners": [[414.28557996308444, 411.4118623936375], [423.4963832740396, 411.4099863997796], [423.49842003691555, 421.4101376063626], [414.2876167259604, 421.41201360022046]],
             "entityId": "bld_6abb84bcf2e499b951eece64_5",
             "lotId": "6abb84eef2e499b951eecec5"
           },
           {
-            "corners": [[434.4452707126271, 450.073515503233], [434.44961501098203, 439.4086415636502], [446.3384584020175, 439.4134844415949], [446.3341141036626, 450.07835838117774]],
+            "corners": [[435.39013949885486, 448.8942377744911], [435.3937936200062, 439.9236887339377], [445.3938605011451, 439.92776222550884], [445.39020637999374, 448.89831126606225]],
             "entityId": "bld_6abb84bcf2e499b951eece64_6",
             "lotId": "6abb84eef2e499b951eecec6"
           },
           {
-            "corners": [[456.2099144547519, 428.5138025692839], [445.8908036983846, 428.5117008428933], [445.8930855386315, 417.3082624024681], [456.2121962949988, 417.31036412885874]],
+            "corners": [[455.4963832740396, 427.9120136002204], [446.28557996308444, 427.9101376063625], [446.2876167259604, 417.90998639977954], [455.49842003691555, 417.9118623936374]],
             "entityId": "bld_6abb84eef2e499b951eecec0",
             "lotId": "6abb84eef2e499b951eecec0"
           },
           {
-            "corners": [[423.78811443025205, 449.72777320370204], [423.79231788294607, 439.40866308943276], [434.9957556262466, 439.4132267698318], [434.9915521735526, 449.7323368841012]],
+            "corners": [[424.3900487140151, 449.01436460607664], [424.393800701653, 439.803561868256], [434.39395128598494, 439.80763539392336], [434.39019929834706, 449.018438131744]],
             "entityId": "bld_6abb84eef2e499b951eecec1",
             "lotId": "6abb84eef2e499b951eecec1"
           },
           {
-            "corners": [[413.22585198578736, 422.46773173054703], [423.89072658898306, 422.46555958132456], [423.89314802800567, 434.35440371213343], [413.22827342480997, 434.3565758613559]],
+            "corners": [[413.89102532598264, 422.8383651632993], [423.89070426637545, 422.8363284966113], [423.8929746740174, 433.98363483670073], [413.8932957336246, 433.9856715033887]],
             "entityId": "bld_6abb84eef2e499b951eecec2",
             "lotId": "6abb84eef2e499b951eecec2"
           },
           {
-            "corners": [[444.29043722855, 405.38424860145], [444.29043722855, 417.4107513985501], [428.49356277145, 417.4107513985501], [428.49356277145, 405.38424860145]],
+            "corners": [[443.8918700488, 405.70118643120003], [443.8918700488, 417.12081356880003], [428.8921299512, 417.12081356880003], [428.8921299512, 405.70118643120003]],
             "entityId": "bld_6abb84eef2e499b951eecec3",
             "lotId": "6abb84eef2e499b951eecec3"
           }
@@ -7414,58 +7419,16 @@
       },
       "expected": [
         {
-          "depth": 0.4411015648248622,
-          "entityId": "bld_6abb84bcf2e499b951eece64_4",
-          "with": "bld_6abb84bcf2e499b951eece64_6",
-          "withKind": "building"
-        },
-        {
-          "depth": 0.5461417532552559,
-          "entityId": "bld_6abb84bcf2e499b951eece64_4",
-          "with": "bld_6abb84eef2e499b951eecec0",
-          "withKind": "building"
-        },
-        {
-          "depth": 0.4411015648248622,
-          "entityId": "bld_6abb84bcf2e499b951eece64_6",
-          "with": "bld_6abb84bcf2e499b951eece64_4",
-          "withKind": "building"
-        },
-        {
-          "depth": 0.5461424377210164,
-          "entityId": "bld_6abb84bcf2e499b951eece64_6",
-          "with": "bld_6abb84eef2e499b951eecec1",
-          "withKind": "building"
-        },
-        {
-          "depth": 0.5461417532552559,
-          "entityId": "bld_6abb84eef2e499b951eecec0",
-          "with": "bld_6abb84bcf2e499b951eece64_4",
-          "withKind": "building"
-        },
-        {
-          "depth": 0.5461424377210164,
-          "entityId": "bld_6abb84eef2e499b951eecec1",
-          "with": "bld_6abb84bcf2e499b951eece64_6",
-          "withKind": "building"
-        },
-        {
-          "depth": 0.632823034843108,
+          "depth": 0.031179405443239272,
           "entityId": "bld_6abb84eef2e499b951eecec1",
           "with": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eecec6.footpath",
           "withKind": "footpath"
         },
         {
-          "depth": 0.608319971681226,
+          "depth": 0.6082221333812754,
           "entityId": "bld_6abb84eef2e499b951eecec2",
           "with": "surface.6abb84bcf2e499b951eece64.6abb84eef2e499b951eeced2.plaza",
           "withKind": "plaza"
-        },
-        {
-          "depth": 0.3984372285499944,
-          "entityId": "bld_6abb84eef2e499b951eecec3",
-          "with": "road.street_lane_1_mouth.street_lane_1_end",
-          "withKind": "road"
         }
       ]
     },
@@ -7476,37 +7439,37 @@
       "input": {
         "buildings": [
           {
-            "corners": [[456.55872657519006, 440.7685758613559], [445.89385197199437, 440.7664037121334], [445.8962734110169, 428.87755958132453], [456.5611480142126, 428.879731730547]],
+            "corners": [[455.37725642645523, 438.9179472819991], [446.4067068277169, 438.91612022138554], [446.4087435735447, 428.9160527180008], [455.37929317228304, 428.9178797786144]],
             "entityId": "bld_6abb84bcf2e499b951eece64_4",
             "lotId": "6abb84eef2e499b951eecec4"
           },
           {
-            "corners": [[412.82080370500114, 405.0683641288587], [423.13991446136845, 405.06626240246806], [423.14219630161534, 416.2697008428932], [412.82308554524803, 416.2718025692838]],
+            "corners": [[413.92957996308445, 407.0128623936375], [423.1403832740396, 407.0109863997796], [423.14242003691555, 417.0111376063626], [413.9316167259604, 417.01301360022046]],
             "entityId": "bld_6abb84bcf2e499b951eece64_5",
             "lotId": "6abb84eef2e499b951eecec5"
           },
           {
-            "corners": [[436.25927071262714, 457.350515503233], [436.26361501098205, 446.68564156365017], [448.15245840201754, 446.6904844415949], [448.14811410366264, 457.3553583811777]],
+            "corners": [[437.8881394988548, 453.8832377744911], [437.8917936200062, 444.91268873393767], [447.8918605011451, 444.9167622255088], [447.88820637999373, 453.8873112660622]],
             "entityId": "bld_6abb84bcf2e499b951eece64_6",
             "lotId": "6abb84eef2e499b951eecec6"
           },
           {
-            "corners": [[461.20591445475196, 422.9198025692839], [450.8868036983846, 422.9177008428932], [450.8890855386315, 411.7142624024681], [461.20819629499886, 411.71636412885874]],
+            "corners": [[459.3513832740396, 422.9190136002204], [450.14057996308446, 422.91713760636253], [450.1426167259604, 412.91698639977955], [459.35342003691557, 412.9188623936374]],
             "entityId": "bld_6abb84eef2e499b951eecec0",
             "lotId": "6abb84eef2e499b951eecec0"
           },
           {
-            "corners": [[419.058114430252, 451.7747732037021], [419.06231788294605, 441.4556630894328], [430.26575562624663, 441.46022676983193], [430.26155217355256, 451.7793368841012]],
+            "corners": [[421.8900487140151, 450.33636460607664], [421.893800701653, 441.125561868256], [431.89395128598494, 441.12963539392337], [431.89019929834706, 450.340438131744]],
             "entityId": "bld_6abb84eef2e499b951eecec1",
             "lotId": "6abb84eef2e499b951eecec1"
           },
           {
-            "corners": [[412.1718519857874, 422.27273173054704], [422.8367265889831, 422.27055958132456], [422.8391480280057, 434.15940371213344], [412.17427342481, 434.1615758613559]],
+            "corners": [[413.03302532598263, 423.0133651632993], [423.03270426637545, 423.0113284966113], [423.0349746740174, 434.15863483670074], [413.0352957336246, 434.1606715033887]],
             "entityId": "bld_6abb84eef2e499b951eecec2",
             "lotId": "6abb84eef2e499b951eecec2"
           },
           {
-            "corners": [[444.93943722855, 405.17424860145], [444.93943722855, 417.20075139855], [429.14256277145, 417.20075139855], [429.14256277145, 405.17424860145]],
+            "corners": [[444.1418700488, 405.70018643120005], [444.1418700488, 417.11981356880005], [429.1421299512, 417.11981356880005], [429.1421299512, 405.70018643120005]],
             "entityId": "bld_6abb84eef2e499b951eecec3",
             "lotId": "6abb84eef2e499b951eecec3"
           }
@@ -12087,11 +12050,11 @@
       },
       "expected": {
         "applied": true,
-        "outcome": "misfit",
-        "issues": ["too-large"],
+        "outcome": "fits",
+        "issues": [],
         "required": {
-          "across": 15.797,
-          "away": 12.027
+          "across": 15,
+          "away": 11.42
         },
         "aligned": true,
         "lot": {
@@ -12101,11 +12064,11 @@
         },
         "streetHeading": 1.5707963267948966,
         "wantedFactor": 0.848368,
-        "factor": 0.893453,
+        "factor": 0.848368,
         "limited": false,
         "doorFactor": 0.893452,
-        "doorHeld": true,
-        "doorHeight": 2.0100012141,
+        "doorHeld": false,
+        "doorHeight": 1.9085734896,
         "castHeight": 2.01,
         "policy": {
           "mode": "lot",
@@ -12116,26 +12079,26 @@
           "neighbourGap": 1
         },
         "scale": {
-          "x": 0.893453,
-          "y": 0.893453,
-          "z": 0.893453
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
         },
         "fixupScale": {
-          "x": 0.893453,
-          "y": 0.893453,
-          "z": 0.893453
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
         },
         "heading": 1.5707963267948966,
         "fixupHeading": 1.5707963267948966,
         "location": {
-          "x": 436.98574419115,
-          "y": 11.56548517599459,
-          "z": 410.5613307249
+          "x": 436.9557829544,
+          "y": 11.522043059653381,
+          "z": 410.8943600944
         },
         "offsetFromNode": {
-          "x": 0.9857441911499905,
-          "y": 1.1281687470663968,
-          "z": -0.43866927509998277
+          "x": 0.9557829543999787,
+          "y": 1.0847266307251875,
+          "z": -0.10563990560001457
         },
         "door": {
           "source": "component",
@@ -12151,26 +12114,26 @@
           "height": 2.2497
         },
         "doorWorld": {
-          "x": 440.8131628252,
-          "y": 10.541856073894591,
+          "x": 440.5900642112,
+          "y": 10.55006784205338,
           "z": 417.161
         },
         "doorHeading": 1.5707963267948966,
         "seat": {
           "sampled": true,
-          "groundMin": 9.66868445699459,
-          "groundMax": 10.412808067774222,
-          "foundation": 0.8731716169000003,
+          "groundMin": 9.720957795653382,
+          "groundMax": 10.414636893850398,
+          "foundation": 0.8291100464000003,
           "float": 0,
           "sink": 0
         },
-        "footprint": [[444.29043722855, 405.13449720290004], [444.29043722855, 417.161], [428.49356277145, 417.161], [428.49356277145, 405.13449720290004]],
+        "footprint": [[443.8918700488, 405.7413728624], [443.8918700488, 417.161], [428.8921299512, 417.161], [428.8921299512, 405.7413728624]],
         "settleShift": [0, 0],
         "facade": {
           "line": 6,
           "front": 5.75
         },
-        "notes": ["door-held"]
+        "notes": ["door-yields"]
       }
     },
     {
@@ -12776,6 +12739,1960 @@
         "footprint": [[436.392, 412.411], [436.392, 412.411], [436.392, 412.411], [436.392, 412.411]],
         "settleShift": [0, 0],
         "notes": ["no-bounds"]
+      }
+    },
+    {
+      "name": "area wins: Brightwater L3 bld_6abb84bcf2e499b951eece64_4, the Haunted pairing's door-held house in its building area",
+      "note": "U108(3), b9-fit m2: B8's house (the Haunted pairing, cast 2.01 m; core's 'brightwater: bld_6abb84bcf2e499b951eece64_4' case for the bounds, door, cast, policy and fixups) handed its Brightwater L3 building area with the lot's front line, as Unreal's B9.fit hands it (the room, centre, node and front line of 'front line: Brightwater L3 bld_6abb84bcf2e499b951eece64_4'). On core main de10a09 the door hold won: factor 0.862254 (the door hold), across ±5.944 of ±5.000, back to −5.915 of −5.000. The area wins now: the factor is the area's (0.725268, the hold wanted 0.862254), doorHeld false, noted door-yields; across ±5.000 of ±5.000, back to -4.221 of -5.000, front on facade.front. The door stays where the asset has it at that factor until a ruling says how it moves.",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.4775,
+            "y": 4.0572,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -6.310599999999999,
+            "y": -5.3567,
+            "z": -4.9466
+          }
+        },
+        "castHeight": 2.01,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_4",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [416.392, 444.411],
+        "lotId": "6abb84eef2e499b951eecec4",
+        "node": {
+          "x": 416.392,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1,
+          "scaleMin": 0.5,
+          "seatSink": 0.67
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.971
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.725268,
+        "factor": 0.725268,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.6906722348000003,
+        "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.67,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "fixupScale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 415.96858459513044,
+          "y": 3.8850430956,
+          "z": 445.0437664643435
+        },
+        "offsetFromNode": {
+          "x": -0.42341540486955864,
+          "y": 3.8850430956,
+          "z": 0.63276646434349
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 416.2892424683653,
+          "y": 0.9165211715999999,
+          "z": 439.66095754058574
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[411.39024733375857, 448.6295124814403], [411.39390145490995, 439.6589634408869], [421.3939683360489, 439.66303693245806], [421.3903142148975, 448.63358597301146]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000207413869,
+          "front": 4.750000207413869
+        },
+        "notes": ["door-yields"]
+      }
+    },
+    {
+      "name": "area wins: Brightwater L3 bld_6abb84bcf2e499b951eece64_5, the Haunted pairing's door-held house in its building area",
+      "note": "U108(3), b9-fit m2: B8's house (the Haunted pairing, cast 2.01 m; core's 'brightwater: bld_6abb84bcf2e499b951eece64_5' case for the bounds, door, cast, policy and fixups) handed its Brightwater L3 building area with the lot's front line, as Unreal's B9.fit hands it (the room, centre, node and front line of 'front line: Brightwater L3 bld_6abb84bcf2e499b951eece64_5'). On core main de10a09 the door hold won: factor 0.862254 (the door hold), across ±5.602 of ±5.000, back to −5.569 of −5.000. The area wins now: the factor is the area's (0.769645, the hold wanted 0.862254), doorHeld false, noted door-yields; across ±5.000 of ±5.000, back to -4.461 of -5.000, front on facade.front. The door stays where the asset has it at that factor until a ruling says how it moves.",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.1213,
+            "y": 6.8302,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -5.8719,
+            "y": -5.3567,
+            "z": -4.5456
+          }
+        },
+        "castHeight": 2.01,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_5",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 408.911],
+        "lotId": "6abb84eef2e499b951eecec5",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1,
+          "scaleMin": 0.5,
+          "seatSink": 0.69
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
+        "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.92959695630054,
+          "y": 4.1227573715000005,
+          "z": 408.43039877424286
+        },
+        "offsetFromNode": {
+          "x": -0.9624030436994531,
+          "y": 4.1227573715000005,
+          "z": -0.48060122575714104
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 423.6419708594066,
+          "y": 0.9726003865000004,
+          "z": 408.7671864432348
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[414.43017826093876, 403.9118329428383], [423.6409815718939, 403.90995694898044], [423.64301833476986, 413.9101081555634], [414.4322150238147, 413.9119841494213]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000051853467,
+          "front": 4.750000051853467
+        },
+        "notes": ["door-yields"]
+      }
+    },
+    {
+      "name": "area wins: Brightwater L3 bld_6abb84bcf2e499b951eece64_6, the Haunted pairing's door-held house in its building area",
+      "note": "U108(3), b9-fit m2: B8's house (the Haunted pairing, cast 2.01 m; core's 'brightwater: bld_6abb84bcf2e499b951eece64_6' case for the bounds, door, cast, policy and fixups) handed its Brightwater L3 building area with the lot's front line, as Unreal's B9.fit hands it (the room, centre, node and front line of 'front line: Brightwater L3 bld_6abb84bcf2e499b951eece64_6'). On core main de10a09 the door hold won: factor 0.862254 (the door hold), across ±5.944 of ±5.000, back to −5.915 of −5.000. The area wins now: the factor is the area's (0.725268, the hold wanted 0.862254), doorHeld false, noted door-yields; across ±5.000 of ±5.000, back to -4.221 of -5.000, front on facade.front. The door stays where the asset has it at that factor until a ruling says how it moves.",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.4775,
+            "y": 4.0572,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -6.310599999999999,
+            "y": -5.3567,
+            "z": -4.9466
+          }
+        },
+        "castHeight": 2.01,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_6",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [400.392, 444.411],
+        "lotId": "6abb84eef2e499b951eecec6",
+        "node": {
+          "x": 400.392,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1,
+          "scaleMin": 0.5,
+          "seatSink": 0.67
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 8.971
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.725268,
+        "factor": 0.725268,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.6906722348000003,
+        "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.67,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "fixupScale": {
+          "x": 0.725268,
+          "y": 0.725268,
+          "z": 0.725268
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 399.96858459513044,
+          "y": 3.8850430956,
+          "z": 445.0437664643435
+        },
+        "offsetFromNode": {
+          "x": -0.42341540486955864,
+          "y": 3.8850430956,
+          "z": 0.63276646434349
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 400.2892424683653,
+          "y": 0.9165211715999999,
+          "z": 439.66095754058574
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[395.39024733375857, 448.6295124814403], [395.39390145490995, 439.6589634408869], [405.3939683360489, 439.66303693245806], [405.3903142148975, 448.63358597301146]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000207413869,
+          "front": 4.750000207413869
+        },
+        "notes": ["door-yields"]
+      }
+    },
+    {
+      "name": "area wins: Brightwater L3 bld_6abb84eef2e499b951eecec0, the Haunted pairing's door-held house in its building area",
+      "note": "U108(3), b9-fit m2: B8's house (the Haunted pairing, cast 2.01 m; core's 'brightwater: bld_6abb84eef2e499b951eecec0' case for the bounds, door, cast, policy and fixups) handed its Brightwater L3 building area with the lot's front line, as Unreal's B9.fit hands it (the room, centre, node and front line of 'front line: Brightwater L3 bld_6abb84eef2e499b951eecec0'). On core main de10a09 the door hold won: factor 0.862254 (the door hold), across ±5.602 of ±5.000, back to −5.569 of −5.000. The area wins now: the factor is the area's (0.769645, the hold wanted 0.862254), doorHeld false, noted door-yields; across ±5.000 of ±5.000, back to -4.461 of -5.000, front on facade.front. The door stays where the asset has it at that factor until a ruling says how it moves.",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.1213,
+            "y": 6.8302,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -5.8719,
+            "y": -5.3567,
+            "z": -4.5456
+          }
+        },
+        "castHeight": 2.01,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec0",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 0
+        },
+        "lotCentre": [436.392, 412.411],
+        "lotId": "6abb84eef2e499b951eecec0",
+        "node": {
+          "x": 436.392,
+          "y": 0,
+          "z": 412.411
+        },
+        "nodeHeading": 0,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1,
+          "scaleMin": 0.5,
+          "seatSink": 0.69
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": 1.5707963267948966,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
+        "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": 1.5707963267948966,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 436.8727972315,
+          "y": 4.1227573715000005,
+          "z": 411.44869481
+        },
+        "offsetFromNode": {
+          "x": 0.48079723149999154,
+          "y": 4.1227573715000005,
+          "z": -0.962305189999995
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 436.53484611199997,
+          "y": 0.9726003865000004,
+          "z": 417.161
+        },
+        "doorHeading": 1.5707963267948966,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[441.392075707, 407.950196498], [441.392075707, 417.161], [431.391924293, 417.161], [431.391924293, 407.950196498]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5,
+          "front": 4.75
+        },
+        "notes": ["door-yields"]
+      }
+    },
+    {
+      "name": "area wins: Brightwater L3 bld_6abb84eef2e499b951eecec1, the Haunted pairing's door-held house in its building area",
+      "note": "U108(3), b9-fit m2: B8's house (the Haunted pairing, cast 2.01 m; core's 'brightwater: bld_6abb84eef2e499b951eecec1' case for the bounds, door, cast, policy and fixups) handed its Brightwater L3 building area with the lot's front line, as Unreal's B9.fit hands it (the room, centre, node and front line of 'front line: Brightwater L3 bld_6abb84eef2e499b951eecec1'). On core main de10a09 the door hold won: factor 0.862254 (the door hold), across ±5.602 of ±5.000, back to −5.569 of −5.000. The area wins now: the factor is the area's (0.769645, the hold wanted 0.862254), doorHeld false, noted door-yields; across ±5.000 of ±5.000, back to -4.461 of -5.000, front on facade.front. The door stays where the asset has it at that factor until a ruling says how it moves.",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.1213,
+            "y": 6.8302,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -5.8719,
+            "y": -5.3567,
+            "z": -4.5456
+          }
+        },
+        "castHeight": 2.01,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec1",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": -3.142
+        },
+        "lotCentre": [437.892, 444.411],
+        "lotId": "6abb84eef2e499b951eecec1",
+        "node": {
+          "x": 437.892,
+          "y": 0,
+          "z": 444.411
+        },
+        "nodeHeading": 3.142,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1,
+          "scaleMin": 0.5,
+          "seatSink": 0.69
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000207413869,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -1.5703889803846898,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
+        "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -1.5703889803846898,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 437.4108108169203,
+          "y": 4.1227573715000005,
+          "z": 445.3731090517271
+        },
+        "offsetFromNode": {
+          "x": -0.4811891830797208,
+          "y": 4.1227573715000005,
+          "z": 0.9621090517271114
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 437.75108879533076,
+          "y": 0.9726003865000004,
+          "z": 439.6609419988232
+        },
+        "doorHeading": -1.5703889803846898,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[432.8901076156756, 448.86976616165947], [432.8938596033135, 439.6589634238388], [442.89401018764545, 439.6630369495062], [442.89025820000757, 448.87383968732684]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000207413869,
+          "front": 4.750000207413869
+        },
+        "notes": ["door-yields"]
+      }
+    },
+    {
+      "name": "area wins: Brightwater L3 bld_6abb84eef2e499b951eecec2, the Haunted pairing's door-held house in its building area",
+      "note": "U108(3), b9-fit m2: B8's house (the Haunted pairing, cast 2.01 m; core's 'brightwater: bld_6abb84eef2e499b951eecec2' case for the bounds, door, cast, policy and fixups) handed its Brightwater L3 building area with the lot's front line, as Unreal's B9.fit hands it (the room, centre, node and front line of 'front line: Brightwater L3 bld_6abb84eef2e499b951eecec2'). On core main de10a09 the door hold won: factor 0.862254 (the door hold), across ±5.944 of ±6.000, back to −5.915 of −5.000. The area wins now: the factor is the area's (0.808473, the hold wanted 0.862254), doorHeld false, noted door-yields; across ±5.574 of ±6.000, back to -5.250 of -5.000, front on facade.front. Its back still stands 0.250 m past the area: held by the area's depth, its front is core's paving clearance (0.25 m) behind the facade line, which PL.fit-front-line states and U108(3) does not reach (a ruling is asked: does the clearance come out of the area?). The door stays where the asset has it at that factor until a ruling says how it moves.",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.4775,
+            "y": 4.0572,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -6.310599999999999,
+            "y": -5.3567,
+            "z": -4.9466
+          }
+        },
+        "castHeight": 2.01,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec2",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 425.911],
+        "lotId": "6abb84eef2e499b951eecec2",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 425.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1,
+          "scaleMin": 0.5,
+          "seatSink": 0.71
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 11.147,
+          "away": 10
+        },
+        "aligned": true,
+        "lot": {
+          "width": 12,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.808473,
+        "factor": 0.808473,
+        "limited": false,
+        "doorFactor": 0.862254,
+        "doorHeld": false,
+        "doorHeight": 1.8846314103000001,
+        "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.71,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.808473,
+          "y": 0.808473,
+          "z": 0.808473
+        },
+        "fixupScale": {
+          "x": 0.808473,
+          "y": 0.808473,
+          "z": 0.808473
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.6414173984126,
+          "y": 4.3307473191,
+          "z": 425.43955112853644
+        },
+        "offsetFromNode": {
+          "x": -1.2505826015873822,
+          "y": 4.3307473191,
+          "z": -0.47144887146356496
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 423.64197618404216,
+          "y": 1.0216673301000005,
+          "z": 425.79332947714244
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[413.6411858091181, 420.3384160489151], [423.6408647495109, 420.33637938222716], [423.64313515715287, 431.4836857223166], [413.64345621676006, 431.48572238900454]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000051853467,
+          "front": 4.750000051853467
+        },
+        "notes": ["door-yields"]
+      }
+    },
+    {
+      "name": "area wins: Brightwater L3 bld_6abb84eef2e499b951eecec3, the Haunted pairing's door-held house in its building area",
+      "note": "U108(3), b9-fit m2: B8's house (the Haunted pairing, cast 2.01 m; core's 'brightwater: bld_6abb84eef2e499b951eecec3' case for the bounds, door, cast, policy and fixups) handed its Brightwater L3 building area with the lot's front line, as Unreal's B9.fit hands it (the room, centre, node and front line of 'front line: Brightwater L3 bld_6abb84eef2e499b951eecec3'). On core main de10a09 the door hold won: factor 0.893453 (the door hold), across ±7.898 of ±7.500, back to −6.277 of −6.000. The area wins now: the factor is the area's (0.848368, the hold wanted 0.893452), doorHeld false, noted door-yields; across ±7.500 of ±7.500, back to -5.670 of -6.000, front on facade.front. The door stays where the asset has it at that factor until a ruling says how it moves.",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 9.5049,
+            "y": 9.558,
+            "z": 7.386699999999999
+          },
+          "min": {
+            "x": -8.1758,
+            "y": -2.123,
+            "z": -6.074
+          }
+        },
+        "castHeight": 2.01,
+        "door": {
+          "candidates": 5,
+          "hasPosition": true,
+          "height": 2.2497,
+          "name": "SM_Door_B2_StaticMeshComponent0",
+          "position": {
+            "x": -4.28385,
+            "y": -1.1457,
+            "z": 5.33465
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84eef2e499b951eecec3",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "frontageYaw": -1.571
+        },
+        "lotCentre": [451.892, 427.911],
+        "lotId": "6abb84eef2e499b951eecec3",
+        "node": {
+          "x": 451.892,
+          "y": 0,
+          "z": 427.911
+        },
+        "nodeHeading": 1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1,
+          "scaleMin": 0.5,
+          "seatSink": 0.64
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 6.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 15,
+          "away": 11.42
+        },
+        "aligned": true,
+        "lot": {
+          "width": 15,
+          "depth": 12,
+          "hasFrontage": true
+        },
+        "streetHeading": -3.14138898038469,
+        "wantedFactor": 0.848368,
+        "factor": 0.848368,
+        "limited": false,
+        "doorFactor": 0.893452,
+        "doorHeld": false,
+        "doorHeight": 1.9085734896,
+        "castHeight": 2.01,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.64,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
+        },
+        "fixupScale": {
+          "x": 0.848368,
+          "y": 0.848368,
+          "z": 0.848368
+        },
+        "heading": -3.14138898038469,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 452.4085250155502,
+          "y": 1.8010852640000001,
+          "z": 428.4748881684005
+        },
+        "offsetFromNode": {
+          "x": 0.5165250155502008,
+          "y": 1.8010852640000001,
+          "z": 0.5638881684005241
+        },
+        "door": {
+          "source": "component",
+          "name": "SM_Door_B2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": -4.28385,
+            "y": -1.1457,
+            "z": 5.33465
+          },
+          "yaw": 0,
+          "candidates": 5,
+          "height": 2.2497
+        },
+        "doorWorld": {
+          "x": 446.1411450342223,
+          "y": 0.8291100464000002,
+          "z": 432.10789300319453
+        },
+        "doorHeading": -3.14138898038469,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[457.5600994455905, 435.4120246443546], [446.1404725448494, 435.4096987723105], [446.14352758996966, 420.4099589858259], [457.56315449071076, 420.41228485787]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 6.000000051853467,
+          "front": 5.750000051853467
+        },
+        "notes": ["door-yields"]
+      }
+    },
+    {
+      "name": "area wins control: a tall cast on an unbounded lot, the door still holds",
+      "note": "U108(3) control: the house of 'area wins: Brightwater L3 bld_6abb84bcf2e499b951eece64_5' with scaleMax 1.5 and a 2.6 m cast, on a lot that states no width or depth. With no room to disagree with, the door hold raises the factor as before (1.115354, doorHeld true, notes [\"door-held\"]), so the yield is the room's and the hold is not switched off.",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.1213,
+            "y": 6.8302,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -5.8719,
+            "y": -5.3567,
+            "z": -4.5456
+          }
+        },
+        "castHeight": 2.6,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_5",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 408.911],
+        "lotId": "6abb84eef2e499b951eecec5",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1.5,
+          "scaleMin": 0.5,
+          "seatSink": 0.69
+        },
+        "settleShift": [0, 0]
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "unbounded",
+        "issues": [],
+        "required": {
+          "across": 14.492,
+          "away": 13.348
+        },
+        "aligned": true,
+        "lot": {
+          "width": 0,
+          "depth": 0,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 1,
+        "factor": 1.115354,
+        "limited": false,
+        "doorFactor": 1.115353,
+        "doorHeld": true,
+        "doorHeight": 2.6000017094000003,
+        "castHeight": 2.6,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1.5,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 1.115354,
+          "y": 1.115354,
+          "z": 1.115354
+        },
+        "fixupScale": {
+          "x": 1.115354,
+          "y": 1.115354,
+          "z": 1.115354
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.2877559987951,
+          "y": 5.9746167718,
+          "z": 408.2145650832702
+        },
+        "offsetFromNode": {
+          "x": -1.6042440012049042,
+          "y": 5.9746167718,
+          "z": -0.6964349167297996
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 425.56601296444154,
+          "y": 1.4094728498000002,
+          "z": 408.7026309756762
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[412.2164690554036, 401.66635068010976], [425.56457930894527, 401.6636320276748], [425.5675309445964, 416.15564931989024], [412.2194206910547, 416.1583679723252]],
+        "settleShift": [0, 0],
+        "notes": ["door-held"]
+      }
+    },
+    {
+      "name": "area wins control: a tall cast with no measured footprint, the door still holds",
+      "note": "U108(3) control: the same house, policy and cast on its building area, but with no footprint bounds: a room the fit cannot measure the house against cannot disagree with the hold, so the hold raises the factor as before (1.115354, doorHeld true, notes [\"no-bounds\",\"door-held\"]).",
+      "op": "fitBuildingToLot",
+      "input": {
+        "castHeight": 2.6,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_5",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 408.911],
+        "lotId": "6abb84eef2e499b951eecec5",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1.5,
+          "scaleMin": 0.5,
+          "seatSink": 0.69
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "unmeasured",
+        "issues": [],
+        "required": {
+          "across": 0,
+          "away": 0
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 1,
+        "factor": 1.115354,
+        "limited": false,
+        "doorFactor": 1.115353,
+        "doorHeld": true,
+        "doorHeight": 2.6000017094000003,
+        "castHeight": 2.6,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1.5,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 1.115354,
+          "y": 1.115354,
+          "z": 1.115354
+        },
+        "fixupScale": {
+          "x": 1.115354,
+          "y": 1.115354,
+          "z": 1.115354
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "offsetFromNode": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 423.56147340579764,
+          "y": -4.565143922,
+          "z": 409.39980090493026
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[418.892, 408.911], [418.892, 408.911], [418.892, 408.911], [418.892, 408.911]],
+        "settleShift": [0, 0],
+        "notes": ["no-bounds", "door-held"]
+      }
+    },
+    {
+      "name": "area wins: a tall cast on its building area, the area still wins",
+      "note": "U108(3): the same house, policy and cast as the two controls above, on its Brightwater L3 building area with its bounds: the hold wants 1.115353 and the area keeps 0.769645 (doorHeld false, notes [\"door-yields\"]).",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.1213,
+            "y": 6.8302,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -5.8719,
+            "y": -5.3567,
+            "z": -4.5456
+          }
+        },
+        "castHeight": 2.6,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_5",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 408.911],
+        "lotId": "6abb84eef2e499b951eecec5",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1.5,
+          "scaleMin": 0.5,
+          "seatSink": 0.69
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 1.115353,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
+        "castHeight": 2.6,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1.5,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.92959695630054,
+          "y": 4.1227573715000005,
+          "z": 408.43039877424286
+        },
+        "offsetFromNode": {
+          "x": -0.9624030436994531,
+          "y": 4.1227573715000005,
+          "z": -0.48060122575714104
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 423.6419708594066,
+          "y": 0.9726003865000004,
+          "z": 408.7671864432348
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[414.43017826093876, 403.9118329428383], [423.6409815718939, 403.90995694898044], [423.64301833476986, 413.9101081555634], [414.4322150238147, 413.9119841494213]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000051853467,
+          "front": 4.750000051853467
+        },
+        "notes": ["door-yields"]
+      }
+    },
+    {
+      "name": "area wins threshold: a cast of 1.78 m, just below the leaf at the area's factor",
+      "note": "U108(3): the house of 'area wins: Brightwater L3 bld_6abb84bcf2e499b951eece64_5' with a 1.78 m cast. Its door leaf at the area's factor 0.769645 is 2.3311 × 0.769645 = 1.794 m, so a 1.78 m body already clears it: no hold is wanted above the area, and nothing yields (no door-yields note).",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.1213,
+            "y": 6.8302,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -5.8719,
+            "y": -5.3567,
+            "z": -4.5456
+          }
+        },
+        "castHeight": 1.78,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_5",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 408.911],
+        "lotId": "6abb84eef2e499b951eecec5",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1,
+          "scaleMin": 0.5,
+          "seatSink": 0.69
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.763588,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
+        "castHeight": 1.78,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.92959695630054,
+          "y": 4.1227573715000005,
+          "z": 408.43039877424286
+        },
+        "offsetFromNode": {
+          "x": -0.9624030436994531,
+          "y": 4.1227573715000005,
+          "z": -0.48060122575714104
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 423.6419708594066,
+          "y": 0.9726003865000004,
+          "z": 408.7671864432348
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[414.43017826093876, 403.9118329428383], [423.6409815718939, 403.90995694898044], [423.64301833476986, 413.9101081555634], [414.4322150238147, 413.9119841494213]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000051853467,
+          "front": 4.750000051853467
+        },
+        "notes": []
+      }
+    },
+    {
+      "name": "area wins threshold: a cast of 1.81 m, just above the leaf at the area's factor",
+      "note": "U108(3): the house of 'area wins: Brightwater L3 bld_6abb84bcf2e499b951eece64_5' with a 1.81 m cast. Its door leaf at the area's factor 0.769645 is 2.3311 × 0.769645 = 1.794 m, so a 1.81 m body does not: the hold wants 0.776457, the area keeps 0.769645, and the door yields.",
+      "op": "fitBuildingToLot",
+      "input": {
+        "bounds": {
+          "max": {
+            "x": 7.1213,
+            "y": 6.8302,
+            "z": 7.422000000000001
+          },
+          "min": {
+            "x": -5.8719,
+            "y": -5.3567,
+            "z": -4.5456
+          }
+        },
+        "castHeight": 1.81,
+        "door": {
+          "candidates": 3,
+          "hasPosition": true,
+          "height": 2.3311,
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "source": "component",
+          "yaw": 0
+        },
+        "entityId": "bld_6abb84bcf2e499b951eece64_5",
+        "geometry": {
+          "offset": {
+            "x": 0,
+            "y": 0,
+            "z": 0
+          },
+          "scale": {
+            "x": 1,
+            "y": 1,
+            "z": 1
+          },
+          "yaw": 0
+        },
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "frontageYaw": 1.571
+        },
+        "lotCentre": [418.892, 408.911],
+        "lotId": "6abb84eef2e499b951eecec5",
+        "node": {
+          "x": 418.892,
+          "y": 0,
+          "z": 408.911
+        },
+        "nodeHeading": -1.571,
+        "nodeScale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        },
+        "policy": {
+          "doorClearance": 1,
+          "mode": "lot",
+          "neighbourGap": 6,
+          "scaleMax": 1,
+          "scaleMin": 0.5,
+          "seatSink": 0.69
+        },
+        "settleShift": [0, 0],
+        "frontLine": {
+          "street": 5.000000051853467,
+          "buildTo": 0
+        }
+      },
+      "expected": {
+        "applied": true,
+        "outcome": "fits",
+        "issues": [],
+        "required": {
+          "across": 10,
+          "away": 9.211
+        },
+        "aligned": true,
+        "lot": {
+          "width": 10,
+          "depth": 10,
+          "hasFrontage": true
+        },
+        "streetHeading": -0.00020367320510339404,
+        "wantedFactor": 0.769645,
+        "factor": 0.769645,
+        "limited": false,
+        "doorFactor": 0.776457,
+        "doorHeld": false,
+        "doorHeight": 1.7941194595000003,
+        "castHeight": 1.81,
+        "policy": {
+          "mode": "lot",
+          "scaleMin": 0.5,
+          "scaleMax": 1,
+          "doorClearance": 1,
+          "seatSink": 0.69,
+          "neighbourGap": 6
+        },
+        "scale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "fixupScale": {
+          "x": 0.769645,
+          "y": 0.769645,
+          "z": 0.769645
+        },
+        "heading": -0.00020367320510339404,
+        "fixupHeading": 1.5707963267948966,
+        "location": {
+          "x": 417.92959695630054,
+          "y": 4.1227573715000005,
+          "z": 408.43039877424286
+        },
+        "offsetFromNode": {
+          "x": -0.9624030436994531,
+          "y": 4.1227573715000005,
+          "z": -0.48060122575714104
+        },
+        "door": {
+          "source": "component",
+          "name": "BP_Door2_SM_Door_2_StaticMeshComponent0",
+          "hasPosition": true,
+          "position": {
+            "x": 0.43910000000000005,
+            "y": -4.093,
+            "z": 4.18645
+          },
+          "yaw": 0,
+          "candidates": 3,
+          "height": 2.3311
+        },
+        "doorWorld": {
+          "x": 423.6419708594066,
+          "y": 0.9726003865000004,
+          "z": 408.7671864432348
+        },
+        "doorHeading": -0.00020367320510339404,
+        "seat": {
+          "sampled": false,
+          "groundMin": 0,
+          "groundMax": 0,
+          "foundation": 0,
+          "float": 0,
+          "sink": 0
+        },
+        "footprint": [[414.43017826093876, 403.9118329428383], [423.6409815718939, 403.90995694898044], [423.64301833476986, 413.9101081555634], [414.4322150238147, 413.9119841494213]],
+        "settleShift": [0, 0],
+        "facade": {
+          "line": 5.000000051853467,
+          "front": 4.750000051853467
+        },
+        "notes": ["door-yields"]
       }
     }
   ]

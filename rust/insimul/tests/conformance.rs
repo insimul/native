@@ -16,7 +16,12 @@
 //!
 //! `expected` is the COMPLETE solution set, compared as an unordered multiset —
 //! the corpus README states a conforming engine need not enumerate solutions in
-//! tau-prolog's order, only produce the same set.
+//! tau-prolog's order, only produce the same set. A binding's JSON NUMBERS are
+//! compared as numbers (`terms_match`), as the C leg's `jv_equal` and the wasm
+//! leg's `deepEqual` compare them: core's corpus states `83` where an ISO engine's
+//! `Total / Count` binds the float `83.0` (`quest-count-goals.json`,
+//! `avg-pronunciation-mean`), and the raw strings the parity gate diffs still
+//! show any difference in how a number is written.
 //!
 //! Nothing is ever silently skipped: a missing corpus directory, a file with no
 //! cases, an unparseable file, or a case whose query errors is a hard failure,
@@ -31,7 +36,7 @@
 //! same records in the same order, so `scripts/conformance_parity.sh` diffs all
 //! three byte for byte instead of merely observing that each is green.
 
-use insimul::{Bindings, KnowledgeBase};
+use insimul::{Bindings, KnowledgeBase, Term};
 use serde_json::Value;
 use std::fmt::Write as _;
 use std::path::{Path, PathBuf};
@@ -299,6 +304,46 @@ fn parse_file(path: &Path) -> Vec<Case> {
 // Case execution.
 // ------------------------------------------------------------------ //
 
+/// One binding's term against the corpus's: JSON numbers compared as numbers (an
+/// `Int` and a `Float` agree when their values do, floats within 1e-9, the C and
+/// wasm legs' tolerance; two `Int`s exactly), recursively through lists and
+/// compounds; every other term by `Term`'s own equality.
+fn terms_match(want: &Term, got: &Term) -> bool {
+    match (want, got) {
+        (Term::Int(a), Term::Int(b)) => a == b,
+        (Term::Int(_) | Term::Float(_), Term::Int(_) | Term::Float(_)) => {
+            let (a, b) = (
+                want.as_f64().unwrap_or(f64::NAN),
+                got.as_f64().unwrap_or(f64::NAN),
+            );
+            a == b || (a - b).abs() < 1e-9
+        }
+        (Term::List(a), Term::List(b)) => {
+            a.len() == b.len() && a.iter().zip(b).all(|(x, y)| terms_match(x, y))
+        }
+        (
+            Term::Compound {
+                functor: f,
+                args: a,
+            },
+            Term::Compound {
+                functor: g,
+                args: b,
+            },
+        ) => f == g && a.len() == b.len() && a.iter().zip(b).all(|(x, y)| terms_match(x, y)),
+        _ => want == got,
+    }
+}
+
+/// One solution against the corpus's: the same variables, each bound to a
+/// matching term (`terms_match`), in any order.
+fn bindings_match(want: &Bindings, got: &Bindings) -> bool {
+    want.len() == got.len()
+        && want
+            .iter()
+            .all(|(k, v)| got.get(k).is_some_and(|o| terms_match(v, o)))
+}
+
 /// Unordered multiset comparison: every expected solution must be matched by a
 /// distinct actual solution, and the counts must be equal.
 fn solutions_match(expected: &[Bindings], actual: &[Bindings]) -> bool {
@@ -310,7 +355,7 @@ fn solutions_match(expected: &[Bindings], actual: &[Bindings]) -> bool {
         match actual
             .iter()
             .enumerate()
-            .find(|(i, got)| !used[*i] && *got == want)
+            .find(|(i, got)| !used[*i] && bindings_match(want, got))
         {
             Some((i, _)) => {
                 used[i] = true;
@@ -516,4 +561,42 @@ fn wrong_expectation_fails_the_gate() {
             "expected `{wrong}` must FAIL the gate"
         );
     }
+}
+
+/// A binding's numbers are compared as numbers, as the C and wasm legs compare
+/// them (`terms_match`): an `Int` and an integral `Float` of the same value agree,
+/// and nothing looser does — another value, a string of the digits, two different
+/// `Int`s, or a number inside a compound that differs.
+#[test]
+fn numbers_match_as_numbers_and_nothing_looser() {
+    let int = |i| Term::Int(i);
+    let float = |f| Term::Float(f);
+    assert!(terms_match(&int(83), &float(83.0)), "83 is 83.0");
+    assert!(terms_match(&float(83.0), &int(83)), "83.0 is 83");
+    assert!(
+        terms_match(&float(0.8), &float(0.8 + 1e-12)),
+        "floats within 1e-9"
+    );
+    assert!(!terms_match(&int(83), &float(83.5)), "83 is not 83.5");
+    assert!(!terms_match(&int(83), &int(84)), "two Ints compare exactly");
+    assert!(
+        !terms_match(&int(83), &Term::Atom("83".to_owned())),
+        "a number is not its digits"
+    );
+    let c = |n| Term::Compound {
+        functor: "score".to_owned(),
+        args: vec![n],
+    };
+    assert!(
+        terms_match(&c(int(83)), &c(float(83.0))),
+        "inside a compound too"
+    );
+    assert!(
+        !terms_match(&c(int(83)), &c(float(82.0))),
+        "a compound's differing number"
+    );
+    assert!(
+        !terms_match(&Term::List(vec![int(1)]), &Term::List(vec![int(1), int(2)])),
+        "list lengths"
+    );
 }

@@ -46,7 +46,8 @@
     "notes": [
       "A node's size and respawn time are authored in WorldIR.resources; the action table is Babylon's, overridable by id.",
       "Fishing, mining, farming and crafting actions name a production craft on completion: call ProductionDirector, which decides what comes up.",
-      "Spend a completion's energyCost through the stamina pool, not a second energy number."
+      "Spend a completion's energyCost through the stamina pool, not a second energy number.",
+      "E by a node or a hotspot is core's props.interactables.target: pass nodes (ResourceState.nodes with each kind's item and where it is drawn), hotspots, busy and the clock as now; a node is gathered within 2.0 m and a hotspot performed at within 2.5 m, among the actions, never while busy, and a depleted node not before its respawn instant (conformance/props/interactables.json)."
     ],
     "doNot": ["Roll rewards with an engine RNG: the roll is keyed on (seed, actor, action, attempt, item).", "Keep a separate resource store beside the inventory."]
   }

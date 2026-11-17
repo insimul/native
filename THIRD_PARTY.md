@@ -123,7 +123,10 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `6cd4b4e`, core `main` (2026-11-12,
+  what to quote in a bug report about core behaviour. Today: `d88b6f0`, core `main` (2026-11-16,
+  PL.native-bundle-core: every core item landed after 6cd4b4e, among them PL.core-doorstep-rule's network answers,
+  PL.core-ride-intent's rider intent, which the `traversal.rider.*` rows run, and the helper clauses of
+  PL.core-helper-aggregate-all and PL.core-helper-sum-list). Before that, `6cd4b4e`, core `main` (2026-11-12,
   PL.native-survival-rows: P9c.core's survival needs, HUD bars and stamina (in since ac229a7) with
   PL.core-survival-rules' five host rules and grown corpora, which the `survival.*` rows run, and every other core
   item landed after 603063d, among them PL.core-camera-movement-gaps' `prop` solid kind and three new layout ops). Before that, `603063d`, core `main` (2026-11-11,

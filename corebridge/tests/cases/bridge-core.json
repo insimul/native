@@ -295,6 +295,10 @@
        "traversal.personal.pace",
        "traversal.personal.saveRows",
        "traversal.personal.tuning",
+       "traversal.rider.body",
+       "traversal.rider.intent",
+       "traversal.rider.posture",
+       "traversal.rider.vehicleRiders",
        "traversal.save.block",
        "traversal.save.read",
        "traversal.session.apply",
@@ -359,7 +363,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 325}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 329}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -405,7 +409,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 325}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 329}}}}
    ]
   },
   {

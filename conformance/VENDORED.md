@@ -7,7 +7,18 @@
 `conformance/README.md` for the case format, the order-independence rule, and the
 "Amendments for the native harness" notes). Re-sync it with a plain copy of every
 `*.json` — never hand-write or hand-edit a case here, or the two engines stop
-testing the same thing. Last synced at the KINP identity corpus (`identity.json`,
+testing the same thing. Last synced at core `d88b6f0` (PL.native-bundle-core,
+2026-11-16, the commit `corebridge/core-pin.json` pins): every file the mirror holds
+re-copied (only `worlds.json` moved: core's work/canon split, one case renamed
+`playthrough-role-links-a-save-to-its-parent-world` and one added, 12 -> 14), and two
+of core's files added that the core items PL.core-helper-aggregate-all,
+PL.core-helper-sum-list and PL.core-prolog-predicate-dups deferred to this re-vendor:
+`quest-count-goals.json` (81 cases: the count and total clauses of core's quest
+helper program, `avg-pronunciation-mean` and `avg-pronunciation-none` among them) and
+`pack-agreement.json` (22: core's packs loaded together). 12 files, 181 cases. The
+mirror is still a SUBSET of core's `conformance/prolog/` (35 files at d88b6f0): the
+`mechanic-*`, `agent-ai`, `geo-map`, `placement` and `scaffold` files are not here.
+Before that, synced at the KINP identity corpus (`identity.json`,
 `equivalence.json`, `worlds.json` + the rewritten `gameplay.json`), where entity
 atoms became CURIEs. Regenerate on schema change — the engine repos (`insimul-godot`, `insimul-unity`,
 `insimul-unreal`) vendor the same files the same way, so every standalone parity

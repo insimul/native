@@ -1694,6 +1694,11 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "vocabulary_usage": "use_vocabulary",
     "practice_vocabulary": "use_vocabulary",
     "use_word": "use_vocabulary",
+    // PL.core-language-host-event: the converter writes use_vocabulary as learn_words([...]) or
+    // learn_words_count(N), and the hydrator gives the latter back by its goal name (Brightwater's
+    // chapter quests store "Learn 10 vocabulary words" so); both are use_vocabulary again.
+    "learn_words_count": "use_vocabulary",
+    "learn_words": "use_vocabulary",
     "identify": "identify_object",
     "name_object": "identify_object",
     "label_object": "identify_object",
@@ -1908,7 +1913,14 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     item_name: "itemName",
     clue_category: "clueCategory",
     clue_source: "clueSource",
-    completion_trigger: "completionTrigger"
+    completion_trigger: "completionTrigger",
+    difficulty: "difficulty"
+  };
+  var QUEST_OBJECTIVE_INTEGER_FIELDS = {
+    max_attempts: "maxAttempts"
+  };
+  var QUEST_OBJECTIVE_LIST_FIELDS = {
+    target_word: "targetWords"
   };
 
   // @insimul/core/src/prolog/quest-hydrator.ts
@@ -2150,10 +2162,27 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     }
     const fieldPattern = /quest_objective_field\(\s*\w+\s*,\s*(\d+)\s*,\s*(\w+)\s*,\s*'((?:[^'\\]|\\.)*)'\s*\)\s*\./g;
     let fieldMatch;
+    const listStarted = /* @__PURE__ */ new Set();
     while ((fieldMatch = fieldPattern.exec(content)) !== null) {
       const obj3 = objectives.find((o) => o.id === `obj_${parseInt(fieldMatch[1])}`);
       const key = Object.prototype.hasOwnProperty.call(QUEST_OBJECTIVE_FIELDS, fieldMatch[2]) ? QUEST_OBJECTIVE_FIELDS[fieldMatch[2]] : void 0;
       if (obj3 && key) obj3[key] = unescape(fieldMatch[3]);
+      const listKey = Object.prototype.hasOwnProperty.call(QUEST_OBJECTIVE_LIST_FIELDS, fieldMatch[2]) ? QUEST_OBJECTIVE_LIST_FIELDS[fieldMatch[2]] : void 0;
+      if (obj3 && listKey) {
+        const started = `${obj3.id}:${listKey}`;
+        if (!listStarted.has(started)) {
+          listStarted.add(started);
+          obj3[listKey] = [];
+        }
+        obj3[listKey].push(unescape(fieldMatch[3]));
+      }
+    }
+    const integerFieldPattern = /quest_objective_field\(\s*\w+\s*,\s*(\d+)\s*,\s*(\w+)\s*,\s*(\d+)\s*\)\s*\./g;
+    let integerFieldMatch;
+    while ((integerFieldMatch = integerFieldPattern.exec(content)) !== null) {
+      const obj3 = objectives.find((o) => o.id === `obj_${parseInt(integerFieldMatch[1])}`);
+      const key = Object.prototype.hasOwnProperty.call(QUEST_OBJECTIVE_INTEGER_FIELDS, integerFieldMatch[2]) ? QUEST_OBJECTIVE_INTEGER_FIELDS[integerFieldMatch[2]] : void 0;
+      if (obj3 && key) obj3[key] = Number(integerFieldMatch[3]);
     }
     const orderPattern = /quest_objective_order\(\s*\w+\s*,\s*(\d+)\s*,\s*(-?\d+(?:\.\d+)?)\s*\)\s*\./g;
     let orderMatch;
@@ -2264,6 +2293,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       listen_and_repeat: "Listen and repeat {n} phrase(s)",
       pronunciation_check: "Complete {n} pronunciation check(s)",
       identify_object: "Identify {n} object(s)",
+      speak_phrase: "Speak {n} phrase(s)",
+      point_and_name: "Point and name {n} object(s)",
+      vocabulary: "Complete {n} vocabulary activit(ies)",
       order_food: "Order {n} food item(s)",
       haggle_price: "Haggle {n} price(s)",
       buy_item: "Buy {n} item(s)",
@@ -2292,7 +2324,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     };
     if (countGoals[functor] && args.length >= 1 && /^\d+(\.\d+)?$/.test(args[0])) {
       const count = functor === "build_friendship" ? parseFloat(args[0]) : parseInt(args[0]);
-      const result2 = { type: functor, description: formatCountDescription(countGoals[functor], count), requiredCount: count, required: count };
+      const type = functor === "vocabulary_activities" ? "vocabulary" : functor;
+      const result2 = { type, description: formatCountDescription(countGoals[functor], count), requiredCount: count, required: count };
       if (functor === "observe_activity" && args.length >= 2) {
         result2.observeDurationRequired = parseInt(args[1]) || 5;
       }
@@ -2451,7 +2484,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "clueSource",
     "completionTrigger",
     "order",
-    "dependsOn"
+    "dependsOn",
+    "difficulty",
+    "maxAttempts",
+    "targetWords"
   ];
   function projectHydratedQuest(q) {
     const out = {};
@@ -2671,7 +2707,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     },
     gathering: {
       owner: "gathering",
-      describe: "What a playthrough gathered and produced (P9d.core; catalog gathering-resource-nodes, gathering-physical-actions, gathering-farming, gathering-fishing, gathering-mining, crafting-recipes). Shape: {nodes: [{id, remaining, respawnInMs: number | null}], actions: {<actor>: {<action>: completed count}}, production: ProductionDirector.serialize() | null}, gatheringSaveBlock() in src/gathering/gathering-save.ts, read back through readGatheringBlock(), resourcesFromSave(), physicalActionsFromSave() and ProductionDirector.restore(). Written by src/save-file-game-state.ts from GameSaveState.gathering. Only a node that is not full is kept. Not kept: a gather or action under way (a load starts idle, nothing taken or charged), and anything authored (node sizes and times, the action table, recipes, crops, waters, seams; WorldIR.resources and WorldIR.production). null (the default) is a save with no gathering: every node starts full and every plot empty.",
+      describe: "What a playthrough gathered and produced (P9d.core; catalog gathering-resource-nodes, gathering-physical-actions, gathering-farming, gathering-fishing, gathering-mining, crafting-recipes, economy-business-lifecycle). Shape: {nodes: [{id, remaining, respawnInMs: number | null}], actions: {<actor>: {<action>: completed count}}, production: ProductionDirector.serialize() | null, business: BusinessDirector.serialize() | null}, gatheringSaveBlock() in src/gathering/gathering-save.ts, read back through readGatheringBlock(), resourcesFromSave(), physicalActionsFromSave(), ProductionDirector.restore() and BusinessDirector.restore(). Written by src/save-file-game-state.ts from GameSaveState.gathering. Only a node that is not full is kept. The business state keeps the last day it settled, so a load across days settles no day twice (PL.core-business-settle). Not kept: a gather or action under way (a load starts idle, nothing taken or charged), and anything authored (node sizes and times, the action table, recipes, crops, waters, seams, trades, posts; WorldIR.resources, WorldIR.production and WorldIR.business). null (the default) is a save with no gathering: every node starts full, every plot empty and no business founded in play.",
       defaultValue: null
     },
     traversal: {
@@ -4664,7 +4700,15 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     // PL.find-text-events: one text_found put a find_text of requiredCount 3 at 2 (trackTextFound and
     // the mapping's quantity each added one); sign_read is decided by trackSignRead alone.
     text_found: ["find_text", "collect_text"],
-    sign_read: ["read_sign"]
+    sign_read: ["read_sign"],
+    // PL.core-language-host-event (U110(4) Q5): one pronunciation_attempt put a pronunciation_check
+    // of requiredCount 2 at 2 (trackPronunciationAttempt and the mapping's quantity each added one),
+    // and a FAILED attempt completed one of requiredCount 1 (the mapping reads no `passed`).
+    pronunciation_attempt: ["pronunciation_check"],
+    // PL.core-language-host-event round 2 (M1): one vocabulary_usage put a 'vocabulary' (chapter-quest
+    // meta) objective of requiredCount 4 at 2 (trackVocabularyUsage and the mapping's quantity each
+    // added one); trackVocabularyUsage alone decides it, each word once, with its default (10).
+    vocabulary_usage: ["vocabulary"]
   };
   var _QuestCompletionEngine = class _QuestCompletionEngine {
     constructor() {
@@ -4810,7 +4854,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           this.trackTeachPhrase(event.npcId, event.phrase, event.questId);
           break;
         case "object_identified":
-          this.trackObjectIdentified(event.objectName, event.questId);
+          this.trackObjectIdentified(event.objectName, event.questId, event.objectId);
           break;
         case "object_examined":
           this.trackObjectExamined(event.objectName, event.questId);
@@ -4923,6 +4967,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
           break;
         case "friendship_changed":
           this.trackFriendshipBuilt(event.npcId, event.relationshipStrength, event.questId);
+          break;
+        case "listening_graded":
+          this.trackListeningGraded(event.questId, event.passed);
           break;
       }
       this.handleGameEvent(event, QUEST_EVENT_TYPE_HANDLED[event.type]);
@@ -5061,7 +5108,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       const lowerWord = word.toLowerCase();
       this.forEachObjective(questId, ["use_vocabulary", "collect_vocabulary", "vocabulary"], (quest, obj3) => {
         if (obj3.targetWords && obj3.targetWords.length > 0) {
-          if (!obj3.targetWords.includes(lowerWord)) return;
+          if (!obj3.targetWords.some((w) => String(w).toLowerCase() === lowerWord)) return;
         }
         obj3.wordsUsed = obj3.wordsUsed || [];
         if (obj3.wordsUsed.includes(lowerWord)) return;
@@ -5501,13 +5548,42 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       });
     }
     // ── Object interaction tracking ─────────────────────────────────────
-    trackObjectIdentified(objectName, questId) {
-      const lowerName = objectName.toLowerCase();
+    /**
+     * An object was identified (core's identification `answerIdentification` and point-and-name
+     * `submitName` raise `object_identified` on a pass). Every `identify_object` objective counts it
+     * toward `requiredCount` (default 1): the converter's `identify_object(Count)` names no object.
+     * With an `objectId` (PL.core-language-host-event), each objective counts an object once
+     * (`objectsIdentified`), as the kernel's `questIdentification` counts each target once: an object
+     * identified and then named raises `object_identified` twice. Without one, every report counts.
+     */
+    trackObjectIdentified(objectName, questId, objectId) {
       this.forEachObjective(questId, "identify_object", (quest, obj3) => {
-        obj3.currentCount = (obj3.currentCount || 0) + 1;
-        if (obj3.currentCount >= (obj3.requiredCount || 1)) {
-          this.completeObjective(quest.id, obj3.id);
+        if (objectId !== void 0) {
+          obj3.objectsIdentified = obj3.objectsIdentified || [];
+          if (obj3.objectsIdentified.includes(objectId)) return;
+          obj3.objectsIdentified.push(objectId);
         }
+        obj3.currentCount = (obj3.currentCount || 0) + 1;
+        const required2 = obj3.requiredCount || 1;
+        if (obj3.currentCount >= required2) {
+          this.completeObjective(quest.id, obj3.id);
+        } else {
+          this.onObjectiveProgress?.(quest.id, obj3.id, obj3.currentCount, required2, obj3.type);
+        }
+      });
+    }
+    /**
+     * A quest's listening comprehension was graded (core's `gradeListening`, the server's score or
+     * the local fallback; a quest grades once). PL.core-language-host-event (U110(4) Q5): a passed
+     * grade completes every `listening_comprehension` objective of THAT quest, whatever its
+     * `requiredCount` or `comprehensionQuestions` say, since the grade is the quest's one verdict
+     * (the server grade names no per-question result, and `trackListeningAnswer`'s per-answer count
+     * could never reach the default 3 from one grade). A failed grade completes and counts nothing.
+     */
+    trackListeningGraded(questId, passed) {
+      if (!passed || !questId) return;
+      this.forEachObjective(questId, "listening_comprehension", (quest, obj3) => {
+        this.completeObjective(quest.id, obj3.id);
       });
     }
     trackObjectExamined(objectName, questId) {
@@ -6034,6 +6110,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     // still counts each clue and sign once.
     "cluesFound",
     "signsRead",
+    // PL.core-language-host-event: identify_object's ledger, so a restored game counts an object once.
+    "objectsIdentified",
     "photographedSubjects",
     "observedActivities",
     "conversationGoalMet",
@@ -13875,6 +13953,26 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     };
   }
 
+  // @insimul/core/src/traversal/rider-intent.ts
+  var RIDER_ANIMATION_INTENT = "ride";
+  function riderIntent(posture) {
+    return posture.kind !== null || posture.aboard !== null ? RIDER_ANIMATION_INTENT : null;
+  }
+  function riderPostureOf(actor, riding, vehicles) {
+    const rows = riding?.riding ?? {};
+    const kind = Object.prototype.hasOwnProperty.call(rows, actor) ? rows[actor] : null;
+    const carrying = [...vehicles].filter((state) => state.occupants.includes(actor)).sort((a, b) => compareIds(a.id, b.id));
+    return { kind: kind ?? null, aboard: carrying[0]?.id ?? null };
+  }
+  function bodyIntent(prior, rider) {
+    return rider ?? prior;
+  }
+  function vehicleRiderIntents(state) {
+    const out = {};
+    for (const occupant of [...new Set(state.occupants)].sort(compareIds)) out[occupant] = RIDER_ANIMATION_INTENT;
+    return out;
+  }
+
   // npm:zod/v3/external.js
   var external_exports = {};
   __export(external_exports, {
@@ -14706,9 +14804,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     superRefine(refinement) {
       return this._refinement(refinement);
     }
-    constructor(def) {
+    constructor(def2) {
       this.spa = this.safeParseAsync;
-      this._def = def;
+      this._def = def2;
       this.parse = this.parse.bind(this);
       this.safeParse = this.safeParse.bind(this);
       this.parseAsync = this.parseAsync.bind(this);
@@ -14768,8 +14866,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         effect: { type: "transform", transform }
       });
     }
-    default(def) {
-      const defaultValueFunc = typeof def === "function" ? def : () => def;
+    default(def2) {
+      const defaultValueFunc = typeof def2 === "function" ? def2 : () => def2;
       return new ZodDefault({
         ...processCreateParams(this._def),
         innerType: this,
@@ -14784,8 +14882,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         ...processCreateParams(this._def)
       });
     }
-    catch(def) {
-      const catchValueFunc = typeof def === "function" ? def : () => def;
+    catch(def2) {
+      const catchValueFunc = typeof def2 === "function" ? def2 : () => def2;
       return new ZodCatch({
         ...processCreateParams(this._def),
         innerType: this,
@@ -16119,7 +16217,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   var ZodArray = class _ZodArray extends ZodType {
     _parse(input) {
       const { ctx, status } = this._processInputParams(input);
-      const def = this._def;
+      const def2 = this._def;
       if (ctx.parsedType !== ZodParsedType.array) {
         addIssueToContext(ctx, {
           code: ZodIssueCode.invalid_type,
@@ -16128,57 +16226,57 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         });
         return INVALID;
       }
-      if (def.exactLength !== null) {
-        const tooBig = ctx.data.length > def.exactLength.value;
-        const tooSmall = ctx.data.length < def.exactLength.value;
+      if (def2.exactLength !== null) {
+        const tooBig = ctx.data.length > def2.exactLength.value;
+        const tooSmall = ctx.data.length < def2.exactLength.value;
         if (tooBig || tooSmall) {
           addIssueToContext(ctx, {
             code: tooBig ? ZodIssueCode.too_big : ZodIssueCode.too_small,
-            minimum: tooSmall ? def.exactLength.value : void 0,
-            maximum: tooBig ? def.exactLength.value : void 0,
+            minimum: tooSmall ? def2.exactLength.value : void 0,
+            maximum: tooBig ? def2.exactLength.value : void 0,
             type: "array",
             inclusive: true,
             exact: true,
-            message: def.exactLength.message
+            message: def2.exactLength.message
           });
           status.dirty();
         }
       }
-      if (def.minLength !== null) {
-        if (ctx.data.length < def.minLength.value) {
+      if (def2.minLength !== null) {
+        if (ctx.data.length < def2.minLength.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_small,
-            minimum: def.minLength.value,
+            minimum: def2.minLength.value,
             type: "array",
             inclusive: true,
             exact: false,
-            message: def.minLength.message
+            message: def2.minLength.message
           });
           status.dirty();
         }
       }
-      if (def.maxLength !== null) {
-        if (ctx.data.length > def.maxLength.value) {
+      if (def2.maxLength !== null) {
+        if (ctx.data.length > def2.maxLength.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_big,
-            maximum: def.maxLength.value,
+            maximum: def2.maxLength.value,
             type: "array",
             inclusive: true,
             exact: false,
-            message: def.maxLength.message
+            message: def2.maxLength.message
           });
           status.dirty();
         }
       }
       if (ctx.common.async) {
         return Promise.all([...ctx.data].map((item, i) => {
-          return def.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+          return def2.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
         })).then((result3) => {
           return ParseStatus.mergeArray(status, result3);
         });
       }
       const result2 = [...ctx.data].map((item, i) => {
-        return def.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
+        return def2.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
       });
       return ParseStatus.mergeArray(status, result2);
     }
@@ -17067,29 +17165,29 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         });
         return INVALID;
       }
-      const def = this._def;
-      if (def.minSize !== null) {
-        if (ctx.data.size < def.minSize.value) {
+      const def2 = this._def;
+      if (def2.minSize !== null) {
+        if (ctx.data.size < def2.minSize.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_small,
-            minimum: def.minSize.value,
+            minimum: def2.minSize.value,
             type: "set",
             inclusive: true,
             exact: false,
-            message: def.minSize.message
+            message: def2.minSize.message
           });
           status.dirty();
         }
       }
-      if (def.maxSize !== null) {
-        if (ctx.data.size > def.maxSize.value) {
+      if (def2.maxSize !== null) {
+        if (ctx.data.size > def2.maxSize.value) {
           addIssueToContext(ctx, {
             code: ZodIssueCode.too_big,
-            maximum: def.maxSize.value,
+            maximum: def2.maxSize.value,
             type: "set",
             inclusive: true,
             exact: false,
-            message: def.maxSize.message
+            message: def2.maxSize.message
           });
           status.dirty();
         }
@@ -19886,6 +19984,16 @@ skill_gte(Actor, Skill, MinLevel) :-
 :- dynamic(radiant_generated/3).
 :- dynamic(radiant_cooldown_until/2).
 
+% \u2500\u2500 How the objective clauses count \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+% Every count below is findall/3 + length/2, and every total findall/3 +
+% sum_list/2 (the shared engine's own builtin, called and never defined
+% here: docs/tau-wasm-parity.md D-1; an empty list sums to 0). Core's engine
+% has no library(aggregate): a clause that called its counting predicate
+% raised existence_error, so no count goal could ever succeed in core
+% (PL.core-helper-aggregate-all). What each clause counts is unchanged.
+% conformance/prolog/quest-count-goals.json runs each one to success and
+% failure; helper-count-goals.test.ts keeps library(aggregate) out by name.
+
 % \u2500\u2500 Collection objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 % collect(Item, Count) \u2014 player collected enough of an item
 objective_complete(Player, QuestId, Idx) :-
@@ -19896,7 +20004,8 @@ objective_complete(Player, QuestId, Idx) :-
 % collect with unspecified item \u2014 count total unique items collected
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, collect('', Count)),
-    aggregate_all(count, collected(Player, _, _), Total),
+    findall(x, collected(Player, _, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Visit location \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -19938,13 +20047,15 @@ objective_complete(Player, QuestId, Idx) :-
 % \u2500\u2500 Conversation turns (aggregate) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)),
-    aggregate_all(sum(T), talked_to(Player, _, T), Total),
+    findall(T, talked_to(Player, _, T), Terms),
+    sum_list(Terms, Total),
     Total >= RequiredTurns.
 
 % Also support npc_conversation_turns for more granular tracking
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)),
-    aggregate_all(sum(T), npc_conversation_turns(Player, _, T), Total),
+    findall(T, npc_conversation_turns(Player, _, T), Terms),
+    sum_list(Terms, Total),
     Total >= RequiredTurns.
 
 % \u2500\u2500 Deliver item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -19955,20 +20066,23 @@ objective_complete(Player, QuestId, Idx) :-
 % \u2500\u2500 Defeat enemies \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, defeat(EnemyType, Count)),
-    aggregate_all(count, defeated(Player, EnemyType), Total),
+    findall(x, defeated(Player, EnemyType), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % defeat with empty type \u2014 any enemy counts
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, defeat('', Count)),
-    aggregate_all(count, defeated(Player, _), Total),
+    findall(x, defeated(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Vocabulary / learn words \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 % learn_words_count(Count) \u2014 player used enough distinct vocabulary words
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, learn_words_count(Count)),
-    aggregate_all(count, vocab_used(Player, _, 1), Total),
+    findall(x, vocab_used(Player, _, 1), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % learn_words([WordList]) \u2014 player used specific words
@@ -19991,7 +20105,8 @@ objective_complete(Player, QuestId, Idx) :-
 
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, craft_item('', Count)),
-    aggregate_all(sum(Q), crafted(Player, _, Q), Total),
+    findall(Q, crafted(Player, _, Q), Terms),
+    sum_list(Terms, Total),
     Total >= Count.
 
 % \u2500\u2500 Escort NPC \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20002,7 +20117,8 @@ objective_complete(Player, QuestId, Idx) :-
 % \u2500\u2500 Reputation \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, gain_reputation(Faction, Amount)),
-    aggregate_all(sum(D), reputation_change(Player, Faction, D), Total),
+    findall(D, reputation_change(Player, Faction, D), Terms),
+    sum_list(Terms, Total),
     Total >= Amount.
 
 % \u2500\u2500 Solve puzzle \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20159,7 +20275,8 @@ objective_complete(Player, QuestId, Idx) :-
 % \u2500\u2500 Examine object \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, examine_object(Count)),
-    aggregate_all(count, object_examined(Player, _), Total),
+    findall(x, object_examined(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Read sign \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20174,49 +20291,73 @@ objective_complete(Player, QuestId, Idx) :-
 % \u2500\u2500 Write response / describe scene \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, write_response(Count)),
-    aggregate_all(count, response_written(Player, _), Total),
+    findall(x, response_written(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Listen and repeat \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, listen_and_repeat(Count)),
-    aggregate_all(count, pronunciation_passed(Player, _), Total),
+    findall(x, pronunciation_passed(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Pronunciation check \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, pronunciation_check(Count)),
-    aggregate_all(count, pronunciation_passed(Player, _), Total),
+    findall(x, pronunciation_passed(Player, _), Hits),
+    length(Hits, Total),
+    Total >= Count.
+
+% speak_phrase(Count): the converter's goal for speak_phrase, counting what the other two
+% pronunciation goals count (PL.core-quest-converter-language-gaps).
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, speak_phrase(Count)),
+    findall(P, pronunciation_passed(Player, P), Passes),
+    length(Passes, Total),
     Total >= Count.
 
 % \u2500\u2500 Identify / point-and-name \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, identify_object(Count)),
-    aggregate_all(count, object_pointed_named(Player, _), Total),
+    findall(x, object_pointed_named(Player, _), Hits),
+    length(Hits, Total),
+    Total >= Count.
+
+% point_and_name(Count): the converter writes point_and_name under its own name, no longer as
+% identify_object (PL.core-quest-converter-language-gaps); the same facts count for it.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, point_and_name(Count)),
+    findall(O, object_pointed_named(Player, O), Named),
+    length(Named, Total),
     Total >= Count.
 
 % \u2500\u2500 Order food \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, order_food(Count)),
-    aggregate_all(count, food_ordered(Player, _), Total),
+    findall(x, food_ordered(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Haggle price \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, haggle_price(Count)),
-    aggregate_all(count, price_haggled(Player, _), Total),
+    findall(x, price_haggled(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Buy item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, buy_item(Count)),
-    aggregate_all(count, action_performed(Player, buy_item), Total),
+    findall(x, action_performed(Player, buy_item), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Sell item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, sell_item(Count)),
-    aggregate_all(count, action_performed(Player, sell_item), Total),
+    findall(x, action_performed(Player, sell_item), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Give gift \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20233,24 +20374,28 @@ objective_complete(Player, QuestId, Idx) :-
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, photograph(Subject, Count)),
     Subject \\= any,
-    aggregate_all(count, photo_taken(Player, Subject), Total),
+    findall(x, photo_taken(Player, Subject), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, photograph(any, Count)),
-    aggregate_all(count, photo_taken(Player, _), Total),
+    findall(x, photo_taken(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Physical action \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, physical_action(Action, Count)),
     Action \\= '',
-    aggregate_all(count, physical_action_done(Player, Action), Total),
+    findall(x, physical_action_done(Player, Action), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, physical_action('', Count)),
-    aggregate_all(count, physical_action_done(Player, _), Total),
+    findall(x, physical_action_done(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Introduce self \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20261,37 +20406,43 @@ objective_complete(Player, QuestId, Idx) :-
 % \u2500\u2500 Ask for directions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, ask_for_directions(Count)),
-    aggregate_all(count, action_performed(Player, ask_for_directions), Total),
+    findall(x, action_performed(Player, ask_for_directions), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Comprehension quiz \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, comprehension_quiz(Count)),
-    aggregate_all(count, comprehension_done(Player, _), Total),
+    findall(x, comprehension_done(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Translation challenge \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, translation_challenge(Count)),
-    aggregate_all(count, translation_completed(Player, correct), Total),
+    findall(x, translation_completed(Player, correct), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Follow directions \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, follow_directions(Count)),
-    aggregate_all(count, direction_step_done(Player, QuestId, _), Total),
+    findall(x, direction_step_done(Player, QuestId, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Listening comprehension \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, listening_comprehension(Count)),
-    aggregate_all(count, pronunciation_passed(Player, _), Total),
+    findall(x, pronunciation_passed(Player, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Collect vocabulary \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, collect_vocabulary(Count)),
-    aggregate_all(count, vocab_used(Player, _, _), Total),
+    findall(x, vocab_used(Player, _, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Eavesdrop \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20308,7 +20459,8 @@ objective_complete(Player, QuestId, Idx) :-
 :- dynamic(friendship_level/3).
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, build_friendship(Count)),
-    aggregate_all(count, (friendship_level(Player, _, Level), Level >= 3), Total),
+    findall(x, (friendship_level(Player, _, Level), Level >= 3), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Collect clue \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20333,16 +20485,26 @@ objective_complete(Player, QuestId, Idx) :-
     Progress >= 100.
 
 % \u2500\u2500 Meta / aggregation objectives (chapter quests) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
-% vocabulary_activities(Count) \u2014 player completed enough vocab-related actions
+% vocabulary(Count) \u2014 player completed enough vocab-related actions. The converter writes the
+% 'vocabulary' meta-objective under its own name (PL.core-quest-converter-language-gaps);
+% vocabulary_activities(Count) is the name it wrote before, which stored worlds still hold.
+objective_complete(Player, QuestId, Idx) :-
+    quest_objective(QuestId, Idx, vocabulary(Count)),
+    findall(x, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Activities),
+    length(Activities, Total),
+    Total >= Count.
+
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, vocabulary_activities(Count)),
-    aggregate_all(count, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Total),
+    findall(x, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % conversation_activities(Count) \u2014 player had enough conversations
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, conversation_activities(Count)),
-    aggregate_all(sum(T), talked_to(Player, _, T), Total),
+    findall(T, talked_to(Player, _, T), Terms),
+    sum_list(Terms, Total),
     Total >= Count.
 
 % grammar_activities(Count) \u2014 player practiced grammar enough times
@@ -20360,19 +20522,22 @@ objective_complete(Player, QuestId, Idx) :-
 % master_words(Count) \u2014 vocab words used correctly multiple times
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, master_words(Count)),
-    aggregate_all(count, vocab_used(Player, _, 1), Total),
+    findall(x, vocab_used(Player, _, 1), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % learn_new_words(Count) \u2014 distinct vocab words encountered
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, learn_new_words(Count)),
-    aggregate_all(count, vocab_used(Player, _, _), Total),
+    findall(x, vocab_used(Player, _, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % find_vocabulary_items(Count) \u2014 objects examined/identified for vocab
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, find_vocabulary_items(Count)),
-    aggregate_all(count, (object_examined(Player, _) ; object_pointed_named(Player, _)), Total),
+    findall(x, (object_examined(Player, _) ; object_pointed_named(Player, _)), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Equip item \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20399,7 +20564,8 @@ objective_complete(Player, QuestId, Idx) :-
 % \u2500\u2500 Combat action (individual moves) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, combat_action(Count)),
-    aggregate_all(count, combat_action_done(Player, _, _), Total),
+    findall(x, combat_action_done(Player, _, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Accept quest \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20415,7 +20581,8 @@ objective_complete(Player, QuestId, Idx) :-
 % \u2500\u2500 Observe activity \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
 objective_complete(Player, QuestId, Idx) :-
     quest_objective(QuestId, Idx, observe_activity(Count)),
-    aggregate_all(count, activity_observed(Player, _, _), Total),
+    findall(x, activity_observed(Player, _, _), Hits),
+    length(Hits, Total),
     Total >= Count.
 
 % \u2500\u2500 Generic description-based objectives \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
@@ -20512,7 +20679,8 @@ quest_should_be_complete(Player, QuestId) :-
 :- dynamic(reputation_record/3).
 
 reputation(Player, Faction, Total) :-
-    aggregate_all(sum(D), reputation_change(Player, Faction, D), Total).
+    findall(D, reputation_change(Player, Faction, D), Terms),
+    sum_list(Terms, Total).
 reputation(Player, Faction, 0) :-
     \\+ reputation_change(Player, Faction, _).
 
@@ -20687,11 +20855,15 @@ knows_about(NpcId, Topic) :-
 :- dynamic(pronunciation_score/4).
 :- dynamic(pronunciation_passed/2).
 
-% player_avg_pronunciation(Player, Avg) \u2014 average score across all attempts
+% player_avg_pronunciation(Player, Avg) \u2014 average score across all attempts;
+% fails (never raises) for a player with no scores. It totals with sum_list/2,
+% the counting convention above: it called insimul_sum_list/2, which only the
+% advanced pack defines, so this pack raised existence_error wherever it was
+% consulted without that pack (PL.core-helper-sum-list).
 player_avg_pronunciation(Player, Avg) :-
     findall(S, pronunciation_score(Player, _, S, _), Scores),
     Scores \\= [],
-    insimul_sum_list(Scores, Total),
+    sum_list(Scores, Total),
     length(Scores, Count),
     Avg is Total / Count.
 
@@ -20825,12 +20997,17 @@ player_meets_cefr(Player, RequiredLevel) :-
     // Simulation per-timestep state (asserted by the simulation loop)
     "birth_chance/2",
     // birth_chance(MotherId, Probability) — fertility adjusted by child count
+    // random_chance(P) — the HOST's seeded draw: each call draws exactly once from a
+    // stream the host seeds, and succeeds when that draw is below P. No pack defines
+    // it; see RANDOM_CHANCE_CONTRACT below for the whole statement and the reference.
     "random_chance/1",
-    // random_chance(P) — succeeds with probability P (implemented as JS bridge)
     // General state
     "current_timestep/1",
     "current_year/1"
   ];
+  var RANDOM_CHANCE_STATE = "random_chance_state";
+  var RANDOM_CHANCE_MODULUS = 2147483648;
+  var RANDOM_CHANCE_REFERENCE_RULE = `random_chance(P) :- retract(${RANDOM_CHANCE_STATE}(S0)), S1 is (S0 * 1103515245 + 12345) mod ${RANDOM_CHANCE_MODULUS}, assertz(${RANDOM_CHANCE_STATE}(S1)), S1 / ${RANDOM_CHANCE_MODULUS}.0 < P`;
   function getTotTDynamicPredicates() {
     return [...DYNAMIC_DECLARATIONS2];
   }
@@ -24984,6 +25161,21 @@ can_craft(A, R) :-
   \\+ (recipe_tool(R, Tool), \\+ (has_item(A, I, Q), Q > 0, item_type(I, Tool))),
   \\+ (recipe_skill(R, S, Min), \\+ (has_skill(A, S, L), L >= Min)),
   has_inputs(A, R).
+
+% \u2500\u2500 The choice (PL.core-craft-chooser, U110(4) Q2) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% With NO recipe stated, the one a crafting action makes: the first, in the
+% standard order of atoms (core's id order), that this actor may make here and
+% now. No solution is "nothing to make" \u2014 there is no fallback to a recipe the
+% gate would refuse. A stated recipe is asked of can_craft/2 itself. Like
+% can_craft/2 this is the arithmetic half only: whether the world FORBIDS a
+% recipe is forbids/4's, and a host composes the two by taking the first
+% solution of can_craft(A, R), \\+ forbidden_by(A, Act, R, _) \u2014 which is what
+% ProductionDirector.craft does, candidate by candidate.
+craft_choice(A, R) :-
+  nonvar(A),
+  can_craft(A, R),
+  \\+ (can_craft(A, Other), Other @< R).
 `;
   var FARMING_PREDICATES_PROLOG = `
 % \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -25110,6 +25302,19 @@ can_harvest(A, P) :-
   plot_ready(P),
   \\+ (crop_tool(C, Tool), \\+ (has_item(A, I, Q), Q > 0, item_type(I, Tool))),
   \\+ (crop_skill(C, S, Min), \\+ (has_skill(A, S, L), L >= Min)).
+
+% \u2500\u2500 The choice (PL.core-craft-chooser, U110(4) Q2) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+
+% With NO crop stated, the one a planting sows in plot P: the first, in the
+% standard order of atoms (core's id order), that this actor may plant there
+% now. Both the actor and the plot must be BOUND. No solution is "nothing to
+% sow" \u2014 there is no fallback to a crop whose seed nobody holds. A stated crop
+% is asked of can_plant/3 itself.
+plant_choice(A, P, C) :-
+  nonvar(A),
+  nonvar(P),
+  can_plant(A, P, C),
+  \\+ (can_plant(A, P, Other), Other @< C).
 `;
   var FISHING_PREDICATES_PROLOG = `
 % \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
@@ -34568,11 +34773,95 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     return { placements };
   }
 
+  // @insimul/core/src/gathering/physical-actions.ts
+  var PHYSICAL_ACTION_IDS = Object.freeze([
+    "chopping",
+    "cooking",
+    "crafting",
+    "farm_harvest",
+    "farm_plant",
+    "farm_water",
+    "fishing",
+    "harvesting",
+    "herbalism",
+    "mining",
+    "painting",
+    "praying",
+    "reading",
+    "sweeping"
+  ]);
+  var def = (id, displayName, promptVerb, clip, clipFallback, seconds, energyCost, xp, rewards, places, extra = {}) => ({
+    id,
+    displayName,
+    promptVerb,
+    clip,
+    clipFallback,
+    durationMs: seconds * 1e3,
+    energyCost,
+    xp,
+    rewards: extra.production ? [] : rewards.map(([item, chancePercent, min, max]) => ({ item, chancePercent, min, max })),
+    production: extra.production ?? null,
+    tool: extra.tool ?? null,
+    places
+  });
+  var FARM = ["farm", "field", "garden", "plantation", "greenhouse"];
+  var DEFAULT_PHYSICAL_ACTIONS = Object.freeze([
+    def("chopping", "Chop Wood", "Chop", "TreeChopping_Loop", "Interact", 6, 7, 12, [["firewood", 90, 1, 3], ["timber", 30, 1, 1]], ["wood_pile", "lumber_yard", "tree_stump", "forest"], { tool: "axe" }),
+    def("cooking", "Cook", "Cook", "Interact", "Idle_Talking_Loop", 6, 4, 12, [["prepared_food", 80, 1, 1], ["baked_goods", 30, 1, 2]], ["kitchen", "oven", "stove", "hearth", "campfire", "bakery", "restaurant"]),
+    def("crafting", "Craft", "Craft", "Fixing_Kneeling", "Interact", 8, 6, 18, [], ["workbench", "forge", "blacksmith", "workshop", "anvil"], { production: { craft: "crafting", verb: "craft" } }),
+    def("farm_harvest", "Harvest Crops", "Harvest", "Farm_Harvest", "Interact", 6, 10, 15, [], FARM, { production: { craft: "farming", verb: "harvest" } }),
+    def("farm_plant", "Plant Crops", "Plant", "Farm_Harvest", "Interact", 5, 8, 10, [], FARM, { production: { craft: "farming", verb: "plant" } }),
+    def("farm_water", "Water Crops", "Water", "Farm_Watering", "Interact", 4, 5, 8, [], FARM, { production: { craft: "farming", verb: "water" } }),
+    def("fishing", "Fish", "Fish", "Farm_Harvest", "Interact", 10, 15, 15, [], ["water", "river", "lake", "pond", "dock", "pier", "stream", "marsh", "canal"], { production: { craft: "fishing", verb: "fish" } }),
+    def("harvesting", "Harvest", "Harvest", "Farm_Harvest", "Interact", 5, 3, 10, [["herbs", 60, 1, 3], ["vegetables", 50, 1, 2], ["flowers", 30, 1, 2]], ["garden", "farm", "field", "greenhouse", "plantation"]),
+    def("herbalism", "Pick", "Pick", "Farm_Harvest", "Interact", 4, 5, 8, [["lavande", 20, 1, 1], ["romarin", 20, 1, 1], ["menthe", 15, 1, 1], ["rose", 10, 1, 1], ["thym", 10, 1, 1], ["sauge", 10, 1, 1], ["basilic", 5, 1, 1], ["fleur_sauvage", 5, 1, 1]], ["garden", "forest", "meadow", "farm", "herb_shop", "greenhouse", "grove"]),
+    def("mining", "Mine", "Mine", "TreeChopping_Loop", "Interact", 8, 20, 20, [], ["mine", "quarry", "rock", "cave", "mountain", "ore_deposit"], { production: { craft: "mining", verb: "mine" } }),
+    def("painting", "Paint", "Paint", "Interact", "Idle_Talking_Loop", 10, 4, 15, [["painting", 70, 1, 1]], ["easel", "studio", "art_room"]),
+    def("praying", "Pray", "Pray", "Fixing_Kneeling", "Idle", 5, 1, 5, [["blessing_token", 15, 1, 1]], ["altar", "church", "chapel", "shrine", "temple"]),
+    def("reading", "Read", "Study", "Sitting_Idle_Loop", "Idle", 5, 1, 8, [["knowledge_scroll", 20, 1, 1]], ["bookshelf", "library", "desk", "study"]),
+    def("sweeping", "Sweep", "Sweep", "Farm_Watering", "Interact", 4, 2, 5, [["dust_bundle", 30, 1, 1]], ["broom", "porch", "floor", "entrance"])
+  ]);
+  var DEFAULT_PHYSICAL_ACTION_TUNING = Object.freeze({
+    actions: DEFAULT_PHYSICAL_ACTIONS.map((a) => ({ ...a })),
+    seed: "insimul",
+    energyCostPercent: 100,
+    energyGate: true
+  });
+  var BUSINESS_ACTIONS = Object.freeze({
+    art_studio: [{ action: "painting", furniture: "workbench" }],
+    bakery: [{ action: "cooking", furniture: "counter" }],
+    blacksmith: [{ action: "crafting", furniture: "workbench" }],
+    blacksmith_yard: [{ action: "mining", furniture: "anvil" }],
+    bookstore: [{ action: "reading", furniture: "bookshelf" }],
+    carpentry: [{ action: "crafting", furniture: "workbench" }],
+    chapel: [{ action: "praying", furniture: "pew" }],
+    church: [{ action: "praying", furniture: "pew" }],
+    farm: ["farm_plant", "farm_water", "farm_harvest", "harvesting"].map((action) => ({ action, furniture: "counter" })),
+    garden: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
+    greenhouse: ["farm_plant", "farm_water", "farm_harvest", "harvesting", "herbalism"].map((action) => ({ action, furniture: "counter" })),
+    herb_shop: [{ action: "herbalism", furniture: "counter" }],
+    library: [{ action: "reading", furniture: "bookshelf" }],
+    mine: [{ action: "mining", furniture: "workbench" }],
+    pharmacy: [{ action: "herbalism", furniture: "counter" }],
+    restaurant: [{ action: "cooking", furniture: "counter" }],
+    school: [{ action: "reading", furniture: "bookshelf" }],
+    tavern: [{ action: "cooking", furniture: "counter" }],
+    temple: [{ action: "praying", furniture: "pew" }],
+    university: [{ action: "reading", furniture: "bookshelf" }],
+    workshop: [{ action: "crafting", furniture: "workbench" }]
+  });
+  function actionPrompt(tuning, action) {
+    const d = tuning.actions.find((a) => a.id === action);
+    return d ? `${d.promptVerb} here` : action;
+  }
+  var ACTION_REFUSALS = Object.freeze(["unknown_action", "busy", "wrong_place", "no_tool", "too_tired", "production_refused"]);
+
   // @insimul/core/src/props/interactables.ts
   var PROP_ACTIONS = ["open_board", "read_sign", "examine"];
-  var INTERACT_ACTIONS = ["close_panel", "talk", "pick_up", "open_container", "open_board", "enter", "read_sign", "examine"];
-  var INTERACT_ACTION_TIER = Object.freeze(["talk", "pick_up", "open_container", "open_board", "enter"]);
+  var INTERACT_ACTIONS = ["close_panel", "get_off", "talk", "pick_up", "open_container", "open_board", "enter", "gather", "perform", "read_sign", "examine", "board"];
+  var INTERACT_ACTION_TIER = Object.freeze(["talk", "pick_up", "open_container", "open_board", "enter", "gather", "perform"]);
   var INTERACT_LOOK_TIER = Object.freeze(["read_sign", "examine"]);
+  var INTERACT_VEHICLE_TIER = Object.freeze(["board"]);
   var PROP_NOT_OFFERED_REASONS = ["built_fabric", "no_archetype"];
   var INTERACT_REFUSALS = ["bad_position"];
   var PROP_NOT_OFFERED_ARCHETYPES = Object.freeze(["prop.structural.wall", "prop.structural.fence"]);
@@ -34583,7 +34872,10 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     open_container: 2.2,
     open_board: 3.2,
     read_sign: 2.6,
-    examine: 2.6
+    examine: 2.6,
+    board: 3.5,
+    gather: 2,
+    perform: 2.5
   });
   var INTERACT_DEVIATIONS = Object.freeze([
     {
@@ -34645,6 +34937,54 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       unreal: "the board host is chosen from every stated sign, for the first settlement only",
       core: "a sign that states another settlementId is not considered for this settlement's board",
       why: "a world with two settlements posts each board in its own settlement; Brightwater has one"
+    },
+    {
+      id: "vehicle-tie",
+      unreal: "NearestVehicle keeps the LAST placed vehicle at an equal distance (D <= BestSq) over a TMap, whose order is not the authored order",
+      core: "the first listed, as every other tie in this rule",
+      why: "one tie rule across core; a host lists the vehicles in the authored order"
+    },
+    {
+      id: "gather-tier",
+      unreal: "InterimGatherReach: a node or hotspot is reached only where core's target and the world-vehicle tier find nothing, so a sign or an examined prop within 2.6 m, or a vehicle within 3.5 m, takes E instead",
+      core: "nodes and hotspots join the actions tier by nearest, a tie going after the door (gather, then perform); a vehicle is still reached only where nothing else is",
+      why: "gathering and a physical action are acts, and core's looking never shadows an act: a stall, barrel or bench within 2.6 m of a garden or a workbench would make E examine it every time"
+    },
+    {
+      id: "gather-reach",
+      unreal: "kInterimGatherReachM 3.5 m, the talk reach, for both nodes and hotspots",
+      core: "a node 2.0 m (rangesM.gather), a hotspot 2.5 m (rangesM.perform), compared with <=",
+      why: "the reference games: Godot INTERACTION_RADIUS 2.0 and Unity interactionRadius 2 for nodes, Babylon MAX_FURNITURE_DISTANCE 2.5 for hotspots; the talk reach has no gathering source and lets a player fish 3 m off the drawn disc"
+    },
+    {
+      id: "gather-depleted",
+      unreal: 'a depleted node keeps its marker, so E reaches it while its body is hidden and core refuses it ("is used up for now")',
+      core: "a node with no units left is not offered until its respawn instant (respawnAt <= now)",
+      why: "Babylon getNearestNode, Godot _update_nearest_node and Unity Update all skip a depleted node; E on a thing that is not drawn only refuses"
+    },
+    {
+      id: "gather-tie",
+      unreal: "InterimGatherReach keeps the LAST spot at an equal distance (D > Best continue), over a TMap whose order is not the authored order",
+      core: "the first listed, and after the door on a tie with one",
+      why: "one tie rule across core"
+    },
+    {
+      id: "gather-unknown-action",
+      unreal: "a hotspot whose action the table does not hold is prompted with the bare action id (ActionPrompt's fallback)",
+      core: "not offered",
+      why: "startPhysicalAction could only refuse it unknown_action"
+    },
+    {
+      id: "gather-item-words",
+      unreal: '"Gather <item>" with the item atom as it is ("Gather iron_ore")',
+      core: `underscores read as spaces ("Gather iron ore"), as a prop's noun does; an absent or empty item falls back to the node id`,
+      why: "an item atom is a key, not words"
+    },
+    {
+      id: "vehicle-name",
+      unreal: 'the prompt names the vehicle by Name.value_or(Id): a stated empty name reads "Board the "',
+      core: "an empty or absent name falls back to the id, as a villager's and a pick-up's do",
+      why: "a prompt never ends in an empty name"
     }
   ]);
   var round2 = (n) => Math.round(n * 1e9) / 1e9;
@@ -34709,6 +35049,10 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function interactTarget(input, ranges = {}) {
     if (!finitePoint2(input?.at)) return { ok: false, refusal: { code: "bad_position", field: "at" } };
     if (nonEmpty3(input.panel)) return { ok: true, target: { action: "close_panel", kind: "panel", id: input.panel, prompt: "", distance: null } };
+    const aboard = input.aboard;
+    if (aboard && nonEmpty3(aboard.id)) {
+      return { ok: true, target: { action: "get_off", kind: "vehicle", id: aboard.id, prompt: `Get off the ${nonEmpty3(aboard.name) ? aboard.name : aboard.id}`, distance: null } };
+    }
     const reach = { ...INTERACT_RANGES_M, ...ranges };
     const at = input.at;
     const dist = (p) => Math.hypot(p.x - at.x, p.z - at.z);
@@ -34741,12 +35085,35 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       const d = doorPrompt(input.buildings, { position: { x: at.x, y: at.y ?? 0, z: at.z } });
       if (d && d.action === "enter" && d.distance !== null) actions.push({ action: "enter", kind: "door", id: d.building, prompt: `Enter ${d.label}`, distance: d.distance });
     }
+    if (input.busy !== true) {
+      const now = typeof input.now === "number" && Number.isFinite(input.now) ? input.now : null;
+      for (const n of input.nodes ?? []) {
+        if (!n || !nonEmpty3(n.id) || !finitePoint2(n.position) || !Number.isFinite(n.remaining)) continue;
+        const respawned = now !== null && typeof n.respawnAt === "number" && Number.isFinite(n.respawnAt) && n.respawnAt <= now;
+        if (n.remaining <= 0 && !respawned) continue;
+        const words = nonEmpty3(n.item) ? n.item.replace(/_/g, " ") : n.id;
+        offer(actions, { action: "gather", kind: "node", id: n.id, prompt: `Gather ${words}`, distance: dist(n.position) }, reach.gather);
+      }
+      const table = input.actionTable ?? DEFAULT_PHYSICAL_ACTION_TUNING;
+      for (const h of input.hotspots ?? []) {
+        if (!h || !nonEmpty3(h.id) || !nonEmpty3(h.actionType) || !finitePoint2(h.position)) continue;
+        if (!(table.actions ?? []).some((a) => a.id === h.actionType)) continue;
+        offer(actions, { action: "perform", kind: "hotspot", id: h.id, prompt: actionPrompt(table, h.actionType), distance: dist(h.position) }, reach.perform);
+      }
+    }
     const nearest = (list2) => {
       let best = null;
       for (const c of list2) if (best === null || c.distance < best.distance) best = c;
       return best === null ? null : { ...best, distance: round2(best.distance) };
     };
-    return { ok: true, target: nearest(actions) ?? nearest(looks) };
+    const found = nearest(actions) ?? nearest(looks);
+    if (found !== null) return { ok: true, target: found };
+    const rides = [];
+    for (const w of input.vehicles ?? []) {
+      if (!w || !nonEmpty3(w.id) || !finitePoint2(w.position)) continue;
+      offer(rides, { action: "board", kind: "vehicle", id: w.id, prompt: `Board the ${nonEmpty3(w.name) ? w.name : w.id}`, distance: dist(w.position) }, reach.board);
+    }
+    return { ok: true, target: nearest(rides) };
   }
 
   // @insimul/core/src/system-packs/composer.ts
@@ -36318,21 +36685,25 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const lotFactor = Math.max(policy2.scaleMin, Math.min(policy2.scaleMax, wanted));
     let factor = lotFactor;
     const limited = wanted < policy2.scaleMin - 1e-9;
+    const roomBinds = hasFootprint && lotIsBounded(inLot2) && first.required.across > 0 && first.required.away > 0;
     let doorShort = false;
     let doorFactor = 0;
     let doorHeld = false;
+    let doorYields = false;
     const doorLocal = door2.height * g.scale.y * input.nodeScale.y;
     if (policy2.doorClearance > 0 && input.castHeight > 0 && doorLocal > 0) {
       const floor = input.castHeight * policy2.doorClearance / doorLocal;
       doorFactor = quantizeFactor(floor);
       if (floor > factor + 1e-9) {
-        if (floor <= policy2.scaleMax + 1e-9) {
+        doorShort = floor > policy2.scaleMax + 1e-9;
+        if (roomBinds) {
+          doorYields = true;
+        } else if (floor <= policy2.scaleMax + 1e-9) {
           factor = Math.min(policy2.scaleMax, Math.ceil(floor * 1e6) / 1e6);
           doorHeld = true;
         } else {
           factor = policy2.scaleMax;
           doorHeld = factor > lotFactor + 1e-9;
-          doorShort = true;
         }
       }
     }
@@ -36378,10 +36749,6 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       const along = facade.front - front;
       target[0] += sx * along;
       target[1] += sz * along;
-    } else if (doorHeld && lotIsBounded(inLot2) && inLot2.hasFrontage && fitOut.required.away > inLot2.depth + FIT_QUANTUM) {
-      const back = (fitOut.required.away - inLot2.depth) / 2;
-      target[0] -= Math.cos(hostLot.frontageYaw) * back;
-      target[1] -= Math.sin(hostLot.frontageYaw) * back;
     }
     const location = { x: target[0] + shift[0], y: input.node.y, z: target[1] + shift[1] };
     const corners = [];
@@ -36451,6 +36818,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       notes.push("no-door");
     }
     if (doorHeld) notes.push("door-held");
+    if (doorYields) notes.push("door-yields");
     if (doorShort) notes.push("door-below-body");
     if (policy2.doorClearance > 0 && input.castHeight > 0 && hasDoor && doorLocal <= 0) notes.push("door-unmeasured");
     if (limited) notes.push("limited");
@@ -36758,24 +37126,36 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     return pads;
   }
   function gradedHeight(pads, rawHeight, x, z) {
-    let wMax = 0;
-    let wSum = 0;
-    let hSum = 0;
+    const blend = newPadBlend();
     for (const p of pads) {
-      const dx = x - p.cx;
-      const dz = z - p.cz;
-      const away = Math.abs(dx * p.awayX + dz * p.awayZ) - (p.halfAway + LOT_PAD_MARGIN_M);
-      const across = Math.abs(-dx * p.awayZ + dz * p.awayX) - (p.halfAcross + LOT_PAD_MARGIN_M);
-      const outside = Math.hypot(Math.max(0, away), Math.max(0, across));
+      const outside = padFlatOutside(p, x, z);
       if (outside >= LOT_PAD_BLEND_M) continue;
-      const t = 1 - outside / LOT_PAD_BLEND_M;
-      const w = t * t * (3 - 2 * t);
-      wMax = Math.max(wMax, w);
-      wSum += w;
-      hSum += w * p.height;
+      addPadWeight(blend, padBandWeight(outside), p.height);
     }
-    if (wSum <= 0) return rawHeight;
-    return rawHeight + wMax * (hSum / wSum - rawHeight);
+    return blendedHeight(blend, rawHeight);
+  }
+  function padFlatOutside(p, x, z) {
+    const dx = x - p.cx;
+    const dz = z - p.cz;
+    const away = Math.abs(dx * p.awayX + dz * p.awayZ) - (p.halfAway + LOT_PAD_MARGIN_M);
+    const across = Math.abs(-dx * p.awayZ + dz * p.awayX) - (p.halfAcross + LOT_PAD_MARGIN_M);
+    return Math.hypot(Math.max(0, away), Math.max(0, across));
+  }
+  function padBandWeight(outside) {
+    const t = 1 - outside / LOT_PAD_BLEND_M;
+    return t * t * (3 - 2 * t);
+  }
+  function newPadBlend() {
+    return { wMax: 0, wSum: 0, hSum: 0 };
+  }
+  function addPadWeight(blend, w, h) {
+    blend.wMax = Math.max(blend.wMax, w);
+    blend.wSum += w;
+    blend.hSum += w * h;
+  }
+  function blendedHeight(blend, rawHeight) {
+    if (blend.wSum <= 0) return rawHeight;
+    return rawHeight + blend.wMax * (blend.hSum / blend.wSum - rawHeight);
   }
   function gradeTerrain(raw, lots) {
     if (raw.resolution < 2 || raw.sizeX <= 0 || raw.sizeZ <= 0) return { pads: [], grid: null };
@@ -38024,7 +38404,11 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       streetJoinReachM: 18,
       doorStepOutM: 1,
       sampleStepM: 1,
-      maxWalkGrade: 0.2
+      maxWalkGrade: 0.2,
+      doorstepDepthM: 0.6,
+      doorInsetM: 0.3,
+      intoBandM: 0.8,
+      doorBandReachM: FOOTPATH_REACH_M
     },
     transitions: {
       featherM: { road: 3.5, plaza: 3, path: 3, lot: 3 },
@@ -39263,6 +39647,45 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     }
     return best === null ? null : { at: best.at, edge: Math.max(0, best.d - strip.halfWidth) };
   }
+  function roadBandAhead(from, heading, strips, reach) {
+    const fx = Math.cos(heading);
+    const fz = Math.sin(heading);
+    let best = Infinity;
+    const consider = (t) => {
+      if (t >= 0 && t <= reach && t < best) best = t;
+    };
+    const roundEnd = (c, half) => {
+      const ox = from[0] - c[0];
+      const oz = from[1] - c[1];
+      const b = ox * fx + oz * fz;
+      const disc = b * b - (ox * ox + oz * oz - half * half);
+      if (disc >= 0) consider(-b - Math.sqrt(disc));
+    };
+    for (const s of strips) {
+      if (s.surface !== "road" || s.closed || s.points.length < 2) continue;
+      const half = s.halfWidth;
+      for (let i = 0; i + 1 < s.points.length; i += 1) {
+        const a = s.points[i];
+        const b = s.points[i + 1];
+        if (pointSegmentDistance(from, a, b) <= half) return 0;
+        roundEnd(a, half);
+        roundEnd(b, half);
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        if (len === 0) continue;
+        const ux = (b[0] - a[0]) / len;
+        const uz = (b[1] - a[1]) / len;
+        const s0 = (from[0] - a[0]) * -uz + (from[1] - a[1]) * ux;
+        const sd = fx * -uz + fz * ux;
+        if (Math.abs(sd) < 1e-12) continue;
+        for (const side of [half, -half]) {
+          const t = (side - s0) / sd;
+          const along = (from[0] + fx * t - a[0]) * ux + (from[1] + fz * t - a[1]) * uz;
+          if (along >= 0 && along <= len) consider(t);
+        }
+      }
+    }
+    return best === Infinity ? null : best;
+  }
   function composeLaneNetwork(input, rules = DEFAULT_COMPOSITION_RULES) {
     const r = rules.network;
     const { plan: plan2 } = input;
@@ -39352,7 +39775,16 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       const v = va + (line - ua) / (ug - ua) * (vg - va);
       return Math.abs(v) > Math.max(0, rules.yards.gateGapM / 2 - pathHalf) + COMPOSITION_SLACK;
     };
+    const outThroughGap = (l, door2, heading) => {
+      const [u, v] = frame(l, door2);
+      const du = Math.cos(heading) * l.awayX + Math.sin(heading) * l.awayZ;
+      const dv = -Math.cos(heading) * l.awayZ + Math.sin(heading) * l.awayX;
+      if (du <= COMPOSITION_SLACK) return false;
+      return Math.abs(v + (edgeAway(l) - u) / du * dv) <= Math.max(0, rules.yards.gateGapM / 2 - pathHalf) + COMPOSITION_SLACK;
+    };
+    const runOnClear = (a, b) => clear(a, b) && [...houses.values()].every((h) => segmentOutlineDistance(a, b, h) >= pathHalf - COMPOSITION_SLACK);
     const paths = [];
+    const doorsteps = [];
     const noLot = [];
     const served = /* @__PURE__ */ new Set();
     const pathPolylines = [];
@@ -39362,8 +39794,15 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         noLot.push(d.entityId);
         continue;
       }
-      const out = [d.x + Math.cos(d.heading) * r.doorStepOutM, d.z + Math.sin(d.heading) * r.doorStepOutM];
-      const polyline = [[d.x, d.z], out];
+      const ahead = (t) => [d.x + Math.cos(d.heading) * t, d.z + Math.sin(d.heading) * t];
+      const band = roadBandAhead([d.x, d.z], d.heading, plan2.strips, r.doorBandReachM);
+      if (band !== null && band < r.doorstepDepthM) {
+        served.add(lots[k].lotId);
+        doorsteps.push({ entityId: d.entityId, bandAtM: band, way: [ahead(-r.doorInsetM), ahead(band + r.intoBandM)], halfWidth: pathHalf });
+        continue;
+      }
+      const out = ahead(r.doorStepOutM);
+      const polyline = [ahead(-r.doorInsetM), out];
       const lot = lots[k];
       const hull = houses.get(d.entityId) ?? null;
       const ring = hull === null ? null : offsetHull(hull, off);
@@ -39378,6 +39817,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       polyline.push(...mid);
       const tail = polyline[polyline.length - 1];
       if (Math.hypot(gates[k][0] - tail[0], gates[k][1] - tail[1]) > COMPOSITION_SLACK) polyline.push(gates[k]);
+      if (band !== null && outThroughGap(lot, [d.x, d.z], d.heading)) {
+        const end = polyline[polyline.length - 1];
+        const more = band + r.intoBandM - ((end[0] - d.x) * Math.cos(d.heading) + (end[1] - d.z) * Math.sin(d.heading));
+        const to = [end[0] + Math.cos(d.heading) * more, end[1] + Math.sin(d.heading) * more];
+        if (more > COMPOSITION_SLACK && runOnClear(end, to)) polyline.push(to);
+      }
       const p = run(polyline);
       pathPolylines.push(polyline);
       served.add(lots[k].lotId);
@@ -39419,6 +39864,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       gates: lots.map((l, k) => ({ entityId: l.entityId, x: gates[k][0], z: gates[k][1] })),
       lanes,
       paths,
+      doorsteps,
       strips,
       unjoined,
       noLot,
@@ -39587,6 +40033,16 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       terrain: plan2.terrain
     };
   }
+  function doorstepWays(network) {
+    return network.doorsteps.map((d) => ({
+      entityId: `doorstep:${d.entityId}`,
+      surface: "path",
+      lotId: "",
+      points: [d.way[0], d.way[1]],
+      halfWidth: d.halfWidth,
+      closed: false
+    }));
+  }
   function yardLines(yards) {
     return yards.yards.flatMap((y) => y.edges.map((e, k) => ({ entityId: `edge:${y.entityId}:${e.side}:${k}`, points: [e.from, e.to] })));
   }
@@ -39607,7 +40063,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const standing = grouping.props.filter((p) => p.verdict !== "set-aside").map((p) => ({ entityId: p.entityId, x: p.x, z: p.z, radius: radius.get(p.entityId) }));
     const yards = composeYards({ lots: plan2.lots, buildings: input.buildings, doors: input.doors, posts: input.posts ?? [] }, rules);
     const decks = yards.porches.map((d) => ({ entityId: `porch:${d.door}`, outline: porchDeckOutline(d) }));
-    const foliage = composeFoliage({ plan: plan2, buildings: input.buildings, foliage: input.foliage ?? [] }, rules);
+    const kept = doorstepWays(network);
+    const foliage = composeFoliage({ plan: kept.length === 0 ? plan2 : { ...plan2, strips: [...plan2.strips, ...kept] }, buildings: input.buildings, foliage: input.foliage ?? [] }, rules);
     const lanterns = lanternsOnRoutes(
       { plan: plan2, lanterns: input.lanterns ?? [], buildings: [...input.buildings, ...decks], props: [...standing, ...postObstacles(yards, foliage, input.stairs ?? [])], lines: yardLines(yards) },
       rules
@@ -40387,12 +40844,14 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       // PL.native-interact-target: the data tables of conformance/props/interactables.json
       // (core's scripts/emit-props-corpora.ts). Its prose keys (segments, meaning,
       // noun, text, host, read, examine, board, notOfferedResult, target, ranges,
-      // notHere) are rules written out, not data, and are not here.
+      // vehicles, notHere, gathering) are rules written out, not data, and are not here.
       "props-interactables": {
         propActions: PROP_ACTIONS,
         actions: INTERACT_ACTIONS,
         actionTier: INTERACT_ACTION_TIER,
         lookTier: INTERACT_LOOK_TIER,
+        // core's PL.core-vehicle-rules: `board`, reached only where nothing else is.
+        vehicleTier: INTERACT_VEHICLE_TIER,
         notOffered: PROP_NOT_OFFERED_ARCHETYPES,
         notOfferedReasons: PROP_NOT_OFFERED_REASONS,
         signArchetypes: PROP_SIGN_ARCHETYPES,
@@ -40420,6 +40879,14 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     optObject(method, args.villager, "villager");
     optObject(method, args.board, "board");
     if (args.panel !== void 0 && args.panel !== null) needString(method, args.panel, "panel");
+    optObject(method, args.aboard, "aboard");
+    for (const key of ["vehicles", "nodes", "hotspots"]) {
+      (optArrayValue(method, args[key], key) ?? []).forEach((item, i) => needObject(method, item, `${key}[${i}]`));
+    }
+    if (optObject(method, args.actionTable, "actionTable") !== void 0) {
+      optionalArg(args.actionTable.actions, (v) => objectList(method, v, "actionTable.actions"));
+    }
+    optBoolean(method, args.busy, "busy");
     const ranges = optObject(method, args.ranges, "ranges") ?? {};
     for (const [k, v] of Object.entries(ranges)) needNumber(method, v, `ranges.${k}`);
     return [args, ranges];
@@ -40523,6 +40990,18 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     needObject(method, value, name);
     needArray(method, value.occupants, `${name}.occupants`);
     return value;
+  }
+  function riderVehicleArg(method, value, name) {
+    vehicleStateArg(method, value, name);
+    needString(method, value.id, `${name}.id`);
+    stringList(method, value.occupants, `${name}.occupants`);
+    return value;
+  }
+  function animationIntentArg(method, value, name) {
+    return oneOf(method, value, ANIMATION_INTENTS, name);
+  }
+  function riderIntentArg(method, value, name) {
+    return value === void 0 || value === null ? null : animationIntentArg(method, value, name);
   }
   function routeArg(method, value, name) {
     needObject(method, value, name);
@@ -41890,7 +42369,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     // out once per settlement and sends with each call.
     /**
      * `props.interactables.target { at, panel?, villager?, pickups?, containers?,
-     * buildings?, props?, board?, ranges? }` → core's `interactTarget`: `{ ok:
+     * buildings?, props?, board?, ranges?, aboard?, vehicles?, nodes?, hotspots?,
+     * actionTable?, busy?, now? }` → core's `interactTarget`: `{ ok:
      * true, target: { action, kind, id, prompt, distance } | null }` or `{ ok:
      * false, refusal: { code: 'bad_position', field: 'at' } }`. The ONE thing a
      * press of E acts on: an open props `panel` closes (`close_panel`); else the
@@ -41901,6 +42381,13 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      * only with no action in range the nearest `read_sign` or `examine` prop.
      * `prompt` is the words after the key glyph ("Talk to Ada", "Read the sign").
      * `ranges` overrides any of `props.contract`'s `rangesM` for this call.
+     * A game that runs the vehicles pack also states `aboard` (E gets off it, `get_off`,
+     * second only to an open panel) and `vehicles` (`board` the nearest, only when
+     * nothing else is in range; core's PL.core-vehicle-rules); one that runs the
+     * gathering pack states `nodes` (`gather`), `hotspots` (`perform`, prompted from
+     * `actionTable`, core's defaults when absent), `busy` and `now` (core's
+     * PL.core-gather-reach-tier: both rows in the actions tier after `enter`). Absent,
+     * nothing above changes; `props.contract` states the tiers and ranges.
      */
     "props.interactables.target": (args) => {
       const [input, ranges] = coded("invalid-input", () => interactInputOf("props.interactables.target", args));
@@ -43031,6 +43518,52 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     "traversal.lending.vehicleLender": (args) => ({ lender: vehicleLender(args.vehicle) }),
     /** `traversal.lending.personalLender { kind }` → `{ lender }` — core's `personalLender`: `personal:<kind>`. */
     "traversal.lending.personalLender": (args) => ({ lender: personalLender(args.kind) }),
+    // ── the rider's intent (core's PL.core-ride-intent, 844020e, U106(4); PL.native-bundle-core) ──
+    // What a body aboard a vehicle is DRAWN as: core's `traversal/rider-intent`, one row per
+    // function. An order is one decision, so the order that put a body on a horse is long
+    // gone while it rides; a host asks these after a mount, a board, a disembark or a load
+    // and draws `body`. One atom for every vehicle (`ride`, the atom core's catalogue
+    // declares for `drive` and `mount_vehicle`); getting off gives the body's own `prior`
+    // back. Nothing here is a clip or a seat. A session asks the same through its
+    // `riderIntent` and `riders` ops (`traversal.session.apply`).
+    /**
+     * `traversal.rider.posture { actor, state?, vehicles? }` → `{ posture: { kind, aboard } }`
+     * — core's `riderPostureOf`: the personal kind `actor` rides in `state` (a
+     * `traversal.personal.*` state; absent or null: nobody rides) and the first world
+     * vehicle of `vehicles` (each a `VehicleState`, as `stateOf` and `roster` answer them;
+     * absent: none), in canonical id order, that lists `actor` among its occupants, driver
+     * or passenger. Both may be set.
+     */
+    "traversal.rider.posture": (args) => {
+      const m = "traversal.rider.posture";
+      const [actor, state, vehicles] = coded("invalid-input", () => [
+        needString(m, args.actor, "actor"),
+        optionalArg(args.state, (v) => personalStateArg(m, v)) ?? null,
+        (optionalArg(args.vehicles, (v) => needArray(m, v, "vehicles")) ?? []).map((v, i) => riderVehicleArg(m, v, `vehicles[${i}]`))
+      ]);
+      return { posture: plain(riderPostureOf(actor, state, vehicles)) };
+    },
+    /** `traversal.rider.intent { posture: { kind, aboard } }` → `{ rider }` — core's `riderIntent`: `ride` aboard anything (a kind or a world vehicle), null aboard nothing. */
+    "traversal.rider.intent": (args) => {
+      const m = "traversal.rider.intent";
+      const posture = coded("invalid-input", () => {
+        needObject(m, args.posture, "posture");
+        return { kind: kindOrNull(m, args.posture.kind, "posture.kind"), aboard: kindOrNull(m, args.posture.aboard, "posture.aboard") };
+      });
+      return { rider: riderIntent(posture) };
+    },
+    /** `traversal.rider.body { prior, rider? }` → `{ body }` — core's `bodyIntent`: what the host draws, the rider intent while there is one (`rider`, as `traversal.rider.intent` answers it), else `prior`, the body's own (its order's intent, or the host's locomotion for the player). Both are animation intents. */
+    "traversal.rider.body": (args) => {
+      const m = "traversal.rider.body";
+      const [prior, rider] = coded("invalid-input", () => [animationIntentArg(m, args.prior, "prior"), riderIntentArg(m, args.rider, "rider")]);
+      return { body: bodyIntent(prior, rider) };
+    },
+    /** `traversal.rider.vehicleRiders { state }` → `{ riders }` — core's `vehicleRiderIntents`: every body a world vehicle carries (`state`, a `VehicleState`), occupant → `ride`, in canonical order; a parked vehicle gives `{}`, whoever owns it. */
+    "traversal.rider.vehicleRiders": (args) => {
+      const m = "traversal.rider.vehicleRiders";
+      const state = coded("invalid-input", () => riderVehicleArg(m, args.state, "state"));
+      return { riders: plain(vehicleRiderIntents(state)) };
+    },
     /**
      * `traversal.save.block { planner?, vehicles?, fastTravel?, riding? }` → `{ key, block }`
      * — the block a save stores at `currentState.extensions[key]` (`key` is core's
@@ -43153,6 +43686,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      *    for an actor it does not hold).
      *  - personal vehicles: `mount { actor, kind }`, `dismount { actor }`, `cycle { actor }`
      *    → `{ result, delta }` (`personalSessionVerb`, core's doc §8 wiring).
+     *  - the rider's intent (core's PL.core-ride-intent): `riderIntent { actor, prior }` →
+     *    `{ posture, rider, body }` (the `traversal.rider.*` rows over the session's riders
+     *    and its registry's roster: what `actor` is aboard, the rider intent and what the
+     *    host draws given `prior`, an animation intent); `riders { vehicle }` → `{ riders }`
+     *    (every body the world vehicle carries with its intent; `{}` parked or unknown).
+     *    Neither changes any state.
      *  - save: `save` → `{ key, block }` (the four layers' block, as `traversal.save.block`
      *    writes it); `load { block? }` → `{ ok: true, dropped }` after core's
      *    `readTraversalBlock` hands each member to its layer's `restore()` and `riding` to
@@ -43220,6 +43759,16 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         canFastTravel: async ({ director }, op) => ({ decision: await director.canFastTravel(op.actor, op.to) }),
         fastTravel: async ({ director }, op) => ({ report: await director.fastTravel(op.actor, op.to) }),
         meter: ({ pool }, op) => ({ meter: pool.get(op.actor) ?? null }),
+        riderIntent: (st, op) => {
+          const [actor, prior] = coded("invalid-input", () => [needString(m, op.actor, "actor"), animationIntentArg(m, op.prior, "prior")]);
+          const posture = riderPostureOf(actor, st.riding, st.registry.roster());
+          const rider = riderIntent(posture);
+          return { posture, rider, body: bodyIntent(prior, rider) };
+        },
+        riders: ({ registry }, op) => {
+          const state = registry.stateOf(coded("invalid-input", () => needString(m, op.vehicle, "vehicle")));
+          return { riders: state === void 0 || state === null ? {} : vehicleRiderIntents(state) };
+        },
         mount: (st, op) => personalSessionVerb(st, "mount", op),
         dismount: (st, op) => personalSessionVerb(st, "dismount", op),
         cycle: (st, op) => personalSessionVerb(st, "cycle", op),

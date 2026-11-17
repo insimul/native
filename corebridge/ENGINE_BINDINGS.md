@@ -77,7 +77,7 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
    `PLAN.md` §4). **Registered extensions:** an engine that keeps its own list of
    registered save extensions (Unreal's `RegisteredExtensions()` in its interim
    village save) holds it to `save.rules`' `extensionKeys`, which is core's
-   `extensionRegistry` at this library's pin, sorted: **22 keys at core 6cd4b4e**
+   `extensionRegistry` at this library's pin, sorted: **22 keys at core d88b6f0** (as at 6cd4b4e)
    (`achievements`, `aiBlackboards`, `detectionStates`, `droppedFacts`,
    `evaluations`, `gamification`, `gathering`, `introShown`, `languageLearning`,
    `npcLife`, `platformer`, `playthroughTelemetry`, `progression`, `puzzle`,
@@ -539,6 +539,23 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
 
   Nothing of the copy is left without a row. The binding's `FSeatBook` stays the
   binding's (bookkeeping over the settle rows), and so does carrying out an order.
+
+  **The rider's intent (this library from the d88b6f0 pin, PL.native-bundle-core;
+  core's PL.core-ride-intent, U106(4), the P9e critic's M4 "rides not drawn").** What
+  a body aboard a vehicle is drawn as is core's, not the binding's: after a mount, a
+  board, a disembark or a load the binding asks the session's op `riderIntent { actor,
+  prior }` → `{ posture: { kind, aboard }, rider, body }` and draws `body` (`ride`
+  aboard anything, driver and passenger alike; off it, the `prior` it sent back), and
+  op `riders { vehicle }` → `{ riders }` for every body a world vehicle carries (`{}`
+  parked: an owner is not a rider). Stateless, over the JSON the other rows answer:
+  `traversal.rider.posture { actor, state, vehicles }`, `.intent { posture }`, `.body
+  { prior, rider }`, `.vehicleRiders { state }`. Core's corpus drives them through the
+  `intent` and `riders` steps of `session.json` and `mounts.json` (7 cases at the pin).
+  The interact rows take the vehicles and gathering packs' inputs too (`aboard`,
+  `vehicles`, `nodes`, `hotspots`, `actionTable`, `busy`, `now` on
+  `props.interactables.target`; core's PL.core-vehicle-rules and
+  PL.core-gather-reach-tier), so E's `get_off`, `board`, `gather` and `perform` are
+  core's answers as well.
 
   **What changes for the binding**: tunings are core's resolved tunings, read once
   from the IR through the four reader rows and sent back on each call; a seat's

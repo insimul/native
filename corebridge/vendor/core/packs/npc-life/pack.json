@@ -61,6 +61,7 @@
     { "id": "greetingBasePpm", "type": "integer", "min": 0, "max": 1000000, "maps": "GreetingTuning.basePpm", "source": "world", "doc": "how chatty a world's villagers are, before personality" },
     { "id": "greetingCooldownMs", "type": "integer", "min": 0, "maps": "GreetingTuning.perNpcCooldownMs", "source": "core-default" },
     { "id": "greetingGlobalCooldownMs", "type": "integer", "min": 0, "maps": "GreetingTuning.globalCooldownMs", "source": "core-default" },
+    { "id": "greetingUnvoicedLineMs", "type": "integer", "min": 0, "maps": "GreetingTuning.unvoicedLineMs", "source": "core-default", "doc": "how long a greeting with no voice holds the one voice (a voiced one holds it for its audio)" },
     { "id": "followDistanceMm", "type": "integer", "min": 0, "maps": "EscortTuning.followDistanceMm", "source": "core-default" },
     { "id": "maxFollowRangeMm", "type": "integer", "min": 0, "maps": "EscortTuning.maxFollowRangeMm", "source": "core-default", "doc": "an escort left farther behind than this is put down near the player" },
     { "id": "minCustomers", "type": "integer", "min": 0, "maps": "PopulationTuning.minCustomers", "source": "world" },

@@ -597,7 +597,7 @@ add_test(NAME core_vendor COMMAND
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs)
 # core_vendor also holds save.rules' extensionKeys (PL.native-save-extension-keys,
 # U110): every save.rules case under corebridge/tests/cases/ must state exactly the
-# sorted keys of the vendored bundle's extensionRegistry (22 at core 6cd4b4e), so a
+# sorted keys of the vendored bundle's extensionRegistry (22 at core d88b6f0, as at 6cd4b4e), so a
 # core pin that registers a new extension is red until the cases change on purpose.
 # Its negative control runs that check alone over tests/save-extension-keys-negative/
 # (a dropped key, a reordered list, an unregistered key, a list loosened to any array,

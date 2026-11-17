@@ -24,14 +24,15 @@
             } },
             "props-interactables": { "$subset": {
               "propActions": ["open_board", "read_sign", "examine"],
-              "actionTier": ["talk", "pick_up", "open_container", "open_board", "enter"],
+              "actionTier": ["talk", "pick_up", "open_container", "open_board", "enter", "gather", "perform"],
               "lookTier": ["read_sign", "examine"],
+              "vehicleTier": ["board"],
               "notOffered": ["prop.structural.wall", "prop.structural.fence"],
               "signArchetypes": ["prop.structural.sign"],
-              "rangesM": { "talk": 3.5, "pick_up": 2.2, "open_container": 2.2, "open_board": 3.2, "read_sign": 2.6, "examine": 2.6 },
+              "rangesM": { "talk": 3.5, "pick_up": 2.2, "open_container": 2.2, "open_board": 3.2, "read_sign": 2.6, "examine": 2.6, "board": 3.5, "gather": 2, "perform": 2.5 },
               "doorPromptRadiusM": 2,
               "refusals": ["bad_position"],
-              "deviations": { "$len": 10 }
+              "deviations": { "$len": 18 }
             } }
           }
         }
@@ -359,12 +360,30 @@
         {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "panel": 1}, "expectError": "`panel` must be a string"},
         {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "ranges": []}, "expectError": "`ranges` must be a JSON object"},
         {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "ranges": {"talk": "5"}}, "expectError": "[invalid-input] insimulcore: props.interactables.target: `ranges.talk` must be a finite number"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "aboard": "cart"}, "expectError": "`aboard` must be a JSON object"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "vehicles": {"id": "cart"}}, "expectError": "[invalid-input] insimulcore: props.interactables.target: `vehicles` must be an array"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "nodes": [1]}, "expectError": "`nodes[0]` must be a JSON object"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "hotspots": "anvil"}, "expectError": "`hotspots` must be an array"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "actionTable": []}, "expectError": "`actionTable` must be a JSON object"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "actionTable": {"actions": "smithing"}}, "expectError": "`actionTable.actions` must be an array"},
+        {"call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "busy": "yes"}, "expectError": "`busy` must be a boolean"},
         {"call": "props.interactables.interact", "args": {}, "expectError": "[invalid-input] insimulcore: props.interactables.interact: `prop` must be a JSON object"},
         {"call": "props.interactables.interact", "args": {"prop": {"id": "sign_near", "archetype": "prop.structural.sign", "position": {"x": 1, "y": 0, "z": 0}, "text": "Smithy"}, "board": "sign_near"}, "expectError": "`board` must be a JSON object"},
         {"call": "props.interactables.meaning", "args": {"prop": ["sign_near"]}, "expectError": "[invalid-input] insimulcore: props.interactables.meaning: `prop` must be a JSON object"},
         {"call": "props.interactables.host", "args": {"props": {}, "settlement": null}, "expectError": "[invalid-input] insimulcore: props.interactables.host: `props` must be an array"},
         {"call": "props.interactables.host", "args": {"props": [], "settlement": "s1"}, "expectError": "`settlement` must be a JSON object"},
         {"call": "props.interactables.noun", "args": {"archetype": 3}, "expectError": "[invalid-input] insimulcore: props.interactables.noun: `archetype` must be a string"}
+      ]
+    },
+    {
+      "name": "props.interactables.target: the vehicles and gathering packs' inputs reach core (PL.native-bundle-core; core's PL.core-vehicle-rules and PL.core-gather-reach-tier): aboard, E gets off; a vehicle within the talk reach is boarded and one beyond it is not; a node is gathered before a farther hotspot, which alone is performed with its action's verb; busy offers neither (each expectation computed by core's interactTarget at the d88b6f0 pin)",
+      "steps": [
+        { "call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "aboard": {"id": "cart", "name": "A hay cart"}, "props": [{"id": "barrel_1", "archetype": "prop.container.barrel", "position": {"x": 1, "z": 0}}]}, "expect": {"ok": true, "target": {"action": "get_off", "kind": "vehicle", "id": "cart", "prompt": "Get off the A hay cart", "distance": null}} },
+        { "call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "vehicles": [{"id": "skiff", "position": {"x": 3, "z": 0}}, {"id": "cart", "name": "A hay cart", "position": {"x": 0, "z": 3.4}}]}, "expect": {"ok": true, "target": {"action": "board", "kind": "vehicle", "id": "skiff", "prompt": "Board the skiff", "distance": 3}} },
+        { "call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "vehicles": [{"id": "skiff", "position": {"x": 3.6, "z": 0}}]}, "expect": {"ok": true, "target": null} },
+        { "call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "nodes": [{"id": "node_1", "item": "iron_ore", "position": {"x": 1.5, "z": 0}, "remaining": 3}], "hotspots": [{"id": "anvil_1", "actionType": "smithing", "position": {"x": 2.4, "z": 0}}], "actionTable": {"actions": [{"id": "smithing", "promptVerb": "Smith"}]}}, "expect": {"ok": true, "target": {"action": "gather", "kind": "node", "id": "node_1", "prompt": "Gather iron ore", "distance": 1.5}} },
+        { "call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "hotspots": [{"id": "anvil_1", "actionType": "smithing", "position": {"x": 2.4, "z": 0}}], "actionTable": {"actions": [{"id": "smithing", "promptVerb": "Smith"}]}}, "expect": {"ok": true, "target": {"action": "perform", "kind": "hotspot", "id": "anvil_1", "prompt": "Smith here", "distance": 2.4}} },
+        { "call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "busy": true, "nodes": [{"id": "node_1", "item": "iron_ore", "position": {"x": 1.5, "z": 0}, "remaining": 3}]}, "expect": {"ok": true, "target": null} }
       ]
     }
   ]

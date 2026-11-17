@@ -3,9 +3,9 @@
  "description": "core's quest-golden corpora through quest.hydrate and quest.radiantTick (the engines' parity surface); the radiant facts are an order-independent multiset, as core declares them",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "6cd4b4e499efde9c73505fae1f397611138c154e",
+  "coreCommit": "d88b6f0311065f0d2ffd8767d9a65359ea451655",
   "files": {
-   "conformance/quests/hydration-cases.json": "f735845a1c2d227867e5c8a489117e10a462ed387df104d25a48cfdd47a477f1",
+   "conformance/quests/hydration-cases.json": "a20e251badfe1e035f877f0ff039b0653271bae1800278f90f9c8276411df69a",
    "conformance/quests/radiant-cases.json": "d09e08e434fb1c4adcc09c2bb7727f5719a3352052b81b2ebb8eae840ed448d5"
   }
  },
@@ -214,6 +214,128 @@
          "completionTrigger": "clue_discovered",
          "dependsOn": [
           "obj_2"
+         ]
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "hydrate language_goals",
+   "steps": [
+    {
+     "call": "quest.hydrate",
+     "args": {
+      "content": "quest(q_market_words, 'Words at the Market', vocabulary, beginner, active).\nquest_objective(q_market_words, 0, vocabulary(4)).\nquest_objective(q_market_words, 1, vocabulary_activities(2)).\nquest_objective(q_market_words, 2, speak_phrase(3)).\nquest_objective(q_market_words, 3, point_and_name(2)).\nquest_objective(q_market_words, 4, identify_object(1)).\nquest_objective(q_market_words, 5, pronunciation_check(1)).\nquest_objective(q_market_words, 6, listen_and_repeat(2)).\nquest_objective_field(q_market_words, 5, difficulty, 'advanced').\nquest_objective_field(q_market_words, 5, max_attempts, 2).\nquest_objective_field(q_market_words, 6, difficulty, 'beginner').\nquest_objective_field(q_market_words, 6, not_a_field, 7).\nquest_objective_field(q_market_words, 2, max_attempts, 4).\nquest_completion(q_market_words, all_objectives_complete)."
+     },
+     "expect": {
+      "quest": {
+       "title": "Words at the Market",
+       "questType": "vocabulary",
+       "difficulty": "beginner",
+       "status": "active",
+       "completionCriteria": {
+        "type": "all_objectives",
+        "description": "Complete all objectives"
+       },
+       "objectives": [
+        {
+         "id": "obj_0",
+         "type": "vocabulary",
+         "description": "Complete 4 vocabulary activities",
+         "requiredCount": 4
+        },
+        {
+         "id": "obj_1",
+         "type": "vocabulary",
+         "description": "Complete 2 vocabulary activities",
+         "requiredCount": 2
+        },
+        {
+         "id": "obj_2",
+         "type": "speak_phrase",
+         "description": "Speak 3 phrases",
+         "requiredCount": 3,
+         "maxAttempts": 4
+        },
+        {
+         "id": "obj_3",
+         "type": "point_and_name",
+         "description": "Point and name 2 objects",
+         "requiredCount": 2
+        },
+        {
+         "id": "obj_4",
+         "type": "identify_object",
+         "description": "Identify 1 object",
+         "requiredCount": 1
+        },
+        {
+         "id": "obj_5",
+         "type": "pronunciation_check",
+         "description": "Complete 1 pronunciation check",
+         "requiredCount": 1,
+         "difficulty": "advanced",
+         "maxAttempts": 2
+        },
+        {
+         "id": "obj_6",
+         "type": "listen_and_repeat",
+         "description": "Listen and repeat 2 phrases",
+         "requiredCount": 2,
+         "difficulty": "beginner"
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "hydrate vocabulary_target_words",
+   "steps": [
+    {
+     "call": "quest.hydrate",
+     "args": {
+      "content": "quest(q_baker_words, 'Words at the Bakery', vocabulary, beginner, active).\nquest_objective(q_baker_words, 0, vocabulary(3)).\nquest_objective(q_baker_words, 1, vocabulary(10)).\nquest_objective(q_baker_words, 2, vocabulary(2)).\nquest_objective_field(q_baker_words, 0, target_word, 'pain').\nquest_objective_field(q_baker_words, 2, target_word, 'sel').\nquest_objective_field(q_baker_words, 0, target_word, 'aujourd\\'hui').\nquest_objective_field(q_baker_words, 0, target_word, 'Café').\nquest_completion(q_baker_words, all_objectives_complete)."
+     },
+     "expect": {
+      "quest": {
+       "title": "Words at the Bakery",
+       "questType": "vocabulary",
+       "difficulty": "beginner",
+       "status": "active",
+       "completionCriteria": {
+        "type": "all_objectives",
+        "description": "Complete all objectives"
+       },
+       "objectives": [
+        {
+         "id": "obj_0",
+         "type": "vocabulary",
+         "description": "Complete 3 vocabulary activities",
+         "requiredCount": 3,
+         "targetWords": [
+          "pain",
+          "aujourd'hui",
+          "Café"
+         ]
+        },
+        {
+         "id": "obj_1",
+         "type": "vocabulary",
+         "description": "Complete 10 vocabulary activities",
+         "requiredCount": 10
+        },
+        {
+         "id": "obj_2",
+         "type": "vocabulary",
+         "description": "Complete 2 vocabulary activities",
+         "requiredCount": 2,
+         "targetWords": [
+          "sel"
          ]
         }
        ]

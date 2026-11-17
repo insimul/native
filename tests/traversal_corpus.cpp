@@ -510,19 +510,22 @@ const std::vector<Area> &areas() {
 	     {"traversal-ground-seating"},
 	     {{"settle", {"target", "at", "unseat"}}}},
 	    // Slice 2: the stateful layers. core's TRAVERSAL_SYSTEMS_CORPUS_* for each file.
+	    // `intent` and `riders` (session) and `intent` (mounts): core's PL.core-ride-intent, bound by
+	    // PL.native-bundle-core (the session's riderIntent/riders ops; the traversal.rider.* rows).
 	    {"traversal/session", "traversal", {"run"},
 	     {"traversal.session.create", "traversal.session.apply"},
 	     true,
 	     {"traversal-planner", "traversal-vehicles", "traversal-fast-travel"},
 	     {{"run", {"register", "modes", "affordances", "route", "can", "traverse", "block", "unblock", "board", "drive", "disembark",
-	               "discover", "destinations", "fastTravel", "mount", "dismount", "cycle", "save", "load"}}}},
+	               "discover", "destinations", "fastTravel", "mount", "dismount", "cycle", "save", "load", "intent", "riders"}}}},
 	    {"traversal/mounts", "traversal", {"tuning", "pace", "modes", "run"},
 	     {"traversal.personal.tuning", "traversal.personal.pace", "traversal.personal.label", "traversal.personal.modes",
 	      "traversal.personal.initial", "traversal.personal.mount", "traversal.personal.dismount", "traversal.personal.cycle",
-	      "traversal.personal.saveRows", "traversal.personal.fromSave"},
+	      "traversal.personal.saveRows", "traversal.personal.fromSave", "traversal.rider.posture", "traversal.rider.intent",
+	      "traversal.rider.body"},
 	     true,
 	     {"traversal-vehicles"},
-	     {{"run", {"mount", "dismount", "cycle", "save", "load"}}}},
+	     {{"run", {"mount", "dismount", "cycle", "save", "load", "intent"}}}},
 	    {"traversal/save", "traversal", {"block", "read", "restore"},
 	     {"traversal.save.block", "traversal.save.read", "traversal.session.create", "traversal.session.apply"},
 	     true,
@@ -1023,6 +1026,28 @@ bool drive_session(Caller &c, const JsonValue &input, JsonValuePtr &out, std::st
 				items.emplace_back("events", take(p.events));
 				rec.push_back(record_of(d, items));
 			}
+		} else if (d == "intent") {
+			// core's runner: { actor, kind, aboard, rider, body } over the session's riders and roster.
+			if (!session_apply(c, scope.handle, {op_of("riderIntent", step, {"actor", "prior"})}, p, rs, nullptr, why)) return false;
+			JsonValuePtr posture = res(0, "posture"), rider = res(0, "rider"), body = res(0, "body");
+			if (!posture || !rider || !body) return false;
+			const JsonValue *kind = posture->find("kind"), *aboard = posture->find("aboard");
+			if (!kind || !aboard) return why = "riderIntent's posture has no kind or aboard", false;
+			Items items;
+			add_if(items, "actor", step.find("actor"));
+			items.emplace_back("kind", copy_of(*kind));
+			items.emplace_back("aboard", copy_of(*aboard));
+			items.emplace_back("rider", rider);
+			items.emplace_back("body", body);
+			rec.push_back(record_of(d, items));
+		} else if (d == "riders") {
+			if (!session_apply(c, scope.handle, {op_of("riders", step, {"vehicle"})}, p, rs, nullptr, why)) return false;
+			JsonValuePtr riders = res(0, "riders");
+			if (!riders) return false;
+			Items items;
+			add_if(items, "vehicle", step.find("vehicle"));
+			items.emplace_back("riders", riders);
+			rec.push_back(record_of(d, items));
 		} else {
 			return why = "unknown session step '" + d + "'", false;
 		}
@@ -1115,6 +1140,31 @@ bool drive_mounts(Caller &c, const std::string &op, const JsonValue &input, Json
 			JsonValuePtr riding = rows_of(state);
 			if (!riding) return false;
 			rec.push_back(record_of(d, {{"riding", riding}, {"dropped", dropped}}));
+		} else if (d == "intent") {
+			// core's runner: no registry in a mounts run, so the world vehicle the actor is aboard is the
+			// step's stated inVehicle (null when absent), as every mounts step states it.
+			Items pargs = {{"state", state}};
+			add_if(pargs, "actor", step.find("actor"));
+			JsonValuePtr posture = member(row("traversal.rider.posture", pargs), "posture", "traversal.rider.posture", why);
+			if (!posture) return false;
+			const JsonValue *kind = posture->find("kind");
+			if (!kind) return why = "traversal.rider.posture answered no kind", false;
+			const JsonValue *in_vehicle = step.find("inVehicle");
+			JsonValuePtr aboard = in_vehicle && in_vehicle->type == JsonType::String ? copy_of(*in_vehicle) : json_null();
+			JsonValuePtr stated = make_object({{"kind", copy_of(*kind)}, {"aboard", aboard}});
+			JsonValuePtr rider = member(row("traversal.rider.intent", Items{{"posture", stated}}), "rider", "traversal.rider.intent", why);
+			if (!rider) return false;
+			Items bargs = {{"rider", rider}};
+			add_if(bargs, "prior", step.find("prior"));
+			JsonValuePtr body = member(row("traversal.rider.body", bargs), "body", "traversal.rider.body", why);
+			if (!body) return false;
+			Items items;
+			add_if(items, "actor", step.find("actor"));
+			items.emplace_back("kind", copy_of(*kind));
+			items.emplace_back("aboard", aboard);
+			items.emplace_back("rider", rider);
+			items.emplace_back("body", body);
+			rec.push_back(record_of(d, items));
 		} else {
 			return why = "unknown mounts step '" + d + "'", false;
 		}

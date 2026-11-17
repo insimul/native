@@ -14,20 +14,26 @@
     ],
     "actions": [
       "close_panel",
+      "get_off",
       "talk",
       "pick_up",
       "open_container",
       "open_board",
       "enter",
+      "gather",
+      "perform",
       "read_sign",
-      "examine"
+      "examine",
+      "board"
     ],
     "actionTier": [
       "talk",
       "pick_up",
       "open_container",
       "open_board",
-      "enter"
+      "enter",
+      "gather",
+      "perform"
     ],
     "lookTier": [
       "read_sign",
@@ -50,7 +56,10 @@
       "open_container": 2.2,
       "open_board": 3.2,
       "read_sign": 2.6,
-      "examine": 2.6
+      "examine": 2.6,
+      "board": 3.5,
+      "gather": 2,
+      "perform": 2.5
     },
     "doorPromptRadiusM": 2,
     "refusals": [
@@ -67,7 +76,12 @@
     "notOfferedResult": "interact on a prop with no meaning is refused not_offered (field archetype, with its reason)",
     "target": "at not a finite point -> bad_position. An open panel (a non-empty panel) -> close_panel. Else the actions tier: the villager the host would talk to (talk, \"Talk to <name or id>\"), each pick-up not taken (\"Pick up <name or id>\"), each container (\"Open the <label, ASCII A-Z folded to a-z; none: container>\"), the board host prop (\"Read the <name> notice board\"), each within its range compared with <=, and the door doorPrompt gives (outside, \"Enter <label>\"): the nearest on the ground plane wins, a tie going in actionTier order and then to the first listed. Only when no action is in range, the looking tier: each prop read or examined within its range, the nearest, the first listed on a tie. Nothing -> null. A candidate with no id or no finite position is skipped. distance is metres rounded to 1e-9; the prompt is the words after the host's key glyph",
     "ranges": "ranges overrides any of rangesM per call; a door prompts by doorPrompt alone",
+    "vehicleTier": [
+      "board"
+    ],
+    "vehicles": "PL.core-vehicle-rules (U106(3)): aboard {id, name?} and vehicles [{id, name?, position}] are stated only by a game that runs the vehicles pack (packs/vehicles); absent, nothing above changes. After an open panel (close_panel), aboard with a non-empty id -> get_off, kind vehicle, prompt \"Get off the <name or id>\", distance null, whatever else is in range. Not aboard, only when neither the actions nor the looking tier has anything in range: the nearest vehicle with an id and a finite position within rangesM.board (the talk reach, 3.5 m; overridden by ranges.board only, never by ranges.talk), compared with <= -> board, kind vehicle, prompt \"Board the <name or id>\", the first listed on a tie. What E then asks of VehicleRegistry is the host's (Unreal's interim: board, then drive when nobody holds the reins; aboard, disembark)",
     "notHere": "inside an interior (doorPrompt's exit) and a conversation in progress are the host's and not this rule's; the language world's translated objects are examineNearest's (world-words.ts)",
+    "gathering": "PL.core-gather-reach-tier (U110(4) Q1): nodes [{id, item?, position, remaining, respawnAt?}], hotspots [{id, actionType, position}], actionTable? {actions: [{id, promptVerb}]}, busy? and now? (the host's clock, ms) are stated only by a game that runs the gathering pack (packs/gathering); absent, nothing above changes. Both rows are in actionTier, after enter: gather, then perform. Unless busy is true: each node with a non-empty id, a finite position and a finite remaining, that has units (remaining > 0) or whose finite respawnAt <= a finite now, within rangesM.gather (2.0 m) compared with <= -> gather, kind node, prompt \"Gather <item with underscores as spaces, or the id when item is absent or empty>\"; each hotspot with a non-empty id and actionType and a finite position whose actionType actionTable (absent: DEFAULT_PHYSICAL_ACTION_TUNING) holds, within rangesM.perform (2.5 m) compared with <= -> perform, kind hotspot, prompt \"<that action's promptVerb> here\" (actionPrompt). They compete with the other actions by nearest. busy true offers neither and changes nothing else. A node someone else is gathering is offered (beginGather then refuses node_busy). What E then asks (beginGather, startPhysicalAction) and how a refusal reads are the host's",
     "deviations": [
       {
         "id": "fence",
@@ -128,6 +142,54 @@
         "unreal": "the board host is chosen from every stated sign, for the first settlement only",
         "core": "a sign that states another settlementId is not considered for this settlement's board",
         "why": "a world with two settlements posts each board in its own settlement; Brightwater has one"
+      },
+      {
+        "id": "vehicle-tie",
+        "unreal": "NearestVehicle keeps the LAST placed vehicle at an equal distance (D <= BestSq) over a TMap, whose order is not the authored order",
+        "core": "the first listed, as every other tie in this rule",
+        "why": "one tie rule across core; a host lists the vehicles in the authored order"
+      },
+      {
+        "id": "gather-tier",
+        "unreal": "InterimGatherReach: a node or hotspot is reached only where core's target and the world-vehicle tier find nothing, so a sign or an examined prop within 2.6 m, or a vehicle within 3.5 m, takes E instead",
+        "core": "nodes and hotspots join the actions tier by nearest, a tie going after the door (gather, then perform); a vehicle is still reached only where nothing else is",
+        "why": "gathering and a physical action are acts, and core's looking never shadows an act: a stall, barrel or bench within 2.6 m of a garden or a workbench would make E examine it every time"
+      },
+      {
+        "id": "gather-reach",
+        "unreal": "kInterimGatherReachM 3.5 m, the talk reach, for both nodes and hotspots",
+        "core": "a node 2.0 m (rangesM.gather), a hotspot 2.5 m (rangesM.perform), compared with <=",
+        "why": "the reference games: Godot INTERACTION_RADIUS 2.0 and Unity interactionRadius 2 for nodes, Babylon MAX_FURNITURE_DISTANCE 2.5 for hotspots; the talk reach has no gathering source and lets a player fish 3 m off the drawn disc"
+      },
+      {
+        "id": "gather-depleted",
+        "unreal": "a depleted node keeps its marker, so E reaches it while its body is hidden and core refuses it (\"is used up for now\")",
+        "core": "a node with no units left is not offered until its respawn instant (respawnAt <= now)",
+        "why": "Babylon getNearestNode, Godot _update_nearest_node and Unity Update all skip a depleted node; E on a thing that is not drawn only refuses"
+      },
+      {
+        "id": "gather-tie",
+        "unreal": "InterimGatherReach keeps the LAST spot at an equal distance (D > Best continue), over a TMap whose order is not the authored order",
+        "core": "the first listed, and after the door on a tie with one",
+        "why": "one tie rule across core"
+      },
+      {
+        "id": "gather-unknown-action",
+        "unreal": "a hotspot whose action the table does not hold is prompted with the bare action id (ActionPrompt's fallback)",
+        "core": "not offered",
+        "why": "startPhysicalAction could only refuse it unknown_action"
+      },
+      {
+        "id": "gather-item-words",
+        "unreal": "\"Gather <item>\" with the item atom as it is (\"Gather iron_ore\")",
+        "core": "underscores read as spaces (\"Gather iron ore\"), as a prop's noun does; an absent or empty item falls back to the node id",
+        "why": "an item atom is a key, not words"
+      },
+      {
+        "id": "vehicle-name",
+        "unreal": "the prompt names the vehicle by Name.value_or(Id): a stated empty name reads \"Board the \"",
+        "core": "an empty or absent name falls back to the id, as a villager's and a pick-up's do",
+        "why": "a prompt never ends in an empty name"
       }
     ]
   },

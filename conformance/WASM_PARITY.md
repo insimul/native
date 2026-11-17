@@ -1,16 +1,26 @@
 # three-leg conformance parity (native ⟷ wasm ⟷ Rust)
 
 **Status: no divergences.** The native build, the Emscripten/wasm32 build and the
-Rust wrapper produce **byte-identical** results on all **76** cases of the golden
+Rust wrapper produce **byte-identical** results on all **181** cases of the golden
 Prolog corpus — same pass/fail, same solution count, same solution *text* from
 `insimul_query_next()`, in the same order.
 
 | leg | command | result |
 |---|---|---|
-| native (C ABI) | `ctest --test-dir build -R conformance` | 10 files, 76 cases, 76 passed, 0 failed, 1 amended |
-| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 10 files, 76 cases, 76 passed, 0 failed, 1 amended |
-| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 10 files, 76 cases, 76 passed, 0 failed, 1 amended |
-| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 76/76 records identical on all three |
+| native (C ABI) | `ctest --test-dir build -R conformance` | 12 files, 181 cases, 181 passed, 0 failed, 1 amended |
+| **Rust wrapper** | `cargo test --manifest-path rust/Cargo.toml` | 12 files, 181 cases, 181 passed, 0 failed, 1 amended |
+| **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 12 files, 181 cases, 181 passed, 0 failed, 1 amended |
+| **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 181/181 records identical on all three |
+
+(181 since PL.native-bundle-core re-copied the mirror at core `d88b6f0`, adding
+`quest-count-goals.json` and `pack-agreement.json`; 76 before. One case there,
+`quest-count-goals` / `avg-pronunciation-mean`, states `{"Avg": 83}` where Trealla's
+`Avg is Total / Count` binds the float `83.0`, identically on all three legs. The C
+and wasm legs always compared a binding's JSON numbers as numbers; the Rust leg
+compared `Int` and `Float` as different terms and failed it, so it now compares
+them as numbers too (`terms_match`, self-tested by
+`numbers_match_as_numbers_and_nothing_looser`). The raw text this gate diffs is
+unchanged: every leg writes `83.0`.)
 
 (The Rust leg joined the diff in tasklist 251 US-2. It was always run, but its
 records were not compared, so only two of the three legs were actually diffed —

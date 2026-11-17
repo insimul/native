@@ -18,7 +18,8 @@ byte for byte. Three legs run the identical corpus:
 | **WebAssembly** | `tests/wasm_conformance.mjs` (the `wasm_conformance` ctest) | `scripts/build_wasm.sh` |
 
 All three print the same `files / cases / passed / failed / amended` summary — currently
-**10 files, 76 cases, 76 passed, 1 amended** — so a divergence between the C ABI and any
+**12 files, 181 cases, 181 passed, 1 amended** (76 cases before core d88b6f0's
+`quest-count-goals.json` and `pack-agreement.json` joined the mirror) — so a divergence between the C ABI and any
 binding shows up immediately as a differing count.
 
 ## The corpus format
@@ -76,7 +77,7 @@ scripts/conformance_parity.sh        # builds whatever leg is missing, then comp
 
 Because it compares the *raw* strings, it catches a divergence in solution order, error
 wording, or number formatting that each leg's own `expected` check would happily pass.
-Result today: **76/76 byte-identical**. The full record, and the non-vacuity gates each
+Result today: **181/181 byte-identical**. The full record, and the non-vacuity gates each
 verified by deliberately triggering them, live in
 [../conformance/WASM_PARITY.md](../conformance/WASM_PARITY.md).
 

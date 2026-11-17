@@ -34,7 +34,9 @@
       "conformance/language/writing.json",
       "conformance/language/quest-feedback.json",
       "conformance/language/quest-types.json",
-      "conformance/language/save.json"
+      "conformance/language/save.json",
+      "conformance/language/chat.json",
+      "conformance/language/prompts.json"
     ],
     "saveExtensions": ["languageLearning"]
   },
@@ -54,6 +56,7 @@
   ],
   "extensionPoints": [
     { "id": "world-words", "kind": "binding-hook", "signature": "registerTags / registerTargets / registerNameable (src/language-learning/world-words.ts)", "doc": "the world's tagged objects, identification targets and nameable objects; nameableObjects(world, language) derives the last from translated objects" },
+    { "id": "prompt-selector", "kind": "binding-hook", "signature": "promptOnPick / answerPick / standingPick / quizOnReach / answerStandingQuiz (src/language-learning/prompt-selector.ts)", "doc": "which object a pick offers for identification or point and name, and which object in reach is asked the collection quiz, when; the engine hands it the pick (examinePick for a key press) and the player's position" },
     { "id": "quest-types", "kind": "binding-hook", "signature": "WorldIR config.questTypes / enabledModules (src/quest-types/index.ts)", "doc": "which language quest types a world offers" },
     { "id": "on-vocabulary", "kind": "event-handler", "signature": "vocabulary_used", "doc": "a use_vocabulary objective, the quest feedback tracker" },
     { "id": "on-pronunciation", "kind": "event-handler", "signature": "pronunciation_attempt", "doc": "a pronunciation_check or speak_phrase objective" },
@@ -96,6 +99,7 @@
       "Hear vocabulary_used, object_examined, vocabulary_overheard and object_named with encounterOfEvent then recordEncounter; a conversation ends with recordConversation; an assessment calls setCefr.",
       "Fluency is thousandths of a point (0..100000), word weights halves, similarities and struggle thousandths, scores whole percents.",
       "Collection quizzes draw from a seeded stream (quizDraw): give every game one seed so a quiz replays.",
+      "Which object a prompt asks about is core's (prompt-selector.ts): hand every pick to promptOnPick and every move to quizOnReach, and answer through answerPick and answerStandingQuiz; one pick prompt and one quiz stand at a time.",
       "A hover lookup that misses returns a request: ask the translator, then hand the answer to resolveLookup.",
       "Listening comprehension grades on the server; with no server, gradeListening with no score uses the local fallback.",
       "The language-assessment pack's systems (arrival and departure assessments, research instruments, periodic speaking encounters, the proficiency dashboard, CEFR self-select, NPC exams, NPC mentors, SRS review, the quiz widget, activity observation, CEFR-localised UI text, the immersion setting, environmental target-language audio, guilds) are port-later, after NX.A1a: do not generate them from this pack. The NPC exam and mentor services were deleted; do not revive them."

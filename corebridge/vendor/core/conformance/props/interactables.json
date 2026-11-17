@@ -1,6 +1,6 @@
 {
   "area": "props-interactables",
-  "description": "What the interact key does by a prop, and which one thing it acts on (PL.examine-props, U49(3); the Unreal P8 critic's m1 and its collision with P6's E actions): each stated prop (entities.props) has one meaning, read_sign, examine, open_board or none; what reading and examining say and raise; where the notice board is posted; and, where the player stands, the one target E acts on among a talk villager, pick-ups, containers, the board, a door and the props. Ops: noun {archetypes} -> {nouns}; meanings {props, board? | settlement?} -> {board, meanings, count}; host {props, settlement} -> {host}; interact {props | prop, board? | settlement?} -> {results: [{id, ok, action, line, events} | {id, ok: false, refusal}]}; target {at, panel?, villager?, pickups?, containers?, buildings?, props?, board? | settlement?, ranges?, stands?: [{name, at, ...overrides}]} -> {ok, target} | {ok: false, refusal} (with stands: {board, stands: [{at, ok, target}]}). board is {host, name}; given a settlement instead, the board is posted by host and named for it. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
+  "description": "What the interact key does by a prop, and which one thing it acts on (PL.examine-props, U49(3); the Unreal P8 critic's m1 and its collision with P6's E actions): each stated prop (entities.props) has one meaning, read_sign, examine, open_board or none; what reading and examining say and raise; where the notice board is posted; and, where the player stands, the one target E acts on among a talk villager, pick-ups, containers, the board, a door and the props. Ops: noun {archetypes} -> {nouns}; meanings {props, board? | settlement?} -> {board, meanings, count}; host {props, settlement} -> {host}; interact {props | prop, board? | settlement?} -> {results: [{id, ok, action, line, events} | {id, ok: false, refusal}]}; target {at, panel?, villager?, pickups?, containers?, buildings?, props?, board? | settlement?, aboard?, vehicles?, nodes?, hotspots?, actionTable?, busy?, now?, ranges?, stands?: [{name, at, ...overrides}]} -> {ok, target} | {ok: false, refusal} (with stands: {board, stands: [{at, ok, target}]}). board is {host, name}; given a settlement instead, the board is posted by host and named for it. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
   "version": 1,
   "tolerance": 1e-9,
   "sources": [
@@ -8,6 +8,8 @@
     "unreal origin/main 360c482 InsimulPlayerCharacter.cpp InteractWithNearest (425-470: an open panel closes; a P6 target strictly nearer than the talk villager wins) and the prompt (1399-1410: Pick up / Open the / Read / Enter); InsimulVillageProps.cpp the board on the sign nearest the settlement centre (414-446) and PropsTargetNear (953-1002: 220 cm, the board 100 cm more, a door at doorPrompt); InsimulPlayerCharacter.h InteractRange 350 cm.",
     "pipelines origin/main pipelines/game-export/settlement-dressing.ts DressingPropIR (entities.props: id, kind, archetype, position, text on a shop sign and a market stall, settlementId, buildingId, forCharacterId).",
     "Brightwater export, pipelines feat/lot-sizing 1a22331 (L3 lot-sizing round 3, brightwater-ir-lot-sizing-r3.json, exported 2026-10-25): its 78 stated props, its one settlement and four of its buildings (interior null).",
+    "unreal feat/p9e-unreal a68b6d0 (the world-vehicle row, PL.core-vehicle-rules, U106(3)): InsimulPlayerCharacter.cpp InteractWithNearest (445-483: aboard, E gets off unless a props panel is open; a vehicle only where core's target finds nothing) and the prompt (1569-1571); InsimulVillageTraversal.cpp NearestVehicle (483-501: <= kVehicleReachCm, the last at an equal distance), WorldVehiclePrompt (504-513: \"Get off the <name>\", \"Board the <name>\", Name.value_or(Id)), WorldVehicleE (515-527); InsimulVillageDirector.h kVehicleReachCm 350 cm.",
+    "the gathering rows (PL.core-gather-reach-tier, U110(4) Q1), examining unreal origin/main ce4b34c's interim: Portable/InsimulGatheringBinding.h kInterimGatherReachM 3.5 and InterimGatherReach (222-231; .cpp 486-500: nothing when core or the vehicles found something or while busy, the nearest within 3.5 m, the last at an equal distance); Private/InsimulVillageGathering.cpp NearestGatheringSpot (444-459), GatheringPrompt (461-481: \"Gather <item>\", a hotspot's ActionPrompt), GatheringE (495-545), a depleted node's body hidden (399); InsimulPlayerCharacter.cpp InteractWithNearest (488-507). The reach from the reference games: godot origin/main 6599874 templates/scripts/systems/resource_system.gd INTERACTION_RADIUS 2.0 (11-12) and _update_nearest_node (170-188: depleted nodes skipped, none while gathering); unity origin/main 0479c3d templates/scripts/systems/ResourceSystem.cs interactionRadius 2f (12) and Update (162-189: depleted skipped, none while gathering); babylon origin/main bfcdeb2 packages/babylon/src/engine/game-engine/rendering/InteractionPromptSystem.ts MAX_FURNITURE_DISTANCE 2.5 (107) for action hotspots (415-425), ResourceSystem.ts getNearestNode (396-412: depleted skipped) and BabylonGame.ts PlayerActionSystem.getPromptText as a hotspot's prompt (12380). core src/gathering/resource-nodes.ts (NodeState, advanceResources's respawnAt <= at, beginGather's node_busy) and src/gathering/physical-actions.ts actionPrompt.",
     "core src/props/doors.ts doorPrompt; src/language-learning/world-words.ts examineNearest (the language world's objects, whose sign_read and object_examined shapes these events share); src/game-engine/logic/TutorialQuestSystem.ts (lessons completing on sign_read and object_examined)."
   ],
   "contract": {
@@ -18,20 +20,26 @@
     ],
     "actions": [
       "close_panel",
+      "get_off",
       "talk",
       "pick_up",
       "open_container",
       "open_board",
       "enter",
+      "gather",
+      "perform",
       "read_sign",
-      "examine"
+      "examine",
+      "board"
     ],
     "actionTier": [
       "talk",
       "pick_up",
       "open_container",
       "open_board",
-      "enter"
+      "enter",
+      "gather",
+      "perform"
     ],
     "lookTier": [
       "read_sign",
@@ -54,7 +62,10 @@
       "open_container": 2.2,
       "open_board": 3.2,
       "read_sign": 2.6,
-      "examine": 2.6
+      "examine": 2.6,
+      "board": 3.5,
+      "gather": 2,
+      "perform": 2.5
     },
     "doorPromptRadiusM": 2,
     "refusals": [
@@ -71,7 +82,12 @@
     "notOfferedResult": "interact on a prop with no meaning is refused not_offered (field archetype, with its reason)",
     "target": "at not a finite point -> bad_position. An open panel (a non-empty panel) -> close_panel. Else the actions tier: the villager the host would talk to (talk, \"Talk to <name or id>\"), each pick-up not taken (\"Pick up <name or id>\"), each container (\"Open the <label, ASCII A-Z folded to a-z; none: container>\"), the board host prop (\"Read the <name> notice board\"), each within its range compared with <=, and the door doorPrompt gives (outside, \"Enter <label>\"): the nearest on the ground plane wins, a tie going in actionTier order and then to the first listed. Only when no action is in range, the looking tier: each prop read or examined within its range, the nearest, the first listed on a tie. Nothing -> null. A candidate with no id or no finite position is skipped. distance is metres rounded to 1e-9; the prompt is the words after the host's key glyph",
     "ranges": "ranges overrides any of rangesM per call; a door prompts by doorPrompt alone",
+    "vehicleTier": [
+      "board"
+    ],
+    "vehicles": "PL.core-vehicle-rules (U106(3)): aboard {id, name?} and vehicles [{id, name?, position}] are stated only by a game that runs the vehicles pack (packs/vehicles); absent, nothing above changes. After an open panel (close_panel), aboard with a non-empty id -> get_off, kind vehicle, prompt \"Get off the <name or id>\", distance null, whatever else is in range. Not aboard, only when neither the actions nor the looking tier has anything in range: the nearest vehicle with an id and a finite position within rangesM.board (the talk reach, 3.5 m; overridden by ranges.board only, never by ranges.talk), compared with <= -> board, kind vehicle, prompt \"Board the <name or id>\", the first listed on a tie. What E then asks of VehicleRegistry is the host's (Unreal's interim: board, then drive when nobody holds the reins; aboard, disembark)",
     "notHere": "inside an interior (doorPrompt's exit) and a conversation in progress are the host's and not this rule's; the language world's translated objects are examineNearest's (world-words.ts)",
+    "gathering": "PL.core-gather-reach-tier (U110(4) Q1): nodes [{id, item?, position, remaining, respawnAt?}], hotspots [{id, actionType, position}], actionTable? {actions: [{id, promptVerb}]}, busy? and now? (the host's clock, ms) are stated only by a game that runs the gathering pack (packs/gathering); absent, nothing above changes. Both rows are in actionTier, after enter: gather, then perform. Unless busy is true: each node with a non-empty id, a finite position and a finite remaining, that has units (remaining > 0) or whose finite respawnAt <= a finite now, within rangesM.gather (2.0 m) compared with <= -> gather, kind node, prompt \"Gather <item with underscores as spaces, or the id when item is absent or empty>\"; each hotspot with a non-empty id and actionType and a finite position whose actionType actionTable (absent: DEFAULT_PHYSICAL_ACTION_TUNING) holds, within rangesM.perform (2.5 m) compared with <= -> perform, kind hotspot, prompt \"<that action's promptVerb> here\" (actionPrompt). They compete with the other actions by nearest. busy true offers neither and changes nothing else. A node someone else is gathering is offered (beginGather then refuses node_busy). What E then asks (beginGather, startPhysicalAction) and how a refusal reads are the host's",
     "deviations": [
       {
         "id": "fence",
@@ -132,6 +148,54 @@
         "unreal": "the board host is chosen from every stated sign, for the first settlement only",
         "core": "a sign that states another settlementId is not considered for this settlement's board",
         "why": "a world with two settlements posts each board in its own settlement; Brightwater has one"
+      },
+      {
+        "id": "vehicle-tie",
+        "unreal": "NearestVehicle keeps the LAST placed vehicle at an equal distance (D <= BestSq) over a TMap, whose order is not the authored order",
+        "core": "the first listed, as every other tie in this rule",
+        "why": "one tie rule across core; a host lists the vehicles in the authored order"
+      },
+      {
+        "id": "gather-tier",
+        "unreal": "InterimGatherReach: a node or hotspot is reached only where core's target and the world-vehicle tier find nothing, so a sign or an examined prop within 2.6 m, or a vehicle within 3.5 m, takes E instead",
+        "core": "nodes and hotspots join the actions tier by nearest, a tie going after the door (gather, then perform); a vehicle is still reached only where nothing else is",
+        "why": "gathering and a physical action are acts, and core's looking never shadows an act: a stall, barrel or bench within 2.6 m of a garden or a workbench would make E examine it every time"
+      },
+      {
+        "id": "gather-reach",
+        "unreal": "kInterimGatherReachM 3.5 m, the talk reach, for both nodes and hotspots",
+        "core": "a node 2.0 m (rangesM.gather), a hotspot 2.5 m (rangesM.perform), compared with <=",
+        "why": "the reference games: Godot INTERACTION_RADIUS 2.0 and Unity interactionRadius 2 for nodes, Babylon MAX_FURNITURE_DISTANCE 2.5 for hotspots; the talk reach has no gathering source and lets a player fish 3 m off the drawn disc"
+      },
+      {
+        "id": "gather-depleted",
+        "unreal": "a depleted node keeps its marker, so E reaches it while its body is hidden and core refuses it (\"is used up for now\")",
+        "core": "a node with no units left is not offered until its respawn instant (respawnAt <= now)",
+        "why": "Babylon getNearestNode, Godot _update_nearest_node and Unity Update all skip a depleted node; E on a thing that is not drawn only refuses"
+      },
+      {
+        "id": "gather-tie",
+        "unreal": "InterimGatherReach keeps the LAST spot at an equal distance (D > Best continue), over a TMap whose order is not the authored order",
+        "core": "the first listed, and after the door on a tie with one",
+        "why": "one tie rule across core"
+      },
+      {
+        "id": "gather-unknown-action",
+        "unreal": "a hotspot whose action the table does not hold is prompted with the bare action id (ActionPrompt's fallback)",
+        "core": "not offered",
+        "why": "startPhysicalAction could only refuse it unknown_action"
+      },
+      {
+        "id": "gather-item-words",
+        "unreal": "\"Gather <item>\" with the item atom as it is (\"Gather iron_ore\")",
+        "core": "underscores read as spaces (\"Gather iron ore\"), as a prop's noun does; an absent or empty item falls back to the node id",
+        "why": "an item atom is a key, not words"
+      },
+      {
+        "id": "vehicle-name",
+        "unreal": "the prompt names the vehicle by Name.value_or(Id): a stated empty name reads \"Board the \"",
+        "core": "an empty or absent name falls back to the id, as a villager's and a pick-up's do",
+        "why": "a prompt never ends in an empty name"
       }
     ]
   },
@@ -6949,6 +7013,3865 @@
               "id": "v1",
               "prompt": "Talk to Ada",
               "distance": 3
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: aboard a world vehicle, E gets off it before a villager, a pick-up, a door and a sign all in reach",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": -4
+        },
+        "aboard": {
+          "id": "veh_handcart",
+          "name": "Handcart"
+        },
+        "villager": {
+          "id": "v1",
+          "name": "Ada",
+          "position": {
+            "x": 1,
+            "y": 0,
+            "z": -4
+          }
+        },
+        "pickups": [
+          {
+            "id": "apple_0",
+            "name": "Apple",
+            "position": {
+              "x": 0.5,
+              "y": 0,
+              "z": -4
+            }
+          }
+        ],
+        "buildings": [
+          {
+            "id": "b_inn",
+            "name": "The Gilded Goose",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": -10
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 10
+            },
+            "interior": {
+              "function": "tavern",
+              "doors": []
+            }
+          }
+        ],
+        "props": [
+          {
+            "id": "sign_door",
+            "archetype": "prop.structural.sign",
+            "position": {
+              "x": 0.3,
+              "y": 0,
+              "z": -4
+            },
+            "text": "Inn"
+          }
+        ],
+        "vehicles": [
+          {
+            "id": "veh_skiff",
+            "name": "Skiff",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": -3.8
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": {
+          "action": "get_off",
+          "kind": "vehicle",
+          "id": "veh_handcart",
+          "prompt": "Get off the Handcart",
+          "distance": null
+        }
+      }
+    },
+    {
+      "name": "target: aboard, an open props panel still closes first; with the panel shut, E gets off",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "aboard": {
+          "id": "veh_handcart",
+          "name": "Handcart"
+        },
+        "stands": [
+          {
+            "name": "a panel open aboard: close it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "panel": "inventory"
+          },
+          {
+            "name": "no panel aboard, nothing near: get off",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "panel": null
+          },
+          {
+            "name": "aboard far from anything, a vehicle with no name: get off, named by its id",
+            "at": {
+              "x": 90,
+              "y": 0,
+              "z": 90
+            },
+            "aboard": {
+              "id": "veh_cart_2"
+            }
+          },
+          {
+            "name": "aboard stated with an empty id: not aboard, so the villager is talked to",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "aboard": {
+              "id": ""
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "close_panel",
+              "kind": "panel",
+              "id": "inventory",
+              "prompt": "",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "get_off",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Get off the Handcart",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 90,
+              "y": 0,
+              "z": 90
+            },
+            "ok": true,
+            "target": {
+              "action": "get_off",
+              "kind": "vehicle",
+              "id": "veh_cart_2",
+              "prompt": "Get off the veh_cart_2",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "talk",
+              "kind": "villager",
+              "id": "v1",
+              "prompt": "Talk to Ada",
+              "distance": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: not aboard, a world vehicle is boarded only where nothing else is in range",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "vehicles": [
+          {
+            "id": "veh_handcart",
+            "name": "Handcart",
+            "position": {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ],
+        "stands": [
+          {
+            "name": "only the handcart at 1 m: board it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "name": "the handcart at 1 m and a villager at 3 m: talk",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 3
+              }
+            }
+          },
+          {
+            "name": "the handcart at 1 m and a pick-up at 2 m: pick up",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "pickups": [
+              {
+                "id": "apple_0",
+                "name": "Apple",
+                "position": {
+                  "x": -2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the handcart at 1 m and a chest at 2 m: open the chest",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "containers": [
+              {
+                "id": "chest_1",
+                "label": "Chest",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -2
+                }
+              }
+            ]
+          },
+          {
+            "name": "the handcart at 1 m and the board host at 3 m: the notice board",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "board": {
+              "host": "sign_board",
+              "name": "Brightwater"
+            },
+            "props": [
+              {
+                "id": "sign_board",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 3
+                },
+                "text": "Malvern's Bakery"
+              }
+            ]
+          },
+          {
+            "name": "the handcart at 1 m and a barrel at 2.5 m: examine the barrel (the looking comes before the vehicle)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "barrel_far",
+                "archetype": "prop.container.barrel",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 2.5
+                }
+              }
+            ]
+          },
+          {
+            "name": "the handcart at 1 m and a sign at 2.6 m: read the sign",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "sign_edge",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": -2.6,
+                  "y": 0,
+                  "z": 0
+                },
+                "text": "Edge"
+              }
+            ]
+          },
+          {
+            "name": "the handcart at 1 m, a villager at 3.6 m and a sign at 2.7 m, both out of range: board it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 3.6
+              }
+            },
+            "props": [
+              {
+                "id": "sign_far",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": -2.7,
+                  "y": 0,
+                  "z": 0
+                },
+                "text": "Far"
+              }
+            ]
+          },
+          {
+            "name": "the handcart at 1 m beside a wall at 0.2 m (never a target): board it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "wall_1",
+                "archetype": "prop.structural.wall",
+                "position": {
+                  "x": 0.2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "a taken pick-up beside the handcart: board it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "pickups": [
+              {
+                "id": "apple_0",
+                "name": "Apple",
+                "position": {
+                  "x": 0.5,
+                  "y": 0,
+                  "z": 0
+                },
+                "taken": true
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "talk",
+              "kind": "villager",
+              "id": "v1",
+              "prompt": "Talk to Ada",
+              "distance": 3
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "pick_up",
+              "kind": "pickup",
+              "id": "apple_0",
+              "prompt": "Pick up Apple",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_1",
+              "prompt": "Open the chest",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "open_board",
+              "kind": "prop",
+              "id": "sign_board",
+              "prompt": "Read the Brightwater notice board",
+              "distance": 3
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "barrel_far",
+              "prompt": "Examine the barrel",
+              "distance": 2.5
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_edge",
+              "prompt": "Read the sign",
+              "distance": 2.6
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: a world vehicle and a door in reach: enter the door; out of the door's prompt, board",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "buildings": [
+          {
+            "id": "b_inn",
+            "name": "The Gilded Goose",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": -10
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 10
+            },
+            "interior": {
+              "function": "tavern",
+              "doors": []
+            }
+          }
+        ],
+        "vehicles": [
+          {
+            "id": "veh_handcart",
+            "name": "Handcart",
+            "position": {
+              "x": 0.5,
+              "y": 0,
+              "z": -4
+            }
+          }
+        ],
+        "stands": [
+          {
+            "name": "the inn door at 1 m and the handcart at 0.5 m: enter",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            }
+          },
+          {
+            "name": "exactly 2.0 m from the door (no prompt), the handcart 1.12 m off: board it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -3
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "ok": true,
+            "target": {
+              "action": "enter",
+              "kind": "door",
+              "id": "b_inn",
+              "prompt": "Enter The Gilded Goose",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -3
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 1.118033989
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: a world vehicle is reached within the talk reach, 3.5 m, compared with <=",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "stands": [
+          {
+            "name": "the handcart at exactly 3.5 m: board it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 3.5
+                }
+              }
+            ]
+          },
+          {
+            "name": "the handcart at 3.51 m: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": 3.51,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the handcart at 3.2 m and a villager at 3.6 m: board it (the villager is out of talk reach)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": -3.2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ],
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 3.6,
+                "y": 0,
+                "z": 0
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 3.5
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 3.2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: among world vehicles the nearest is boarded, the first listed on a tie; a name falls back to the id",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "stands": [
+          {
+            "name": "the skiff at 2 m and the handcart at 1 m: the handcart",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_skiff",
+                "name": "Skiff",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "the skiff and the handcart both at 1 m: the skiff, listed first",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_skiff",
+                "name": "Skiff",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -1
+                }
+              }
+            ]
+          },
+          {
+            "name": "a vehicle with no name is named by its id",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_cart_2",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                }
+              }
+            ]
+          },
+          {
+            "name": "a vehicle with an empty name is named by its id",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_cart_3",
+                "name": "",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "a vehicle with no finite position or no id is skipped",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_nowhere",
+                "name": "Nowhere",
+                "position": {
+                  "x": null,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "id": "",
+                "name": "Nameless",
+                "position": {
+                  "x": 0.5,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "id": "veh_skiff",
+                "name": "Skiff",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_skiff",
+              "prompt": "Board the Skiff",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_cart_2",
+              "prompt": "Board the veh_cart_2",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_cart_3",
+              "prompt": "Board the veh_cart_3",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_skiff",
+              "prompt": "Board the Skiff",
+              "distance": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: a host's board reach narrows it: the handcart at 2 m is out (board 1.5), at exactly 1.5 m in",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "board": 1.5
+        },
+        "stands": [
+          {
+            "name": "the handcart at 2 m: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the handcart at exactly 1.5 m: board it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "vehicles": [
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1.5
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 1.5
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: a host's board reach widens it: the handcart at 4.5 m is in (board 5)",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "board": 5
+        },
+        "vehicles": [
+          {
+            "id": "veh_handcart",
+            "name": "Handcart",
+            "position": {
+              "x": 4.5,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": {
+          "action": "board",
+          "kind": "vehicle",
+          "id": "veh_handcart",
+          "prompt": "Board the Handcart",
+          "distance": 4.5
+        }
+      }
+    },
+    {
+      "name": "target: the board reach does not follow a talk override: talk 1 leaves a villager at 2 m out and the handcart at 3.5 m in",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "talk": 1
+        },
+        "villager": {
+          "id": "v1",
+          "name": "Ada",
+          "position": {
+            "x": 2,
+            "y": 0,
+            "z": 0
+          }
+        },
+        "vehicles": [
+          {
+            "id": "veh_handcart",
+            "name": "Handcart",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": -3.5
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": {
+          "action": "board",
+          "kind": "vehicle",
+          "id": "veh_handcart",
+          "prompt": "Board the Handcart",
+          "distance": 3.5
+        }
+      }
+    },
+    {
+      "name": "target: a vehicle, a villager, a door and a pick-up all in reach, aboard and not",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": -4
+        },
+        "buildings": [
+          {
+            "id": "b_inn",
+            "name": "The Gilded Goose",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": -10
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 10
+            },
+            "interior": {
+              "function": "tavern",
+              "doors": []
+            }
+          }
+        ],
+        "villager": {
+          "id": "v1",
+          "name": "Ada",
+          "position": {
+            "x": 1.5,
+            "y": 0,
+            "z": -4
+          }
+        },
+        "pickups": [
+          {
+            "id": "apple_0",
+            "name": "Apple",
+            "position": {
+              "x": -1.2,
+              "y": 0,
+              "z": -4
+            }
+          }
+        ],
+        "vehicles": [
+          {
+            "id": "veh_handcart",
+            "name": "Handcart",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": -4.4
+            }
+          }
+        ],
+        "stands": [
+          {
+            "name": "not aboard: the nearest action, the inn door at 1 m (the handcart at 0.4 m waits)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            }
+          },
+          {
+            "name": "not aboard, the door shut: the pick-up at 1.2 m",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "buildings": [
+              {
+                "id": "b_shut",
+                "name": "Shut House",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -10
+                },
+                "rotation": 0,
+                "spec": {
+                  "buildingRole": "Tavern",
+                  "depth": 10
+                },
+                "interior": null
+              }
+            ]
+          },
+          {
+            "name": "aboard the handcart: get off",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "aboard": {
+              "id": "veh_handcart",
+              "name": "Handcart"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "ok": true,
+            "target": {
+              "action": "enter",
+              "kind": "door",
+              "id": "b_inn",
+              "prompt": "Enter The Gilded Goose",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "ok": true,
+            "target": {
+              "action": "pick_up",
+              "kind": "pickup",
+              "id": "apple_0",
+              "prompt": "Pick up Apple",
+              "distance": 1.2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "ok": true,
+            "target": {
+              "action": "get_off",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Get off the Handcart",
+              "distance": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: a resource node within 2.0 m is gathered, a hotspot within 2.5 m is performed at, both compared with <=",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "stands": [
+          {
+            "name": "an oak at 1 m: \"Gather wood\"",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "the oak at exactly 2.0 m: gathered",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 2
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "the oak at 2.01 m: nothing (Unreal's interim 3.5 m would reach it)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 2.01,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "the oak at 3.4 m: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -3.4
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "a herb patch at exactly 2.5 m: \"Pick here\"",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": -2.5,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the herb patch at 2.51 m: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 2.51
+                }
+              }
+            ]
+          },
+          {
+            "name": "a fishing spot at 2 m: \"Fish here\"",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-1",
+                "actionType": "fishing",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "an ore vein: the item reads with spaces, \"Gather iron ore\"",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_vein",
+                "item": "iron_ore",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 1
+                },
+                "remaining": 2
+              }
+            ]
+          },
+          {
+            "name": "a node with no item is named by its id",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_pool",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                },
+                "remaining": 1
+              }
+            ]
+          },
+          {
+            "name": "a node with no id, no finite position or no finite remaining is skipped",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "",
+                "item": "wood",
+                "position": {
+                  "x": 0.5,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              },
+              {
+                "id": "node_nowhere",
+                "item": "wood",
+                "position": {
+                  "x": null,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              },
+              {
+                "id": "node_blank",
+                "item": "wood",
+                "position": {
+                  "x": 0.3,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": null
+              },
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "a hotspot with no id, no action or no finite position is skipped",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0.5,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "id": "hotspot-x",
+                "actionType": "",
+                "position": {
+                  "x": 0.4,
+                  "y": 0,
+                  "z": 0
+                }
+              },
+              {
+                "id": "hotspot-y",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": null
+                }
+              },
+              {
+                "id": "hotspot-1",
+                "actionType": "fishing",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-2",
+              "prompt": "Pick here",
+              "distance": 2.5
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-1",
+              "prompt": "Fish here",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_vein",
+              "prompt": "Gather iron ore",
+              "distance": 1.414213562
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_pool",
+              "prompt": "Gather node_pool",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-1",
+              "prompt": "Fish here",
+              "distance": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: a node or a hotspot is an action, so it beats a nearer sign or examined prop, and a nearer world vehicle",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "stands": [
+          {
+            "name": "the oak at 1.8 m and a barrel at 0.5 m: gather (Unreal's interim examines the barrel)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1.8,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ],
+            "props": [
+              {
+                "id": "barrel_n",
+                "archetype": "prop.container.barrel",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0.5
+                }
+              }
+            ]
+          },
+          {
+            "name": "the herb patch at 2.4 m and a sign at 1 m: perform",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 2.4
+                }
+              }
+            ],
+            "props": [
+              {
+                "id": "sign_near",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "text": "Inn"
+              }
+            ]
+          },
+          {
+            "name": "the oak at 1.5 m and the handcart at 0.5 m: gather (a vehicle only where nothing else is)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1.5
+                },
+                "remaining": 3
+              }
+            ],
+            "vehicles": [
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": 0.5,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "(control) the oak at 2.1 m, out, and the barrel at 0.5 m: examine the barrel",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 2.1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ],
+            "props": [
+              {
+                "id": "barrel_n",
+                "archetype": "prop.container.barrel",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0.5
+                }
+              }
+            ]
+          },
+          {
+            "name": "(control) the herb patch at 2.6 m, out, and the handcart at 1 m: board it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": -2.6,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ],
+            "vehicles": [
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "beside a wall at 0.2 m (never a target), the oak at 1.9 m: gather",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -1.9
+                },
+                "remaining": 3
+              }
+            ],
+            "props": [
+              {
+                "id": "wall_1",
+                "archetype": "prop.structural.wall",
+                "position": {
+                  "x": 0.2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1.8
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-2",
+              "prompt": "Pick here",
+              "distance": 2.4
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1.5
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "barrel_n",
+              "prompt": "Examine the barrel",
+              "distance": 0.5
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1.9
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: among the actions the nearest wins, a node or hotspot against a villager, a pick-up, a chest and the board",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "board": {
+          "host": "sign_board",
+          "name": "Brightwater"
+        },
+        "stands": [
+          {
+            "name": "a villager at 1 m and the oak at 1.5 m: talk",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 1,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1.5
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "the oak at 1 m and a villager at 3 m: gather",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 3
+              }
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "a pick-up at 1.5 m and the oak at 1 m: gather",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "pickups": [
+              {
+                "id": "apple_0",
+                "name": "Apple",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1.5
+                }
+              }
+            ],
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "a chest at 0.8 m and the herb patch at 1 m: open the chest",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "containers": [
+              {
+                "id": "chest_1",
+                "label": "Chest",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -0.8
+                }
+              }
+            ],
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the board host at 3 m and the fishing spot at 2 m: fish",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "sign_board",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 3
+                },
+                "text": "Malvern's Bakery"
+              }
+            ],
+            "hotspots": [
+              {
+                "id": "hotspot-1",
+                "actionType": "fishing",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the oak at 1.9 m and the herb patch at 1.2 m: perform (nearest, whichever row)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1.9,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ],
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1.2
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": {
+          "host": "sign_board",
+          "name": "Brightwater"
+        },
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "talk",
+              "kind": "villager",
+              "id": "v1",
+              "prompt": "Talk to Ada",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_1",
+              "prompt": "Open the chest",
+              "distance": 0.8
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-1",
+              "prompt": "Fish here",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-2",
+              "prompt": "Pick here",
+              "distance": 1.2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: ties: a door or a pick-up tied with a node wins; a node tied with a hotspot is gathered; within a row the first listed",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": -4
+        },
+        "buildings": [
+          {
+            "id": "b_inn",
+            "name": "The Gilded Goose",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": -10
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 10
+            },
+            "interior": {
+              "function": "tavern",
+              "doors": []
+            }
+          }
+        ],
+        "stands": [
+          {
+            "name": "the inn door at 1 m and the oak at 1 m: enter (the door comes before the gathering rows)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": -4
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "the inn door at 1 m and the herb patch at 1 m: enter",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": -1,
+                  "y": 0,
+                  "z": -4
+                }
+              }
+            ]
+          },
+          {
+            "name": "(control) the door shut, the oak at 1 m: gather",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "buildings": [
+              {
+                "id": "b_shut",
+                "name": "Shut House",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -10
+                },
+                "rotation": 0,
+                "spec": {
+                  "buildingRole": "Tavern",
+                  "depth": 10
+                },
+                "interior": null
+              }
+            ],
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": -4
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "a pick-up at 1 m and the oak at 1 m: pick up",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "buildings": [],
+            "pickups": [
+              {
+                "id": "apple_0",
+                "name": "Apple",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                }
+              }
+            ],
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "a chest at 1 m and the oak at 1 m: open the chest",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "buildings": [],
+            "containers": [
+              {
+                "id": "chest_1",
+                "label": "Chest",
+                "position": {
+                  "x": -1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ],
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "a villager at 1 m and the herb patch at 1 m: talk",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "buildings": [],
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+              }
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the herb patch at 1 m and the oak at 1 m, the patch listed in its own row: gather",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "buildings": [],
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                }
+              }
+            ],
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "two nodes at 1 m: the first listed (Unreal's interim keeps the last)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "buildings": [],
+            "nodes": [
+              {
+                "id": "node_birch",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                },
+                "remaining": 2
+              },
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "two hotspots at 2 m: the first listed",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "buildings": [],
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -2
+                }
+              },
+              {
+                "id": "hotspot-1",
+                "actionType": "fishing",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "ok": true,
+            "target": {
+              "action": "enter",
+              "kind": "door",
+              "id": "b_inn",
+              "prompt": "Enter The Gilded Goose",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "ok": true,
+            "target": {
+              "action": "enter",
+              "kind": "door",
+              "id": "b_inn",
+              "prompt": "Enter The Gilded Goose",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": -4
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "pick_up",
+              "kind": "pickup",
+              "id": "apple_0",
+              "prompt": "Pick up Apple",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_1",
+              "prompt": "Open the chest",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "talk",
+              "kind": "villager",
+              "id": "v1",
+              "prompt": "Talk to Ada",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_birch",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-2",
+              "prompt": "Pick here",
+              "distance": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: a depleted node is not offered until its respawn instant (respawnAt <= now); a node that never comes back never is",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "stands": [
+          {
+            "name": "the oak spent, back at 60000, now 59999: nothing (Unreal's interim reaches it and refuses)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "now": 59999,
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 0,
+                "respawnAt": 60000
+              }
+            ]
+          },
+          {
+            "name": "the oak spent, now exactly 60000: gather (it has come back)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "now": 60000,
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 0,
+                "respawnAt": 60000
+              }
+            ]
+          },
+          {
+            "name": "the oak spent, no clock stated: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 0,
+                "respawnAt": 60000
+              }
+            ]
+          },
+          {
+            "name": "the oak spent for good (respawnAt null), now 1e9: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "now": 1000000000,
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 0,
+                "respawnAt": null
+              }
+            ]
+          },
+          {
+            "name": "the spent oak at 0.5 m and a birch with units at 1.8 m: the birch",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "now": 100,
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0.5,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 0,
+                "respawnAt": 60000
+              },
+              {
+                "id": "node_birch",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1.8
+                },
+                "remaining": 1
+              }
+            ]
+          },
+          {
+            "name": "the spent oak at 0.5 m and a barrel at 2 m: examine the barrel",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "now": 100,
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0.5,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 0,
+                "respawnAt": 60000
+              }
+            ],
+            "props": [
+              {
+                "id": "barrel_n",
+                "archetype": "prop.container.barrel",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "a node with one unit left is offered whatever its respawnAt says",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "now": 0,
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 1,
+                "respawnAt": 999999
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_birch",
+              "prompt": "Gather wood",
+              "distance": 1.8
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "barrel_n",
+              "prompt": "Examine the barrel",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: busy (the player's own gather or action under way): no node or hotspot is offered, and every other target is as it was",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "busy": true,
+        "stands": [
+          {
+            "name": "busy, the oak at 1 m: nothing (Unreal's interim agrees)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "busy, the oak at 0.5 m and a pick-up at 2 m: pick up",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0.5,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ],
+            "pickups": [
+              {
+                "id": "apple_0",
+                "name": "Apple",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 2
+                }
+              }
+            ]
+          },
+          {
+            "name": "busy, the herb patch at 0.5 m and a sign at 2 m: read the sign",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 0.5
+                }
+              }
+            ],
+            "props": [
+              {
+                "id": "sign_mid",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                },
+                "text": "Inn"
+              }
+            ]
+          },
+          {
+            "name": "busy, the oak at 0.5 m and the handcart at 3 m: board it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -0.5
+                },
+                "remaining": 3
+              }
+            ],
+            "vehicles": [
+              {
+                "id": "veh_handcart",
+                "name": "Handcart",
+                "position": {
+                  "x": 3,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "(control) not busy, the oak at 1 m: gather",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "busy": false,
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "pick_up",
+              "kind": "pickup",
+              "id": "apple_0",
+              "prompt": "Pick up Apple",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_mid",
+              "prompt": "Read the sign",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "board",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Board the Handcart",
+              "distance": 3
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: a hotspot is offered only for an action the table holds; a stated action table renames the verb",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "stands": [
+          {
+            "name": "a hotspot for an action the default table lacks: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-9",
+                "actionType": "juggling",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "a stated table with fishing as \"Cast\": \"Cast here\"",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "actionTable": {
+              "actions": [
+                {
+                  "id": "fishing",
+                  "promptVerb": "Cast"
+                }
+              ]
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-1",
+                "actionType": "fishing",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "that table holds no herbalism: the herb patch at 1 m is not offered, the fishing spot at 2 m is",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "actionTable": {
+              "actions": [
+                {
+                  "id": "fishing",
+                  "promptVerb": "Cast"
+                }
+              ]
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                }
+              },
+              {
+                "id": "hotspot-1",
+                "actionType": "fishing",
+                "position": {
+                  "x": 2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the default table: cooking at a stove reads \"Cook here\"",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-5",
+                "actionType": "cooking",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1.5
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-1",
+              "prompt": "Cast here",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-1",
+              "prompt": "Cast here",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-5",
+              "prompt": "Cook here",
+              "distance": 1.5
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: a host's gather and perform reaches override rangesM",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "gather": 1,
+          "perform": 3
+        },
+        "stands": [
+          {
+            "name": "the oak at 1.5 m: nothing (gather 1)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 1.5,
+                  "y": 0,
+                  "z": 0
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "the oak at exactly 1 m: gather",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "the herb patch at 2.9 m: perform (perform 3)",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 2.9,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the herb patch at 3.1 m: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 3.1
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-2",
+              "prompt": "Pick here",
+              "distance": 2.9
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: the gather and perform reaches do not follow a talk override: talk 1 leaves a villager at 1.2 m out, the oak at 1.9 m in",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "talk": 1
+        },
+        "stands": [
+          {
+            "name": "the villager at 1.2 m and the oak at 1.9 m: gather",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 1.2,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "nodes": [
+              {
+                "id": "node_oak",
+                "item": "wood",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": 1.9
+                },
+                "remaining": 3
+              }
+            ]
+          },
+          {
+            "name": "the villager at 1.2 m and the herb patch at 2.4 m: perform",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 1.2,
+                "y": 0,
+                "z": 0
+              }
+            },
+            "hotspots": [
+              {
+                "id": "hotspot-2",
+                "actionType": "herbalism",
+                "position": {
+                  "x": 0,
+                  "y": 0,
+                  "z": -2.4
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 1.9
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "perform",
+              "kind": "hotspot",
+              "id": "hotspot-2",
+              "prompt": "Pick here",
+              "distance": 2.4
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: an open panel still closes and aboard E still gets off before a node or a hotspot",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "nodes": [
+          {
+            "id": "node_oak",
+            "item": "wood",
+            "position": {
+              "x": 0.3,
+              "y": 0,
+              "z": 0
+            },
+            "remaining": 3
+          }
+        ],
+        "hotspots": [
+          {
+            "id": "hotspot-2",
+            "actionType": "herbalism",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0.3
+            }
+          }
+        ],
+        "stands": [
+          {
+            "name": "a panel open: close it",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "panel": "inventory"
+          },
+          {
+            "name": "aboard the handcart: get off",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "aboard": {
+              "id": "veh_handcart",
+              "name": "Handcart"
+            }
+          },
+          {
+            "name": "neither: the oak at 0.3 m (tied with the patch): gather",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "close_panel",
+              "kind": "panel",
+              "id": "inventory",
+              "prompt": "",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "get_off",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Get off the Handcart",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "gather",
+              "kind": "node",
+              "id": "node_oak",
+              "prompt": "Gather wood",
+              "distance": 0.3
             }
           }
         ]

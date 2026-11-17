@@ -1,0 +1,1265 @@
+{
+  "area": "quest-count-goals",
+  "description": "The count clauses of core's quest helper program (src/prolog/helper-predicates.ts, HELPER_PREDICATES_PROLOG): each objective_complete/3 clause that counts or totals facts, plus reputation/3's total, run in the shared engine to success at exactly its count and to failure one short of it, with a fact it must not count in the KB where the clause filters. Each case's kb opens with its dynamic declarations and the ONE clause under test, verbatim (comments dropped, whitespace collapsed). They count with findall/3 + length/2 and total with findall/3 + sum_list/2 because the shared engine has no library(aggregate): before PL.core-helper-aggregate-all every one of them called that library's counting predicate, raised existence_error and could never succeed. Two cases pin player_avg_pronunciation/2 alone, beside no other pack: the mean of one player's pronunciation_score/4 scores, and failure (not an error) with none; it called insimul_sum_list/2, which only the advanced pack defines, until PL.core-helper-sum-list. The last two cases pin convertQuestToProlog's quest_complete/2 rule for a defeat_enemies completion, which called the same missing predicate. Emitted by scripts/emit-quest-count-goals-corpus.ts (npm run quest-count-goals-corpus; :check fails when this file is stale).",
+  "cases": [
+    {
+      "name": "collect-any-reached",
+      "description": "collect('', 2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(collected/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, collect('', Count)), findall(x, collected(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, collect('', 2)).",
+        "collected(player, bread, 1).",
+        "collected(player, apple, 4).",
+        "collected(someone_else, pear, 1)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "collect-any-one-short",
+      "description": "collect('', 2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(collected/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, collect('', Count)), findall(x, collected(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, collect('', 2)).",
+        "collected(player, bread, 1).",
+        "collected(someone_else, pear, 1)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "conversation-turns-talked-reached",
+      "description": "conversation_turns(5) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(talked_to/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)), findall(T, talked_to(Player, _, T), Terms), sum_list(Terms, Total), Total >= RequiredTurns.",
+        "quest_objective(q1, 0, conversation_turns(5)).",
+        "talked_to(player, anna, 3).",
+        "talked_to(player, ben, 2).",
+        "talked_to(someone_else, anna, 9)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "conversation-turns-talked-one-short",
+      "description": "conversation_turns(5) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(talked_to/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)), findall(T, talked_to(Player, _, T), Terms), sum_list(Terms, Total), Total >= RequiredTurns.",
+        "quest_objective(q1, 0, conversation_turns(5)).",
+        "talked_to(player, anna, 3).",
+        "talked_to(someone_else, anna, 9)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "conversation-turns-npc-reached",
+      "description": "conversation_turns(4) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(npc_conversation_turns/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)), findall(T, npc_conversation_turns(Player, _, T), Terms), sum_list(Terms, Total), Total >= RequiredTurns.",
+        "quest_objective(q1, 0, conversation_turns(4)).",
+        "npc_conversation_turns(player, anna, 1).",
+        "npc_conversation_turns(player, ben, 3).",
+        "npc_conversation_turns(someone_else, ben, 9)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "conversation-turns-npc-one-short",
+      "description": "conversation_turns(4) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(npc_conversation_turns/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, conversation_turns(RequiredTurns)), findall(T, npc_conversation_turns(Player, _, T), Terms), sum_list(Terms, Total), Total >= RequiredTurns.",
+        "quest_objective(q1, 0, conversation_turns(4)).",
+        "npc_conversation_turns(player, anna, 1).",
+        "npc_conversation_turns(someone_else, ben, 9)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "defeat-type-reached",
+      "description": "defeat(wolf, 2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(defeated/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, defeat(EnemyType, Count)), findall(x, defeated(Player, EnemyType), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, defeat(wolf, 2)).",
+        "defeated(player, wolf).",
+        "defeated(player, wolf).",
+        "defeated(player, bear)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "defeat-type-one-short",
+      "description": "defeat(wolf, 2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(defeated/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, defeat(EnemyType, Count)), findall(x, defeated(Player, EnemyType), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, defeat(wolf, 2)).",
+        "defeated(player, wolf).",
+        "defeated(player, bear)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "defeat-any-reached",
+      "description": "defeat('', 2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(defeated/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, defeat('', Count)), findall(x, defeated(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, defeat('', 2)).",
+        "defeated(player, wolf).",
+        "defeated(player, bear).",
+        "defeated(someone_else, wolf)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "defeat-any-one-short",
+      "description": "defeat('', 2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(defeated/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, defeat('', Count)), findall(x, defeated(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, defeat('', 2)).",
+        "defeated(player, wolf).",
+        "defeated(someone_else, wolf)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "learn-words-count-reached",
+      "description": "learn_words_count(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, learn_words_count(Count)), findall(x, vocab_used(Player, _, 1), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, learn_words_count(2)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, eau, 1).",
+        "vocab_used(player, sel, 0)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "learn-words-count-one-short",
+      "description": "learn_words_count(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, learn_words_count(Count)), findall(x, vocab_used(Player, _, 1), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, learn_words_count(2)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, sel, 0)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "craft-item-any-reached",
+      "description": "craft_item('', 5) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(crafted/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, craft_item('', Count)), findall(Q, crafted(Player, _, Q), Terms), sum_list(Terms, Total), Total >= Count.",
+        "quest_objective(q1, 0, craft_item('', 5)).",
+        "crafted(player, bread, 2).",
+        "crafted(player, rope, 3).",
+        "crafted(someone_else, rope, 9)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "craft-item-any-one-short",
+      "description": "craft_item('', 5) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(crafted/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, craft_item('', Count)), findall(Q, crafted(Player, _, Q), Terms), sum_list(Terms, Total), Total >= Count.",
+        "quest_objective(q1, 0, craft_item('', 5)).",
+        "crafted(player, bread, 2).",
+        "crafted(someone_else, rope, 9)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "gain-reputation-reached",
+      "description": "gain_reputation(guild, 10) holds with exactly 3 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(reputation_change/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, gain_reputation(Faction, Amount)), findall(D, reputation_change(Player, Faction, D), Terms), sum_list(Terms, Total), Total >= Amount.",
+        "quest_objective(q1, 0, gain_reputation(guild, 10)).",
+        "reputation_change(player, guild, 4).",
+        "reputation_change(player, guild, -1).",
+        "reputation_change(player, guild, 7).",
+        "reputation_change(player, crown, 50)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "gain-reputation-one-short",
+      "description": "gain_reputation(guild, 10) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(reputation_change/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, gain_reputation(Faction, Amount)), findall(D, reputation_change(Player, Faction, D), Terms), sum_list(Terms, Total), Total >= Amount.",
+        "quest_objective(q1, 0, gain_reputation(guild, 10)).",
+        "reputation_change(player, guild, 4).",
+        "reputation_change(player, guild, -1).",
+        "reputation_change(player, crown, 50)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "examine-object-reached",
+      "description": "examine_object(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(object_examined/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, examine_object(Count)), findall(x, object_examined(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, examine_object(2)).",
+        "object_examined(player, well).",
+        "object_examined(player, door).",
+        "object_examined(someone_else, cart)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "examine-object-one-short",
+      "description": "examine_object(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(object_examined/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, examine_object(Count)), findall(x, object_examined(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, examine_object(2)).",
+        "object_examined(player, well).",
+        "object_examined(someone_else, cart)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "write-response-reached",
+      "description": "write_response(1) holds with exactly 1 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(response_written/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, write_response(Count)), findall(x, response_written(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, write_response(1)).",
+        "response_written(player, r1).",
+        "response_written(someone_else, r2)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "write-response-one-short",
+      "description": "write_response(1) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(response_written/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, write_response(Count)), findall(x, response_written(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, write_response(1)).",
+        "response_written(someone_else, r2)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "listen-and-repeat-reached",
+      "description": "listen_and_repeat(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(pronunciation_passed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, listen_and_repeat(Count)), findall(x, pronunciation_passed(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, listen_and_repeat(2)).",
+        "pronunciation_passed(player, bonjour).",
+        "pronunciation_passed(player, merci).",
+        "pronunciation_passed(someone_else, salut)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "listen-and-repeat-one-short",
+      "description": "listen_and_repeat(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(pronunciation_passed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, listen_and_repeat(Count)), findall(x, pronunciation_passed(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, listen_and_repeat(2)).",
+        "pronunciation_passed(player, bonjour).",
+        "pronunciation_passed(someone_else, salut)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "pronunciation-check-reached",
+      "description": "pronunciation_check(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(pronunciation_passed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, pronunciation_check(Count)), findall(x, pronunciation_passed(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, pronunciation_check(2)).",
+        "pronunciation_passed(player, bonjour).",
+        "pronunciation_passed(player, merci).",
+        "pronunciation_passed(someone_else, salut)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "pronunciation-check-one-short",
+      "description": "pronunciation_check(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(pronunciation_passed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, pronunciation_check(Count)), findall(x, pronunciation_passed(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, pronunciation_check(2)).",
+        "pronunciation_passed(player, bonjour).",
+        "pronunciation_passed(someone_else, salut)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "speak-phrase-reached",
+      "description": "speak_phrase(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(pronunciation_passed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, speak_phrase(Count)), findall(P, pronunciation_passed(Player, P), Passes), length(Passes, Total), Total >= Count.",
+        "quest_objective(q1, 0, speak_phrase(2)).",
+        "pronunciation_passed(player, bonjour).",
+        "pronunciation_passed(player, merci).",
+        "pronunciation_passed(someone_else, salut)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "speak-phrase-one-short",
+      "description": "speak_phrase(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(pronunciation_passed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, speak_phrase(Count)), findall(P, pronunciation_passed(Player, P), Passes), length(Passes, Total), Total >= Count.",
+        "quest_objective(q1, 0, speak_phrase(2)).",
+        "pronunciation_passed(player, bonjour).",
+        "pronunciation_passed(someone_else, salut)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "identify-object-reached",
+      "description": "identify_object(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, identify_object(Count)), findall(x, object_pointed_named(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, identify_object(2)).",
+        "object_pointed_named(player, well).",
+        "object_pointed_named(player, door).",
+        "object_pointed_named(someone_else, cart)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "identify-object-one-short",
+      "description": "identify_object(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, identify_object(Count)), findall(x, object_pointed_named(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, identify_object(2)).",
+        "object_pointed_named(player, well).",
+        "object_pointed_named(someone_else, cart)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "point-and-name-reached",
+      "description": "point_and_name(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, point_and_name(Count)), findall(O, object_pointed_named(Player, O), Named), length(Named, Total), Total >= Count.",
+        "quest_objective(q1, 0, point_and_name(2)).",
+        "object_pointed_named(player, well).",
+        "object_pointed_named(player, door).",
+        "object_pointed_named(someone_else, cart)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "point-and-name-one-short",
+      "description": "point_and_name(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, point_and_name(Count)), findall(O, object_pointed_named(Player, O), Named), length(Named, Total), Total >= Count.",
+        "quest_objective(q1, 0, point_and_name(2)).",
+        "object_pointed_named(player, well).",
+        "object_pointed_named(someone_else, cart)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "order-food-reached",
+      "description": "order_food(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(food_ordered/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, order_food(Count)), findall(x, food_ordered(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, order_food(2)).",
+        "food_ordered(player, soup).",
+        "food_ordered(player, bread).",
+        "food_ordered(someone_else, pie)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "order-food-one-short",
+      "description": "order_food(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(food_ordered/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, order_food(Count)), findall(x, food_ordered(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, order_food(2)).",
+        "food_ordered(player, soup).",
+        "food_ordered(someone_else, pie)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "haggle-price-reached",
+      "description": "haggle_price(1) holds with exactly 1 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(price_haggled/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, haggle_price(Count)), findall(x, price_haggled(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, haggle_price(1)).",
+        "price_haggled(player, rope).",
+        "price_haggled(someone_else, rope)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "haggle-price-one-short",
+      "description": "haggle_price(1) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(price_haggled/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, haggle_price(Count)), findall(x, price_haggled(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, haggle_price(1)).",
+        "price_haggled(someone_else, rope)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "buy-item-reached",
+      "description": "buy_item(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(action_performed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, buy_item(Count)), findall(x, action_performed(Player, buy_item), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, buy_item(2)).",
+        "action_performed(player, buy_item).",
+        "action_performed(player, buy_item).",
+        "action_performed(player, sell_item)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "buy-item-one-short",
+      "description": "buy_item(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(action_performed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, buy_item(Count)), findall(x, action_performed(Player, buy_item), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, buy_item(2)).",
+        "action_performed(player, buy_item).",
+        "action_performed(player, sell_item)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "sell-item-reached",
+      "description": "sell_item(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(action_performed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, sell_item(Count)), findall(x, action_performed(Player, sell_item), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, sell_item(2)).",
+        "action_performed(player, sell_item).",
+        "action_performed(player, sell_item).",
+        "action_performed(player, buy_item)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "sell-item-one-short",
+      "description": "sell_item(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(action_performed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, sell_item(Count)), findall(x, action_performed(Player, sell_item), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, sell_item(2)).",
+        "action_performed(player, sell_item).",
+        "action_performed(player, buy_item)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "photograph-subject-reached",
+      "description": "photograph(heron, 2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(photo_taken/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, photograph(Subject, Count)), Subject \\= any, findall(x, photo_taken(Player, Subject), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, photograph(heron, 2)).",
+        "photo_taken(player, heron).",
+        "photo_taken(player, heron).",
+        "photo_taken(player, mill)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "photograph-subject-one-short",
+      "description": "photograph(heron, 2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(photo_taken/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, photograph(Subject, Count)), Subject \\= any, findall(x, photo_taken(Player, Subject), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, photograph(heron, 2)).",
+        "photo_taken(player, heron).",
+        "photo_taken(player, mill)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "photograph-any-reached",
+      "description": "photograph(any, 2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(photo_taken/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, photograph(any, Count)), findall(x, photo_taken(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, photograph(any, 2)).",
+        "photo_taken(player, heron).",
+        "photo_taken(player, mill).",
+        "photo_taken(someone_else, heron)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "photograph-any-one-short",
+      "description": "photograph(any, 2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(photo_taken/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, photograph(any, Count)), findall(x, photo_taken(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, photograph(any, 2)).",
+        "photo_taken(player, heron).",
+        "photo_taken(someone_else, heron)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "physical-action-reached",
+      "description": "physical_action(chop, 2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(physical_action_done/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, physical_action(Action, Count)), Action \\= '', findall(x, physical_action_done(Player, Action), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, physical_action(chop, 2)).",
+        "physical_action_done(player, chop).",
+        "physical_action_done(player, chop).",
+        "physical_action_done(player, swim)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "physical-action-one-short",
+      "description": "physical_action(chop, 2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(physical_action_done/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, physical_action(Action, Count)), Action \\= '', findall(x, physical_action_done(Player, Action), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, physical_action(chop, 2)).",
+        "physical_action_done(player, chop).",
+        "physical_action_done(player, swim)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "physical-action-any-reached",
+      "description": "physical_action('', 2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(physical_action_done/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, physical_action('', Count)), findall(x, physical_action_done(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, physical_action('', 2)).",
+        "physical_action_done(player, chop).",
+        "physical_action_done(player, swim).",
+        "physical_action_done(someone_else, chop)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "physical-action-any-one-short",
+      "description": "physical_action('', 2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(physical_action_done/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, physical_action('', Count)), findall(x, physical_action_done(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, physical_action('', 2)).",
+        "physical_action_done(player, chop).",
+        "physical_action_done(someone_else, chop)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "ask-for-directions-reached",
+      "description": "ask_for_directions(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(action_performed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, ask_for_directions(Count)), findall(x, action_performed(Player, ask_for_directions), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, ask_for_directions(2)).",
+        "action_performed(player, ask_for_directions).",
+        "action_performed(player, ask_for_directions).",
+        "action_performed(player, buy_item)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "ask-for-directions-one-short",
+      "description": "ask_for_directions(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(action_performed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, ask_for_directions(Count)), findall(x, action_performed(Player, ask_for_directions), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, ask_for_directions(2)).",
+        "action_performed(player, ask_for_directions).",
+        "action_performed(player, buy_item)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "comprehension-quiz-reached",
+      "description": "comprehension_quiz(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(comprehension_done/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, comprehension_quiz(Count)), findall(x, comprehension_done(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, comprehension_quiz(2)).",
+        "comprehension_done(player, q_a).",
+        "comprehension_done(player, q_b).",
+        "comprehension_done(someone_else, q_c)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "comprehension-quiz-one-short",
+      "description": "comprehension_quiz(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(comprehension_done/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, comprehension_quiz(Count)), findall(x, comprehension_done(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, comprehension_quiz(2)).",
+        "comprehension_done(player, q_a).",
+        "comprehension_done(someone_else, q_c)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "translation-challenge-reached",
+      "description": "translation_challenge(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(translation_completed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, translation_challenge(Count)), findall(x, translation_completed(Player, correct), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, translation_challenge(2)).",
+        "translation_completed(player, correct).",
+        "translation_completed(player, correct).",
+        "translation_completed(player, wrong)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "translation-challenge-one-short",
+      "description": "translation_challenge(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(translation_completed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, translation_challenge(Count)), findall(x, translation_completed(Player, correct), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, translation_challenge(2)).",
+        "translation_completed(player, correct).",
+        "translation_completed(player, wrong)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "follow-directions-reached",
+      "description": "follow_directions(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(direction_step_done/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, follow_directions(Count)), findall(x, direction_step_done(Player, QuestId, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, follow_directions(2)).",
+        "direction_step_done(player, q1, s1).",
+        "direction_step_done(player, q1, s2).",
+        "direction_step_done(player, q2, s3)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "follow-directions-one-short",
+      "description": "follow_directions(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(direction_step_done/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, follow_directions(Count)), findall(x, direction_step_done(Player, QuestId, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, follow_directions(2)).",
+        "direction_step_done(player, q1, s1).",
+        "direction_step_done(player, q2, s3)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "listening-comprehension-reached",
+      "description": "listening_comprehension(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(pronunciation_passed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, listening_comprehension(Count)), findall(x, pronunciation_passed(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, listening_comprehension(2)).",
+        "pronunciation_passed(player, bonjour).",
+        "pronunciation_passed(player, merci).",
+        "pronunciation_passed(someone_else, salut)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "listening-comprehension-one-short",
+      "description": "listening_comprehension(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(pronunciation_passed/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, listening_comprehension(Count)), findall(x, pronunciation_passed(Player, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, listening_comprehension(2)).",
+        "pronunciation_passed(player, bonjour).",
+        "pronunciation_passed(someone_else, salut)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "collect-vocabulary-reached",
+      "description": "collect_vocabulary(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, collect_vocabulary(Count)), findall(x, vocab_used(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, collect_vocabulary(2)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, sel, 0).",
+        "vocab_used(someone_else, eau, 1)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "collect-vocabulary-one-short",
+      "description": "collect_vocabulary(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, collect_vocabulary(Count)), findall(x, vocab_used(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, collect_vocabulary(2)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(someone_else, eau, 1)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "build-friendship-reached",
+      "description": "build_friendship(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(friendship_level/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, build_friendship(Count)), findall(x, (friendship_level(Player, _, Level), Level >= 3), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, build_friendship(2)).",
+        "friendship_level(player, anna, 3).",
+        "friendship_level(player, ben, 5).",
+        "friendship_level(player, cora, 2)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "build-friendship-one-short",
+      "description": "build_friendship(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(friendship_level/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, build_friendship(Count)), findall(x, (friendship_level(Player, _, Level), Level >= 3), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, build_friendship(2)).",
+        "friendship_level(player, anna, 3).",
+        "friendship_level(player, cora, 2)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "vocabulary-reached",
+      "description": "vocabulary(3) holds with exactly 3 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, vocabulary(Count)), findall(x, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Activities), length(Activities, Total), Total >= Count.",
+        "quest_objective(q1, 0, vocabulary(3)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, sel, 0).",
+        "object_pointed_named(player, well).",
+        "vocab_used(someone_else, eau, 1)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "vocabulary-one-short",
+      "description": "vocabulary(3) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, vocabulary(Count)), findall(x, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Activities), length(Activities, Total), Total >= Count.",
+        "quest_objective(q1, 0, vocabulary(3)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, sel, 0).",
+        "vocab_used(someone_else, eau, 1)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "vocabulary-activities-reached",
+      "description": "vocabulary_activities(3) holds with exactly 3 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, vocabulary_activities(Count)), findall(x, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, vocabulary_activities(3)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, sel, 0).",
+        "object_pointed_named(player, well).",
+        "object_pointed_named(someone_else, door)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "vocabulary-activities-one-short",
+      "description": "vocabulary_activities(3) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, vocabulary_activities(Count)), findall(x, (vocab_used(Player, _, _) ; object_pointed_named(Player, _)), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, vocabulary_activities(3)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, sel, 0).",
+        "object_pointed_named(someone_else, door)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "conversation-activities-reached",
+      "description": "conversation_activities(5) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(talked_to/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, conversation_activities(Count)), findall(T, talked_to(Player, _, T), Terms), sum_list(Terms, Total), Total >= Count.",
+        "quest_objective(q1, 0, conversation_activities(5)).",
+        "talked_to(player, anna, 3).",
+        "talked_to(player, ben, 2).",
+        "talked_to(someone_else, anna, 9)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "conversation-activities-one-short",
+      "description": "conversation_activities(5) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(talked_to/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, conversation_activities(Count)), findall(T, talked_to(Player, _, T), Terms), sum_list(Terms, Total), Total >= Count.",
+        "quest_objective(q1, 0, conversation_activities(5)).",
+        "talked_to(player, anna, 3).",
+        "talked_to(someone_else, anna, 9)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "master-words-reached",
+      "description": "master_words(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, master_words(Count)), findall(x, vocab_used(Player, _, 1), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, master_words(2)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, eau, 1).",
+        "vocab_used(player, sel, 0)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "master-words-one-short",
+      "description": "master_words(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, master_words(Count)), findall(x, vocab_used(Player, _, 1), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, master_words(2)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, sel, 0)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "learn-new-words-reached",
+      "description": "learn_new_words(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, learn_new_words(Count)), findall(x, vocab_used(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, learn_new_words(2)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(player, sel, 0).",
+        "vocab_used(someone_else, eau, 1)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "learn-new-words-one-short",
+      "description": "learn_new_words(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(vocab_used/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, learn_new_words(Count)), findall(x, vocab_used(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, learn_new_words(2)).",
+        "vocab_used(player, pain, 1).",
+        "vocab_used(someone_else, eau, 1)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "find-vocabulary-items-reached",
+      "description": "find_vocabulary_items(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(object_examined/2).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, find_vocabulary_items(Count)), findall(x, (object_examined(Player, _) ; object_pointed_named(Player, _)), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, find_vocabulary_items(2)).",
+        "object_examined(player, well).",
+        "object_pointed_named(player, door).",
+        "object_examined(someone_else, cart)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "find-vocabulary-items-one-short",
+      "description": "find_vocabulary_items(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(object_examined/2).",
+        ":- dynamic(object_pointed_named/2).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, find_vocabulary_items(Count)), findall(x, (object_examined(Player, _) ; object_pointed_named(Player, _)), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, find_vocabulary_items(2)).",
+        "object_examined(player, well).",
+        "object_examined(someone_else, cart)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "combat-action-reached",
+      "description": "combat_action(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(combat_action_done/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, combat_action(Count)), findall(x, combat_action_done(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, combat_action(2)).",
+        "combat_action_done(player, block, wolf).",
+        "combat_action_done(player, strike, wolf).",
+        "combat_action_done(someone_else, strike, wolf)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "combat-action-one-short",
+      "description": "combat_action(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(combat_action_done/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, combat_action(Count)), findall(x, combat_action_done(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, combat_action(2)).",
+        "combat_action_done(player, block, wolf).",
+        "combat_action_done(someone_else, strike, wolf)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "observe-activity-reached",
+      "description": "observe_activity(2) holds with exactly 2 counted fact(s), the decoy not counted",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(activity_observed/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, observe_activity(Count)), findall(x, activity_observed(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, observe_activity(2)).",
+        "activity_observed(player, anna, baking).",
+        "activity_observed(player, ben, fishing).",
+        "activity_observed(someone_else, anna, baking)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "observe-activity-one-short",
+      "description": "observe_activity(2) fails one counted fact short, though the decoy is in the KB",
+      "kb": [
+        ":- dynamic(quest_objective/3).",
+        ":- dynamic(activity_observed/3).",
+        "objective_complete(Player, QuestId, Idx) :- quest_objective(QuestId, Idx, observe_activity(Count)), findall(x, activity_observed(Player, _, _), Hits), length(Hits, Total), Total >= Count.",
+        "quest_objective(q1, 0, observe_activity(2)).",
+        "activity_observed(player, anna, baking).",
+        "activity_observed(someone_else, anna, baking)."
+      ],
+      "query": "objective_complete(player, q1, 0)",
+      "expected": []
+    },
+    {
+      "name": "reputation-total",
+      "description": "reputation/3 totals one faction's changes (4 - 1 = 3), another faction's not counted",
+      "kb": [
+        ":- dynamic(reputation_change/3).",
+        "reputation(Player, Faction, Total) :- findall(D, reputation_change(Player, Faction, D), Terms), sum_list(Terms, Total).",
+        "reputation_change(player, guild, 4).",
+        "reputation_change(player, guild, -1).",
+        "reputation_change(player, crown, 50)."
+      ],
+      "query": "reputation(player, guild, Total)",
+      "expected": [
+        {
+          "Total": 3
+        }
+      ]
+    },
+    {
+      "name": "avg-pronunciation-mean",
+      "description": "player_avg_pronunciation/2, the clause alone (no advanced pack): the mean of the player's three scores (82 + 90 + 77) / 3 = 83, another player's score not counted",
+      "kb": [
+        ":- dynamic(pronunciation_score/4).",
+        "player_avg_pronunciation(Player, Avg) :- findall(S, pronunciation_score(Player, _, S, _), Scores), Scores \\= [], sum_list(Scores, Total), length(Scores, Count), Avg is Total / Count.",
+        "pronunciation_score(player, bonjour, 82, 1).",
+        "pronunciation_score(player, merci, 90, 2).",
+        "pronunciation_score(player, bonjour, 77, 3).",
+        "pronunciation_score(someone_else, salut, 10, 1)."
+      ],
+      "query": "player_avg_pronunciation(player, Avg)",
+      "expected": [
+        {
+          "Avg": 83
+        }
+      ]
+    },
+    {
+      "name": "avg-pronunciation-none",
+      "description": "player_avg_pronunciation/2, the clause alone: a player with no scores fails (no error, no 0), though another player has one",
+      "kb": [
+        ":- dynamic(pronunciation_score/4).",
+        "player_avg_pronunciation(Player, Avg) :- findall(S, pronunciation_score(Player, _, S, _), Scores), Scores \\= [], sum_list(Scores, Total), length(Scores, Count), Avg is Total / Count.",
+        "pronunciation_score(someone_else, salut, 10, 1)."
+      ],
+      "query": "player_avg_pronunciation(player, Avg)",
+      "expected": []
+    },
+    {
+      "name": "converter-defeat-enemies-reached",
+      "description": "convertQuestToProlog's quest_complete/2 for completionCriteria defeat_enemies (wolf, 2): two wolves, a bear not counted",
+      "kb": [
+        ":- dynamic(defeated/2).",
+        "quest_complete(Player, wolves_at_the_fold) :- findall(x, defeated(Player, wolf), Defeats), length(Defeats, C), C >= 2.",
+        "defeated(player, wolf).",
+        "defeated(player, wolf).",
+        "defeated(player, bear)."
+      ],
+      "query": "quest_complete(player, wolves_at_the_fold)",
+      "expected": [
+        {}
+      ]
+    },
+    {
+      "name": "converter-defeat-enemies-one-short",
+      "description": "the same rule fails with one wolf, though a bear is in the KB",
+      "kb": [
+        ":- dynamic(defeated/2).",
+        "quest_complete(Player, wolves_at_the_fold) :- findall(x, defeated(Player, wolf), Defeats), length(Defeats, C), C >= 2.",
+        "defeated(player, wolf).",
+        "defeated(player, bear)."
+      ],
+      "query": "quest_complete(player, wolves_at_the_fold)",
+      "expected": []
+    }
+  ]
+}

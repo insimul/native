@@ -27,6 +27,8 @@
       "conformance/social/haggling.json",
       "conformance/social/actions.json",
       "conformance/social/save.json",
+      "conformance/social/kernel-inputs.json",
+      "conformance/social/action-effects.json",
       "conformance/prolog/mechanic-volition.json",
       "conformance/items/pricing.json"
     ],
@@ -59,6 +61,7 @@
       "gift_given",
       "food_ordered",
       "price_haggled",
+      "conversational_action",
       "courtship_advanced",
       "npc_volition_action",
       "volition_schedule_override",
@@ -81,11 +84,13 @@
       "A relationship view is the play-time gate: consult canOfferQuests before a quest offer and pricePermille (with the standing's) at a merchant.",
       "Strengths are thousandths (-1000..1000), romance spark tenths (0..1000), standing whole points (-100..100).",
       "A gift is giveGift then the three kernels in order: relationship, standing, and romance's give_gift when romance runs.",
+      "A confirmed Greet, Ask Question, Trade, Gossip or Intimidate is performWheelAction: it spends the wheel's energy and applies the relationship, the standing, conversational_action and the hand-off (Ask Question opens the conversation, Trade a merchant's shop). Compliment and Flirt are romance's actions, Give Gift is giveGift.",
       "Romance draws are seeded (romanceDraw): give every game one seed so an attempt replays.",
       "npc-temporary-states and social-contact-list are port-later; do not generate them from this pack."
     ],
     "doNot": [
       "Let an unaffordable wheel action fire (activateSlot refuses too_tired).",
+      "Spend energy on a refused wheel action: performWheelAction's refusals spend nothing.",
       "Store NPC names or the current settlement in the save: the world gives the names again and the host re-enters the settlement."
     ]
   }

@@ -12,7 +12,9 @@
       "conformance/traversal/vehicles.json",
       "conformance/traversal/mounts.json",
       "conformance/traversal/session.json",
-      "conformance/traversal/save.json"
+      "conformance/traversal/save.json",
+      "conformance/traversal/vehicles-only.json",
+      "conformance/props/vehicle-placement.json"
     ]
   },
   "requires": [{ "id": "controls" }],
@@ -42,7 +44,10 @@
       "Bind the cycle to KEY_CYCLE_VEHICLE (KeyB). Switching straight from one kind to the next raises only vehicle_mounted, as Babylon did.",
       "A horse lends ride (personalVehicleModes): give the planner the modes it returns; a bicycle is a pace only.",
       "Pace factors are thousandths of the controller's own walk, run and turn rates.",
-      "Without the traversal pack, vehicles still decides who is aboard, who drives and who rides which kind, with its events and pace factors; but no planner takes the modes a vehicle lends, and nothing is saved, because the riding rows and the registry's state live in the traversal save extension that traversal owns. A preset that wants either carries traversal too.",
+      "Without the traversal pack, vehicles still decides who is aboard, who drives and who rides which kind, with its events and pace factors; but no planner takes the modes a vehicle lends, and nothing is saved, because the riding rows and the registry's state live in the traversal save extension that traversal owns. So a load (F9) in such a game reads no block: every world vehicle is back at its authored place with nobody aboard and every rider on foot (loadVehicleLayers, conformance/traversal/vehicles-only.json). A preset that wants either kept carries traversal too.",
+      "E by a world vehicle is core's props.interactables.target: aboard, E gets off (only an open props panel first); not aboard, a vehicle is boarded only where nothing else is in range, within the talk reach (conformance/props/interactables.json).",
+      "Draw a body aboard any vehicle (bicycle, horse, a world vehicle as driver or passenger) with the animation intent riderIntentOf(actor, riding, registry.roster()) gives, ride, through bodyIntent(prior, rider): off it, the body's own intent (prior) comes back; vehicleRiderIntents(state) is everyone a world vehicle carries ({} when parked). Ask after every mount, board, disembark and load (src/traversal/rider-intent.ts; the intent and riders steps of conformance/traversal/{session,mounts,vehicles-only}.json).",
+      "Park each world vehicle nobody drives with parkVehicle (src/props/vehicle-placement.ts, conformance/props/vehicle-placement.json) at world start and after every load: core stores a vehicle's place, never where at the place it stands.",
       "Rideable animals, pets and wild animals (traversal-mounts-pets) are port-later: see docs/traversal-systems.md for the contract note; do not generate them from this pack."
     ],
     "doNot": [

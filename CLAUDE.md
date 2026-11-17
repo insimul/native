@@ -241,7 +241,10 @@
   conformance.rs` and `tests/wasm_conformance.mjs` must stay in lockstep; all three
   print an `[AMEND]` line and the same
   `files / cases / passed / failed / amended` summary, so the legs are
-  directly comparable (currently 10 files, 76 cases, 76 passed, 1 amended).
+  directly comparable (currently 12 files, 181 cases, 181 passed, 1 amended; 10 files
+  and 76 cases until PL.native-bundle-core re-copied the mirror at core d88b6f0). The
+  legs compare a binding's JSON numbers as NUMBERS (C `jv_equal`, wasm `deepEqual`,
+  Rust `terms_match`): core states `83` where Trealla's `Total / Count` binds `83.0`.
 - **Cross-leg parity is a diff, not three green checkmarks.** Every leg supports
   `INSIMUL_CONFORMANCE_JSON=<path>`, writing one JSON-Lines record per case that
   carries the **raw** `insimul_query_next()` strings (not a reparsed model — the
@@ -251,7 +254,7 @@
   wording or number formatting fails even when every leg still satisfies
   `expected`. A missing toolchain is a hard failure, not a skip (`--no-rust`
   makes skipping explicit). A new leg should emit the same records. Result
-  today: 76/76 byte-identical on all three — see `conformance/WASM_PARITY.md`,
+  today: 181/181 byte-identical on all three — see `conformance/WASM_PARITY.md`,
   which is where any future divergence gets documented (never skipped).
 - The corpus carries the **KINP identity layer** (`identity.json`,
   `equivalence.json`, `worlds.json`, and a rewritten `gameplay.json`): entity
@@ -446,7 +449,7 @@
 - **`core_vendor` also pins `save.rules`' `extensionKeys`** (PL.native-save-extension-keys,
   U110): it evaluates the vendored bundle and fails unless every `save.rules` step under
   `corebridge/tests/cases/` naming `extensionKeys` states exactly the sorted registry
-  keys (22 at 6cd4b4e); `--check --core` also holds them to core's `extensionRegistry`
+  keys (22 at d88b6f0, unchanged since 6cd4b4e); `--check --core` also holds them to core's `extensionRegistry`
   source at the pin. A re-pin that registers an extension must update those cases on
   purpose. `core_vendor_extension_keys_negative` (`tests/save-extension-keys-negative/`)
   must see five wrong statements named.
@@ -458,7 +461,18 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` 6cd4b4e (2026-11-12,
+  and pin disagree. The pin today is core `main` d88b6f0 (2026-11-16,
+  PL.native-bundle-core, U115(1)/U116(3): every core item landed after 6cd4b4e, among
+  them PL.core-doorstep-rule's network and village answers (48 doorstep cases, 33
+  changed and 15 appended, which `layout_corpus` now runs on this library),
+  PL.core-ride-intent's `intent`/`riders` steps (7 cases, run through the new
+  `traversal.rider.*` rows and the session's `riderIntent`/`riders` ops),
+  PL.core-placement-building-area's building-fit and settle answers,
+  PL.core-vehicle-rules' and PL.core-gather-reach-tier's interact rows and contract
+  tables (`vehicleTier`), and PL.core-helper-aggregate-all / PL.core-helper-sum-list's
+  helper clauses in the bundle, with their `conformance/prolog` files
+  `quest-count-goals.json` and `pack-agreement.json` added to the vendored mirror).
+  Before that, core `main` 6cd4b4e (2026-11-12,
   PL.native-survival-rows: PL.core-survival-rules' five survival host rules and
   grown corpora, which the new `survival.*` rows run over P9c.core's needs, HUD bars
   and stamina; PL.core-camera-movement-gaps' `prop` solid kind, which

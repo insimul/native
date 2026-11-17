@@ -183,17 +183,63 @@
       "expected": [{ "L": "alderforest%23save-7f" }]
     },
     {
-      "name": "playthrough-role-links-a-save-to-its-canon-world",
+      "name": "playthrough-role-links-a-save-to-its-parent-world",
       "kb": [
         "world_role(id(world, insimul, 'alderforest%23save-7f'), playthrough).",
         "world_role(id(world, insimul, alderforest), canon).",
         "world_parent(id(world, insimul, 'alderforest%23save-7f'), id(world, insimul, alderforest)).",
-        "playthrough_of(P, C) :- world_role(P, playthrough), world_parent(P, C).",
+        "playthrough_of(P, Parent) :- world_role(P, playthrough), world_parent(P, Parent).",
         "id_local(id(_, _, L), L).",
         "save_of(PL, CL) :- playthrough_of(P, C), id_local(P, PL), id_local(C, CL)."
       ],
       "query": "save_of(PL, CL)",
       "expected": [{ "PL": "alderforest%23save-7f", "CL": "alderforest" }]
+    },
+    {
+      "name": "a-work-between-canon-and-playthrough-splits-the-two-questions",
+      "kb": [
+        "world_role(id(world, pinakes, 'consensus-reality'), consensus_reality).",
+        "world_role(id(world, insimul, asoiaf), canon).",
+        "world_role(id(world, insimul, got), work).",
+        "world_role(id(world, insimul, 'got%23save-7f'), playthrough).",
+        "world_parent(id(world, insimul, asoiaf), id(world, pinakes, 'consensus-reality')).",
+        "world_parent(id(world, insimul, got), id(world, insimul, asoiaf)).",
+        "world_parent(id(world, insimul, 'got%23save-7f'), id(world, insimul, got)).",
+        "world_ancestor(W, P) :- world_parent(W, P).",
+        "world_ancestor(W, A) :- world_parent(W, M), world_ancestor(M, A).",
+        "playthrough_of(P, Parent) :- world_role(P, playthrough), world_parent(P, Parent).",
+        "playthrough_canon(P, C) :- world_role(P, playthrough), world_ancestor(P, C), world_role(C, canon).",
+        "work_of(Wk, C) :- world_role(Wk, work), world_ancestor(Wk, C), world_role(C, canon).",
+        "id_local(id(_, _, L), L).",
+        "answers(ParentL, CanonL, WorkCanonL) :- playthrough_of(P, Par), id_local(Par, ParentL), playthrough_canon(P, C), id_local(C, CanonL), work_of(_, WC), id_local(WC, WorkCanonL)."
+      ],
+      "query": "answers(ParentL, CanonL, WorkCanonL)",
+      "expected": [{ "ParentL": "got", "CanonL": "asoiaf", "WorkCanonL": "asoiaf" }]
+    },
+    {
+      "name": "a-work-overrides-its-canon-and-the-sibling-work-is-untouched",
+      "kb": [
+        "world_parent(id(world, insimul, got), id(world, insimul, asoiaf)).",
+        "world_parent(id(world, insimul, hotd), id(world, insimul, asoiaf)).",
+        "claim(id(ent, 'insimul:world:asoiaf', jaime), travels_to, id(ent, 'insimul:world:asoiaf', riverlands), '@world'(id(world, insimul, asoiaf))).",
+        "claim(id(ent, 'insimul:world:asoiaf', jaime), sworn_to, id(ent, 'insimul:world:asoiaf', 'house-lannister'), '@world'(id(world, insimul, asoiaf))).",
+        "claim(id(ent, 'insimul:world:asoiaf', jaime), travels_to, id(ent, 'insimul:world:asoiaf', dorne), '@world'(id(world, insimul, got))).",
+        "claim_at(W, S, P, O) :- claim(S, P, O, '@world'(W)).",
+        "claim_defined(W, S, P) :- claim(S, P, _, '@world'(W)).",
+        "world_defines(W, S, P) :- claim_defined(W, S, P).",
+        "world_defines(W, S, P) :- world_parent(W, Parent), world_defines(Parent, S, P).",
+        "world_resolve(W, S, P, O) :- claim_at(W, S, P, O).",
+        "world_resolve(W, S, P, O) :- world_parent(W, Parent), world_resolve(Parent, S, P, O), \\+ claim_defined(W, S, P).",
+        "holds(S, P, O, '@world'(W)) :- world_resolve(W, S, P, O).",
+        "overrides(W, S, P) :- claim_defined(W, S, P), world_parent(W, Parent), world_defines(Parent, S, P).",
+        "masked(W, S, P, O) :- overrides(W, S, P), world_parent(W, Parent), world_resolve(Parent, S, P, O), \\+ claim_at(W, S, P, O).",
+        "id_local(id(_, _, L), L).",
+        "jaime(id(ent, 'insimul:world:asoiaf', jaime)).",
+        "where(W, L) :- jaime(J), holds(J, travels_to, O, '@world'(W)), id_local(O, L).",
+        "divergence(WorkL, SiblingL, CanonL, MaskedL) :- where(id(world, insimul, got), WorkL), where(id(world, insimul, hotd), SiblingL), where(id(world, insimul, asoiaf), CanonL), jaime(J), masked(id(world, insimul, got), J, travels_to, M), id_local(M, MaskedL)."
+      ],
+      "query": "divergence(WorkL, SiblingL, CanonL, MaskedL)",
+      "expected": [{ "WorkL": "dorne", "SiblingL": "riverlands", "CanonL": "riverlands", "MaskedL": "riverlands" }]
     }
   ]
 }

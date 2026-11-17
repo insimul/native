@@ -1,6 +1,6 @@
 {
   "area": "traversal",
-  "description": "Hand-written: the traversal.* stateful rows’ own contract (PL.native-traversal-rows slice 2, U106(1); core’s P9e layers, P9e.core) — the personal-vehicle and lent-mode rows over core’s functions (the state one row answers is what the next is sent), the save block’s writer and reader, and one traversal.session: core’s TraversalPlanner, VehicleRegistry and FastTravelDirector wired together with a StaminaPool, scripted geometry and locomotion hosts, a recording clock and bus, every op it takes, the host op restating the scripted answers, a save loaded back, core’s degradations with no hosts, and the rows’ own refusals as errors coded [invalid-input]. Every expectation here was computed by core’s own functions and classes at the pin, not by these rows. Core’s own corpora (conformance/traversal/{session,mounts,save}.json, 62 cases) are driven whole through these rows by the traversal_corpus ctest (tests/traversal_corpus.cpp), not transcribed here.",
+  "description": "Hand-written: the traversal.* stateful rows’ own contract (PL.native-traversal-rows slice 2, U106(1); core’s P9e layers, P9e.core) — the personal-vehicle and lent-mode rows over core’s functions (the state one row answers is what the next is sent), the save block’s writer and reader, and one traversal.session: core’s TraversalPlanner, VehicleRegistry and FastTravelDirector wired together with a StaminaPool, scripted geometry and locomotion hosts, a recording clock and bus, every op it takes, the host op restating the scripted answers, a save loaded back, core’s degradations with no hosts, and the rows’ own refusals as errors coded [invalid-input]. Every expectation here was computed by core’s own functions and classes at the pin, not by these rows. Core’s own corpora (conformance/traversal/{session,mounts,save}.json, 62 cases) are driven whole through these rows by the traversal_corpus ctest (tests/traversal_corpus.cpp), not transcribed here. The traversal.rider.* rows and the session's riderIntent and riders ops (PL.native-bundle-core; core's PL.core-ride-intent, U106(4)) are pinned the same way, every expectation computed by core's rider-intent functions and, for the session, core's own corpus runner over the same steps at the d88b6f0 pin.",
   "cases": [
     {
       "name": "traversal.personal: each row is one of core’s personal-vehicle functions, the pack’s params read on every call; the state a verb answers is what the next verb is sent",
@@ -3768,6 +3768,690 @@
             "ops": []
           },
           "expectError": "no open session 2"
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "disposed": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.rider: each row is one of core's rider-intent functions (PL.core-ride-intent); a body aboard anything rides, and getting off gives its own intent back",
+      "steps": [
+        {
+          "call": "traversal.rider.posture",
+          "args": {
+            "actor": "mira",
+            "state": {
+              "riding": {
+                "mira": "horse"
+              }
+            },
+            "vehicles": [
+              {
+                "id": "skiff",
+                "occupants": [
+                  "mira"
+                ]
+              },
+              {
+                "id": "cart",
+                "occupants": [
+                  "tam",
+                  "mira"
+                ]
+              }
+            ]
+          },
+          "expect": {
+            "posture": {
+              "kind": "horse",
+              "aboard": "cart"
+            }
+          }
+        },
+        {
+          "call": "traversal.rider.posture",
+          "args": {
+            "actor": "wren",
+            "state": {
+              "riding": {
+                "mira": "horse"
+              }
+            },
+            "vehicles": [
+              {
+                "id": "skiff",
+                "occupants": [
+                  "mira"
+                ]
+              },
+              {
+                "id": "cart",
+                "occupants": [
+                  "tam",
+                  "mira"
+                ]
+              }
+            ]
+          },
+          "expect": {
+            "posture": {
+              "kind": null,
+              "aboard": null
+            }
+          }
+        },
+        {
+          "call": "traversal.rider.posture",
+          "args": {
+            "actor": "tam",
+            "state": null,
+            "vehicles": [
+              {
+                "id": "skiff",
+                "occupants": [
+                  "mira"
+                ]
+              },
+              {
+                "id": "cart",
+                "occupants": [
+                  "tam",
+                  "mira"
+                ]
+              }
+            ]
+          },
+          "expect": {
+            "posture": {
+              "kind": null,
+              "aboard": "cart"
+            }
+          }
+        },
+        {
+          "call": "traversal.rider.posture",
+          "args": {
+            "actor": "tam"
+          },
+          "expect": {
+            "posture": {
+              "kind": null,
+              "aboard": null
+            }
+          }
+        },
+        {
+          "call": "traversal.rider.intent",
+          "args": {
+            "posture": {
+              "kind": null,
+              "aboard": null
+            }
+          },
+          "expect": {
+            "rider": null
+          }
+        },
+        {
+          "call": "traversal.rider.intent",
+          "args": {
+            "posture": {
+              "kind": "bicycle",
+              "aboard": null
+            }
+          },
+          "expect": {
+            "rider": "ride"
+          }
+        },
+        {
+          "call": "traversal.rider.intent",
+          "args": {
+            "posture": {
+              "kind": null,
+              "aboard": "cart"
+            }
+          },
+          "expect": {
+            "rider": "ride"
+          }
+        },
+        {
+          "call": "traversal.rider.body",
+          "args": {
+            "prior": "walk",
+            "rider": "ride"
+          },
+          "expect": {
+            "body": "ride"
+          }
+        },
+        {
+          "call": "traversal.rider.body",
+          "args": {
+            "prior": "run",
+            "rider": null
+          },
+          "expect": {
+            "body": "run"
+          }
+        },
+        {
+          "call": "traversal.rider.body",
+          "args": {
+            "prior": "talk"
+          },
+          "expect": {
+            "body": "talk"
+          }
+        },
+        {
+          "call": "traversal.rider.vehicleRiders",
+          "args": {
+            "state": {
+              "id": "cart",
+              "occupants": [
+                "wren",
+                "ada",
+                "wren"
+              ]
+            }
+          },
+          "expect": {
+            "riders": {
+              "ada": "ride",
+              "wren": "ride"
+            }
+          }
+        },
+        {
+          "call": "traversal.rider.vehicleRiders",
+          "args": {
+            "state": {
+              "id": "cart",
+              "owner": "ada",
+              "occupants": []
+            }
+          },
+          "expect": {
+            "riders": {}
+          }
+        }
+      ]
+    },
+    {
+      "name": "traversal.rider: the rows' own refusals are errors coded [invalid-input]",
+      "steps": [
+        {
+          "call": "traversal.rider.posture",
+          "args": {
+            "state": {
+              "riding": {}
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: traversal.rider.posture: `actor` must be a string"
+        },
+        {
+          "call": "traversal.rider.posture",
+          "args": {
+            "actor": "mira",
+            "state": {
+              "riding": "horse"
+            }
+          },
+          "expectError": "`state.riding` must be a JSON object"
+        },
+        {
+          "call": "traversal.rider.posture",
+          "args": {
+            "actor": "mira",
+            "vehicles": [
+              {
+                "id": "cart"
+              }
+            ]
+          },
+          "expectError": "`vehicles[0].occupants` must be an array"
+        },
+        {
+          "call": "traversal.rider.posture",
+          "args": {
+            "actor": "mira",
+            "vehicles": [
+              {
+                "id": 7,
+                "occupants": [
+                  "mira"
+                ]
+              }
+            ]
+          },
+          "expectError": "`vehicles[0].id` must be a string"
+        },
+        {
+          "call": "traversal.rider.intent",
+          "args": {},
+          "expectError": "`posture` must be a JSON object"
+        },
+        {
+          "call": "traversal.rider.intent",
+          "args": {
+            "posture": {
+              "kind": 3,
+              "aboard": null
+            }
+          },
+          "expectError": "`posture.kind` must be a string"
+        },
+        {
+          "call": "traversal.rider.body",
+          "args": {
+            "prior": "fly",
+            "rider": null
+          },
+          "expectError": "`prior` must be one of idle, walk"
+        },
+        {
+          "call": "traversal.rider.body",
+          "args": {
+            "prior": "walk",
+            "rider": "hover"
+          },
+          "expectError": "`rider` must be one of idle, walk"
+        },
+        {
+          "call": "traversal.rider.vehicleRiders",
+          "args": {
+            "state": {
+              "id": "cart",
+              "occupants": [
+                "wren",
+                4
+              ]
+            }
+          },
+          "expectError": "`state.occupants[1]` must be a string"
+        }
+      ]
+    },
+    {
+      "name": "traversal.session: riderIntent and riders over the session's riders and roster (core's PL.core-ride-intent): boarding draws a driver and a passenger alike riding, getting off gives each its own intent back, a bicycle rides too, and neither op changes state",
+      "steps": [
+        {
+          "call": "traversal.session.create",
+          "args": {
+            "links": [
+              {
+                "from": "riverside_camp",
+                "to": "ford_path",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "from": "ford_path",
+                "to": "riverside_camp",
+                "mode": "walk",
+                "cost": 4
+              },
+              {
+                "from": "riverside_camp",
+                "to": "far_bank",
+                "mode": "swim",
+                "cost": 6,
+                "requires": [
+                  "has_item(rope, 1)"
+                ]
+              },
+              {
+                "from": "riverside_camp",
+                "to": "far_bank",
+                "mode": "boat",
+                "cost": 6
+              },
+              {
+                "from": "far_bank",
+                "to": "riverside_camp",
+                "mode": "boat",
+                "cost": 6
+              },
+              {
+                "from": "ford_path",
+                "to": "far_bank",
+                "mode": "jump",
+                "cost": 3,
+                "geometric": true
+              },
+              {
+                "from": "far_bank",
+                "to": "ridge",
+                "mode": "climb",
+                "cost": 5
+              },
+              {
+                "from": "ridge",
+                "to": "watchtower",
+                "mode": "walk",
+                "cost": 2
+              },
+              {
+                "from": "riverside_camp",
+                "to": "mill_island",
+                "mode": "boat",
+                "cost": 4
+              },
+              {
+                "from": "mill_island",
+                "to": "riverside_camp",
+                "mode": "boat",
+                "cost": 4
+              },
+              {
+                "from": "riverside_camp",
+                "to": "meadow",
+                "mode": "ride",
+                "cost": 10
+              },
+              {
+                "from": "meadow",
+                "to": "riverside_camp",
+                "mode": "walk",
+                "cost": 8
+              }
+            ],
+            "tuning": {
+              "defaultCost": 5,
+              "modeCost": {
+                "walk": 1,
+                "climb": 3,
+                "swim": 2.5,
+                "jump": 2,
+                "ride": 0.2,
+                "boat": 0.2
+              },
+              "modeAction": {
+                "walk": "walk",
+                "climb": "climb",
+                "swim": "swim",
+                "jump": "jump",
+                "ride": "ride",
+                "boat": "row"
+              },
+              "defaultAction": "traverse"
+            },
+            "vehicles": [
+              {
+                "id": "skiff",
+                "name": "The ferryman’s skiff",
+                "mode": "boat",
+                "owner": "ferryman",
+                "location": "riverside_camp",
+                "seats": 2
+              },
+              {
+                "id": "cart",
+                "name": "A hay cart",
+                "mode": "ride",
+                "location": "ford_path",
+                "seats": 2
+              }
+            ],
+            "fastTravel": {
+              "hoursPerCost": 1,
+              "minimumHours": 1,
+              "maxHours": 72,
+              "stepHours": 6,
+              "maxSteps": 12
+            },
+            "seed": "corpus"
+          },
+          "expect": {
+            "$subset": {
+              "session": 1
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "register",
+                "actor": "wren",
+                "location": "ford_path",
+                "modes": [
+                  "walk"
+                ]
+              },
+              {
+                "op": "register",
+                "actor": "tam",
+                "location": "ford_path",
+                "modes": [
+                  "walk"
+                ]
+              },
+              {
+                "op": "riders",
+                "vehicle": "cart"
+              },
+              {
+                "op": "riderIntent",
+                "actor": "wren",
+                "prior": "walk"
+              },
+              {
+                "op": "board",
+                "actor": "wren",
+                "vehicle": "cart"
+              },
+              {
+                "op": "riderIntent",
+                "actor": "wren",
+                "prior": "walk"
+              },
+              {
+                "op": "board",
+                "actor": "tam",
+                "vehicle": "cart"
+              },
+              {
+                "op": "riders",
+                "vehicle": "cart"
+              },
+              {
+                "op": "disembark",
+                "actor": "wren",
+                "vehicle": "cart"
+              },
+              {
+                "op": "riderIntent",
+                "actor": "wren",
+                "prior": "walk"
+              },
+              {
+                "op": "riderIntent",
+                "actor": "tam",
+                "prior": "talk"
+              },
+              {
+                "op": "riders",
+                "vehicle": "ghost"
+              },
+              {
+                "op": "mount",
+                "actor": "wren",
+                "kind": "bicycle"
+              },
+              {
+                "op": "riderIntent",
+                "actor": "wren",
+                "prior": "run"
+              }
+            ]
+          },
+          "expect": {
+            "$subset": {
+              "results": [
+                {
+                  "$any": true
+                },
+                {
+                  "$any": true
+                },
+                {
+                  "$subset": {
+                    "riders": {},
+                    "events": [],
+                    "orders": [],
+                    "clock": []
+                  }
+                },
+                {
+                  "$subset": {
+                    "posture": {
+                      "kind": null,
+                      "aboard": null
+                    },
+                    "rider": null,
+                    "body": "walk",
+                    "events": [],
+                    "orders": [],
+                    "clock": []
+                  }
+                },
+                {
+                  "$any": true
+                },
+                {
+                  "$subset": {
+                    "posture": {
+                      "kind": null,
+                      "aboard": "cart"
+                    },
+                    "rider": "ride",
+                    "body": "ride",
+                    "events": [],
+                    "orders": [],
+                    "clock": []
+                  }
+                },
+                {
+                  "$any": true
+                },
+                {
+                  "$subset": {
+                    "riders": {
+                      "tam": "ride",
+                      "wren": "ride"
+                    },
+                    "events": [],
+                    "orders": [],
+                    "clock": []
+                  }
+                },
+                {
+                  "$any": true
+                },
+                {
+                  "$subset": {
+                    "posture": {
+                      "kind": null,
+                      "aboard": null
+                    },
+                    "rider": null,
+                    "body": "walk",
+                    "events": [],
+                    "orders": [],
+                    "clock": []
+                  }
+                },
+                {
+                  "$subset": {
+                    "posture": {
+                      "kind": null,
+                      "aboard": "cart"
+                    },
+                    "rider": "ride",
+                    "body": "ride",
+                    "events": [],
+                    "orders": [],
+                    "clock": []
+                  }
+                },
+                {
+                  "$subset": {
+                    "riders": {},
+                    "events": [],
+                    "orders": [],
+                    "clock": []
+                  }
+                },
+                {
+                  "$any": true
+                },
+                {
+                  "$subset": {
+                    "posture": {
+                      "kind": "bicycle",
+                      "aboard": null
+                    },
+                    "rider": "ride",
+                    "body": "ride",
+                    "events": [],
+                    "orders": [],
+                    "clock": []
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "riderIntent",
+                "actor": "wren",
+                "prior": "fly"
+              }
+            ]
+          },
+          "expectError": "`prior` must be one of idle, walk"
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "riderIntent",
+                "prior": "walk"
+              }
+            ]
+          },
+          "expectError": "`actor` must be a string"
+        },
+        {
+          "call": "traversal.session.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "riders"
+              }
+            ]
+          },
+          "expectError": "`vehicle` must be a string"
         },
         {
           "call": "session.dispose",

@@ -28,7 +28,9 @@
       "conformance/dialogue/voice.json",
       "conformance/dialogue/context.json",
       "conformance/social/actions.json",
-      "conformance/social/save.json"
+      "conformance/social/save.json",
+      "conformance/social/kernel-inputs.json",
+      "conformance/social/action-effects.json"
     ],
     "saveExtensions": []
   },
