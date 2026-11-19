@@ -1,8 +1,8 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-consult-floor-leak",
-    "gitHead": "8598633800e682d46e3acc475b9a17a98b5edfd3"
+    "root": "native-native-bundle-core-r2",
+    "gitHead": "e0f3635fb6e43af57fa58323a07b082392a890c1"
   },
   "coverage": {
     "trackedFiles": 469,
@@ -124,7 +124,7 @@
       "spdx": "Apache-2.0",
       "package": null,
       "pinnedVersion": null,
-      "pinnedCommit": "d88b6f0311065f0d2ffd8767d9a65359ea451655",
+      "pinnedCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
       "pinSource": "corebridge/vendor/core/VENDORED.json#coreCommit",
       "vendoredPath": "corebridge/vendor/core",
       "derivedWork": []
