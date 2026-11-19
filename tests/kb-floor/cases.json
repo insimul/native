@@ -1,6 +1,6 @@
 {
  "area": "libinsimul — the per-KB floor across create/consult/destroy cycles",
- "description": "PL.native-consult-floor-leak. Replayed by tests/kb_floor.cpp (ctest kb_floor). Each case: cycles measured after warmup cycles (the first KB opens the deliberate L-01 keepalive, outside the window); program is literal text or {template, count} expanded per clause ({i}) and per cycle ({cycle}); ops make it a held-KB case; maxBytesPerCycle bounds heap bytes left per cycle; perNewAtom (with newAtomsPerCycle) states a declared upstream residue per new atom, floor included.",
+ "description": "PL.native-consult-floor-leak. Replayed by tests/kb_floor.cpp (ctest kb_floor). Each case: cycles measured after warmup cycles (the first KB opens the deliberate L-01 keepalive, outside the window); program is literal text or {template, count} expanded per clause ({i}) and per cycle ({cycle}); ops (assert / retract / query, {i} = the cycle number) run on one held KB, or, with \"kb\": \"fresh\", on each cycle's new KB between its consult and its destroy; a query op may state solutions (how many it must answer) or raises (it must fail to start); maxBytesPerCycle bounds heap bytes left per cycle; perNewAtom (with newAtomsPerCycle) and perOccurrence (with occurrencesPerCycle) state a DECLARED upstream residue per unit, floor included, with a min so the declaration goes red the day it stops being true.",
  "cases": [
   {
    "name": "create + destroy of an empty KB",
@@ -58,6 +58,63 @@
    "maxBytesPerCycle": 1
   },
   {
+   "name": "F1: create + consult 3000 facts + a query answering all 3000 with three bindings + destroy leaves no more than the empty KB",
+   "program": {
+    "template": "person(p{i}, {i}, home).",
+    "count": 3000
+   },
+   "kb": "fresh",
+   "ops": [
+    {
+     "query": "person(Id, Number, Home)",
+     "solutions": 3000
+    }
+   ],
+   "cycles": 10,
+   "warmup": 3,
+   "maxBytesPerCycle": 48,
+   "why": "'$insimul_query' (src/insimul_boot.pl) used to findall one with_output_to(atom(_)) binding set per solution, and the engine never frees such an atom once findall keeps it: ~70 B per solution here (~210,000 B per cycle), kept past insimul_kb_destroy for the life of the process. Solutions are now kept as binding terms and rendered into the result stream"
+  },
+  {
+   "name": "F1: a held KB answering a 300-solution query with three bindings per cycle leaves nothing",
+   "program": {
+    "template": "person(p{i}, {i}, home).",
+    "count": 300
+   },
+   "ops": [
+    {
+     "query": "person(Id, Number, Home)",
+     "solutions": 300
+    }
+   ],
+   "cycles": 50,
+   "warmup": 5,
+   "maxBytesPerCycle": 1,
+   "why": "the same residue grew a held KB by every solution of every query"
+  },
+  {
+   "name": "F1: a held KB whose queries raise (after solutions, unknown procedure, instantiation) leaves nothing",
+   "program": "person(p1, 1, home).\nperson(p2, 2, home).",
+   "ops": [
+    {
+     "query": "(person(X, _, _), throw(stop_after_a_solution))",
+     "raises": true
+    },
+    {
+     "query": "undefined_procedure_here(X)",
+     "raises": true
+    },
+    {
+     "query": "atom_length(X, Y)",
+     "raises": true
+    }
+   ],
+   "cycles": 200,
+   "warmup": 5,
+   "maxBytesPerCycle": 1,
+   "why": "guards the shapes that were measured and rejected: writing SOL lines from inside the catch with the result stream open there leaves ~48-96 B per raised query (an exception unwinding a frame in which an atom of 15+ characters is live keeps that atom's text)"
+  },
+  {
    "name": "DECLARED UPSTREAM: an atom new to the process stays in the engine's process-wide atom table after its KB is destroyed",
    "program": {
     "template": "f(c{cycle}_a{i}, {i}).",
@@ -71,6 +128,57 @@
     "max": 128
    },
    "declared": "vendored Trealla interns every atom in one process-wide table (src/prolog.c g_symtab + g_global_atoms, add_to_global_atoms) that is freed only when the last engine instance is destroyed, which libinsimul's L-01 keepalive deliberately never lets happen; about 71.5 B per distinct new atom on this build (the lane's 96 B per clause was a program of fresh atoms). A program whose atoms repeat (every case above) leaves nothing. Native owns no part of it; the row stays open for upstream"
+  },
+  {
+   "name": "DECLARED UPSTREAM: every quoted atom of 15+ characters a consulted program holds stays behind after its KB is destroyed",
+   "program": {
+    "template": "character(c{i}, 'Character Name {i}', home).",
+    "count": 1000
+   },
+   "occurrencesPerCycle": 1000,
+   "cycles": 10,
+   "warmup": 2,
+   "perOccurrence": {
+    "min": 24,
+    "max": 96
+   },
+   "declared": "vendored Trealla's reader keeps a quoted atom of MAX_SMALL_STRING (15) or more characters that is not a functor, operator or builtin name as a reference-counted string cell instead of interning it (vendor/trealla src/parser.c, the TAG_CSTR branch of the token-to-cell code, make_string_internal; src/internal.h MAX_SMALL_STRING); its own consult/1 interns them (is_consulting), but libinsimul's transactional consult reads with read_term/3, which does not. The engine keeps ~48 B of each such cell (16-18 characters here) after the KB is destroyed, query or no query, for the life of the process. Unquoted atoms are interned (the perNewAtom case) and leave nothing when they repeat. Native owns none of it; the row stays open for upstream"
+  },
+  {
+   "name": "DECLARED UPSTREAM: a held KB's query whose text holds a quoted atom of 15+ characters leaves that atom's text each time it runs",
+   "program": "t(x).",
+   "ops": [
+    {
+     "query": "X = 'Character Name {i}'",
+     "solutions": 1
+    }
+   ],
+   "occurrencesPerCycle": 1,
+   "cycles": 200,
+   "warmup": 5,
+   "perOccurrence": {
+    "min": 16,
+    "max": 128
+   },
+   "declared": "the same reader cell, made by read_term_from_atom/3 when '$insimul_query' parses the goal text: ~48 B per query that carries one (16-19 characters here), growing a held KB for the life of the process. Upstream; native cannot parse the host's text any other way. A host that queries with long quoted atoms in the text pays this per query"
+  },
+  {
+   "name": "DECLARED UPSTREAM: a held KB's query whose text holds a double-quoted string leaves it each time it runs",
+   "program": "t(x).",
+   "ops": [
+    {
+     "query": "X = \"s{i}\"",
+     "solutions": 1
+    }
+   ],
+   "occurrencesPerCycle": 1,
+   "cycles": 200,
+   "warmup": 5,
+   "perOccurrence": {
+    "min": 16,
+    "max": 128
+   },
+   "declared": "the reader makes every double-quoted string (double_quotes pinned to chars) a reference-counted string cell whatever its length (same branch of vendor/trealla src/parser.c), and the engine keeps 32 B (short) to 64 B (37 characters) of it per query that carries one; a consulted clause holding a string and touched by a query keeps the same once per KB. Upstream"
   }
  ]
 }

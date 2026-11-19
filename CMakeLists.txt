@@ -646,11 +646,13 @@ add_test(NAME prolog_engine_cases COMMAND insimulcore_prolog_engine
   ${INSIMUL_PROLOG_ENGINE_CASES})
 
 # kb_floor (PL.native-consult-floor-leak): libinsimul's per-KB floor, as data —
-# tests/kb-floor/cases.json states, per case, N create/consult/destroy cycles (or N
-# ops on one held KB) and the heap bytes per cycle they may leave behind, measured
-# after a warm-up that opens the deliberate L-01 engine keepalive outside the window.
-# Its one declared case is the engine's process-wide atom table (upstream, stated per
-# new atom with a floor, so the declaration goes red when it stops being true).
+# tests/kb-floor/cases.json states, per case, N create/consult[/query]/destroy cycles
+# (or N ops on one held KB) and the heap bytes per cycle they may leave behind,
+# measured after a warm-up that opens the deliberate L-01 engine keepalive outside
+# the window. Its DECLARED cases are the engine's (upstream): the process-wide atom
+# table, and the reader's reference-counted cells for quoted atoms of 15+ characters
+# and double-quoted strings, each stated per unit with a floor, so a declaration goes
+# red when it stops being true.
 # Registered only where the allocator reports bytes in use (macOS, glibc ≥ 2.33).
 include(CheckSymbolExists)
 check_symbol_exists(mallinfo2 "malloc.h" INSIMUL_HAVE_MALLINFO2)

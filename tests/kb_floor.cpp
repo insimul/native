@@ -9,19 +9,24 @@
 // outside the measured window. Each case states a per-cycle bound.
 //
 // Two modes, chosen by the case:
-//   cycle mode  (no `ops`):  insimul_kb_create -> insimul_kb_consult(program)
-//                            -> insimul_kb_destroy, per cycle;
+//   cycle mode  (no `ops`, or `ops` with "kb": "fresh"): insimul_kb_create ->
+//                            insimul_kb_consult(program) -> each op, if any ->
+//                            insimul_kb_destroy, per cycle;
 //   held mode   (`ops`):     one KB, created and consulted before the warm-up,
 //                            and per cycle each op (`assert`, `retract`,
 //                            `query`) on it.
+// A `query` op runs insimul_query_start and reads every solution; `solutions`
+// on it states how many there must be, so a case that is meant to measure a
+// query's per-solution cost cannot pass by answering nothing.
 // Templates expand `{i}` (clause index) and `{cycle}` (cycle number, counted
 // from 0 across warm-up and measured cycles alike, so a `{cycle}` program never
 // repeats an atom).
 //
-// A case with `perNewAtom` is a DECLARED upstream residue, not a native one: its
-// program mints `newAtomsPerCycle` atoms the process has never seen, and the
-// bound is stated per new atom — with a floor (`min`), so the declaration fails
-// loudly the day the engine stops keeping them and has to be rewritten.
+// A case with `perNewAtom` (and `newAtomsPerCycle`) or `perOccurrence` (and
+// `occurrencesPerCycle`) is a DECLARED upstream residue, not a native one: the
+// bound is stated per unit (a new atom; one occurrence of the text the engine
+// keeps) — with a floor (`min`), so the declaration fails loudly the day the
+// engine stops keeping it and has to be rewritten.
 //
 // usage: insimul_kb_floor <cases.json>
 #include "insimul.h"
@@ -69,8 +74,14 @@ static std::string expand(const JsonValue *spec, long cycle) {
 	return out;
 }
 
+// Ops run, counted so a case that states ops is proven to have run every one of
+// them in every cycle (a fresh-KB case that silently ran none would measure the
+// bare consult and pass).
+static long long g_ops_run = 0;
+
 static bool run_ops(insimul_kb *kb, const JsonValue *ops, long cycle, std::string &err) {
 	for (const auto &op : ops->array_items) {
+		g_ops_run++;
 		std::string text;
 		if (const JsonValue *a = op->find("assert")) {
 			text = replace_all(a->string_value, "{i}", std::to_string(cycle));
@@ -81,10 +92,27 @@ static bool run_ops(insimul_kb *kb, const JsonValue *ops, long cycle, std::strin
 		} else if (const JsonValue *q = op->find("query")) {
 			text = replace_all(q->string_value, "{i}", std::to_string(cycle));
 			insimul_query *it = insimul_query_start(kb, text.c_str());
-			if (!it) { err = "query " + text + ": " + insimul_last_error(kb); return false; }
-			while (insimul_query_next(it)) {
+			if (!it) {
+				// A query stated to raise is part of what the case measures.
+				if (op->find("raises")) continue;
+				err = "query " + text + ": " + insimul_last_error(kb);
+				return false;
 			}
+			if (op->find("raises")) {
+				insimul_query_stop(it);
+				err = "query " + text + " was stated to raise and did not";
+				return false;
+			}
+			long long n = 0;
+			while (insimul_query_next(it)) n++;
 			insimul_query_stop(it);
+			if (const JsonValue *want = op->find("solutions")) {
+				if (n != (long long)want->as_number()) {
+					err = "query " + text + ": " + std::to_string(n) + " solution(s), stated " +
+						std::to_string((long long)want->as_number());
+					return false;
+				}
+			}
 		} else {
 			err = "an op names none of assert / retract / query";
 			return false;
@@ -93,6 +121,8 @@ static bool run_ops(insimul_kb *kb, const JsonValue *ops, long cycle, std::strin
 	return true;
 }
 
+static bool fresh_kb_case(const JsonValue &c) { return c.get_string("kb") == "fresh"; }
+
 static bool one_cycle(const JsonValue &c, insimul_kb *held, long cycle, std::string &err) {
 	if (held) return run_ops(held, c.find("ops"), cycle, err);
 	insimul_kb *kb = insimul_kb_create();
@@ -100,6 +130,7 @@ static bool one_cycle(const JsonValue &c, insimul_kb *held, long cycle, std::str
 	std::string program = expand(c.find("program"), cycle);
 	bool ok = program.empty() || insimul_kb_consult(kb, program.c_str()) == 0;
 	if (!ok) err = std::string("consult: ") + insimul_last_error(kb);
+	if (ok && c.find("ops")) ok = run_ops(kb, c.find("ops"), cycle, err);
 	insimul_kb_destroy(kb);
 	return ok;
 }
@@ -131,7 +162,7 @@ int main(int argc, char **argv) {
 		const long cycles = (long)c.get_int("cycles");
 		std::string err;
 		insimul_kb *held = nullptr;
-		if (c.find("ops")) {
+		if (c.find("ops") && !fresh_kb_case(c)) {
 			held = insimul_kb_create();
 			std::string program = expand(c.find("program"), 0);
 			if (!held || (!program.empty() && insimul_kb_consult(held, program.c_str()) != 0)) {
@@ -142,11 +173,17 @@ int main(int argc, char **argv) {
 		}
 		long cycle = 0;
 		bool ok = true;
+		g_ops_run = 0;
 		for (long w = 0; ok && w < warmup; w++) ok = one_cycle(c, held, cycle++, err);
 		const long long before = heap_in_use();
 		for (long n = 0; ok && n < cycles; n++) ok = one_cycle(c, held, cycle++, err);
 		const long long after = heap_in_use();
 		if (held) insimul_kb_destroy(held);
+		const long long ops_stated = c.find("ops") ? (long long)c.find("ops")->size() * (warmup + cycles) : 0;
+		if (ok && g_ops_run != ops_stated) {
+			ok = false;
+			err = "ran " + std::to_string(g_ops_run) + " op(s), stated " + std::to_string(ops_stated);
+		}
 		if (!ok || cycles <= 0) {
 			std::printf("[FAIL] %s — %s\n", name.c_str(), cycles <= 0 ? "no measured cycles" : err.c_str());
 			failed++;
@@ -161,20 +198,27 @@ int main(int argc, char **argv) {
 			std::snprintf(line, sizeof line, "%.1f B per cycle over %ld cycle(s), bound %.0f", per_cycle, cycles, bound->as_number());
 			verdict = line;
 		}
-		if (const JsonValue *atom = c.find("perNewAtom")) {
-			const double atoms = (double)c.get_int("newAtomsPerCycle");
-			const double per_atom = atoms > 0 ? per_cycle / atoms : -1;
-			const double lo = atom->find("min") ? atom->find("min")->as_number() : 0;
-			const double hi = atom->find("max") ? atom->find("max")->as_number() : 0;
-			pass = atoms > 0 && per_atom >= lo && per_atom <= hi;
+		// A declared per-unit residue: {bound key, count key, what one unit is}.
+		static const char *const kPerUnit[][3] = {
+			{"perNewAtom", "newAtomsPerCycle", "new atom"},
+			{"perOccurrence", "occurrencesPerCycle", "occurrence"},
+		};
+		for (const auto &u : kPerUnit) {
+			const JsonValue *unit = c.find(u[0]);
+			if (!unit) continue;
+			const double units = (double)c.get_int(u[1]);
+			const double per_unit = units > 0 ? per_cycle / units : -1;
+			const double lo = unit->find("min") ? unit->find("min")->as_number() : 0;
+			const double hi = unit->find("max") ? unit->find("max")->as_number() : 0;
+			pass = units > 0 && per_unit >= lo && per_unit <= hi;
 			char line[256];
-			std::snprintf(line, sizeof line, "%.1f B per new atom (%.1f B per cycle, %.0f new atoms each), stated %.0f..%.0f",
-					per_atom, per_cycle, atoms, lo, hi);
+			std::snprintf(line, sizeof line, "%.1f B per %s (%.1f B per cycle, %.0f each), stated %.0f..%.0f",
+					per_unit, u[2], per_cycle, units, lo, hi);
 			verdict = line;
 		}
 		if (verdict.empty()) {
 			pass = false;
-			verdict = "the case states no bound (maxBytesPerCycle or perNewAtom)";
+			verdict = "the case states no bound (maxBytesPerCycle, perNewAtom or perOccurrence)";
 		}
 		std::printf("[%s] %s — %s%s%s\n", pass ? "PASS" : "FAIL", name.c_str(), verdict.c_str(),
 				c.find("declared") ? "; declared: " : "", c.find("declared") ? c.get_string("declared").c_str() : "");

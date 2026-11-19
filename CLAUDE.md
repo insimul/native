@@ -200,17 +200,29 @@
   `AMENDMENTS` table.
 
 ## The per-KB floor and the Prolog seam's cost (PL.native-consult-floor-leak)
-- **`insimul_kb_destroy` frees everything native owns.** What stays behind after a
-  create/consult/destroy cycle is the vendored engine's, and `kb_floor`
-  (`tests/kb_floor.cpp` over `tests/kb-floor/cases.json`) states it as data:
-  32 B per engine instance (its built-in library load keeps a string from
-  `goal_expansion`'s `atom_concat`), whatever the program, and **every atom new to
-  the process** (~72 B each) — Trealla interns atoms in one process-wide table
-  freed only when the last instance goes, which the L-01 keepalive never allows.
-  A program whose atoms repeat leaves nothing more. Both are declared upstream in
-  the cases; the atom case carries a FLOOR, so it goes red the day it stops being
-  true. Measured after a warm-up, so the keepalive is outside the window.
-  Registered only where the allocator reports bytes in use (macOS, glibc).
+- **What a KB leaves behind is stated as data, native's part and the engine's.**
+  `kb_floor` (`tests/kb_floor.cpp` over `tests/kb-floor/cases.json`) replays
+  create/consult/query/destroy cycles and held-KB ops and bounds the heap left
+  per cycle. **Native's own part is nothing**: a query's solutions are kept as
+  binding TERMS and rendered into the result stream (`'$insimul_query'`,
+  `src/insimul_boot.pl`). Never build a binding set, or anything findall keeps,
+  with `with_output_to(atom(_))`: the engine never frees such an atom, so every
+  solution of every query used to stay for the process's life (~70 B each, past
+  `insimul_kb_destroy`, and a held KB grew per query). Nor write SOL lines from
+  inside the query's catch with the result stream open: a raised query then
+  keeps ~48-96 B. Both shapes have a red case. **The engine's part is declared
+  upstream**, each with a measured per-unit bound and a FLOOR so it goes red the
+  day it stops being true: 32 B per engine instance (its library load's
+  `atom_concat`); ~72 B per atom **new to the process** (one process-wide atom
+  table, freed only when the last instance goes, which the L-01 keepalive never
+  allows); and ~32-64 B per **quoted atom of 15+ characters or double-quoted
+  string the reader reads** (vendored Trealla keeps those as reference-counted
+  cells, not interned atoms, when read by `read_term`, which our transactional
+  consult and the query parser use): once per occurrence in a consulted program,
+  and once per run of a held KB's query whose text carries one. A program whose
+  atoms repeat and are unquoted or short leaves nothing more. Measured after a
+  warm-up, so the keepalive is outside the window. Registered only where the
+  allocator reports bytes in use (macOS, glibc).
 - **The seam no longer re-consults the world per fact.** `host-prolog-engine.js`
   still mirrors core's wasm-engine bookkeeping, but `assertFact(s)`/`retractFact`
   write into the HELD KB when that is provably the clause list a rebuild would

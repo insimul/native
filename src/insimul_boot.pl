@@ -126,9 +126,8 @@
       '$ij_str'(S, N), write(S, ':'), '$ij'(S, V),
       '$ij_binds_'(S, T, false) ).
 
-% Capture a binding set / error term as an atom (deterministic, no choicepoints
-% escape — important because the query loop backtracks over solutions).
-'$ij_atom'(Vs, Atom) :- with_output_to(atom(Atom), (current_output(S), '$ij_binds'(S, Vs))).
+% Capture an error term as an atom (deterministic, no choicepoints escape). A
+% binding set is NOT captured this way: see '$insimul_query'.
 '$err_atom'(E, Atom) :- with_output_to(atom(Atom), write_term(E, [quoted(true)])).
 
 % --- the neutral error surface (leaks L-08 / L-09 / L-10) -------------------
@@ -215,16 +214,42 @@
     setup_call_cleanup(open(ResFile, write, S), '$write_lines_'(S, Lines), close(S)).
 '$write_lines_'(_, []).
 '$write_lines_'(S, [Tag-Text|T]) :-
-    write(S, Tag), write(S, ' '), write(S, Text), nl(S), '$write_lines_'(S, T).
+    write(S, Tag), write(S, ' '), '$write_text'(S, Text), nl(S), '$write_lines_'(S, T).
+% A query's solution is kept as its binding TERMS and rendered here, straight
+% into the result stream (see '$insimul_query'); every other record's text is an
+% atom.
+'$write_text'(S, '$binds'(Vs)) :- !, '$ij_binds'(S, Vs).
+'$write_text'(S, Text) :- write(S, Text).
 
 % --- the operations the C ABI dispatches to ---------------------------------
 
 % Query: enumerate every solution's binding set, or emit one ERR line.
+%
+% findall keeps each solution's binding TERMS ('$binds'(Vs)), and
+% '$write_lines' renders them into the result stream; NO BINDING SET IS EVER
+% MADE INTO AN ATOM. It used to be findall over with_output_to(atom(_)) binding
+% sets, and the pinned engine never frees an atom built that way once findall
+% has kept it: every solution of every query left about its binding set's
+% length + 30 B for the life of the process, past insimul_kb_destroy, and a
+% held KB grew by that much per query (PL.native-consult-floor-leak round 2;
+% tests/kb-floor/cases.json pins it). The bytes written are the same: the
+% renderer is the same '$ij_binds'/2, an unbound variable renders as null
+% whether it is the solution's own or findall's copy, and '$ij'/2 is total
+% (its last clause catches every term), so moving the rendering out of the
+% catch moves nothing that could raise.
+%
+% Two shapes that were tried and must not come back (measured on the pinned
+% engine): writing each SOL line from inside the catch, with the result stream
+% open there, leaves ~48-96 B per RAISED query (an exception unwinding a frame
+% in which the temp path, an atom of 16+ characters, is live keeps that atom's
+% text); and writing each SOL line from inside findall's goal (findall(x, (call(G),
+% write...), _)) raised instantiation_error(stream_or_alias) for a solution that
+% binds an atom of 16+ characters (X = abcdefghijklmnopqrstuvwxyz).
 '$insimul_query'(ResFile, GoalAtom) :-
     catch(
       ( read_term_from_atom(GoalAtom, Goal, [variable_names(Vs)]),
         '$guard'(Goal, insimul_query_start),
-        findall('SOL'-J, ( call(Goal), '$ij_atom'(Vs, J) ), Lines) ),
+        findall('SOL'-'$binds'(Vs), call(Goal), Lines) ),
       E, '$err_lines'(E, insimul_query_start, Lines)),
     '$write_lines'(ResFile, Lines).
 
