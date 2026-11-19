@@ -286,7 +286,8 @@
   print an `[AMEND]` line and the same
   `files / cases / passed / failed / amended` summary, so the legs are
   directly comparable (currently 12 files, 181 cases, 181 passed, 1 amended; 10 files
-  and 76 cases until PL.native-bundle-core re-copied the mirror at core d88b6f0). The
+  and 76 cases until PL.native-bundle-core re-copied the mirror at core d88b6f0;
+  PL.native-bundle-core-r2 re-copied the same 12 at core 45409ed). The
   legs compare a binding's JSON numbers as NUMBERS (C `jv_equal`, wasm `deepEqual`,
   Rust `terms_match`): core states `83` where Trealla's `Total / Count` binds `83.0`.
 - **Cross-leg parity is a diff, not three green checkmarks.** Every leg supports
@@ -493,7 +494,7 @@
 - **`core_vendor` also pins `save.rules`' `extensionKeys`** (PL.native-save-extension-keys,
   U110): it evaluates the vendored bundle and fails unless every `save.rules` step under
   `corebridge/tests/cases/` naming `extensionKeys` states exactly the sorted registry
-  keys (22 at d88b6f0, unchanged since 6cd4b4e); `--check --core` also holds them to core's `extensionRegistry`
+  keys (22 at 45409ed, unchanged since 6cd4b4e); `--check --core` also holds them to core's `extensionRegistry`
   source at the pin. A re-pin that registers an extension must update those cases on
   purpose. `core_vendor_extension_keys_negative` (`tests/save-extension-keys-negative/`)
   must see five wrong statements named.
@@ -505,7 +506,19 @@
   never the checkout's working tree — with the checkout's `node_modules` as
   `nodePaths`, and refuses any other installed esbuild. VENDORED.json's
   `coreCommit` is the RECORD (still what CMake reads); `--check` fails when record
-  and pin disagree. The pin today is core `main` d88b6f0 (2026-11-16,
+  and pin disagree. The pin today is core `main` 45409ed (2026-11-19,
+  PL.native-bundle-core-r2, U124/U126: every core item landed after d88b6f0, among them
+  run 22's four — PL.core-interact-pick-precedence's `press` op (8 interactables
+  cases, run through the new `props.interactables.examinePick` and `.press` rows),
+  PL.core-load-refusal-codes (every string a refused Load names is `invalid_format`,
+  U126(2); the new `ui.loadRefusal` row and core's 20 `load_refusals`, transcribed
+  into `cases/core-ui-save-slots.json`), PL.core-grammar-objective-type (through the
+  quest rows; a hand case) and PL.core-container-y-ground-relative (scene placement,
+  which no row here reaches) — plus PL.core-interior-interact-target's interior rule,
+  whose two stands with no `y` the rows' own contract reads as data
+  (`props.interactables.contract`: `standWithoutY`), and PL.core-skill-kb-live-facts'
+  `compose`/`kb` ops, run by the new `skill.kb.*` rows). Before that, core `main`
+  d88b6f0 (2026-11-16,
   PL.native-bundle-core, U115(1)/U116(3): every core item landed after 6cd4b4e, among
   them PL.core-doorstep-rule's network and village answers (48 doorstep cases, 33
   changed and 15 appended, which `layout_corpus` now runs on this library),

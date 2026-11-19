@@ -3287,7 +3287,9 @@
         "seatsTurned": [
           {
             "entityId": "bench",
-            "heading": -3.141592653589793
+            "heading": -3.141592653589793,
+            "x": 2.737721358048277,
+            "z": 10.814773991285834
           }
         ],
         "seating": {
@@ -3824,7 +3826,9 @@
         "seatsTurned": [
           {
             "entityId": "bench",
-            "heading": 1.88785206712908
+            "heading": 1.88785206712908,
+            "x": 0.7484659577552498,
+            "z": 15.168960791510811
           }
         ],
         "seating": {
@@ -4790,7 +4794,9 @@
         "seatsTurned": [
           {
             "entityId": "bench",
-            "heading": 1.3985111669593076e-16
+            "heading": 1.3985111669593076e-16,
+            "x": 5.587721358048277,
+            "z": 1.8147739912858347
           }
         ],
         "seating": {
@@ -4833,6 +4839,515 @@
           ]
         },
         "reach": []
+      }
+    },
+    {
+      "name": "village: a bench whose seat stands 0.4 m off its pivot is stood by its seat and turns about it",
+      "note": "PL.core-grouping-disc-origin (U122(4)): the m4 house and bench, the bench's seat (its footprint's middle) standing 0.4 m off its pivot ([0, 0.4] as it stands, at heading 1.2). G2 reads the disc at the seat (9.4, 3.4): regrouped at the wall, the disc's spot is the m4 bench's moved 0.4 m along z with it (5.588, 2.215), and the grouping's answer is the pivot, the spot less the middle (5.588, 1.815). Turned to face away from the wall (heading 0, a turn of -1.2 rad), the bench turns about its seat, so the disc stays on its spot and seatsTurned (and the seat the sitter is given) carry where its pivot then stands: the spot less the middle turned by -1.2 rad, (5.215, 2.070).",
+      "op": "composeVillage",
+      "input": {
+        "plan": {
+          "strips": [],
+          "lots": []
+        },
+        "doors": [],
+        "buildings": [
+          {
+            "entityId": "bld_h",
+            "archetype": "building.residence.house",
+            "outline": [[-4, -4], [4, -4], [4, 4], [-4, 4]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 9.4,
+            "z": 3,
+            "radius": 0.9,
+            "middle": [0, 0.4]
+          }
+        ],
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 9.4,
+            "z": 3,
+            "heading": 1.2,
+            "length": 1.8
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "sitter",
+            "x": 9.6,
+            "z": 3.2
+          }
+        ]
+      },
+      "expected": {
+        "plan": {
+          "strips": [],
+          "lots": [],
+          "terrain": null
+        },
+        "network": {
+          "gates": [],
+          "lanes": [],
+          "paths": [],
+          "doorsteps": [],
+          "strips": [],
+          "unjoined": [],
+          "noLot": [],
+          "supersedes": [],
+          "notes": []
+        },
+        "grouping": {
+          "props": [
+            {
+              "entityId": "bench",
+              "purpose": "seat",
+              "verdict": "regrouped",
+              "anchor": {
+                "kind": "building",
+                "id": "bld_h"
+              },
+              "why": ["untied"],
+              "x": 5.587721358048277,
+              "z": 1.814773991285835,
+              "moved": 3.9922711751099507
+            }
+          ],
+          "before": {
+            "untied": ["bench"],
+            "blocks": [],
+            "rows": [],
+            "floraOnSquare": []
+          },
+          "after": {
+            "untied": [],
+            "blocks": [],
+            "rows": [],
+            "floraOnSquare": []
+          }
+        },
+        "lanterns": [],
+        "yards": {
+          "yards": [],
+          "noLot": [],
+          "porches": [],
+          "loosePosts": []
+        },
+        "foliage": {
+          "items": [],
+          "audit": {
+            "before": {
+              "woody": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              },
+              "undergrowth": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              }
+            },
+            "after": {
+              "woody": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              },
+              "undergrowth": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              }
+            }
+          }
+        },
+        "seatsSetAside": [],
+        "seatsTurned": [
+          {
+            "entityId": "bench",
+            "heading": 0,
+            "x": 5.214905723661387,
+            "z": 2.0698308894951656
+          }
+        ],
+        "seating": {
+          "seats": [
+            {
+              "entityId": "bench",
+              "capacity": 3,
+              "slots": [
+                {
+                  "x": 5.214905723661387,
+                  "z": 1.4698308894951655,
+                  "blocked": null,
+                  "sitter": null
+                },
+                {
+                  "x": 5.214905723661387,
+                  "z": 2.0698308894951656,
+                  "blocked": null,
+                  "sitter": null
+                },
+                {
+                  "x": 5.214905723661387,
+                  "z": 2.6698308894951657,
+                  "blocked": null,
+                  "sitter": "sitter"
+                }
+              ]
+            }
+          ],
+          "sitters": [
+            {
+              "entityId": "sitter",
+              "verdict": "seated",
+              "seat": "bench",
+              "slot": 2,
+              "x": 5.214905723661387,
+              "z": 2.6698308894951657,
+              "heading": 0
+            }
+          ]
+        },
+        "reach": []
+      }
+    },
+    {
+      "name": "village: a bench whose pivot is at its end faces away from the wall by its seat",
+      "note": "PL.core-grouping-disc-origin (U122(4)): the m4 house and bench, but the bench's pivot at its west end, its seat's middle 1.7 m east of it ([1.7, 0], at heading 1.2). G2 regroups the disc at the east wall; the pivot (the spot less the middle) then stands just inside the wall. regroupedHeading reads the line from the wall to the disc, so the bench faces east, its back to the house (heading 0), as the m4 bench does; read from the pivot inside the wall it would face west, into the house. Turned about its seat, its pivot then stands where seatsTurned says.",
+      "op": "composeVillage",
+      "input": {
+        "plan": {
+          "strips": [],
+          "lots": []
+        },
+        "doors": [],
+        "buildings": [
+          {
+            "entityId": "bld_h",
+            "archetype": "building.residence.house",
+            "outline": [[-4, -4], [4, -4], [4, 4], [-4, 4]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 9.4,
+            "z": 3,
+            "radius": 0.9,
+            "middle": [1.7, 0]
+          }
+        ],
+        "seats": [
+          {
+            "entityId": "bench",
+            "archetype": "prop.furniture.bench",
+            "x": 9.4,
+            "z": 3,
+            "heading": 1.2,
+            "length": 1.8
+          }
+        ],
+        "sitters": [
+          {
+            "entityId": "sitter",
+            "x": 9.6,
+            "z": 3.2
+          }
+        ]
+      },
+      "expected": {
+        "plan": {
+          "strips": [],
+          "lots": [],
+          "terrain": null
+        },
+        "network": {
+          "gates": [],
+          "lanes": [],
+          "paths": [],
+          "doorsteps": [],
+          "strips": [],
+          "unjoined": [],
+          "noLot": [],
+          "supersedes": [],
+          "notes": []
+        },
+        "grouping": {
+          "props": [
+            {
+              "entityId": "bench",
+              "purpose": "seat",
+              "verdict": "regrouped",
+              "anchor": {
+                "kind": "building",
+                "id": "bld_h"
+              },
+              "why": ["untied"],
+              "x": 3.8877213580482772,
+              "z": 1.8147739912858347,
+              "moved": 5.638260061246699
+            }
+          ],
+          "before": {
+            "untied": ["bench"],
+            "blocks": [],
+            "rows": [],
+            "floraOnSquare": []
+          },
+          "after": {
+            "untied": [],
+            "blocks": [],
+            "rows": [],
+            "floraOnSquare": []
+          }
+        },
+        "lanterns": [],
+        "yards": {
+          "yards": [],
+          "noLot": [],
+          "porches": [],
+          "loosePosts": []
+        },
+        "foliage": {
+          "items": [],
+          "audit": {
+            "before": {
+              "woody": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              },
+              "undergrowth": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              }
+            },
+            "after": {
+              "woody": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              },
+              "undergrowth": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              }
+            }
+          }
+        },
+        "seatsSetAside": [],
+        "seatsTurned": [
+          {
+            "entityId": "bench",
+            "heading": 1.3985111669593076e-16,
+            "x": 4.971713175437932,
+            "z": 3.3992404374301195
+          }
+        ],
+        "seating": {
+          "seats": [
+            {
+              "entityId": "bench",
+              "capacity": 3,
+              "slots": [
+                {
+                  "x": 4.971713175437932,
+                  "z": 2.7992404374301194,
+                  "blocked": null,
+                  "sitter": null
+                },
+                {
+                  "x": 4.971713175437932,
+                  "z": 3.3992404374301195,
+                  "blocked": null,
+                  "sitter": "sitter"
+                },
+                {
+                  "x": 4.971713175437932,
+                  "z": 3.9992404374301196,
+                  "blocked": null,
+                  "sitter": null
+                }
+              ]
+            }
+          ],
+          "sitters": [
+            {
+              "entityId": "sitter",
+              "verdict": "seated",
+              "seat": "bench",
+              "slot": 1,
+              "x": 4.971713175437932,
+              "z": 3.3992404374301195,
+              "heading": 1.3985111669593076e-16
+            }
+          ]
+        },
+        "reach": []
+      }
+    },
+    {
+      "name": "village: a worker is drawn to a crate's middle, not its pivot (G8 reads the disc)",
+      "note": "PL.core-grouping-disc-origin (U122(4)): the m4 house; a 0.8 m crate whose pivot stands 0.5 m off the east wall and whose middle stands 0.6 m further east (middle [0.6, 0]): G2 ties it by its disc (its edge 0.7 m off the wall) and it stays. A worker at x 7 works at it: G8 reads the crate as standing where G2 stood it, a disc at its middle (x 5.1), so the worker is drawn in to the 0.8 m work reach of that disc's edge, x 6.3. Read at the pivot she would be drawn to x 5.7, 0.2 m from the crate's real edge.",
+      "op": "composeVillage",
+      "input": {
+        "plan": {
+          "strips": [],
+          "lots": []
+        },
+        "doors": [],
+        "buildings": [
+          {
+            "entityId": "bld_h",
+            "archetype": "building.residence.house",
+            "outline": [[-4, -4], [4, -4], [4, 4], [-4, 4]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "crate",
+            "archetype": "prop.container.crate",
+            "x": 4.5,
+            "z": 0,
+            "radius": 0.4,
+            "middle": [0.6, 0]
+          }
+        ],
+        "villagers": [
+          {
+            "entityId": "worker",
+            "x": 7,
+            "z": 0,
+            "target": "crate"
+          }
+        ]
+      },
+      "expected": {
+        "plan": {
+          "strips": [],
+          "lots": [],
+          "terrain": null
+        },
+        "network": {
+          "gates": [],
+          "lanes": [],
+          "paths": [],
+          "doorsteps": [],
+          "strips": [],
+          "unjoined": [],
+          "noLot": [],
+          "supersedes": [],
+          "notes": []
+        },
+        "grouping": {
+          "props": [
+            {
+              "entityId": "crate",
+              "purpose": "goods",
+              "verdict": "tied",
+              "anchor": {
+                "kind": "building",
+                "id": "bld_h"
+              },
+              "why": [],
+              "x": 4.5,
+              "z": 0,
+              "moved": 0
+            }
+          ],
+          "before": {
+            "untied": [],
+            "blocks": [],
+            "rows": [],
+            "floraOnSquare": []
+          },
+          "after": {
+            "untied": [],
+            "blocks": [],
+            "rows": [],
+            "floraOnSquare": []
+          }
+        },
+        "lanterns": [],
+        "yards": {
+          "yards": [],
+          "noLot": [],
+          "porches": [],
+          "loosePosts": []
+        },
+        "foliage": {
+          "items": [],
+          "audit": {
+            "before": {
+              "woody": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              },
+              "undergrowth": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              }
+            },
+            "after": {
+              "woody": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              },
+              "undergrowth": {
+                "count": 0,
+                "meanNearest": null,
+                "cv": null,
+                "even": false
+              }
+            }
+          }
+        },
+        "seatsSetAside": [],
+        "seatsTurned": [],
+        "seating": {
+          "seats": [],
+          "sitters": []
+        },
+        "reach": [
+          {
+            "entityId": "worker",
+            "verdict": "moved",
+            "x": 6.3,
+            "z": 0,
+            "moved": 0.7000000000000002,
+            "heading": 3.141592653589793,
+            "targetEdge": 0.8000000000000002,
+            "nearest": {
+              "prop": "crate",
+              "edge": 0.8000000000000002
+            }
+          }
+        ]
       }
     },
     {

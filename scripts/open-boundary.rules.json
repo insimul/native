@@ -633,6 +633,24 @@
     {
       "rule": "undeclared-dependency",
       "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/language-learning/prompt-selector",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the props.interactables.examinePick row and props.contract's examineRangeM (core's examinePick, the language world's pick one E press weighs against the interactables target, PL.core-interact-pick-precedence) (PL.native-bundle-core-r2, rulings U124, U126 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-bundle-core-r2 (Features Gauntlet PL.native-bundle-core-r2)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
+      "specifier": "@insimul/core/progression/skill-kb",
+      "classification": "keep",
+      "reason": "A BUNDLE INPUT of the skill.kb.* rows (core's skill KB that sees the live facts: which facts a skill KB holds, the program a recomposing host consults, and its reference session, PL.core-skill-kb-live-facts and PL.core-skill-kb-rule-head-facts) (PL.native-bundle-core-r2, rulings U124, U126 and U36), exactly as the traversal.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",
+      "reviewedBy": "features-native-bundle-core-r2 (Features Gauntlet PL.native-bundle-core-r2)",
+      "reviewedAt": "2026-11-19"
+    },
+    {
+      "rule": "undeclared-dependency",
+      "path": "corebridge/js/entry.js",
       "specifier": "@insimul/core/stamina/stamina",
       "classification": "keep",
       "reason": "A BUNDLE INPUT of the survival.stamina.* rows (core's stamina meter: tuning, bands, spend, regen and the rest clock) (PL.native-survival-rows, rulings U106(1) and U36), exactly as the audio.ground.* rows' specifiers above: resolved by corebridge/tools/vendor-core-bundle.mjs against @insimul/core (licensed Apache-2.0; its repository is still private) at the commit corebridge/core-pin.json pins, and absent from the shipped artifact, which carries zero bare specifiers. Allowed per specifier so a future import in this file is still a finding.",

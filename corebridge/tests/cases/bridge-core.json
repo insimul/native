@@ -167,10 +167,13 @@
        "props.doors.door",
        "props.doors.prompt",
        "props.doors.step",
+       "props.interactables.contract",
+       "props.interactables.examinePick",
        "props.interactables.host",
        "props.interactables.interact",
        "props.interactables.meaning",
        "props.interactables.noun",
+       "props.interactables.press",
        "props.interactables.target",
        "props.notices.generate",
        "props.pickups.clearance",
@@ -215,6 +218,18 @@
        "skill.ir.skills",
        "skill.ir.trees",
        "skill.ir.tuning",
+       "skill.kb.assert",
+       "skill.kb.canUnlock",
+       "skill.kb.compose",
+       "skill.kb.facts",
+       "skill.kb.liveFacts",
+       "skill.kb.load",
+       "skill.kb.open",
+       "skill.kb.program",
+       "skill.kb.retract",
+       "skill.kb.savedFacts",
+       "skill.kb.serialize",
+       "skill.kb.unlock",
        "skill.lastWriteRefusal",
        "skill.modifiersOf",
        "skill.priceOfNextLevel",
@@ -315,6 +330,7 @@
        "ui.genreHud",
        "ui.journal.apply",
        "ui.journal.create",
+       "ui.loadRefusal",
        "ui.loading.apply",
        "ui.loading.create",
        "ui.notifications.apply",
@@ -363,7 +379,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 329}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 345}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -409,7 +425,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 329}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 345}}}}
    ]
   },
   {

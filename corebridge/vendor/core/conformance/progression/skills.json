@@ -3,7 +3,7 @@
   "area": "progression",
   "file": "progression/skills",
   "phase": "P9i",
-  "description": "The language and guild domain trees as a skill panel draws them, and a saved skills block restored into SkillProgression with the effects of the nodes taken (src/skills/, src/game-engine/logic/SkillProgression.ts).",
+  "description": "The language and guild domain trees as a skill panel draws them, and a saved skills block restored into SkillProgression with the effects of the nodes taken (src/skills/, src/game-engine/logic/SkillProgression.ts). The skill KB sees the live facts (PL.core-skill-kb-live-facts, src/progression/skill-kb.ts; appended): the program a recomposing host consults (op compose) and a skill session through asserts, retracts, saves and loads, answering unlocks (op kb; docs/progression-systems.md section 6). A live fact naming a rule head the skill pack defines is never live (skill_owned; PL.core-skill-kb-rule-head-facts, appended).",
   "runner": "src/progression/systems-corpus.ts (runProgressionSystemsOp)",
   "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
   "catalog": [
@@ -11,9 +11,20 @@
   ],
   "ops": [
     "domain",
-    "restore"
+    "restore",
+    "compose",
+    "kb"
   ],
-  "steps": {},
+  "steps": {
+    "kb": [
+      "load",
+      "assert",
+      "retract",
+      "query",
+      "unlock",
+      "save"
+    ]
+  },
   "cases": [
     {
       "name": "domain: the language ladder and the guild tree, as a panel draws them for a new learner and for one on the way",
@@ -1235,6 +1246,3046 @@
         "ok": false,
         "keys": [
           "skills.actors[0]"
+        ]
+      }
+    },
+    {
+      "name": "compose: with no live facts the program is the pack, then the world (PL.core-skill-kb-live-facts)",
+      "op": "compose",
+      "note": "What a host composed before the rule (pack + \"\\n\" + world), unchanged.",
+      "input": {
+        "pack": ":- dynamic(has_skill/3).\n",
+        "world": "guild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\n",
+        "facts": []
+      },
+      "expected": {
+        "facts": [],
+        "dropped": [],
+        "program": ":- dynamic(has_skill/3).\n\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\n"
+      }
+    },
+    {
+      "name": "compose: the live predicates are declared dynamic before the world and the live clauses follow it, in clause order (PL.core-skill-kb-live-facts)",
+      "op": "compose",
+      "note": "One declaration per live predicate, by signature, so a later retract is legal; one clause per live fact, a repeat once. A string that is not an unquoted atom is quoted; a fact with no arguments is the bare atom. skill_xp/3 is the roster's and is dropped.",
+      "input": {
+        "pack": ":- dynamic(has_skill/3).\n",
+        "world": "guild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\n",
+        "facts": [
+          {
+            "predicate": "gold",
+            "args": [
+              "player",
+              40
+            ]
+          },
+          {
+            "predicate": "reputation",
+            "args": [
+              "player",
+              "smiths_guild",
+              25
+            ]
+          },
+          {
+            "predicate": "quest_completed",
+            "args": [
+              "Old Mill"
+            ]
+          },
+          {
+            "predicate": "bridge_repaired",
+            "args": []
+          },
+          {
+            "predicate": "reputation",
+            "args": [
+              "player",
+              "smiths_guild",
+              25
+            ]
+          },
+          {
+            "predicate": "skill_xp",
+            "args": [
+              "player",
+              "smiths_guild_standing",
+              10
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "facts": [
+          "bridge_repaired.",
+          "gold(player, 40).",
+          "quest_completed('Old Mill').",
+          "reputation(player, smiths_guild, 25)."
+        ],
+        "dropped": [
+          {
+            "at": "prologFacts[4]",
+            "code": "duplicate"
+          },
+          {
+            "at": "prologFacts[5]",
+            "code": "skill_owned"
+          }
+        ],
+        "program": ":- dynamic(has_skill/3).\n\n:- dynamic(bridge_repaired/0).\n:- dynamic(gold/2).\n:- dynamic(quest_completed/1).\n:- dynamic(reputation/3).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\n\nbridge_repaired.\ngold(player, 40).\nquest_completed('Old Mill').\nreputation(player, smiths_guild, 25)."
+      }
+    },
+    {
+      "name": "compose: no world, so the live clauses follow their declarations (PL.core-skill-kb-live-facts)",
+      "op": "compose",
+      "input": {
+        "pack": ":- dynamic(has_skill/3).\n",
+        "facts": [
+          {
+            "predicate": "talked_to",
+            "args": [
+              "player",
+              "npc_bram"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "facts": [
+          "talked_to(player, npc_bram)."
+        ],
+        "dropped": [],
+        "program": ":- dynamic(has_skill/3).\n\n:- dynamic(talked_to/2).\ntalked_to(player, npc_bram)."
+      }
+    },
+    {
+      "name": "kb: a fact the game asserts in play opens the unlock that needs it; a retract closes it (PL.core-skill-kb-live-facts)",
+      "op": "kb",
+      "note": "guild_apprentice requires guild_standing_at_least(Actor, smiths_guild, 20), which the world reads from reputation/3. A host that composed the skill KB when progression opened answers requires to every query here.",
+      "input": {
+        "world": {
+          "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n",
+          "ir": {
+            "pointsPerLevel": 1,
+            "defaultNodeCost": 1,
+            "skills": [
+              {
+                "id": "smiths_guild_standing",
+                "category": "faction",
+                "maxLevel": 3,
+                "levelXp": [
+                  0,
+                  0,
+                  200,
+                  600
+                ]
+              }
+            ],
+            "trees": [
+              {
+                "id": "smiths_guild",
+                "skill": "smiths_guild_standing",
+                "name": "The Smiths’ Guild",
+                "nodes": [
+                  {
+                    "id": "guild_apprentice",
+                    "name": "Apprentice of the guild",
+                    "description": "Admitted to the hall, and to the small forge at the back of it.",
+                    "cost": 1,
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 20)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "use_guild_forge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_journeyman",
+                    "name": "Journeyman of the guild",
+                    "description": "Free of the guild’s work, and of its rates.",
+                    "cost": 1,
+                    "parents": [
+                      "guild_apprentice"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 50)",
+                      "guild_dues_paid(Actor, 40)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_guild_commission"
+                        ]
+                      },
+                      {
+                        "kind": "modifies",
+                        "args": [
+                          "crafting",
+                          "quality",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_master",
+                    "name": "Master of the guild",
+                    "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                    "cost": 2,
+                    "parents": [
+                      "guild_journeyman"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 80)",
+                      "guild_dues_paid(Actor, 200)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "stamp_guild_mark"
+                        ]
+                      },
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                25
+              ]
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                25
+              ]
+            }
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman"
+          },
+          {
+            "do": "retract",
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                25
+              ]
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                60
+              ]
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "gold",
+              "args": [
+                "player",
+                40
+              ]
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman"
+          },
+          {
+            "do": "retract",
+            "fact": {
+              "predicate": "gold",
+              "args": [
+                "player",
+                40
+              ]
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [],
+            "facts": []
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "guild_standing_at_least(Actor, smiths_guild, 20)"
+            ]
+          },
+          {
+            "do": "assert",
+            "changed": true
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          },
+          {
+            "do": "assert",
+            "changed": false
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "performed": true,
+            "refusal": null,
+            "remaining": 2
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "guild_dues_paid(Actor, 40)",
+              "guild_standing_at_least(Actor, smiths_guild, 50)"
+            ]
+          },
+          {
+            "do": "retract",
+            "changed": true
+          },
+          {
+            "do": "assert",
+            "changed": true
+          },
+          {
+            "do": "assert",
+            "changed": true
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          },
+          {
+            "do": "retract",
+            "changed": true
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "guild_dues_paid(Actor, 40)"
+            ]
+          }
+        ],
+        "facts": [
+          "reputation(player, smiths_guild, 60)."
+        ]
+      }
+    },
+    {
+      "name": "kb: assert, save, retract, then load the save: the load recomposes the KB with the saved fact (PL.core-skill-kb-live-facts)",
+      "op": "kb",
+      "note": "The retract after the save is play the load throws away, so the unlock that needs the fact opens again.",
+      "input": {
+        "world": {
+          "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n",
+          "ir": {
+            "pointsPerLevel": 1,
+            "defaultNodeCost": 1,
+            "skills": [
+              {
+                "id": "smiths_guild_standing",
+                "category": "faction",
+                "maxLevel": 3,
+                "levelXp": [
+                  0,
+                  0,
+                  200,
+                  600
+                ]
+              }
+            ],
+            "trees": [
+              {
+                "id": "smiths_guild",
+                "skill": "smiths_guild_standing",
+                "name": "The Smiths’ Guild",
+                "nodes": [
+                  {
+                    "id": "guild_apprentice",
+                    "name": "Apprentice of the guild",
+                    "description": "Admitted to the hall, and to the small forge at the back of it.",
+                    "cost": 1,
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 20)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "use_guild_forge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_journeyman",
+                    "name": "Journeyman of the guild",
+                    "description": "Free of the guild’s work, and of its rates.",
+                    "cost": 1,
+                    "parents": [
+                      "guild_apprentice"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 50)",
+                      "guild_dues_paid(Actor, 40)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_guild_commission"
+                        ]
+                      },
+                      {
+                        "kind": "modifies",
+                        "args": [
+                          "crafting",
+                          "quality",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_master",
+                    "name": "Master of the guild",
+                    "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                    "cost": 2,
+                    "parents": [
+                      "guild_journeyman"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 80)",
+                      "guild_dues_paid(Actor, 200)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "stamp_guild_mark"
+                        ]
+                      },
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                25
+              ]
+            }
+          },
+          {
+            "do": "save"
+          },
+          {
+            "do": "retract",
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                25
+              ]
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "load"
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_apprentice"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [],
+            "facts": []
+          },
+          {
+            "do": "assert",
+            "changed": true
+          },
+          {
+            "do": "save",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    25
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "retract",
+            "changed": true
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "guild_standing_at_least(Actor, smiths_guild, 20)"
+            ]
+          },
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [],
+            "facts": [
+              "reputation(player, smiths_guild, 25)."
+            ]
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "performed": true,
+            "refusal": null,
+            "remaining": 2
+          }
+        ],
+        "facts": [
+          "reputation(player, smiths_guild, 25)."
+        ]
+      }
+    },
+    {
+      "name": "kb: a save the game wrote earlier, loaded into a session opened without its facts (PL.core-skill-kb-live-facts)",
+      "op": "kb",
+      "note": "The roster comes from the progression block (guild_apprentice taken, one point left) and the live facts from prologFacts; the parent edge and both authored goals hold.",
+      "input": {
+        "world": {
+          "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n",
+          "ir": {
+            "pointsPerLevel": 1,
+            "defaultNodeCost": 1,
+            "skills": [
+              {
+                "id": "smiths_guild_standing",
+                "category": "faction",
+                "maxLevel": 3,
+                "levelXp": [
+                  0,
+                  0,
+                  200,
+                  600
+                ]
+              }
+            ],
+            "trees": [
+              {
+                "id": "smiths_guild",
+                "skill": "smiths_guild_standing",
+                "name": "The Smiths’ Guild",
+                "nodes": [
+                  {
+                    "id": "guild_apprentice",
+                    "name": "Apprentice of the guild",
+                    "description": "Admitted to the hall, and to the small forge at the back of it.",
+                    "cost": 1,
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 20)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "use_guild_forge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_journeyman",
+                    "name": "Journeyman of the guild",
+                    "description": "Free of the guild’s work, and of its rates.",
+                    "cost": 1,
+                    "parents": [
+                      "guild_apprentice"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 50)",
+                      "guild_dues_paid(Actor, 40)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_guild_commission"
+                        ]
+                      },
+                      {
+                        "kind": "modifies",
+                        "args": [
+                          "crafting",
+                          "quality",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_master",
+                    "name": "Master of the guild",
+                    "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                    "cost": 2,
+                    "parents": [
+                      "guild_journeyman"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 80)",
+                      "guild_dues_paid(Actor, 200)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "stamp_guild_mark"
+                        ]
+                      },
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    55
+                  ]
+                },
+                {
+                  "predicate": "gold",
+                  "args": [
+                    "player",
+                    40
+                  ]
+                },
+                {
+                  "predicate": "quest_completed",
+                  "args": [
+                    "q_smith"
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 1
+                        },
+                        "unlocked": [
+                          "guild_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman"
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_journeyman"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [],
+            "facts": [
+              "gold(player, 40).",
+              "quest_completed(q_smith).",
+              "reputation(player, smiths_guild, 55)."
+            ]
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_journeyman",
+            "performed": true,
+            "refusal": null,
+            "remaining": 0
+          }
+        ],
+        "facts": [
+          "gold(player, 40).",
+          "quest_completed(q_smith).",
+          "reputation(player, smiths_guild, 55)."
+        ]
+      }
+    },
+    {
+      "name": "kb: a fact retracted after a load closes the unlock that needed it, and the next save leaves it out (PL.core-skill-kb-live-facts)",
+      "op": "kb",
+      "input": {
+        "world": {
+          "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n",
+          "ir": {
+            "pointsPerLevel": 1,
+            "defaultNodeCost": 1,
+            "skills": [
+              {
+                "id": "smiths_guild_standing",
+                "category": "faction",
+                "maxLevel": 3,
+                "levelXp": [
+                  0,
+                  0,
+                  200,
+                  600
+                ]
+              }
+            ],
+            "trees": [
+              {
+                "id": "smiths_guild",
+                "skill": "smiths_guild_standing",
+                "name": "The Smiths’ Guild",
+                "nodes": [
+                  {
+                    "id": "guild_apprentice",
+                    "name": "Apprentice of the guild",
+                    "description": "Admitted to the hall, and to the small forge at the back of it.",
+                    "cost": 1,
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 20)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "use_guild_forge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_journeyman",
+                    "name": "Journeyman of the guild",
+                    "description": "Free of the guild’s work, and of its rates.",
+                    "cost": 1,
+                    "parents": [
+                      "guild_apprentice"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 50)",
+                      "guild_dues_paid(Actor, 40)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_guild_commission"
+                        ]
+                      },
+                      {
+                        "kind": "modifies",
+                        "args": [
+                          "crafting",
+                          "quality",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_master",
+                    "name": "Master of the guild",
+                    "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                    "cost": 2,
+                    "parents": [
+                      "guild_journeyman"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 80)",
+                      "guild_dues_paid(Actor, 200)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "stamp_guild_mark"
+                        ]
+                      },
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    55
+                  ]
+                },
+                {
+                  "predicate": "gold",
+                  "args": [
+                    "player",
+                    40
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 1
+                        },
+                        "unlocked": [
+                          "guild_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman"
+          },
+          {
+            "do": "retract",
+            "fact": {
+              "predicate": "gold",
+              "args": [
+                "player",
+                40
+              ]
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman"
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_journeyman"
+          },
+          {
+            "do": "retract",
+            "fact": {
+              "predicate": "gold",
+              "args": [
+                "player",
+                40
+              ]
+            }
+          },
+          {
+            "do": "save"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [],
+            "facts": [
+              "gold(player, 40).",
+              "reputation(player, smiths_guild, 55)."
+            ]
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          },
+          {
+            "do": "retract",
+            "changed": true
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "guild_dues_paid(Actor, 40)"
+            ]
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_journeyman",
+            "performed": false,
+            "refusal": "requires",
+            "remaining": 1
+          },
+          {
+            "do": "retract",
+            "changed": false
+          },
+          {
+            "do": "save",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    55
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 1
+                        },
+                        "unlocked": [
+                          "guild_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "facts": [
+          "reputation(player, smiths_guild, 55)."
+        ]
+      }
+    },
+    {
+      "name": "kb: a load replaces the facts and the roster held before it; a refused load changes nothing (PL.core-skill-kb-live-facts)",
+      "op": "kb",
+      "note": "The node taken before the load is not taken after it, and reputation(player, smiths_guild, 25), held before the load, is gone. The refused load (an unreadable progression block) leaves the KB as the first load made it.",
+      "input": {
+        "world": {
+          "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n",
+          "ir": {
+            "pointsPerLevel": 1,
+            "defaultNodeCost": 1,
+            "skills": [
+              {
+                "id": "smiths_guild_standing",
+                "category": "faction",
+                "maxLevel": 3,
+                "levelXp": [
+                  0,
+                  0,
+                  200,
+                  600
+                ]
+              }
+            ],
+            "trees": [
+              {
+                "id": "smiths_guild",
+                "skill": "smiths_guild_standing",
+                "name": "The Smiths’ Guild",
+                "nodes": [
+                  {
+                    "id": "guild_apprentice",
+                    "name": "Apprentice of the guild",
+                    "description": "Admitted to the hall, and to the small forge at the back of it.",
+                    "cost": 1,
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 20)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "use_guild_forge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_journeyman",
+                    "name": "Journeyman of the guild",
+                    "description": "Free of the guild’s work, and of its rates.",
+                    "cost": 1,
+                    "parents": [
+                      "guild_apprentice"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 50)",
+                      "guild_dues_paid(Actor, 40)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_guild_commission"
+                        ]
+                      },
+                      {
+                        "kind": "modifies",
+                        "args": [
+                          "crafting",
+                          "quality",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_master",
+                    "name": "Master of the guild",
+                    "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                    "cost": 2,
+                    "parents": [
+                      "guild_journeyman"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 80)",
+                      "guild_dues_paid(Actor, 200)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "stamp_guild_mark"
+                        ]
+                      },
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                25
+              ]
+            }
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "gold",
+                  "args": [
+                    "player",
+                    40
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    25
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "skills": {
+                    "actors": {}
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                25
+              ]
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [],
+            "facts": []
+          },
+          {
+            "do": "assert",
+            "changed": true
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "performed": true,
+            "refusal": null,
+            "remaining": 2
+          },
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [],
+            "facts": [
+              "gold(player, 40)."
+            ]
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "guild_standing_at_least(Actor, smiths_guild, 20)"
+            ]
+          },
+          {
+            "do": "load",
+            "ok": false,
+            "refusal": {
+              "code": "unreadable_progression",
+              "field": "currentState.extensions.progression",
+              "keys": [
+                "skills.actors"
+              ]
+            },
+            "facts": [
+              "gold(player, 40)."
+            ]
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "guild_standing_at_least(Actor, smiths_guild, 20)"
+            ]
+          },
+          {
+            "do": "assert",
+            "changed": true
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          }
+        ],
+        "facts": [
+          "gold(player, 40).",
+          "reputation(player, smiths_guild, 25)."
+        ]
+      }
+    },
+    {
+      "name": "kb: what is never a live fact: progression's own, the authored, the unreadable and a repeat (PL.core-skill-kb-live-facts)",
+      "op": "kb",
+      "note": "A save's skill_unlocked(player, guild_journeyman) is dropped (skill_owned): guild_master still asks for its parent. The rest load; an assert or retract of a fact that is not live changes nothing.",
+      "input": {
+        "world": {
+          "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n",
+          "ir": {
+            "pointsPerLevel": 1,
+            "defaultNodeCost": 1,
+            "skills": [
+              {
+                "id": "smiths_guild_standing",
+                "category": "faction",
+                "maxLevel": 3,
+                "levelXp": [
+                  0,
+                  0,
+                  200,
+                  600
+                ]
+              }
+            ],
+            "trees": [
+              {
+                "id": "smiths_guild",
+                "skill": "smiths_guild_standing",
+                "name": "The Smiths’ Guild",
+                "nodes": [
+                  {
+                    "id": "guild_apprentice",
+                    "name": "Apprentice of the guild",
+                    "description": "Admitted to the hall, and to the small forge at the back of it.",
+                    "cost": 1,
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 20)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "use_guild_forge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_journeyman",
+                    "name": "Journeyman of the guild",
+                    "description": "Free of the guild’s work, and of its rates.",
+                    "cost": 1,
+                    "parents": [
+                      "guild_apprentice"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 50)",
+                      "guild_dues_paid(Actor, 40)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_guild_commission"
+                        ]
+                      },
+                      {
+                        "kind": "modifies",
+                        "args": [
+                          "crafting",
+                          "quality",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_master",
+                    "name": "Master of the guild",
+                    "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                    "cost": 2,
+                    "parents": [
+                      "guild_journeyman"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 80)",
+                      "guild_dues_paid(Actor, 200)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "stamp_guild_mark"
+                        ]
+                      },
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    90
+                  ]
+                },
+                {
+                  "predicate": "skill_unlocked",
+                  "args": [
+                    "player",
+                    "guild_journeyman"
+                  ]
+                },
+                {
+                  "predicate": "skill_node_cost",
+                  "args": [
+                    "guild_master",
+                    0
+                  ]
+                },
+                {
+                  "predicate": "Reputation",
+                  "args": [
+                    "player"
+                  ]
+                },
+                {
+                  "predicate": "gold",
+                  "args": "player"
+                },
+                {
+                  "predicate": "gold",
+                  "args": [
+                    "player",
+                    {
+                      "coins": 200
+                    }
+                  ]
+                },
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    90
+                  ]
+                },
+                {
+                  "predicate": "quest_completed",
+                  "args": [
+                    "Old Mill"
+                  ]
+                },
+                {
+                  "predicate": "gold",
+                  "args": [
+                    "player",
+                    200
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": [
+                          "guild_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_master"
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "skill_unlocked",
+              "args": [
+                "player",
+                "guild_journeyman"
+              ]
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "has_skill",
+              "args": [
+                "player",
+                "smiths_guild_standing",
+                3
+              ]
+            }
+          },
+          {
+            "do": "retract",
+            "fact": {
+              "predicate": "skill_node_requires",
+              "args": [
+                "guild_master",
+                "bridge_repaired"
+              ]
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                null
+              ]
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "bridge_repaired",
+              "args": []
+            }
+          },
+          {
+            "do": "retract",
+            "fact": {
+              "predicate": "talked_to",
+              "args": [
+                "player",
+                "npc_bram"
+              ]
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_master"
+          },
+          {
+            "do": "save"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [
+              {
+                "at": "prologFacts[1]",
+                "code": "skill_owned"
+              },
+              {
+                "at": "prologFacts[2]",
+                "code": "authored"
+              },
+              {
+                "at": "prologFacts[3]",
+                "code": "unreadable"
+              },
+              {
+                "at": "prologFacts[4]",
+                "code": "unreadable"
+              },
+              {
+                "at": "prologFacts[5]",
+                "code": "unreadable"
+              },
+              {
+                "at": "prologFacts[6]",
+                "code": "duplicate"
+              }
+            ],
+            "facts": [
+              "gold(player, 200).",
+              "quest_completed('Old Mill').",
+              "reputation(player, smiths_guild, 90)."
+            ]
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_master",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "skill_unlocked(Actor, guild_journeyman)"
+            ]
+          },
+          {
+            "do": "assert",
+            "changed": false,
+            "refusal": "skill_owned"
+          },
+          {
+            "do": "assert",
+            "changed": false,
+            "refusal": "skill_owned"
+          },
+          {
+            "do": "retract",
+            "changed": false,
+            "refusal": "authored"
+          },
+          {
+            "do": "assert",
+            "changed": false,
+            "refusal": "unreadable"
+          },
+          {
+            "do": "assert",
+            "changed": true
+          },
+          {
+            "do": "retract",
+            "changed": false
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_master",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "skill_unlocked(Actor, guild_journeyman)"
+            ]
+          },
+          {
+            "do": "save",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "bridge_repaired",
+                  "args": []
+                },
+                {
+                  "predicate": "gold",
+                  "args": [
+                    "player",
+                    200
+                  ]
+                },
+                {
+                  "predicate": "quest_completed",
+                  "args": [
+                    "Old Mill"
+                  ]
+                },
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    90
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": [
+                          "guild_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "facts": [
+          "bridge_repaired.",
+          "gold(player, 200).",
+          "quest_completed('Old Mill').",
+          "reputation(player, smiths_guild, 90)."
+        ]
+      }
+    },
+    {
+      "name": "kb: prologFacts that is not a list loads no live fact, and the roster still loads (PL.core-skill-kb-live-facts)",
+      "op": "kb",
+      "input": {
+        "world": {
+          "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n",
+          "ir": {
+            "pointsPerLevel": 1,
+            "defaultNodeCost": 1,
+            "skills": [
+              {
+                "id": "smiths_guild_standing",
+                "category": "faction",
+                "maxLevel": 3,
+                "levelXp": [
+                  0,
+                  0,
+                  200,
+                  600
+                ]
+              }
+            ],
+            "trees": [
+              {
+                "id": "smiths_guild",
+                "skill": "smiths_guild_standing",
+                "name": "The Smiths’ Guild",
+                "nodes": [
+                  {
+                    "id": "guild_apprentice",
+                    "name": "Apprentice of the guild",
+                    "description": "Admitted to the hall, and to the small forge at the back of it.",
+                    "cost": 1,
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 20)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "use_guild_forge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_journeyman",
+                    "name": "Journeyman of the guild",
+                    "description": "Free of the guild’s work, and of its rates.",
+                    "cost": 1,
+                    "parents": [
+                      "guild_apprentice"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 50)",
+                      "guild_dues_paid(Actor, 40)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_guild_commission"
+                        ]
+                      },
+                      {
+                        "kind": "modifies",
+                        "args": [
+                          "crafting",
+                          "quality",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_master",
+                    "name": "Master of the guild",
+                    "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                    "cost": 2,
+                    "parents": [
+                      "guild_journeyman"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 80)",
+                      "guild_dues_paid(Actor, 200)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "stamp_guild_mark"
+                        ]
+                      },
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": "reputation(player, smiths_guild, 90).",
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": [
+                          "guild_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [
+              {
+                "at": "prologFacts",
+                "code": "unreadable"
+              }
+            ],
+            "facts": []
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_journeyman",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "guild_dues_paid(Actor, 40)",
+              "guild_standing_at_least(Actor, smiths_guild, 50)"
+            ]
+          }
+        ],
+        "facts": []
+      }
+    },
+    {
+      "name": "compose: a predicate the engine owns is dropped (reserved), and a number in exponent form is written in Prolog's syntax (PL.core-skill-kb-live-facts)",
+      "op": "compose",
+      "note": "member/2 is a library predicate of the shared engine: a recomposing host that consulted member(player, smiths_guild) would fail with permission_error(modify, static_procedure, member/2). 1e-7 is not a Prolog number; 1.0e-7 is.",
+      "input": {
+        "pack": ":- dynamic(has_skill/3).\n",
+        "world": "w(1).\n",
+        "facts": [
+          {
+            "predicate": "member",
+            "args": [
+              "player",
+              "smiths_guild"
+            ]
+          },
+          {
+            "predicate": "gold",
+            "args": [
+              "player",
+              1e-7
+            ]
+          },
+          {
+            "predicate": "true",
+            "args": []
+          }
+        ]
+      },
+      "expected": {
+        "facts": [
+          "gold(player, 1.0e-7)."
+        ],
+        "dropped": [
+          {
+            "at": "prologFacts[0]",
+            "code": "reserved"
+          },
+          {
+            "at": "prologFacts[2]",
+            "code": "reserved"
+          }
+        ],
+        "program": ":- dynamic(has_skill/3).\n\n:- dynamic(gold/2).\nw(1).\n\ngold(player, 1.0e-7)."
+      }
+    },
+    {
+      "name": "kb: a fact the KB cannot hold is never live: a predicate the engine owns is reserved, a control character is unreadable, and an exponent number is held (PL.core-skill-kb-live-facts)",
+      "op": "kb",
+      "note": "member/2, length/2 and true/0 are the engine's (builtin or library) and attribute/1 is a prefix operator's name, so the KB cannot hold them: a load drops each (reserved), an assert or retract changes nothing, and guild_apprentice, permitted by reputation 25, stays permitted throughout. A string holding a newline is unreadable. gold(player, 1e-7) and gold(player, 1e+21) are live, held as 1.0e-7 and 1.0e+21, and a save keeps them as numbers.",
+      "input": {
+        "world": {
+          "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n",
+          "ir": {
+            "pointsPerLevel": 1,
+            "defaultNodeCost": 1,
+            "skills": [
+              {
+                "id": "smiths_guild_standing",
+                "category": "faction",
+                "maxLevel": 3,
+                "levelXp": [
+                  0,
+                  0,
+                  200,
+                  600
+                ]
+              }
+            ],
+            "trees": [
+              {
+                "id": "smiths_guild",
+                "skill": "smiths_guild_standing",
+                "name": "The Smiths’ Guild",
+                "nodes": [
+                  {
+                    "id": "guild_apprentice",
+                    "name": "Apprentice of the guild",
+                    "description": "Admitted to the hall, and to the small forge at the back of it.",
+                    "cost": 1,
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 20)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "use_guild_forge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_journeyman",
+                    "name": "Journeyman of the guild",
+                    "description": "Free of the guild’s work, and of its rates.",
+                    "cost": 1,
+                    "parents": [
+                      "guild_apprentice"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 50)",
+                      "guild_dues_paid(Actor, 40)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_guild_commission"
+                        ]
+                      },
+                      {
+                        "kind": "modifies",
+                        "args": [
+                          "crafting",
+                          "quality",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_master",
+                    "name": "Master of the guild",
+                    "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                    "cost": 2,
+                    "parents": [
+                      "guild_journeyman"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 80)",
+                      "guild_dues_paid(Actor, 200)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "stamp_guild_mark"
+                        ]
+                      },
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_apprentice"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    25
+                  ]
+                },
+                {
+                  "predicate": "member",
+                  "args": [
+                    "player",
+                    "smiths_guild"
+                  ]
+                },
+                {
+                  "predicate": "true",
+                  "args": []
+                },
+                {
+                  "predicate": "gold",
+                  "args": [
+                    "player",
+                    1e-7
+                  ]
+                },
+                {
+                  "predicate": "quest_completed",
+                  "args": [
+                    "Old\nMill"
+                  ]
+                },
+                {
+                  "predicate": "length",
+                  "args": [
+                    "rope",
+                    5
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "member",
+              "args": [
+                "player",
+                "smiths_guild"
+              ]
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "attribute",
+              "args": [
+                "player"
+              ]
+            }
+          },
+          {
+            "do": "retract",
+            "fact": {
+              "predicate": "true",
+              "args": []
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "gold",
+              "args": [
+                "player",
+                1e+21
+              ]
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "save"
+          },
+          {
+            "do": "load"
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_apprentice"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [
+              {
+                "at": "prologFacts[1]",
+                "code": "reserved"
+              },
+              {
+                "at": "prologFacts[2]",
+                "code": "reserved"
+              },
+              {
+                "at": "prologFacts[4]",
+                "code": "unreadable"
+              },
+              {
+                "at": "prologFacts[5]",
+                "code": "reserved"
+              }
+            ],
+            "facts": [
+              "gold(player, 1.0e-7).",
+              "reputation(player, smiths_guild, 25)."
+            ]
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          },
+          {
+            "do": "assert",
+            "changed": false,
+            "refusal": "reserved"
+          },
+          {
+            "do": "assert",
+            "changed": false,
+            "refusal": "reserved"
+          },
+          {
+            "do": "retract",
+            "changed": false,
+            "refusal": "reserved"
+          },
+          {
+            "do": "assert",
+            "changed": true
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          },
+          {
+            "do": "save",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "gold",
+                  "args": [
+                    "player",
+                    1e+21
+                  ]
+                },
+                {
+                  "predicate": "gold",
+                  "args": [
+                    "player",
+                    1e-7
+                  ]
+                },
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    25
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [],
+            "facts": [
+              "gold(player, 1.0e+21).",
+              "gold(player, 1.0e-7).",
+              "reputation(player, smiths_guild, 25)."
+            ]
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_apprentice",
+            "performed": true,
+            "refusal": null,
+            "remaining": 2
+          }
+        ],
+        "facts": [
+          "gold(player, 1.0e+21).",
+          "gold(player, 1.0e-7).",
+          "reputation(player, smiths_guild, 25)."
+        ]
+      }
+    },
+    {
+      "name": "compose: a fact naming a rule head the skill pack defines is skill_owned; the same name at another arity is live (PL.core-skill-kb-rule-head-facts)",
+      "op": "compose",
+      "note": "can_advance/2, can_learn_skill/2, can_unlock/2, skill_capped/2, skill_effect/2, skill_goal_met/2, skill_node_price/2 and skill_points_held/3 are the rule heads of core's skill pack (src/prolog/mechanics/skill-predicates.ts; SKILL_KB_PACK_RULE_HEADS reads them from its clauses): a live clause of one would be a clause added to the pack's rule. The refusal is the same whatever pack a host hands compose. skill_goal_met/1, can_unlock/1, skill_points_held/2 and can_advance/3 are other predicates, and are live.",
+      "input": {
+        "pack": ":- dynamic(has_skill/3).\n",
+        "world": "w(1).\n",
+        "facts": [
+          {
+            "predicate": "skill_goal_met",
+            "args": [
+              "player",
+              "bridge_repaired"
+            ]
+          },
+          {
+            "predicate": "can_unlock",
+            "args": [
+              "player",
+              "guild_master"
+            ]
+          },
+          {
+            "predicate": "skill_node_price",
+            "args": [
+              "guild_master",
+              0
+            ]
+          },
+          {
+            "predicate": "skill_points_held",
+            "args": [
+              "player",
+              "smiths_guild",
+              9
+            ]
+          },
+          {
+            "predicate": "skill_effect",
+            "args": [
+              "player",
+              "permits_use_guild_forge"
+            ]
+          },
+          {
+            "predicate": "can_advance",
+            "args": [
+              "player",
+              "french"
+            ]
+          },
+          {
+            "predicate": "can_learn_skill",
+            "args": [
+              "player",
+              "french"
+            ]
+          },
+          {
+            "predicate": "skill_capped",
+            "args": [
+              "player",
+              "french"
+            ]
+          },
+          {
+            "predicate": "skill_goal_met",
+            "args": [
+              "bridge_repaired"
+            ]
+          },
+          {
+            "predicate": "can_unlock",
+            "args": [
+              "player"
+            ]
+          },
+          {
+            "predicate": "skill_points_held",
+            "args": [
+              "player",
+              9
+            ]
+          },
+          {
+            "predicate": "can_advance",
+            "args": [
+              "player",
+              "french",
+              "soon"
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "facts": [
+          "can_advance(player, french, soon).",
+          "can_unlock(player).",
+          "skill_goal_met(bridge_repaired).",
+          "skill_points_held(player, 9)."
+        ],
+        "dropped": [
+          {
+            "at": "prologFacts[0]",
+            "code": "skill_owned"
+          },
+          {
+            "at": "prologFacts[1]",
+            "code": "skill_owned"
+          },
+          {
+            "at": "prologFacts[2]",
+            "code": "skill_owned"
+          },
+          {
+            "at": "prologFacts[3]",
+            "code": "skill_owned"
+          },
+          {
+            "at": "prologFacts[4]",
+            "code": "skill_owned"
+          },
+          {
+            "at": "prologFacts[5]",
+            "code": "skill_owned"
+          },
+          {
+            "at": "prologFacts[6]",
+            "code": "skill_owned"
+          },
+          {
+            "at": "prologFacts[7]",
+            "code": "skill_owned"
+          }
+        ],
+        "program": ":- dynamic(has_skill/3).\n\n:- dynamic(can_advance/3).\n:- dynamic(can_unlock/1).\n:- dynamic(skill_goal_met/1).\n:- dynamic(skill_points_held/2).\nw(1).\n\ncan_advance(player, french, soon).\ncan_unlock(player).\nskill_goal_met(bridge_repaired).\nskill_points_held(player, 9)."
+      }
+    },
+    {
+      "name": "kb: a fact naming a rule head the skill pack defines is never live, so an atom requirement holds only when its atom does (PL.core-skill-kb-rule-head-facts)",
+      "op": "kb",
+      "note": "guild_bridgewarden requires the plain atom bridge_repaired, which the pack's skill_goal_met/2 calls as written. skill_goal_met(player, bridge_repaired) and can_unlock(player, guild_master) name rule heads of the pack, so they are dropped at the load (skill_owned) and an assert or retract of one changes nothing: held, each would be a clause added to the pack's rule (a KB that answers a held fact before the rule would meet the atom requirement with the bridge unrepaired). skill_goal_met/1 and can_unlock/1 are other predicates: they load, and do not open the node. Only bridge_repaired does.",
+      "input": {
+        "world": {
+          "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n:- dynamic(bridge_repaired/0).\n",
+          "ir": {
+            "pointsPerLevel": 1,
+            "defaultNodeCost": 1,
+            "skills": [
+              {
+                "id": "smiths_guild_standing",
+                "category": "faction",
+                "maxLevel": 3,
+                "levelXp": [
+                  0,
+                  0,
+                  200,
+                  600
+                ]
+              }
+            ],
+            "trees": [
+              {
+                "id": "smiths_guild",
+                "skill": "smiths_guild_standing",
+                "name": "The Smiths’ Guild",
+                "nodes": [
+                  {
+                    "id": "guild_apprentice",
+                    "name": "Apprentice of the guild",
+                    "description": "Admitted to the hall, and to the small forge at the back of it.",
+                    "cost": 1,
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 20)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "use_guild_forge"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_journeyman",
+                    "name": "Journeyman of the guild",
+                    "description": "Free of the guild’s work, and of its rates.",
+                    "cost": 1,
+                    "parents": [
+                      "guild_apprentice"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 50)",
+                      "guild_dues_paid(Actor, 40)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_guild_commission"
+                        ]
+                      },
+                      {
+                        "kind": "modifies",
+                        "args": [
+                          "crafting",
+                          "quality",
+                          1
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_master",
+                    "name": "Master of the guild",
+                    "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                    "cost": 2,
+                    "parents": [
+                      "guild_journeyman"
+                    ],
+                    "requires": [
+                      "guild_standing_at_least(Actor, smiths_guild, 80)",
+                      "guild_dues_paid(Actor, 200)"
+                    ],
+                    "effects": [
+                      {
+                        "kind": "permits",
+                        "args": [
+                          "stamp_guild_mark"
+                        ]
+                      },
+                      {
+                        "kind": "unlocks",
+                        "args": [
+                          "take_apprentice"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "guild_bridgewarden",
+                    "name": "Warden of the guild bridge",
+                    "description": "Keeps the toll on the bridge the guild repaired.",
+                    "cost": 1,
+                    "requires": [
+                      "bridge_repaired"
+                    ],
+                    "effects": []
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "steps": [
+          {
+            "do": "load",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "skill_goal_met",
+                  "args": [
+                    "player",
+                    "bridge_repaired"
+                  ]
+                },
+                {
+                  "predicate": "can_unlock",
+                  "args": [
+                    "player",
+                    "guild_master"
+                  ]
+                },
+                {
+                  "predicate": "skill_goal_met",
+                  "args": [
+                    "bridge_repaired"
+                  ]
+                },
+                {
+                  "predicate": "can_unlock",
+                  "args": [
+                    "player"
+                  ]
+                },
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    25
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_bridgewarden"
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "skill_goal_met",
+              "args": [
+                "player",
+                "bridge_repaired"
+              ]
+            }
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "skill_points_held",
+              "args": [
+                "player",
+                "smiths_guild",
+                9
+              ]
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_bridgewarden"
+          },
+          {
+            "do": "assert",
+            "fact": {
+              "predicate": "bridge_repaired",
+              "args": []
+            }
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_bridgewarden"
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_bridgewarden"
+          },
+          {
+            "do": "retract",
+            "fact": {
+              "predicate": "can_unlock",
+              "args": [
+                "player",
+                "guild_master"
+              ]
+            }
+          },
+          {
+            "do": "save"
+          }
+        ]
+      },
+      "expected": {
+        "steps": [
+          {
+            "do": "load",
+            "ok": true,
+            "dropped": [
+              {
+                "at": "prologFacts[0]",
+                "code": "skill_owned"
+              },
+              {
+                "at": "prologFacts[1]",
+                "code": "skill_owned"
+              }
+            ],
+            "facts": [
+              "can_unlock(player).",
+              "reputation(player, smiths_guild, 25).",
+              "skill_goal_met(bridge_repaired)."
+            ]
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_bridgewarden",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "bridge_repaired"
+            ]
+          },
+          {
+            "do": "assert",
+            "changed": false,
+            "refusal": "skill_owned"
+          },
+          {
+            "do": "assert",
+            "changed": false,
+            "refusal": "skill_owned"
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_bridgewarden",
+            "permitted": false,
+            "refusal": "requires",
+            "unmet": [
+              "bridge_repaired"
+            ]
+          },
+          {
+            "do": "assert",
+            "changed": true
+          },
+          {
+            "do": "query",
+            "actor": "player",
+            "node": "guild_bridgewarden",
+            "permitted": true,
+            "refusal": null,
+            "unmet": []
+          },
+          {
+            "do": "unlock",
+            "actor": "player",
+            "node": "guild_bridgewarden",
+            "performed": true,
+            "refusal": null,
+            "remaining": 2
+          },
+          {
+            "do": "retract",
+            "changed": false,
+            "refusal": "skill_owned"
+          },
+          {
+            "do": "save",
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "bridge_repaired",
+                  "args": []
+                },
+                {
+                  "predicate": "can_unlock",
+                  "args": [
+                    "player"
+                  ]
+                },
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    25
+                  ]
+                },
+                {
+                  "predicate": "skill_goal_met",
+                  "args": [
+                    "bridge_repaired"
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 2
+                        },
+                        "unlocked": [
+                          "guild_bridgewarden"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ],
+        "facts": [
+          "bridge_repaired.",
+          "can_unlock(player).",
+          "reputation(player, smiths_guild, 25).",
+          "skill_goal_met(bridge_repaired)."
         ]
       }
     }

@@ -1,6 +1,6 @@
 {
   "area": "props-interactables",
-  "description": "What the interact key does by a prop, and which one thing it acts on (PL.examine-props, U49(3); the Unreal P8 critic's m1 and its collision with P6's E actions): each stated prop (entities.props) has one meaning, read_sign, examine, open_board or none; what reading and examining say and raise; where the notice board is posted; and, where the player stands, the one target E acts on among a talk villager, pick-ups, containers, the board, a door and the props. Ops: noun {archetypes} -> {nouns}; meanings {props, board? | settlement?} -> {board, meanings, count}; host {props, settlement} -> {host}; interact {props | prop, board? | settlement?} -> {results: [{id, ok, action, line, events} | {id, ok: false, refusal}]}; target {at, panel?, villager?, pickups?, containers?, buildings?, props?, board? | settlement?, aboard?, vehicles?, nodes?, hotspots?, actionTable?, busy?, now?, ranges?, stands?: [{name, at, ...overrides}]} -> {ok, target} | {ok: false, refusal} (with stands: {board, stands: [{at, ok, target}]}). board is {host, name}; given a settlement instead, the board is posted by host and named for it. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
+  "description": "What the interact key does by a prop, and which one thing it acts on (PL.examine-props, U49(3); the Unreal P8 critic's m1 and its collision with P6's E actions): each stated prop (entities.props) has one meaning, read_sign, examine, open_board or none; what reading and examining say and raise; where the notice board is posted; and, where the player stands, the one target E acts on among a talk villager, pick-ups, containers, the board, a door and the props. Ops: noun {archetypes} -> {nouns}; meanings {props, board? | settlement?} -> {board, meanings, count}; host {props, settlement} -> {host}; interact {props | prop, board? | settlement?} -> {results: [{id, ok, action, line, events} | {id, ok: false, refusal}]}; target {at, panel?, villager?, pickups?, containers?, buildings?, props?, board? | settlement?, aboard?, vehicles?, nodes?, hotspots?, actionTable?, busy?, now?, interior?, ranges?, stands?: [{name, at, ...overrides}]} -> {ok, target} | {ok: false, refusal} (with stands: {board, stands: [{at, ok, target}]}); press {everything target takes, objects: [WorldObjectIn {id, role, name?, position {x, z}, translations?}], stands?: [{name, at, objects?, ...overrides}]} -> {ok, target, examine: {id, role} | null, press: {source, id, target, pick, shadowed}} | {ok: false, refusal} (with stands: {board, stands: [{at, ...}]}): the one object an E press acts on of the target and the language world's examine pick (contract.press). board is {host, name}; given a settlement instead, the board is posted by host and named for it. Every case is {name, op, input, expected}; numbers compare within tolerance, everything else exactly, object key sets included (a key TypeScript leaves undefined is absent). Runner: src/props/props-corpus.ts. Regenerate with npm run props-corpora; npm run props-corpora:check fails on any difference.",
   "version": 1,
   "tolerance": 1e-9,
   "sources": [
@@ -10,6 +10,7 @@
     "Brightwater export, pipelines feat/lot-sizing 1a22331 (L3 lot-sizing round 3, brightwater-ir-lot-sizing-r3.json, exported 2026-10-25): its 78 stated props, its one settlement and four of its buildings (interior null).",
     "unreal feat/p9e-unreal a68b6d0 (the world-vehicle row, PL.core-vehicle-rules, U106(3)): InsimulPlayerCharacter.cpp InteractWithNearest (445-483: aboard, E gets off unless a props panel is open; a vehicle only where core's target finds nothing) and the prompt (1569-1571); InsimulVillageTraversal.cpp NearestVehicle (483-501: <= kVehicleReachCm, the last at an equal distance), WorldVehiclePrompt (504-513: \"Get off the <name>\", \"Board the <name>\", Name.value_or(Id)), WorldVehicleE (515-527); InsimulVillageDirector.h kVehicleReachCm 350 cm.",
     "the gathering rows (PL.core-gather-reach-tier, U110(4) Q1), examining unreal origin/main ce4b34c's interim: Portable/InsimulGatheringBinding.h kInterimGatherReachM 3.5 and InterimGatherReach (222-231; .cpp 486-500: nothing when core or the vehicles found something or while busy, the nearest within 3.5 m, the last at an equal distance); Private/InsimulVillageGathering.cpp NearestGatheringSpot (444-459), GatheringPrompt (461-481: \"Gather <item>\", a hotspot's ActionPrompt), GatheringE (495-545), a depleted node's body hidden (399); InsimulPlayerCharacter.cpp InteractWithNearest (488-507). The reach from the reference games: godot origin/main 6599874 templates/scripts/systems/resource_system.gd INTERACTION_RADIUS 2.0 (11-12) and _update_nearest_node (170-188: depleted nodes skipped, none while gathering); unity origin/main 0479c3d templates/scripts/systems/ResourceSystem.cs interactionRadius 2f (12) and Update (162-189: depleted skipped, none while gathering); babylon origin/main bfcdeb2 packages/babylon/src/engine/game-engine/rendering/InteractionPromptSystem.ts MAX_FURNITURE_DISTANCE 2.5 (107) for action hotspots (415-425), ResourceSystem.ts getNearestNode (396-412: depleted skipped) and BabylonGame.ts PlayerActionSystem.getPromptText as a hotspot's prompt (12380). core src/gathering/resource-nodes.ts (NodeState, advanceResources's respawnAt <= at, beginGather's node_busy) and src/gathering/physical-actions.ts actionPrompt.",
+    "the interior row (PL.core-interior-interact-target, U122(4); Unreal run 15 P6.unreal.brightwater-interiors m1), examining unreal origin/main 22f657b Source/InsimulRuntime/Private/InsimulVillageProps.cpp InteractTargetAt (1193-1291: inside, core's target over what the host passes, and only where it finds nothing the exit at distance 0, \"Exit <label>\") and AnyInteractableNear (1308-1309: inside, the exit always prompts); core src/props/interior-save.ts readInteriorState and STATED_LAYOUT_SEED (how interiorState is read: PL.core-interior-save-state), doors.ts doorPrompt inside (the exit, the door's label) and doorStep's enter arrive (the first entrance door, in the interior's frame, props doc §1a).",
     "core src/props/doors.ts doorPrompt; src/language-learning/world-words.ts examineNearest (the language world's objects, whose sign_read and object_examined shapes these events share); src/game-engine/logic/TutorialQuestSystem.ts (lessons completing on sign_read and object_examined)."
   ],
   "contract": {
@@ -26,6 +27,7 @@
       "open_container",
       "open_board",
       "enter",
+      "exit",
       "gather",
       "perform",
       "read_sign",
@@ -38,6 +40,7 @@
       "open_container",
       "open_board",
       "enter",
+      "exit",
       "gather",
       "perform"
     ],
@@ -61,6 +64,7 @@
       "pick_up": 2.2,
       "open_container": 2.2,
       "open_board": 3.2,
+      "exit": 2,
       "read_sign": 2.6,
       "examine": 2.6,
       "board": 3.5,
@@ -80,13 +84,20 @@
     "examine": "examine: line \"You examine the <noun>.\" or, with text, \"You examine the <noun>: <text>\" plus a full stop unless the text ends in . ! or ?; events [object_examined {objectId: id, objectName: noun, targetWord: '', targetLanguage: ''}] (no word: the language tracker records nothing, as for any untranslated object)",
     "board": "open_board: line null, events []: the board model (notice-board.json) takes over",
     "notOfferedResult": "interact on a prop with no meaning is refused not_offered (field archetype, with its reason)",
-    "target": "at not a finite point -> bad_position. An open panel (a non-empty panel) -> close_panel. Else the actions tier: the villager the host would talk to (talk, \"Talk to <name or id>\"), each pick-up not taken (\"Pick up <name or id>\"), each container (\"Open the <label, ASCII A-Z folded to a-z; none: container>\"), the board host prop (\"Read the <name> notice board\"), each within its range compared with <=, and the door doorPrompt gives (outside, \"Enter <label>\"): the nearest on the ground plane wins, a tie going in actionTier order and then to the first listed. Only when no action is in range, the looking tier: each prop read or examined within its range, the nearest, the first listed on a tie. Nothing -> null. A candidate with no id or no finite position is skipped. distance is metres rounded to 1e-9; the prompt is the words after the host's key glyph",
+    "target": "at not a finite point -> bad_position. An open panel (a non-empty panel) -> close_panel. Inside an interior (interior names a building), the interior rule (contract.interior). Else the actions tier: the villager the host would talk to (talk, \"Talk to <name or id>\"), each pick-up not taken (\"Pick up <name or id>\"), each container (\"Open the <label, ASCII A-Z folded to a-z; none: container>\"), the board host prop (\"Read the <name> notice board\"), each within its range compared with <=, and the door doorPrompt gives (outside, \"Enter <label>\"): the nearest on the ground plane wins, a tie going in actionTier order and then to the first listed. Only when no action is in range, the looking tier: each prop read or examined within its range, the nearest, the first listed on a tie. Nothing -> null. A candidate with no id or no finite position is skipped. distance is metres rounded to 1e-9; the prompt is the words after the host's key glyph",
     "ranges": "ranges overrides any of rangesM per call; a door prompts by doorPrompt alone",
     "vehicleTier": [
       "board"
     ],
     "vehicles": "PL.core-vehicle-rules (U106(3)): aboard {id, name?} and vehicles [{id, name?, position}] are stated only by a game that runs the vehicles pack (packs/vehicles); absent, nothing above changes. After an open panel (close_panel), aboard with a non-empty id -> get_off, kind vehicle, prompt \"Get off the <name or id>\", distance null, whatever else is in range. Not aboard, only when neither the actions nor the looking tier has anything in range: the nearest vehicle with an id and a finite position within rangesM.board (the talk reach, 3.5 m; overridden by ranges.board only, never by ranges.talk), compared with <= -> board, kind vehicle, prompt \"Board the <name or id>\", the first listed on a tie. What E then asks of VehicleRegistry is the host's (Unreal's interim: board, then drive when nobody holds the reins; aboard, disembark)",
-    "notHere": "inside an interior (doorPrompt's exit) and a conversation in progress are the host's and not this rule's; the language world's translated objects are examineNearest's (world-words.ts)",
+    "notHere": "a conversation in progress is the host's and not this rule's, inside an interior and out; the language world's translated objects are examineNearest's (world-words.ts)",
+    "interiorActions": [
+      "close_panel",
+      "open_container",
+      "exit"
+    ],
+    "floorBandM": 1.5,
+    "interior": "PL.core-interior-interact-target (U122(4), U122(2)): interior is the record the host writes into currentState.interiorState ({buildingId, buildingName?, buildingType?, layoutSeed?}, read as interior-save.ts readInteriorState reads it: not a record, or no non-empty string buildingId -> outside, and nothing above changes; layoutSeed null, absent or not an integer -> a stated interior, a finite integer (0 included) -> seeded) plus containers? [{id, label?, position}], the interior's own containers the player can reach where the host drew each. While interior names a building, at and those containers are in the interior's frame (props doc §1a; the save's frame for player.position, §1b) and the rule is, after bad_position: an open panel -> close_panel (as outside). Else the candidates are only the interior's containers and its exit (interiorActions); villager, pickups, the top-level containers, props, board / settlement, the buildings' enter doors, aboard, vehicles, nodes, hotspots, actionTable, busy and now are not read. Each container with a non-empty id and a finite position, on the player's floor (below), within rangesM.open_container compared with <= -> open_container, kind container, prompt as outside. The exit, offered only when buildings lists the building interior names (doorPrompt with inside; else none, since doorStep's exit would refuse unknown_building): action exit, kind door, id the building, prompt \"Exit <doorView label: name, else businessType, else spec.buildingRole, else Building>\"; its distance is to the interior's entrance (the first door of building.interior.doors with kind entrance, the point enter's arrive names), on the ground plane, only for a stated interior whose building states one with a finite position, else null. The exit is in reach within rangesM.exit (2.0 m, the door prompt radius as a declared core value: Unreal measured none; see deviations interior-exit) compared with <=, and only from the entrance's floor: |at.y - the entrance's y| < floorBandM (1.5 m, half a 3 m storey; the interior's floors stand at y = floor x 3 m, props doc §1a). A container likewise only from its own floor: |at.y - its position.y| < floorBandM, else it is not a candidate (no press opens a container through a floor or a ceiling). A y that is absent or not finite on either side reads as the same floor; distances stay on the ground plane. From another floor the exit is never in reach, but is still reached at any distance below. Of the containers and the exit in reach the nearest wins, a tie going to the container (actionTier: open_container before exit), then to the first listed. Nothing in reach -> the exit at any distance (its distance, or null). No exit and no container in reach -> null. ranges overrides open_container and exit as outside. What E then does is doorStep {op: exit} (exit_to_exterior) or the container panel; a conversation stays the host's. The press op is unchanged: inside, the target is never null while the building is listed, so it always wins the press",
     "gathering": "PL.core-gather-reach-tier (U110(4) Q1): nodes [{id, item?, position, remaining, respawnAt?}], hotspots [{id, actionType, position}], actionTable? {actions: [{id, promptVerb}]}, busy? and now? (the host's clock, ms) are stated only by a game that runs the gathering pack (packs/gathering); absent, nothing above changes. Both rows are in actionTier, after enter: gather, then perform. Unless busy is true: each node with a non-empty id, a finite position and a finite remaining, that has units (remaining > 0) or whose finite respawnAt <= a finite now, within rangesM.gather (2.0 m) compared with <= -> gather, kind node, prompt \"Gather <item with underscores as spaces, or the id when item is absent or empty>\"; each hotspot with a non-empty id and actionType and a finite position whose actionType actionTable (absent: DEFAULT_PHYSICAL_ACTION_TUNING) holds, within rangesM.perform (2.5 m) compared with <= -> perform, kind hotspot, prompt \"<that action's promptVerb> here\" (actionPrompt). They compete with the other actions by nearest. busy true offers neither and changes nothing else. A node someone else is gathering is offered (beginGather then refuses node_busy). What E then asks (beginGather, startPhysicalAction) and how a refusal reads are the host's",
     "deviations": [
       {
@@ -192,12 +203,28 @@
         "why": "an item atom is a key, not words"
       },
       {
+        "id": "interior-exit",
+        "unreal": "inside an interior (unreal 22f657b InsimulVillageProps.cpp InteractTargetAt 1193-1291) core's outdoor target over every candidate it passes, the village's included, and only where that finds nothing the exit, at distance 0 (\"Exit <label>\")",
+        "core": "inside, only an open panel, the interior's containers and its exit are candidates; the exit competes by nearest within rangesM.exit (2.0 m, <=) of the interior's entrance, a tie going to the container, and is the answer at any distance only when nothing else is in reach",
+        "why": "a chest by the entrance would otherwise always shadow the exit; the village's villager, props and doors are not in the interior's scene; 2.0 m is the door prompt radius, a declared core value, since Unreal measured no exit reach"
+      },
+      {
         "id": "vehicle-name",
         "unreal": "the prompt names the vehicle by Name.value_or(Id): a stated empty name reads \"Board the \"",
         "core": "an empty or absent name falls back to the id, as a villager's and a pick-up's do",
         "why": "a prompt never ends in an empty name"
       }
-    ]
+    ],
+    "pressSources": [
+      "interactables",
+      "examine"
+    ],
+    "pressPrecedence": [
+      "interactables",
+      "examine"
+    ],
+    "examineRangeM": 5,
+    "press": "PL.core-interact-pick-precedence (U118(4), U49(3); Unreal run 14 language-well-pick m2): one E press acts on one object. Two answers can name one: target (above; its reaches are rangesM, the 2.6 m class, and ranges overrides them) and the language world's examine pick (examinePick in src/language-learning/prompt-selector.ts: of objects with a non-empty role, the nearest to at on the ground plane within examineRangeM, 5 m, compared squared with <=, the first listed on a tie; ranges never reaches it). The default (U118(4)): the interactables target when one is present, else the examine pick (pressPrecedence). A target (an open panel's close_panel and aboard's get_off included) -> source interactables, id the target's, target it; the pick, when it has the target's id, is the same object -> pick {id, role}, shadowed null; a pick of another id -> pick null, shadowed {id, role} (it raises nothing this press). No target and a pick -> source examine, id the pick's, target null, pick {id, role} (the host hands it to promptOnPick), shadowed null. Neither -> every field null. A pick with no id counts as none. examine is examinePick's answer {id, role} before the rule. Neither range changes"
   },
   "cases": [
     {
@@ -10872,6 +10899,3973 @@
               "id": "node_oak",
               "prompt": "Gather wood",
               "distance": 0.3
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "press: both name the same object (the well prop at 2 m is also the language world's well): one object, the target, and the pick passed on for its prompt",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "props": [
+          {
+            "id": "prop_well",
+            "archetype": "prop.structural.well",
+            "position": {
+              "x": 2,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ],
+        "objects": [
+          {
+            "id": "prop_well",
+            "role": "well",
+            "name": "Well",
+            "position": {
+              "x": 2,
+              "z": 0
+            },
+            "translations": {
+              "fr": {
+                "targetWord": "puits"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": {
+          "action": "examine",
+          "kind": "prop",
+          "id": "prop_well",
+          "prompt": "Examine the well",
+          "distance": 2
+        },
+        "examine": {
+          "id": "prop_well",
+          "role": "well"
+        },
+        "press": {
+          "source": "interactables",
+          "id": "prop_well",
+          "target": {
+            "action": "examine",
+            "kind": "prop",
+            "id": "prop_well",
+            "prompt": "Examine the well",
+            "distance": 2
+          },
+          "pick": {
+            "id": "prop_well",
+            "role": "well"
+          },
+          "shadowed": null
+        }
+      }
+    },
+    {
+      "name": "press: interactables only: the barrel at 1.5 m is examined, no language object within 5 m (the well at 6 m)",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "props": [
+          {
+            "id": "barrel_1",
+            "archetype": "prop.container.barrel",
+            "position": {
+              "x": 1.5,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ],
+        "objects": [
+          {
+            "id": "prop_well",
+            "role": "well",
+            "name": "Well",
+            "position": {
+              "x": 6,
+              "z": 0
+            },
+            "translations": {
+              "fr": {
+                "targetWord": "puits"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": {
+          "action": "examine",
+          "kind": "prop",
+          "id": "barrel_1",
+          "prompt": "Examine the barrel",
+          "distance": 1.5
+        },
+        "examine": null,
+        "press": {
+          "source": "interactables",
+          "id": "barrel_1",
+          "target": {
+            "action": "examine",
+            "kind": "prop",
+            "id": "barrel_1",
+            "prompt": "Examine the barrel",
+            "distance": 1.5
+          },
+          "pick": null,
+          "shadowed": null
+        }
+      }
+    },
+    {
+      "name": "press: examine only: nothing within the 2.6 m class, the language well 3 to 5 m away acts; past 5 m nothing",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "objects": [
+          {
+            "id": "prop_well",
+            "role": "well",
+            "name": "Well",
+            "position": {
+              "x": 0,
+              "z": 0
+            },
+            "translations": {
+              "fr": {
+                "targetWord": "puits"
+              }
+            }
+          }
+        ],
+        "props": [
+          {
+            "id": "bench_1",
+            "archetype": "prop.furniture.bench",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ],
+        "stands": [
+          {
+            "name": "the bench and the well at 2.6 m: the bench is examined (2.6 m, <=), the pick names the well: the target wins",
+            "at": {
+              "x": 2.6,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "name": "at 2.7 m: the bench is out of reach, the well is picked",
+            "at": {
+              "x": 2.7,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "name": "at 3 m: the well is picked",
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "name": "at 4 m: the well is picked",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 4
+            }
+          },
+          {
+            "name": "at exactly 5 m: the well is picked (<=)",
+            "at": {
+              "x": -3,
+              "y": 0,
+              "z": 4
+            }
+          },
+          {
+            "name": "at 5.1 m: nothing",
+            "at": {
+              "x": 5.1,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 2.6,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "bench_1",
+              "prompt": "Examine the bench",
+              "distance": 2.6
+            },
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "interactables",
+              "id": "bench_1",
+              "target": {
+                "action": "examine",
+                "kind": "prop",
+                "id": "bench_1",
+                "prompt": "Examine the bench",
+                "distance": 2.6
+              },
+              "pick": null,
+              "shadowed": {
+                "id": "prop_well",
+                "role": "well"
+              }
+            }
+          },
+          {
+            "at": {
+              "x": 2.7,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null,
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "examine",
+              "id": "prop_well",
+              "target": null,
+              "pick": {
+                "id": "prop_well",
+                "role": "well"
+              },
+              "shadowed": null
+            }
+          },
+          {
+            "at": {
+              "x": 3,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null,
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "examine",
+              "id": "prop_well",
+              "target": null,
+              "pick": {
+                "id": "prop_well",
+                "role": "well"
+              },
+              "shadowed": null
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 4
+            },
+            "ok": true,
+            "target": null,
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "examine",
+              "id": "prop_well",
+              "target": null,
+              "pick": {
+                "id": "prop_well",
+                "role": "well"
+              },
+              "shadowed": null
+            }
+          },
+          {
+            "at": {
+              "x": -3,
+              "y": 0,
+              "z": 4
+            },
+            "ok": true,
+            "target": null,
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "examine",
+              "id": "prop_well",
+              "target": null,
+              "pick": {
+                "id": "prop_well",
+                "role": "well"
+              },
+              "shadowed": null
+            }
+          },
+          {
+            "at": {
+              "x": 5.1,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null,
+            "examine": null,
+            "press": {
+              "source": null,
+              "id": null,
+              "target": null,
+              "pick": null,
+              "shadowed": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "press: both name different objects: the interactables target wins and the examine pick is shadowed",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "objects": [
+          {
+            "id": "prop_well",
+            "role": "well",
+            "name": "Well",
+            "position": {
+              "x": 0.5,
+              "z": 0
+            },
+            "translations": {
+              "fr": {
+                "targetWord": "puits"
+              }
+            }
+          }
+        ],
+        "stands": [
+          {
+            "name": "the barrel at 1 m, the language well nearer at 0.5 m: examine the barrel, the well is shadowed",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "barrel_1",
+                "archetype": "prop.container.barrel",
+                "position": {
+                  "x": 1,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "a villager at 3 m in talk range, the well at 0.5 m: talk, the well is shadowed",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "villager": {
+              "id": "v1",
+              "name": "Ada",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 3
+              }
+            }
+          },
+          {
+            "name": "a sign at 2.5 m and this stand's own objects, a bucket at 4.5 m: read the sign, the bucket is shadowed",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "props": [
+              {
+                "id": "sign_a",
+                "archetype": "prop.structural.sign",
+                "position": {
+                  "x": 2.5,
+                  "y": 0,
+                  "z": 0
+                },
+                "text": "The Gilded Goose"
+              }
+            ],
+            "objects": [
+              {
+                "id": "lw_bucket",
+                "role": "bucket",
+                "position": {
+                  "x": -4.5,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "a panel open: close it, the well is shadowed",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "panel": "inventory"
+          },
+          {
+            "name": "aboard the handcart: get off, the well is shadowed",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "aboard": {
+              "id": "veh_handcart",
+              "name": "Handcart"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "barrel_1",
+              "prompt": "Examine the barrel",
+              "distance": 1
+            },
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "interactables",
+              "id": "barrel_1",
+              "target": {
+                "action": "examine",
+                "kind": "prop",
+                "id": "barrel_1",
+                "prompt": "Examine the barrel",
+                "distance": 1
+              },
+              "pick": null,
+              "shadowed": {
+                "id": "prop_well",
+                "role": "well"
+              }
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "talk",
+              "kind": "villager",
+              "id": "v1",
+              "prompt": "Talk to Ada",
+              "distance": 3
+            },
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "interactables",
+              "id": "v1",
+              "target": {
+                "action": "talk",
+                "kind": "villager",
+                "id": "v1",
+                "prompt": "Talk to Ada",
+                "distance": 3
+              },
+              "pick": null,
+              "shadowed": {
+                "id": "prop_well",
+                "role": "well"
+              }
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_a",
+              "prompt": "Read the sign",
+              "distance": 2.5
+            },
+            "examine": {
+              "id": "lw_bucket",
+              "role": "bucket"
+            },
+            "press": {
+              "source": "interactables",
+              "id": "sign_a",
+              "target": {
+                "action": "read_sign",
+                "kind": "prop",
+                "id": "sign_a",
+                "prompt": "Read the sign",
+                "distance": 2.5
+              },
+              "pick": null,
+              "shadowed": {
+                "id": "lw_bucket",
+                "role": "bucket"
+              }
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "close_panel",
+              "kind": "panel",
+              "id": "inventory",
+              "prompt": "",
+              "distance": null
+            },
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "interactables",
+              "id": "inventory",
+              "target": {
+                "action": "close_panel",
+                "kind": "panel",
+                "id": "inventory",
+                "prompt": "",
+                "distance": null
+              },
+              "pick": null,
+              "shadowed": {
+                "id": "prop_well",
+                "role": "well"
+              }
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "get_off",
+              "kind": "vehicle",
+              "id": "veh_handcart",
+              "prompt": "Get off the Handcart",
+              "distance": null
+            },
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "interactables",
+              "id": "veh_handcart",
+              "target": {
+                "action": "get_off",
+                "kind": "vehicle",
+                "id": "veh_handcart",
+                "prompt": "Get off the Handcart",
+                "distance": null
+              },
+              "pick": null,
+              "shadowed": {
+                "id": "prop_well",
+                "role": "well"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "press: neither names anything: no object within 5 m, an object with no role is never picked, a pick with no id is none, and a wall is not offered",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "stands": [
+          {
+            "name": "nothing stated",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "name": "an object with no role at 1 m and a wall at 0.5 m: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "objects": [
+              {
+                "id": "lw_nameless",
+                "role": "",
+                "position": {
+                  "x": 1,
+                  "z": 0
+                }
+              }
+            ],
+            "props": [
+              {
+                "id": "wall_1",
+                "archetype": "prop.structural.wall",
+                "position": {
+                  "x": 0.2,
+                  "y": 0,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          {
+            "name": "the well at 5.5 m: nothing",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "objects": [
+              {
+                "id": "prop_well",
+                "role": "well",
+                "name": "Well",
+                "position": {
+                  "x": 0,
+                  "z": 5.5
+                },
+                "translations": {
+                  "fr": {
+                    "targetWord": "puits"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "an object with a role and no id at 1 m: examinePick answers it, but a pick with no id counts as none",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "objects": [
+              {
+                "id": "",
+                "role": "well",
+                "position": {
+                  "x": 1,
+                  "z": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null,
+            "examine": null,
+            "press": {
+              "source": null,
+              "id": null,
+              "target": null,
+              "pick": null,
+              "shadowed": null
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null,
+            "examine": null,
+            "press": {
+              "source": null,
+              "id": null,
+              "target": null,
+              "pick": null,
+              "shadowed": null
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null,
+            "examine": null,
+            "press": {
+              "source": null,
+              "id": null,
+              "target": null,
+              "pick": null,
+              "shadowed": null
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null,
+            "examine": {
+              "id": "",
+              "role": "well"
+            },
+            "press": {
+              "source": null,
+              "id": null,
+              "target": null,
+              "pick": null,
+              "shadowed": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "press: a target reach override does not reach the examine pick: examine 1 leaves the bench at 2 m out and the well at 4 m acts",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "ranges": {
+          "examine": 1
+        },
+        "props": [
+          {
+            "id": "bench_1",
+            "archetype": "prop.furniture.bench",
+            "position": {
+              "x": 2,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ],
+        "objects": [
+          {
+            "id": "prop_well",
+            "role": "well",
+            "name": "Well",
+            "position": {
+              "x": 0,
+              "z": 4
+            },
+            "translations": {
+              "fr": {
+                "targetWord": "puits"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": null,
+        "examine": {
+          "id": "prop_well",
+          "role": "well"
+        },
+        "press": {
+          "source": "examine",
+          "id": "prop_well",
+          "target": null,
+          "pick": {
+            "id": "prop_well",
+            "role": "well"
+          },
+          "shadowed": null
+        }
+      }
+    },
+    {
+      "name": "press: at not a finite point is refused bad_position, as target is",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": null,
+          "z": 0
+        },
+        "objects": [
+          {
+            "id": "prop_well",
+            "role": "well",
+            "name": "Well",
+            "position": {
+              "x": 2,
+              "z": 0
+            },
+            "translations": {
+              "fr": {
+                "targetWord": "puits"
+              }
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": false,
+        "refusal": {
+          "code": "bad_position",
+          "field": "at"
+        }
+      }
+    },
+    {
+      "name": "target: inside a stated interior with nothing else in reach, E exits (Denham's Tavern): within 2.0 m of the entrance and from anywhere in the interior",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 1
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "stands": [
+          {
+            "name": "on the entrance: exit, 0 m",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "name": "1 m in: exit, 1 m",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            }
+          },
+          {
+            "name": "exactly 2.0 m in: exit, 2 m (rangesM.exit, <=)",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 2
+            }
+          },
+          {
+            "name": "by the kitchen door, 7.7 m off: still the exit, the only thing in reach",
+            "at": {
+              "x": 10.0227,
+              "y": 0,
+              "z": 5.85
+            }
+          },
+          {
+            "name": "upstairs in the office (y 3), 6.5 m off in plan: the exit at any distance, measured on the ground plane",
+            "at": {
+              "x": 7.84,
+              "y": 3,
+              "z": 5.85
+            }
+          },
+          {
+            "name": "Unreal's interiorState shape (no layoutSeed) reads as stated: exit, 1 m",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant"
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 0
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 2
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 2
+            }
+          },
+          {
+            "at": {
+              "x": 10.0227,
+              "y": 0,
+              "z": 5.85
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 7.702962267
+            }
+          },
+          {
+            "at": {
+              "x": 7.84,
+              "y": 3,
+              "z": 5.85
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 6.497959523
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside, the exit is in reach only from the entrance's floor: upstairs over the entrance, a chest on the player's floor wins; with nothing in reach upstairs, the exit at any distance",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 5.0114,
+          "y": 3,
+          "z": 1
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null,
+          "containers": [
+            {
+              "id": "chest_upstairs",
+              "label": "Linen Chest",
+              "position": {
+                "x": 5.0114,
+                "y": 3,
+                "z": 2.5
+              }
+            }
+          ]
+        },
+        "stands": [
+          {
+            "name": "upstairs (y 3) over the entrance, 1 m in plan; a chest on that floor 1.5 m away: the container",
+            "at": {
+              "x": 5.0114,
+              "y": 3,
+              "z": 1
+            }
+          },
+          {
+            "name": "the same points on floor 0 (y 0): the exit, 1 m, nearer than the chest",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_ground",
+                  "label": "Linen Chest",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 2.5
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "upstairs over the entrance, nothing in reach: the exit at any distance (1 m in plan)",
+            "at": {
+              "x": 5.0114,
+              "y": 3,
+              "z": 1
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null
+            }
+          },
+          {
+            "name": "upstairs, the chest out of reach (2.3 m): the exit at any distance",
+            "at": {
+              "x": 5.0114,
+              "y": 3,
+              "z": 0.2
+            }
+          },
+          {
+            "name": "at y 1.49, inside the band: the exit, 1 m (the chest at y 3 is 1.51 m off, a floor up)",
+            "at": {
+              "x": 5.0114,
+              "y": 1.49,
+              "z": 1
+            }
+          },
+          {
+            "name": "at exactly y 1.5, a chest on a landing at y 1.5, 1.5 m away: the band compared strictly (<), the exit is out and the container wins",
+            "at": {
+              "x": 5.0114,
+              "y": 1.5,
+              "z": 1
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_landing",
+                  "label": "Linen Chest",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 1.5,
+                    "z": 2.5
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "a host passing its capsule centre (y 0.9) on floor 0: the exit, 1 m",
+            "at": {
+              "x": 5.0114,
+              "y": 0.9,
+              "z": 1
+            }
+          },
+          {
+            "name": "below the entrance at y -1.49 (a step down), inside the band: the exit, 1 m",
+            "at": {
+              "x": 5.0114,
+              "y": -1.49,
+              "z": 1
+            }
+          },
+          {
+            "name": "at with no y: read as the entrance's floor, the exit, 1 m",
+            "at": {
+              "x": 5.0114,
+              "z": 1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 3,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_upstairs",
+              "prompt": "Open the linen chest",
+              "distance": 1.5
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 3,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 3,
+              "z": 0.2
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 0.2
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 1.49,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 1.5,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_landing",
+              "prompt": "Open the linen chest",
+              "distance": 1.5
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0.9,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": -1.49,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside, a container is in reach only from its own floor: upstairs, a chest a floor below is never opened through the floor, the own-floor chest wins and, alone, the exit",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 8,
+          "y": 3,
+          "z": 6
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null,
+          "containers": [
+            {
+              "id": "chest_down",
+              "label": "Cellar Chest",
+              "position": {
+                "x": 8,
+                "y": 0,
+                "z": 6.5
+              }
+            },
+            {
+              "id": "chest_up",
+              "label": "Linen Chest",
+              "position": {
+                "x": 8,
+                "y": 3,
+                "z": 7.8
+              }
+            }
+          ]
+        },
+        "stands": [
+          {
+            "name": "upstairs (y 3): the floor-0 chest 0.5 m off in plan is a floor down, the own-floor chest at 1.8 m wins",
+            "at": {
+              "x": 8,
+              "y": 3,
+              "z": 6
+            }
+          },
+          {
+            "name": "the same points on floor 0 (y 0): the floor-0 chest, 0.5 m",
+            "at": {
+              "x": 8,
+              "y": 0,
+              "z": 6
+            }
+          },
+          {
+            "name": "upstairs over the floor-0 chest alone: not opened through the floor, the exit at any distance",
+            "at": {
+              "x": 8,
+              "y": 3,
+              "z": 6
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_down",
+                  "label": "Cellar Chest",
+                  "position": {
+                    "x": 8,
+                    "y": 0,
+                    "z": 6.5
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "upstairs with the own-floor chest alone: the chest, 1.8 m",
+            "at": {
+              "x": 8,
+              "y": 3,
+              "z": 6
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_up",
+                  "label": "Linen Chest",
+                  "position": {
+                    "x": 8,
+                    "y": 3,
+                    "z": 7.8
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "on floor 0 under the floor-1 chest alone (0.2 m off in plan): not opened through the ceiling, the exit at any distance",
+            "at": {
+              "x": 8,
+              "y": 0,
+              "z": 7.6
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_up",
+                  "label": "Linen Chest",
+                  "position": {
+                    "x": 8,
+                    "y": 3,
+                    "z": 7.8
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "a host passing its capsule centre upstairs (y 3.9): the own-floor chest, 1.8 m",
+            "at": {
+              "x": 8,
+              "y": 3.9,
+              "z": 6
+            }
+          },
+          {
+            "name": "at y 1.49, inside the floor-0 chest's band: the floor-0 chest, 0.5 m",
+            "at": {
+              "x": 8,
+              "y": 1.49,
+              "z": 6
+            }
+          },
+          {
+            "name": "at exactly y 1.5, the band compared strictly (<): on neither chest's floor, the exit at any distance",
+            "at": {
+              "x": 8,
+              "y": 1.5,
+              "z": 6
+            }
+          },
+          {
+            "name": "a chest with no y, upstairs: read as the player's floor, the chest, 0.5 m",
+            "at": {
+              "x": 8,
+              "y": 3,
+              "z": 6
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_noy",
+                  "label": "Cellar Chest",
+                  "position": {
+                    "x": 8,
+                    "z": 6.5
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "at with no y: read as every chest's floor, the nearer chest, 0.5 m",
+            "at": {
+              "x": 8,
+              "z": 6
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 8,
+              "y": 3,
+              "z": 6
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_up",
+              "prompt": "Open the linen chest",
+              "distance": 1.8
+            }
+          },
+          {
+            "at": {
+              "x": 8,
+              "y": 0,
+              "z": 6
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_down",
+              "prompt": "Open the cellar chest",
+              "distance": 0.5
+            }
+          },
+          {
+            "at": {
+              "x": 8,
+              "y": 3,
+              "z": 6
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 6.703113453
+            }
+          },
+          {
+            "at": {
+              "x": 8,
+              "y": 3,
+              "z": 6
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_up",
+              "prompt": "Open the linen chest",
+              "distance": 1.8
+            }
+          },
+          {
+            "at": {
+              "x": 8,
+              "y": 0,
+              "z": 7.6
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 8.166500472
+            }
+          },
+          {
+            "at": {
+              "x": 8,
+              "y": 3.9,
+              "z": 6
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_up",
+              "prompt": "Open the linen chest",
+              "distance": 1.8
+            }
+          },
+          {
+            "at": {
+              "x": 8,
+              "y": 1.49,
+              "z": 6
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_down",
+              "prompt": "Open the cellar chest",
+              "distance": 0.5
+            }
+          },
+          {
+            "at": {
+              "x": 8,
+              "y": 1.5,
+              "z": 6
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 6.703113453
+            }
+          },
+          {
+            "at": {
+              "x": 8,
+              "y": 3,
+              "z": 6
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_noy",
+              "prompt": "Open the cellar chest",
+              "distance": 0.5
+            }
+          },
+          {
+            "at": {
+              "x": 8,
+              "z": 6
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_down",
+              "prompt": "Open the cellar chest",
+              "distance": 0.5
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside, a container and the exit both in reach: the nearer wins, a tie goes to the container",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 0.5
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null,
+          "containers": [
+            {
+              "id": "chest_cellar",
+              "label": "Cellar Chest",
+              "position": {
+                "x": 5.0114,
+                "y": 0,
+                "z": 2.5
+              }
+            }
+          ]
+        },
+        "stands": [
+          {
+            "name": "the exit at 0.5 m, the chest at 2.0 m: exit",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0.5
+            }
+          },
+          {
+            "name": "both at 1.25 m: the container (open_container before exit)",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.25
+            }
+          },
+          {
+            "name": "the exit at 1.9 m, the chest at 0.6 m: the container",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.9
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0.5
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 0.5
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.25
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_cellar",
+              "prompt": "Open the cellar chest",
+              "distance": 1.25
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.9
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_cellar",
+              "prompt": "Open the cellar chest",
+              "distance": 0.6
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside, a container in reach wins over an exit out of its reach; out of both reaches, the exit at any distance",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 2.5
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null,
+          "containers": [
+            {
+              "id": "chest_cellar",
+              "label": "Cellar Chest",
+              "position": {
+                "x": 5.0114,
+                "y": 0,
+                "z": 4.7
+              }
+            }
+          ]
+        },
+        "stands": [
+          {
+            "name": "the chest at exactly 2.2 m (<=), the exit at 2.5 m: the container",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 2.5
+            }
+          },
+          {
+            "name": "the chest at 2.3 m, the exit at 2.4 m, both out of reach: the exit",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 2.4
+            }
+          },
+          {
+            "name": "the exit at exactly 2.0 m, the chest at 2.7 m: the exit",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 2
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 2.5
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_cellar",
+              "prompt": "Open the cellar chest",
+              "distance": 2.2
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 2.4
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 2.4
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 2
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside, an open props panel closes first, before a container and the exit in reach",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 1.25
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null,
+          "containers": [
+            {
+              "id": "chest_cellar",
+              "label": "Cellar Chest",
+              "position": {
+                "x": 5.0114,
+                "y": 0,
+                "z": 2.5
+              }
+            }
+          ]
+        },
+        "stands": [
+          {
+            "name": "the chest panel open: close it",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.25
+            },
+            "panel": "container"
+          },
+          {
+            "name": "the panel shut: the container (the tie)",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.25
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.25
+            },
+            "ok": true,
+            "target": {
+              "action": "close_panel",
+              "kind": "panel",
+              "id": "container",
+              "prompt": "",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.25
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_cellar",
+              "prompt": "Open the cellar chest",
+              "distance": 1.25
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside, nothing outside the interior is ever targeted: the village's villager, pick-up, container, board, sign, door, node, hotspot and vehicle at the player's own point, and aboard, are not read",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 5,
+          "y": 0,
+          "z": 3
+        },
+        "settlement": {
+          "id": "s_v",
+          "name": "Brightwater",
+          "position": {
+            "x": 5,
+            "y": 0,
+            "z": 3
+          }
+        },
+        "villager": {
+          "id": "v1",
+          "name": "Ada",
+          "position": {
+            "x": 5,
+            "y": 0,
+            "z": 3
+          }
+        },
+        "pickups": [
+          {
+            "id": "apple_0",
+            "name": "Apple",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            }
+          }
+        ],
+        "containers": [
+          {
+            "id": "k_yard",
+            "label": "Yard Crate",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            }
+          }
+        ],
+        "props": [
+          {
+            "id": "sign_v",
+            "archetype": "prop.structural.sign",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            },
+            "text": "Brightwater"
+          },
+          {
+            "id": "barrel_v",
+            "archetype": "prop.container.barrel",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            }
+          }
+        ],
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "b_inn",
+            "name": "The Gilded Goose",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": -2
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "Tavern",
+              "depth": 10
+            },
+            "interior": {
+              "function": "tavern",
+              "doors": []
+            }
+          }
+        ],
+        "nodes": [
+          {
+            "id": "node_oak",
+            "item": "wood",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            },
+            "remaining": 3
+          }
+        ],
+        "hotspots": [
+          {
+            "id": "hotspot-2",
+            "actionType": "herbalism",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            }
+          }
+        ],
+        "vehicles": [
+          {
+            "id": "veh_handcart",
+            "name": "Handcart",
+            "position": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            }
+          }
+        ],
+        "stands": [
+          {
+            "name": "inside the tavern: the exit, 3 m off, the only candidate",
+            "at": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null
+            }
+          },
+          {
+            "name": "inside and aboard a vehicle: still the exit",
+            "at": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null
+            },
+            "aboard": {
+              "id": "veh_handcart",
+              "name": "Handcart"
+            }
+          },
+          {
+            "name": "the same point outside (interior null): the village rule, talk first on the tie",
+            "at": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            },
+            "interior": null
+          }
+        ]
+      },
+      "expected": {
+        "board": {
+          "host": "sign_v",
+          "name": "Brightwater"
+        },
+        "stands": [
+          {
+            "at": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 3.00002166
+            }
+          },
+          {
+            "at": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 3.00002166
+            }
+          },
+          {
+            "at": {
+              "x": 5,
+              "y": 0,
+              "z": 3
+            },
+            "ok": true,
+            "target": {
+              "action": "talk",
+              "kind": "villager",
+              "id": "v1",
+              "prompt": "Talk to Ada",
+              "distance": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside, a host's ranges reach the exit and the containers (exit 1, open_container 3)",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 1.5
+        },
+        "ranges": {
+          "exit": 1,
+          "open_container": 3
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null,
+          "containers": [
+            {
+              "id": "chest_cellar",
+              "label": "Cellar Chest",
+              "position": {
+                "x": 5.0114,
+                "y": 0,
+                "z": 4
+              }
+            }
+          ]
+        },
+        "stands": [
+          {
+            "name": "the exit at 1.5 m is out (exit 1), the chest at 2.5 m in (open_container 3): the container",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.5
+            }
+          },
+          {
+            "name": "the exit at exactly 1 m, the chest at exactly 3 m: the exit, nearer",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            }
+          },
+          {
+            "name": "the exit at 0.75 m, the chest at 3.25 m out: the exit",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0.75
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1.5
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_cellar",
+              "prompt": "Open the cellar chest",
+              "distance": 2.5
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0.75
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 0.75
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside a seeded interior, or one whose building states no entrance or no interior: the exit has no point (distance null), so it is reached only when nothing else is",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 0
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "b_box",
+            "position": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "rotation": 0,
+            "spec": {
+              "buildingRole": "House",
+              "depth": 8,
+              "width": 6
+            },
+            "interior": {
+              "function": "residence",
+              "doors": []
+            }
+          },
+          {
+            "id": "b_house",
+            "position": {
+              "x": -10,
+              "y": 2,
+              "z": 0
+            },
+            "rotation": 1.5707963267948966,
+            "spec": {
+              "buildingRole": "House",
+              "depth": 6
+            },
+            "interior": null
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": 42
+        },
+        "stands": [
+          {
+            "name": "seeded (layoutSeed 42), on the stated entrance: the exit, distance null",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "name": "layoutSeed 0 is a seed: the exit, distance null",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": 0
+            }
+          },
+          {
+            "name": "seeded, a chest at 2 m: the container",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": 42,
+              "containers": [
+                {
+                  "id": "chest_cellar",
+                  "label": "Cellar Chest",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 2.5
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "stated, an interior that lists no entrance: the exit, distance null, labelled by the role",
+            "at": {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            },
+            "interior": {
+              "buildingId": "b_box",
+              "layoutSeed": null
+            }
+          },
+          {
+            "name": "stated, the building states no interior in this world: the exit, distance null",
+            "at": {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            },
+            "interior": {
+              "buildingId": "b_house",
+              "layoutSeed": null
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "b_box",
+              "prompt": "Exit House",
+              "distance": null
+            }
+          },
+          {
+            "at": {
+              "x": 1,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "b_house",
+              "prompt": "Exit House",
+              "distance": null
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: an interiorState that names no building (no or empty buildingId, not a record) is outside, as the save reads it: the village rule",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "props": [
+          {
+            "id": "sign_a",
+            "archetype": "prop.structural.sign",
+            "position": {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            "text": "The Gilded Goose"
+          }
+        ],
+        "stands": [
+          {
+            "name": "interior {}: read the sign",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "interior": {}
+          },
+          {
+            "name": "interior {buildingId: ''}: read the sign",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "interior": {
+              "buildingId": "",
+              "containers": [
+                {
+                  "id": "chest_cellar",
+                  "label": "Cellar Chest",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 2.5
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "interior a string: read the sign",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "interior": "bld_6abb84eef2e499b951eecec3"
+          },
+          {
+            "name": "interior null: read the sign",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "interior": null
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_a",
+              "prompt": "Read the sign",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_a",
+              "prompt": "Read the sign",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_a",
+              "prompt": "Read the sign",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "read_sign",
+              "kind": "prop",
+              "id": "sign_a",
+              "prompt": "Read the sign",
+              "distance": 1
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside a building the world does not list, no exit is offered (doorStep would refuse unknown_building); a container in reach still opens, else nothing",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_gone",
+          "layoutSeed": null,
+          "containers": [
+            {
+              "id": "chest_cellar",
+              "label": "Cellar Chest",
+              "position": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              }
+            }
+          ]
+        },
+        "stands": [
+          {
+            "name": "the chest at 1 m: the container",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          {
+            "name": "the chest out of reach: nothing",
+            "at": {
+              "x": 10,
+              "y": 0,
+              "z": 10
+            }
+          },
+          {
+            "name": "no buildings stated at all: nothing",
+            "at": {
+              "x": 10,
+              "y": 0,
+              "z": 10
+            },
+            "buildings": []
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_cellar",
+              "prompt": "Open the cellar chest",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 10,
+              "y": 0,
+              "z": 10
+            },
+            "ok": true,
+            "target": null
+          },
+          {
+            "at": {
+              "x": 10,
+              "y": 0,
+              "z": 10
+            },
+            "ok": true,
+            "target": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "target: inside, at not a finite point is refused bad_position; an interior container with no id or no finite position is skipped",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 1
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null,
+          "containers": [
+            {
+              "id": "",
+              "label": "Nameless",
+              "position": {
+                "x": 5.0114,
+                "y": 0,
+                "z": 1
+              }
+            },
+            {
+              "id": "chest_lost",
+              "label": "Lost Chest",
+              "position": {
+                "x": null,
+                "z": 1
+              }
+            },
+            {
+              "id": "chest_text",
+              "label": "Text Chest",
+              "position": {
+                "x": "0",
+                "z": 1
+              }
+            }
+          ]
+        },
+        "stands": [
+          {
+            "name": "at {x: 'here'}: bad_position",
+            "at": {
+              "x": "here",
+              "y": 0,
+              "z": 1
+            }
+          },
+          {
+            "name": "at null: bad_position",
+            "at": null
+          },
+          {
+            "name": "every container skipped: the exit, 1 m",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            }
+          },
+          {
+            "name": "0.5 m from where x null or x '0' would read as 0: still skipped, the exit from 4.6 m",
+            "at": {
+              "x": 0.5,
+              "y": 0,
+              "z": 1
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": "here",
+              "y": 0,
+              "z": 1
+            },
+            "ok": false,
+            "refusal": {
+              "code": "bad_position",
+              "field": "at"
+            }
+          },
+          {
+            "at": null,
+            "ok": false,
+            "refusal": {
+              "code": "bad_position",
+              "field": "at"
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            }
+          },
+          {
+            "at": {
+              "x": 0.5,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 4.620901423
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "press: inside an interior the press is the interior's exit or container; a language object at the player's point loses to it (precedence unchanged)",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 5.0114,
+          "y": 0,
+          "z": 1
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null
+        },
+        "objects": [
+          {
+            "id": "prop_well",
+            "role": "well",
+            "name": "Well",
+            "position": {
+              "x": 5.0114,
+              "z": 1
+            },
+            "translations": {
+              "fr": {
+                "targetWord": "puits"
+              }
+            }
+          }
+        ],
+        "stands": [
+          {
+            "name": "nothing else in reach: the exit, the well shadowed",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            }
+          },
+          {
+            "name": "a chest at 0.5 m: the container, the well shadowed",
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_cellar",
+                  "label": "Cellar Chest",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 1.5
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 1
+            },
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "interactables",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "target": {
+                "action": "exit",
+                "kind": "door",
+                "id": "bld_6abb84eef2e499b951eecec3",
+                "prompt": "Exit Denham's Tavern",
+                "distance": 1
+              },
+              "pick": null,
+              "shadowed": {
+                "id": "prop_well",
+                "role": "well"
+              }
+            }
+          },
+          {
+            "at": {
+              "x": 5.0114,
+              "y": 0,
+              "z": 1
+            },
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_cellar",
+              "prompt": "Open the cellar chest",
+              "distance": 0.5
+            },
+            "examine": {
+              "id": "prop_well",
+              "role": "well"
+            },
+            "press": {
+              "source": "interactables",
+              "id": "chest_cellar",
+              "target": {
+                "action": "open_container",
+                "kind": "container",
+                "id": "chest_cellar",
+                "prompt": "Open the cellar chest",
+                "distance": 0.5
+              },
+              "pick": null,
+              "shadowed": {
+                "id": "prop_well",
+                "role": "well"
+              }
             }
           }
         ]

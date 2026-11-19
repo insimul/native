@@ -94,6 +94,21 @@
 //     `props.interactables.target`; with `stands`, once per stand with the
 //     stand's fields over the input's and its `at` → `{board, stands: [{at,
 //     ...answer}]}`.
+//     press {at, …, objects?, board? | settlement?, ranges?, stands?} (core's
+//     PL.core-interact-pick-precedence, `runPress`): one press is
+//     `props.interactables.target` over the input less `settlement`, `ranges`,
+//     `objects` and `stands` (with the board and `ranges`; per stand, the stand's
+//     fields over it less its `objects` and `name`, at the stand's `at`, else the
+//     input's); when that is not refused, `props.interactables.examinePick
+//     {objects, at}` (the stand's objects, else the input's, else none) and
+//     `props.interactables.press {target, pick}` → `{ok: true, target, examine:
+//     {id, role} | null, press}`; a refused target is the answer as it stands.
+//     With `stands`, `{board, stands: [{at, ...answer}]}`.
+//     A stand (`at`) that states no `y` is sent with none, by target and press alike:
+//     the rows' own contract, `props.interactables.contract`'s `standWithoutY`
+//     (U126), must state `{y: not_added, floor: every}`, and the run counts the
+//     stands it sent that way (two of core's stands omit `y`; core's answers for
+//     them are on every floor).
 //   camera-movement occluders/sideView/buildingSolid/move/slope/slopeAtRest/step:
 //   the case's `input` is the row's args AS IS (`camera.movement.<op>`), in core's
 //   metres in the IR's world frame, and the row's answer is compared whole (a
@@ -597,11 +612,13 @@ const std::vector<Area> &areas() {
 	     {"constants"},
 	     true},
 	    {"props-interactables",
-	     {"noun", "meanings", "host", "interact", "target"},
+	     {"noun", "meanings", "host", "interact", "target", "press"},
 	     {"props.interactables.noun", "props.interactables.meaning", "props.interactables.host",
-	      "props.interactables.interact", "props.interactables.target", "props.contract"},
+	      "props.interactables.interact", "props.interactables.target", "props.interactables.examinePick",
+	      "props.interactables.press", "props.interactables.contract", "props.contract"},
 	     {"propActions", "actions", "actionTier", "lookTier", "vehicleTier", "notOffered", "notOfferedReasons",
-	      "signArchetypes", "rangesM", "doorPromptRadiusM", "refusals", "deviations"}},
+	      "signArchetypes", "rangesM", "doorPromptRadiusM", "refusals", "interiorActions", "floorBandM", "deviations",
+	      "pressSources", "pressPrecedence", "examineRangeM"}},
 	    {"camera-movement",
 	     {"occluders", "sideView", "buildingSolid", "move", "slope", "slopeAtRest", "step"},
 	     {"camera.movement.occluders", "camera.movement.sideView", "camera.movement.buildingSolid",
@@ -798,6 +815,12 @@ JsonValuePtr without(const JsonValue &input, std::initializer_list<const char *>
 
 JsonValuePtr null_value() { return std::make_shared<JsonValue>(); }
 
+// Stands (an `at` object with no `y`) the interactables ops sent as given.
+int g_stands_without_y = 0;
+void count_no_y(const JsonValue *at) {
+	if (at && at->is_object() && !at->find("y")) g_stands_without_y++;
+}
+
 // The board a props-interactables case states (core's runner's `boardOf`): `board`
 // as given, else posted by `props.interactables.host` in `settlement`, else null.
 bool board_of(Caller &c, const JsonValue &input, const JsonValue &props, JsonValuePtr &board, std::string &why) {
@@ -896,17 +919,84 @@ bool drive_interactables(Caller &c, const std::string &op, const JsonValue &inpu
 		};
 		const JsonValue *stands = input.find("stands");
 		if (!stands || !stands->is_array()) {
+			count_no_y(input.find("at"));
 			return target(*base, out);
 		}
 		std::vector<JsonValuePtr> answers;
 		for (const auto &st : stands->array_items) {
 			if (!st->is_object()) return why = "a stand is not an object: " + json_of(*st), false;
 			const JsonValue *at = st->find("at");
+			count_no_y(at);
 			// `{...input, ...stand, at: stand.at}`: a stand with no `at` has none.
 			JsonValuePtr args = without(*spread(*base, *st), {"at"});
 			if (at) args = spread(*args, *make_object({{"at", copy_of(*at)}}));
 			JsonValuePtr answer;
 			if (!target(*args, answer)) return false;
+			answers.push_back(at ? spread(*make_object({{"at", copy_of(*at)}}), *answer) : answer);
+		}
+		out = make_object({{"board", board}, {"stands", make_array(std::move(answers))}});
+		return true;
+	}
+	if (op == "press") {
+		// core's runPress: `base` is the input less settlement, ranges, objects and
+		// stands, with the board; one press (alone, or per stand with the stand's
+		// fields over base's, less its objects and name) is target, then (when the
+		// target is not refused) the examine pick over the stand's objects, else the
+		// input's, else none, at the stand's `at`, else base's, then the press rule.
+		JsonValuePtr base = without(input, {"settlement", "ranges", "stands", "objects"});
+		base = spread(*base, *make_object({{"board", board}}));
+		const JsonValue *ranges = input.find("ranges");
+		auto nonnull = [](const JsonValue *v) { return v && v->type != JsonType::Null ? v : nullptr; };
+		auto one = [&](const JsonValue *stand, JsonValuePtr &answer) {
+			JsonValuePtr args = stand ? spread(*base, *without(*stand, {"objects", "name", "at"})) : copy_of(*base);
+			const JsonValue *at = (stand ? nonnull(stand->find("at")) : nullptr);
+			if (!at) at = nonnull(base->find("at"));
+			count_no_y(at);
+			args = without(*args, {"at"});
+			if (at) args = spread(*args, *make_object({{"at", copy_of(*at)}}));
+			if (ranges) args = spread(*args, *make_object({{"ranges", copy_of(*ranges)}}));
+			auto t = c.call("props.interactables.target", json_of(*args));
+			if (!t) return why = c.error, false;
+			const JsonValue *ok = t->find("ok");
+			if (!ok || ok->type != JsonType::Bool || !ok->bool_value) {
+				answer = t;
+				return true;
+			}
+			const JsonValue *objects = stand ? nonnull(stand->find("objects")) : nullptr;
+			if (!objects) objects = nonnull(input.find("objects"));
+			ObjectText pick_args;
+			pick_args.add("objects", objects ? *objects : *make_array({}));
+			pick_args.add("at", *at);
+			auto picked = c.call("props.interactables.examinePick", pick_args.done());
+			if (!picked) return why = c.error, false;
+			const JsonValue *pick = picked->find("pick");
+			const JsonValue *target = t->find("target");
+			if (!pick || !target) return why = "examinePick answered no pick, or target no target", false;
+			// `examine`: the pick as {id, role} (a member the pick lacks stays absent), or null.
+			JsonValuePtr examine = null_value();
+			if (pick->is_object()) {
+				std::vector<std::pair<std::string, JsonValuePtr>> ref;
+				for (const char *k : {"id", "role"}) {
+					if (const JsonValue *v = pick->find(k)) ref.emplace_back(k, copy_of(*v));
+				}
+				examine = make_object(std::move(ref));
+			}
+			ObjectText press_args;
+			press_args.add("target", *target);
+			press_args.add("pick", *pick);
+			auto press = c.call("props.interactables.press", press_args.done());
+			if (!press) return why = c.error, false;
+			answer = make_object({{"ok", make_bool(true)}, {"target", copy_of(*target)}, {"examine", examine}, {"press", press}});
+			return true;
+		};
+		const JsonValue *stands = input.find("stands");
+		if (!stands || !stands->is_array()) return one(nullptr, out);
+		std::vector<JsonValuePtr> answers;
+		for (const auto &st : stands->array_items) {
+			if (!st->is_object()) return why = "a stand is not an object: " + json_of(*st), false;
+			JsonValuePtr answer;
+			if (!one(st.get(), answer)) return false;
+			const JsonValue *at = st->find("at");
 			answers.push_back(at ? spread(*make_object({{"at", copy_of(*at)}}), *answer) : answer);
 		}
 		out = make_object({{"board", board}, {"stands", make_array(std::move(answers))}});
@@ -1283,6 +1373,22 @@ int main(int argc, char **argv) {
 		            file_undriven);
 		if (area->order != Order::None) {
 			std::printf("  order: %d case(s) driven again with %s reversed, the same answer\n", reversed_runs, order_lists(area->order));
+		}
+		if (area_name == "props-interactables") {
+			// The rows' own contract (U126): this runner sends a stand's `at` as given, so the
+			// rows must say they add no y and core reads such a stand on every floor.
+			auto rc = c.call("props.interactables.contract", "{}");
+			const JsonValue *st = rc ? rc->find("standWithoutY") : nullptr;
+			auto want = insimul::parse_json("{\"y\":\"not_added\",\"floor\":\"every\"}").root;
+			if (!st || compare(*want, *st, 0.0, "standWithoutY") != "") {
+				std::printf("  [FAIL] props.interactables.contract states no standWithoutY {y: not_added, floor: every}: %s\n",
+				            st ? json_of(*st).c_str() : (rc ? "absent" : c.error.c_str()));
+				failed++;
+			} else {
+				std::printf("  stands with no y: %d, sent as given (props.interactables.contract: standWithoutY y not_added, floor every)\n",
+				            g_stands_without_y);
+			}
+			g_stands_without_y = 0;
 		}
 	}
 

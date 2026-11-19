@@ -6727,6 +6727,894 @@
           "expectError": "[invalid-input] insimulcore: skill.create: the KB refused `kb`"
         }
       ]
+    },
+    {
+      "name": "skill KB live facts: which facts a skill KB holds and the program a recomposing host consults (core's skills.json compose case: a rule head of the skill pack is skill_owned, the same name at another arity is live)",
+      "steps": [
+        {
+          "call": "skill.kb.liveFacts",
+          "args": {
+            "prologFacts": [
+              {
+                "predicate": "skill_goal_met",
+                "args": [
+                  "player",
+                  "bridge_repaired"
+                ]
+              },
+              {
+                "predicate": "can_unlock",
+                "args": [
+                  "player",
+                  "guild_master"
+                ]
+              },
+              {
+                "predicate": "skill_node_price",
+                "args": [
+                  "guild_master",
+                  0
+                ]
+              },
+              {
+                "predicate": "skill_points_held",
+                "args": [
+                  "player",
+                  "smiths_guild",
+                  9
+                ]
+              },
+              {
+                "predicate": "skill_effect",
+                "args": [
+                  "player",
+                  "permits_use_guild_forge"
+                ]
+              },
+              {
+                "predicate": "can_advance",
+                "args": [
+                  "player",
+                  "french"
+                ]
+              },
+              {
+                "predicate": "can_learn_skill",
+                "args": [
+                  "player",
+                  "french"
+                ]
+              },
+              {
+                "predicate": "skill_capped",
+                "args": [
+                  "player",
+                  "french"
+                ]
+              },
+              {
+                "predicate": "skill_goal_met",
+                "args": [
+                  "bridge_repaired"
+                ]
+              },
+              {
+                "predicate": "can_unlock",
+                "args": [
+                  "player"
+                ]
+              },
+              {
+                "predicate": "skill_points_held",
+                "args": [
+                  "player",
+                  9
+                ]
+              },
+              {
+                "predicate": "can_advance",
+                "args": [
+                  "player",
+                  "french",
+                  "soon"
+                ]
+              }
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "$subset": {
+                "live": {
+                  "$len": 4
+                },
+                "dropped": [
+                  {
+                    "at": "prologFacts[0]",
+                    "code": "skill_owned"
+                  },
+                  {
+                    "at": "prologFacts[1]",
+                    "code": "skill_owned"
+                  },
+                  {
+                    "at": "prologFacts[2]",
+                    "code": "skill_owned"
+                  },
+                  {
+                    "at": "prologFacts[3]",
+                    "code": "skill_owned"
+                  },
+                  {
+                    "at": "prologFacts[4]",
+                    "code": "skill_owned"
+                  },
+                  {
+                    "at": "prologFacts[5]",
+                    "code": "skill_owned"
+                  },
+                  {
+                    "at": "prologFacts[6]",
+                    "code": "skill_owned"
+                  },
+                  {
+                    "at": "prologFacts[7]",
+                    "code": "skill_owned"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "call": "skill.kb.compose",
+          "args": {
+            "pack": ":- dynamic(has_skill/3).\n",
+            "world": "w(1).\n",
+            "facts": [
+              "can_advance(player, french, soon).",
+              "can_unlock(player).",
+              "skill_goal_met(bridge_repaired).",
+              "skill_points_held(player, 9)."
+            ]
+          },
+          "expect": {
+            "ok": true,
+            "value": ":- dynamic(has_skill/3).\n\n:- dynamic(can_advance/3).\n:- dynamic(can_unlock/1).\n:- dynamic(skill_goal_met/1).\n:- dynamic(skill_points_held/2).\nw(1).\n\ncan_advance(player, french, soon).\ncan_unlock(player).\nskill_goal_met(bridge_repaired).\nskill_points_held(player, 9)."
+          }
+        },
+        {
+          "call": "skill.kb.liveFacts",
+          "args": {
+            "prologFacts": "reputation(player, smiths_guild, 90)."
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "live": [],
+              "dropped": [
+                {
+                  "at": "prologFacts",
+                  "code": "unreadable"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "skill.kb.liveFacts",
+          "args": {},
+          "expect": {
+            "ok": true,
+            "value": {
+              "live": [],
+              "dropped": []
+            }
+          }
+        },
+        {
+          "call": "skill.kb.compose",
+          "args": {
+            "facts": [
+              1
+            ]
+          },
+          "expectError": "`facts[0]` must be a string"
+        },
+        {
+          "call": "skill.kb.compose",
+          "args": {
+            "pack": 7
+          },
+          "expectError": "`pack` must be a string"
+        }
+      ]
+    },
+    {
+      "name": "skill KB session: assert, save, retract, then load the save (core's skills.json kb case): the load recomposes the KB with the saved fact and the unlock opens; a refused load changes nothing",
+      "legs": [
+        "c"
+      ],
+      "why": "the skill KB session consults a native KB (the Prolog seam), which the JS leg does not wire",
+      "steps": [
+        {
+          "call": "skill.ir.skills",
+          "args": {
+            "ir": {
+              "pointsPerLevel": 1,
+              "defaultNodeCost": 1,
+              "skills": [
+                {
+                  "id": "smiths_guild_standing",
+                  "category": "faction",
+                  "maxLevel": 3,
+                  "levelXp": [
+                    0,
+                    0,
+                    200,
+                    600
+                  ]
+                }
+              ],
+              "trees": [
+                {
+                  "id": "smiths_guild",
+                  "skill": "smiths_guild_standing",
+                  "name": "The Smiths’ Guild",
+                  "nodes": [
+                    {
+                      "id": "guild_apprentice",
+                      "name": "Apprentice of the guild",
+                      "description": "Admitted to the hall, and to the small forge at the back of it.",
+                      "cost": 1,
+                      "requires": [
+                        "guild_standing_at_least(Actor, smiths_guild, 20)"
+                      ],
+                      "effects": [
+                        {
+                          "kind": "permits",
+                          "args": [
+                            "use_guild_forge"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "guild_journeyman",
+                      "name": "Journeyman of the guild",
+                      "description": "Free of the guild’s work, and of its rates.",
+                      "cost": 1,
+                      "parents": [
+                        "guild_apprentice"
+                      ],
+                      "requires": [
+                        "guild_standing_at_least(Actor, smiths_guild, 50)",
+                        "guild_dues_paid(Actor, 40)"
+                      ],
+                      "effects": [
+                        {
+                          "kind": "unlocks",
+                          "args": [
+                            "take_guild_commission"
+                          ]
+                        },
+                        {
+                          "kind": "modifies",
+                          "args": [
+                            "crafting",
+                            "quality",
+                            1
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "guild_master",
+                      "name": "Master of the guild",
+                      "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                      "cost": 2,
+                      "parents": [
+                        "guild_journeyman"
+                      ],
+                      "requires": [
+                        "guild_standing_at_least(Actor, smiths_guild, 80)",
+                        "guild_dues_paid(Actor, 200)"
+                      ],
+                      "effects": [
+                        {
+                          "kind": "permits",
+                          "args": [
+                            "stamp_guild_mark"
+                          ]
+                        },
+                        {
+                          "kind": "unlocks",
+                          "args": [
+                            "take_apprentice"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "bind": "sk"
+        },
+        {
+          "call": "skill.ir.trees",
+          "args": {
+            "ir": {
+              "pointsPerLevel": 1,
+              "defaultNodeCost": 1,
+              "skills": [
+                {
+                  "id": "smiths_guild_standing",
+                  "category": "faction",
+                  "maxLevel": 3,
+                  "levelXp": [
+                    0,
+                    0,
+                    200,
+                    600
+                  ]
+                }
+              ],
+              "trees": [
+                {
+                  "id": "smiths_guild",
+                  "skill": "smiths_guild_standing",
+                  "name": "The Smiths’ Guild",
+                  "nodes": [
+                    {
+                      "id": "guild_apprentice",
+                      "name": "Apprentice of the guild",
+                      "description": "Admitted to the hall, and to the small forge at the back of it.",
+                      "cost": 1,
+                      "requires": [
+                        "guild_standing_at_least(Actor, smiths_guild, 20)"
+                      ],
+                      "effects": [
+                        {
+                          "kind": "permits",
+                          "args": [
+                            "use_guild_forge"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "guild_journeyman",
+                      "name": "Journeyman of the guild",
+                      "description": "Free of the guild’s work, and of its rates.",
+                      "cost": 1,
+                      "parents": [
+                        "guild_apprentice"
+                      ],
+                      "requires": [
+                        "guild_standing_at_least(Actor, smiths_guild, 50)",
+                        "guild_dues_paid(Actor, 40)"
+                      ],
+                      "effects": [
+                        {
+                          "kind": "unlocks",
+                          "args": [
+                            "take_guild_commission"
+                          ]
+                        },
+                        {
+                          "kind": "modifies",
+                          "args": [
+                            "crafting",
+                            "quality",
+                            1
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "guild_master",
+                      "name": "Master of the guild",
+                      "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                      "cost": 2,
+                      "parents": [
+                        "guild_journeyman"
+                      ],
+                      "requires": [
+                        "guild_standing_at_least(Actor, smiths_guild, 80)",
+                        "guild_dues_paid(Actor, 200)"
+                      ],
+                      "effects": [
+                        {
+                          "kind": "permits",
+                          "args": [
+                            "stamp_guild_mark"
+                          ]
+                        },
+                        {
+                          "kind": "unlocks",
+                          "args": [
+                            "take_apprentice"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "bind": "tr"
+        },
+        {
+          "call": "skill.ir.tuning",
+          "args": {
+            "ir": {
+              "pointsPerLevel": 1,
+              "defaultNodeCost": 1,
+              "skills": [
+                {
+                  "id": "smiths_guild_standing",
+                  "category": "faction",
+                  "maxLevel": 3,
+                  "levelXp": [
+                    0,
+                    0,
+                    200,
+                    600
+                  ]
+                }
+              ],
+              "trees": [
+                {
+                  "id": "smiths_guild",
+                  "skill": "smiths_guild_standing",
+                  "name": "The Smiths’ Guild",
+                  "nodes": [
+                    {
+                      "id": "guild_apprentice",
+                      "name": "Apprentice of the guild",
+                      "description": "Admitted to the hall, and to the small forge at the back of it.",
+                      "cost": 1,
+                      "requires": [
+                        "guild_standing_at_least(Actor, smiths_guild, 20)"
+                      ],
+                      "effects": [
+                        {
+                          "kind": "permits",
+                          "args": [
+                            "use_guild_forge"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "guild_journeyman",
+                      "name": "Journeyman of the guild",
+                      "description": "Free of the guild’s work, and of its rates.",
+                      "cost": 1,
+                      "parents": [
+                        "guild_apprentice"
+                      ],
+                      "requires": [
+                        "guild_standing_at_least(Actor, smiths_guild, 50)",
+                        "guild_dues_paid(Actor, 40)"
+                      ],
+                      "effects": [
+                        {
+                          "kind": "unlocks",
+                          "args": [
+                            "take_guild_commission"
+                          ]
+                        },
+                        {
+                          "kind": "modifies",
+                          "args": [
+                            "crafting",
+                            "quality",
+                            1
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "id": "guild_master",
+                      "name": "Master of the guild",
+                      "description": "Entitled to a mark, a bench, and an apprentice of your own.",
+                      "cost": 2,
+                      "parents": [
+                        "guild_journeyman"
+                      ],
+                      "requires": [
+                        "guild_standing_at_least(Actor, smiths_guild, 80)",
+                        "guild_dues_paid(Actor, 200)"
+                      ],
+                      "effects": [
+                        {
+                          "kind": "permits",
+                          "args": [
+                            "stamp_guild_mark"
+                          ]
+                        },
+                        {
+                          "kind": "unlocks",
+                          "args": [
+                            "take_apprentice"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "bind": "tu"
+        },
+        {
+          "call": "skill.kb.open",
+          "args": {
+            "program": "\n:- dynamic(reputation/3).\n:- dynamic(gold/2).\nguild_standing_at_least(A, G, N) :- reputation(A, G, R), R >= N.\nguild_dues_paid(A, N) :- gold(A, G), G >= N.\n",
+            "skills": {
+              "$ref": "sk.value"
+            },
+            "trees": {
+              "$ref": "tr.value"
+            },
+            "tuning": {
+              "$ref": "tu.value"
+            }
+          },
+          "expect": {
+            "session": 1,
+            "view": {
+              "facts": []
+            }
+          }
+        },
+        {
+          "call": "skill.kb.load",
+          "args": {
+            "session": 1,
+            "currentState": {
+              "prologFacts": [],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "ok": true,
+              "dropped": []
+            }
+          }
+        },
+        {
+          "call": "skill.kb.facts",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "ok": true,
+            "value": []
+          }
+        },
+        {
+          "call": "skill.kb.assert",
+          "args": {
+            "session": 1,
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                25
+              ]
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "changed": true
+            }
+          }
+        },
+        {
+          "call": "skill.kb.savedFacts",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "ok": true,
+            "value": [
+              {
+                "predicate": "reputation",
+                "args": [
+                  "player",
+                  "smiths_guild",
+                  25
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "call": "skill.kb.serialize",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "actors": [
+                {
+                  "id": "player",
+                  "levels": {
+                    "smiths_guild_standing": 2
+                  },
+                  "xp": {},
+                  "points": {
+                    "smiths_guild": 3
+                  },
+                  "unlocked": []
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "skill.kb.program",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "$type": "string"
+            }
+          }
+        },
+        {
+          "call": "skill.kb.retract",
+          "args": {
+            "session": 1,
+            "fact": {
+              "predicate": "reputation",
+              "args": [
+                "player",
+                "smiths_guild",
+                25
+              ]
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "changed": true
+            }
+          }
+        },
+        {
+          "call": "skill.kb.canUnlock",
+          "args": {
+            "session": 1,
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "$subset": {
+                "actor": "player",
+                "node": "guild_apprentice",
+                "permitted": false,
+                "refusal": "requires",
+                "unmet": [
+                  "guild_standing_at_least(Actor, smiths_guild, 20)"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "call": "skill.kb.load",
+          "args": {
+            "session": 1,
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    25
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "gamification": null,
+                  "skills": {
+                    "actors": [
+                      {
+                        "id": "player",
+                        "levels": {
+                          "smiths_guild_standing": 2
+                        },
+                        "xp": {},
+                        "points": {
+                          "smiths_guild": 3
+                        },
+                        "unlocked": []
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "ok": true,
+              "dropped": []
+            }
+          }
+        },
+        {
+          "call": "skill.kb.facts",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "ok": true,
+            "value": [
+              "reputation(player, smiths_guild, 25)."
+            ]
+          }
+        },
+        {
+          "call": "skill.kb.canUnlock",
+          "args": {
+            "session": 1,
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "$subset": {
+                "permitted": true,
+                "unmet": []
+              }
+            }
+          }
+        },
+        {
+          "call": "skill.kb.load",
+          "args": {
+            "session": 1,
+            "currentState": {
+              "prologFacts": [
+                {
+                  "predicate": "reputation",
+                  "args": [
+                    "player",
+                    "smiths_guild",
+                    25
+                  ]
+                }
+              ],
+              "extensions": {
+                "progression": {
+                  "skills": {
+                    "actors": {}
+                  }
+                }
+              }
+            }
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "ok": false,
+              "refusal": {
+                "code": "unreadable_progression",
+                "field": "currentState.extensions.progression",
+                "keys": [
+                  "skills.actors"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "call": "skill.kb.facts",
+          "args": {
+            "session": 1
+          },
+          "expect": {
+            "ok": true,
+            "value": [
+              "reputation(player, smiths_guild, 25)."
+            ]
+          }
+        },
+        {
+          "call": "skill.kb.unlock",
+          "args": {
+            "session": 1,
+            "actor": "player",
+            "node": "guild_apprentice"
+          },
+          "expect": {
+            "ok": true,
+            "value": {
+              "$subset": {
+                "actor": "player",
+                "node": "guild_apprentice",
+                "performed": true,
+                "remaining": 2
+              }
+            }
+          }
+        },
+        {
+          "call": "skill.kb.canUnlock",
+          "args": {
+            "session": 1,
+            "node": "guild_apprentice"
+          },
+          "expectError": "`actor` must be a string"
+        },
+        {
+          "call": "skill.kb.facts",
+          "args": {
+            "session": 99
+          },
+          "expectError": "no open session"
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          }
+        },
+        {
+          "call": "skill.kb.open",
+          "args": {
+            "program": 5
+          },
+          "expectError": "`program` must be a string"
+        },
+        {
+          "call": "skill.kb.open",
+          "args": {
+            "program": "this is not ( prolog"
+          },
+          "expectError": "failed to consult"
+        }
+      ]
     }
   ]
 }

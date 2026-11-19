@@ -1,11 +1,11 @@
 {
  "area": "ui-save-slots",
- "description": "core's save/load slot matrix through ui.saveSlots",
+ "description": "core's save/load slot matrix through ui.saveSlots, and its refused-Load mapping through ui.loadRefusal",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "d88b6f0311065f0d2ffd8767d9a65359ea451655",
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
   "files": {
-   "conformance/ui/save-slot-cases.json": "60d14158ee3194bcdd94a1ea71762e8689a65f3b8054ec6e29769c17b473d8b6"
+   "conformance/ui/save-slot-cases.json": "d5a95ec296ecf60ca29296acbd6a49eca9cc44f86011cbf225d746c3e774599f"
   }
  },
  "cases": [
@@ -230,6 +230,846 @@
        }
       ],
       "hasAnyLoadable": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused wrong_version shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "wrong_version"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unregistered_extension shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unregistered_extension"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_weather shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_weather"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_survival shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_survival"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_gathering shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_gathering"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_traversal shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_traversal"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_social shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_social"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_language shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_language"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_npc_life shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_npc_life"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_progression shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_progression"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_tutorial shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_tutorial"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_puzzle shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_puzzle"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_platformer shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_platformer"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_strategy shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_strategy"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused unreadable_conversations shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_conversations"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused wrong_world (another world's save) shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "wrong_world"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a Load refused wrong_runtime (another runtime's save, C5-3) shows core's invalid_format message",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "wrong_runtime"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: an unreadable_* code a newer core adds maps the same way",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_fishing"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: a code core does not state (an engine's own word) maps the same way: one answer on every surface",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "not_this_game"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "load refusal: the bare prefix, a code core does not state, maps the same way",
+   "steps": [
+    {
+     "call": "ui.loadRefusal",
+     "args": {
+      "refusal": "unreadable_"
+     },
+     "expect": {
+      "outcome": "invalid_format",
+      "message": "Unrecognized save format — this slot cannot be loaded."
+     }
+    },
+    {
+     "call": "ui.saveSlots",
+     "args": {
+      "slots": [
+       {
+        "index": 0,
+        "outcome": "invalid_format"
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "slots": [
+        {
+         "$subset": {
+          "index": 0,
+          "status": "corrupted",
+          "title": "Corrupted Save",
+          "message": "Unrecognized save format — this slot cannot be loaded.",
+          "canLoad": false,
+          "canSave": true
+         }
+        }
+       ]
+      }
      }
     }
    ]

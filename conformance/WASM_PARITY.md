@@ -12,7 +12,9 @@ Prolog corpus — same pass/fail, same solution count, same solution *text* from
 | **wasm32** | `ctest --test-dir build-wasm -R wasm_conformance` | 12 files, 181 cases, 181 passed, 0 failed, 1 amended |
 | **cross-leg diff** | `scripts/conformance_parity.sh` | PASS — 181/181 records identical on all three |
 
-(181 since PL.native-bundle-core re-copied the mirror at core `d88b6f0`, adding
+(181 since PL.native-bundle-core re-copied the mirror at core `d88b6f0`, and still 181
+after PL.native-bundle-core-r2 re-copied the same 12 files at core `45409ed`, where only
+`pack-agreement.json`'s pack clauses moved; at d88b6f0 that sync added
 `quest-count-goals.json` and `pack-agreement.json`; 76 before. One case there,
 `quest-count-goals` / `avg-pronunciation-mean`, states `{"Avg": 83}` where Trealla's
 `Avg is Total / Count` binds the float `83.0`, identically on all three legs. The C

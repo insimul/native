@@ -123,7 +123,12 @@ artifact**, not third-party source and not hand-written.
   — and records the result as `coreCommit` in `corebridge/vendor/core/VENDORED.json`,
   which the top-level `CMakeLists.txt` reads and `insimul_core_version()` reports.
   `--check` refuses a VENDORED.json that disagrees with the pin. That string is
-  what to quote in a bug report about core behaviour. Today: `d88b6f0`, core `main` (2026-11-16,
+  what to quote in a bug report about core behaviour. Today: `45409ed`, core `main` (2026-11-19,
+  PL.native-bundle-core-r2: every core item landed after d88b6f0, among them run 22's four — the one-press rule
+  (PL.core-interact-pick-precedence), which the `props.interactables.examinePick` and `.press` rows run, the load
+  refusal codes, which the `ui.loadRefusal` row and the saves session answer, grammar objectives through the quest
+  rows, and the ground-relative container y, which no row here reaches — plus the interior interact rule and the
+  skill KB's live facts, which the `skill.kb.*` rows run). Before that, `d88b6f0`, core `main` (2026-11-16,
   PL.native-bundle-core: every core item landed after 6cd4b4e, among them PL.core-doorstep-rule's network answers,
   PL.core-ride-intent's rider intent, which the `traversal.rider.*` rows run, and the helper clauses of
   PL.core-helper-aggregate-all and PL.core-helper-sum-list). Before that, `6cd4b4e`, core `main` (2026-11-12,

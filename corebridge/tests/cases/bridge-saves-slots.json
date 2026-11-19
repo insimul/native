@@ -222,6 +222,382 @@
         { "call": "session.dispose", "args": { "session": 1 }, "expect": { "disposed": true } },
         { "call": "saves.slots.apply", "args": { "session": 1, "ops": [] }, "expectError": "no open session 1" }
       ]
+    },
+    {
+      "name": "a refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)): every string, '' and a bare unreadable_ included, is invalid_format with core's message, through ui.loadRefusal and through a session's finished { refusal }; a value that is not a string names no refusal and the slot stays as it was (each expectation computed by core at the 45409ed pin)",
+      "steps": [
+        {
+          "call": "ui.loadRefusal",
+          "args": {
+            "refusal": ""
+          },
+          "expect": {
+            "outcome": "invalid_format",
+            "message": "Unrecognized save format — this slot cannot be loaded."
+          }
+        },
+        {
+          "call": "ui.loadRefusal",
+          "args": {
+            "refusal": "unreadable_"
+          },
+          "expect": {
+            "outcome": "invalid_format",
+            "message": "Unrecognized save format — this slot cannot be loaded."
+          }
+        },
+        {
+          "call": "ui.loadRefusal",
+          "args": {
+            "refusal": "not_this_game"
+          },
+          "expect": {
+            "outcome": "invalid_format",
+            "message": "Unrecognized save format — this slot cannot be loaded."
+          }
+        },
+        {
+          "call": "ui.loadRefusal",
+          "args": {
+            "refusal": "wrong_world"
+          },
+          "expect": {
+            "outcome": "invalid_format",
+            "message": "Unrecognized save format — this slot cannot be loaded."
+          }
+        },
+        {
+          "call": "ui.loadRefusal",
+          "args": {
+            "refusal": null
+          },
+          "expect": {
+            "outcome": null,
+            "message": ""
+          }
+        },
+        {
+          "call": "ui.loadRefusal",
+          "args": {
+            "refusal": 7
+          },
+          "expect": {
+            "outcome": null,
+            "message": ""
+          }
+        },
+        {
+          "call": "ui.loadRefusal",
+          "args": {},
+          "expect": {
+            "outcome": null,
+            "message": ""
+          }
+        },
+        {
+          "call": "ui.saveSlots",
+          "args": {
+            "slots": [
+              {
+                "index": 0,
+                "outcome": "invalid_format"
+              }
+            ]
+          },
+          "expect": {
+            "$subset": {
+              "slots": [
+                {
+                  "$subset": {
+                    "index": 0,
+                    "status": "corrupted",
+                    "message": "Unrecognized save format — this slot cannot be loaded.",
+                    "canLoad": false
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "call": "saves.slots.create",
+          "args": {
+            "slots": [
+              {
+                "index": 0,
+                "outcome": "ok",
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 1,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-01T10:00:00Z"
+                }
+              }
+            ],
+            "activeSlot": 0
+          },
+          "expect": {
+            "$subset": {
+              "session": 1
+            }
+          }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": {
+            "session": 1,
+            "ops": [
+              {
+                "op": "load",
+                "slot": 0
+              },
+              {
+                "op": "finished",
+                "ok": false,
+                "refusal": ""
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "effect": {
+                  "read": {
+                    "slot": 0,
+                    "kind": "manual"
+                  }
+                }
+              },
+              {
+                "ok": false,
+                "effect": null
+              }
+            ],
+            "view": {
+              "rows": [
+                {
+                  "index": 0,
+                  "status": "corrupted",
+                  "title": "Corrupted Save",
+                  "message": "Unrecognized save format — this slot cannot be loaded.",
+                  "canLoad": false,
+                  "canSave": true,
+                  "canDelete": true,
+                  "isContinue": false,
+                  "isActive": true,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 1,
+                  "status": "empty",
+                  "title": "Empty Slot",
+                  "message": "",
+                  "canLoad": false,
+                  "canSave": true,
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 2,
+                  "status": "empty",
+                  "title": "Empty Slot",
+                  "message": "",
+                  "canLoad": false,
+                  "canSave": true,
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 3,
+                  "status": "empty",
+                  "title": "Quick save",
+                  "message": "",
+                  "canLoad": false,
+                  "canSave": false,
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": true,
+                  "isManual": false
+                }
+              ],
+              "continueSlot": null,
+              "activeSlot": 0,
+              "pending": null,
+              "confirm": null,
+              "autosave": {
+                "on": true,
+                "target": 0,
+                "inSec": 300
+              },
+              "indicator": {
+                "visible": true,
+                "state": "load_failed",
+                "label": "Load failed",
+                "detail": "Unrecognized save format — this slot cannot be loaded.",
+                "kind": "manual",
+                "opacity": 1
+              }
+            }
+          }
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 1
+          }
+        },
+        {
+          "call": "saves.slots.create",
+          "args": {
+            "slots": [
+              {
+                "index": 0,
+                "outcome": "ok",
+                "summary": {
+                  "playerName": "Ash",
+                  "level": 1,
+                  "locationName": "Brightwater",
+                  "savedAt": "2026-11-01T10:00:00Z"
+                }
+              }
+            ],
+            "activeSlot": 0
+          },
+          "expect": {
+            "$subset": {
+              "session": 2
+            }
+          }
+        },
+        {
+          "call": "saves.slots.apply",
+          "args": {
+            "session": 2,
+            "ops": [
+              {
+                "op": "load",
+                "slot": 0
+              },
+              {
+                "op": "finished",
+                "ok": false,
+                "refusal": 7
+              }
+            ]
+          },
+          "expect": {
+            "results": [
+              {
+                "ok": true,
+                "effect": {
+                  "read": {
+                    "slot": 0,
+                    "kind": "manual"
+                  }
+                }
+              },
+              {
+                "ok": false,
+                "effect": null
+              }
+            ],
+            "view": {
+              "rows": [
+                {
+                  "index": 0,
+                  "status": "ok",
+                  "title": "Ash · Lv 1 · Brightwater",
+                  "message": "Saved 2026-11-01T10:00:00Z",
+                  "canLoad": true,
+                  "canSave": true,
+                  "summary": {
+                    "playerName": "Ash",
+                    "level": 1,
+                    "locationName": "Brightwater",
+                    "savedAt": "2026-11-01T10:00:00Z"
+                  },
+                  "canDelete": true,
+                  "isContinue": true,
+                  "isActive": true,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 1,
+                  "status": "empty",
+                  "title": "Empty Slot",
+                  "message": "",
+                  "canLoad": false,
+                  "canSave": true,
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 2,
+                  "status": "empty",
+                  "title": "Empty Slot",
+                  "message": "",
+                  "canLoad": false,
+                  "canSave": true,
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": false,
+                  "isManual": true
+                },
+                {
+                  "index": 3,
+                  "status": "empty",
+                  "title": "Quick save",
+                  "message": "",
+                  "canLoad": false,
+                  "canSave": false,
+                  "canDelete": false,
+                  "isContinue": false,
+                  "isActive": false,
+                  "isQuick": true,
+                  "isManual": false
+                }
+              ],
+              "continueSlot": 0,
+              "activeSlot": 0,
+              "pending": null,
+              "confirm": null,
+              "autosave": {
+                "on": true,
+                "target": 0,
+                "inSec": 300
+              },
+              "indicator": {
+                "visible": true,
+                "state": "load_failed",
+                "label": "Load failed",
+                "detail": "",
+                "kind": "manual",
+                "opacity": 1
+              }
+            }
+          }
+        },
+        {
+          "call": "session.dispose",
+          "args": {
+            "session": 2
+          }
+        }
+      ]
     }
   ]
 }

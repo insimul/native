@@ -7,8 +7,17 @@
 `conformance/README.md` for the case format, the order-independence rule, and the
 "Amendments for the native harness" notes). Re-sync it with a plain copy of every
 `*.json` — never hand-write or hand-edit a case here, or the two engines stop
-testing the same thing. Last synced at core `d88b6f0` (PL.native-bundle-core,
-2026-11-16, the commit `corebridge/core-pin.json` pins): every file the mirror holds
+testing the same thing. Last synced at core `45409ed` (PL.native-bundle-core-r2,
+2026-11-19, the commit `corebridge/core-pin.json` pins): every one of the 12 files the
+mirror holds re-copied as it stands, and only `pack-agreement.json` moved (core's
+PL.core-dead-readers, 55264c4 and 14d9387: the packs' `schedule/4` and funeral
+candidate read both death facts, a recorded death outranking an unretractable
+`alive/1`, U126(1); 16 of its 22 cases carry the changed pack clauses, no answer
+changed). Still 12 files, 181 cases. The mirror is still a SUBSET of core's
+`conformance/prolog/` (37 files at 45409ed: alive-negation.json and death-readers.json joined after d88b6f0); widening it to all of them is
+PL.native-prolog-mirror-full's row (U120(9)), not this sync's.
+Before that, synced at core `d88b6f0` (PL.native-bundle-core,
+2026-11-16): every file the mirror holds
 re-copied (only `worlds.json` moved: core's work/canon split, one case renamed
 `playthrough-role-links-a-save-to-its-parent-world` and one added, 12 -> 14), and two
 of core's files added that the core items PL.core-helper-aggregate-all,

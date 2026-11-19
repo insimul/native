@@ -128,6 +128,7 @@ game; **meta** = about the bridge itself.
 | `save.decode` | `{ envelope }` or `{ text }` → `{ ok: false, error: { code, message } }` or `{ ok: true, envelope, saveFile, outcome, significant }` | `validateSaveFileEnvelope` then `migrateSaveFileWithOutcome` | P1 |
 | `save.migrate` | `{ saveFile }` → `{ saveFile, outcome, significant }` | `save-file` `migrateSaveFileWithOutcome`, unchanged; `significant` = `isMigrationOutcomeSignificant` | P1 |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
+| `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
 | `saves.slots.apply` | `{ session, ops: save, load, continue, delete, ask_delete, confirm_delete, cancel_delete, key, tick, finished, disk_changed }` → `{ results: [{ ok, refusal?, outcome?, effect, history?, disk? }], view }` | same | P1 slots |
 | `props.contract` | `{}` → `{ <area>: { <table>: value } }` — the data tables each P6 corpus file's `contract` states (`props-containers`, `props-documents`, `props-notice-board`, `props-doors`, `ui-inventory`, `props-pickup-placement`, `props-interactables`) | `props/containers`, `props/documents`, `props/doors`, `props/notice-board`, `ui/inventory-model`, `props/pickup-placement`, `props/interactables` constants | P6 (PL.native-props-rows, U89(2); `props-pickup-placement` PL.native-pickup-settle, U91(2); `props-interactables` PL.native-interact-target, U94(3)) |
@@ -151,7 +152,10 @@ game; **meta** = about the bridge itself.
 | `props.pickups.clearance` | `{ spot, groundY?, settled?, obstacles?, roads?, clearance? }` → `{ ok: true, clearanceM, nearest }` or `{ ok: false, code: bad-spot }` | `props/pickup-placement` `pickupClearance` | P6 pick-up settle |
 | `props.pickups.pattern` | `{ search? }` → `{ rings: [{ radiusM, points }] }` | `props/pickup-placement` `pickupSearchPattern` | P6 pick-up settle |
 | `props.pickups.ring` | `{ ring, search? }` → `{ points: [{ x, z }] }` | `props/pickup-placement` `pickupSearchRing` | P6 pick-up settle |
-| `props.interactables.target` | `{ at, panel?, villager?, pickups?, containers?, buildings?, props?, board?, ranges?, aboard?, vehicles?, nodes?, hotspots?, actionTable?, busy?, now? }` → `{ ok: true, target: { action, kind, id, prompt, distance } or null }`, or the refusal value `{ ok: false, refusal: { code: bad_position, field: at } }` | `props/interactables` `interactTarget` | P8 interact (PL.native-interact-target, U94(3); core's PL.examine-props, U49(3)) |
+| `props.interactables.target` | `{ at, panel?, villager?, pickups?, containers?, buildings?, props?, board?, ranges?, aboard?, vehicles?, nodes?, hotspots?, actionTable?, busy?, now?, interior? }` → `{ ok: true, target: { action, kind, id, prompt, distance } or null }`, or the refusal value `{ ok: false, refusal: { code: bad_position, field: at } }` | `props/interactables` `interactTarget` | P8 interact (PL.native-interact-target, U94(3); core's PL.examine-props, U49(3)) |
+| `props.interactables.examinePick` | `{ objects?, at }` → `{ pick }`: the nearest object with a role within 5 m of `at`, as sent, or null | `language-learning/prompt-selector` `examinePick` | P8 interact, one press (PL.native-bundle-core-r2; core's PL.core-interact-pick-precedence, U118(4)) |
+| `props.interactables.press` | `{ target?, pick? }` → `{ source, id, target, pick, shadowed }`: the one object an E press acts on | `props/interactables` `resolveInteractPress` | P8 interact, one press (PL.native-bundle-core-r2) |
+| `props.interactables.contract` | `{}` → `{ standWithoutY: { y: not_added, floor: every } }`: the rows' own reading of a stand with no y, as data | (these rows; core reads such a stand on every floor) | P8 interact (PL.native-bundle-core-r2, U126) |
 | `props.interactables.interact` | `{ prop, board? }` → `{ ok: true, action, line, events }`, or the refusal value `{ ok: false, refusal: { code: not_offered, field: archetype, reason } }` | `props/interactables` `interactWithProp` | P8 interact |
 | `props.interactables.meaning` | `{ prop, board? }` → `{ id, action, noun, prompt, text }` or `{ id, action: null, reason }` | `props/interactables` `propInteraction` | P8 interact |
 | `props.interactables.host` | `{ props, settlement }` → `{ host }` (null: no board) | `props/interactables` `noticeBoardHost` | P8 interact |
@@ -369,6 +373,18 @@ game; **meta** = about the bridge itself.
 | `skill.publishWorld` | `{ session }` → `{ ok: true, value, events }`: clauses asserted (0 with no KB) | `game-engine/logic/SkillProgression` `publishWorld` | P9i skill trees (PL.native-progression-rows) |
 | `skill.publishActors` | `{ session }` → `{ ok: true, value, events }`: clauses asserted (0 with no KB) | `game-engine/logic/SkillProgression` `publishActors` | P9i skill trees (PL.native-progression-rows) |
 | `skill.lastWriteRefusal` | `{ session }` → `{ ok: true, value, events }`: why the last write was refused, or null | `game-engine/logic/SkillProgression` `lastWriteRefusal` | P9i skill trees (PL.native-progression-rows) |
+| `skill.kb.liveFacts` | `{ prologFacts }` → `{ ok: true, value: { live: [{ fact, clause }], dropped: [{ at, code }] } }` | `progression/skill-kb` `skillKbLiveFactsOf` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.compose` | `{ pack?, world?, facts? }` → `{ ok: true, value }`: the program a recomposing host consults | `progression/skill-kb` `composeSkillKbProgram` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.open` | `{ program?, pack?, skills?, trees?, tuning? }` → `{ session, view: { facts } }`: a skill session with a native KB of its own | `progression/skill-kb` `SkillKbSession.open` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.load` | `{ session, currentState }` → `{ ok: true, value: { ok: true, dropped } or { ok: false, refusal } }` | `progression/skill-kb` `SkillKbSession.load` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.assert` | `{ session, fact }` → `{ ok: true, value: { changed } or { changed: false, refusal } }` | `progression/skill-kb` `SkillKbSession.assert` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.retract` | `{ session, fact }` → `{ ok: true, value: { changed } or { changed: false, refusal } }` | `progression/skill-kb` `SkillKbSession.retract` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.canUnlock` | `{ session, actor, node }` → `{ ok: true, value }`: the unlock decision over the current KB | `progression/skill-kb` `SkillKbSession.canUnlock` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.unlock` | `{ session, actor, node }` → `{ ok: true, value }`: the unlock report | `progression/skill-kb` `SkillKbSession.unlock` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.facts` | `{ session }` → `{ ok: true, value }`: the live clauses, in clause order | `progression/skill-kb` `SkillKbSession.facts` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.savedFacts` | `{ session }` → `{ ok: true, value }`: the live facts as `currentState.prologFacts` keeps them | `progression/skill-kb` `SkillKbSession.savedFacts` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.program` | `{ session }` → `{ ok: true, value }`: what a recomposing host would consult now | `progression/skill-kb` `SkillKbSession.program` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
+| `skill.kb.serialize` | `{ session }` → `{ ok: true, value }`: the session's roster, for the save's skills block | `progression/skill-kb` `SkillKbSession.progression` | P9i skill KB live facts (PL.native-bundle-core-r2; core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) |
 | `ui.genreHud` | `{ op: config, view, genre_view, config_of or view_of, ...input }` (a `conformance/ui/genre-hud-cases.json` case's `op` and `input`; `config_of` / `view_of` take a game's own settings, `{ genreConfig }` or `{ recipe, world? }`, plus `state?` for `view_of`) → its `expected` shape: `{ ok: true, value }` or a refusal VALUE `{ ok: false, refusal: { code, field } }` (`unresolved_recipe` also carries `reason`); an unknown `op` is an error `[unknown-op]` | `ui/genre-hud-corpus` `runGenreHudOp` (`genre-hud-model`, `genreHudConfigOf`; `game-genres/resolution` `resolveGameGenre` for a recipe) | P9a.native (U84); `config_of` / `view_of` PL.native-genre-hud-config (U92(2)) |
 | `ui.rulesPanel` | `{ op: panel, card, byCategory, byType or isActive, ...input }` (a `conformance/ui/rules-panel-cases.json` case's `op` and `input`) → its `expected` shape; an unknown `op` is an error `[unknown-op]`, an input of the wrong JSON type `[invalid-input]` | `ui/rules-panel-corpus` `runRulesPanelOp` (`rules-panel-model`) | P9a.native (U84) |
 | `packs.compose` | `{ recipe?, world?, game?, engine?, catalog: { index, manifests } }` → core's `Composition` (packs, settings, activation, overrides; a refused choice is a `refusals` entry; a refused recipe, preset, request or engine is an error with a code) | `system-packs/composer` `resolveComposition` | SP.composer-native (U62(1)) |
@@ -685,7 +701,7 @@ quick load on F5 / F9. It does no I/O, so it is a session pair like the clock:
   two actions; core's PL.slots-delete-states), `key { code }` (a
   KeyboardEvent.code: `F5`, `F9`; any other is `unbound_key`), `tick { delta }`
   (seconds; null is a non-finite tick, as the corpus writes it), `finished {
-  ok, savedAt?, summary?, outcome? }` and `disk_changed { slots }` (the save
+  ok, savedAt?, summary?, outcome?, refusal? }` and `disk_changed { slots }` (the save
   files changed outside the game: `slots` is the host's new listing, as at
   create, null for none; core's PL.disk-changed-step, in from the 72c658c pin).
   Each result is core's `{ ok, refusal?, outcome?, effect, history?, disk? }`:
@@ -713,6 +729,22 @@ quick load on F5 / F9. It does no I/O, so it is a session pair like the clock:
   index in the resolved `config`; 0 and any number past the manual slots are
   refused `quick_slot_out_of_range` (F5 and F9 then answer that refusal and write
   nothing). A binding that stated a 0-based index must add one.
+- **A refused Load** (core's PL.core-load-refused-message and PL.core-load-refusal-codes,
+  U118(5), U124(1), U126(2); in from the 45409ed pin, bound by PL.native-bundle-core-r2).
+  A read the host refused is answered `finished { ok: false, refusal: <code> }`: with no
+  `outcome`, core makes the slot `invalid_format` and the indicator's detail
+  `SLOT_MESSAGES.invalid_format`, the one message every engine shows. Every string is
+  mapped that way — the codes core states (`wrong_world`, another world's save;
+  `wrong_runtime`, another runtime's; the checked read's `wrong_version`,
+  `unregistered_extension`, every `unreadable_*`) and every other string (`not_this_game`,
+  '', a bare `unreadable_`); a stated `outcome` wins; a value that is not a string names no
+  refusal and the slot stays as it was. **`ui.loadRefusal { refusal }`** → `{ outcome,
+  message }` is the same mapping outside a session (`slotOutcomeOfLoadRefusal`,
+  `loadRefusalMessage`); render it with `ui.saveSlots`. Core's 20 `load_refusals`
+  (`conformance/ui/save-slot-cases.json`) are transcribed into
+  `vendor/core/cases/core-ui-save-slots.json`, each the mapping then the slot it renders,
+  and `conformance/saves/slots.json`'s 9 `finished { refusal }` runs go through
+  `saves.slots.apply` in `saves_slots_corpus`.
 
 What the rows refuse as errors is only what core's types declare and JSON cannot
 hold: a `config` that is not an object, a slot (at create or in a `disk_changed`
@@ -949,9 +981,31 @@ nothing:
 - **`props.contract`'s `props-interactables`** — the corpus's data tables from
   core's constants: `propActions`, `actions`, `actionTier`, `lookTier`,
   `vehicleTier`, `notOffered`, `notOfferedReasons`, `signArchetypes`, `rangesM`,
-  `doorPromptRadiusM`, `refusals` and the `deviations` from Unreal's interim
-  rules (eighteen at the d88b6f0 pin, each with Unreal's reading, core's and why).
-  The prose keys are rules written out and stay in the corpus.
+  `doorPromptRadiusM`, `refusals`, `interiorActions` and `floorBandM` (inside an
+  interior), the `deviations` from Unreal's interim rules (nineteen at the 45409ed
+  pin, each with Unreal's reading, core's and why), and the press's `pressSources`,
+  `pressPrecedence` and `examineRangeM`. The prose keys are rules written out and
+  stay in the corpus.
+- **One E press, one object** (core's PL.core-interact-pick-precedence, U118(4); in at
+  the 45409ed pin, bound by PL.native-bundle-core-r2). The language world's examine
+  pick can name an object the target does not. **`props.interactables.examinePick`
+  `{ objects?, at }`** → `{ pick }` is core's `examinePick`: of `objects` (core's
+  `WorldObjectIn`) with a non-empty `role`, the nearest to `at` on the ground plane
+  within 5 m (`<=`, squared; the first listed on a tie), as it was sent, or null.
+  **`props.interactables.press { target?, pick? }`** → `{ source, id, target, pick,
+  shadowed }` is core's `resolveInteractPress`: the target wins whenever there is one
+  (`source` `interactables`; `pick` the same object when it names the target's id,
+  else null with the pick `shadowed`), else the pick acts (`source` `examine`),
+  else every field is null. A press is target, then (when not refused) the pick,
+  then this row, as core's corpus runner composes it.
+- **Inside an interior** (core's PL.core-interior-interact-target, in at the 45409ed
+  pin). The target row also takes `interior` (`currentState.interiorState`'s record
+  plus that interior's reachable `containers`): inside, only an open panel, those
+  containers and the interior's `exit` are candidates, each only from its own floor.
+  **`props.interactables.contract {}`** → `{ standWithoutY: { y: "not_added", floor:
+  "every" } }` states, as data, how these rows read a stand that states no `y`
+  (U126): they add none and default none to 0, and core reads it on every
+  candidate's floor. A binding that has no `y` sends none.
 - **The vehicles and gathering packs' inputs** (core's PL.core-vehicle-rules and
   PL.core-gather-reach-tier, in at the d88b6f0 pin; bound by PL.native-bundle-core).
   A game that runs the vehicles pack also sends `aboard { id, name? }` (E gets off
@@ -974,14 +1028,22 @@ building that is not an object, `villager`, `board`, `settlement`, `prop` or
 `archetype` that is not a string; and of the packs' inputs, `vehicles`, `nodes` or
 `hotspots` that is not an array of objects, `aboard` or `actionTable` that is not
 an object, `actionTable.actions` that is not an array of objects, `busy` that is
-not a boolean. Every value core reads itself goes to core,
+not a boolean; `interior.containers` that is not an array (any other `interior` goes
+to core, which reads a non-record as outside); and of the press rows, `objects`
+that is not an array of objects each with a `position` object, `at` with no
+numeric `x` and `z`, a `target` or `pick` that is not an object. Every value core
+reads itself goes to core,
 which answers it as its corpus pins: a position that is not a finite point (`at`:
 `bad_position`; a candidate's: skipped), a null or id-less list entry, a taken
 pick-up (skipped), an archetype or text that is not a non-empty string (no
 archetype: not offered; no text: blank).
 
-**The evidence** is core's `conformance/props/interactables.json` (53 cases at
-d88b6f0 over `noun` 1, `meanings` 4, `host` 5, `interact` 4, `target` 39, after core's
+**The evidence** is core's `conformance/props/interactables.json` (73 cases at
+45409ed over `noun` 1, `meanings` 4, `host` 5, `interact` 4, `target` 51, `press` 8,
+after core's PL.core-interior-interact-target added 12 `target` cases and
+PL.core-interact-pick-precedence the 8 `press` cases, none of an earlier case's answer
+changed; the runner counts the stands it sent with no `y` and holds them to
+`props.interactables.contract`; 53 at d88b6f0 with `target` 39, after core's
 PL.core-vehicle-rules and PL.core-gather-reach-tier added 20 `target` cases, none
 of an earlier case's answer changed; 33 at 431c95b with `target` 19, after core's
 PL.interactables-cases added four `target` cases whose answer depends on the stated
@@ -1775,10 +1837,27 @@ retire; `ENGINE_BINDINGS.md` maps it row by row).
   asks anything stays locked until this world's rules open it (refusal `requires`),
   and nothing is forbidden. A program the KB refuses is `[invalid-input]`; the KB
   lives as long as the session and `session.dispose` destroys it.
+- **`skill.kb.*` is the skill KB that sees the live facts** (core's
+  PL.core-skill-kb-live-facts and PL.core-skill-kb-rule-head-facts, in at the 45409ed
+  pin; bound by PL.native-bundle-core-r2). A fact the game asserts or retracts in play
+  (`currentState.prologFacts`) reaches the requirement gate, in play and after a load.
+  `skill.kb.liveFacts { prologFacts }` (core's `skillKbLiveFactsOf`) says which facts a
+  skill KB holds, in clause order, and which it drops and why (`unreadable`,
+  `skill_owned` — a roster predicate or a rule head of the skill pack — `authored`,
+  `reserved`, `duplicate`); `skill.kb.compose { pack?, world?, facts? }` (core's
+  `composeSkillKbProgram`) is the program a host that recomposes consults. A host that
+  layers opens core's reference session, `skill.kb.open { program?, pack?, skills?,
+  trees?, tuning? }` (a native KB of its own), then `skill.kb.load { currentState }`
+  (recomposed from the save; a refused progression block is the value `{ ok: false,
+  refusal }` and changes nothing), `.assert` / `.retract { fact }`, `.canUnlock` /
+  `.unlock { actor, node }`, `.facts`, `.savedFacts` (what a save writes as
+  `prologFacts`), `.program` and `.serialize` (the roster). Each answers `{ ok: true,
+  value }`. The JS leg has no Prolog, so its hand case is C-only.
 
 Evidence: `progression_corpus` (`tests/progression_corpus.cpp`) drives core's
-`conformance/progression/{gamification,modules,skills,save}.json` (73 cases at
-6cd4b4e), `conformance/skills/{advancement,unlocks,effects,trees,effect-terms}.json`
+`conformance/progression/{gamification,modules,skills,save}.json` (87 cases at
+45409ed, the 14 `compose` and `kb` cases of skills.json among them, a `kb` case one
+`skill.kb.open` session with one row per step; 73 at 6cd4b4e), `conformance/skills/{advancement,unlocks,effects,trees,effect-terms}.json`
 (52) and the three `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json`
 through the rows, each copied byte for byte at the pin; a KB-backed unlock replays
 each `can_unlock` case with the case's KB behind the session, and every node the KB
@@ -1795,7 +1874,7 @@ every expectation computed by core's own functions at the pin.
 
 `save.rules`' `extensionKeys` is `Object.keys(extensionRegistry).sort()` over core's
 `src/save-extensions.ts` at the pin, so it moves with every pin that registers an
-extension. At d88b6f0 (as at 6cd4b4e) it is **22 keys**: `achievements`, `aiBlackboards`,
+extension. At 45409ed (as at d88b6f0 and 6cd4b4e) it is **22 keys**: `achievements`, `aiBlackboards`,
 `detectionStates`, `droppedFacts`, `evaluations`, `gamification`, `gathering`,
 `introShown`, `languageLearning`, `npcLife`, `platformer`, `playthroughTelemetry`,
 `progression`, `puzzle`, `sessions`, `skillTree`, `social`, `strategy`,
@@ -1897,19 +1976,19 @@ compiling a JS engine to wasm in order to run JS would be circular.
 | `corebridge_cases_parity` | the C and JS legs' RAW result strings are byte-identical for every step |
 | `corebridge_sha256` | the C SHA-256 against the NIST vectors, at every split point |
 | `corebridge_radiant`, `corebridge_radiant_none` | the radiant corpus through core's real radiant engine on the native Prolog engine |
-| `core_vendor` | every vendored file matches its recorded sha256 and the pin; every `save.rules` case under `tests/cases/` states exactly the sorted extension keys the vendored bundle's registry answers (22 at d88b6f0; with `--check --core`, also the keys of core's `extensionRegistry` in `src/save-extensions.ts` at the pin) |
+| `core_vendor` | every vendored file matches its recorded sha256 and the pin; every `save.rules` case under `tests/cases/` states exactly the sorted extension keys the vendored bundle's registry answers (22 at 45409ed; with `--check --core`, also the keys of core's `extensionRegistry` in `src/save-extensions.ts` at the pin) |
 | `core_vendor_extension_keys_negative` | that extension-key check alone over `tests/save-extension-keys-negative/`: a dropped key, a reordered list, an unregistered key, a list loosened to any array and a dropped key inside `$subset`, each named, and the run failed |
 | `saves_slots_corpus`, `saves_slots_corpus_negative` | core's `conformance/saves/slots.json` driven through the `saves.slots.*` session rows (132 of 147 cases at 72c658c; the 15 indicator cases reported with a measured reason), and a wrong answer seen as wrong |
 | `props_containers_corpus`, `props_documents_corpus`, `props_doors_corpus`, `props_notice_board_corpus`, `inventory_corpus`, `props_corpus_negative` | core's five P6 corpora driven whole through the `props.*` and `inventory.*` rows (129 cases at 431c95b, each file's contract tables held to `props.contract`), and a wrong answer per file seen as wrong |
 | `props_pickup_placement_corpus`, `props_pickup_placement_corpus_negative` | core's pick-up placement corpus driven whole through the `props.pickups.*` rows (72 cases; its `numerics` must name double precision; its contract tables, `frames` and the constants' values among them, held to `props.contract`), and a wrong numerics, frame, constant, undriven op and four wrong answers (a mirrored building axis among them) seen as wrong |
-| `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (53 cases at d88b6f0, 33 at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does; its contract's data tables held to `props.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give and two runner controls (a case's `ranges`, a lone `prop`) seen as wrong |
+| `props_interactables_corpus`, `props_interactables_corpus_negative` | core's interact-rule corpus driven whole through the `props.interactables.*` rows (73 cases at 45409ed with 8 `press`, 53 at d88b6f0, 33 at 431c95b, 27 at 72c658c; 0 undriven; the runner walks each case's props and stands one row call each, as core's runner does, a press through target, examinePick and press; its contract's data tables held to `props.contract`; the stands sent with no `y` counted against `props.interactables.contract`), and a wrong range, an undriven op, five answers an engine keeping one of Unreal's interim rules would give, two runner controls (a case's `ranges`, a lone `prop`), a stand with no `y` read as floor 0, a pick acting over the target and a stand's dropped `objects` seen as wrong |
 | `audio_ground_corpus`, `audio_ground_corpus_negative` | core's ground reading corpus driven whole through the `audio.ground.*` rows (48 cases, 0 undriven; every case whose world lists two or more settlements, ground surfaces or roads driven again with them reversed; its contract's data held to `audio.ground.contract`), and Unreal's sidewalk for a footpath in the contract, an undriven op and six answers an engine keeping one of its interim readings would give seen as wrong |
 | `camera_movement_corpus`, `camera_movement_corpus_negative` | core's movement contract corpus driven whole through the `camera.movement.*` rows (95 cases at 6cd4b4e, 0 undriven; every case with more than one solid or exclusion driven again with them reversed; its contract's data tables held to `camera.movement.contract`), and Unreal's step in the contract, an undriven op and six answers an engine keeping one of its interim rules would give seen as wrong |
 | `title_flow_corpus`, `tutorial_corpus`, `title_flow_corpus_negative`, `tutorial_corpus_negative` | core's P8 corpora driven whole through the `ui.titleFlow.*`, `ui.tutorial.*` and `ui.onboarding.*` rows (97 cases, 0 undriven; each file's contract tables held to its contract row), and a wrong contract table, a wrong answer per op and an undrivable case per file seen as wrong |
 | `survival_corpus`, `survival_corpus_negative` | core's three P9c corpora (`needs.json`, `hud.json`, `stamina.json`; 89 cases at 6cd4b4e) driven whole through the `survival.*` rows by `tests/survival_corpus.cpp` (0 undriven per file; a `run` one row per step over the state the last answer carried, a `pool` one `survival.stamina.pool.apply` per step; each file's catalog and op list held to core's), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `survival_corpus_negative` does |
 | `traversal_corpus`, `traversal_corpus_negative` | core's seven P9e corpora (the kernels' `affordances.json`, `vehicles.json`, `fast-travel.json`, `ground-seating.json`, and the layers' `session.json`, `mounts.json`, `save.json`; 136 cases at d88b6f0, 129 at 6cd4b4e) driven whole through the `traversal.*` rows by `tests/traversal_corpus.cpp` (0 undriven per file; each older case's record composed from one row per core function and driven again with its lists reversed, a settle one row per step, a session case one `traversal.session` with one apply per step, a mounts run one personal row per step; each systems file's catalog, ops and steps held to core's and every step driven), and EVERY case's expectation perturbed and seen as wrong, as Unreal's `traversal_corpus_negative` does |
 | `build_corpus`, `build_corpus_negative` | core's P10 headless build corpus (`conformance/build/headless.json`, 233 cases at 6cd4b4e) driven whole through the `build.*` rows by `tests/build_corpus.cpp` (credential markers expanded as core's runner does; 0 undriven; `build.contract` held to the file's contract; no credential repeated in a detail or a line; every out-dir refusal asked of the fold rows, with at least one case only the macOS fold catches and one only the Windows fold catches), and EVERY case's expectation perturbed and seen as wrong, with purposeful perturbations (a credential not caught or shown, a path escaping the build folder under either fold, an artefact outside it, a path outside the project) each refused |
-| `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 73 cases at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |
+| `progression_corpus`, `progression_corpus_negative` | core's P9i progression corpora (`conformance/progression/{gamification,modules,skills,save}.json`, 87 cases at 45409ed with skills.json's `compose` and `kb` through the `skill.kb.*` rows, 73 at 6cd4b4e), its skill-tree corpora (`conformance/skills/*.json`, 52) and the `can_unlock/2` cases of `conformance/prolog/mechanic-skill.json` (3) driven whole through the `progression.*` and `skill.*` rows by `tests/progression_corpus.cpp` (0 undriven per file; a gamification `run` one `progression.gamification.step` per step, every step kind driven; each progression file's catalog, ops and steps held to core's; a KB-backed `skill.unlock` per `can_unlock` case, with a no-KB control; refusal probes for an unknown op, step, area and row); the negative pass perturbs every expectation and needs every one refused |
 | `tutorial_progress_corpus`, `tutorial_progress_corpus_negative` | core's tutorial progress corpus driven whole through `ui.tutorial.readProgress`, the create rows' `progress` and the apply rows' `save` op (23 cases, 0 undriven; contract tables held to `ui.tutorial.contract`, the runner lists to the steps it maps), and a wrong contract table, a wrong runner list, four wrong answers and an undrivable step seen as wrong |
 
 The cases come from two places (`tests/README.md`): `vendor/core/cases/` is core's

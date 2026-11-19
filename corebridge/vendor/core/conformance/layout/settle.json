@@ -16,6 +16,11 @@
       "crossCheckedAgainst": "the Unreal plugin's interim engine copy at unreal main e859b55 (P0.unreal.openframe): Portable/InsimulBuildingFit KeepClearOfStart and StartClearOutline (kStartClearRadiusM 1.0) applied after SettleClearance as FinishPropClearance applies them; every move and the outline agree. Two deliberate differences, which the engine's binding takes from this corpus when it re-vendors: set-asides are read after the start's move (the interim copy reads them before), and a building on the start is named in startCovered (the interim copy logs a FINDING)"
     },
     {
+      "cases": "the six 'start clearance: the tail ...' / '... squeezed ...' cases, and the moved short of 'start clearance: a barrel moved off the start into a house is set aside' (PL.core-grouping-disc-origin, manager ruling U122(4), Unreal run 15 B9.unreal.prop-radii m4)",
+      "writtenBy": "core src/editor/layout/settle.ts settleClearance's start tail (core's own answers), synthetic inputs; no other case's answer moved",
+      "rule": "the start's tail keeps the clearance gap: after the least move off the start's ground the bodies settle once more with that ground holding still, each pair keeping its rule's gap or what the settle left it; where the ground and a gap cannot both hold, the start wins and the move reports the short"
+    },
+    {
       "cases": "the 'door frontage:' cases (PL.brightwater-door-facing, operator rulings U78 and U79(4))",
       "writtenBy": "core src/editor/layout/settle.ts settleFittedBuildings given each building's door, doorFrontage and doorApproachOutline (core's own answers); the synthetic pairs' inputs written here, the Brightwater cases' footprints the 'neighbours: Brightwater's seven fitted houses' case's and their doors building-fit.json's 'brightwater:' answers on brightwater-ir-20261017.json",
       "measuredBy": "the Unreal editor's door points on Brightwater (P0.unreal.homeslots round 1: its control run's unreachable lines and its place lines): each of the seven door points bears 84-111 degrees (a quarter turn, +pi/2) from the door core's fit turns to the street, seen from the house's fit-alone centre, and stands 0.40-2.61 m from the middle of that quarter-turned wall 1.5 m out (64_5 0.40, the Bakery 0.75, the Tavern 1.01, 64_4 1.10, 64_6 1.19, the Farmstead 1.59, the Smithy 2.61): the quarter-turn case stands its doors there. The editor's own positions are not in this corpus (the held PL.layout-recharacterise, operator ruling U82)"
@@ -10912,7 +10917,7 @@
     },
     {
       "name": "start clearance: a barrel moved off the start into a house is set aside",
-      "note": "the settle parts the barrel 15 cm from the wall (-x 5 cm); the start then moves it +x 0.451 m, into the house: set-asides are read where the items end, the start's move included, so it is set aside",
+      "note": "the settle parts the barrel 15 cm from the wall (-x 5 cm); the start then moves it +x 0.451 m, into the house: set-asides are read where the items end, the start's move included, so it is set aside; squeezed between the start's ground and the wall, the start wins, and since PL.core-grouping-disc-origin (U122(4)) its move reports what the tail could not keep: 0.451 m short of house.east",
       "op": "settleClearance",
       "input": {
         "items": [
@@ -10952,8 +10957,8 @@
             "entityId": "barrel.wall",
             "dx": 0.401,
             "dz": 0,
-            "short": 0,
-            "shortOf": "",
+            "short": 0.451,
+            "shortOf": "house.east",
             "limited": false
           }
         ],
@@ -10969,6 +10974,489 @@
             "index": 1,
             "entityId": "barrel.wall",
             "dx": 0.451,
+            "dz": 0
+          }
+        ],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: the tail keeps the clearance gap, parting the crates the move off the start crowds",
+      "note": "PL.core-grouping-disc-origin (U122(4); Unreal run 15 B9.unreal.prop-radii m4: on Brightwater the start's least move pushed crate goods.2 0.128 m into goods.1). The start at the origin; crate.start (0.8 m) at x 0.9 stands on its metre; crate.next 0.3 m beyond it and crate.far 0.05 m (the props' gap) beyond that; the barrel 5 m away. The settle moves nothing (every gap is kept). The least move off the start takes crate.start 0.501 m along +x, 0.201 m INTO crate.next; the tail then settles again with the start's ground holding still, so crate.start stays a millimetre off the ground and crate.next and crate.far are parted along +x to the 0.05 m gap (crate.next 0.251 m, crate.far 0.251 m). The barrel, which nothing crowded, does not move. startMoves names all three crates.",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "crate.start",
+            "kind": "prop",
+            "outline": [[0.5, -0.4], [1.3, -0.4], [1.3, 0.4], [0.5, 0.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          },
+          {
+            "entityId": "crate.next",
+            "kind": "prop",
+            "outline": [[1.6, -0.4], [2.4, -0.4], [2.4, 0.4], [1.6, 0.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          },
+          {
+            "entityId": "crate.far",
+            "kind": "prop",
+            "outline": [[2.45, -0.4], [3.25, -0.4], [3.25, 0.4], [2.45, 0.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          },
+          {
+            "entityId": "barrel.away",
+            "kind": "prop",
+            "outline": [[-0.3, 4.7], [0.3, 4.7], [0.3, 5.3], [-0.3, 5.3]],
+            "area": 0.36,
+            "archetype": "prop.container.barrel",
+            "height": 0.9,
+            "longestPlan": 0.6
+          }
+        ],
+        "obstacles": [],
+        "playerStart": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "crate.next",
+            "dx": 0.251,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "crate.far",
+            "dx": 0.251,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "barrel.away",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "setAsides": [],
+        "startMoves": [
+          {
+            "index": 0,
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": 0
+          },
+          {
+            "index": 1,
+            "entityId": "crate.next",
+            "dx": 0.251,
+            "dz": 0
+          },
+          {
+            "index": 2,
+            "entityId": "crate.far",
+            "dx": 0.251,
+            "dz": 0
+          }
+        ],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: the tail parts a crowded neighbour along their own axis, and the crate stays off the start",
+      "note": "PL.core-grouping-disc-origin (U122(4)). The start at the origin; crate.start (0.8 m) at x 0.9 on its metre; barrel.side (0.6 m) at (1.9, 0.7), 0.3 m beyond the crate along x and level with its top face along z. The settle moves nothing. The least move off the start takes the crate 0.501 m along +x, which leaves the two touching along z (0.05 m short of the props' gap); the tail parts them along z, the lighter barrel taking the larger share (0.032 m to the crate's 0.018 m), and the crate slides along the start's ground, still a millimetre off it.",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "crate.start",
+            "kind": "prop",
+            "outline": [[0.5, -0.4], [1.3, -0.4], [1.3, 0.4], [0.5, 0.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          },
+          {
+            "entityId": "barrel.side",
+            "kind": "prop",
+            "outline": [[1.5999999999999999, 0.39999999999999997], [2.1999999999999997, 0.39999999999999997], [2.1999999999999997, 1], [1.5999999999999999, 1]],
+            "area": 0.36,
+            "archetype": "prop.container.barrel",
+            "height": 0.9,
+            "longestPlan": 0.6
+          }
+        ],
+        "obstacles": [],
+        "playerStart": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": -0.018,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "barrel.side",
+            "dx": 0,
+            "dz": 0.032,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "setAsides": [],
+        "startMoves": [
+          {
+            "index": 0,
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": -0.018
+          },
+          {
+            "index": 1,
+            "entityId": "barrel.side",
+            "dx": 0,
+            "dz": 0.032
+          }
+        ],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: squeezed between the start and a wall, the start wins and the short gap is reported",
+      "note": "PL.core-grouping-disc-origin (U122(4)). The start at the origin; crate.start (0.8 m) at x 0.9 on its metre; a house whose west wall stands at x 1.85. The crate can be clear of the start's ground (x 1.0) or keep the props' 0.15 m from the wall, not both (0.95 m asked of 0.85 m). The start wins: the crate is moved 0.501 m off it, and its move reports what the tail could not keep, 0.101 m short of the house (the old tail moved it there and reported nothing).",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "house",
+            "kind": "building",
+            "outline": [[1.85, -3], [6, -3], [6, 3], [1.85, 3]]
+          },
+          {
+            "entityId": "crate.start",
+            "kind": "prop",
+            "outline": [[0.5, -0.4], [1.3, -0.4], [1.3, 0.4], [0.5, 0.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          }
+        ],
+        "obstacles": [],
+        "playerStart": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": 0,
+            "short": 0.101,
+            "shortOf": "house",
+            "limited": false
+          }
+        ],
+        "setAsides": [],
+        "startMoves": [
+          {
+            "index": 1,
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": 0
+          }
+        ],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: the tail asks no more of a pair the settle left short",
+      "note": "PL.core-grouping-disc-origin (U122(4)). A 0.8 m crate in a 1.0 m alley between two houses cannot keep the props' 0.15 m from both walls; the settle leaves it 0.1 m short of house.w. A crate stands on the start at the origin, 12 m away: it is moved off, so the tail runs, and the tail asks of every pair no more than the settle left it, so the crate in the alley does not move again (its move and its short are the settle's).",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "house.w",
+            "kind": "building",
+            "outline": [[10, -2], [12, -2], [12, 2], [10, 2]]
+          },
+          {
+            "entityId": "house.e",
+            "kind": "building",
+            "outline": [[13, -2], [15, -2], [15, 2], [13, 2]]
+          },
+          {
+            "entityId": "crate.alley",
+            "kind": "prop",
+            "outline": [[12.1, -0.4], [12.9, -0.4], [12.9, 0.4], [12.1, 0.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          },
+          {
+            "entityId": "crate.start",
+            "kind": "prop",
+            "outline": [[0.5, -0.4], [1.3, -0.4], [1.3, 0.4], [0.5, 0.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          }
+        ],
+        "obstacles": [],
+        "playerStart": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "house.w",
+            "dx": 0,
+            "dz": 0,
+            "short": 0.1,
+            "shortOf": "crate.alley",
+            "limited": false
+          },
+          {
+            "entityId": "house.e",
+            "dx": 0,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          },
+          {
+            "entityId": "crate.alley",
+            "dx": -0.05,
+            "dz": 0,
+            "short": 0.1,
+            "shortOf": "house.w",
+            "limited": false
+          },
+          {
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "setAsides": [],
+        "startMoves": [
+          {
+            "index": 3,
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": 0
+          }
+        ],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: the tail asks no more of what the settle left overlapping",
+      "note": "PL.core-grouping-disc-origin (U122(4)). crate.deep stands in the middle of a 20 m hall, sapling.deep in the middle of a 20 m plaza: the settle moves each its whole limit (2.5 m, 3.0 m) and leaves both still overlapping (the crate is set aside in the hall). A crate on the start at the origin is moved off it, so the tail runs; the tail asks nothing more of a pair or a paving the settle left overlapping, so neither moves again (a fresh limit would move each as far once more).",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "hall",
+            "kind": "building",
+            "outline": [[20, -10], [40, -10], [40, 10], [20, 10]]
+          },
+          {
+            "entityId": "crate.deep",
+            "kind": "prop",
+            "outline": [[29.6, -0.4], [30.4, -0.4], [30.4, 0.4], [29.6, 0.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          },
+          {
+            "entityId": "sapling.deep",
+            "kind": "plant",
+            "outline": [[-30.25, -0.25], [-29.75, -0.25], [-29.75, 0.25], [-30.25, 0.25]],
+            "crownRadius": 1.5
+          },
+          {
+            "entityId": "crate.start",
+            "kind": "prop",
+            "outline": [[0.5, -0.4], [1.3, -0.4], [1.3, 0.4], [0.5, 0.4]],
+            "area": 0.64,
+            "archetype": "prop.container.crate",
+            "height": 0.8,
+            "longestPlan": 0.8
+          }
+        ],
+        "obstacles": [
+          {
+            "entityId": "plaza",
+            "kind": "plaza",
+            "lotId": "",
+            "points": [[-40, -10], [-20, -10], [-20, 10], [-40, 10]],
+            "halfWidth": 0,
+            "closed": true
+          }
+        ],
+        "playerStart": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "hall",
+            "dx": 0,
+            "dz": 0,
+            "short": 8.05,
+            "shortOf": "crate.deep",
+            "limited": false
+          },
+          {
+            "entityId": "crate.deep",
+            "dx": 0,
+            "dz": 2.5,
+            "short": 8.05,
+            "shortOf": "hall",
+            "limited": true
+          },
+          {
+            "entityId": "sapling.deep",
+            "dx": 0,
+            "dz": -3,
+            "short": 7.55,
+            "shortOf": "plaza",
+            "limited": true
+          },
+          {
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": 0,
+            "short": 0,
+            "shortOf": "",
+            "limited": false
+          }
+        ],
+        "setAsides": [
+          {
+            "index": 1,
+            "buildingId": "hall",
+            "inside": 7.9
+          }
+        ],
+        "startMoves": [
+          {
+            "index": 3,
+            "entityId": "crate.start",
+            "dx": 0.501,
+            "dz": 0
+          }
+        ],
+        "startCovered": []
+      }
+    },
+    {
+      "name": "start clearance: a sapling squeezed between the start and a road ends off the start",
+      "note": "PL.core-grouping-disc-origin (U122(4)). A sapling's trunk (0.5 m) on the start at the origin, a road whose edge runs at x 1.4: the settle keeps the trunk its 0.3 m from the paving (x 0.6 to 1.1, still on the start's metre); the least move takes it off the start, 0.3 m into its paving clearance; the tail cannot keep both, and the paving's push comes last, so the tail leaves the trunk on the start again; step 3 moves it off by the least move once more. The start wins: the trunk ends off the start and its move reports the paving clearance it could not keep (short of the road).",
+      "op": "settleClearance",
+      "input": {
+        "items": [
+          {
+            "entityId": "sapling.start",
+            "kind": "plant",
+            "outline": [[0.65, -0.25], [1.15, -0.25], [1.15, 0.25], [0.65, 0.25]],
+            "crownRadius": 1.5
+          }
+        ],
+        "obstacles": [
+          {
+            "entityId": "road",
+            "kind": "road",
+            "lotId": "",
+            "points": [[1.4, -6], [8, -6], [8, 6], [1.4, 6]],
+            "halfWidth": 0,
+            "closed": true
+          }
+        ],
+        "playerStart": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        }
+      },
+      "expected": {
+        "moves": [
+          {
+            "entityId": "sapling.start",
+            "dx": 0.351,
+            "dz": 0,
+            "short": 0.401,
+            "shortOf": "road",
+            "limited": false
+          }
+        ],
+        "setAsides": [],
+        "startMoves": [
+          {
+            "index": 0,
+            "entityId": "sapling.start",
+            "dx": 0.401,
             "dz": 0
           }
         ],

@@ -16,6 +16,8 @@
       "conformance/saves/village-state.json",
       "conformance/saves/slots.json",
       "conformance/saves/tutorial-progress.json",
+      "conformance/saves/runtime-save.json",
+      "conformance/saves/interior-state.json",
       "conformance/ui/save-slot-cases.json",
       "conformance/events/save-load-cases.json"
     ]
@@ -64,6 +66,8 @@
       "The quick slot is dedicated by default: index maxSlots, after the manual slots, stored apart from them (a name of its own, not slot_<index>, so a later maxSlots change never turns the quick save into a manual slot). Report it to the session at that index.",
       "Slot rules (delete, Continue, autosave, F5/F9 quick save and load, the indicator) are core's SaveSlotsSession (save-slots.ts); the binding does the I/O each step names and draws the rows, the indicator and the delete prompt (askDelete, then confirmDelete or cancelDelete). Delete's words are core's SAVE_SLOT_DELETE_WORDS (save-indicator-model.ts): bind the table, never copy the words.",
       "When the save files change outside the game (a save copied in, restored, deleted or damaged), pass the new listing to the session's diskChanged; never rebuild the session. It keeps the autosave target only while that save is unchanged, so autosave never writes over an outside change, and says so in SAVE_SLOT_DISK_WORDS. Report each finished write with the savedAt the file carries, or the game's own save reads as changed.",
+      "A refused Load is the slot outcome invalid_format, whatever refused it: another world's save (wrong_world) or another runtime's (wrong_runtime, C5-3), which readRuntimeSave / checkSaveOwnership check first, or the checked read (wrong_version, unregistered_extension, any unreadable_*). Report the refusal's code to the session's finished step (refusal), or map it with slotOutcomeOfLoadRefusal / loadRefusalMessage, and show SLOT_MESSAGES.invalid_format, never words of your own. New Game starts from a fresh runtime save (RuntimeSave.newGame, runtime-save.ts), never from the document a Load put there.",
+      "A save written inside an interior carries currentState.interiorState {buildingId, buildingName, buildingType, layoutSeed}, null outside: layoutSeed null for a stated interior (the IR lays it out; statedInteriorState in props/interior-save.ts), a number only for a seeded one. While it is not null, player.position and player.rotation are in the interior's own frame (props-and-interiors section 1a): subtract the point where the scene draws that frame's origin (interiorFramePoint), never write the scene's own offset. On load, place the player with interiorLoadOf: it never refuses, and its note says when the saved point was not kept.",
       "A new system's state goes into the save as a registered save extension (extensionRegistry), never as a new top-level field.",
       "Raise game_saved after a completed write and game_loaded after a read and migration, built with gameSavedEvent / gameLoadedEvent."
     ],

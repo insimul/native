@@ -1311,7 +1311,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
       integrity: computeSaveFileIntegrity(saveFile)
     };
   }
-  function validateSaveFileEnvelope(candidate2) {
+  function envelopeCodeOfLoadRefusal(code) {
+    return typeof code === "string" ? "invalid_format" : null;
+  }
+  function validateSaveFileEnvelope(candidate2, options = {}) {
     if (!candidate2 || typeof candidate2 !== "object") {
       return { ok: false, error: { code: "invalid_format", message: "Envelope must be a JSON object" } };
     }
@@ -1341,6 +1344,18 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
         error: {
           code: "integrity_mismatch",
           message: "Save file integrity check failed \u2014 file may be corrupted or tampered"
+        }
+      };
+    }
+    const refused = options.check?.(e.saveFile);
+    if (refused) {
+      const named = envelopeCodeOfLoadRefusal(refused.code) !== null;
+      return {
+        ok: false,
+        error: {
+          code: "invalid_format",
+          message: typeof refused.message === "string" && refused.message.length > 0 ? refused.message : `the save was refused: ${String(refused.code)}`,
+          ...named ? { refusal: refused.code } : {}
         }
       };
     }
@@ -1890,7 +1905,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "use_vocabulary_category": "use_vocabulary",
     "master_words": "use_vocabulary",
     "sustained_conversation": "complete_conversation",
-    "practice_grammar": "use_vocabulary",
+    // A grammar objective keeps its own type (PL.core-grammar-objective-type, U120(4)): `grammar`, which
+    // QuestCompletionEngine.trackGrammarDemonstrated counts (grammar uses toward requiredCount, default 2).
+    "practice_grammar": "grammar",
     // SRS / spaced repetition review variations
     "review_vocabulary": "use_vocabulary",
     "vocabulary_review": "use_vocabulary",
@@ -1963,12 +1980,16 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "listen_to_conversation": "eavesdrop",
     "eavesdrop_conversation": "eavesdrop",
     "spy_on_conversation": "eavesdrop",
-    // Grammar-focused objective aliases (map to canonical types)
-    "grammar_pattern": "use_vocabulary",
-    "grammar_practice": "use_vocabulary",
-    "grammar_drill": "use_vocabulary",
-    "conjugation": "use_vocabulary",
-    "conjugate": "use_vocabulary",
+    // Grammar-focused objective aliases. A grammar objective counts grammar uses, not words
+    // (PL.core-grammar-objective-type, U120(4)): `grammar` is the type trackGrammarDemonstrated decides.
+    // grammar_pattern is the hydrator's name for practice_grammar(Pattern, Count), grammar_activities its
+    // name for the chapter quests' grammar meta-objective (grammar_activities(Count)).
+    "grammar_pattern": "grammar",
+    "grammar_activities": "grammar",
+    "grammar_practice": "grammar",
+    "grammar_drill": "grammar",
+    "conjugation": "grammar",
+    "conjugate": "grammar",
     "grammar_conversation": "complete_conversation",
     "grammar_focus": "complete_conversation"
   };
@@ -4043,6 +4064,13 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     missing_save_file: "Save data is missing or unreadable.",
     integrity_mismatch: "Save file integrity check failed \u2014 file may be corrupted or tampered."
   };
+  function slotOutcomeOfLoadRefusal(code) {
+    return envelopeCodeOfLoadRefusal(code);
+  }
+  function loadRefusalMessage(code) {
+    const outcome = slotOutcomeOfLoadRefusal(code);
+    return outcome ? SLOT_MESSAGES[outcome] : "";
+  }
   function slotSummaryLine(s) {
     if (!s) return "";
     const bits = [];
@@ -4102,12 +4130,14 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     /**
      * TS-only: run the real envelope validator over a loaded slot candidate and map
      * its verdict to a `SlotLoadResult`. `null`/`undefined` candidate = empty slot.
+     * With `check` (core's checked read: `(saveFile) => checkVillageSave(saveFile)`), a sound
+     * envelope whose save the read refuses is `invalid_format` (PL.core-load-refused-message).
      */
-    static classifyEnvelope(index, candidate2, summarize) {
+    static classifyEnvelope(index, candidate2, summarize, check) {
       if (candidate2 === null || candidate2 === void 0) {
         return { index, outcome: "empty" };
       }
-      const res = validateSaveFileEnvelope(candidate2);
+      const res = validateSaveFileEnvelope(candidate2, { check });
       if (res.ok) {
         return { index, outcome: "ok", summary: summarize?.(candidate2) };
       }
@@ -4819,7 +4849,12 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     // PL.core-language-host-event round 2 (M1): one vocabulary_usage put a 'vocabulary' (chapter-quest
     // meta) objective of requiredCount 4 at 2 (trackVocabularyUsage and the mapping's quantity each
     // added one); trackVocabularyUsage alone decides it, each word once, with its default (10).
-    vocabulary_usage: ["vocabulary"]
+    vocabulary_usage: ["vocabulary"],
+    // PL.core-grammar-objective-type (U120(4)): one grammar_demonstrated put a grammar objective of
+    // requiredCount 2 at 2 and completed one with no requiredCount at once (trackGrammarDemonstrated
+    // added its patternCount and the mapping's quantity, default 1, added one more);
+    // trackGrammarDemonstrated alone decides it, with its default (2).
+    grammar_demonstrated: ["grammar"]
   };
   var _QuestCompletionEngine = class _QuestCompletionEngine {
     constructor() {
@@ -6463,7 +6498,8 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     "write_response",
     "describe_scene",
     "ask_for_directions",
-    "conversation_initiation"
+    "conversation_initiation",
+    "grammar"
   ]);
   var DynamicQuestWaypointDirector = class {
     /**
@@ -18675,7 +18711,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     const k = key.toLowerCase().replace(/[_-]/g, "");
     return SECRET_KEY_ENDINGS.some((e) => k.endsWith(e));
   }
-  var SECRET_VALUE_RES = [
+  var BUILD_SECRET_VALUE_RES = [
     /\beyJ[A-Za-z0-9_-]{8,}\.eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/,
     // a JSON Web Token
     /\b(?:postgres|postgresql|mysql|mongodb(?:\+srv)?|redis|rediss|amqp|amqps):\/\//i,
@@ -18691,7 +18727,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     /-----BEGIN (?:[A-Z]+ )?PRIVATE KEY-----/
   ];
   function looksLikeSecret(value) {
-    return SECRET_VALUE_RES.some((re) => re.test(value));
+    return BUILD_SECRET_VALUE_RES.some((re) => re.test(value));
   }
   var BUILD_SECRET_KEY_STAND_IN = "<credential>";
   function findSecrets(value) {
@@ -19522,6 +19558,7 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   }
 
   // @insimul/core/src/progression/progression-save.ts
+  var PROGRESSION_EXTENSION_KEY = "progression";
   var PROGRESSION_BLOCK_MEMBERS = Object.freeze(["gamification", "skills"]);
   var PROGRESSION_GAMIFICATION_KEYS = Object.freeze(["xp", "unlocked", "daily", "consecutiveDays", "dailyStreak", "lastDailyDate", "counters"]);
   var PROGRESSION_DAILY_KEYS = Object.freeze(["dateKey", "progress", "completed"]);
@@ -23580,16 +23617,7 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
       if (!engine) return 0;
       let written = 0;
       for (const actor of this.roster()) {
-        const delta = mergeSkillDeltas(
-          ...Object.entries(actor.levels).map(
-            ([skill, level]) => skillLevelDelta(actor.id, skill, void 0, level)
-          ),
-          ...Object.entries(actor.xp).map(([skill, xp]) => skillXpDelta(actor.id, skill, void 0, xp)),
-          ...Object.entries(actor.points).map(
-            ([tree, points3]) => skillPointsDelta(actor.id, tree, void 0, points3)
-          ),
-          ...actor.unlocked.map((node) => skillUnlockDelta(actor.id, node))
-        );
+        const delta = actorPublishDelta(actor);
         for (const fact of delta.assert) {
           await engine.assertFact(stripPeriod5(fact));
           written += 1;
@@ -23639,6 +23667,18 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
       }
     }
   };
+  function actorPublishDelta(actor) {
+    return mergeSkillDeltas(
+      ...Object.entries(actor.levels).map(
+        ([skill, level]) => skillLevelDelta(actor.id, skill, void 0, level)
+      ),
+      ...Object.entries(actor.xp).map(([skill, xp]) => skillXpDelta(actor.id, skill, void 0, xp)),
+      ...Object.entries(actor.points).map(
+        ([tree, points3]) => skillPointsDelta(actor.id, tree, void 0, points3)
+      ),
+      ...actor.unlocked.map((node) => skillUnlockDelta(actor.id, node))
+    );
+  }
   function stripPeriod5(clause) {
     return clause.replace(/\.$/, "");
   }
@@ -23650,6 +23690,810 @@ words_used_at_least(A, N) :- findall(W, vocab_used(A, W, _), Ws), length(Ws, C),
     for (const key of Object.keys(record).sort(compareIds)) out[key] = record[key];
     return out;
   }
+
+  // @insimul/core/src/progression/skill-kb-reserved.ts
+  var SKILL_KB_RESERVED_PREDICATES = Object.freeze([
+    "abolish/1",
+    "abolish/2",
+    "abort/0",
+    "abs/1",
+    "absolute_file_name/2",
+    "absolute_file_name/3",
+    "absolute_filename/2",
+    "access_file/2",
+    "acos/1",
+    "acosh/1",
+    "acyclic_term/1",
+    "alias/2",
+    "append/1",
+    "append/2",
+    "append/3",
+    "arg/3",
+    "argv/1",
+    "asinh/1",
+    "asserta/1",
+    "asserta/2",
+    "assertz/1",
+    "assertz/2",
+    "at_end_of_stream/0",
+    "at_end_of_stream/1",
+    "atan/1",
+    "atan2/2",
+    "atanh/1",
+    "atom/1",
+    "atom_chars/2",
+    "atom_codes/2",
+    "atom_concat/3",
+    "atom_length/2",
+    "atom_lower/2",
+    "atom_number/2",
+    "atom_upper/2",
+    "atomic/1",
+    "atomic_concat/3",
+    "atomic_list_concat/2",
+    "atomic_list_concat/3",
+    "attribute/0",
+    "attribute/1",
+    "attribute/2",
+    "attribute/3",
+    "attribute/4",
+    "attribute/5",
+    "attribute/6",
+    "attribute/7",
+    "attribute/8",
+    "attribute/9",
+    "atts_modules_/2",
+    "await/0",
+    "bagof/3",
+    "base64/3",
+    "bb_b_put/2",
+    "bb_delete/2",
+    "bb_get/2",
+    "bb_put/2",
+    "bb_update/3",
+    "between/3",
+    "busy/1",
+    "call/1",
+    "call/2",
+    "call/3",
+    "call/4",
+    "call/5",
+    "call/6",
+    "call/7",
+    "call/8",
+    "call_cleanup/2",
+    "call_det/2",
+    "call_nth/2",
+    "call_residue_vars/2",
+    "call_task/1",
+    "call_task/2",
+    "call_task/3",
+    "call_task/4",
+    "call_task/5",
+    "call_task/6",
+    "call_task/7",
+    "call_task/8",
+    "call_with_error_context/2",
+    "call_with_time_limit/2",
+    "callable/1",
+    "can_be/2",
+    "can_be/4",
+    "catch/3",
+    "ceiling/1",
+    "cfor/3",
+    "char_code/2",
+    "chars_base64/3",
+    "chars_urlenc/3",
+    "chdir/1",
+    "clause/2",
+    "clause/3",
+    "close/1",
+    "close/2",
+    "collect_goals_/3",
+    "collect_goals_/4",
+    "compare/3",
+    "compound/1",
+    "consult/1",
+    "copy_file/2",
+    "copy_term/2",
+    "copy_term/3",
+    "copy_term_nat/2",
+    "copysign/2",
+    "countall/2",
+    "cpu_time/1",
+    "crypto_n_random_bytes/2",
+    "current_engine/1",
+    "current_error/1",
+    "current_input/1",
+    "current_module/1",
+    "current_op/3",
+    "current_output/1",
+    "current_predicate/1",
+    "current_prolog_flag/2",
+    "current_rule/1",
+    "cyclic_term/1",
+    "date_time/6",
+    "date_time/7",
+    "dcg_translate/2",
+    "deconsult/1",
+    "delete_file/1",
+    "denominator/1",
+    "directory_files/2",
+    "display/1",
+    "display/2",
+    "div/2",
+    "divmod/4",
+    "domain_error/2",
+    "domain_error/3",
+    "dump_attvars_/1",
+    "dump_attvars_/2",
+    "duplicate_term_/2",
+    "e/0",
+    "end_of_file/0",
+    "end_wait/0",
+    "engine_create/3",
+    "engine_create/4",
+    "engine_destroy/1",
+    "engine_fetch/1",
+    "engine_next/2",
+    "engine_post/2",
+    "engine_post/3",
+    "engine_self/1",
+    "engine_yield/1",
+    "epsilon/0",
+    "erase/1",
+    "erf/1",
+    "erfc/1",
+    "evaluable_property/2",
+    "exclude/3",
+    "exists_directory/1",
+    "exists_file/1",
+    "exp/1",
+    "expand_term/2",
+    "fail/0",
+    "failingvarskip/1",
+    "false/0",
+    "findall/3",
+    "findall/4",
+    "findnsols/4",
+    "flatten/2",
+    "flatten_/3",
+    "float/1",
+    "float_fractional_part/1",
+    "float_integer_part/1",
+    "floor/1",
+    "flush_output/0",
+    "flush_output/1",
+    "foldl/4",
+    "foldl/5",
+    "foldl/6",
+    "forall/2",
+    "fork/0",
+    "format/1",
+    "format/2",
+    "format/3",
+    "functor/3",
+    "gcd/2",
+    "get0/1",
+    "get0/2",
+    "get_atts/2",
+    "get_code/1",
+    "get_code/2",
+    "get_seed/1",
+    "get_time/1",
+    "get_unbuffered_char/1",
+    "get_unbuffered_code/1",
+    "getenv/2",
+    "getfile/2",
+    "getfile/3",
+    "getline/1",
+    "getline/2",
+    "getline/3",
+    "getlines/1",
+    "getlines/2",
+    "getlines/3",
+    "goal_expansion/2",
+    "ground/1",
+    "halt/0",
+    "halt/1",
+    "help/0",
+    "help/1",
+    "help/2",
+    "hex_bytes/2",
+    "hex_chars/2",
+    "if/3",
+    "ignore/1",
+    "include/3",
+    "instance/2",
+    "instantiation_error/0",
+    "instantiation_error/1",
+    "integer/1",
+    "intersection/3",
+    "is/2",
+    "is_absolute_file_name/1",
+    "is_bigint/1",
+    "is_engine/1",
+    "is_list/1",
+    "is_list_or_partial_list/1",
+    "is_partial_list/1",
+    "is_set/1",
+    "is_stream/1",
+    "iso_dif/2",
+    "keysort/2",
+    "last/2",
+    "length/2",
+    "length_addendum/3",
+    "length_rundown/2",
+    "limit/2",
+    "list/1",
+    "list_max/2",
+    "list_min/2",
+    "list_sum/2",
+    "list_to_set/2",
+    "listing/0",
+    "listing/1",
+    "load_files/1",
+    "load_files/2",
+    "load_text/2",
+    "loadfile/2",
+    "log/1",
+    "log/2",
+    "log10/1",
+    "lsb/1",
+    "make/0",
+    "make_directory/1",
+    "make_directory_path/1",
+    "map_close/1",
+    "map_count/2",
+    "map_create/2",
+    "map_del/2",
+    "map_get/3",
+    "map_list/2",
+    "map_set/3",
+    "maplist/2",
+    "maplist/3",
+    "maplist/4",
+    "maplist/5",
+    "maplist/6",
+    "maplist/7",
+    "maplist/8",
+    "max/2",
+    "max_list/2",
+    "member/2",
+    "memberchk/2",
+    "message_queue_create/1",
+    "meta_predicate/1",
+    "min/2",
+    "min_list/2",
+    "mod/2",
+    "modularize/4",
+    "module_help/1",
+    "module_help/2",
+    "module_help/3",
+    "module_info/2",
+    "msb/1",
+    "msort/2",
+    "multifile/1",
+    "must_be/2",
+    "must_be/4",
+    "mutex_create/1",
+    "nb_setarg/3",
+    "nl/0",
+    "nl/1",
+    "nonvar/1",
+    "not/1",
+    "now/0",
+    "now/1",
+    "nth0/3",
+    "nth0/4",
+    "nth1/3",
+    "nth1/4",
+    "number/1",
+    "number_chars/2",
+    "number_codes/2",
+    "numberlist_/3",
+    "numbervars/3",
+    "numerator/1",
+    "numlist/3",
+    "octal_chars/2",
+    "offset/2",
+    "once/1",
+    "op/3",
+    "open/3",
+    "open/4",
+    "option/2",
+    "option/3",
+    "parse_csv_file/2",
+    "parse_csv_line/2",
+    "parse_csv_line/3",
+    "pclose/1",
+    "peek_byte/1",
+    "peek_byte/2",
+    "peek_char/1",
+    "peek_char/2",
+    "peek_code/1",
+    "peek_code/2",
+    "permutation/2",
+    "pi/0",
+    "popcount/1",
+    "popen/4",
+    "portray/1",
+    "portray_clause/1",
+    "portray_clause/2",
+    "posix_ctime/2",
+    "posix_fork/1",
+    "posix_getpid/1",
+    "posix_getppid/1",
+    "posix_gmtime/2",
+    "posix_localtime/2",
+    "posix_mktime/2",
+    "posix_strftime/3",
+    "posix_strptime/3",
+    "posix_time/1",
+    "predicate_property/2",
+    "pretty/1",
+    "print/1",
+    "print/2",
+    "print_goals_/2",
+    "process_create/3",
+    "process_kill/1",
+    "process_kill/2",
+    "process_modules_/5",
+    "process_var_/5",
+    "process_vars_/3",
+    "process_wait/2",
+    "process_wait/3",
+    "prolog_load_context/2",
+    "put/1",
+    "put/2",
+    "put_atts/2",
+    "put_byte/1",
+    "put_byte/2",
+    "put_char/1",
+    "put_char/2",
+    "put_code/1",
+    "put_code/2",
+    "random/1",
+    "random_between/3",
+    "random_float/0",
+    "random_integer/0",
+    "rational/1",
+    "raw_argv/1",
+    "rdiv/2",
+    "read/1",
+    "read/2",
+    "read_file_to_string/3",
+    "read_from_atom/2",
+    "read_from_chars/2",
+    "read_line_to_codes/2",
+    "read_line_to_string/2",
+    "read_term/2",
+    "read_term/3",
+    "read_term_from_atom/3",
+    "read_term_from_chars/3",
+    "read_term_from_chars_/3",
+    "read_term_from_chars_/4",
+    "reconsult/1",
+    "recv/1",
+    "redo/1",
+    "redo/2",
+    "rem/2",
+    "rename_file/2",
+    "repeat/0",
+    "replace/4",
+    "representation_error/1",
+    "reset/3",
+    "resource_error/1",
+    "retract/1",
+    "retract/2",
+    "retractall/1",
+    "reverse/2",
+    "round/1",
+    "same_length/2",
+    "savefile/2",
+    "see/1",
+    "seeing/1",
+    "seen/0",
+    "select/3",
+    "selectchk/3",
+    "send/1",
+    "set_error/1",
+    "set_input/1",
+    "set_output/1",
+    "set_prolog_flag/2",
+    "set_seed/1",
+    "set_stream/2",
+    "set_stream_position/2",
+    "setof/3",
+    "setrand/1",
+    "setup_call_cleanup/3",
+    "shift/1",
+    "sign/1",
+    "size_file/2",
+    "sleep/1",
+    "sort/2",
+    "sort/4",
+    "source_info/2",
+    "split/4",
+    "split_string/4",
+    "sqrt/1",
+    "srandom/1",
+    "sre_compile/2",
+    "sre_match/4",
+    "sre_match_all/3",
+    "sre_match_all_/4",
+    "sre_match_all_in_file/3",
+    "sre_match_all_pos/3",
+    "sre_match_all_pos_/5",
+    "sre_match_all_pos_in_file/3",
+    "sre_matchp/4",
+    "sre_subst/4",
+    "sre_subst_all/4",
+    "sre_subst_all_/5",
+    "sre_subst_all_in_file/4",
+    "sre_substp/4",
+    "statistics/0",
+    "statistics/2",
+    "stream_property/2",
+    "string/1",
+    "string_codes/2",
+    "string_concat/3",
+    "string_length/2",
+    "string_lower/2",
+    "string_upper/2",
+    "strip_module/3",
+    "sub_atom/5",
+    "sub_string/5",
+    "subsumes_term/2",
+    "subtract/3",
+    "succ/2",
+    "sum_list/2",
+    "sys_enum_runs_/3",
+    "sys_globals_kernel_/3",
+    "sys_goal_split_/3",
+    "sys_key_run_/4",
+    "sys_same_vars_/2",
+    "sys_var_subtract_/3",
+    "tab/1",
+    "tab/2",
+    "task/1",
+    "task/2",
+    "task/3",
+    "task/4",
+    "task/5",
+    "task/6",
+    "task/7",
+    "tasklist/2",
+    "tasklist/3",
+    "tasklist/4",
+    "tasklist/5",
+    "tasklist/6",
+    "tasklist/7",
+    "tasklist/8",
+    "tell/1",
+    "telling/1",
+    "term_attributed_variables_/2",
+    "term_attvars_/3",
+    "term_expansion/2",
+    "term_hash/2",
+    "term_hash/3",
+    "term_singletons/2",
+    "term_to_atom/2",
+    "term_variables/2",
+    "term_variables/3",
+    "thread_create/2",
+    "thread_get_message/1",
+    "thread_join/1",
+    "thread_join/2",
+    "thread_peek_message/1",
+    "thread_property/1",
+    "thread_send_message/1",
+    "throw/1",
+    "time/1",
+    "time_file/2",
+    "time_out/3",
+    "told/0",
+    "trace/0",
+    "transpose/2",
+    "true/0",
+    "truncate/1",
+    "type_error/2",
+    "type_error/3",
+    "unget_byte/1",
+    "unget_byte/2",
+    "unget_char/1",
+    "unget_char/2",
+    "unget_code/1",
+    "unget_code/2",
+    "unifiable/3",
+    "unify_with_occurs_check/2",
+    "union/3",
+    "unload_files/1",
+    "unsetenv/1",
+    "urlenc/3",
+    "use_module/1",
+    "use_module/2",
+    "using/0",
+    "uuid/1",
+    "var/1",
+    "variant/2",
+    "wait/0",
+    "wall_time/1",
+    "with_mutex/2",
+    "with_output_to/2",
+    "working_directory/2",
+    "write/1",
+    "write/2",
+    "write_canonical/1",
+    "write_canonical/2",
+    "write_canonical_to_atom/3",
+    "write_canonical_to_chars/3",
+    "write_csv_file/3",
+    "write_term/2",
+    "write_term/3",
+    "write_term_to_atom/3",
+    "write_term_to_chars/3",
+    "writeln/1",
+    "writeln/2",
+    "writeq/1",
+    "writeq/2",
+    "xor/2",
+    "xthread_statistics/2",
+    "yield/0"
+  ]);
+
+  // @insimul/core/src/progression/skill-kb.ts
+  var SKILL_KB_FACT_REFUSALS = Object.freeze(["unreadable", "skill_owned", "authored", "duplicate", "reserved"]);
+  var SKILL_KB_ROSTER_PREDICATES = SKILL_RESOLUTION_PREDICATES;
+  var SKILL_KB_PACK_RULE_HEADS = Object.freeze(prologClauseHeads(SKILL_PREDICATES_PROLOG));
+  function prologClauseHeads(text4) {
+    const SYMBOL = "+-*/\\^<>=~:.?@#&$";
+    const clauses = [];
+    let clause = "";
+    let depth = 0;
+    for (let i = 0; i < text4.length; i++) {
+      const ch = text4[i];
+      if (ch === "%") {
+        const nl = text4.indexOf("\n", i);
+        i = (nl < 0 ? text4.length : nl) - 1;
+        clause += " ";
+      } else if (ch === "/" && text4[i + 1] === "*") {
+        const end = text4.indexOf("*/", i + 2);
+        i = end < 0 ? text4.length : end + 1;
+        clause += " ";
+      } else if (ch === "'" || ch === '"' || ch === "`") {
+        let j = i + 1;
+        for (; j < text4.length && text4[j] !== ch; j++) if (text4[j] === "\\") j++;
+        clause += text4.slice(i, j + 1);
+        i = j;
+      } else if (ch === "0" && text4[i + 1] === "'" && !/[A-Za-z0-9_]/.test(text4[i - 1] ?? "")) {
+        i += text4[i + 2] === "\\" ? 3 : 2;
+        clause += "0";
+      } else if (ch === "." && depth === 0 && !SYMBOL.includes(text4[i - 1] ?? " ") && (i + 1 >= text4.length || /[\s%]/.test(text4[i + 1]))) {
+        clauses.push(clause.trim());
+        clause = "";
+      } else {
+        if ("([{".includes(ch)) depth++;
+        else if (")]}".includes(ch)) depth--;
+        clause += ch;
+      }
+    }
+    if (clause.trim() !== "") throw new Error(`prologClauseHeads: text after the last clause: ${clause.trim().slice(0, 60)}`);
+    const heads = /* @__PURE__ */ new Set();
+    for (const c of clauses) {
+      if (c.startsWith(":-")) continue;
+      const m = /^([a-z][A-Za-z0-9_]*)(\(?)/.exec(c);
+      if (!m) throw new Error(`prologClauseHeads: a clause whose head is not an unquoted atom: ${c.slice(0, 60)}`);
+      let arity = 0;
+      if (m[2]) {
+        let d = 0;
+        arity = 1;
+        for (let i = m[1].length; i < c.length; i++) {
+          const ch = c[i];
+          if (ch === "'" || ch === '"') {
+            for (i++; i < c.length && c[i] !== ch; i++) if (c[i] === "\\") i++;
+          } else if ("([{".includes(ch)) d++;
+          else if (")]}".includes(ch)) {
+            if (--d === 0) break;
+          } else if (ch === "," && d === 1) arity++;
+        }
+      }
+      heads.add(`${m[1]}/${arity}`);
+    }
+    return [...heads].sort(compareIds);
+  }
+  var ATOM = /^[a-z][A-Za-z0-9_]*$/;
+  var CONTROL = /[\u0000-\u001f\u007f]/;
+  var RESERVED = new Set(SKILL_KB_RESERVED_PREDICATES);
+  var isObj6 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  function skillKbClause(fact) {
+    const arg = (a) => typeof a === "number" ? skillKbNumber(a) : serializeArg(a);
+    return fact.args.length === 0 ? `${fact.predicate}.` : `${fact.predicate}(${fact.args.map(arg).join(", ")}).`;
+  }
+  function skillKbNumber(n) {
+    return String(n).replace(/^(-?\d+)e/, "$1.0e");
+  }
+  function skillKbLiveFactOf(fact) {
+    if (!isObj6(fact) || typeof fact.predicate !== "string" || !ATOM.test(fact.predicate) || !Array.isArray(fact.args)) return { ok: false, code: "unreadable" };
+    const args = [];
+    for (const a of fact.args) {
+      if (typeof a === "string" && !CONTROL.test(a) || typeof a === "number" && Number.isFinite(a)) args.push(a);
+      else return { ok: false, code: "unreadable" };
+    }
+    const signature = `${fact.predicate}/${args.length}`;
+    if (SKILL_KB_ROSTER_PREDICATES.includes(signature) || SKILL_KB_PACK_RULE_HEADS.includes(signature)) return { ok: false, code: "skill_owned" };
+    if (SKILL_AUTHORED_PREDICATES.includes(signature)) return { ok: false, code: "authored" };
+    if (RESERVED.has(signature)) return { ok: false, code: "reserved" };
+    const normal = { predicate: fact.predicate, args };
+    return { ok: true, live: { fact: normal, clause: skillKbClause(normal) } };
+  }
+  function skillKbLiveFactsOf(prologFacts) {
+    if (prologFacts === void 0 || prologFacts === null) return { live: [], dropped: [] };
+    if (!Array.isArray(prologFacts)) return { live: [], dropped: [{ at: "prologFacts", code: "unreadable" }] };
+    const held = /* @__PURE__ */ new Map();
+    const dropped2 = [];
+    prologFacts.forEach((f, i) => {
+      const r = skillKbLiveFactOf(f);
+      if (!r.ok) dropped2.push({ at: `prologFacts[${i}]`, code: r.code });
+      else if (held.has(r.live.clause)) dropped2.push({ at: `prologFacts[${i}]`, code: "duplicate" });
+      else held.set(r.live.clause, r.live);
+    });
+    return { live: [...held.values()].sort((a, b) => compareIds(a.clause, b.clause)), dropped: dropped2 };
+  }
+  function skillKbLoadOf(currentState) {
+    const cs = isObj6(currentState) ? currentState : {};
+    const extensions = isObj6(cs.extensions) ? cs.extensions : {};
+    const block = readProgressionBlock(extensions[PROGRESSION_EXTENSION_KEY]);
+    if (!block.ok) return { ok: false, refusal: { code: "unreadable_progression", field: `currentState.extensions.${PROGRESSION_EXTENSION_KEY}`, keys: block.keys } };
+    const { live, dropped: dropped2 } = skillKbLiveFactsOf(cs.prologFacts);
+    return { ok: true, live, dropped: dropped2, skills: block.value?.skills ?? null };
+  }
+  function composeSkillKbProgram(input) {
+    const pack = input.pack ?? SKILL_PREDICATES_PROLOG;
+    const facts = input.facts ?? [];
+    const parts = [pack];
+    if (facts.length > 0) {
+      const signatures = /* @__PURE__ */ new Set();
+      for (const clause of facts) {
+        const open = clause.indexOf("(");
+        signatures.add(open < 0 ? `${clause.replace(/\.$/, "")}/0` : `${clause.slice(0, open)}/${arityOf(clause.slice(open))}`);
+      }
+      parts.push([...signatures].sort(compareIds).map((s) => `:- dynamic(${s}).`).join("\n"));
+    }
+    if (input.world) parts.push(input.world);
+    if (facts.length > 0) parts.push(facts.join("\n"));
+    return parts.join("\n");
+  }
+  function arityOf(argText2) {
+    let n = 1;
+    let quoted = false;
+    for (let i = 0; i < argText2.length; i++) {
+      const ch = argText2[i];
+      if (quoted) {
+        if (ch === "\\") i++;
+        else if (ch === "'") quoted = false;
+      } else if (ch === "'") quoted = true;
+      else if (ch === ",") n++;
+    }
+    return n;
+  }
+  var bare = (f) => f.clause.replace(/\.$/, "");
+  var SkillKbSession = class _SkillKbSession {
+    constructor(world2, engine, current) {
+      __publicField(this, "world", world2);
+      __publicField(this, "engine", engine);
+      __publicField(this, "current", current);
+      __publicField(this, "live", /* @__PURE__ */ new Map());
+    }
+    /** A new game over `world`: no live facts, no roster. */
+    static async open(world2) {
+      const { engine, progression } = await _SkillKbSession.compose(world2, [], null);
+      return new _SkillKbSession(world2, engine, progression);
+    }
+    static async compose(world2, live, skills) {
+      const engine = await createPrologEngine();
+      const consulted = await engine.consult(composeSkillKbProgram({ pack: world2.pack, world: world2.program }));
+      if (!consulted.success) {
+        engine.destroy?.();
+        throw new Error(`skill KB: the skill pack and the world's program failed to consult: ${consulted.error ?? ""}`);
+      }
+      let held = [...live];
+      const refused = [];
+      if (live.length > 0 && !await engine.assertFacts(live.map(bare))) {
+        for (const f of live) await engine.retractFact(bare(f));
+        held = [];
+        for (const f of live) {
+          if (await engine.assertFact(bare(f))) held.push(f);
+          else {
+            await engine.retractFact(bare(f));
+            refused.push(f);
+          }
+        }
+      }
+      const progression = new SkillProgression({ engine, skills: world2.skills, trees: world2.trees, tuning: world2.tuning, ...skills ? { state: skills } : {} });
+      await progression.publishActors();
+      return { engine, progression, held, refused };
+    }
+    /** The decision layer over the current KB. A load replaces it. */
+    get progression() {
+      return this.current;
+    }
+    /** The live clauses, in clause order. */
+    facts() {
+      return [...this.live.keys()].sort(compareIds);
+    }
+    /** The live facts as `currentState.prologFacts` keeps them, in clause order. */
+    savedFacts() {
+      return this.facts().map((c) => {
+        const f = this.live.get(c).fact;
+        return { predicate: f.predicate, args: [...f.args] };
+      });
+    }
+    /** The program a recomposing host would consult now. */
+    program() {
+      return composeSkillKbProgram({ pack: this.world.pack, world: this.world.program, facts: this.facts() });
+    }
+    /**
+     * A fact the game asserted in play, layered onto the skill KB. A clause the engine refuses is taken
+     * off again, so the KB is as it was, and the answer is `reserved`.
+     */
+    async assert(fact) {
+      const r = skillKbLiveFactOf(fact);
+      if (!r.ok) return { changed: false, refusal: r.code };
+      if (this.live.has(r.live.clause)) return { changed: false };
+      if (!await this.engine.assertFact(bare(r.live))) {
+        await this.engine.retractFact(bare(r.live));
+        return { changed: false, refusal: "reserved" };
+      }
+      this.live.set(r.live.clause, r.live);
+      return { changed: true };
+    }
+    /** A fact the game retracted in play, taken off the skill KB. */
+    async retract(fact) {
+      const r = skillKbLiveFactOf(fact);
+      if (!r.ok) return { changed: false, refusal: r.code };
+      if (!this.live.has(r.live.clause)) return { changed: false };
+      await this.engine.retractFact(bare(r.live));
+      this.live.delete(r.live.clause);
+      return { changed: true };
+    }
+    /**
+     * A load: the skill KB composed again from the save's live facts and its restored, published
+     * roster. A refused load changes nothing.
+     */
+    async load(currentState) {
+      const r = skillKbLoadOf(currentState);
+      if (!r.ok) return { ok: false, refusal: r.refusal };
+      const { engine, progression, held, refused } = await _SkillKbSession.compose(this.world, r.live, r.skills);
+      this.engine.destroy?.();
+      this.engine = engine;
+      this.current = progression;
+      this.live.clear();
+      for (const f of held) this.live.set(f.clause, f);
+      if (refused.length === 0) return { ok: true, dropped: r.dropped };
+      const facts = currentState.prologFacts;
+      const out = [...r.dropped];
+      for (const f of refused) {
+        const i = facts.findIndex((x) => {
+          const v = skillKbLiveFactOf(x);
+          return v.ok && v.live.clause === f.clause;
+        });
+        out.push({ at: `prologFacts[${i}]`, code: "reserved" });
+      }
+      const index = (d) => Number(/\[(\d+)\]/.exec(d.at)?.[1] ?? -1);
+      return { ok: true, dropped: out.sort((a, b) => index(a) - index(b)) };
+    }
+    canUnlock(actor, node) {
+      return this.current.canUnlock(actor, node);
+    }
+    unlock(actor, node) {
+      return this.current.unlock(actor, node);
+    }
+    /** Release the KB (wasm has no finalizers). */
+    dispose() {
+      this.engine.destroy?.();
+    }
+  };
 
   // @insimul/core/src/ai/substrate-pack.ts
   var AI_SUBSTRATE_AREA = "agentAi";
@@ -32625,7 +33469,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
           this.sinceSaveSec = 0;
           this.ind = showSaveIndicator("loaded", p.kind);
         } else {
-          const found = result2?.outcome;
+          const found = result2?.outcome ?? slotOutcomeOfLoadRefusal(result2?.refusal) ?? void 0;
           if (found && found !== "ok" && found !== "empty" && found in SLOT_MESSAGES) {
             this.slots[p.slot] = { index: p.slot, outcome: found };
             this.ind = showSaveIndicator("load_failed", p.kind, SLOT_MESSAGES[found]);
@@ -33314,7 +34158,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   // @insimul/core/src/quests/tutorial-save.ts
   var TUTORIAL_EXTENSION_KEY = "tutorial";
   var TUTORIAL_BLOCK_MEMBERS = Object.freeze(["completed", "skipped", "current", "endedBySkip"]);
-  var isObj6 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  var isObj7 = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
   var isId = (v) => typeof v === "string" && v.length > 0;
   function readIds(v, name, bad3, taken = /* @__PURE__ */ new Set()) {
     if (v === void 0) return [];
@@ -33336,7 +34180,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   }
   function readTutorialBlock(b) {
     if (b === void 0 || b === null) return { ok: true, value: null };
-    if (!isObj6(b)) return { ok: false, keys: [] };
+    if (!isObj7(b)) return { ok: false, keys: [] };
     const bad3 = [];
     const completed = readIds(b.completed, "completed", bad3);
     const skipped = readIds(b.skipped, "skipped", bad3, new Set(completed ?? []));
@@ -34967,12 +35811,31 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   }
   var ACTION_REFUSALS = Object.freeze(["unknown_action", "busy", "wrong_place", "no_tool", "too_tired", "production_refused"]);
 
+  // @insimul/core/src/props/interior-save.ts
+  var STATED_LAYOUT_SEED = null;
+  var DEFAULT_INTERIOR_FLOOR_HEIGHT_M = 3;
+  var isRec = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+  function layoutSeedOf(v) {
+    return Number.isInteger(v) ? v : STATED_LAYOUT_SEED;
+  }
+  function readInteriorState(v) {
+    if (!isRec(v)) return null;
+    if (typeof v.buildingId !== "string" || v.buildingId === "") return null;
+    return {
+      buildingId: v.buildingId,
+      buildingName: typeof v.buildingName === "string" ? v.buildingName : "",
+      buildingType: typeof v.buildingType === "string" ? v.buildingType : "",
+      layoutSeed: layoutSeedOf(v.layoutSeed)
+    };
+  }
+
   // @insimul/core/src/props/interactables.ts
   var PROP_ACTIONS = ["open_board", "read_sign", "examine"];
-  var INTERACT_ACTIONS = ["close_panel", "get_off", "talk", "pick_up", "open_container", "open_board", "enter", "gather", "perform", "read_sign", "examine", "board"];
-  var INTERACT_ACTION_TIER = Object.freeze(["talk", "pick_up", "open_container", "open_board", "enter", "gather", "perform"]);
+  var INTERACT_ACTIONS = ["close_panel", "get_off", "talk", "pick_up", "open_container", "open_board", "enter", "exit", "gather", "perform", "read_sign", "examine", "board"];
+  var INTERACT_ACTION_TIER = Object.freeze(["talk", "pick_up", "open_container", "open_board", "enter", "exit", "gather", "perform"]);
   var INTERACT_LOOK_TIER = Object.freeze(["read_sign", "examine"]);
   var INTERACT_VEHICLE_TIER = Object.freeze(["board"]);
+  var INTERACT_INTERIOR_ACTIONS = Object.freeze(["close_panel", "open_container", "exit"]);
   var PROP_NOT_OFFERED_REASONS = ["built_fabric", "no_archetype"];
   var INTERACT_REFUSALS = ["bad_position"];
   var PROP_NOT_OFFERED_ARCHETYPES = Object.freeze(["prop.structural.wall", "prop.structural.fence"]);
@@ -34982,12 +35845,14 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     pick_up: 2.2,
     open_container: 2.2,
     open_board: 3.2,
+    exit: DOOR_PROMPT_RADIUS_M,
     read_sign: 2.6,
     examine: 2.6,
     board: 3.5,
     gather: 2,
     perform: 2.5
   });
+  var INTERACT_FLOOR_BAND_M = DEFAULT_INTERIOR_FLOOR_HEIGHT_M / 2;
   var INTERACT_DEVIATIONS = Object.freeze([
     {
       id: "fence",
@@ -35092,6 +35957,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       why: "an item atom is a key, not words"
     },
     {
+      id: "interior-exit",
+      unreal: `inside an interior (unreal 22f657b InsimulVillageProps.cpp InteractTargetAt 1193-1291) core's outdoor target over every candidate it passes, the village's included, and only where that finds nothing the exit, at distance 0 ("Exit <label>")`,
+      core: "inside, only an open panel, the interior's containers and its exit are candidates; the exit competes by nearest within rangesM.exit (2.0 m, <=) of the interior's entrance, a tie going to the container, and is the answer at any distance only when nothing else is in reach",
+      why: "a chest by the entrance would otherwise always shadow the exit; the village's villager, props and doors are not in the interior's scene; 2.0 m is the door prompt radius, a declared core value, since Unreal measured no exit reach"
+    },
+    {
       id: "vehicle-name",
       unreal: 'the prompt names the vehicle by Name.value_or(Id): a stated empty name reads "Board the "',
       core: "an empty or absent name falls back to the id, as a villager's and a pick-up's do",
@@ -35160,6 +36031,8 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function interactTarget(input, ranges = {}) {
     if (!finitePoint2(input?.at)) return { ok: false, refusal: { code: "bad_position", field: "at" } };
     if (nonEmpty3(input.panel)) return { ok: true, target: { action: "close_panel", kind: "panel", id: input.panel, prompt: "", distance: null } };
+    const inside = readInteriorState(input.interior);
+    if (inside !== null) return { ok: true, target: interiorTarget(input, inside.buildingId, inside.layoutSeed === STATED_LAYOUT_SEED, ranges) };
     const aboard = input.aboard;
     if (aboard && nonEmpty3(aboard.id)) {
       return { ok: true, target: { action: "get_off", kind: "vehicle", id: aboard.id, prompt: `Get off the ${nonEmpty3(aboard.name) ? aboard.name : aboard.id}`, distance: null } };
@@ -35226,6 +36099,165 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     }
     return { ok: true, target: nearest(rides) };
   }
+  function interiorTarget(input, buildingId, stated2, ranges) {
+    const reach = { ...INTERACT_RANGES_M, ...ranges };
+    const at = input.at;
+    const dist = (p) => Math.hypot(p.x - at.x, p.z - at.z);
+    const onFloor = (y) => !Number.isFinite(at.y) || !Number.isFinite(y) || Math.abs(at.y - y) < INTERACT_FLOOR_BAND_M;
+    const inReach = [];
+    for (const k of input.interior?.containers ?? []) {
+      if (!k || !nonEmpty3(k.id) || !finitePoint2(k.position)) continue;
+      const d2 = dist(k.position);
+      if (onFloor(k.position.y) && d2 <= reach.open_container) inReach.push({ action: "open_container", kind: "container", id: k.id, prompt: `Open the ${asciiLower(nonEmpty3(k.label) ? k.label : "container")}`, distance: d2 });
+    }
+    let exit = null;
+    const buildings = (input.buildings ?? []).filter((b) => b && nonEmpty3(b.id));
+    const d = doorPrompt(buildings, { position: { x: at.x, y: at.y ?? 0, z: at.z }, inside: buildingId });
+    if (d !== null && d.action === "exit") {
+      const b = buildings.find((x) => x.id === buildingId);
+      const entrance = stated2 ? (b?.interior?.doors ?? []).find((x) => x && x.kind === "entrance") : void 0;
+      const distance = entrance && finitePoint2(entrance.position) ? dist(entrance.position) : null;
+      exit = { action: "exit", kind: "door", id: d.building, prompt: `Exit ${d.label}`, distance };
+      if (distance !== null && onFloor(entrance?.position.y) && distance <= reach.exit) inReach.push(exit);
+    }
+    let best = null;
+    for (const c of inReach) if (best === null || c.distance < best.distance) best = c;
+    const found = best ?? exit;
+    return found === null ? null : { ...found, distance: found.distance === null ? null : round2(found.distance) };
+  }
+  var INTERACT_PRESS_SOURCES = ["interactables", "examine"];
+  var INTERACT_PRESS_PRECEDENCE = Object.freeze(["interactables", "examine"]);
+  var pickRef = (p) => p && nonEmpty3(p.id) ? { id: p.id, ...nonEmpty3(p.role) ? { role: p.role } : {} } : null;
+  function resolveInteractPress(target, examine) {
+    const t = target && nonEmpty3(target.id) ? target : null;
+    const p = pickRef(examine);
+    if (t !== null) {
+      const same = p !== null && p.id === t.id;
+      return { source: "interactables", id: t.id, target: t, pick: same ? p : null, shadowed: same ? null : p };
+    }
+    if (p !== null) return { source: "examine", id: p.id, target: null, pick: p, shadowed: null };
+    return { source: null, id: null, target: null, pick: null, shadowed: null };
+  }
+
+  // @insimul/core/src/language-learning/progress.ts
+  var CEFR_ORDER = Object.freeze(["A1", "A2", "B1", "B2", "C1", "C2"]);
+  var ENCOUNTER_TYPES = Object.freeze(["active_use", "passive_hover", "passive_read", "quiz_correct", "quiz_incorrect"]);
+  var ENCOUNTER_HALVES = Object.freeze({
+    active_use: 2,
+    passive_hover: 1,
+    passive_read: 1,
+    quiz_correct: 2,
+    quiz_incorrect: 0
+  });
+  var GRAMMAR_WEAKNESS_RATE = Object.freeze({ num: 2, den: 5 });
+  var BOOK_REFUSALS = Object.freeze(["empty_word", "unknown_encounter"]);
+
+  // @insimul/core/src/language-learning/adaptation.ts
+  var SIGNAL_WEIGHTS = Object.freeze({ grammar: 300, targetLanguage: 300, length: 200, quality: 200 });
+  var NPC_MODE_PERCENT = Object.freeze({
+    A1: { bilingual: 60, simplified: 40, natural: 0 },
+    A2: { bilingual: 30, simplified: 70, natural: 0 },
+    B1: { bilingual: 10, simplified: 0, natural: 90 },
+    B2: { bilingual: 0, simplified: 0, natural: 100 },
+    C1: { bilingual: 0, simplified: 0, natural: 100 },
+    C2: { bilingual: 0, simplified: 0, natural: 100 }
+  });
+  var HINT_BEHAVIOR = Object.freeze({
+    A1: { translationMode: "inline", showTranslateButton: true, translateButtonProminence: 2, newWordHintFrequency: 1, advancedVocabOnly: false },
+    A2: { translationMode: "inline", showTranslateButton: true, translateButtonProminence: 1, newWordHintFrequency: 3, advancedVocabOnly: false },
+    B1: { translationMode: "hover", showTranslateButton: false, translateButtonProminence: 0, newWordHintFrequency: 0, advancedVocabOnly: true },
+    B2: { translationMode: "click", showTranslateButton: false, translateButtonProminence: 0, newWordHintFrequency: 0, advancedVocabOnly: true },
+    C1: { translationMode: "click", showTranslateButton: false, translateButtonProminence: 0, newWordHintFrequency: 0, advancedVocabOnly: false },
+    C2: { translationMode: "click", showTranslateButton: false, translateButtonProminence: 0, newWordHintFrequency: 0, advancedVocabOnly: false }
+  });
+  var CEFR_ADVANCEMENT = Object.freeze({
+    "A1\u2192A2": { wordsLearned: 50, conversations: 3, textsRead: 0 },
+    "A2\u2192B1": { wordsLearned: 150, conversations: 10, textsRead: 5 },
+    "B1\u2192B2": { wordsLearned: 300, conversations: 25, textsRead: 15 },
+    "B2\u2192C1": { wordsLearned: 500, conversations: 50, textsRead: 30 },
+    "C1\u2192C2": { wordsLearned: 800, conversations: 100, textsRead: 50 }
+  });
+  var FREQUENCY_RANGES = Object.freeze({
+    A1: { min: 1, max: 200, label: "top 200 most common words", description: "Only the most basic, high-frequency everyday words (greetings, numbers, common nouns/verbs)" },
+    A2: { min: 1, max: 500, label: "top 500 most common words", description: "Common situational vocabulary (shopping, directions, food, travel, daily routines)" },
+    B1: { min: 1, max: 1500, label: "top 1500 most common words", description: "General vocabulary for most everyday topics (work, education, culture, opinions)" },
+    B2: { min: 1, max: null, label: "unrestricted vocabulary", description: "Full vocabulary including abstract concepts, idioms, and specialized terms" },
+    C1: { min: 1, max: null, label: "unrestricted vocabulary with sophisticated register", description: "Full vocabulary including academic, literary, and nuanced register-appropriate terms" },
+    C2: { min: 1, max: null, label: "native-level unrestricted vocabulary", description: "Complete native-speaker vocabulary including rare, archaic, dialectal, and highly specialized terms" }
+  });
+  var TEXT_COMPLEXITY = Object.freeze({
+    A1: { maxSentenceWords: 8, maxParagraphs: 2, vocabularyTier: "basic", questionType: "true_false" },
+    A2: { maxSentenceWords: 12, maxParagraphs: 3, vocabularyTier: "common", questionType: "simple_factual" },
+    B1: { maxSentenceWords: 20, maxParagraphs: 5, vocabularyTier: "varied", questionType: "inferential" },
+    B2: { maxSentenceWords: 30, maxParagraphs: 8, vocabularyTier: "advanced", questionType: "analytical" },
+    C1: { maxSentenceWords: 40, maxParagraphs: 10, vocabularyTier: "sophisticated", questionType: "analytical" },
+    C2: { maxSentenceWords: 50, maxParagraphs: 12, vocabularyTier: "native", questionType: "analytical" }
+  });
+  var QUEST_POOL_SIZES = Object.freeze({ A1: 30, A2: 25, B1: 15, B2: 10, C1: 8, C2: 5 });
+
+  // @insimul/core/src/language-learning/bank-profile.ts
+  var VOCABULARY_SORTS = Object.freeze(["mastery", "alpha", "recent", "used", "review"]);
+  var MASTERY_LABELS = Object.freeze({ new: "New", learning: "Learning", familiar: "Familiar", mastered: "Mastered" });
+  var MASTERY_TONES = Object.freeze({ new: "danger", learning: "warning", familiar: "success", mastered: "quest" });
+  var MASTERY_RANK = Object.freeze({ mastered: 0, familiar: 1, learning: 2, new: 3 });
+  var CARD_INTERACTIONS = Object.freeze(["idle", "gaze", "select"]);
+  var WEAKNESS_VOLUME_PERMILLE = Object.freeze(Array.from({ length: 9 }, (_, k) => k === 0 ? 0 : Math.min(25e3, Math.floor(Math.log2(k) * 8e3))));
+  var WEAKNESS_CONFIDENCE_PERMILLE = Object.freeze(Array.from({ length: 18 }, (_, k) => k === 0 ? 0 : Math.min(25e3, Math.floor(Math.log2(k) * 6e3))));
+  var QUEST_CATEGORIES = Object.freeze([
+    "conversation",
+    "vocabulary",
+    "grammar",
+    "translation_challenge",
+    "cultural",
+    "visual_vocabulary",
+    "follow_instructions",
+    "scavenger_hunt",
+    "listening_comprehension",
+    "navigation",
+    "pronunciation",
+    "time_activity"
+  ]);
+  var SKILL_DIMENSIONS = Object.freeze(["comprehension", "fluency", "vocabulary", "grammar", "pronunciation"]);
+  var SKILL_TO_CATEGORIES = Object.freeze({
+    comprehension: ["listening_comprehension", "follow_instructions", "translation_challenge"],
+    fluency: ["conversation", "navigation", "time_activity"],
+    vocabulary: ["vocabulary", "visual_vocabulary", "scavenger_hunt"],
+    grammar: ["grammar", "translation_challenge", "conversation"],
+    pronunciation: ["pronunciation", "conversation", "listening_comprehension"]
+  });
+  var LEARNING_HISTORY_STATUSES = Object.freeze(["completed", "failed", "abandoned"]);
+
+  // @insimul/core/src/language-learning/world-words.ts
+  var WORLD_WORD_REFUSALS = Object.freeze(["unknown_object", "already_named", "no_attempts_left", "nothing_in_reach"]);
+  var COLLECTION_TUNING = Object.freeze({ xpPerEntry: 3, options: 4, range: 5, kind: "vocabulary" });
+  var IDENTIFICATION_TUNING = Object.freeze({
+    passScore: 45,
+    hintAfter: 2,
+    promptForObject: "What is this? Answer in the target language.",
+    promptForActivity: "What is this person doing? Answer in the target language."
+  });
+  var NAMING_TUNING = Object.freeze({ range: 8, xpFirstTry: 5, xpRetry: 2, maxAttempts: 3, caseInsensitive: true });
+  var SIGN_ROLES = Object.freeze(["sign", "signpost", "sign_post", "notice", "notice_board", "billboard", "plaque", "marker", "street_sign", "shop_sign"]);
+  function nearestObject(objects, at, range = 5) {
+    let best = null;
+    let bestD = Infinity;
+    for (const o of objects) {
+      if (!o.role) continue;
+      const dx = at.x - o.position.x;
+      const dz = at.z - o.position.z;
+      const d = dx * dx + dz * dz;
+      if (d <= range * range && d < bestD) {
+        best = o;
+        bestD = d;
+      }
+    }
+    return best;
+  }
+
+  // @insimul/core/src/language-learning/prompt-selector.ts
+  var PROMPT_REFUSALS = Object.freeze(["nothing_in_reach", "no_prompt", "no_quiz"]);
+  var EXAMINE_RANGE = 5;
+  var examinePick = (objects, at, range = EXAMINE_RANGE) => nearestObject(objects, at, range);
 
   // @insimul/core/src/system-packs/composer.ts
   var WORLD_DEFAULT_VARIANT = "world-default";
@@ -36521,26 +37553,99 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     }
     return d;
   }
+  var START_GROUND_ID = "player-start";
   function settleClearance(items, obstacles2, iterations = SETTLE_DEFAULT_ITERATIONS, playerStart = null) {
     const bodies = items.map(clearanceBodyOf);
     const moves = settleBodies(bodies, obstacles2, settlePairGapOf("clearance"), iterations);
     if (playerStart === null) return { moves, setAsides: clearanceSetAsides(bodies, moves) };
-    const startMoves = [];
+    const n = bodies.length;
+    const ground = startClearOutline(playerStart.x, playerStart.z);
+    const settled = bodies.map((b, i) => moved(b.outline, [moves[i].dx, moves[i].dz]));
     const startCovered = [];
-    for (let i = 0; i < bodies.length; i += 1) {
-      const at = moved(bodies[i].outline, [moves[i].dx, moves[i].dz]);
-      const off = keepClearOfStart(at, playerStart);
-      if (off[0] === 0 && off[1] === 0) continue;
+    const off = bodies.map(() => [0, 0]);
+    let anyOff = false;
+    for (let i = 0; i < n; i += 1) {
+      const o = keepClearOfStart(settled[i], playerStart);
+      if (o[0] === 0 && o[1] === 0) continue;
       if (bodies[i].class === CLEARANCE_BUILDING) {
-        const ground = startClearOutline(playerStart.x, playerStart.z);
-        startCovered.push({ index: i, entityId: items[i].entityId, inside: quantizeMillimetre(-planSeparation(ground, at).gap) });
+        startCovered.push({ index: i, entityId: items[i].entityId, inside: quantizeMillimetre(-planSeparation(ground, settled[i]).gap) });
         continue;
       }
-      const dx = quantizeMillimetre(off[0]);
-      const dz = quantizeMillimetre(off[1]);
-      moves[i].dx = quantizeMillimetre(moves[i].dx + dx);
-      moves[i].dz = quantizeMillimetre(moves[i].dz + dz);
-      startMoves.push({ index: i, entityId: items[i].entityId, dx, dz });
+      off[i] = [quantizeMillimetre(o[0]), quantizeMillimetre(o[1])];
+      anyOff = true;
+    }
+    const tail = bodies.map(() => [0, 0]);
+    if (anyOff) {
+      const from = settled.map((p, i) => moved(p, off[i]));
+      const circles = settled.map((p) => circle(p));
+      const pieces = obstaclePieces(obstacles2);
+      const tailBodies = bodies.map((b, i) => {
+        if (b.obstacleGap < 0 || b.mass <= 0 || b.maxShift <= 0 || settled[i].length < 3) return { ...b, outline: from[i] };
+        let keep = b.obstacleGap;
+        for (const o of pieces) {
+          const c = circle(o.outline);
+          const d = Math.hypot(circles[i].centre[0] - c.centre[0], circles[i].centre[1] - c.centre[1]) - circles[i].radius - c.radius;
+          if (d >= keep) continue;
+          keep = Math.min(keep, planSeparation(settled[i], o.outline).gap);
+        }
+        return { ...b, outline: from[i], obstacleGap: keep < 0 ? -1 : keep };
+      });
+      const startIndex = n;
+      tailBodies.push({ entityId: START_GROUND_ID, lotId: "", outline: ground, mass: 0, maxShift: 0, obstacleGap: -1, class: -1, gap: 0 });
+      const index = new Map(tailBodies.map((b, i) => [b, i]));
+      const rule2 = settlePairGapOf("clearance");
+      const pairGap = (a, b) => {
+        const i = index.get(a);
+        const j = index.get(b);
+        if (i === startIndex || j === startIndex) {
+          const k = i === startIndex ? j : i;
+          if (bodies[k].class === CLEARANCE_BUILDING) return -1;
+          const sep2 = planSeparation(ground, from[k]).gap;
+          return sep2 < 0 ? -1 : Math.min(START_CLEAR_PUSH_M, sep2);
+        }
+        const g = rule2(a, b);
+        if (g < 0) return g;
+        const d = Math.hypot(circles[i].centre[0] - circles[j].centre[0], circles[i].centre[1] - circles[j].centre[1]) - circles[i].radius - circles[j].radius;
+        if (d >= g) return g;
+        const sep = planSeparation(settled[i], settled[j]).gap;
+        return sep < 0 ? -1 : Math.min(g, sep);
+      };
+      const again = settleBodies(tailBodies, obstacles2, pairGap, iterations);
+      for (let i = 0; i < n; i += 1) {
+        tail[i] = [quantizeMillimetre(off[i][0] + again[i].dx), quantizeMillimetre(off[i][1] + again[i].dz)];
+        if (bodies[i].class === CLEARANCE_BUILDING) continue;
+        const last = keepClearOfStart(moved(settled[i], tail[i]), playerStart);
+        if (last[0] === 0 && last[1] === 0) continue;
+        tail[i] = [quantizeMillimetre(tail[i][0] + quantizeMillimetre(last[0])), quantizeMillimetre(tail[i][1] + quantizeMillimetre(last[1]))];
+      }
+      const at = settled.map((p, i) => moved(p, tail[i]));
+      for (let i = 0; i < n; i += 1) {
+        if (tail[i][0] === 0 && tail[i][1] === 0 || bodies[i].class === CLEARANCE_BUILDING) continue;
+        if (again[i].limited) moves[i].limited = true;
+        const note = (short, of) => {
+          const q = quantizeMillimetre(short);
+          if (short >= 0.01 && q > moves[i].short) {
+            moves[i].short = q;
+            moves[i].shortOf = of;
+          }
+        };
+        for (let j = 0; j <= n; j += 1) {
+          if (j === i || tailBodies[j].outline.length < 3) continue;
+          const g = pairGap(tailBodies[i], tailBodies[j]);
+          if (g < 0) continue;
+          note(g - planSeparation(at[i], j === startIndex ? ground : at[j]).gap, j === startIndex ? START_GROUND_ID : bodies[j].entityId);
+        }
+        if (tailBodies[i].obstacleGap >= 0) {
+          for (const o of pieces) note(tailBodies[i].obstacleGap - planSeparation(at[i], o.outline).gap, o.entityId);
+        }
+      }
+    }
+    const startMoves = [];
+    for (let i = 0; i < n; i += 1) {
+      if (tail[i][0] === 0 && tail[i][1] === 0) continue;
+      moves[i].dx = quantizeMillimetre(moves[i].dx + tail[i][0]);
+      moves[i].dz = quantizeMillimetre(moves[i].dz + tail[i][1]);
+      startMoves.push({ index: i, entityId: items[i].entityId, dx: tail[i][0], dz: tail[i][1] });
     }
     return { moves, setAsides: clearanceSetAsides(bodies, moves), startMoves, startCovered };
   }
@@ -38745,6 +39850,18 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   }
 
   // @insimul/core/src/editor/layout/composition/grouping.ts
+  function propDiscCentre(p) {
+    return p.middle === void 0 ? [p.x, p.z] : [p.x + p.middle[0], p.z + p.middle[1]];
+  }
+  function onDiscs(input) {
+    return {
+      ...input,
+      props: input.props.map((p) => {
+        const [x, z] = propDiscCentre(p);
+        return { entityId: p.entityId, archetype: p.archetype, x, z, radius: p.radius };
+      })
+    };
+  }
   var GOLDEN = 0.6180339887498949;
   var CLUSTER_SPOTS = 256;
   function propPurpose(archetype, rules = DEFAULT_COMPOSITION_RULES) {
@@ -38881,8 +39998,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const sortSets = (s) => s.sort((a, b) => a.join("|") < b.join("|") ? -1 : 1);
     return { blocks: sortSets(blocks), rows: sortSets(kept) };
   }
-  function auditPropGroups(input, rules = DEFAULT_COMPOSITION_RULES) {
+  function auditPropGroups(stated2, rules = DEFAULT_COMPOSITION_RULES) {
     const g = rules.grouping;
+    const input = onDiscs(stated2);
     const anchors = anchorsOf(input, rules);
     const untied = [];
     const floraOnSquare = [];
@@ -38901,8 +40019,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     }
     return { untied: untied.sort(), ...findBlocksAndRows(open, rules), floraOnSquare: floraOnSquare.sort() };
   }
-  function groupProps(input, rules = DEFAULT_COMPOSITION_RULES) {
+  function groupProps(stated2, rules = DEFAULT_COMPOSITION_RULES) {
     const g = rules.grouping;
+    const input = onDiscs(stated2);
     const anchors = anchorsOf(input, rules);
     const before = auditPropGroups(input, rules);
     const why = /* @__PURE__ */ new Map();
@@ -39030,18 +40149,34 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       }
     }
     const placed = input.props.map((p, k) => ({ ...p, x: out[k].x, z: out[k].z })).filter((_, k) => out[k].verdict !== "set-aside");
-    return { props: out, before, after: auditPropGroups({ ...input, props: placed }, rules) };
+    const after = auditPropGroups({ ...input, props: placed }, rules);
+    stated2.props.forEach((p, k) => {
+      if (p.middle === void 0) return;
+      out[k].x -= p.middle[0];
+      out[k].z -= p.middle[1];
+    });
+    return { props: out, before, after };
   }
-  function regroupedHeading(input, prop, rules = DEFAULT_COMPOSITION_RULES) {
+  function regroupedHeading(stated2, prop, rules = DEFAULT_COMPOSITION_RULES) {
     if (prop.verdict !== "regrouped" || prop.anchor === null) return null;
+    const input = onDiscs(stated2);
     const a = anchorsOf(input, rules).find((x) => x.kind === prop.anchor.kind && x.id === prop.anchor.id);
     if (a === void 0) return null;
-    const r = a.reach([prop.x, prop.z]);
+    const m = stated2.props.find((p) => p.entityId === prop.entityId)?.middle ?? [0, 0];
+    const cx = prop.x + m[0];
+    const cz = prop.z + m[1];
+    const r = a.reach([cx, cz]);
     if (r === null) return null;
-    const dx = prop.x - r.at[0];
-    const dz = prop.z - r.at[1];
+    const dx = cx - r.at[0];
+    const dz = cz - r.at[1];
     if (Math.hypot(dx, dz) <= COMPOSITION_SLACK) return null;
     return a.kind === "route" ? Math.atan2(-dz, -dx) : Math.atan2(dz, dx);
+  }
+  function turnedAboutMiddle(cx, cz, middle, by) {
+    if (middle === void 0) return [cx, cz];
+    const c = Math.cos(by);
+    const s = Math.sin(by);
+    return [cx - (middle[0] * c - middle[1] * s), cz - (middle[0] * s + middle[1] * c)];
   }
   function trimFloraOffSquare(plan2, points3, rules = DEFAULT_COMPOSITION_RULES) {
     const out = [];
@@ -40170,8 +41305,12 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     const plan2 = withLaneNetwork(input.plan, network);
     const props = input.props ?? [];
     const grouping = groupProps({ plan: plan2, buildings: input.buildings, props }, rules);
-    const radius = new Map(props.map((p) => [p.entityId, p.radius]));
-    const standing = grouping.props.filter((p) => p.verdict !== "set-aside").map((p) => ({ entityId: p.entityId, x: p.x, z: p.z, radius: radius.get(p.entityId) }));
+    const given = new Map(props.map((p) => [p.entityId, p]));
+    const middleOf = (id) => {
+      const m = given.get(id).middle;
+      return m === void 0 ? [0, 0] : [m[0], m[1]];
+    };
+    const standing = grouping.props.filter((p) => p.verdict !== "set-aside").map((p) => ({ entityId: p.entityId, x: p.x + middleOf(p.entityId)[0], z: p.z + middleOf(p.entityId)[1], radius: given.get(p.entityId).radius }));
     const yards = composeYards({ lots: plan2.lots, buildings: input.buildings, doors: input.doors, posts: input.posts ?? [] }, rules);
     const decks = yards.porches.map((d) => ({ entityId: `porch:${d.door}`, outline: porchDeckOutline(d) }));
     const kept = doorstepWays(network);
@@ -40190,8 +41329,14 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       else if (p.verdict === "set-aside") seatsSetAside.push(s.entityId);
       else {
         const turned = regroupedHeading({ plan: plan2, buildings: input.buildings, props }, p, rules);
-        if (turned !== null) seatsTurned.push({ entityId: s.entityId, heading: turned });
-        seats.push({ ...s, x: p.x, z: p.z, heading: turned ?? s.heading });
+        if (turned === null) {
+          seats.push({ ...s, x: p.x, z: p.z });
+          continue;
+        }
+        const m = middleOf(p.entityId);
+        const [x, z] = turnedAboutMiddle(p.x + m[0], p.z + m[1], given.get(p.entityId).middle, turned - s.heading);
+        seatsTurned.push({ entityId: s.entityId, heading: turned, x, z });
+        seats.push({ ...s, x, z, heading: turned });
       }
     }
     const seatIds = new Set((input.seats ?? []).map((s) => s.entityId));
@@ -40388,7 +41533,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
   function propsOf(v) {
     return arr2(v ?? [], "props").map((p) => {
       const o = obj2(p, "a prop");
-      return { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
+      const prop = { entityId: str5(o, "entityId"), archetype: str5(o, "archetype"), x: num4(o, "x"), z: num4(o, "z"), radius: num4(o, "radius") };
+      if (o.middle !== void 0) prop.middle = point2(o.middle, "middle");
+      return prop;
     });
   }
   function plannedOn(i) {
@@ -40969,9 +42116,22 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
         rangesM: INTERACT_RANGES_M,
         doorPromptRadiusM: DOOR_PROMPT_RADIUS_M,
         refusals: INTERACT_REFUSALS,
-        deviations: INTERACT_DEVIATIONS
+        // core's PL.core-interior-interact-target: inside an interior, the only
+        // actions a press can have, and the floor band (metres, compared with <)
+        // that keeps a container or the exit on another floor out of reach.
+        interiorActions: INTERACT_INTERIOR_ACTIONS,
+        floorBandM: INTERACT_FLOOR_BAND_M,
+        deviations: INTERACT_DEVIATIONS,
+        // core's PL.core-interact-pick-precedence: the two sources one press weighs,
+        // which wins when they name different objects, and the examine pick's reach.
+        pressSources: INTERACT_PRESS_SOURCES,
+        pressPrecedence: INTERACT_PRESS_PRECEDENCE,
+        examineRangeM: EXAMINE_RANGE
       }
     });
+  }
+  function interactablesRowContract() {
+    return { standWithoutY: { y: "not_added", floor: "every" } };
   }
   function pickupWorldOf(method, args) {
     for (const key of ["obstacles", "settled", "walkable", "pickups"]) optArrayValue(method, args[key], key);
@@ -40998,9 +42158,24 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       optionalArg(args.actionTable.actions, (v) => objectList(method, v, "actionTable.actions"));
     }
     optBoolean(method, args.busy, "busy");
+    const interior = args.interior;
+    if (interior !== null && typeof interior === "object" && !Array.isArray(interior)) {
+      optArrayValue(method, interior.containers, "interior.containers");
+    }
     const ranges = optObject(method, args.ranges, "ranges") ?? {};
     for (const [k, v] of Object.entries(ranges)) needNumber(method, v, `ranges.${k}`);
     return [args, ranges];
+  }
+  function examineArgsOf(method, args) {
+    const objects = optArrayValue(method, args.objects, "objects") ?? [];
+    objects.forEach((o, i) => {
+      needObject(method, o, `objects[${i}]`);
+      needObject(method, o.position, `objects[${i}].position`);
+    });
+    const at = needObject(method, args.at, "at");
+    needNumber(method, at.x, "at.x");
+    needNumber(method, at.z, "at.z");
+    return [objects, at];
   }
   function movementContract() {
     return plain({
@@ -41771,6 +42946,24 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
       return { slots: plain(model.slots()), hasAnyLoadable: model.hasAnyLoadable() };
     },
     /**
+     * `ui.loadRefusal { refusal }` → `{ outcome, message }` — core's
+     * `slotOutcomeOfLoadRefusal` and `loadRefusalMessage` (PL.core-load-refused-message,
+     * PL.core-load-refusal-codes; U118(5), U124(1), U126(2)): what a refused Load
+     * shows. Every string is `invalid_format` with `SLOT_MESSAGES.invalid_format`:
+     * the codes core states (the checked read's `wrong_version`,
+     * `unregistered_extension` and every `unreadable_*`, the writer's
+     * `unreadable_conversations`, the ownership codes `wrong_world` and
+     * `wrong_runtime`) and every string core does not state (`not_this_game`, '',
+     * a bare `unreadable_`) alike. Any other value (absent, null, a number) names no
+     * refusal: `{ outcome: null, message: '' }`, and the slot stays as it was. Render
+     * the slot with `ui.saveSlots { slots: [{ index, outcome }] }`; a session's Load
+     * reports the code as `saves.slots.apply`'s `finished { ok: false, refusal }`.
+     */
+    "ui.loadRefusal": (args) => ({
+      outcome: slotOutcomeOfLoadRefusal(args.refusal),
+      message: loadRefusalMessage(args.refusal)
+    }),
+    /**
      * `saves.slots.create { config?, slots?, activeSlot? }` → `{ session, config,
      * view }` — core's `SaveSlotsSession` (`save-slots`, P1.core-slots): deleting a
      * slot, the Continue target, autosave at an interval with its indicator, and
@@ -41796,7 +42989,9 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      * (the list's Delete: opens the prompt) · `confirm_delete` · `cancel_delete`
      * (the prompt's two actions) · `key { code }` (a KeyboardEvent.code; F5
      * quick-saves, F9 quick-loads) · `tick { delta }` (seconds; null is a
-     * non-finite tick) · `finished { ok, savedAt?, summary?, outcome? }` ·
+     * non-finite tick) · `finished { ok, savedAt?, summary?, outcome?, refusal? }`
+     * (`refusal`: a refused Load's code, which core maps to `invalid_format` when no
+     * `outcome` is given; see `ui.loadRefusal`) ·
      * `disk_changed { slots }` (the save files changed outside the game: the new
      * listing, as at create; null lists none). Each result is `{ ok, refusal?,
      * outcome?, effect, history?, disk? }`; a refusal (`busy`,
@@ -42191,6 +43386,15 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      */
     "props.contract": () => propsContract(),
     /**
+     * `props.interactables.contract {}` → `{ standWithoutY: { y, floor } }` — what the
+     * `props.interactables.*` rows themselves do with a stand, stated as data (U126),
+     * not a table of core's corpus: a stand (`at`) that states no `y` is sent to core
+     * with none (`y: 'not_added'`; nothing defaults it to 0), and core reads it on every
+     * candidate's floor (`floor: 'every'`; `floorBandM` not applied). Two of core's
+     * interactables stands omit `y` and are read this way.
+     */
+    "props.interactables.contract": () => interactablesRowContract(),
+    /**
      * `props.containers.view { container, context? }` → `{ view }` — core's
      * `containerView`: `{ id, state (open | locked | unreachable), refusal,
      * canUnlock, capacity, slotsUsed, slotsFree, full, respawnDue }`. `container` is
@@ -42481,7 +43685,7 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     /**
      * `props.interactables.target { at, panel?, villager?, pickups?, containers?,
      * buildings?, props?, board?, ranges?, aboard?, vehicles?, nodes?, hotspots?,
-     * actionTable?, busy?, now? }` → core's `interactTarget`: `{ ok:
+     * actionTable?, busy?, now?, interior? }` → core's `interactTarget`: `{ ok:
      * true, target: { action, kind, id, prompt, distance } | null }` or `{ ok:
      * false, refusal: { code: 'bad_position', field: 'at' } }`. The ONE thing a
      * press of E acts on: an open props `panel` closes (`close_panel`); else the
@@ -42499,10 +43703,55 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
      * `actionTable`, core's defaults when absent), `busy` and `now` (core's
      * PL.core-gather-reach-tier: both rows in the actions tier after `enter`). Absent,
      * nothing above changes; `props.contract` states the tiers and ranges.
+     * Inside an interior (core's PL.core-interior-interact-target), `interior` is the
+     * record the host writes into `currentState.interiorState` plus that interior's
+     * reachable `containers`, and `at` is in the interior's frame: only an open panel,
+     * those containers and the interior's `exit` are candidates (`interiorActions`),
+     * each only from its own floor (`floorBandM`). `at` is sent as given: a stand
+     * with no `y` is read on every floor (`props.interactables.contract`'s
+     * `standWithoutY`).
      */
     "props.interactables.target": (args) => {
       const [input, ranges] = coded("invalid-input", () => interactInputOf("props.interactables.target", args));
       return plain(interactTarget(input, ranges));
+    },
+    /**
+     * `props.interactables.examinePick { objects, at }` → `{ pick }` — core's
+     * `examinePick` (`language-learning/prompt-selector`): the language world's pick
+     * for one E press, the nearest object with a non-empty `role` within
+     * `props.contract`'s `examineRangeM` (5 m) of `at` on the ground plane (compared
+     * squared, `<=`; the first listed on a tie), as the object was sent, or null.
+     * `objects` are core's `WorldObjectIn` (`{ id, role, name?, position: { x, z },
+     * translations?, sign? }`; absent or null: none); `at` a point with numeric `x` and `z` (a `y` is not
+     * read). The reach is core's and is not a parameter: a target's `ranges` never
+     * reach it.
+     */
+    "props.interactables.examinePick": (args) => {
+      const m = "props.interactables.examinePick";
+      const [objects, at] = coded("invalid-input", () => examineArgsOf(m, args));
+      return { pick: plain(examinePick(objects, at) ?? null) };
+    },
+    /**
+     * `props.interactables.press { target, pick }` → core's `resolveInteractPress`:
+     * the ONE object an E press acts on (core's PL.core-interact-pick-precedence,
+     * U118(4)), `{ source: 'interactables'|'examine'|null, id, target, pick,
+     * shadowed }`. `target` is this press's `props.interactables.target` answer's
+     * `target` (or null); `pick` its `props.interactables.examinePick` answer (or
+     * null). The target wins whenever there is one; then `pick` is the same object
+     * (`{ id, role }`) when it names the target's id, else null with the pick under
+     * `shadowed` (it raises nothing this press). No target: the pick acts (`source`
+     * examine; the host hands it to `promptOnPick`). Neither: every field null. A
+     * target or pick with no non-empty id counts as none. Order, as core's corpus
+     * runner composes it: target, then (when the target is not refused) the pick,
+     * then this row.
+     */
+    "props.interactables.press": (args) => {
+      const m = "props.interactables.press";
+      coded("invalid-input", () => {
+        optObject(m, args.target, "target");
+        optObject(m, args.pick, "pick");
+      });
+      return plain(resolveInteractPress(args.target ?? null, args.pick ?? null));
     },
     /**
      * `props.interactables.interact { prop, board? }` → core's `interactWithProp`:
@@ -44671,6 +45920,97 @@ ${num2(combo.damage, 0)} DMG`, tone: "accent" });
     "skill.publishActors": (args) => skillCall(session("skill.publishActors", args, "skill"), (p) => p.publishActors()),
     /** `skill.lastWriteRefusal { session }` → core's `lastWriteRefusal()`: why the last write was refused, or null. */
     "skill.lastWriteRefusal": (args) => skillCall(session("skill.lastWriteRefusal", args, "skill"), (p) => p.lastWriteRefusal()),
+    // ── the skill KB that sees the live facts (core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) ──
+    // A fact the game asserts or retracts in play (`currentState.prologFacts`) reaches the
+    // skill KB's requirement gate, in play and after a load; a fact the skill KB owns (a
+    // roster or skill pack rule head: `skill_owned`), an authored one (`authored`), one
+    // the engine owns (`reserved`), an unreadable one or a repeat is never live. Each row
+    // answers `{ ok: true, value }` with core's answer; core's refusals are values.
+    /**
+     * `skill.kb.liveFacts { prologFacts }` → core's `skillKbLiveFactsOf`: `{ live: [{
+     * fact, clause }], dropped: [{ at, code }] }` — a save's `prologFacts` (any value:
+     * absent or null holds none, a non-list is dropped whole as `unreadable`), live
+     * facts in clause order, the dropped in index order.
+     */
+    "skill.kb.liveFacts": (args) => okValue(skillKbLiveFactsOf(args.prologFacts)),
+    /**
+     * `skill.kb.compose { pack?, world?, facts? }` → core's `composeSkillKbProgram`: the
+     * program a host that RECOMPOSES consults — the skill pack (absent: core's own),
+     * one `:- dynamic(Name/Arity).` per live predicate when there are live clauses,
+     * the world's program, then the live clauses (`facts`: clauses, as
+     * `skill.kb.liveFacts` answers them). A host that LAYERS opens `skill.kb.open`.
+     */
+    "skill.kb.compose": (args) => {
+      const m = "skill.kb.compose";
+      const input = coded("invalid-input", () => ({
+        pack: optionalArg(args.pack, (v) => needString(m, v, "pack")),
+        world: optionalArg(args.world, (v) => needString(m, v, "world")),
+        facts: optionalArg(args.facts, (v) => stringList(m, v, "facts"))
+      }));
+      return okValue(composeSkillKbProgram(input));
+    },
+    /**
+     * `skill.kb.open { program?, pack?, skills?, trees?, tuning? }` → `{ session, view:
+     * { facts } }` — core's `SkillKbSession.open`: a new game over the world (its KB
+     * `program`, consulted after the skill `pack`, core's when absent; `skills`,
+     * `trees` and `tuning` as `skill.ir.*` read them), no live facts, no roster. The
+     * session owns a native KB until `session.dispose`. A pack or program the KB
+     * refuses is `[invalid-input]`.
+     */
+    "skill.kb.open": async (args) => {
+      const m = "skill.kb.open";
+      const world2 = coded("invalid-input", () => ({
+        program: optionalArg(args.program, (v) => needString(m, v, "program")),
+        pack: optionalArg(args.pack, (v) => needString(m, v, "pack")),
+        skills: optionalArg(args.skills, (v) => objectList(m, v, "skills")),
+        trees: optionalArg(args.trees, (v) => objectList(m, v, "trees")),
+        tuning: optionalObject(m, args.tuning, "tuning")
+      }));
+      let kb;
+      try {
+        kb = await SkillKbSession.open(world2);
+      } catch (e) {
+        const err = refuse2(m, String(e && e.message ? e.message : e));
+        err.code = "invalid-input";
+        throw err;
+      }
+      const handle = openSession("skill.kb", { kb, onDispose: () => kb.dispose() });
+      return { session: handle, view: { facts: kb.facts() } };
+    },
+    /**
+     * `skill.kb.load { session, currentState }` → core's `load`: the KB composed again
+     * from the save's live facts (`currentState.prologFacts`) and its restored roster
+     * (`currentState.extensions.progression.skills`) — `{ ok: true, dropped }`, or `{ ok:
+     * false, refusal: { code: 'unreadable_progression', field, keys } }`, which changes
+     * nothing. `currentState` is read as core reads it (any value).
+     */
+    "skill.kb.load": async (args) => okValue(await session("skill.kb.load", args, "skill.kb").kb.load(args.currentState)),
+    /** `skill.kb.assert { session, fact }` → core's `assert`: `{ changed }`, or `{ changed: false, refusal }` (a fact that is never live). */
+    "skill.kb.assert": async (args) => okValue(await session("skill.kb.assert", args, "skill.kb").kb.assert(args.fact)),
+    /** `skill.kb.retract { session, fact }` → core's `retract`: `{ changed }`, or `{ changed: false, refusal }`. */
+    "skill.kb.retract": async (args) => okValue(await session("skill.kb.retract", args, "skill.kb").kb.retract(args.fact)),
+    /** `skill.kb.canUnlock { session, actor, node }` → core's `canUnlock` over the current KB (the decision `skill.canUnlock` answers). */
+    "skill.kb.canUnlock": async (args) => {
+      const m = "skill.kb.canUnlock";
+      const s = session(m, args, "skill.kb");
+      skillActorArgs(m, args, "node");
+      return okValue(await s.kb.canUnlock(args.actor, args.node));
+    },
+    /** `skill.kb.unlock { session, actor, node }` → core's `unlock` over the current KB (the report `skill.unlock` answers). */
+    "skill.kb.unlock": async (args) => {
+      const m = "skill.kb.unlock";
+      const s = session(m, args, "skill.kb");
+      skillActorArgs(m, args, "node");
+      return okValue(await s.kb.unlock(args.actor, args.node));
+    },
+    /** `skill.kb.facts { session }` → core's `facts()`: the live clauses, in clause order. */
+    "skill.kb.facts": (args) => okValue(session("skill.kb.facts", args, "skill.kb").kb.facts()),
+    /** `skill.kb.savedFacts { session }` → core's `savedFacts()`: the live facts as `currentState.prologFacts` keeps them. */
+    "skill.kb.savedFacts": (args) => okValue(session("skill.kb.savedFacts", args, "skill.kb").kb.savedFacts()),
+    /** `skill.kb.program { session }` → core's `program()`: what a recomposing host would consult now. */
+    "skill.kb.program": (args) => okValue(session("skill.kb.program", args, "skill.kb").kb.program()),
+    /** `skill.kb.serialize { session }` → the session's roster (`progression.serialize()`), for the save's skills block. */
+    "skill.kb.serialize": (args) => okValue(session("skill.kb.serialize", args, "skill.kb").kb.progression.serialize()),
     // ── the genre HUD and the world rules panel (P9a) ──
     // Each row is one of core's corpus runners and nothing else: the args are
     // `{ op, ...input }`, where `input` is a `conformance/ui/` case's `input` and

@@ -274,7 +274,30 @@ function saveSlots(root, coreCommit) {
 			},
 		],
 	}));
-	return caseFile('ui-save-slots', "core's save/load slot matrix through ui.saveSlots", coreCommit, r.files, cases);
+	// A refused Load (PL.core-load-refused-message, PL.core-load-refusal-codes; U118(5),
+	// U124(1), U126(2)): each `load_refusals` entry as its `load_refusal_rule` says —
+	// the refusal through the mapping (`ui.loadRefusal`), compared with
+	// `expected_outcome` and `expected_message`, then slot 0 rendered with that
+	// outcome (`ui.saveSlots`; no slot when it is null) and compared with `expected`.
+	// The rule names no `hasAnyLoadable`, so the render step holds `slots` only.
+	for (const c of doc.load_refusals ?? []) {
+		const steps = [
+			{ call: 'ui.loadRefusal', args: { refusal: c.refusal }, expect: { outcome: c.expected_outcome, message: c.expected_message } },
+		];
+		if (c.expected_outcome !== null) {
+			steps.push({
+				call: 'ui.saveSlots',
+				args: { slots: [{ index: 0, outcome: c.expected_outcome }] },
+				expect: sub({
+					slots: c.expected.map((e) =>
+						sub({ index: e.index, status: e.status, title: e.title, message: e.message, canLoad: e.can_load, canSave: e.can_save }),
+					),
+				}),
+			});
+		}
+		cases.push({ name: `load refusal: ${c.name}`, steps });
+	}
+	return caseFile('ui-save-slots', "core's save/load slot matrix through ui.saveSlots, and its refused-Load mapping through ui.loadRefusal", coreCommit, r.files, cases);
 }
 
 function loading(root, coreCommit) {

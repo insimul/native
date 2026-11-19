@@ -232,6 +232,448 @@
     {"call": "quest.waypoints", "args": {"quest": {"id": "q"}, "player": {"x": 0, "y": 0, "z": 0}, "buildings": [{"position": {"x": 0, "y": 0, "z": 0}}]}, "expectError": "`building.id` must be a string"},
     {"call": "quest.waypoints", "args": {"quest": {"id": "q"}}, "expectError": "`player` must be a JSON object"}
    ]
+  },
+  {
+   "name": "grammar objectives (PL.native-bundle-core-r2; core's PL.core-grammar-objective-type, U120(4)): practice_grammar and grammar_drill keep their own type, grammar, and count grammar uses (requiredCount 2 by default), so ten words complete the use_vocabulary objective and leave both grammar objectives untouched, and two grammar_demonstrated complete them; a grammar objective's waypoint is the nearest NPC (each expectation computed by core at the 45409ed pin)",
+   "steps": [
+    {
+     "call": "quest.completion.create",
+     "args": {
+      "quests": [
+       {
+        "id": "q_grammar",
+        "title": "Articles",
+        "status": "active",
+        "objectives": [
+         {
+          "id": "o_practice",
+          "type": "practice_grammar",
+          "description": "Use the articles",
+          "requiredCount": 2,
+          "currentCount": 0,
+          "completed": false
+         },
+         {
+          "id": "o_drill",
+          "type": "grammar_drill",
+          "description": "Drill",
+          "completed": false
+         },
+         {
+          "id": "o_words",
+          "type": "use_vocabulary",
+          "description": "Ten words",
+          "requiredCount": 10,
+          "currentCount": 0,
+          "completed": false
+         }
+        ]
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "session": 1,
+       "view": {
+        "$subset": {
+         "quests": [
+          {
+           "$subset": {
+            "objectives": [
+             {
+              "$subset": {
+               "id": "o_practice",
+               "type": "grammar"
+              }
+             },
+             {
+              "$subset": {
+               "id": "o_drill",
+               "type": "grammar"
+              }
+             },
+             {
+              "$subset": {
+               "id": "o_words",
+               "type": "use_vocabulary"
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "quest.completion.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w0"
+        }
+       },
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w1"
+        }
+       },
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w2"
+        }
+       },
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w3"
+        }
+       },
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w4"
+        }
+       },
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w5"
+        }
+       },
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w6"
+        }
+       },
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w7"
+        }
+       },
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w8"
+        }
+       },
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "vocabulary_usage",
+         "word": "w9"
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "events": [
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_words",
+         "current": 1,
+         "required": 10,
+         "objectiveType": "use_vocabulary"
+        },
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_words",
+         "current": 2,
+         "required": 10,
+         "objectiveType": "use_vocabulary"
+        },
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_words",
+         "current": 3,
+         "required": 10,
+         "objectiveType": "use_vocabulary"
+        },
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_words",
+         "current": 4,
+         "required": 10,
+         "objectiveType": "use_vocabulary"
+        },
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_words",
+         "current": 5,
+         "required": 10,
+         "objectiveType": "use_vocabulary"
+        },
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_words",
+         "current": 6,
+         "required": 10,
+         "objectiveType": "use_vocabulary"
+        },
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_words",
+         "current": 7,
+         "required": 10,
+         "objectiveType": "use_vocabulary"
+        },
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_words",
+         "current": 8,
+         "required": 10,
+         "objectiveType": "use_vocabulary"
+        },
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_words",
+         "current": 9,
+         "required": 10,
+         "objectiveType": "use_vocabulary"
+        },
+        {
+         "type": "objectiveCompleted",
+         "questId": "q_grammar",
+         "objectiveId": "o_words"
+        }
+       ],
+       "view": {
+        "$subset": {
+         "quests": [
+          {
+           "$subset": {
+            "complete": false,
+            "objectives": [
+             {
+              "$subset": {
+               "id": "o_practice",
+               "completed": false
+              }
+             },
+             {
+              "$subset": {
+               "id": "o_drill",
+               "completed": false
+              }
+             },
+             {
+              "$subset": {
+               "id": "o_words",
+               "completed": true
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "quest.completion.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "grammar_demonstrated",
+         "patternCount": 1
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "events": [
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_practice",
+         "current": 1,
+         "required": 2,
+         "objectiveType": "grammar"
+        },
+        {
+         "type": "objectiveProgress",
+         "questId": "q_grammar",
+         "objectiveId": "o_drill",
+         "current": 1,
+         "required": 2,
+         "objectiveType": "grammar"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "call": "quest.completion.apply",
+     "args": {
+      "session": 1,
+      "ops": [
+       {
+        "op": "trackEvent",
+        "event": {
+         "type": "grammar_demonstrated",
+         "patternCount": 1
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "events": [
+        {
+         "type": "objectiveCompleted",
+         "questId": "q_grammar",
+         "objectiveId": "o_practice"
+        },
+        {
+         "type": "objectiveCompleted",
+         "questId": "q_grammar",
+         "objectiveId": "o_drill"
+        },
+        {
+         "type": "questCompleted",
+         "questId": "q_grammar"
+        }
+       ],
+       "view": {
+        "$subset": {
+         "quests": [
+          {
+           "$subset": {
+            "complete": true,
+            "objectives": [
+             {
+              "$subset": {
+               "id": "o_practice",
+               "type": "grammar",
+               "currentCount": 2,
+               "completed": true
+              }
+             },
+             {
+              "$subset": {
+               "id": "o_drill",
+               "type": "grammar",
+               "currentCount": 2,
+               "completed": true
+              }
+             },
+             {
+              "$subset": {
+               "id": "o_words",
+               "type": "use_vocabulary",
+               "currentCount": 10,
+               "completed": true
+              }
+             }
+            ]
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "call": "session.dispose",
+     "args": {
+      "session": 1
+     }
+    },
+    {
+     "call": "quest.waypoints",
+     "args": {
+      "quest": {
+       "id": "q_g",
+       "status": "active",
+       "objectives": [
+        {
+         "id": "o1",
+         "type": "grammar",
+         "completed": false
+        }
+       ]
+      },
+      "player": {
+       "x": 0,
+       "y": 0,
+       "z": 0
+      },
+      "npcPositions": [
+       {
+        "id": "npc_far",
+        "position": {
+         "x": 50,
+         "y": 0,
+         "z": 50
+        }
+       },
+       {
+        "id": "npc_marie",
+        "name": "Marie",
+        "position": {
+         "x": -4,
+         "y": 0,
+         "z": 3
+        }
+       }
+      ]
+     },
+     "expect": {
+      "$subset": {
+       "waypoints": [
+        {
+         "$subset": {
+          "objectiveId": "q_g_o1",
+          "objectiveType": "grammar",
+          "position": {
+           "x": -4,
+           "y": 0,
+           "z": 3
+          },
+          "label": "Marie",
+          "source": "nearest_npc"
+         }
+        }
+       ]
+      }
+     }
+    }
+   ]
   }
  ]
 }

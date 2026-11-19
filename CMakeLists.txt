@@ -597,7 +597,7 @@ add_test(NAME core_vendor COMMAND
        ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tools/vendor-core-bundle.mjs)
 # core_vendor also holds save.rules' extensionKeys (PL.native-save-extension-keys,
 # U110): every save.rules case under corebridge/tests/cases/ must state exactly the
-# sorted keys of the vendored bundle's extensionRegistry (22 at core d88b6f0, as at 6cd4b4e), so a
+# sorted keys of the vendored bundle's extensionRegistry (22 at core 45409ed, as at d88b6f0 and 6cd4b4e), so a
 # core pin that registers a new extension is red until the cases change on purpose.
 # Its negative control runs that check alone over tests/save-extension-keys-negative/
 # (a dropped key, a reordered list, an unregistered key, a list loosened to any array,
@@ -823,6 +823,14 @@ add_test(NAME props_pickup_placement_corpus COMMAND insimulcore_props_corpus ${I
 # walks a case's props and stands as core's does, one row call each), the
 # contract's data tables held to props.contract.
 add_test(NAME props_interactables_corpus COMMAND insimulcore_props_corpus ${INSIMUL_PROPS_CORPUS}/props/interactables.json)
+# PL.native-bundle-core-r2 (U124, U126): the file's `press` op (core's
+# PL.core-interact-pick-precedence: one E press, one object) is driven through
+# props.interactables.target, .examinePick and .press, as core's runPress composes
+# them, and the stands that state no y are counted against the rows' own contract
+# (props.interactables.contract's standWithoutY). The regex demands every op driven,
+# 0 undriven, that count and PASS.
+set_tests_properties(props_interactables_corpus PROPERTIES
+  PASS_REGULAR_EXPRESSION "props-interactables: [^\n]*driven noun [1-9][0-9]*, meanings [1-9][0-9]*, host [1-9][0-9]*, interact [1-9][0-9]*, target [1-9][0-9]*, press [1-9][0-9]*. 0 undriven\n  stands with no y: [1-9][0-9]*, sent as given [^\n]*\nprops_corpus: [0-9]+ case[(]s[)] driven through the rows, 0 failed[^\n]*\nprops_corpus: PASS")
 # The negative control: the same runner over five deliberately wrong files
 # (tests/props-negative/), one per corpus file, one wrong case each (two through
 # a stateless row, two through a session, one through the door session), plus a
@@ -861,12 +869,16 @@ set_tests_properties(props_pickup_placement_corpus_negative PROPERTIES
 # and a text that ends in its own full stop given a second one; and two runner
 # controls core's corpus cannot be (no core case changes its answer with them): a
 # target whose `ranges` reach a prop the defaults do not, and an interact case that
-# states one `prop` alone. It passes only when the runner reports each of them and
-# the run as failed, in that order.
+# states one `prop` alone; and three more (PL.native-bundle-core-r2: core's
+# PL.core-interact-pick-precedence and U126): a stand that states no y expected as
+# if it stood on floor 0 (a binding that fills in y 0), a press where the 5 m
+# examine pick acts over the 2.6 m target, and a press whose stand's own objects a
+# runner dropped. It passes only when the runner reports each of them and the run
+# as failed, in that order.
 add_test(NAME props_interactables_corpus_negative COMMAND insimulcore_props_corpus
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/props-negative/interactables-wrong.json)
 set_tests_properties(props_interactables_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "contract.rangesM.talk: 3 != 3.5.*expected WRONGLY the board's host sign read as a sign.*expected WRONGLY a fence offered.*expected WRONGLY the nearer barrel examined before the pick-up.*expected WRONGLY the last listed prop on a tie.*expected WRONGLY a second full stop.*expected WRONGLY nothing in reach where the host's own ranges reach the crate.*expected WRONGLY no result for a lone prop.*op noun of area props-interactables: no case of it was driven.*props_corpus: FAIL")
+  PASS_REGULAR_EXPRESSION "contract.rangesM.talk: 3 != 3.5.*expected WRONGLY the board's host sign read as a sign.*expected WRONGLY a fence offered.*expected WRONGLY the nearer barrel examined before the pick-up.*expected WRONGLY the last listed prop on a tie.*expected WRONGLY a second full stop.*expected WRONGLY nothing in reach where the host's own ranges reach the crate.*expected WRONGLY no result for a lone prop.*expected WRONGLY the exit for a stand that states no y.*expected WRONGLY the examine pick acting over the interactables target.*expected WRONGLY no pick where a stand's own objects hold one.*op noun of area props-interactables: no case of it was driven.*props_corpus: FAIL")
 
 # PL.native-camera-movement (U95(5)): core's movement contract (PL.movement-contract,
 # core 89dd9ed, and PL.movement-followups, 431c95b: what each camera mode's lens
@@ -1050,7 +1062,8 @@ set_tests_properties(build_corpus_negative PROPERTIES
 # and every node the KB opens is asked again with no KB and must stay locked
 # (U106(7)). Unreal's interim P9i copy is what these rows retire. The regex demands
 # the refusal probes' line, each file's driven line with every op driven and 0
-# undriven, in file order, the run's step line and the no-KB control, then PASS. It
+# undriven, in file order, the run's step line, the skills kb op's step line (core's
+# PL.core-skill-kb-live-facts: skill.kb.* rows) and the no-KB control, then PASS. It
 # holds no ';': CMake reads one as a list separator, and a PASS_REGULAR_EXPRESSION
 # list passes when ANY of its parts matches (a regex split that way passed a red run).
 add_executable(insimulcore_progression_corpus tests/progression_corpus.cpp tests/radiant/json_value.cpp)
@@ -1064,13 +1077,13 @@ set(INSIMUL_PROGRESSION_CORPORA ${INSIMUL_PROPS_CORPUS}/progression/gamification
   ${INSIMUL_PROPS_CORPUS}/prolog/mechanic-skill.json)
 add_test(NAME progression_corpus COMMAND insimulcore_progression_corpus ${INSIMUL_PROGRESSION_CORPORA})
 set_tests_properties(progression_corpus PROPERTIES
-  PASS_REGULAR_EXPRESSION "refusals: 9 of 9 unknown op[(]s[)], step[(]s[)], area[(]s[)] and row[(]s[)] refused\n.*progression/gamification: [^\n]*driven levels [1-9][0-9]*, table [1-9][0-9]*, achievements [1-9][0-9]*, daily [1-9][0-9]*, run [1-9][0-9]*. 0 undriven\n.*steps through progression.gamification.step: day [1-9][0-9]*,[^\n]* stats [1-9][0-9]*\n.*progression/modules: [^\n]*driven definitions [1-9][0-9]*, resolve [1-9][0-9]*, genre [1-9][0-9]*, proficiency [1-9][0-9]*, difficulty [1-9][0-9]*, performance [1-9][0-9]*, adjust [1-9][0-9]*, records [1-9][0-9]*. 0 undriven\n.*progression/skills: [^\n]*driven domain [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*progression/save: [^\n]*driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*skills-advancement: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-unlocks: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-effects: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-trees: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-effect-terms: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*mechanic-skill: [^\n]*driven can_unlock [1-9][0-9]* [^\n]*. 0 undriven\n.*no-KB control: [1-9][0-9]* node[(]s[)] the KB opened stay locked [(]requires[)] without it\n.*progression_corpus: PASS")
+  PASS_REGULAR_EXPRESSION "refusals: 10 of 10 unknown op[(]s[)], step[(]s[)], area[(]s[)] and row[(]s[)] refused\n.*progression/gamification: [^\n]*driven levels [1-9][0-9]*, table [1-9][0-9]*, achievements [1-9][0-9]*, daily [1-9][0-9]*, run [1-9][0-9]*. 0 undriven\n.*steps through progression.gamification.step: day [1-9][0-9]*,[^\n]* stats [1-9][0-9]*\n.*progression/modules: [^\n]*driven definitions [1-9][0-9]*, resolve [1-9][0-9]*, genre [1-9][0-9]*, proficiency [1-9][0-9]*, difficulty [1-9][0-9]*, performance [1-9][0-9]*, adjust [1-9][0-9]*, records [1-9][0-9]*. 0 undriven\n.*progression/skills: [^\n]*driven domain [1-9][0-9]*, restore [1-9][0-9]*, compose [1-9][0-9]*, kb [1-9][0-9]*. 0 undriven\n.*steps through the skill.kb.[*] rows: load [1-9][0-9]*, assert [1-9][0-9]*, retract [1-9][0-9]*, query [1-9][0-9]*, unlock [1-9][0-9]*, save [1-9][0-9]*\n.*progression/save: [^\n]*driven block [1-9][0-9]*, read [1-9][0-9]*, restore [1-9][0-9]*. 0 undriven\n.*skills-advancement: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-unlocks: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-effects: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-trees: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*skills-effect-terms: [^\n]*driven case [1-9][0-9]*. 0 undriven\n.*mechanic-skill: [^\n]*driven can_unlock [1-9][0-9]* [^\n]*. 0 undriven\n.*no-KB control: [1-9][0-9]* node[(]s[)] the KB opened stay locked [(]requires[)] without it\n.*progression_corpus: PASS")
 # Its negative pass: every driven case's expectation perturbed (its last leaf) must be
 # refused, each file's count and the total stated; PASS only when every case of every
 # file was refused and none accepted.
 add_test(NAME progression_corpus_negative COMMAND insimulcore_progression_corpus --negative ${INSIMUL_PROGRESSION_CORPORA})
 set_tests_properties(progression_corpus_negative PROPERTIES
-  PASS_REGULAR_EXPRESSION "refusals: 9 of 9 unknown op[(]s[)], step[(]s[)], area[(]s[)] and row[(]s[)] refused\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*progression_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*progression_corpus --negative: PASS")
+  PASS_REGULAR_EXPRESSION "refusals: 10 of 10 unknown op[(]s[)], step[(]s[)], area[(]s[)] and row[(]s[)] refused\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*negative: [1-9][0-9]* of [0-9]+ perturbed expectation[(]s[)] refused, 0 accepted\n.*progression_corpus --negative: [1-9][0-9]* of [0-9]+ perturbed case[(]s[)] refused, 0 accepted, 0 failure[(]s[)].*progression_corpus --negative: PASS")
 
 # title_corpus (PL.native-title-rows, rulings U92(1) and U36): core's P8 logic —
 # the title menu over the save slots (src/ui/title-flow.ts), the tutorial quest

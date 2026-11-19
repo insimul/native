@@ -1,11 +1,11 @@
 {
   "area": "props-interactables",
-  "description": "NEGATIVE CONTROL for props_interactables_corpus_negative (PL.native-interact-target): a deliberately WRONG copy of core's conformance/props/interactables.json. contract.rangesM.talk is wrong, no case drives the noun op, five cases expect the answer an engine keeping one of Unreal's interim rules would give (core's deviations board-sign, fence, tiers, prop-tie and full-stop), and two hand-made cases expect what a runner that dropped a case's ranges or its lone prop would see (core's corpus has no case either would fail). One correct case of each op but noun rides beside them, so the run shows every other op driven. The runner must report every wrong one and fail.",
+  "description": "NEGATIVE CONTROL for props_interactables_corpus_negative (PL.native-interact-target; PL.native-bundle-core-r2): a deliberately WRONG copy of core's conformance/props/interactables.json. contract.rangesM.talk is wrong, no case drives the noun op, five cases expect the answer an engine keeping one of Unreal's interim rules would give (core's deviations board-sign, fence, tiers, prop-tie and full-stop), and two hand-made cases expect what a runner that dropped a case's ranges or its lone prop would see (core's corpus has no case either would fail). Three more (core's PL.core-interact-pick-precedence and U126): a press where the examine pick acts over the interactables target, a press whose stand's own objects a runner dropped, and a stand that states no y read as if it were on floor 0. One correct case of each op but noun rides beside them, so the run shows every other op driven. The runner must report every wrong one and fail.",
   "version": 1,
   "sources": [
-    "tests/props-negative/interactables-wrong.json, made from corebridge/vendor/core/conformance/props/interactables.json at core 72c658c"
+    "tests/props-negative/interactables-wrong.json, made from corebridge/vendor/core/conformance/props/interactables.json at core 72c658c; its contract re-copied at core 45409ed (rangesM.talk kept wrong) and three cases appended, their wrong answers made with core's runner at 45409ed"
   ],
-  "tolerance": 1e-09,
+  "tolerance": 1e-9,
   "contract": {
     "propActions": [
       "open_board",
@@ -20,6 +20,7 @@
       "open_container",
       "open_board",
       "enter",
+      "exit",
       "gather",
       "perform",
       "read_sign",
@@ -32,6 +33,7 @@
       "open_container",
       "open_board",
       "enter",
+      "exit",
       "gather",
       "perform"
     ],
@@ -55,6 +57,7 @@
       "pick_up": 2.2,
       "open_container": 2.2,
       "open_board": 3.2,
+      "exit": 2,
       "read_sign": 2.6,
       "examine": 2.6,
       "board": 3.5,
@@ -74,13 +77,20 @@
     "examine": "examine: line \"You examine the <noun>.\" or, with text, \"You examine the <noun>: <text>\" plus a full stop unless the text ends in . ! or ?; events [object_examined {objectId: id, objectName: noun, targetWord: '', targetLanguage: ''}] (no word: the language tracker records nothing, as for any untranslated object)",
     "board": "open_board: line null, events []: the board model (notice-board.json) takes over",
     "notOfferedResult": "interact on a prop with no meaning is refused not_offered (field archetype, with its reason)",
-    "target": "at not a finite point -> bad_position. An open panel (a non-empty panel) -> close_panel. Else the actions tier: the villager the host would talk to (talk, \"Talk to <name or id>\"), each pick-up not taken (\"Pick up <name or id>\"), each container (\"Open the <label, ASCII A-Z folded to a-z; none: container>\"), the board host prop (\"Read the <name> notice board\"), each within its range compared with <=, and the door doorPrompt gives (outside, \"Enter <label>\"): the nearest on the ground plane wins, a tie going in actionTier order and then to the first listed. Only when no action is in range, the looking tier: each prop read or examined within its range, the nearest, the first listed on a tie. Nothing -> null. A candidate with no id or no finite position is skipped. distance is metres rounded to 1e-9; the prompt is the words after the host's key glyph",
+    "target": "at not a finite point -> bad_position. An open panel (a non-empty panel) -> close_panel. Inside an interior (interior names a building), the interior rule (contract.interior). Else the actions tier: the villager the host would talk to (talk, \"Talk to <name or id>\"), each pick-up not taken (\"Pick up <name or id>\"), each container (\"Open the <label, ASCII A-Z folded to a-z; none: container>\"), the board host prop (\"Read the <name> notice board\"), each within its range compared with <=, and the door doorPrompt gives (outside, \"Enter <label>\"): the nearest on the ground plane wins, a tie going in actionTier order and then to the first listed. Only when no action is in range, the looking tier: each prop read or examined within its range, the nearest, the first listed on a tie. Nothing -> null. A candidate with no id or no finite position is skipped. distance is metres rounded to 1e-9; the prompt is the words after the host's key glyph",
     "ranges": "ranges overrides any of rangesM per call; a door prompts by doorPrompt alone",
     "vehicleTier": [
       "board"
     ],
     "vehicles": "PL.core-vehicle-rules (U106(3)): aboard {id, name?} and vehicles [{id, name?, position}] are stated only by a game that runs the vehicles pack (packs/vehicles); absent, nothing above changes. After an open panel (close_panel), aboard with a non-empty id -> get_off, kind vehicle, prompt \"Get off the <name or id>\", distance null, whatever else is in range. Not aboard, only when neither the actions nor the looking tier has anything in range: the nearest vehicle with an id and a finite position within rangesM.board (the talk reach, 3.5 m; overridden by ranges.board only, never by ranges.talk), compared with <= -> board, kind vehicle, prompt \"Board the <name or id>\", the first listed on a tie. What E then asks of VehicleRegistry is the host's (Unreal's interim: board, then drive when nobody holds the reins; aboard, disembark)",
-    "notHere": "inside an interior (doorPrompt's exit) and a conversation in progress are the host's and not this rule's; the language world's translated objects are examineNearest's (world-words.ts)",
+    "notHere": "a conversation in progress is the host's and not this rule's, inside an interior and out; the language world's translated objects are examineNearest's (world-words.ts)",
+    "interiorActions": [
+      "close_panel",
+      "open_container",
+      "exit"
+    ],
+    "floorBandM": 1.5,
+    "interior": "PL.core-interior-interact-target (U122(4), U122(2)): interior is the record the host writes into currentState.interiorState ({buildingId, buildingName?, buildingType?, layoutSeed?}, read as interior-save.ts readInteriorState reads it: not a record, or no non-empty string buildingId -> outside, and nothing above changes; layoutSeed null, absent or not an integer -> a stated interior, a finite integer (0 included) -> seeded) plus containers? [{id, label?, position}], the interior's own containers the player can reach where the host drew each. While interior names a building, at and those containers are in the interior's frame (props doc §1a; the save's frame for player.position, §1b) and the rule is, after bad_position: an open panel -> close_panel (as outside). Else the candidates are only the interior's containers and its exit (interiorActions); villager, pickups, the top-level containers, props, board / settlement, the buildings' enter doors, aboard, vehicles, nodes, hotspots, actionTable, busy and now are not read. Each container with a non-empty id and a finite position, on the player's floor (below), within rangesM.open_container compared with <= -> open_container, kind container, prompt as outside. The exit, offered only when buildings lists the building interior names (doorPrompt with inside; else none, since doorStep's exit would refuse unknown_building): action exit, kind door, id the building, prompt \"Exit <doorView label: name, else businessType, else spec.buildingRole, else Building>\"; its distance is to the interior's entrance (the first door of building.interior.doors with kind entrance, the point enter's arrive names), on the ground plane, only for a stated interior whose building states one with a finite position, else null. The exit is in reach within rangesM.exit (2.0 m, the door prompt radius as a declared core value: Unreal measured none; see deviations interior-exit) compared with <=, and only from the entrance's floor: |at.y - the entrance's y| < floorBandM (1.5 m, half a 3 m storey; the interior's floors stand at y = floor x 3 m, props doc §1a). A container likewise only from its own floor: |at.y - its position.y| < floorBandM, else it is not a candidate (no press opens a container through a floor or a ceiling). A y that is absent or not finite on either side reads as the same floor; distances stay on the ground plane. From another floor the exit is never in reach, but is still reached at any distance below. Of the containers and the exit in reach the nearest wins, a tie going to the container (actionTier: open_container before exit), then to the first listed. Nothing in reach -> the exit at any distance (its distance, or null). No exit and no container in reach -> null. ranges overrides open_container and exit as outside. What E then does is doorStep {op: exit} (exit_to_exterior) or the container panel; a conversation stays the host's. The press op is unchanged: inside, the target is never null while the building is listed, so it always wins the press",
     "gathering": "PL.core-gather-reach-tier (U110(4) Q1): nodes [{id, item?, position, remaining, respawnAt?}], hotspots [{id, actionType, position}], actionTable? {actions: [{id, promptVerb}]}, busy? and now? (the host's clock, ms) are stated only by a game that runs the gathering pack (packs/gathering); absent, nothing above changes. Both rows are in actionTier, after enter: gather, then perform. Unless busy is true: each node with a non-empty id, a finite position and a finite remaining, that has units (remaining > 0) or whose finite respawnAt <= a finite now, within rangesM.gather (2.0 m) compared with <= -> gather, kind node, prompt \"Gather <item with underscores as spaces, or the id when item is absent or empty>\"; each hotspot with a non-empty id and actionType and a finite position whose actionType actionTable (absent: DEFAULT_PHYSICAL_ACTION_TUNING) holds, within rangesM.perform (2.5 m) compared with <= -> perform, kind hotspot, prompt \"<that action's promptVerb> here\" (actionPrompt). They compete with the other actions by nearest. busy true offers neither and changes nothing else. A node someone else is gathering is offered (beginGather then refuses node_busy). What E then asks (beginGather, startPhysicalAction) and how a refusal reads are the host's",
     "deviations": [
       {
@@ -186,12 +196,28 @@
         "why": "an item atom is a key, not words"
       },
       {
+        "id": "interior-exit",
+        "unreal": "inside an interior (unreal 22f657b InsimulVillageProps.cpp InteractTargetAt 1193-1291) core's outdoor target over every candidate it passes, the village's included, and only where that finds nothing the exit, at distance 0 (\"Exit <label>\")",
+        "core": "inside, only an open panel, the interior's containers and its exit are candidates; the exit competes by nearest within rangesM.exit (2.0 m, <=) of the interior's entrance, a tie going to the container, and is the answer at any distance only when nothing else is in reach",
+        "why": "a chest by the entrance would otherwise always shadow the exit; the village's villager, props and doors are not in the interior's scene; 2.0 m is the door prompt radius, a declared core value, since Unreal measured no exit reach"
+      },
+      {
         "id": "vehicle-name",
         "unreal": "the prompt names the vehicle by Name.value_or(Id): a stated empty name reads \"Board the \"",
         "core": "an empty or absent name falls back to the id, as a villager's and a pick-up's do",
         "why": "a prompt never ends in an empty name"
       }
-    ]
+    ],
+    "pressSources": [
+      "interactables",
+      "examine"
+    ],
+    "pressPrecedence": [
+      "interactables",
+      "examine"
+    ],
+    "examineRangeM": 5,
+    "press": "PL.core-interact-pick-precedence (U118(4), U49(3); Unreal run 14 language-well-pick m2): one E press acts on one object. Two answers can name one: target (above; its reaches are rangesM, the 2.6 m class, and ranges overrides them) and the language world's examine pick (examinePick in src/language-learning/prompt-selector.ts: of objects with a non-empty role, the nearest to at on the ground plane within examineRangeM, 5 m, compared squared with <=, the first listed on a tie; ranges never reaches it). The default (U118(4)): the interactables target when one is present, else the examine pick (pressPrecedence). A target (an open panel's close_panel and aboard's get_off included) -> source interactables, id the target's, target it; the pick, when it has the target's id, is the same object -> pick {id, role}, shadowed null; a pick of another id -> pick null, shadowed {id, role} (it raises nothing this press). No target and a pick -> source examine, id the pick's, target null, pick {id, role} (the host hands it to promptOnPick), shadowed null. Neither -> every field null. A pick with no id counts as none. examine is examinePick's answer {id, role} before the rule. Neither range changes"
   },
   "cases": [
     {
@@ -1082,6 +1108,225 @@
       }
     },
     {
+      "name": "target: expected WRONGLY the exit for a stand that states no y under the upstairs chest (a binding that sends y 0 for a stand with none; props.interactables.contract's standWithoutY says the rows add no y, and core reads it on every floor)",
+      "op": "target",
+      "input": {
+        "at": {
+          "x": 8,
+          "z": 7.6
+        },
+        "buildings": [
+          {
+            "id": "bld_6abb84eef2e499b951eecec3",
+            "position": {
+              "x": 195.892,
+              "y": 0,
+              "z": 171.911
+            },
+            "rotation": -1.571,
+            "spec": {
+              "buildingRole": "Restaurant",
+              "floors": 2,
+              "width": 15,
+              "depth": 12
+            },
+            "name": "Denham's Tavern",
+            "businessType": "Restaurant",
+            "interior": {
+              "function": "business.Restaurant",
+              "width": 14.7,
+              "depth": 11.7,
+              "height": 6,
+              "floors": 2,
+              "doors": [
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 10.0227,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "kind": "stair",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                  "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                  "kind": "door",
+                  "position": {
+                    "x": 7.84,
+                    "y": 3,
+                    "z": 5.85
+                  }
+                },
+                {
+                  "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                  "fromRoomId": "",
+                  "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                  "kind": "entrance",
+                  "position": {
+                    "x": 5.0114,
+                    "y": 0,
+                    "z": 0
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "interior": {
+          "buildingId": "bld_6abb84eef2e499b951eecec3",
+          "buildingName": "Denham's Tavern",
+          "buildingType": "Restaurant",
+          "layoutSeed": null,
+          "containers": [
+            {
+              "id": "chest_up",
+              "label": "Linen Chest",
+              "position": {
+                "x": 8,
+                "y": 3,
+                "z": 7.8
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "target": {
+          "action": "exit",
+          "kind": "door",
+          "id": "bld_6abb84eef2e499b951eecec3",
+          "prompt": "Exit Denham's Tavern",
+          "distance": 8.166500472
+        }
+      }
+    },
+    {
+      "name": "press: expected WRONGLY the examine pick acting over the interactables target (a binding that lets the 5 m pick act before the 2.6 m target; core: the target wins, the pick is shadowed)",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "props": [
+          {
+            "id": "prop_barrel",
+            "archetype": "prop.container.barrel",
+            "position": {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ],
+        "objects": [
+          {
+            "id": "obj_well",
+            "role": "well",
+            "position": {
+              "x": 0.5,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": {
+          "action": "examine",
+          "kind": "prop",
+          "id": "prop_barrel",
+          "prompt": "Examine the barrel",
+          "distance": 1
+        },
+        "examine": {
+          "id": "obj_well",
+          "role": "well"
+        },
+        "press": {
+          "source": "examine",
+          "id": "obj_well",
+          "target": null,
+          "pick": {
+            "id": "obj_well",
+            "role": "well"
+          },
+          "shadowed": null
+        }
+      }
+    },
+    {
+      "name": "press: expected WRONGLY no pick where a stand's own objects hold one (a runner that reads only the case's objects)",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "objects": [],
+        "stands": [
+          {
+            "name": "its own bucket 4 m off",
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "objects": [
+              {
+                "id": "obj_bucket",
+                "role": "bucket",
+                "position": {
+                  "x": 4,
+                  "z": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "board": null,
+        "stands": [
+          {
+            "at": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ok": true,
+            "target": null,
+            "examine": null,
+            "press": {
+              "source": null,
+              "id": null,
+              "target": null,
+              "pick": null,
+              "shadowed": null
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "host: the sign nearest the settlement centre, the first listed on a tie",
       "op": "host",
       "input": {
@@ -1546,6 +1791,68 @@
       "expected": {
         "ok": true,
         "target": null
+      }
+    },
+    {
+      "name": "press: a barrel 1 m off and the language well 0.5 m off: the target wins, the pick is shadowed",
+      "op": "press",
+      "input": {
+        "at": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "props": [
+          {
+            "id": "prop_barrel",
+            "archetype": "prop.container.barrel",
+            "position": {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            }
+          }
+        ],
+        "objects": [
+          {
+            "id": "obj_well",
+            "role": "well",
+            "position": {
+              "x": 0.5,
+              "z": 0
+            }
+          }
+        ]
+      },
+      "expected": {
+        "ok": true,
+        "target": {
+          "action": "examine",
+          "kind": "prop",
+          "id": "prop_barrel",
+          "prompt": "Examine the barrel",
+          "distance": 1
+        },
+        "examine": {
+          "id": "obj_well",
+          "role": "well"
+        },
+        "press": {
+          "source": "interactables",
+          "id": "prop_barrel",
+          "target": {
+            "action": "examine",
+            "kind": "prop",
+            "id": "prop_barrel",
+            "prompt": "Examine the barrel",
+            "distance": 1
+          },
+          "pick": null,
+          "shadowed": {
+            "id": "obj_well",
+            "role": "well"
+          }
+        }
       }
     }
   ]

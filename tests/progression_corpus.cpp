@@ -11,7 +11,7 @@
 //   progression/gamification.json  levels, table, achievements, daily, run (14 step kinds)
 //   progression/modules.json       definitions, resolve, genre, proficiency, difficulty,
 //                                  performance, adjust, records
-//   progression/skills.json        domain, restore
+//   progression/skills.json        domain, restore, compose, kb (6 step kinds)
 //   progression/save.json          block, read, restore
 //   skills/advancement.json        what a level prices and whether it may be taken
 //   skills/unlocks.json            what a node costs, asks, and whether core refuses it
@@ -42,7 +42,17 @@
 //   skills domain: progression.skills.domain read by skill.ir.{trees,skills,tuning},
 //     then skill.trees.view per actor; restore: progression.save.read, a skill.create
 //     session over the domain world, skill.restore, skill.serialize, skill.effectsOf
-//     and skill.modifiersOf per actor.
+//     and skill.modifiersOf per actor. compose (core's PL.core-skill-kb-live-facts):
+//     skill.kb.liveFacts over the case's facts, then skill.kb.compose { pack (''
+//     when the case states none, as core's runner sends it), world (a string only),
+//     facts: the live clauses } → { facts, dropped, program }. kb: the world's IR
+//     read by skill.ir.{skills,trees,tuning}, a skill.kb.open session over it and
+//     the world's program, then ONE row per step — load (skill.kb.load with the
+//     step's currentState, else the last save's; then skill.kb.facts), assert and
+//     retract (skill.kb.assert/.retract), query (skill.kb.canUnlock), unlock
+//     (skill.kb.unlock), save (skill.kb.savedFacts, then skill.kb.serialize through
+//     progression.save.build → .write as the progression block) — recorded as core
+//     records each, then skill.kb.facts.
 //   save block/read/restore: progression.save.build, .read and .write (and the
 //     gamification rows for a block built from steps).
 //   skills/*: skill.advancement.{maxLevel,xpForLevel,resolve}, skill.unlocks.
@@ -444,7 +454,8 @@ struct ProgressionFile {
 	std::string file;
 	std::vector<std::string> catalog;
 	std::vector<std::string> ops;
-	std::vector<std::string> run_steps;  // gamification's `run` op only
+	std::vector<std::string> run_steps;  // the step kinds of the file's one stepped op
+	std::string step_op;                 // that op: gamification's `run`, skills' `kb`
 };
 
 const std::vector<ProgressionFile> &progression_files() {
@@ -453,13 +464,19 @@ const std::vector<ProgressionFile> &progression_files() {
 	     {"progression-xp-levels-achievements"},
 	     {"levels", "table", "achievements", "daily", "run"},
 	     {"day", "conversation", "word", "mastered", "grammar", "pattern", "quest", "skillRewards", "category", "article",
-	      "award", "listening", "event", "stats"}},
+	      "award", "listening", "event", "stats"},
+	     "run"},
 	    {"progression/modules",
 	     {"progression-feature-modules", "progression-performance-scoring-world-lore"},
 	     {"definitions", "resolve", "genre", "proficiency", "difficulty", "performance", "adjust", "records"},
-	     {}},
-	    {"progression/skills", {"progression-skill-trees"}, {"domain", "restore"}, {}},
-	    {"progression/save", {"progression-xp-levels-achievements", "progression-skill-trees"}, {"block", "read", "restore"}, {}},
+	     {},
+	     ""},
+	    {"progression/skills",
+	     {"progression-skill-trees"},
+	     {"domain", "restore", "compose", "kb"},
+	     {"load", "assert", "retract", "query", "unlock", "save"},
+	     "kb"},
+	    {"progression/save", {"progression-xp-levels-achievements", "progression-skill-trees"}, {"block", "read", "restore"}, {}, ""},
 	};
 	return list;
 }
@@ -490,6 +507,9 @@ const std::vector<std::string> &rows_driven() {
 	    "skill.effects.permits", "skill.effects.apply", "skill.effects.modifierOf", "skill.trees.view",
 	    "skill.trees.funded", "skill.trees.depth", "skill.trees.facts", "skill.create", "skill.register",
 	    "skill.unlock", "skill.restore", "skill.serialize", "skill.effectsOf", "skill.modifiersOf",
+	    "skill.kb.liveFacts", "skill.kb.compose", "skill.kb.open", "skill.kb.load", "skill.kb.assert",
+	    "skill.kb.retract", "skill.kb.canUnlock", "skill.kb.unlock", "skill.kb.facts", "skill.kb.savedFacts",
+	    "skill.kb.serialize",
 	};
 	return list;
 }
@@ -718,7 +738,106 @@ World domain_world(Caller &c) {
 	return {c.value("skill.ir.trees", {{"ir", ir}}), c.value("skill.ir.skills", {{"ir", ir}}), c.value("skill.ir.tuning", {{"ir", ir}})};
 }
 
+// The live clauses of a skill.kb.liveFacts answer, in its order.
+JsonValuePtr live_clauses(const JsonValue &live) {
+	std::vector<JsonValuePtr> out;
+	for (const auto &f : need_array(live, "live").array_items) out.push_back(copy_of(need(*f, "clause")));
+	return make_array(out);
+}
+
+// progression/skills kb: core's skillKbRun (src/progression/systems-corpus.ts), one row per step.
+JsonValuePtr skill_kb_run(Caller &c, const JsonValue &input) {
+	const ProgressionFile &pf = progression_files()[2];
+	const JsonValue &steps_in = need_array(input, "steps");
+	for (const auto &raw : steps_in.array_items) {
+		const std::string d = raw->get_string("do");
+		bool known = false;
+		for (const auto &s : pf.run_steps) known = known || s == d;
+		if (!known) throw DriveError("unknown progression/skills:kb step '" + d + "'");
+	}
+	const JsonValue *world = present(input, "world");
+	const JsonValue *ir_in = world && world->is_object() ? present(*world, "ir") : nullptr;
+	JsonValuePtr ir = ir_in ? copy_of(*ir_in) : null_value();
+	Items open = {{"skills", c.value("skill.ir.skills", {{"ir", ir}})},
+	              {"trees", c.value("skill.ir.trees", {{"ir", ir}})},
+	              {"tuning", c.value("skill.ir.tuning", {{"ir", ir}})}};
+	const JsonValue *program = world && world->is_object() ? world->find("program") : nullptr;
+	if (program && program->is_string()) open.emplace_back("program", copy_of(*program));
+	auto opened = c.answer("skill.kb.open", open);
+	JsonValuePtr session = copy_of(need(*opened, "session"));
+	JsonValuePtr result;
+	try {
+		JsonValuePtr saved;
+		std::vector<JsonValuePtr> out;
+		for (const auto &raw : steps_in.array_items) {
+			const std::string d = raw->get_string("do");
+			g_steps[d]++;
+			Items rec = {{"do", make_string(d)}};
+			if (d == "load") {
+				const JsonValue *cs = present(*raw, "currentState");
+				if (!cs && !saved) throw DriveError("a load with no currentState and nothing saved");
+				auto r = c.value("skill.kb.load", {{"session", session}, {"currentState", cs ? copy_of(*cs) : saved}});
+				auto facts = c.value("skill.kb.facts", {{"session", session}});
+				const JsonValue *ok = r->find("ok");
+				if (ok && ok->type == JsonType::Bool && ok->bool_value) {
+					rec.emplace_back("ok", make_bool(true));
+					rec.emplace_back("dropped", copy_of(need(*r, "dropped")));
+				} else {
+					rec.emplace_back("ok", make_bool(false));
+					rec.emplace_back("refusal", copy_of(need(*r, "refusal")));
+				}
+				rec.emplace_back("facts", facts);
+			} else if (d == "assert" || d == "retract") {
+				Items args = {{"session", session}};
+				put(args, "fact", raw->find("fact"));
+				auto r = c.value(d == "assert" ? "skill.kb.assert" : "skill.kb.retract", args);
+				for (const auto &kv : r->object_items) rec.push_back(kv);
+			} else if (d == "query" || d == "unlock") {
+				Items args = {{"session", session},
+				              {"actor", make_string(js_string(need(*raw, "actor")))},
+				              {"node", make_string(js_string(need(*raw, "node")))}};
+				auto r = c.value(d == "query" ? "skill.kb.canUnlock" : "skill.kb.unlock", args);
+				rec.emplace_back("actor", copy_of(need(*r, "actor")));
+				rec.emplace_back("node", copy_of(need(*r, "node")));
+				if (d == "query") rec.emplace_back("permitted", copy_of(need(*r, "permitted")));
+				else rec.emplace_back("performed", copy_of(need(*r, "performed")));
+				const JsonValue *refusal = present(*r, "refusal");
+				rec.emplace_back("refusal", refusal ? copy_of(*refusal) : null_value());
+				if (d == "query") rec.emplace_back("unmet", copy_of(need(*r, "unmet")));
+				else rec.emplace_back("remaining", copy_of(need(*r, "remaining")));
+			} else {  // save
+				auto facts = c.value("skill.kb.savedFacts", {{"session", session}});
+				auto roster = c.value("skill.kb.serialize", {{"session", session}});
+				auto built = c.value("progression.save.build", {{"skills", roster}});
+				auto block = c.value("progression.save.write", {{"block", built}});
+				saved = make_object({{"prologFacts", facts}, {"extensions", make_object({{"progression", block}})}});
+				rec.emplace_back("currentState", saved);
+			}
+			out.push_back(make_object(rec));
+		}
+		result = make_object({{"steps", make_array(out)}, {"facts", c.value("skill.kb.facts", {{"session", session}})}});
+	} catch (...) {
+		c.dispose(*session);
+		throw;
+	}
+	c.dispose(*session);
+	return result;
+}
+
 JsonValuePtr drive_skills(Caller &c, const std::string &op, const JsonValue &input) {
+	if (op == "compose") {
+		Items live_args;
+		put(live_args, "prologFacts", input.find("facts"));
+		auto live = c.value("skill.kb.liveFacts", live_args);
+		auto facts = live_clauses(*live);
+		const JsonValue *pack = present(input, "pack");
+		Items args = {{"pack", make_string(pack ? js_string(*pack) : "")}, {"facts", facts}};
+		const JsonValue *world = input.find("world");
+		if (world && world->is_string()) args.emplace_back("world", copy_of(*world));
+		auto program = c.value("skill.kb.compose", args);
+		return make_object({{"facts", facts}, {"dropped", copy_of(need(*live, "dropped"))}, {"program", program}});
+	}
+	if (op == "kb") return skill_kb_run(c, input);
 	const World w = domain_world(c);
 	if (op == "domain") {
 		std::vector<JsonValuePtr> out;
@@ -1091,6 +1210,9 @@ int refusal_probes(Caller &c, int &total) {
 	expect_throw("an unknown progression/skills op", [&] { drive_skills(c, "fly", *empty); });
 	expect_throw("an unknown progression/save op", [&] { drive_save(c, "fly", *make_object({{"block", make_object({})}})); });
 	expect_throw("an unknown skills area", [&] { drive_skill_area(c, "skills-fly", *empty); });
+	expect_throw("an unknown progression/skills:kb step", [&] {
+		skill_kb_run(c, *make_object({{"steps", make_array({make_object({{"do", make_string("fly")}})})}}));
+	});
 	expect_throw("an unknown progression/gamification:run step", [&] {
 		auto in = make_object({{"steps", make_array({make_object({{"do", make_string("fly")}})})}});
 		JsonValuePtr state;
@@ -1204,7 +1326,7 @@ int main(int argc, char **argv) {
 			}
 			label = pf->file;
 			ops = pf->ops;
-			// The header is core's: catalog, ops and (gamification) the run's steps, in order.
+			// The header is core's: catalog, ops and (gamification's run, skills' kb) the steps, in order.
 			auto strings = [](const JsonValue *v) {
 				std::vector<std::string> out;
 				if (v && v->is_array()) {
@@ -1214,7 +1336,7 @@ int main(int argc, char **argv) {
 			};
 			const JsonValue *steps = doc.find("steps");
 			const bool same = strings(doc.find("catalog")) == pf->catalog && strings(doc.find("ops")) == pf->ops &&
-			                  strings(steps ? steps->find("run") : nullptr) == pf->run_steps;
+			                  strings(steps && !pf->step_op.empty() ? steps->find(pf->step_op.c_str()) : nullptr) == pf->run_steps;
 			if (!same) {
 				std::printf("  [FAIL] %s — header: the catalog, ops or steps are not core's\n", file.c_str());
 				failed++;
@@ -1327,12 +1449,13 @@ int main(int argc, char **argv) {
 			std::string by_step;
 			for (const auto &s : pf->run_steps) {
 				if (!g_steps.count(s)) {
-					std::printf("  [FAIL] step %s of %s:run: no step of it was driven\n", s.c_str(), label.c_str());
+					std::printf("  [FAIL] step %s of %s:%s: no step of it was driven\n", s.c_str(), label.c_str(), pf->step_op.c_str());
 					failed++;
 				}
 				by_step += (by_step.empty() ? "" : ", ") + s + " " + std::to_string(g_steps.count(s) ? g_steps[s] : 0);
 			}
-			std::printf("  steps through progression.gamification.step: %s\n", by_step.c_str());
+			std::printf("  steps through %s: %s\n", pf->step_op == "run" ? "progression.gamification.step" : "the skill.kb.* rows",
+			            by_step.c_str());
 		}
 		if (negative) {
 			std::printf("  negative: %d of %d perturbed expectation(s) refused, %d accepted\n", file_refused,

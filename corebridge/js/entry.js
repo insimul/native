@@ -53,7 +53,7 @@ import {
 import { KIND_COLOR, Notifications } from '@insimul/core/ui/notifications';
 import { DEFAULT_MENU_TABS, PauseMenuModel } from '@insimul/core/ui/pause-menu-model';
 import { QuestJournalModel } from '@insimul/core/ui/quest-journal-model';
-import { SLOT_MESSAGES, SaveSlotModel } from '@insimul/core/ui/save-slot-model';
+import { SLOT_MESSAGES, SaveSlotModel, loadRefusalMessage, slotOutcomeOfLoadRefusal } from '@insimul/core/ui/save-slot-model';
 import { LoadingScreenModel } from '@insimul/core/ui/loading-screen-model';
 import { TradeModel } from '@insimul/core/ui/trade-model';
 
@@ -345,6 +345,11 @@ import { buildSkillView } from '@insimul/core/skills/skill-view';
 import { skillTreeFacts } from '@insimul/core/skills/skill-facts';
 import { DOMAIN_SKILL_TREES } from '@insimul/core/skills/domain-trees';
 import { SkillProgression } from '@insimul/core/game-engine/logic/SkillProgression';
+// The skill KB that sees the live facts (core's PL.core-skill-kb-live-facts and
+// PL.core-skill-kb-rule-head-facts, src/progression/skill-kb.ts): which of a save's
+// prologFacts a skill KB holds, the program a recomposing host consults, and core's
+// reference session that layers asserts and retracts and recomposes on a load.
+import { SkillKbSession, composeSkillKbProgram, skillKbLiveFactsOf } from '@insimul/core/progression/skill-kb';
 // The skill session's KB (`skill.create { kb }`) is a native Trealla KB, through the
 // same seam core's own `prolog-engine` import resolves to in this bundle.
 import { createPrologEngine } from './host-prolog-engine.js';
@@ -558,7 +563,11 @@ import {
 	INTERACT_ACTIONS,
 	INTERACT_ACTION_TIER,
 	INTERACT_DEVIATIONS,
+	INTERACT_FLOOR_BAND_M,
+	INTERACT_INTERIOR_ACTIONS,
 	INTERACT_LOOK_TIER,
+	INTERACT_PRESS_PRECEDENCE,
+	INTERACT_PRESS_SOURCES,
 	INTERACT_RANGES_M,
 	INTERACT_REFUSALS,
 	INTERACT_VEHICLE_TIER,
@@ -571,7 +580,11 @@ import {
 	noticeBoardHost,
 	propInteraction,
 	propNoun,
+	resolveInteractPress,
 } from '@insimul/core/props/interactables';
+// One E press, one object (core's PL.core-interact-pick-precedence, U118(4)): the
+// language world's examine pick, which a press weighs against the target above.
+import { EXAMINE_RANGE, examinePick } from '@insimul/core/language-learning/prompt-selector';
 
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
@@ -1086,9 +1099,35 @@ function propsContract() {
 			rangesM: INTERACT_RANGES_M,
 			doorPromptRadiusM: DOOR_PROMPT_RADIUS_M,
 			refusals: INTERACT_REFUSALS,
+			// core's PL.core-interior-interact-target: inside an interior, the only
+			// actions a press can have, and the floor band (metres, compared with <)
+			// that keeps a container or the exit on another floor out of reach.
+			interiorActions: INTERACT_INTERIOR_ACTIONS,
+			floorBandM: INTERACT_FLOOR_BAND_M,
 			deviations: INTERACT_DEVIATIONS,
+			// core's PL.core-interact-pick-precedence: the two sources one press weighs,
+			// which wins when they name different objects, and the examine pick's reach.
+			pressSources: INTERACT_PRESS_SOURCES,
+			pressPrecedence: INTERACT_PRESS_PRECEDENCE,
+			examineRangeM: EXAMINE_RANGE,
 		},
 	});
+}
+
+/**
+ * The `props.interactables.*` rows' OWN contract (`props.interactables.contract`):
+ * what these rows do with their input, as data, beside core's tables above (which
+ * are core's corpus's and nothing else). `standWithoutY` (U126; two of core's
+ * interactables stands omit `at.y`): the rows add no `y` to a stand and default
+ * none to 0 — `at` reaches core as it was sent (`y: 'not_added'`) — and core reads
+ * a `y` that is absent or not a finite number as on every candidate's floor
+ * (`floor: 'every'`: `floorBandM` is not applied, and every distance stays on the
+ * ground plane, x and z). Outside an interior no answer reads `y`. A binding that
+ * filled in a `y` of its own (0, or its capsule's) would change which floor a press
+ * reaches inside an interior.
+ */
+function interactablesRowContract() {
+	return { standWithoutY: { y: 'not_added', floor: 'every' } };
 }
 
 /**
@@ -1147,9 +1186,35 @@ function interactInputOf(method, args) {
 		optionalArg(args.actionTable.actions, (v) => objectList(method, v, 'actionTable.actions'));
 	}
 	optBoolean(method, args.busy, 'busy');
+	// The interior the player is in (core's PL.core-interior-interact-target): core reads
+	// any value (`readInteriorState`: not a record, or no non-empty buildingId, is
+	// outside), so only the list it walks is checked: a record's `containers`, an array.
+	const interior = args.interior;
+	if (interior !== null && typeof interior === 'object' && !Array.isArray(interior)) {
+		optArrayValue(method, interior.containers, 'interior.containers');
+	}
 	const ranges = optObject(method, args.ranges, 'ranges') ?? {};
 	for (const [k, v] of Object.entries(ranges)) needNumber(method, v, `ranges.${k}`);
 	return [args, ranges];
+}
+
+/**
+ * `props.interactables.examinePick`'s inputs, checked for the JSON types core's
+ * `examinePick` declares and nothing more: `objects` (absent or null: none) an array of objects, each
+ * with a `position` object (core reads `role` first and skips an object with
+ * none, then the position's `x` and `z`); `at` an object with numeric `x` and
+ * `z`. Returned AS IS.
+ */
+function examineArgsOf(method, args) {
+	const objects = optArrayValue(method, args.objects, 'objects') ?? [];
+	objects.forEach((o, i) => {
+		needObject(method, o, `objects[${i}]`);
+		needObject(method, o.position, `objects[${i}].position`);
+	});
+	const at = needObject(method, args.at, 'at');
+	needNumber(method, at.x, 'at.x');
+	needNumber(method, at.z, 'at.z');
+	return [objects, at];
 }
 
 // ── camera movement (PL.native-camera-movement) ───────────────────────────────
@@ -2283,6 +2348,25 @@ const METHODS = {
 	},
 
 	/**
+	 * `ui.loadRefusal { refusal }` → `{ outcome, message }` — core's
+	 * `slotOutcomeOfLoadRefusal` and `loadRefusalMessage` (PL.core-load-refused-message,
+	 * PL.core-load-refusal-codes; U118(5), U124(1), U126(2)): what a refused Load
+	 * shows. Every string is `invalid_format` with `SLOT_MESSAGES.invalid_format`:
+	 * the codes core states (the checked read's `wrong_version`,
+	 * `unregistered_extension` and every `unreadable_*`, the writer's
+	 * `unreadable_conversations`, the ownership codes `wrong_world` and
+	 * `wrong_runtime`) and every string core does not state (`not_this_game`, '',
+	 * a bare `unreadable_`) alike. Any other value (absent, null, a number) names no
+	 * refusal: `{ outcome: null, message: '' }`, and the slot stays as it was. Render
+	 * the slot with `ui.saveSlots { slots: [{ index, outcome }] }`; a session's Load
+	 * reports the code as `saves.slots.apply`'s `finished { ok: false, refusal }`.
+	 */
+	'ui.loadRefusal': (args) => ({
+		outcome: slotOutcomeOfLoadRefusal(args.refusal),
+		message: loadRefusalMessage(args.refusal),
+	}),
+
+	/**
 	 * `saves.slots.create { config?, slots?, activeSlot? }` → `{ session, config,
 	 * view }` — core's `SaveSlotsSession` (`save-slots`, P1.core-slots): deleting a
 	 * slot, the Continue target, autosave at an interval with its indicator, and
@@ -2309,7 +2393,9 @@ const METHODS = {
 	 * (the list's Delete: opens the prompt) · `confirm_delete` · `cancel_delete`
 	 * (the prompt's two actions) · `key { code }` (a KeyboardEvent.code; F5
 	 * quick-saves, F9 quick-loads) · `tick { delta }` (seconds; null is a
-	 * non-finite tick) · `finished { ok, savedAt?, summary?, outcome? }` ·
+	 * non-finite tick) · `finished { ok, savedAt?, summary?, outcome?, refusal? }`
+	 * (`refusal`: a refused Load's code, which core maps to `invalid_format` when no
+	 * `outcome` is given; see `ui.loadRefusal`) ·
 	 * `disk_changed { slots }` (the save files changed outside the game: the new
 	 * listing, as at create; null lists none). Each result is `{ ok, refusal?,
 	 * outcome?, effect, history?, disk? }`; a refusal (`busy`,
@@ -2729,6 +2815,16 @@ const METHODS = {
 	'props.contract': () => propsContract(),
 
 	/**
+	 * `props.interactables.contract {}` → `{ standWithoutY: { y, floor } }` — what the
+	 * `props.interactables.*` rows themselves do with a stand, stated as data (U126),
+	 * not a table of core's corpus: a stand (`at`) that states no `y` is sent to core
+	 * with none (`y: 'not_added'`; nothing defaults it to 0), and core reads it on every
+	 * candidate's floor (`floor: 'every'`; `floorBandM` not applied). Two of core's
+	 * interactables stands omit `y` and are read this way.
+	 */
+	'props.interactables.contract': () => interactablesRowContract(),
+
+	/**
 	 * `props.containers.view { container, context? }` → `{ view }` — core's
 	 * `containerView`: `{ id, state (open | locked | unreachable), refusal,
 	 * canUnlock, capacity, slotsUsed, slotsFree, full, respawnDue }`. `container` is
@@ -3041,7 +3137,7 @@ const METHODS = {
 	/**
 	 * `props.interactables.target { at, panel?, villager?, pickups?, containers?,
 	 * buildings?, props?, board?, ranges?, aboard?, vehicles?, nodes?, hotspots?,
-	 * actionTable?, busy?, now? }` → core's `interactTarget`: `{ ok:
+	 * actionTable?, busy?, now?, interior? }` → core's `interactTarget`: `{ ok:
 	 * true, target: { action, kind, id, prompt, distance } | null }` or `{ ok:
 	 * false, refusal: { code: 'bad_position', field: 'at' } }`. The ONE thing a
 	 * press of E acts on: an open props `panel` closes (`close_panel`); else the
@@ -3059,10 +3155,57 @@ const METHODS = {
 	 * `actionTable`, core's defaults when absent), `busy` and `now` (core's
 	 * PL.core-gather-reach-tier: both rows in the actions tier after `enter`). Absent,
 	 * nothing above changes; `props.contract` states the tiers and ranges.
+	 * Inside an interior (core's PL.core-interior-interact-target), `interior` is the
+	 * record the host writes into `currentState.interiorState` plus that interior's
+	 * reachable `containers`, and `at` is in the interior's frame: only an open panel,
+	 * those containers and the interior's `exit` are candidates (`interiorActions`),
+	 * each only from its own floor (`floorBandM`). `at` is sent as given: a stand
+	 * with no `y` is read on every floor (`props.interactables.contract`'s
+	 * `standWithoutY`).
 	 */
 	'props.interactables.target': (args) => {
 		const [input, ranges] = coded('invalid-input', () => interactInputOf('props.interactables.target', args));
 		return plain(interactTarget(input, ranges));
+	},
+
+	/**
+	 * `props.interactables.examinePick { objects, at }` → `{ pick }` — core's
+	 * `examinePick` (`language-learning/prompt-selector`): the language world's pick
+	 * for one E press, the nearest object with a non-empty `role` within
+	 * `props.contract`'s `examineRangeM` (5 m) of `at` on the ground plane (compared
+	 * squared, `<=`; the first listed on a tie), as the object was sent, or null.
+	 * `objects` are core's `WorldObjectIn` (`{ id, role, name?, position: { x, z },
+	 * translations?, sign? }`; absent or null: none); `at` a point with numeric `x` and `z` (a `y` is not
+	 * read). The reach is core's and is not a parameter: a target's `ranges` never
+	 * reach it.
+	 */
+	'props.interactables.examinePick': (args) => {
+		const m = 'props.interactables.examinePick';
+		const [objects, at] = coded('invalid-input', () => examineArgsOf(m, args));
+		return { pick: plain(examinePick(objects, at) ?? null) };
+	},
+
+	/**
+	 * `props.interactables.press { target, pick }` → core's `resolveInteractPress`:
+	 * the ONE object an E press acts on (core's PL.core-interact-pick-precedence,
+	 * U118(4)), `{ source: 'interactables'|'examine'|null, id, target, pick,
+	 * shadowed }`. `target` is this press's `props.interactables.target` answer's
+	 * `target` (or null); `pick` its `props.interactables.examinePick` answer (or
+	 * null). The target wins whenever there is one; then `pick` is the same object
+	 * (`{ id, role }`) when it names the target's id, else null with the pick under
+	 * `shadowed` (it raises nothing this press). No target: the pick acts (`source`
+	 * examine; the host hands it to `promptOnPick`). Neither: every field null. A
+	 * target or pick with no non-empty id counts as none. Order, as core's corpus
+	 * runner composes it: target, then (when the target is not refused) the pick,
+	 * then this row.
+	 */
+	'props.interactables.press': (args) => {
+		const m = 'props.interactables.press';
+		coded('invalid-input', () => {
+			optObject(m, args.target, 'target');
+			optObject(m, args.pick, 'pick');
+		});
+		return plain(resolveInteractPress(args.target ?? null, args.pick ?? null));
 	},
 
 	/**
@@ -5456,6 +5599,110 @@ const METHODS = {
 
 	/** `skill.lastWriteRefusal { session }` → core's `lastWriteRefusal()`: why the last write was refused, or null. */
 	'skill.lastWriteRefusal': (args) => skillCall(session('skill.lastWriteRefusal', args, 'skill'), (p) => p.lastWriteRefusal()),
+
+	// ── the skill KB that sees the live facts (core's PL.core-skill-kb-live-facts, PL.core-skill-kb-rule-head-facts) ──
+	// A fact the game asserts or retracts in play (`currentState.prologFacts`) reaches the
+	// skill KB's requirement gate, in play and after a load; a fact the skill KB owns (a
+	// roster or skill pack rule head: `skill_owned`), an authored one (`authored`), one
+	// the engine owns (`reserved`), an unreadable one or a repeat is never live. Each row
+	// answers `{ ok: true, value }` with core's answer; core's refusals are values.
+
+	/**
+	 * `skill.kb.liveFacts { prologFacts }` → core's `skillKbLiveFactsOf`: `{ live: [{
+	 * fact, clause }], dropped: [{ at, code }] }` — a save's `prologFacts` (any value:
+	 * absent or null holds none, a non-list is dropped whole as `unreadable`), live
+	 * facts in clause order, the dropped in index order.
+	 */
+	'skill.kb.liveFacts': (args) => okValue(skillKbLiveFactsOf(args.prologFacts)),
+
+	/**
+	 * `skill.kb.compose { pack?, world?, facts? }` → core's `composeSkillKbProgram`: the
+	 * program a host that RECOMPOSES consults — the skill pack (absent: core's own),
+	 * one `:- dynamic(Name/Arity).` per live predicate when there are live clauses,
+	 * the world's program, then the live clauses (`facts`: clauses, as
+	 * `skill.kb.liveFacts` answers them). A host that LAYERS opens `skill.kb.open`.
+	 */
+	'skill.kb.compose': (args) => {
+		const m = 'skill.kb.compose';
+		const input = coded('invalid-input', () => ({
+			pack: optionalArg(args.pack, (v) => needString(m, v, 'pack')),
+			world: optionalArg(args.world, (v) => needString(m, v, 'world')),
+			facts: optionalArg(args.facts, (v) => stringList(m, v, 'facts')),
+		}));
+		return okValue(composeSkillKbProgram(input));
+	},
+
+	/**
+	 * `skill.kb.open { program?, pack?, skills?, trees?, tuning? }` → `{ session, view:
+	 * { facts } }` — core's `SkillKbSession.open`: a new game over the world (its KB
+	 * `program`, consulted after the skill `pack`, core's when absent; `skills`,
+	 * `trees` and `tuning` as `skill.ir.*` read them), no live facts, no roster. The
+	 * session owns a native KB until `session.dispose`. A pack or program the KB
+	 * refuses is `[invalid-input]`.
+	 */
+	'skill.kb.open': async (args) => {
+		const m = 'skill.kb.open';
+		const world = coded('invalid-input', () => ({
+			program: optionalArg(args.program, (v) => needString(m, v, 'program')),
+			pack: optionalArg(args.pack, (v) => needString(m, v, 'pack')),
+			skills: optionalArg(args.skills, (v) => objectList(m, v, 'skills')),
+			trees: optionalArg(args.trees, (v) => objectList(m, v, 'trees')),
+			tuning: optionalObject(m, args.tuning, 'tuning'),
+		}));
+		let kb;
+		try {
+			kb = await SkillKbSession.open(world);
+		} catch (e) {
+			const err = refuse(m, String(e && e.message ? e.message : e));
+			err.code = 'invalid-input';
+			throw err;
+		}
+		const handle = openSession('skill.kb', { kb, onDispose: () => kb.dispose() });
+		return { session: handle, view: { facts: kb.facts() } };
+	},
+
+	/**
+	 * `skill.kb.load { session, currentState }` → core's `load`: the KB composed again
+	 * from the save's live facts (`currentState.prologFacts`) and its restored roster
+	 * (`currentState.extensions.progression.skills`) — `{ ok: true, dropped }`, or `{ ok:
+	 * false, refusal: { code: 'unreadable_progression', field, keys } }`, which changes
+	 * nothing. `currentState` is read as core reads it (any value).
+	 */
+	'skill.kb.load': async (args) => okValue(await session('skill.kb.load', args, 'skill.kb').kb.load(args.currentState)),
+
+	/** `skill.kb.assert { session, fact }` → core's `assert`: `{ changed }`, or `{ changed: false, refusal }` (a fact that is never live). */
+	'skill.kb.assert': async (args) => okValue(await session('skill.kb.assert', args, 'skill.kb').kb.assert(args.fact)),
+
+	/** `skill.kb.retract { session, fact }` → core's `retract`: `{ changed }`, or `{ changed: false, refusal }`. */
+	'skill.kb.retract': async (args) => okValue(await session('skill.kb.retract', args, 'skill.kb').kb.retract(args.fact)),
+
+	/** `skill.kb.canUnlock { session, actor, node }` → core's `canUnlock` over the current KB (the decision `skill.canUnlock` answers). */
+	'skill.kb.canUnlock': async (args) => {
+		const m = 'skill.kb.canUnlock';
+		const s = session(m, args, 'skill.kb');
+		skillActorArgs(m, args, 'node');
+		return okValue(await s.kb.canUnlock(args.actor, args.node));
+	},
+
+	/** `skill.kb.unlock { session, actor, node }` → core's `unlock` over the current KB (the report `skill.unlock` answers). */
+	'skill.kb.unlock': async (args) => {
+		const m = 'skill.kb.unlock';
+		const s = session(m, args, 'skill.kb');
+		skillActorArgs(m, args, 'node');
+		return okValue(await s.kb.unlock(args.actor, args.node));
+	},
+
+	/** `skill.kb.facts { session }` → core's `facts()`: the live clauses, in clause order. */
+	'skill.kb.facts': (args) => okValue(session('skill.kb.facts', args, 'skill.kb').kb.facts()),
+
+	/** `skill.kb.savedFacts { session }` → core's `savedFacts()`: the live facts as `currentState.prologFacts` keeps them. */
+	'skill.kb.savedFacts': (args) => okValue(session('skill.kb.savedFacts', args, 'skill.kb').kb.savedFacts()),
+
+	/** `skill.kb.program { session }` → core's `program()`: what a recomposing host would consult now. */
+	'skill.kb.program': (args) => okValue(session('skill.kb.program', args, 'skill.kb').kb.program()),
+
+	/** `skill.kb.serialize { session }` → the session's roster (`progression.serialize()`), for the save's skills block. */
+	'skill.kb.serialize': (args) => okValue(session('skill.kb.serialize', args, 'skill.kb').kb.progression.serialize()),
 
 	// ── the genre HUD and the world rules panel (P9a) ──
 	// Each row is one of core's corpus runners and nothing else: the args are

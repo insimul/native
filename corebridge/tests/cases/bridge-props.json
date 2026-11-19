@@ -24,15 +24,20 @@
             } },
             "props-interactables": { "$subset": {
               "propActions": ["open_board", "read_sign", "examine"],
-              "actionTier": ["talk", "pick_up", "open_container", "open_board", "enter", "gather", "perform"],
+              "actionTier": ["talk", "pick_up", "open_container", "open_board", "enter", "exit", "gather", "perform"],
               "lookTier": ["read_sign", "examine"],
               "vehicleTier": ["board"],
               "notOffered": ["prop.structural.wall", "prop.structural.fence"],
               "signArchetypes": ["prop.structural.sign"],
-              "rangesM": { "talk": 3.5, "pick_up": 2.2, "open_container": 2.2, "open_board": 3.2, "read_sign": 2.6, "examine": 2.6, "board": 3.5, "gather": 2, "perform": 2.5 },
+              "rangesM": {"talk": 3.5, "pick_up": 2.2, "open_container": 2.2, "open_board": 3.2, "exit": 2, "read_sign": 2.6, "examine": 2.6, "board": 3.5, "gather": 2, "perform": 2.5},
               "doorPromptRadiusM": 2,
               "refusals": ["bad_position"],
-              "deviations": { "$len": 18 }
+              "interiorActions": ["close_panel", "open_container", "exit"],
+              "floorBandM": 1.5,
+              "deviations": {"$len": 19},
+              "pressSources": ["interactables", "examine"],
+              "pressPrecedence": ["interactables", "examine"],
+              "examineRangeM": 5
             } }
           }
         }
@@ -384,6 +389,803 @@
         { "call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "nodes": [{"id": "node_1", "item": "iron_ore", "position": {"x": 1.5, "z": 0}, "remaining": 3}], "hotspots": [{"id": "anvil_1", "actionType": "smithing", "position": {"x": 2.4, "z": 0}}], "actionTable": {"actions": [{"id": "smithing", "promptVerb": "Smith"}]}}, "expect": {"ok": true, "target": {"action": "gather", "kind": "node", "id": "node_1", "prompt": "Gather iron ore", "distance": 1.5}} },
         { "call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "hotspots": [{"id": "anvil_1", "actionType": "smithing", "position": {"x": 2.4, "z": 0}}], "actionTable": {"actions": [{"id": "smithing", "promptVerb": "Smith"}]}}, "expect": {"ok": true, "target": {"action": "perform", "kind": "hotspot", "id": "anvil_1", "prompt": "Smith here", "distance": 2.4}} },
         { "call": "props.interactables.target", "args": {"at": {"x": 0, "z": 0}, "busy": true, "nodes": [{"id": "node_1", "item": "iron_ore", "position": {"x": 1.5, "z": 0}, "remaining": 3}]}, "expect": {"ok": true, "target": null} }
+      ]
+    },
+    {
+      "name": "props.interactables.press, .examinePick and .contract (PL.native-bundle-core-r2; core's PL.core-interact-pick-precedence, U118(4), and U126): the language world's 5 m pick, one press acting on one object, and a stand with no y sent with none — under the upstairs chest it opens the chest, as a stand on that floor does, where a stand on floor 0 gets the exit; an interior that is not a record is outside (each expectation computed by core at the 45409ed pin)",
+      "steps": [
+        {
+          "call": "props.interactables.contract",
+          "expect": {
+            "standWithoutY": {
+              "y": "not_added",
+              "floor": "every"
+            }
+          }
+        },
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "objects": [
+              {
+                "id": "obj_bench",
+                "role": "bench",
+                "position": {
+                  "x": 4,
+                  "z": 0
+                }
+              },
+              {
+                "id": "obj_wall",
+                "role": "",
+                "position": {
+                  "x": 0.2,
+                  "z": 0
+                }
+              },
+              {
+                "id": "obj_well",
+                "role": "well",
+                "name": "the well",
+                "position": {
+                  "x": 0.5,
+                  "z": 0
+                }
+              }
+            ],
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          "expect": {
+            "pick": {
+              "id": "obj_well",
+              "role": "well",
+              "name": "the well",
+              "position": {
+                "x": 0.5,
+                "z": 0
+              }
+            }
+          }
+        },
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "objects": [
+              {
+                "id": "obj_bench",
+                "role": "bench",
+                "position": {
+                  "x": 4,
+                  "z": 0
+                }
+              }
+            ],
+            "at": {
+              "x": -1,
+              "z": 0
+            }
+          },
+          "expect": {
+            "pick": {
+              "id": "obj_bench",
+              "role": "bench",
+              "position": {
+                "x": 4,
+                "z": 0
+              }
+            }
+          }
+        },
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "objects": [
+              {
+                "id": "obj_bench",
+                "role": "bench",
+                "position": {
+                  "x": 4,
+                  "z": 0
+                }
+              }
+            ],
+            "at": {
+              "x": -1.1,
+              "z": 0
+            }
+          },
+          "expect": {
+            "pick": null
+          }
+        },
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          "expect": {
+            "pick": null
+          }
+        },
+        {
+          "call": "props.interactables.press",
+          "args": {
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "prop_barrel",
+              "prompt": "Examine the barrel",
+              "distance": 1
+            },
+            "pick": {
+              "id": "obj_well",
+              "role": "well",
+              "name": "the well",
+              "position": {
+                "x": 0.5,
+                "z": 0
+              }
+            }
+          },
+          "expect": {
+            "source": "interactables",
+            "id": "prop_barrel",
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "prop_barrel",
+              "prompt": "Examine the barrel",
+              "distance": 1
+            },
+            "pick": null,
+            "shadowed": {
+              "id": "obj_well",
+              "role": "well"
+            }
+          }
+        },
+        {
+          "call": "props.interactables.press",
+          "args": {
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "obj_well",
+              "prompt": "Examine the well",
+              "distance": 0.5
+            },
+            "pick": {
+              "id": "obj_well",
+              "role": "well",
+              "name": "the well",
+              "position": {
+                "x": 0.5,
+                "z": 0
+              }
+            }
+          },
+          "expect": {
+            "source": "interactables",
+            "id": "obj_well",
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "obj_well",
+              "prompt": "Examine the well",
+              "distance": 0.5
+            },
+            "pick": {
+              "id": "obj_well",
+              "role": "well"
+            },
+            "shadowed": null
+          }
+        },
+        {
+          "call": "props.interactables.press",
+          "args": {
+            "target": null,
+            "pick": {
+              "id": "obj_well",
+              "role": "well",
+              "name": "the well",
+              "position": {
+                "x": 0.5,
+                "z": 0
+              }
+            }
+          },
+          "expect": {
+            "source": "examine",
+            "id": "obj_well",
+            "target": null,
+            "pick": {
+              "id": "obj_well",
+              "role": "well"
+            },
+            "shadowed": null
+          }
+        },
+        {
+          "call": "props.interactables.press",
+          "args": {
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "prop_barrel",
+              "prompt": "Examine the barrel",
+              "distance": 1
+            }
+          },
+          "expect": {
+            "source": "interactables",
+            "id": "prop_barrel",
+            "target": {
+              "action": "examine",
+              "kind": "prop",
+              "id": "prop_barrel",
+              "prompt": "Examine the barrel",
+              "distance": 1
+            },
+            "pick": null,
+            "shadowed": null
+          }
+        },
+        {
+          "call": "props.interactables.press",
+          "args": {
+            "pick": {
+              "role": "well"
+            }
+          },
+          "expect": {
+            "source": null,
+            "id": null,
+            "target": null,
+            "pick": null,
+            "shadowed": null
+          }
+        },
+        {
+          "call": "props.interactables.press",
+          "args": {},
+          "expect": {
+            "source": null,
+            "id": null,
+            "target": null,
+            "pick": null,
+            "shadowed": null
+          }
+        },
+        {
+          "call": "props.interactables.target",
+          "args": {
+            "at": {
+              "x": 8,
+              "z": 7.6
+            },
+            "buildings": [
+              {
+                "id": "bld_6abb84eef2e499b951eecec3",
+                "position": {
+                  "x": 195.892,
+                  "y": 0,
+                  "z": 171.911
+                },
+                "rotation": -1.571,
+                "spec": {
+                  "buildingRole": "Restaurant",
+                  "floors": 2,
+                  "width": 15,
+                  "depth": 12
+                },
+                "name": "Denham's Tavern",
+                "businessType": "Restaurant",
+                "interior": {
+                  "function": "business.Restaurant",
+                  "width": 14.7,
+                  "depth": 11.7,
+                  "height": 6,
+                  "floors": 2,
+                  "doors": [
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                      "kind": "door",
+                      "position": {
+                        "x": 10.0227,
+                        "y": 0,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                      "kind": "stair",
+                      "position": {
+                        "x": 5.0114,
+                        "y": 0,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                      "kind": "door",
+                      "position": {
+                        "x": 7.84,
+                        "y": 3,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                      "fromRoomId": "",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "kind": "entrance",
+                      "position": {
+                        "x": 5.0114,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_up",
+                  "label": "Linen Chest",
+                  "position": {
+                    "x": 8,
+                    "y": 3,
+                    "z": 7.8
+                  }
+                }
+              ]
+            }
+          },
+          "expect": {
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_up",
+              "prompt": "Open the linen chest",
+              "distance": 0.2
+            }
+          }
+        },
+        {
+          "call": "props.interactables.target",
+          "args": {
+            "at": {
+              "x": 8,
+              "y": 0,
+              "z": 7.6
+            },
+            "buildings": [
+              {
+                "id": "bld_6abb84eef2e499b951eecec3",
+                "position": {
+                  "x": 195.892,
+                  "y": 0,
+                  "z": 171.911
+                },
+                "rotation": -1.571,
+                "spec": {
+                  "buildingRole": "Restaurant",
+                  "floors": 2,
+                  "width": 15,
+                  "depth": 12
+                },
+                "name": "Denham's Tavern",
+                "businessType": "Restaurant",
+                "interior": {
+                  "function": "business.Restaurant",
+                  "width": 14.7,
+                  "depth": 11.7,
+                  "height": 6,
+                  "floors": 2,
+                  "doors": [
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                      "kind": "door",
+                      "position": {
+                        "x": 10.0227,
+                        "y": 0,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                      "kind": "stair",
+                      "position": {
+                        "x": 5.0114,
+                        "y": 0,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                      "kind": "door",
+                      "position": {
+                        "x": 7.84,
+                        "y": 3,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                      "fromRoomId": "",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "kind": "entrance",
+                      "position": {
+                        "x": 5.0114,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_up",
+                  "label": "Linen Chest",
+                  "position": {
+                    "x": 8,
+                    "y": 3,
+                    "z": 7.8
+                  }
+                }
+              ]
+            }
+          },
+          "expect": {
+            "ok": true,
+            "target": {
+              "action": "exit",
+              "kind": "door",
+              "id": "bld_6abb84eef2e499b951eecec3",
+              "prompt": "Exit Denham's Tavern",
+              "distance": 8.166500472
+            }
+          }
+        },
+        {
+          "call": "props.interactables.target",
+          "args": {
+            "at": {
+              "x": 8,
+              "y": 3,
+              "z": 7.6
+            },
+            "buildings": [
+              {
+                "id": "bld_6abb84eef2e499b951eecec3",
+                "position": {
+                  "x": 195.892,
+                  "y": 0,
+                  "z": 171.911
+                },
+                "rotation": -1.571,
+                "spec": {
+                  "buildingRole": "Restaurant",
+                  "floors": 2,
+                  "width": 15,
+                  "depth": 12
+                },
+                "name": "Denham's Tavern",
+                "businessType": "Restaurant",
+                "interior": {
+                  "function": "business.Restaurant",
+                  "width": 14.7,
+                  "depth": 11.7,
+                  "height": 6,
+                  "floors": 2,
+                  "doors": [
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                      "kind": "door",
+                      "position": {
+                        "x": 10.0227,
+                        "y": 0,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                      "kind": "stair",
+                      "position": {
+                        "x": 5.0114,
+                        "y": 0,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                      "kind": "door",
+                      "position": {
+                        "x": 7.84,
+                        "y": 3,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                      "fromRoomId": "",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "kind": "entrance",
+                      "position": {
+                        "x": 5.0114,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "interior": {
+              "buildingId": "bld_6abb84eef2e499b951eecec3",
+              "buildingName": "Denham's Tavern",
+              "buildingType": "Restaurant",
+              "layoutSeed": null,
+              "containers": [
+                {
+                  "id": "chest_up",
+                  "label": "Linen Chest",
+                  "position": {
+                    "x": 8,
+                    "y": 3,
+                    "z": 7.8
+                  }
+                }
+              ]
+            }
+          },
+          "expect": {
+            "ok": true,
+            "target": {
+              "action": "open_container",
+              "kind": "container",
+              "id": "chest_up",
+              "prompt": "Open the linen chest",
+              "distance": 0.2
+            }
+          }
+        },
+        {
+          "call": "props.interactables.target",
+          "args": {
+            "at": {
+              "x": 8,
+              "z": 7.6
+            },
+            "buildings": [
+              {
+                "id": "bld_6abb84eef2e499b951eecec3",
+                "position": {
+                  "x": 195.892,
+                  "y": 0,
+                  "z": 171.911
+                },
+                "rotation": -1.571,
+                "spec": {
+                  "buildingRole": "Restaurant",
+                  "floors": 2,
+                  "width": 15,
+                  "depth": 12
+                },
+                "name": "Denham's Tavern",
+                "businessType": "Restaurant",
+                "interior": {
+                  "function": "business.Restaurant",
+                  "width": 14.7,
+                  "depth": 11.7,
+                  "height": 6,
+                  "floors": 2,
+                  "doors": [
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1~bld_6abb84eef2e499b951eecec3.kitchen.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.kitchen.1",
+                      "kind": "door",
+                      "position": {
+                        "x": 10.0227,
+                        "y": 0,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1^bld_6abb84eef2e499b951eecec3.store.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                      "kind": "stair",
+                      "position": {
+                        "x": 5.0114,
+                        "y": 0,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.store.1~bld_6abb84eef2e499b951eecec3.office.1",
+                      "fromRoomId": "bld_6abb84eef2e499b951eecec3.store.1",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.office.1",
+                      "kind": "door",
+                      "position": {
+                        "x": 7.84,
+                        "y": 3,
+                        "z": 5.85
+                      }
+                    },
+                    {
+                      "id": "bld_6abb84eef2e499b951eecec3.dining_room.1!entrance",
+                      "fromRoomId": "",
+                      "toRoomId": "bld_6abb84eef2e499b951eecec3.dining_room.1",
+                      "kind": "entrance",
+                      "position": {
+                        "x": 5.0114,
+                        "y": 0,
+                        "z": 0
+                      }
+                    }
+                  ]
+                }
+              }
+            ],
+            "interior": "inside"
+          },
+          "expect": {
+            "ok": true,
+            "target": null
+          }
+        }
+      ]
+    },
+    {
+      "name": "props.interactables.press and .examinePick, and the target row's interior: the rows refuse a field of the wrong JSON type as [invalid-input]",
+      "steps": [
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "objects": {},
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          "expectError": "[invalid-input] insimulcore: props.interactables.examinePick: `objects` must be an array"
+        },
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "objects": [
+              1
+            ],
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          "expectError": "`objects[0]` must be a JSON object"
+        },
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "objects": [
+              {
+                "id": "a",
+                "role": "r"
+              }
+            ],
+            "at": {
+              "x": 0,
+              "z": 0
+            }
+          },
+          "expectError": "`objects[0].position` must be a JSON object"
+        },
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "objects": []
+          },
+          "expectError": "`at` must be a JSON object"
+        },
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "objects": [],
+            "at": {
+              "x": "1",
+              "z": 0
+            }
+          },
+          "expectError": "`at.x` must be a finite number"
+        },
+        {
+          "call": "props.interactables.examinePick",
+          "args": {
+            "objects": [],
+            "at": {
+              "x": 1
+            }
+          },
+          "expectError": "`at.z` must be a finite number"
+        },
+        {
+          "call": "props.interactables.press",
+          "args": {
+            "target": "prop_barrel"
+          },
+          "expectError": "[invalid-input] insimulcore: props.interactables.press: `target` must be a JSON object"
+        },
+        {
+          "call": "props.interactables.press",
+          "args": {
+            "pick": [
+              {
+                "id": "obj_well",
+                "role": "well",
+                "name": "the well",
+                "position": {
+                  "x": 0.5,
+                  "z": 0
+                }
+              }
+            ]
+          },
+          "expectError": "`pick` must be a JSON object"
+        },
+        {
+          "call": "props.interactables.target",
+          "args": {
+            "at": {
+              "x": 0,
+              "z": 0
+            },
+            "interior": {
+              "buildingId": "b",
+              "containers": "chest"
+            }
+          },
+          "expectError": "`interior.containers` must be an array"
+        }
       ]
     }
   ]

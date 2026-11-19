@@ -3,7 +3,7 @@
  "description": "core's container / merchant trade matrix through ui.trade (item census per stack id, as core's runner counts it)",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "d88b6f0311065f0d2ffd8767d9a65359ea451655",
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
   "files": {
    "conformance/ui/trade-cases.json": "9b34b02e2c6358524b77f2c73f5aa84cac6139e773f417a779dee26f41bc7320"
   }

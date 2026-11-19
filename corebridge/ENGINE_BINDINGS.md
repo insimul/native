@@ -77,7 +77,7 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
    `PLAN.md` §4). **Registered extensions:** an engine that keeps its own list of
    registered save extensions (Unreal's `RegisteredExtensions()` in its interim
    village save) holds it to `save.rules`' `extensionKeys`, which is core's
-   `extensionRegistry` at this library's pin, sorted: **22 keys at core d88b6f0** (as at 6cd4b4e)
+   `extensionRegistry` at this library's pin, sorted: **22 keys at core 45409ed** (as at d88b6f0 and 6cd4b4e)
    (`achievements`, `aiBlackboards`, `detectionStates`, `droppedFacts`,
    `evaluations`, `gamification`, `gathering`, `introShown`, `languageLearning`,
    `npcLife`, `platformer`, `playthroughTelemetry`, `progression`, `puzzle`,
@@ -683,6 +683,66 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   Re-vendor `conformance/progression/*.json`, `conformance/skills/*.json` and
   `conformance/prolog/mechanic-skill.json` from core at this library's pin and drive
   each case as `tests/progression_corpus.cpp` does.
+- **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What
+  each Unreal cell binds, and what it does not get here:
+  - **One E press, one object** (`P6.unreal.interact-press`; core's
+    PL.core-interact-pick-precedence, U118(4)). A press is three calls, in this order, as
+    core's `runPress` composes them: `props.interactables.target` (as before), then, when
+    it is not refused, `props.interactables.examinePick { objects, at }` (the language
+    world's objects as `WorldObjectIn`, the nearest with a role within 5 m, `<=`;
+    `props.contract`'s `examineRangeM`; a target's `ranges` never reach it), then
+    `props.interactables.press { target, pick }` → `{ source, id, target, pick,
+    shadowed }`. Act on `source`: `interactables` → the target's `action`; `examine` →
+    hand `pick` to `promptOnPick`; null → nothing. A pick that lost to another object is
+    `shadowed` and raises nothing this press. This replaces the lane's own InteractTarget
+    then `lg::ExaminePick` choice; replay `conformance/props/interactables.json`'s 8
+    `press` cases as `tests/props_corpus.cpp` does (per stand: the stand's fields over
+    the case's, less its `objects` and `name`; its `objects`, else the case's).
+  - **A stand with no y** (U126). Inside an interior (`interior`, core's
+    PL.core-interior-interact-target) a candidate is in reach only from its own floor
+    (`floorBandM` 1.5, `<`). These rows add no `y` to `at` and default none to 0, and
+    core reads a `y` that is absent or not a finite number as on every candidate's floor.
+    That reading is stated as data by `props.interactables.contract` →
+    `{ standWithoutY: { y: "not_added", floor: "every" } }`. So: send the capsule's
+    height when the player has one, and send NO `y` (never 0) when the binding has none:
+    under an upstairs chest, a stand with no `y` opens it while one at `y` 0 gets the
+    exit. Two of core's interactables stands omit `y`; replay them as given.
+  - **Load refusals** (`P1.unreal.load-refusals`; core's PL.core-load-refusal-codes,
+    U124(1), U126(2)). Report a refused Load's code as `saves.slots.apply` op `finished
+    { ok: false, refusal: <code> }`: core maps every string to `invalid_format` with
+    `SLOT_MESSAGES.invalid_format`, the stated codes (`wrong_world`, another world's save;
+    `wrong_runtime`, another runtime's; the checked read's `wrong_version`,
+    `unregistered_extension`, every `unreadable_*`) and every other string alike
+    (`not_this_game`, '', a bare `unreadable_`). Outside a session,
+    `ui.loadRefusal { refusal }` → `{ outcome, message }` answers the same mapping;
+    render with `ui.saveSlots`. A value that is not a string names no refusal (outcome
+    null, message ''). Retire `NotThisGameMessage`: no engine words its own message.
+    `cases/core-ui-save-slots.json` carries core's 20 `load_refusals`.
+  - **Grammar objectives** (`P9h.unreal.grammar-objective-type`; core's
+    PL.core-grammar-objective-type, U120(4)). `quest.completion.*` normalizes
+    `practice_grammar`, `grammar_drill`, `grammar_pattern`, `grammar_activities`,
+    `grammar_practice`, `conjugation` and `conjugate` to `grammar`, counted by
+    `trackEvent { type: "grammar_demonstrated", patternCount }` toward `requiredCount`
+    (default 2), never by words; `quest.waypoints` sends a grammar objective to the
+    nearest NPC. Core's own cases are in `conformance/quests/lifecycle.json` (op
+    `session`, step `use_grammar`) and `markers.json`, which this library does not
+    vendor or run; replay them through the binding's own quest runner.
+  - **Container y** (`P7.unreal.container-y`; core's PL.core-container-y-ground-relative,
+    U120(2)). A placed container's IR `y` is an offset above the ground at its own
+    unsnapped x/z (0 on the ground; negative clamped to 0; non-finite 0). That is core's
+    scene placement (`src/editor/scene/placement.ts`), which no row of this library
+    reaches: bind it against core's `conformance/editor/ground-relative-height.json`
+    (`containerCases`) in the engine's own placement.
+  - **The skill KB sees the live facts** (core's PL.core-skill-kb-live-facts and
+    PL.core-skill-kb-rule-head-facts). A host that LAYERS opens `skill.kb.open { program,
+    skills, trees, tuning }` and sends each fact the game asserts or retracts in play
+    (`skill.kb.assert` / `.retract { fact }`), each Load (`skill.kb.load {
+    currentState }`), and asks `skill.kb.canUnlock` / `.unlock`; a Save writes
+    `skill.kb.savedFacts` as `currentState.prologFacts`. A host that RECOMPOSES consults
+    `skill.kb.compose { pack?, world, facts }` over `skill.kb.liveFacts { prologFacts }`'s
+    clauses. A fact naming a skill pack rule head (`can_unlock/2`, `skill_goal_met/2`, …)
+    is `skill_owned` and never live. Replay `conformance/progression/skills.json`'s
+    `compose` and `kb` cases as `tests/progression_corpus.cpp` does.
 - **Save slots: the disk can change under the session since the 72c658c pin**
   (core's PL.disk-changed-step). When the save files change outside the game,
   send the new listing as `saves.slots.apply` op `disk_changed { slots }` (the

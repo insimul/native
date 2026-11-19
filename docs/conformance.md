@@ -18,7 +18,7 @@ byte for byte. Three legs run the identical corpus:
 | **WebAssembly** | `tests/wasm_conformance.mjs` (the `wasm_conformance` ctest) | `scripts/build_wasm.sh` |
 
 All three print the same `files / cases / passed / failed / amended` summary — currently
-**12 files, 181 cases, 181 passed, 1 amended** (76 cases before core d88b6f0's
+**12 files, 181 cases, 181 passed, 1 amended** at core 45409ed (76 cases before core d88b6f0's
 `quest-count-goals.json` and `pack-agreement.json` joined the mirror) — so a divergence between the C ABI and any
 binding shows up immediately as a differing count.
 

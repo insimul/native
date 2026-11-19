@@ -4320,6 +4320,291 @@
           "floraOnSquare": []
         }
       }
+    },
+    {
+      "name": "disc: a sign whose board stands 0.66 m off its post towards a wall is tied by the board",
+      "note": "PL.core-grouping-disc-origin (U122(4)): a prop's disc stands at its footprint's middle, not its pivot. A 1.8 m sign (Brightwater's, a disc of 0.9 m) whose post stands 3.33 m from a 6 m house's wall and whose board's middle stands 0.66 m off the post towards the wall (middle [-0.66, 0], Brightwater's sign offset): the disc's edge is 2.67 m from the wall, within the 3 m tie, so it is tied and stays. Read at its post (3.33 m) it would be untied and regrouped. The answer's x is the post's.",
+      "op": "groupProps",
+      "input": {
+        "plan": {},
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "sign",
+            "archetype": "prop.structural.sign",
+            "x": 10.23,
+            "z": 3,
+            "radius": 0.9,
+            "middle": [-0.66, 0]
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "sign",
+            "purpose": "sign",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": [],
+            "x": 10.23,
+            "z": 3,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "disc: a sign whose board stands 0.66 m off its post away from a wall is regrouped, its board at the spot",
+      "note": "PL.core-grouping-disc-origin (U122(4)): the mirror. The post stands 2.67 m from the wall (tied, read at the post), but the board's middle stands 0.66 m further out (middle [0.66, 0]), its disc's edge 3.33 m off: untied, it is regrouped at the house. The cluster's spot is where the DISC stands; the answer's x and z are the post's, the spot less the middle, so the board ties to the wall from the spot.",
+      "op": "groupProps",
+      "input": {
+        "plan": {},
+        "buildings": [
+          {
+            "entityId": "house",
+            "outline": [[0, 0], [6, 0], [6, 6], [0, 6]]
+          }
+        ],
+        "props": [
+          {
+            "entityId": "sign",
+            "archetype": "prop.structural.sign",
+            "x": 9.57,
+            "z": 3,
+            "radius": 0.9,
+            "middle": [0.66, 0]
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "sign",
+            "purpose": "sign",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "building",
+              "id": "house"
+            },
+            "why": ["untied"],
+            "x": 6.927721358048277,
+            "z": 1.8147739912858347,
+            "moved": 2.8959276775235177
+          }
+        ],
+        "before": {
+          "untied": ["sign"],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "disc: a crate 2.9 m from a produce stall's middle is tied to the stall, 3.21 m from its pivot it would not be",
+      "note": "PL.core-grouping-disc-origin (U122(4)), round-2 M1: a cart anchor (cartArchetypes: cart, stall, well) is read at its disc too. A produce stall (Brightwater's, radius 1.5) whose pivot stands at the origin and whose footprint's middle stands 0.31 m off it (middle [0.31, 0], Brightwater's produce-stall offset); a crate (radius 0.3) at x 5.01, no house in reach. The crate's edge is 2.9 m from the stall's disc, within the 3 m tie, so it is tied to the stall and stays. Read at the stall's pivot its edge is 3.21 m off: untied, it would be regrouped at the stall.",
+      "op": "groupProps",
+      "input": {
+        "plan": {},
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "stall.produce",
+            "archetype": "prop.furniture.stall.produce",
+            "x": 0,
+            "z": 0,
+            "radius": 1.5,
+            "middle": [0.31, 0]
+          },
+          {
+            "entityId": "crate",
+            "archetype": "prop.container.crate",
+            "x": 5.01,
+            "z": 0,
+            "radius": 0.3
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "stall.produce",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 0,
+            "z": 0,
+            "moved": 0
+          },
+          {
+            "entityId": "crate",
+            "purpose": "goods",
+            "verdict": "tied",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall.produce"
+            },
+            "why": [],
+            "x": 5.01,
+            "z": 0,
+            "moved": 0
+          }
+        ],
+        "before": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "disc: a crate regrouped at a wares stall whose middle stands 0.21 m off its pivot lands off the stall's disc",
+      "note": "PL.core-grouping-disc-origin (U122(4)), round-2 M1: goods regroup at a cart anchor's disc, not its pivot. A wares stall (radius 1.5) whose pivot stands at the origin and whose footprint's middle stands 0.21 m off it across the line to the crate (middle [0, 0.21], Brightwater's wares-stall offset); a crate (radius 0.3) 10 m east, untied, no house in reach. It is regrouped at the stall: the cluster's spot is off the stall's DISC edge point nearest the crate, so the crate ties to the disc where it lands. Read at the stall's pivot, the spot would stand off the pivot's edge point instead, 0.16 m from this one.",
+      "op": "groupProps",
+      "input": {
+        "plan": {},
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "stall.wares",
+            "archetype": "prop.furniture.stall.wares",
+            "x": 0,
+            "z": 0,
+            "radius": 1.5,
+            "middle": [0, 0.21]
+          },
+          {
+            "entityId": "crate",
+            "archetype": "prop.container.crate",
+            "x": 10,
+            "z": 0,
+            "radius": 0.3
+          }
+        ]
+      },
+      "expected": {
+        "props": [
+          {
+            "entityId": "stall.wares",
+            "purpose": null,
+            "verdict": "left",
+            "anchor": null,
+            "why": [],
+            "x": 0,
+            "z": 0,
+            "moved": 0
+          },
+          {
+            "entityId": "crate",
+            "purpose": "goods",
+            "verdict": "regrouped",
+            "anchor": {
+              "kind": "cart",
+              "id": "stall.wares"
+            },
+            "why": ["untied"],
+            "x": 2.4622887370441138,
+            "z": -1.0271953857203724,
+            "moved": 7.607379407137338
+          }
+        ],
+        "before": {
+          "untied": ["crate"],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        },
+        "after": {
+          "untied": [],
+          "blocks": [],
+          "rows": [],
+          "floraOnSquare": []
+        }
+      }
+    },
+    {
+      "name": "disc: four crates whose middles stand off their pivots pack and block by their middles",
+      "note": "PL.core-grouping-disc-origin (U122(4)): four 0.8 m crates (0.4 m discs) in the open, their pivots 1.3 m apart along x (x 0, 1.3, 2.6, 3.9) but each middle further back towards the first (middles [0, 0], [-0.35, 0], [-0.7, 0], [-1.05, 0]), so the discs stand at x 0, 0.95, 1.9 and 2.85. The discs' edges are 0.15 m apart, under the 0.35 m pack gap: one packed cluster covering 2.56 m2, a block (and, evenly spaced on one line, a row). Read at the pivots they would stand 0.5 m apart edge to edge: not packed, no block.",
+      "op": "auditPropGroups",
+      "input": {
+        "plan": {},
+        "buildings": [],
+        "props": [
+          {
+            "entityId": "crate.0",
+            "archetype": "prop.container.crate",
+            "x": 0,
+            "z": 0,
+            "radius": 0.4,
+            "middle": [0, 0]
+          },
+          {
+            "entityId": "crate.1",
+            "archetype": "prop.container.crate",
+            "x": 1.3,
+            "z": 0,
+            "radius": 0.4,
+            "middle": [-0.35, 0]
+          },
+          {
+            "entityId": "crate.2",
+            "archetype": "prop.container.crate",
+            "x": 2.6,
+            "z": 0,
+            "radius": 0.4,
+            "middle": [-0.7, 0]
+          },
+          {
+            "entityId": "crate.3",
+            "archetype": "prop.container.crate",
+            "x": 3.9,
+            "z": 0,
+            "radius": 0.4,
+            "middle": [-1.05, 0]
+          }
+        ]
+      },
+      "expected": {
+        "untied": ["crate.0", "crate.1", "crate.2", "crate.3"],
+        "blocks": [["crate.0", "crate.1", "crate.2", "crate.3"]],
+        "rows": [["crate.0", "crate.1", "crate.2", "crate.3"]],
+        "floraOnSquare": []
+      }
     }
   ]
 }

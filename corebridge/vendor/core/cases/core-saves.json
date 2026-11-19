@@ -3,14 +3,14 @@
  "description": "core's save corpus through the save.* rows: every fixture's integrity vector (SHA-256 computed by the C host), an envelope carrying it decoded and migrated, the same envelope tampered, and the v1 migration backfills.",
  "generatedBy": "corebridge/tools/emit-bridge-cases.mjs (via vendor-core-bundle.mjs) — do not hand-edit",
  "source": {
-  "coreCommit": "d88b6f0311065f0d2ffd8767d9a65359ea451655",
+  "coreCommit": "45409ed35f2e33c601923dbbbf0a48b88c7c4952",
   "files": {
    "conformance/saves/integrity-vectors.json": "86b2b3b4a45458fc41c9154ee66b1d420345d2c4dc55724b30bc8072835d93fa",
    "conformance/saves/v1-minimal.json": "c5d87ff78a396cf92006d874768b4d0be50440bb7bd14ed6879d3a17eab7ebd6",
    "conformance/saves/v2-typical.json": "cff03b510b8ee0261d556a131827d2af0ab9e688b8ce2054143e615f0aceed92",
    "conformance/saves/v2-with-extensions.json": "6eb5a38fa3033bdc065597dadb851d165d2768a9804c1dcdb64680952215162c",
-   "src/save-envelope.ts": "967998eeb9944cae6eed379de970e42b96a3b1b00a9041120c3d70fe1339fed8",
-   "src/save-file.ts": "ede5fb301d9fb09de76e814d814ed7463fe38acf5906ffc9157b1bdb1c57eeea"
+   "src/save-envelope.ts": "6d521cb56cbc7dc16cab9fd66094c3b167cdad42373a710c8ea50b687f0d5db3",
+   "src/save-file.ts": "cc2736784e240ca44cd1f964a61dc0068ef8f5d8b766d7a6aabb3918a63ea033"
   }
  },
  "cases": [
