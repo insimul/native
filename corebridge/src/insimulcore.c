@@ -40,6 +40,7 @@
 #include "insimul.h"            /* libinsimul C ABI (vendor/insimul/insimul.h) */
 #include "insimul_core_bundle.h" /* generated: tools/vendor-core-bundle.mjs */
 #include "insimulcore_sha256.h"  /* SHA-256 for core's save envelope (js/host-crypto.js) */
+#include "insimulcore_testing.h" /* the test-only views defined at the end of this file */
 
 #ifndef INSIMULCORE_ABI_VERSION
 #define INSIMULCORE_ABI_VERSION "0.1.0"
@@ -119,7 +120,10 @@ struct insimul_core {
 	 * and the `abi_neutral_runtime` ctest that now cycles KBs with none held.)
 	 */
 
-	/* Prolog KBs owned by this runtime; the JS side addresses them by index. */
+	/* Prolog KBs owned by this runtime; the JS side addresses them by index.
+	 * A destroyed KB's slot is NULL and the next create reuses the lowest one
+	 * (PL.native-consult-floor-leak): the table used to grow by one slot per
+	 * KB ever created, so a long session's table never stopped growing. */
 	insimul_kb **kbs;
 	int kb_count;
 	int kb_cap;
@@ -181,6 +185,12 @@ static JSValue js_prolog_create(JSContext *ctx, JSValueConst this_val, int argc,
 	insimul_kb *kb = insimul_kb_create();
 	if (!kb) return JS_NewInt32(ctx, -1);
 
+	for (int i = 0; i < core->kb_count; i++) {
+		if (!core->kbs[i]) {
+			core->kbs[i] = kb;
+			return JS_NewInt32(ctx, i);
+		}
+	}
 	if (core->kb_count == core->kb_cap) {
 		int cap = core->kb_cap ? core->kb_cap * 2 : 4;
 		insimul_kb **next = (insimul_kb **)realloc(core->kbs, (size_t)cap * sizeof(*next));
@@ -499,4 +509,22 @@ const char *insimul_core_version(void) {
 				CONFIG_VERSION, insimul_core_bundle_source_commit);
 	}
 	return buf;
+}
+
+/* ── test-only views (corebridge/src/insimulcore_testing.h) ────────────────── */
+
+JSContext *insimulcore_testing_context(insimul_core *core) {
+	return core ? core->ctx : NULL;
+}
+
+int insimulcore_testing_kb_slots(const insimul_core *core) {
+	return core ? core->kb_count : 0;
+}
+
+int insimulcore_testing_kb_live(const insimul_core *core) {
+	int live = 0;
+	if (core) {
+		for (int i = 0; i < core->kb_count; i++) live += core->kbs[i] != NULL;
+	}
+	return live;
 }

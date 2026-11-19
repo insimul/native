@@ -70,6 +70,35 @@ export const DEFAULT_PROLOG_ENGINE = 'wasm';
  * (`skill.create { kb }`, PL.native-progression-rows) also reaches `queryOnce`
  * (core's `skill_goal_met/2` gate), `assertFact` and `retractFact` (its fact
  * deltas), which is why the rest of the seam is no longer a named throw.
+ *
+ * INCREMENTAL FACT WRITES (PL.native-consult-floor-leak). A rebuild per written
+ * fact made every skill take a whole-program consult (a one-frame 0.43 s hitch
+ * over a village-sized KB) and a fresh native KB. `assertFact`, `assertFacts`
+ * and `retractFact` now write into the HELD KB when that provably leaves it
+ * holding exactly the clauses, in exactly the order, that `_rebuild()` would
+ * have consulted — and fall back to `_rebuild()` in every other case:
+ *
+ *   - assert: the fact is a plain term (`plainFact`: `name` or `name(args)`,
+ *     nothing after it) whose predicate is the bookkeeping bucket it lands in,
+ *     that bucket was already declared dynamic, and no stored fact sits in a
+ *     different bucket for the same predicate (`_mixed`). Facts are the LAST
+ *     part of a rebuilt program and a bucket appends, so the new clause is the
+ *     predicate's last either way. One consult of the fact's own text.
+ *   - retract: the fact is plain and ground, the bookkeeping holds it, and the
+ *     KB holds exactly one identical clause which is also the first clause
+ *     `retract/1` would take (checked in Prolog, `retractDirective`); that one
+ *     clause is what a rebuild without the fact leaves out.
+ *   - an already-held assert, or a retract of a fact never asserted, changes
+ *     nothing a rebuild would change, so it writes nothing.
+ *
+ * Any failure on the incremental path (a fact the engine refuses, a check that
+ * does not hold) is followed by the rebuild, so errors and `_loadError` read as
+ * before. Rules, dynamic declarations, programs and `clearFacts` still rebuild.
+ * One behaviour moves, and it is stated: a QUERY that itself asserts or
+ * retracts (a world rule doing so) keeps that change until the engine rebuilds,
+ * where previously the next fact write discarded it (core's wasm-engine still
+ * does). `corebridge/tests/prolog-engine/` holds the cases and the seeded
+ * differential that replay this file against the rebuild-only oracle.
  */
 class NativePrologEngine {
 	constructor(id) {
@@ -81,6 +110,11 @@ class NativePrologEngine {
 		this._facts = new Map();
 		this._rules = [];
 		this._loadError = undefined;
+		/** Stored facts whose predicate is not their bucket's, or unknown (see `_mixed`). */
+		this._mixedCount = 0;
+		this._mixedSigs = new Map();
+		/** True while the KB has had nothing consulted or queried since it was created. */
+		this._pristine = true;
 	}
 
 	async declareDynamic(predicates) {
@@ -118,12 +152,25 @@ class NativePrologEngine {
 	}
 
 	async assertFact(fact) {
-		this._recordFact(fact);
-		return (await this._rebuild()).success;
+		return this.assertFacts([fact]);
 	}
 
 	async assertFacts(facts) {
+		// Which facts are new, and may each be appended to the held KB?
+		let incremental = this._writable();
+		const fresh = [];
+		for (const fact of facts) {
+			const normalized = String(fact).trim().replace(/\.\s*$/, '');
+			const sig = signatureOf(normalized);
+			const held = this._facts.get(sig || '');
+			if ((held && held.has(normalized + '.')) || fresh.some((f) => f.text === normalized + '.')) continue;
+			const head = plainFact(normalized);
+			if (!head || head.sig !== sig || !this._dynamic.has(sig) || this._mixedSigs.has(sig)) incremental = false;
+			fresh.push({ fact, text: normalized + '.' });
+		}
 		for (const fact of facts) this._recordFact(fact);
+		if (fresh.length === 0 && this._writable()) return true;
+		if (incremental && this._consultHeld(fresh.map((f) => f.text).join('\n'))) return true;
 		return (await this._rebuild()).success;
 	}
 
@@ -131,9 +178,16 @@ class NativePrologEngine {
 		const normalized = String(fact).trim().replace(/\.\s*$/, '') + '.';
 		const sig = signatureOf(normalized.replace(/\.$/, ''));
 		const facts = this._facts.get(sig || '');
-		if (facts) {
+		const held = Boolean(facts && facts.has(normalized));
+		if (held) {
 			facts.delete(normalized);
+			this._countMixed(normalized, sig || '', -1);
 			if (facts.size === 0) this._facts.delete(sig || '');
+		}
+		if (this._writable()) {
+			if (!held) return true;
+			const head = plainFact(normalized.replace(/\.$/, ''));
+			if (head && head.ground && this._consultHeld(retractDirective(normalized.replace(/\.$/, '')))) return true;
 		}
 		return (await this._rebuild()).success;
 	}
@@ -157,6 +211,7 @@ class NativePrologEngine {
 		if (this._loadError) return { success: false, bindings: [], error: this._loadError };
 		// wasm-engine.ts: `queryString.trim().replace(/\.\s*$/, '')`.
 		const goal = String(queryString).trim().replace(/\.\s*$/, '');
+		this._pristine = false;
 		let raw;
 		try {
 			raw = globalThis.__insimul_prolog_query(this._id, goal, maxResults);
@@ -199,7 +254,7 @@ class NativePrologEngine {
 
 	async clear() {
 		this._dynamic.clear();
-		this._facts.clear();
+		this._forgetFacts();
 		this._rules = [];
 		this._programs = [];
 		this._loadError = undefined;
@@ -207,7 +262,7 @@ class NativePrologEngine {
 	}
 
 	async clearFacts() {
-		this._facts.clear();
+		this._forgetFacts();
 		await this._rebuild();
 	}
 
@@ -221,6 +276,12 @@ class NativePrologEngine {
 		if (this._id < 0) return;
 		globalThis.__insimul_prolog_destroy(this._id);
 		this._id = -1;
+		// The program text is the bulk of an engine; a disposed session can stay
+		// reachable from the JS heap until QuickJS's next cycle collection, and it
+		// should not hold a village-sized program there in the meantime.
+		this._programs = [];
+		this._rules = [];
+		this._forgetFacts();
 	}
 
 	// ── Not reached by any adopted slice. Fail loudly if a future one gets here.
@@ -234,7 +295,45 @@ class NativePrologEngine {
 		const sig = signatureOf(normalized);
 		if (sig && !this._dynamic.has(sig)) this._dynamic.add(sig);
 		if (!this._facts.has(sig || '')) this._facts.set(sig || '', new Set());
-		this._facts.get(sig || '').add(normalized + '.');
+		const bucket = this._facts.get(sig || '');
+		if (bucket.has(normalized + '.')) return;
+		bucket.add(normalized + '.');
+		this._countMixed(normalized + '.', sig || '', 1);
+	}
+
+	/**
+	 * `_mixed`: a stored fact whose real predicate is not the bucket
+	 * `signatureOf` put it in (it reads `p(f(a,b), c)` as p/1), or whose predicate
+	 * `plainFact` cannot tell. A rebuild emits buckets in insertion order, so such
+	 * a fact can sit AFTER another bucket holding its predicate, and appending to
+	 * that other bucket's predicate would then not be appending to the end of the
+	 * rebuilt clause list. Counted per real predicate; an unknown one blocks all.
+	 */
+	_countMixed(text, bucket, delta) {
+		const head = plainFact(text.replace(/\.$/, ''));
+		if (head && head.sig === bucket) return;
+		const key = head ? head.sig : '';
+		const n = (this._mixedSigs.get(key) || 0) + delta;
+		if (n > 0) this._mixedSigs.set(key, n);
+		else this._mixedSigs.delete(key);
+		this._mixedCount += delta;
+	}
+
+	_forgetFacts() {
+		this._facts.clear();
+		this._mixedSigs.clear();
+		this._mixedCount = 0;
+	}
+
+	/** May a fact write go straight into the held KB (it holds the bookkeeping's program)? */
+	_writable() {
+		return this._id >= 0 && !this._loadError && !this._mixedSigs.has('');
+	}
+
+	/** Consult `text` into the held KB; false (and nothing changed by a clause) when it refuses. */
+	_consultHeld(text) {
+		this._pristine = false;
+		return globalThis.__insimul_prolog_consult(this._id, text) === null;
 	}
 
 	_recordRule(rule) {
@@ -255,6 +354,7 @@ class NativePrologEngine {
 		const id = globalThis.__insimul_prolog_create();
 		if (id < 0) throw new Error('insimulcore: could not create a Prolog KB');
 		this._id = id;
+		this._pristine = true;
 	}
 
 	/** wasm-engine.ts `rebuild()`: a fresh KB consulted with everything, in order. */
@@ -267,7 +367,10 @@ class NativePrologEngine {
 		for (const facts of this._facts.values()) for (const f of facts) parts.push(f);
 		const fullProgram = parts.join('\n');
 
-		this._freshKb();
+		// A KB nothing has been consulted into or asked yet is already what
+		// `_freshKb()` would make: reuse it rather than create and destroy one.
+		if (!(this._pristine && this._id >= 0)) this._freshKb();
+		this._pristine = false;
 		this._loadError = undefined;
 		if (!fullProgram.trim()) return { success: true };
 		const err = globalThis.__insimul_prolog_consult(this._id, fullProgram);
@@ -303,6 +406,77 @@ function signatureOf(fact) {
 		}
 	}
 	return `${match[1]}/${arity}`;
+}
+
+/**
+ * The head of a PLAIN fact — `name` or `name(args)` with nothing after the
+ * closing parenthesis — as `{ sig: 'name/arity', ground }`, or null for
+ * anything else (a rule, a directive, an operator term, a quoted or
+ * upper-case functor, a comment, `0'c`, an end token inside, unbalanced
+ * brackets). Unlike `signatureOf` it counts arguments at the top level of the
+ * argument list, so `p(f(a,b), c)` is p/2. `ground` is false when a variable
+ * token appears outside quotes. Null always means "rebuild", never an error.
+ */
+export function plainFact(text) {
+	const name = /^[a-z][A-Za-z0-9_]*/.exec(text);
+	if (!name) return null;
+	let i = name[0].length;
+	if (i === text.length) return { sig: `${name[0]}/0`, ground: true };
+	if (text[i] !== '(') return null;
+	let depth = 0;
+	let arity = 1;
+	let ground = true;
+	const word = (c) => c !== undefined && /[A-Za-z0-9_]/.test(c);
+	for (; i < text.length; i++) {
+		const ch = text[i];
+		if (ch === "'" || ch === '"' || ch === '`') {
+			let j = i + 1;
+			for (;;) {
+				if (j >= text.length) return null;
+				if (text[j] === '\\') j += 2;
+				else if (text[j] === ch && text[j + 1] === ch) j += 2;
+				else if (text[j] === ch) break;
+				else j++;
+			}
+			i = j;
+			continue;
+		}
+		if (ch === '(' || ch === '[' || ch === '{') {
+			depth++;
+		} else if (ch === ')' || ch === ']' || ch === '}') {
+			depth--;
+			if (depth === 0) {
+				return ch === ')' && i === text.length - 1 ? { sig: `${name[0]}/${arity}`, ground } : null;
+			}
+			if (depth < 0) return null;
+		} else if (ch === ',' && depth === 1) {
+			arity++;
+		} else if (ch === '%' || (ch === '/' && text[i + 1] === '*')) {
+			return null;
+		} else if (ch === '0' && text[i + 1] === "'" && !word(text[i - 1])) {
+			return null;
+		} else if (ch === '.' && (i + 1 === text.length || /[\s%]/.test(text[i + 1]))) {
+			return null;
+		} else if (/[A-Z_]/.test(ch) && !word(text[i - 1])) {
+			ground = false;
+		}
+	}
+	return null;
+}
+
+/**
+ * The directive that retracts ground fact `fact` from a held KB exactly as a
+ * rebuild without it would: only when the KB holds ONE clause identical to it
+ * and it is the first clause `retract/1` would take (no earlier fact merely
+ * unifies with it). Otherwise the directive fails, so does the consult, and the
+ * caller rebuilds. ISO builtins only; no helper predicate enters the KB.
+ */
+export function retractDirective(fact) {
+	return (
+		`:- once((G = (${fact}), functor(G, N, A), functor(H1, N, A), ` +
+		`findall(x, (clause(H1, true), H1 == G), [_]), functor(H2, N, A), ` +
+		`once((clause(H2, true), \\+ H2 \\= G)), H2 == G, retract(G))).`
+	);
 }
 
 function unimplemented(member) {

@@ -1,0 +1,76 @@
+{
+ "area": "libinsimul — the per-KB floor across create/consult/destroy cycles",
+ "description": "PL.native-consult-floor-leak. Replayed by tests/kb_floor.cpp (ctest kb_floor). Each case: cycles measured after warmup cycles (the first KB opens the deliberate L-01 keepalive, outside the window); program is literal text or {template, count} expanded per clause ({i}) and per cycle ({cycle}); ops make it a held-KB case; maxBytesPerCycle bounds heap bytes left per cycle; perNewAtom (with newAtomsPerCycle) states a declared upstream residue per new atom, floor included.",
+ "cases": [
+  {
+   "name": "create + destroy of an empty KB",
+   "cycles": 200,
+   "warmup": 5,
+   "maxBytesPerCycle": 48,
+   "declared": "the engine's own library load keeps 32 B per engine instance (a string its goal_expansion builds with atom_concat while pl_create loads the built-in library; vendor/trealla src/parser.c goal_expansion -> bif_iso_atom_concat_3 -> make_cstringn); upstream, not native's, and bounded here"
+  },
+  {
+   "name": "create + consult 3000 facts + destroy, the same program every cycle",
+   "program": {
+    "template": "fact_{i}_(a{i}, {i}, \"s{i}\").",
+    "count": 3000
+   },
+   "cycles": 20,
+   "warmup": 3,
+   "maxBytesPerCycle": 48
+  },
+  {
+   "name": "create + consult 300 facts + destroy (the residue does not scale with the program)",
+   "program": {
+    "template": "f(a{i}, {i}).",
+    "count": 300
+   },
+   "cycles": 100,
+   "warmup": 3,
+   "maxBytesPerCycle": 48
+  },
+  {
+   "name": "create + consult rules, directives, strings and compounds + destroy",
+   "program": ":- dynamic(seen/2).\n:- op(700, xfx, ===>).\nedge(a, b).\nedge(b, c).\npath(X, Y) :- edge(X, Y).\npath(X, Z) :- edge(X, Y), path(Y, Z).\nrule(a ===> b, [x, y, \"text\"], f(g(1.5), 'Quoted atom')).\nmeets(X) :- findall(Y, path(X, Y), Ys), length(Ys, N), N > 0.",
+   "cycles": 100,
+   "warmup": 3,
+   "maxBytesPerCycle": 48
+  },
+  {
+   "name": "a held KB: assert, query and retract a fact per cycle leave nothing",
+   "program": ":- dynamic(g/2).\nbase(1).",
+   "ops": [
+    {
+     "assert": "g({i}, {i})"
+    },
+    {
+     "query": "g(X, {i})"
+    },
+    {
+     "query": "base(X)"
+    },
+    {
+     "retract": "g({i}, {i})"
+    }
+   ],
+   "cycles": 1000,
+   "warmup": 20,
+   "maxBytesPerCycle": 1
+  },
+  {
+   "name": "DECLARED UPSTREAM: an atom new to the process stays in the engine's process-wide atom table after its KB is destroyed",
+   "program": {
+    "template": "f(c{cycle}_a{i}, {i}).",
+    "count": 1000
+   },
+   "newAtomsPerCycle": 1000,
+   "cycles": 10,
+   "warmup": 2,
+   "perNewAtom": {
+    "min": 16,
+    "max": 128
+   },
+   "declared": "vendored Trealla interns every atom in one process-wide table (src/prolog.c g_symtab + g_global_atoms, add_to_global_atoms) that is freed only when the last engine instance is destroyed, which libinsimul's L-01 keepalive deliberately never lets happen; about 71.5 B per distinct new atom on this build (the lane's 96 B per clause was a program of fresh atoms). A program whose atoms repeat (every case above) leaves nothing. Native owns no part of it; the row stays open for upstream"
+  }
+ ]
+}

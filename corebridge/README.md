@@ -81,9 +81,10 @@ corpus is what proves it.
 | `include/insimulcore.h` | **The contract.** The one file that must not fork. |
 | `src/insimulcore.c` | The QuickJS host: ABI, promise pump, Prolog bridge, the SHA-256 global. |
 | `src/insimulcore_sha256.{c,h}` | SHA-256 (FIPS 180-4) for core's save envelope. Internal; not exported. |
+| `src/insimulcore_testing.h` | Test-only views (the handle's QuickJS context, its KB table) for this repo's `prolog_engine_cases`. Never shipped, never included by a plugin. |
 | `js/entry.js` | **The method table** — one entry per callable method (below). |
 | `js/host-sessions.js` | The session table behind every stateful row (`<area>.create` / `<area>.apply`). |
-| `js/host-prolog-engine.js` | Core's Prolog seam, implemented over libinsimul. |
+| `js/host-prolog-engine.js` | Core's Prolog seam, implemented over libinsimul. Fact writes go into the held KB where that is provably what a rebuild would hold (PL.native-consult-floor-leak); everything else rebuilds. |
 | `js/host-crypto.js` | Core's `crypto` import: `createHash('sha256')` backed by the C host. Anything else throws. |
 | `js/host-console.js` | A `console` for QuickJS: records what core logs, prints nothing (`core.diagnostics`). |
 | `js/host-text-codec.js` | `TextEncoder`/`TextDecoder` polyfill (byte-for-byte Godot's; core's `identity/kinp.ts` needs one at load). |
@@ -93,6 +94,7 @@ corpus is what proves it.
 | `tools/vendor-core-bundle.mjs` | Produces `vendor/core/` from the pin, and the `--check` drift guard the `core_vendor` ctest runs. |
 | `tools/emit-bridge-cases.mjs` | The transcription of core's corpora into `vendor/core/cases/` (run by the tool above). |
 | `tests/cases/` | Hand-written cases for behaviour no core corpus pins yet. |
+| `tests/prolog-engine/` | The Prolog seam's own corpus and driver: each step against the rebuild-only oracle, with stated answers and native cost, plus a seeded differential (`prolog_engine_cases`). |
 | `tests/README.md` | The case format and the matcher rules both harnesses implement. |
 | `ENGINE_BINDINGS.md` | What each engine's binding must add to use this table. |
 | `CMakeLists.txt` | The two targets: `insimulcore` (static) + `insimulcore_shared`. |

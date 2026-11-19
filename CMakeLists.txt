@@ -623,6 +623,46 @@ add_test(NAME corebridge_cases COMMAND insimulcore_cases
   ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/core/cases
   ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tests/cases)
 
+# prolog_engine_cases (PL.native-consult-floor-leak): corebridge/js/host-prolog-engine.js,
+# the adapter behind core's PrologEngine seam, replayed over the cases and the seeded
+# differential in corebridge/tests/prolog-engine/ inside a REAL libinsimulcore runtime
+# (real __insimul_prolog_* globals, real native engine). Every step is compared with
+# the same file's rebuild-only oracle; `cost` pins that a fact write in a held KB
+# creates no KB and consults only its own text, and `kbSlots` that the bridge's KB
+# table reuses its holes. Uses corebridge/src/insimulcore_testing.h (test-only).
+file(GLOB INSIMUL_PROLOG_ENGINE_CASES CONFIGURE_DEPENDS
+  "${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tests/prolog-engine/*.json")
+if(NOT INSIMUL_PROLOG_ENGINE_CASES)
+  message(FATAL_ERROR "no corebridge/tests/prolog-engine/*.json — prolog_engine_cases would run nothing")
+endif()
+add_executable(insimulcore_prolog_engine tests/prolog_engine_cases.c)
+target_include_directories(insimulcore_prolog_engine PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/src
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/vendor/quickjs)
+target_link_libraries(insimulcore_prolog_engine PRIVATE insimulcore m)
+add_test(NAME prolog_engine_cases COMMAND insimulcore_prolog_engine
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/js/host-prolog-engine.js
+  ${CMAKE_CURRENT_SOURCE_DIR}/corebridge/tests/prolog-engine/driver.js
+  ${INSIMUL_PROLOG_ENGINE_CASES})
+
+# kb_floor (PL.native-consult-floor-leak): libinsimul's per-KB floor, as data —
+# tests/kb-floor/cases.json states, per case, N create/consult/destroy cycles (or N
+# ops on one held KB) and the heap bytes per cycle they may leave behind, measured
+# after a warm-up that opens the deliberate L-01 engine keepalive outside the window.
+# Its one declared case is the engine's process-wide atom table (upstream, stated per
+# new atom with a floor, so the declaration goes red when it stops being true).
+# Registered only where the allocator reports bytes in use (macOS, glibc ≥ 2.33).
+include(CheckSymbolExists)
+check_symbol_exists(mallinfo2 "malloc.h" INSIMUL_HAVE_MALLINFO2)
+if(APPLE OR INSIMUL_HAVE_MALLINFO2)
+  add_executable(insimul_kb_floor tests/kb_floor.cpp tests/radiant/json_value.cpp)
+  target_include_directories(insimul_kb_floor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  target_link_libraries(insimul_kb_floor PRIVATE insimul)
+  add_test(NAME kb_floor COMMAND insimul_kb_floor ${CMAKE_CURRENT_SOURCE_DIR}/tests/kb-floor/cases.json)
+else()
+  message(WARNING "kb_floor is not registered: this allocator reports no bytes in use (needs macOS or glibc's mallinfo2)")
+endif()
+
 # The JS leg: the same generated bundle evaluated in Node (V8, Node's crypto)
 # over the same cases; and the parity leg, which diffs the RAW result string of
 # every step between QuickJS-through-C and V8. Need node; a loud [SKIP] without.

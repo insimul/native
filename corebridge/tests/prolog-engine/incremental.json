@@ -1,0 +1,721 @@
+{
+ "area": "corebridge/js/host-prolog-engine.js — core's PrologEngine seam over libinsimul",
+ "description": "PL.native-consult-floor-leak. Each step runs on the shipped engine and on the rebuild-only oracle (the pre-change code, in driver.js); their answers, and every probe's answers, must be identical JSON (order counts) unless a step says oracleDiffers. expect is the stated answer for any runner; cost bounds the step's native work: creates = KBs created, maxConsultBytes = the largest single consult in bytes. kbSlots bounds the bridge's KB table. The fuzz block is a seeded LCG op sequence over its pools (driver.js runFuzz), compared after every op. A consult step's cost counts KBs created by the step itself: a new engine's first consult reuses the KB createPrologEngine made (creates 0). destroy releases the engine's KB and its program, rules and facts (it reports what it still holds) and ends the case.",
+ "cases": [
+  {
+   "name": "a skill take in a held village-sized KB: each fact write creates no KB and consults only its own text",
+   "probes": [
+    "skill_points(A, T, P)",
+    "skill_unlocked(A, N)",
+    "can_unlock(smith, N)"
+   ],
+   "steps": [
+    {
+     "op": "consult",
+     "program": ":- dynamic(skill_points/3).\n:- dynamic(skill_unlocked/2).\n:- dynamic(skill_node/2).\n:- dynamic(skill_node_cost/2).\n:- dynamic(skill_node_requires/2).\nskill_goal_met(_, Goal) :- atom(Goal), !, call(Goal).\nskill_goal_met(A, Goal) :- Goal =.. [F, _ | Rest], Bound =.. [F, A | Rest], call(Bound).\nskill_node_price(N, C) :- skill_node_cost(N, C), !.\nskill_node_price(N, 0) :- skill_node(N, _).\nskill_points_held(A, T, P) :- skill_points(A, T, P), !.\ncan_unlock(A, N) :- skill_node(N, T), \\+ skill_unlocked(A, N), skill_node_price(N, C), skill_points_held(A, T, P), P >= C, \\+ (skill_node_requires(N, G), \\+ skill_goal_met(A, G)).\nskill_node(apprentice_forge, forge_tree).\nskill_node_cost(apprentice_forge, 1).\nskill_node(guild_forge, forge_tree).\nskill_node_cost(guild_forge, 2).\nskill_node_requires(guild_forge, skill_unlocked(Actor, apprentice_forge)).\nskill_points(smith, forge_tree, 3).",
+     "expect": {
+      "success": true
+     },
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "consult",
+     "program": {
+      "template": "village_fact(p{i}, {i}).",
+      "count": 3000
+     },
+     "expect": {
+      "success": true
+     },
+     "skipProbes": true
+    },
+    {
+     "op": "assertFact",
+     "fact": "skill_points(wren, forge_tree, 2)",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 64
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "skill_unlocked(smith, apprentice_forge)",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 64
+     }
+    },
+    {
+     "op": "retractFact",
+     "fact": "skill_points(wren, forge_tree, 2)",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 400
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "skill_points(wren, forge_tree, 0).",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 64
+     }
+    },
+    {
+     "op": "query",
+     "goal": "skill_points(wren, T, P)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "T": "forge_tree",
+        "P": 0
+       }
+      ]
+     }
+    },
+    {
+     "op": "queryOnce",
+     "goal": "can_unlock(smith, guild_forge)",
+     "expect": true
+    },
+    {
+     "op": "assertFacts",
+     "facts": [
+      "skill_unlocked(wren, apprentice_forge)",
+      "skill_points(wren, forge_tree, 5)"
+     ],
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 128
+     }
+    },
+    {
+     "op": "query",
+     "goal": "skill_points(A, forge_tree, P)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "A": "smith",
+        "P": 3
+       },
+       {
+        "A": "wren",
+        "P": 0
+       },
+       {
+        "A": "wren",
+        "P": 5
+       }
+      ]
+     }
+    },
+    {
+     "op": "destroy",
+     "expect": {
+      "programs": 0,
+      "rules": 0,
+      "facts": 0,
+      "dynamic": 5
+     },
+     "skipProbes": true
+    }
+   ]
+  },
+  {
+   "name": "the first fact of a predicate no declaration named rebuilds once; the next is incremental",
+   "probes": [
+    "fresh_pred(X)"
+   ],
+   "steps": [
+    {
+     "op": "consult",
+     "program": "seed(1).",
+     "expect": {
+      "success": true
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "fresh_pred(a)",
+     "expect": true,
+     "cost": {
+      "creates": 1
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "fresh_pred(b)",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 32
+     }
+    },
+    {
+     "op": "query",
+     "goal": "fresh_pred(X)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "a"
+       },
+       {
+        "X": "b"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "order: an appended fact lands after the predicate's program clauses and added rules, as a rebuild puts it (q/1, never declared, rebuilds on its first written fact)",
+   "probes": [
+    "p(X)",
+    "q(X)"
+   ],
+   "steps": [
+    {
+     "op": "consult",
+     "program": ":- dynamic(p/1).\np(prog1).\np(prog2) :- true.\nq(1).",
+     "expect": {
+      "success": true
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "p(fact1)",
+     "expect": true
+    },
+    {
+     "op": "addRule",
+     "rule": "p(rule1) :- true",
+     "expect": true,
+     "cost": {
+      "creates": 1
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "p(fact2)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "query",
+     "goal": "p(X)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "prog1"
+       },
+       {
+        "X": "prog2"
+       },
+       {
+        "X": "rule1"
+       },
+       {
+        "X": "fact1"
+       },
+       {
+        "X": "fact2"
+       }
+      ]
+     }
+    },
+    {
+     "op": "assertFacts",
+     "facts": [
+      "p(fact3)",
+      "q(2)",
+      "p(fact4)"
+     ],
+     "expect": true,
+     "cost": {
+      "creates": 1
+     }
+    },
+    {
+     "op": "query",
+     "goal": "p(X)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "prog1"
+       },
+       {
+        "X": "prog2"
+       },
+       {
+        "X": "rule1"
+       },
+       {
+        "X": "fact1"
+       },
+       {
+        "X": "fact2"
+       },
+       {
+        "X": "fact3"
+       },
+       {
+        "X": "fact4"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "a fact whose bookkeeping bucket is not its predicate (p(f(a,b), c) read as p/1) makes that predicate rebuild",
+   "probes": [
+    "p(X, Y)",
+    "p(X)"
+   ],
+   "steps": [
+    {
+     "op": "consult",
+     "program": ":- dynamic(p/1).\n:- dynamic(p/2).",
+     "expect": {
+      "success": true
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "p(plain, one)",
+     "expect": true
+    },
+    {
+     "op": "assertFact",
+     "fact": "p(f(a,b), two)",
+     "expect": true,
+     "cost": {
+      "creates": 1
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "p(plain, three)",
+     "expect": true,
+     "cost": {
+      "creates": 1
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "p(solo)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "query",
+     "goal": "p(X, Y)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "plain",
+        "Y": "one"
+       },
+       {
+        "X": "plain",
+        "Y": "three"
+       },
+       {
+        "X": "f",
+        "Y": "two"
+       }
+      ]
+     }
+    },
+    {
+     "op": "retractFact",
+     "fact": "p(f(a,b), two)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "p(plain, four)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "query",
+     "goal": "p(X, Y)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "plain",
+        "Y": "one"
+       },
+       {
+        "X": "plain",
+        "Y": "three"
+       },
+       {
+        "X": "plain",
+        "Y": "four"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "retract removes only the asserted copy: a program clause stays, a fact never asserted is a no-op, an earlier unifying fact forces a rebuild",
+   "probes": [
+    "r(X)",
+    "s(X)"
+   ],
+   "steps": [
+    {
+     "op": "consult",
+     "program": ":- dynamic(r/1).\n:- dynamic(s/1).\nr(prog).\ns(_).",
+     "expect": {
+      "success": true
+     }
+    },
+    {
+     "op": "retractFact",
+     "fact": "r(prog)",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 0
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "r(prog)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "query",
+     "goal": "r(X)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "prog"
+       },
+       {
+        "X": "prog"
+       }
+      ]
+     }
+    },
+    {
+     "op": "retractFact",
+     "fact": "r(prog)",
+     "expect": true,
+     "cost": {
+      "creates": 1
+     }
+    },
+    {
+     "op": "query",
+     "goal": "r(X)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "prog"
+       }
+      ]
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "s(a)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "retractFact",
+     "fact": "s(a)",
+     "expect": true,
+     "cost": {
+      "creates": 1
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "r(x1)",
+     "expect": true
+    },
+    {
+     "op": "assertFact",
+     "fact": "r(x2)",
+     "expect": true
+    },
+    {
+     "op": "retractFact",
+     "fact": "r(x1)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "query",
+     "goal": "r(X)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "prog"
+       },
+       {
+        "X": "x2"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "a repeated assert and a non-ground retract: the first writes nothing, the second rebuilds",
+   "probes": [
+    "t(X)"
+   ],
+   "steps": [
+    {
+     "op": "consult",
+     "program": ":- dynamic(t/1).",
+     "expect": {
+      "success": true
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "t(once)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "t(once).",
+     "expect": true,
+     "cost": {
+      "creates": 0,
+      "maxConsultBytes": 0
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "t(Any)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "retractFact",
+     "fact": "t(Any)",
+     "expect": true,
+     "cost": {
+      "creates": 1
+     }
+    },
+    {
+     "op": "query",
+     "goal": "t(X)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "once"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "a fact the engine refuses reports exactly as the rebuild did, and the engine recovers once it is retracted",
+   "probes": [
+    "u(X)"
+   ],
+   "steps": [
+    {
+     "op": "consult",
+     "program": ":- dynamic(u/1).\nu(1).",
+     "expect": {
+      "success": true
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "u(2",
+     "expect": false
+    },
+    {
+     "op": "query",
+     "goal": "u(X)"
+    },
+    {
+     "op": "assertFact",
+     "fact": "u(3)",
+     "expect": false
+    },
+    {
+     "op": "retractFact",
+     "fact": "u(2",
+     "expect": true
+    },
+    {
+     "op": "query",
+     "goal": "u(X)",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": 1
+       },
+       {
+        "X": 3
+       }
+      ]
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "u(4)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "STATED CHANGE: a query that itself asserts keeps its clause past the next fact write (the rebuild discarded it)",
+   "steps": [
+    {
+     "op": "consult",
+     "program": ":- dynamic(note/1).",
+     "expect": {
+      "success": true
+     }
+    },
+    {
+     "op": "query",
+     "goal": "assertz(note(by_query))",
+     "expect": {
+      "success": true,
+      "bindings": [
+       {}
+      ]
+     }
+    },
+    {
+     "op": "assertFact",
+     "fact": "note(by_host)",
+     "expect": true,
+     "cost": {
+      "creates": 0
+     }
+    },
+    {
+     "op": "query",
+     "goal": "note(X)",
+     "oracleDiffers": true,
+     "expect": {
+      "success": true,
+      "bindings": [
+       {
+        "X": "by_query"
+       },
+       {
+        "X": "by_host"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "the bridge's KB table reuses a destroyed KB's slot: 60 create/consult/destroy cycles leave it bounded",
+   "steps": [
+    {
+     "op": "consult",
+     "program": "seed(1).",
+     "expect": {
+      "success": true
+     }
+    },
+    {
+     "op": "cycle",
+     "count": 60,
+     "program": "a(1).\nb(2) :- a(1)."
+    },
+    {
+     "op": "kbSlots",
+     "max": 4
+    }
+   ]
+  }
+ ],
+ "fuzz": {
+  "seed": 20261119,
+  "sequences": 30,
+  "steps": 30,
+  "maxCreateRatio": 0.6,
+  "program": ":- dynamic(p/1).\n:- dynamic(p/2).\n:- dynamic(q/1).\np(prog).\np(X, y) :- q(X).\nq(0).",
+  "facts": [
+   "p(a)",
+   "p(b)",
+   "p(c)",
+   "p(a, b)",
+   "p(f(a,b), c)",
+   "p(g(x), d)",
+   "q(1)",
+   "q(2)",
+   "q(1)",
+   "q(Var)",
+   "r(z)",
+   "'quoted'(x)",
+   "p(a)."
+  ],
+  "rules": [
+   "p(r) :- true",
+   "q(3)",
+   "p(X, w) :- q(X)"
+  ],
+  "probes": [
+   "p(X)",
+   "p(X, Y)",
+   "q(X)",
+   "r(X)"
+  ]
+ }
+}

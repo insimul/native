@@ -199,6 +199,38 @@
   documented, printed amendment (rename), never a silent skip — see its
   `AMENDMENTS` table.
 
+## The per-KB floor and the Prolog seam's cost (PL.native-consult-floor-leak)
+- **`insimul_kb_destroy` frees everything native owns.** What stays behind after a
+  create/consult/destroy cycle is the vendored engine's, and `kb_floor`
+  (`tests/kb_floor.cpp` over `tests/kb-floor/cases.json`) states it as data:
+  32 B per engine instance (its built-in library load keeps a string from
+  `goal_expansion`'s `atom_concat`), whatever the program, and **every atom new to
+  the process** (~72 B each) — Trealla interns atoms in one process-wide table
+  freed only when the last instance goes, which the L-01 keepalive never allows.
+  A program whose atoms repeat leaves nothing more. Both are declared upstream in
+  the cases; the atom case carries a FLOOR, so it goes red the day it stops being
+  true. Measured after a warm-up, so the keepalive is outside the window.
+  Registered only where the allocator reports bytes in use (macOS, glibc).
+- **The seam no longer re-consults the world per fact.** `host-prolog-engine.js`
+  still mirrors core's wasm-engine bookkeeping, but `assertFact(s)`/`retractFact`
+  write into the HELD KB when that is provably the clause list a rebuild would
+  make (plain fact, its predicate is its bucket and already declared, no
+  mis-bucketed fact of that predicate; a retract only of a ground fact the KB holds
+  exactly once and `retract/1` would take first) and rebuild otherwise. A skill take
+  is a few hundred bytes of consult instead of the whole program and a fresh KB.
+  One stated behaviour change: a query's own assert/retract survives the next fact
+  write (the rebuild used to discard it). `prolog_engine_cases`
+  (`tests/prolog_engine_cases.c`, corpus + driver in `corebridge/tests/prolog-engine/`)
+  runs the shipped file and its rebuild-only oracle (the old code, in the driver)
+  side by side in a real libinsimulcore runtime and fails on any difference in an
+  answer or its ORDER, on a step's stated `cost` (KBs created, bytes consulted), and
+  on the bridge's KB table growing (slots are reused now). Keep the oracle as it is:
+  it is the definition of "exact".
+- A disposed session's JS objects wait for QuickJS's cycle collector (the session
+  graph is cyclic), so the bridge's heap per skill session is ~11 KB that plateaus,
+  not a leak; `destroy()` drops the engine's program text at once so that wait
+  never holds a world.
+
 ## The engine source is VENDORED here (US-3)
 - **Trealla is committed under `vendor/trealla/`, not fetched.** libinsimul is
   layer zero — four engine runtimes, the Rust server and every save file sit on
