@@ -350,6 +350,18 @@ function statedExtensionKeyLists(dir) {
 }
 
 /** Problems with the stated lists against the bundle's keys (empty = they agree). */
+// A refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1),
+// U126(2)): core's conformance/ui/save-slot-cases.json states its `load_refusals`, and the
+// emitter transcribes each into cases/core-ui-save-slots.json as a case whose steps call
+// `ui.loadRefusal`. A self-consistent re-vendor with that transcription dropped would leave
+// every other check green, so --check holds the derived file to carry them (and, with
+// --core, exactly as many as core states at the pin).
+const LOAD_REFUSAL_CASES = path.join(CASES_DIR, 'core-ui-save-slots.json');
+function loadRefusalCasesOnDisk() {
+  const doc = JSON.parse(fs.readFileSync(LOAD_REFUSAL_CASES, 'utf8'));
+  return doc.cases.filter((c) => (c.steps ?? []).some((st) => st.call === 'ui.loadRefusal')).length;
+}
+
 function extensionKeyProblems(bundleKeys, stated) {
   const problems = [];
   if (stated.length === 0) problems.push('no save.rules step states extensionKeys, so nothing pins the registered extension keys');
@@ -1311,6 +1323,11 @@ async function check(coreDir) {
     `vendor-core-bundle: save.rules extensionKeys — the vendored bundle registers ${keys.count}, and all ` +
       `${keys.steps} save.rules step(s) under corebridge/tests/cases/ state exactly that list`,
   );
+  const refusalCases = loadRefusalCasesOnDisk();
+  if (refusalCases === 0) {
+    fail("cases/core-ui-save-slots.json carries no ui.loadRefusal case: core's load_refusals were not transcribed");
+  }
+  console.log(`vendor-core-bundle: load refusals — cases/core-ui-save-slots.json carries ${refusalCases} ui.loadRefusal case(s)`);
 
   if (coreDir) {
     const src = materialize(coreDir, pin);
@@ -1326,6 +1343,10 @@ async function check(coreDir) {
       }
       if (JSON.stringify(fresh.npmModules) !== JSON.stringify(manifest.npmModules ?? {})) {
         fail(`DRIFT: npm modules ${JSON.stringify(fresh.npmModules)} differ from the recorded ${JSON.stringify(manifest.npmModules)}`);
+      }
+      const stated = JSON.parse(fs.readFileSync(path.join(src.root, 'conformance/ui/save-slot-cases.json'), 'utf8')).load_refusals ?? [];
+      if (stated.length !== refusalCases) {
+        fail(`core ${pin.coreCommit} states ${stated.length} load_refusals; cases/core-ui-save-slots.json carries ${refusalCases}`);
       }
       const cases = await emitCases(src, pin);
       const names = Object.keys(cases).sort();
