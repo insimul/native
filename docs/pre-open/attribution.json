@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-village-save-rows",
-    "gitHead": "9dd61baed198bfc457155c1f4e01b2ca3ed39a82"
+    "root": "native-native-language-rows-s1-book-prompts-hover-chat",
+    "gitHead": "be0231d2b9a184e5fc37329a69a1d37824535373"
   },
   "coverage": {
-    "trackedFiles": 473,
+    "trackedFiles": 485,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
