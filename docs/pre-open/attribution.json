@@ -1,11 +1,11 @@
 {
   "tool": "scripts/check-attribution.mjs",
   "repository": {
-    "root": "native-native-language-rows-s1-book-prompts-hover-chat",
-    "gitHead": "be0231d2b9a184e5fc37329a69a1d37824535373"
+    "root": "native-native-language-rows-s2-bank-adaptation-pronunciation",
+    "gitHead": "9a0969c13340fdaae3b677717bcdf2ec0d44f0ec"
   },
   "coverage": {
-    "trackedFiles": 485,
+    "trackedFiles": 491,
     "components": 26,
     "registryPackages": 11,
     "firstPartyPackages": 2,
