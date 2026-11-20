@@ -816,6 +816,60 @@ operator's order (Unreal, Unity, Babylon, Godot). Nothing here is done yet.
   value; a restore as the read, then the run with the READ value restored first. Exact
   comparison, key sets included; an unknown op or step is an error.
   `conformance/prolog/mechanic-puzzle.json` stays with PL.native-prolog-mirror-full (U120(9)).
+- **The platformer, slice 2 of PL.native-genre-rows (Unreal's
+  `P9j.unreal.retire-platformer-copy`; U115, U128).** Core's P9j platformer module is the
+  `platformer.*` rows (`README.md`, "The genre systems rows: the platformer"). The retirement
+  row binds them in place of the interim copy on unreal main (`8568cf5c`, read only):
+  `Portable/InsimulPlatformer.{h,cpp}` (137 + 1043 lines), held to core's platformer corpus by
+  its `platformer_corpus` (+ `_negative`). The course rows are stateless; the director is a
+  session (`platformer.director.create` → `{ session, published }`) whose KB is its OWN:
+  `GamePrologEngine` with genre `platformer` (the platformer and traversal packs) on the
+  library's native KB, as core's runner builds it. Unreal's copy writes the run into the game's
+  KB through an `FScopedKb` (`FGenreSystemsSession`'s `PlatformerKb`), so its verdicts also
+  see the game's rules. Through the rows, whatever of those rules a verdict must see (the facts
+  an authored link's `requires` goal names, a norm that forbids a mode's action through
+  `forbidden_by/4`) is passed as `kb`, and a binding whose game rules must see the run mirrors each outcome's `applied` facts and a
+  step's `outcome.movement.facts` (the traversal delta) into the game's KB, as the scoped KB
+  did. The host's probe (`FProbe`) is a callback core calls mid-decision, which
+  cannot cross the ABI: the binding states its answers as data, `probe { <link id>: passable }`
+  at create, and restates them with `platformer.director.host { probe }` whenever its geometry
+  changes (before a step from a new place, say: core asks one query per geometric link out of
+  where the runner stands, and each step's `probed` names the links it asked). A link the table
+  does not list is unanswered, so passable, as `FProbe` returning true is.
+
+  | Unreal's interim copy (`insimul::platformer`) | Row |
+  |---|---|
+  | `kRuntimePredicates`, `kDefaultLevelCount` | `platformer.contract {}` (`runtimePredicates`, `writtenPredicates`, `defaultLevelCount`; also the area, the authored predicates, the default runner modes, the pack tuning, the junction words and the save block's key, members and runner keys) |
+  | `Row(Core, Method, Args, Why)` | the binding's own `ICoreCaller` call; not a core function |
+  | `TraversalTuning(Core, TraversalIr)` | `traversal.affordances.tuning { traversal? }` (already a row); a course's own `tuning` member is that value |
+  | `CourseRoute(Core, Links, From, To, Modes, Tuning)` (Modes, Tuning nullptr: core's defaults) | `platformer.route { links, from, to, modes?, tuning? }` → `{ route }` (null: none) |
+  | `CourseGraph(World)` (with its junction atoms and labels) | `platformer.courseGraph { world }` → `{ places, links }`; one junction's atom and label: `platformer.junctionAtom`, `platformer.junctionLabel` |
+  | `CourseForWorld(Core, World, Platformer, Traversal, LevelCount)` (LevelCount nullptr: undefined) | `platformer.forWorld { world, platformer, traversal, levelCount? }` (send `platformer: null` / `traversal: null` for none: absent, the row reads the world's own section; omit `levelCount` for undefined) |
+  | `GenerateCourse`, `CourseFromIR` (the copy's internals) | `platformer.generate { world, levelCount?, runnerModes? }`, `platformer.fromIR { platformer, traversal?, world }` |
+  | `CourseLevelFacts(Course)`, `StarsFor(Par, Cost)` | `platformer.levelFacts { course }`, `platformer.stars { par, cost }` |
+  | `FPlatformerDirector(Course, Kb, Core, Probe)` + `Publish()` | `platformer.director.create { course, probe?, kb? }` → `{ session, published }` |
+  | `IsUnlocked`, `Enter`, `Respawn`, `Hint` (nullptr: none), `Progress`, `Serialize`, `Restore` | `platformer.director.isUnlocked` (`{ unlocked }`), `.enter`, `.respawn`, `.hint` (`{ route: null }`), `.progress` (`{ progress }`), `.serialize` (`{ state }`), `.restore` |
+  | `Step(Runner, To)` (the outcome with `movement` reduced to `movementView`) | `platformer.director.step { session, runner, to }` → `{ outcome, probed, orders }`: `outcome.movement` is core's whole `TraversalReport`; the corpus's view is `{ performed, refusal? (when non-empty), mode: affordance.mode, link: affordance.id (when there is an affordance), cost, location }` |
+  | `FProbe` | `probe` at create, `platformer.director.host { session, probe }` after |
+  | `Traversal().LocationOf(Runner)` (`""`: never registered), `Traversal().Registered(Runner)` | `platformer.director.locationOf { session, runner }` → `{ location }` (null: never put on a level) |
+  | `FGenreTraversal` `Register`, `Arrive`, `Traverse` | inside the director: `.enter` registers the runner at the level's start, `.respawn` arrives it, `.step` traverses |
+  | `LevelOf(Runner)` (`""`: none) | the runner's `level` in `.serialize`'s `state` (null: between runs) |
+  | `Course()` | the binding keeps the course it created the session with |
+  | the village save's own reader (`GenreRunBlockRead` for `extensions.platformer`) | `platformer.save.read`, `platformer.save.block`, `platformer.save.blockOf` for a binding that shows the block between saves; the save itself carries it through `save.village.write`/`.read` |
+
+  Re-vendor `conformance/platformer/{course,run,save}.json` (with the world slice above) from
+  core at this library's pin and drive each case as `tests/genre_systems_corpus.cpp` does:
+  generate as `genre.world.of`, then `platformer.forWorld` (`platformer ?? null`,
+  `traversal ?? null`, the case's `levelCount` when it has the key), then
+  `platformer.levelFacts`; route as `platformer.route` (the case's `modes` when it has the
+  key); stars as `platformer.stars` per `[par, cost]`; a run as `platformer.director.create`
+  with `probe` answering each `impassable` link id false (every other link unanswered), each
+  step's row with the runner `player` unless named (a `step` shown as `{ ...outcome,
+  movement: movementView(outcome.movement), probed }`, the movement key absent when the
+  outcome has none), a final `.serialize` and `session.dispose`; a save as the puzzle's, over
+  `platformer.save.*` and the platformer run. Exact comparison, key sets included; an
+  unknown op or step is an error. `conformance/prolog/mechanic-platformer.json` stays with
+  PL.native-prolog-mirror-full (U120(9)).
 - **Run 22's cases, from the 45409ed pin** (PL.native-bundle-core-r2; U124, U126). What
   each Unreal cell binds, and what it does not get here:
   - **One E press, one object** (`P6.unreal.interact-press`; core's

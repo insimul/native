@@ -262,6 +262,30 @@
        "modules.activate",
        "modules.table",
        "packs.compose",
+       "platformer.contract",
+       "platformer.courseGraph",
+       "platformer.director.create",
+       "platformer.director.enter",
+       "platformer.director.hint",
+       "platformer.director.host",
+       "platformer.director.isUnlocked",
+       "platformer.director.locationOf",
+       "platformer.director.progress",
+       "platformer.director.respawn",
+       "platformer.director.restore",
+       "platformer.director.serialize",
+       "platformer.director.step",
+       "platformer.forWorld",
+       "platformer.fromIR",
+       "platformer.generate",
+       "platformer.junctionAtom",
+       "platformer.junctionLabel",
+       "platformer.levelFacts",
+       "platformer.route",
+       "platformer.save.block",
+       "platformer.save.blockOf",
+       "platformer.save.read",
+       "platformer.stars",
        "progression.gamification.achievements",
        "progression.gamification.dailyChallenge",
        "progression.gamification.dailyIndex",
@@ -565,7 +589,7 @@
      }
     },
     {"call": "core.diagnostics", "expect": {"$subset": {"lines": {"$len": 3}}}},
-    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 531}}}},
+    {"call": "core.methods", "expect": {"$subset": {"methods": {"$len": 555}}}},
     {"call": "core.diagnostics", "expect": {"lines": [], "dropped": 0}}
    ]
   },
@@ -611,7 +635,7 @@
     {"call": "core.methods", "argsText": "[1, 2]", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "null", "expectError": "core.methods: the arguments must be a JSON object"},
     {"call": "core.methods", "argsText": "{not json", "expectError": "SyntaxError"},
-    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 531}}}}
+    {"call": "core.methods", "argsText": "", "expect": {"$subset": {"methods": {"$len": 555}}}}
    ]
   },
   {

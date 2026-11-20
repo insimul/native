@@ -1,0 +1,3541 @@
+{
+  "schema": "insimul.conformance.genre-systems/1",
+  "area": "platformer",
+  "file": "platformer/run",
+  "phase": "P9j",
+  "description": "PlatformerDirector played step by step (genre-platformer). Each run is a fresh knowledge base for the platformer genre (GamePrologEngine.create({genre: 'platformer'}): the genre's modules and their predicate packs by module activation), the director built over it from the case's inline definition and published, then the steps in order. Movement is traversal's (TraversalPlanner over the course's links); no locomotion host is wired, so every ordered movement arrives. The host's probe answers every geometric link passable except the case's impassable link ids; a step result lists the links probed (probed) and shows its movement as {performed, refusal?, mode?, link?, cost, location}. Steps: enter, step, respawn, hint (the cheapest route to the goal, or null), unlocked, progress, restore, state. The runner is player unless the step names one.",
+  "sources": [
+    "Rules: core's puzzle, platformer and strategy modules (src/puzzle, src/platformer, src/strategy) and their directors (src/game-engine/logic/{Puzzle,Platformer,Strategy}Director.ts), unchanged by this corpus; their predicate packs are pinned clause by clause by conformance/prolog/mechanic-{puzzle,platformer,strategy}.json.",
+    "Worlds: the committed slice of Thistlecombe (Unity closing-wave export, conformance/genre-mechanics/thistlecombe.world-slice.json) and synthetic worlds written in src/genre-systems/systems-corpus-cases.ts."
+  ],
+  "runner": "src/genre-systems/systems-corpus.ts (runGenreSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "genre-platformer"
+  ],
+  "ops": [
+    "run"
+  ],
+  "steps": [
+    "restore",
+    "enter",
+    "step",
+    "respawn",
+    "hint",
+    "unlocked",
+    "progress",
+    "state"
+  ],
+  "cases": [
+    {
+      "name": "yard: the climb at par for three stars, then the descent with a fall back to its checkpoint",
+      "op": "run",
+      "input": {
+        "course": {
+          "places": [],
+          "links": [
+            {
+              "from": "gate",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "gate",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "ledge",
+              "mode": "jump",
+              "cost": 6,
+              "geometric": true
+            },
+            {
+              "from": "ledge",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "ledge",
+              "to": "tower",
+              "mode": "jump",
+              "cost": 8,
+              "geometric": true
+            },
+            {
+              "from": "tower",
+              "to": "ledge",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "yard",
+              "to": "tower",
+              "mode": "walk",
+              "cost": 30
+            },
+            {
+              "from": "tower",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 30
+            }
+          ],
+          "levels": [
+            {
+              "id": "climb",
+              "order": 1,
+              "start": "gate",
+              "goal": "tower",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "yard"
+              ],
+              "par": 38
+            },
+            {
+              "id": "descent",
+              "order": 2,
+              "start": "tower",
+              "goal": "gate",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "ledge",
+                "yard"
+              ],
+              "par": 18
+            }
+          ],
+          "runnerModes": [
+            "walk",
+            "jump"
+          ],
+          "tuning": {
+            "defaultCost": 5,
+            "modeCost": {
+              "walk": 1,
+              "climb": 3,
+              "swim": 2.5,
+              "jump": 2,
+              "ride": 0.2,
+              "boat": 0.2
+            },
+            "modeAction": {
+              "walk": "walk",
+              "climb": "climb",
+              "swim": "swim",
+              "jump": "jump",
+              "ride": "ride",
+              "boat": "row"
+            },
+            "defaultAction": "traverse"
+          },
+          "source": "authored",
+          "notes": []
+        },
+        "steps": [
+          {
+            "step": "unlocked",
+            "level": "descent"
+          },
+          {
+            "step": "enter",
+            "level": "descent"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "respawn"
+          },
+          {
+            "step": "enter",
+            "level": "nowhere"
+          },
+          {
+            "step": "enter",
+            "level": "climb"
+          },
+          {
+            "step": "hint"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "ledge"
+          },
+          {
+            "step": "progress"
+          },
+          {
+            "step": "step",
+            "to": "tower"
+          },
+          {
+            "step": "progress"
+          },
+          {
+            "step": "unlocked",
+            "level": "descent"
+          },
+          {
+            "step": "enter",
+            "level": "descent"
+          },
+          {
+            "step": "step",
+            "to": "ledge"
+          },
+          {
+            "step": "respawn"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "gate"
+          },
+          {
+            "step": "progress"
+          }
+        ]
+      },
+      "expected": {
+        "published": 29,
+        "steps": [
+          {
+            "step": "unlocked",
+            "unlocked": false
+          },
+          {
+            "step": "enter",
+            "ok": false,
+            "refusal": "locked",
+            "reason": "descent opens when the level before it is cleared",
+            "applied": []
+          },
+          {
+            "step": "step",
+            "ok": false,
+            "refusal": "not_running",
+            "reason": "player is not on a level",
+            "applied": [],
+            "location": "",
+            "runCost": 0,
+            "probed": []
+          },
+          {
+            "step": "respawn",
+            "ok": false,
+            "refusal": "not_running",
+            "reason": "player is not on a level",
+            "applied": []
+          },
+          {
+            "step": "enter",
+            "ok": false,
+            "refusal": "unknown_level",
+            "reason": "\"nowhere\" is not a level of this course",
+            "applied": []
+          },
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 0)."
+            ]
+          },
+          {
+            "step": "hint",
+            "route": {
+              "from": "gate",
+              "to": "tower",
+              "steps": [
+                {
+                  "id": "gate>yard:walk",
+                  "from": "gate",
+                  "to": "yard",
+                  "mode": "walk",
+                  "cost": 10,
+                  "requires": []
+                },
+                {
+                  "id": "yard>ledge:jump",
+                  "from": "yard",
+                  "to": "ledge",
+                  "mode": "jump",
+                  "cost": 12,
+                  "requires": []
+                },
+                {
+                  "id": "ledge>tower:jump",
+                  "from": "ledge",
+                  "to": "tower",
+                  "mode": "jump",
+                  "cost": 16,
+                  "requires": []
+                }
+              ],
+              "cost": 38,
+              "conditional": false
+            }
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 0).",
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_checkpoint_reached(player, climb, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "gate>yard:walk",
+              "cost": 10,
+              "location": "yard"
+            },
+            "location": "yard",
+            "checkpoint": 1,
+            "runCost": 10,
+            "probed": []
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_run_cost(player, climb, 22)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "yard>ledge:jump",
+              "cost": 12,
+              "location": "ledge"
+            },
+            "location": "ledge",
+            "runCost": 22,
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "levelsCleared": 0,
+              "levelsTotal": 2,
+              "checkpointsReached": 1,
+              "checkpointsTotal": 1,
+              "stars": 0,
+              "goalReached": false,
+              "runCost": 22,
+              "par": 38,
+              "courseComplete": false
+            }
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 22).",
+              "platformer_run_cost(player, climb, 38).",
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 38).",
+              "platformer_checkpoint_reached(player, climb, 1).",
+              "platformer_cleared(player, climb, 3)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "ledge>tower:jump",
+              "cost": 16,
+              "location": "tower"
+            },
+            "location": "tower",
+            "runCost": 38,
+            "cleared": {
+              "level": "climb",
+              "stars": 3,
+              "best": 3
+            },
+            "probed": [
+              "ledge>tower:jump"
+            ]
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "levelsCleared": 1,
+              "levelsTotal": 2,
+              "checkpointsReached": 1,
+              "checkpointsTotal": 1,
+              "stars": 3,
+              "goalReached": true,
+              "runCost": 38,
+              "par": 38,
+              "courseComplete": false
+            }
+          },
+          {
+            "step": "unlocked",
+            "unlocked": true
+          },
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, descent).",
+              "platformer_run_cost(player, descent, 0)."
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, descent, 0).",
+              "platformer_run_cost(player, descent, 4).",
+              "platformer_checkpoint_reached(player, descent, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "tower>ledge:walk",
+              "cost": 4,
+              "location": "ledge"
+            },
+            "location": "ledge",
+            "checkpoint": 1,
+            "runCost": 4,
+            "probed": []
+          },
+          {
+            "step": "respawn",
+            "ok": true,
+            "reason": null,
+            "applied": [],
+            "location": "ledge"
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, descent, 4).",
+              "platformer_run_cost(player, descent, 8).",
+              "platformer_checkpoint_reached(player, descent, 2)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "ledge>yard:walk",
+              "cost": 4,
+              "location": "yard"
+            },
+            "location": "yard",
+            "checkpoint": 2,
+            "runCost": 8,
+            "probed": [
+              "ledge>tower:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, descent, 8).",
+              "platformer_run_cost(player, descent, 18).",
+              "platformer_running(player, descent).",
+              "platformer_run_cost(player, descent, 18).",
+              "platformer_checkpoint_reached(player, descent, 1).",
+              "platformer_checkpoint_reached(player, descent, 2).",
+              "platformer_cleared(player, descent, 3)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "yard>gate:walk",
+              "cost": 10,
+              "location": "gate"
+            },
+            "location": "gate",
+            "runCost": 18,
+            "cleared": {
+              "level": "descent",
+              "stars": 3,
+              "best": 3
+            },
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "levelsCleared": 2,
+              "levelsTotal": 2,
+              "checkpointsReached": 2,
+              "checkpointsTotal": 2,
+              "stars": 6,
+              "goalReached": true,
+              "runCost": 18,
+              "par": 18,
+              "courseComplete": true
+            }
+          }
+        ],
+        "state": {
+          "runners": [
+            {
+              "runner": "player",
+              "level": null,
+              "location": "gate",
+              "runCost": 18,
+              "checkpoints": [],
+              "cleared": [
+                [
+                  "climb",
+                  3
+                ],
+                [
+                  "descent",
+                  3
+                ]
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "yard: the long way is two stars, a tripled detour one; a better run raises the best, a worse one leaves it",
+      "op": "run",
+      "input": {
+        "course": {
+          "places": [],
+          "links": [
+            {
+              "from": "gate",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "gate",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "ledge",
+              "mode": "jump",
+              "cost": 6,
+              "geometric": true
+            },
+            {
+              "from": "ledge",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "ledge",
+              "to": "tower",
+              "mode": "jump",
+              "cost": 8,
+              "geometric": true
+            },
+            {
+              "from": "tower",
+              "to": "ledge",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "yard",
+              "to": "tower",
+              "mode": "walk",
+              "cost": 30
+            },
+            {
+              "from": "tower",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 30
+            }
+          ],
+          "levels": [
+            {
+              "id": "climb",
+              "order": 1,
+              "start": "gate",
+              "goal": "tower",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "yard"
+              ],
+              "par": 38
+            },
+            {
+              "id": "descent",
+              "order": 2,
+              "start": "tower",
+              "goal": "gate",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "ledge",
+                "yard"
+              ],
+              "par": 18
+            }
+          ],
+          "runnerModes": [
+            "walk",
+            "jump"
+          ],
+          "tuning": {
+            "defaultCost": 5,
+            "modeCost": {
+              "walk": 1,
+              "climb": 3,
+              "swim": 2.5,
+              "jump": 2,
+              "ride": 0.2,
+              "boat": 0.2
+            },
+            "modeAction": {
+              "walk": "walk",
+              "climb": "climb",
+              "swim": "swim",
+              "jump": "jump",
+              "ride": "ride",
+              "boat": "row"
+            },
+            "defaultAction": "traverse"
+          },
+          "source": "authored",
+          "notes": []
+        },
+        "steps": [
+          {
+            "step": "enter",
+            "level": "climb"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "tower"
+          },
+          {
+            "step": "enter",
+            "level": "climb"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "ledge"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "ledge"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "ledge"
+          },
+          {
+            "step": "step",
+            "to": "tower"
+          },
+          {
+            "step": "enter",
+            "level": "climb"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "ledge"
+          },
+          {
+            "step": "step",
+            "to": "tower"
+          },
+          {
+            "step": "enter",
+            "level": "climb"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "tower"
+          },
+          {
+            "step": "state"
+          }
+        ]
+      },
+      "expected": {
+        "published": 29,
+        "steps": [
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 0)."
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 0).",
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_checkpoint_reached(player, climb, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "gate>yard:walk",
+              "cost": 10,
+              "location": "yard"
+            },
+            "location": "yard",
+            "checkpoint": 1,
+            "runCost": 10,
+            "probed": []
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_run_cost(player, climb, 40).",
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 40).",
+              "platformer_checkpoint_reached(player, climb, 1).",
+              "platformer_cleared(player, climb, 2)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "yard>tower:walk",
+              "cost": 30,
+              "location": "tower"
+            },
+            "location": "tower",
+            "runCost": 40,
+            "cleared": {
+              "level": "climb",
+              "stars": 2,
+              "best": 2
+            },
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 0)."
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 0).",
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_checkpoint_reached(player, climb, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "gate>yard:walk",
+              "cost": 10,
+              "location": "yard"
+            },
+            "location": "yard",
+            "checkpoint": 1,
+            "runCost": 10,
+            "probed": []
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_run_cost(player, climb, 22)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "yard>ledge:jump",
+              "cost": 12,
+              "location": "ledge"
+            },
+            "location": "ledge",
+            "runCost": 22,
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 22).",
+              "platformer_run_cost(player, climb, 26)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "ledge>yard:walk",
+              "cost": 4,
+              "location": "yard"
+            },
+            "location": "yard",
+            "runCost": 26,
+            "probed": [
+              "ledge>tower:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 26).",
+              "platformer_run_cost(player, climb, 38)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "yard>ledge:jump",
+              "cost": 12,
+              "location": "ledge"
+            },
+            "location": "ledge",
+            "runCost": 38,
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 38).",
+              "platformer_run_cost(player, climb, 42)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "ledge>yard:walk",
+              "cost": 4,
+              "location": "yard"
+            },
+            "location": "yard",
+            "runCost": 42,
+            "probed": [
+              "ledge>tower:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 42).",
+              "platformer_run_cost(player, climb, 54)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "yard>ledge:jump",
+              "cost": 12,
+              "location": "ledge"
+            },
+            "location": "ledge",
+            "runCost": 54,
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 54).",
+              "platformer_run_cost(player, climb, 70).",
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 70).",
+              "platformer_checkpoint_reached(player, climb, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "ledge>tower:jump",
+              "cost": 16,
+              "location": "tower"
+            },
+            "location": "tower",
+            "runCost": 70,
+            "cleared": {
+              "level": "climb",
+              "stars": 1,
+              "best": 2
+            },
+            "probed": [
+              "ledge>tower:jump"
+            ]
+          },
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 0)."
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 0).",
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_checkpoint_reached(player, climb, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "gate>yard:walk",
+              "cost": 10,
+              "location": "yard"
+            },
+            "location": "yard",
+            "checkpoint": 1,
+            "runCost": 10,
+            "probed": []
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_run_cost(player, climb, 22)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "yard>ledge:jump",
+              "cost": 12,
+              "location": "ledge"
+            },
+            "location": "ledge",
+            "runCost": 22,
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 22).",
+              "platformer_run_cost(player, climb, 38).",
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 38).",
+              "platformer_checkpoint_reached(player, climb, 1).",
+              "platformer_cleared(player, climb, 2).",
+              "platformer_cleared(player, climb, 3)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "ledge>tower:jump",
+              "cost": 16,
+              "location": "tower"
+            },
+            "location": "tower",
+            "runCost": 38,
+            "cleared": {
+              "level": "climb",
+              "stars": 3,
+              "best": 3
+            },
+            "probed": [
+              "ledge>tower:jump"
+            ]
+          },
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 0)."
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 0).",
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_checkpoint_reached(player, climb, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "gate>yard:walk",
+              "cost": 10,
+              "location": "yard"
+            },
+            "location": "yard",
+            "checkpoint": 1,
+            "runCost": 10,
+            "probed": []
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_run_cost(player, climb, 40).",
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 40).",
+              "platformer_checkpoint_reached(player, climb, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "yard>tower:walk",
+              "cost": 30,
+              "location": "tower"
+            },
+            "location": "tower",
+            "runCost": 40,
+            "cleared": {
+              "level": "climb",
+              "stars": 2,
+              "best": 3
+            },
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "state",
+            "state": {
+              "runners": [
+                {
+                  "runner": "player",
+                  "level": null,
+                  "location": "tower",
+                  "runCost": 40,
+                  "checkpoints": [],
+                  "cleared": [
+                    [
+                      "climb",
+                      3
+                    ]
+                  ]
+                }
+              ]
+            }
+          }
+        ],
+        "state": {
+          "runners": [
+            {
+              "runner": "player",
+              "level": null,
+              "location": "tower",
+              "runCost": 40,
+              "checkpoints": [],
+              "cleared": [
+                [
+                  "climb",
+                  3
+                ]
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "yard: reaching the goal without every checkpoint does not clear; re-entering abandons the run; a second restore is refused",
+      "op": "run",
+      "input": {
+        "course": {
+          "places": [],
+          "links": [
+            {
+              "from": "gate",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "gate",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "ledge",
+              "mode": "jump",
+              "cost": 6,
+              "geometric": true
+            },
+            {
+              "from": "ledge",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "ledge",
+              "to": "tower",
+              "mode": "jump",
+              "cost": 8,
+              "geometric": true
+            },
+            {
+              "from": "tower",
+              "to": "ledge",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "yard",
+              "to": "tower",
+              "mode": "walk",
+              "cost": 30
+            },
+            {
+              "from": "tower",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 30
+            }
+          ],
+          "levels": [
+            {
+              "id": "climb",
+              "order": 1,
+              "start": "gate",
+              "goal": "tower",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "yard"
+              ],
+              "par": 38
+            },
+            {
+              "id": "descent",
+              "order": 2,
+              "start": "tower",
+              "goal": "gate",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "ledge",
+                "yard"
+              ],
+              "par": 18
+            }
+          ],
+          "runnerModes": [
+            "walk",
+            "jump"
+          ],
+          "tuning": {
+            "defaultCost": 5,
+            "modeCost": {
+              "walk": 1,
+              "climb": 3,
+              "swim": 2.5,
+              "jump": 2,
+              "ride": 0.2,
+              "boat": 0.2
+            },
+            "modeAction": {
+              "walk": "walk",
+              "climb": "climb",
+              "swim": "swim",
+              "jump": "jump",
+              "ride": "ride",
+              "boat": "row"
+            },
+            "defaultAction": "traverse"
+          },
+          "source": "authored",
+          "notes": []
+        },
+        "steps": [
+          {
+            "step": "restore",
+            "state": {
+              "runners": [
+                {
+                  "runner": "player",
+                  "level": null,
+                  "location": "tower",
+                  "runCost": 24,
+                  "checkpoints": [],
+                  "cleared": [
+                    [
+                      "climb",
+                      3
+                    ]
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "step": "enter",
+            "level": "descent"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "gate"
+          },
+          {
+            "step": "progress"
+          },
+          {
+            "step": "enter",
+            "level": "descent"
+          },
+          {
+            "step": "state"
+          },
+          {
+            "step": "restore",
+            "state": {
+              "runners": []
+            }
+          }
+        ]
+      },
+      "expected": {
+        "published": 29,
+        "steps": [
+          {
+            "step": "restore",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_cleared(player, climb, 3)."
+            ]
+          },
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, descent).",
+              "platformer_run_cost(player, descent, 0)."
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, descent, 0).",
+              "platformer_run_cost(player, descent, 30).",
+              "platformer_checkpoint_reached(player, descent, 2)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "tower>yard:walk",
+              "cost": 30,
+              "location": "yard"
+            },
+            "location": "yard",
+            "checkpoint": 2,
+            "runCost": 30,
+            "probed": []
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, descent, 30).",
+              "platformer_run_cost(player, descent, 40)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "yard>gate:walk",
+              "cost": 10,
+              "location": "gate"
+            },
+            "location": "gate",
+            "runCost": 40,
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "levelsCleared": 1,
+              "levelsTotal": 2,
+              "checkpointsReached": 1,
+              "checkpointsTotal": 2,
+              "stars": 3,
+              "goalReached": false,
+              "runCost": 40,
+              "par": 18,
+              "courseComplete": false
+            }
+          },
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, descent).",
+              "platformer_run_cost(player, descent, 40).",
+              "platformer_checkpoint_reached(player, descent, 2).",
+              "platformer_running(player, descent).",
+              "platformer_run_cost(player, descent, 0)."
+            ]
+          },
+          {
+            "step": "state",
+            "state": {
+              "runners": [
+                {
+                  "runner": "player",
+                  "level": "descent",
+                  "location": "tower",
+                  "runCost": 0,
+                  "checkpoints": [],
+                  "cleared": [
+                    [
+                      "climb",
+                      3
+                    ]
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "step": "restore",
+            "ok": false,
+            "refusal": "schema",
+            "reason": "restore() is for a fresh director",
+            "applied": []
+          }
+        ],
+        "state": {
+          "runners": [
+            {
+              "runner": "player",
+              "level": "descent",
+              "location": "tower",
+              "runCost": 0,
+              "checkpoints": [],
+              "cleared": [
+                [
+                  "climb",
+                  3
+                ]
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "yard: the host's probe refuses a jump; a step to nowhere adjacent is refused; nothing moves",
+      "op": "run",
+      "input": {
+        "course": {
+          "places": [],
+          "links": [
+            {
+              "from": "gate",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "gate",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "ledge",
+              "mode": "jump",
+              "cost": 6,
+              "geometric": true
+            },
+            {
+              "from": "ledge",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "ledge",
+              "to": "tower",
+              "mode": "jump",
+              "cost": 8,
+              "geometric": true
+            },
+            {
+              "from": "tower",
+              "to": "ledge",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "yard",
+              "to": "tower",
+              "mode": "walk",
+              "cost": 30
+            },
+            {
+              "from": "tower",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 30
+            }
+          ],
+          "levels": [
+            {
+              "id": "climb",
+              "order": 1,
+              "start": "gate",
+              "goal": "tower",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "yard"
+              ],
+              "par": 38
+            },
+            {
+              "id": "descent",
+              "order": 2,
+              "start": "tower",
+              "goal": "gate",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "ledge",
+                "yard"
+              ],
+              "par": 18
+            }
+          ],
+          "runnerModes": [
+            "walk",
+            "jump"
+          ],
+          "tuning": {
+            "defaultCost": 5,
+            "modeCost": {
+              "walk": 1,
+              "climb": 3,
+              "swim": 2.5,
+              "jump": 2,
+              "ride": 0.2,
+              "boat": 0.2
+            },
+            "modeAction": {
+              "walk": "walk",
+              "climb": "climb",
+              "swim": "swim",
+              "jump": "jump",
+              "ride": "ride",
+              "boat": "row"
+            },
+            "defaultAction": "traverse"
+          },
+          "source": "authored",
+          "notes": []
+        },
+        "impassable": [
+          "yard>ledge:jump"
+        ],
+        "steps": [
+          {
+            "step": "enter",
+            "level": "climb"
+          },
+          {
+            "step": "step",
+            "to": "yard"
+          },
+          {
+            "step": "step",
+            "to": "ledge"
+          },
+          {
+            "step": "step",
+            "to": "moon"
+          },
+          {
+            "step": "hint"
+          },
+          {
+            "step": "progress"
+          }
+        ]
+      },
+      "expected": {
+        "published": 29,
+        "steps": [
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, climb).",
+              "platformer_run_cost(player, climb, 0)."
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, climb, 0).",
+              "platformer_run_cost(player, climb, 10).",
+              "platformer_checkpoint_reached(player, climb, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "gate>yard:walk",
+              "cost": 10,
+              "location": "yard"
+            },
+            "location": "yard",
+            "checkpoint": 1,
+            "runCost": 10,
+            "probed": []
+          },
+          {
+            "step": "step",
+            "ok": false,
+            "refusal": "movement",
+            "reason": "traversal refused the step (impassable)",
+            "applied": [],
+            "movement": {
+              "performed": false,
+              "refusal": "impassable",
+              "mode": "jump",
+              "link": "yard>ledge:jump",
+              "cost": 12,
+              "location": "yard"
+            },
+            "location": "yard",
+            "runCost": 10,
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": false,
+            "refusal": "movement",
+            "reason": "traversal refused the step (unreachable)",
+            "applied": [],
+            "movement": {
+              "performed": false,
+              "refusal": "unreachable",
+              "cost": 0,
+              "location": "yard"
+            },
+            "location": "yard",
+            "runCost": 10,
+            "probed": [
+              "yard>ledge:jump"
+            ]
+          },
+          {
+            "step": "hint",
+            "route": {
+              "from": "yard",
+              "to": "tower",
+              "steps": [
+                {
+                  "id": "yard>ledge:jump",
+                  "from": "yard",
+                  "to": "ledge",
+                  "mode": "jump",
+                  "cost": 12,
+                  "requires": []
+                },
+                {
+                  "id": "ledge>tower:jump",
+                  "from": "ledge",
+                  "to": "tower",
+                  "mode": "jump",
+                  "cost": 16,
+                  "requires": []
+                }
+              ],
+              "cost": 28,
+              "conditional": false
+            }
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "levelsCleared": 0,
+              "levelsTotal": 2,
+              "checkpointsReached": 1,
+              "checkpointsTotal": 1,
+              "stars": 0,
+              "goalReached": false,
+              "runCost": 10,
+              "par": 38,
+              "courseComplete": false
+            }
+          }
+        ],
+        "state": {
+          "runners": [
+            {
+              "runner": "player",
+              "level": "climb",
+              "location": "yard",
+              "runCost": 10,
+              "checkpoints": [
+                1
+              ],
+              "cleared": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "yard: two runners keep separate runs; an unknown runner is not running",
+      "op": "run",
+      "input": {
+        "course": {
+          "places": [],
+          "links": [
+            {
+              "from": "gate",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "gate",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "ledge",
+              "mode": "jump",
+              "cost": 6,
+              "geometric": true
+            },
+            {
+              "from": "ledge",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "ledge",
+              "to": "tower",
+              "mode": "jump",
+              "cost": 8,
+              "geometric": true
+            },
+            {
+              "from": "tower",
+              "to": "ledge",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "yard",
+              "to": "tower",
+              "mode": "walk",
+              "cost": 30
+            },
+            {
+              "from": "tower",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 30
+            }
+          ],
+          "levels": [
+            {
+              "id": "climb",
+              "order": 1,
+              "start": "gate",
+              "goal": "tower",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "yard"
+              ],
+              "par": 38
+            },
+            {
+              "id": "descent",
+              "order": 2,
+              "start": "tower",
+              "goal": "gate",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "ledge",
+                "yard"
+              ],
+              "par": 18
+            }
+          ],
+          "runnerModes": [
+            "walk",
+            "jump"
+          ],
+          "tuning": {
+            "defaultCost": 5,
+            "modeCost": {
+              "walk": 1,
+              "climb": 3,
+              "swim": 2.5,
+              "jump": 2,
+              "ride": 0.2,
+              "boat": 0.2
+            },
+            "modeAction": {
+              "walk": "walk",
+              "climb": "climb",
+              "swim": "swim",
+              "jump": "jump",
+              "ride": "ride",
+              "boat": "row"
+            },
+            "defaultAction": "traverse"
+          },
+          "source": "authored",
+          "notes": []
+        },
+        "steps": [
+          {
+            "step": "enter",
+            "runner": "ana",
+            "level": "climb"
+          },
+          {
+            "step": "enter",
+            "runner": "ben",
+            "level": "climb"
+          },
+          {
+            "step": "step",
+            "runner": "ana",
+            "to": "yard"
+          },
+          {
+            "step": "respawn",
+            "runner": "cal"
+          },
+          {
+            "step": "hint",
+            "runner": "cal"
+          },
+          {
+            "step": "state"
+          }
+        ]
+      },
+      "expected": {
+        "published": 29,
+        "steps": [
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(ana, climb).",
+              "platformer_run_cost(ana, climb, 0)."
+            ]
+          },
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(ben, climb).",
+              "platformer_run_cost(ben, climb, 0)."
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(ana, climb, 0).",
+              "platformer_run_cost(ana, climb, 10).",
+              "platformer_checkpoint_reached(ana, climb, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "gate>yard:walk",
+              "cost": 10,
+              "location": "yard"
+            },
+            "location": "yard",
+            "checkpoint": 1,
+            "runCost": 10,
+            "probed": []
+          },
+          {
+            "step": "respawn",
+            "ok": false,
+            "refusal": "not_running",
+            "reason": "cal is not on a level",
+            "applied": []
+          },
+          {
+            "step": "hint",
+            "route": null
+          },
+          {
+            "step": "state",
+            "state": {
+              "runners": [
+                {
+                  "runner": "ana",
+                  "level": "climb",
+                  "location": "yard",
+                  "runCost": 10,
+                  "checkpoints": [
+                    1
+                  ],
+                  "cleared": []
+                },
+                {
+                  "runner": "ben",
+                  "level": "climb",
+                  "location": "gate",
+                  "runCost": 0,
+                  "checkpoints": [],
+                  "cleared": []
+                },
+                {
+                  "runner": "cal",
+                  "level": null,
+                  "location": "",
+                  "runCost": 0,
+                  "checkpoints": [],
+                  "cleared": []
+                }
+              ]
+            }
+          }
+        ],
+        "state": {
+          "runners": [
+            {
+              "runner": "ana",
+              "level": "climb",
+              "location": "yard",
+              "runCost": 10,
+              "checkpoints": [
+                1
+              ],
+              "cleared": []
+            },
+            {
+              "runner": "ben",
+              "level": "climb",
+              "location": "gate",
+              "runCost": 0,
+              "checkpoints": [],
+              "cleared": []
+            },
+            {
+              "runner": "cal",
+              "level": null,
+              "location": "",
+              "runCost": 0,
+              "checkpoints": [],
+              "cleared": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "thistlecombe: the first two levels of a generated course, along their cheapest routes",
+      "op": "run",
+      "input": {
+        "course": {
+          "places": [
+            {
+              "id": "n10_mill_road",
+              "kind": "lot",
+              "label": "10 Mill Road",
+              "position": {
+                "x": -83.57866941015088,
+                "z": -63.614437585733896
+              }
+            },
+            {
+              "id": "n11_mill_road",
+              "kind": "lot",
+              "label": "11 Mill Road",
+              "position": {
+                "x": -70.24533607681755,
+                "z": -63.614437585733896
+              }
+            },
+            {
+              "id": "n12_mill_road",
+              "kind": "lot",
+              "label": "12 Mill Road",
+              "position": {
+                "x": -56.912002743484216,
+                "z": -63.614437585733896
+              }
+            },
+            {
+              "id": "n13_mill_road",
+              "kind": "lot",
+              "label": "13 Mill Road",
+              "position": {
+                "x": -83.57866941015088,
+                "z": -33.614437585733896
+              }
+            },
+            {
+              "id": "n14_mill_road",
+              "kind": "lot",
+              "label": "14 Mill Road",
+              "position": {
+                "x": -70.24533607681755,
+                "z": -33.614437585733896
+              }
+            },
+            {
+              "id": "n15_mill_road",
+              "kind": "lot",
+              "label": "15 Mill Road",
+              "position": {
+                "x": -56.912002743484216,
+                "z": -33.614437585733896
+              }
+            },
+            {
+              "id": "n16_castle_road",
+              "kind": "lot",
+              "label": "16 Castle Road",
+              "position": {
+                "x": -83.57866941015088,
+                "z": -13.614437585733896
+              }
+            },
+            {
+              "id": "n17_castle_road",
+              "kind": "lot",
+              "label": "17 Castle Road",
+              "position": {
+                "x": -70.24533607681755,
+                "z": -13.614437585733896
+              }
+            },
+            {
+              "id": "n18_castle_road",
+              "kind": "lot",
+              "label": "18 Castle Road",
+              "position": {
+                "x": -56.912002743484216,
+                "z": -13.614437585733896
+              }
+            },
+            {
+              "id": "n19_queen_street",
+              "kind": "lot",
+              "label": "19 Queen Street",
+              "position": {
+                "x": -33.57866941015089,
+                "z": -133.6144375857339
+              }
+            },
+            {
+              "id": "n1_queen_street",
+              "kind": "lot",
+              "label": "1 Queen Street",
+              "position": {
+                "x": -83.57866941015088,
+                "z": -133.6144375857339
+              }
+            },
+            {
+              "id": "n20_queen_street",
+              "kind": "lot",
+              "label": "20 Queen Street",
+              "position": {
+                "x": -20.24533607681755,
+                "z": -133.6144375857339
+              }
+            },
+            {
+              "id": "n21_queen_street",
+              "kind": "lot",
+              "label": "21 Queen Street",
+              "position": {
+                "x": -6.912002743484216,
+                "z": -133.6144375857339
+              }
+            },
+            {
+              "id": "n22_forge_lane",
+              "kind": "lot",
+              "label": "22 Forge Lane",
+              "position": {
+                "x": -33.57866941015089,
+                "z": -113.6144375857339
+              }
+            },
+            {
+              "id": "n23_forge_lane",
+              "kind": "lot",
+              "label": "23 Forge Lane",
+              "position": {
+                "x": -20.24533607681755,
+                "z": -113.6144375857339
+              }
+            },
+            {
+              "id": "n24_forge_lane",
+              "kind": "lot",
+              "label": "24 Forge Lane",
+              "position": {
+                "x": -6.912002743484216,
+                "z": -113.6144375857339
+              }
+            },
+            {
+              "id": "n25_mill_road",
+              "kind": "lot",
+              "label": "25 Mill Road",
+              "position": {
+                "x": -33.57866941015089,
+                "z": -33.614437585733896
+              }
+            },
+            {
+              "id": "n26_mill_road",
+              "kind": "lot",
+              "label": "26 Mill Road",
+              "position": {
+                "x": -20.24533607681755,
+                "z": -33.614437585733896
+              }
+            },
+            {
+              "id": "n27_mill_road",
+              "kind": "lot",
+              "label": "27 Mill Road",
+              "position": {
+                "x": -6.912002743484216,
+                "z": -33.614437585733896
+              }
+            },
+            {
+              "id": "n2_queen_street",
+              "kind": "lot",
+              "label": "2 Queen Street",
+              "position": {
+                "x": -70.24533607681755,
+                "z": -133.6144375857339
+              }
+            },
+            {
+              "id": "n34_forge_lane",
+              "kind": "lot",
+              "label": "34 Forge Lane",
+              "position": {
+                "x": 16.421330589849116,
+                "z": -113.6144375857339
+              }
+            },
+            {
+              "id": "n37_forge_lane",
+              "kind": "lot",
+              "label": "37 Forge Lane",
+              "position": {
+                "x": 16.421330589849116,
+                "z": -83.6144375857339
+              }
+            },
+            {
+              "id": "n3_queen_street",
+              "kind": "lot",
+              "label": "3 Queen Street",
+              "position": {
+                "x": -56.912002743484216,
+                "z": -133.6144375857339
+              }
+            },
+            {
+              "id": "n40_mill_road",
+              "kind": "lot",
+              "label": "40 Mill Road",
+              "position": {
+                "x": 16.421330589849116,
+                "z": -63.614437585733896
+              }
+            },
+            {
+              "id": "n43_mill_road",
+              "kind": "lot",
+              "label": "43 Mill Road",
+              "position": {
+                "x": 16.421330589849116,
+                "z": -33.614437585733896
+              }
+            },
+            {
+              "id": "n49_forge_lane",
+              "kind": "lot",
+              "label": "49 Forge Lane",
+              "position": {
+                "x": -8.578669410150884,
+                "z": -88.6144375857339
+              }
+            },
+            {
+              "id": "n4_forge_lane",
+              "kind": "lot",
+              "label": "4 Forge Lane",
+              "position": {
+                "x": -83.57866941015088,
+                "z": -113.6144375857339
+              }
+            },
+            {
+              "id": "n50_forge_lane",
+              "kind": "lot",
+              "label": "50 Forge Lane",
+              "position": {
+                "x": -8.578669410150884,
+                "z": -78.6144375857339
+              }
+            },
+            {
+              "id": "n51_forge_lane",
+              "kind": "lot",
+              "label": "51 Forge Lane",
+              "position": {
+                "x": -33.57866941015089,
+                "z": -68.6144375857339
+              }
+            },
+            {
+              "id": "n52_forge_lane",
+              "kind": "lot",
+              "label": "52 Forge Lane",
+              "position": {
+                "x": -20.24533607681755,
+                "z": -68.6144375857339
+              }
+            },
+            {
+              "id": "n5_forge_lane",
+              "kind": "lot",
+              "label": "5 Forge Lane",
+              "position": {
+                "x": -70.24533607681755,
+                "z": -113.6144375857339
+              }
+            },
+            {
+              "id": "n6_forge_lane",
+              "kind": "lot",
+              "label": "6 Forge Lane",
+              "position": {
+                "x": -56.912002743484216,
+                "z": -113.6144375857339
+              }
+            },
+            {
+              "id": "n7_forge_lane",
+              "kind": "lot",
+              "label": "7 Forge Lane",
+              "position": {
+                "x": -83.57866941015088,
+                "z": -83.6144375857339
+              }
+            },
+            {
+              "id": "n8_forge_lane",
+              "kind": "lot",
+              "label": "8 Forge Lane",
+              "position": {
+                "x": -70.24533607681755,
+                "z": -83.6144375857339
+              }
+            },
+            {
+              "id": "n9_forge_lane",
+              "kind": "lot",
+              "label": "9 Forge Lane",
+              "position": {
+                "x": -56.912002743484216,
+                "z": -83.6144375857339
+              }
+            },
+            {
+              "id": "thistlecombe_node_0_0",
+              "kind": "junction",
+              "label": "Corner of High Street and Queen Street",
+              "position": {
+                "x": -95.24533607681755,
+                "z": -148.6144375857339
+              }
+            },
+            {
+              "id": "thistlecombe_node_0_1",
+              "kind": "junction",
+              "label": "Corner of Church Lane and Queen Street",
+              "position": {
+                "x": -45.24533607681755,
+                "z": -148.6144375857339
+              }
+            },
+            {
+              "id": "thistlecombe_node_0_2",
+              "kind": "junction",
+              "label": "Corner of Market Street and Queen Street",
+              "position": {
+                "x": 4.754663923182449,
+                "z": -148.6144375857339
+              }
+            },
+            {
+              "id": "thistlecombe_node_0_3",
+              "kind": "junction",
+              "label": "Corner of King Street and Queen Street",
+              "position": {
+                "x": 54.75466392318245,
+                "z": -148.6144375857339
+              }
+            },
+            {
+              "id": "thistlecombe_node_1_0",
+              "kind": "junction",
+              "label": "Corner of Forge Lane and High Street",
+              "position": {
+                "x": -95.24533607681755,
+                "z": -98.6144375857339
+              }
+            },
+            {
+              "id": "thistlecombe_node_1_1",
+              "kind": "junction",
+              "label": "Corner of Church Lane and Forge Lane",
+              "position": {
+                "x": -45.24533607681755,
+                "z": -98.6144375857339
+              }
+            },
+            {
+              "id": "thistlecombe_node_1_2",
+              "kind": "junction",
+              "label": "Corner of Forge Lane and Market Street",
+              "position": {
+                "x": 4.754663923182449,
+                "z": -98.6144375857339
+              }
+            },
+            {
+              "id": "thistlecombe_node_1_3",
+              "kind": "junction",
+              "label": "Corner of Forge Lane and King Street",
+              "position": {
+                "x": 54.75466392318245,
+                "z": -98.6144375857339
+              }
+            },
+            {
+              "id": "thistlecombe_node_2_0",
+              "kind": "junction",
+              "label": "Corner of High Street and Mill Road",
+              "position": {
+                "x": -95.24533607681755,
+                "z": -48.614437585733896
+              }
+            },
+            {
+              "id": "thistlecombe_node_2_1",
+              "kind": "junction",
+              "label": "Corner of Church Lane and Mill Road",
+              "position": {
+                "x": -45.24533607681755,
+                "z": -48.614437585733896
+              }
+            },
+            {
+              "id": "thistlecombe_node_2_2",
+              "kind": "junction",
+              "label": "Corner of Market Street and Mill Road",
+              "position": {
+                "x": 4.754663923182449,
+                "z": -48.614437585733896
+              }
+            },
+            {
+              "id": "thistlecombe_node_2_3",
+              "kind": "junction",
+              "label": "Corner of King Street and Mill Road",
+              "position": {
+                "x": 54.75466392318245,
+                "z": -48.614437585733896
+              }
+            },
+            {
+              "id": "thistlecombe_node_3_0",
+              "kind": "junction",
+              "label": "Corner of Castle Road and High Street",
+              "position": {
+                "x": -95.24533607681755,
+                "z": 1.3855624142661043
+              }
+            },
+            {
+              "id": "thistlecombe_node_3_1",
+              "kind": "junction",
+              "label": "Corner of Castle Road and Church Lane",
+              "position": {
+                "x": -45.24533607681755,
+                "z": 1.3855624142661043
+              }
+            },
+            {
+              "id": "thistlecombe_node_3_2",
+              "kind": "junction",
+              "label": "Corner of Castle Road and Market Street",
+              "position": {
+                "x": 4.754663923182449,
+                "z": 1.3855624142661043
+              }
+            },
+            {
+              "id": "thistlecombe_node_3_3",
+              "kind": "junction",
+              "label": "Corner of Castle Road and King Street",
+              "position": {
+                "x": 54.75466392318245,
+                "z": 1.3855624142661043
+              }
+            }
+          ],
+          "links": [
+            {
+              "from": "thistlecombe_node_0_0",
+              "to": "thistlecombe_node_1_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_0",
+              "to": "thistlecombe_node_0_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_0",
+              "to": "thistlecombe_node_2_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_0",
+              "to": "thistlecombe_node_1_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_0",
+              "to": "thistlecombe_node_3_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_0",
+              "to": "thistlecombe_node_2_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_1",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "thistlecombe_node_0_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "thistlecombe_node_2_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_1",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_1",
+              "to": "thistlecombe_node_3_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_1",
+              "to": "thistlecombe_node_2_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_2",
+              "to": "thistlecombe_node_1_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_2",
+              "to": "thistlecombe_node_0_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_2",
+              "to": "thistlecombe_node_2_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_2",
+              "to": "thistlecombe_node_1_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_2",
+              "to": "thistlecombe_node_3_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_2",
+              "to": "thistlecombe_node_2_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_3",
+              "to": "thistlecombe_node_1_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_3",
+              "to": "thistlecombe_node_0_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_3",
+              "to": "thistlecombe_node_2_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_3",
+              "to": "thistlecombe_node_1_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_3",
+              "to": "thistlecombe_node_3_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_3",
+              "to": "thistlecombe_node_2_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_0",
+              "to": "thistlecombe_node_0_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_1",
+              "to": "thistlecombe_node_0_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_1",
+              "to": "thistlecombe_node_0_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_2",
+              "to": "thistlecombe_node_0_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_2",
+              "to": "thistlecombe_node_0_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_3",
+              "to": "thistlecombe_node_0_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_0",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "thistlecombe_node_1_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "thistlecombe_node_1_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_2",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_2",
+              "to": "thistlecombe_node_1_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_1_3",
+              "to": "thistlecombe_node_1_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_0",
+              "to": "thistlecombe_node_2_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_1",
+              "to": "thistlecombe_node_2_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_1",
+              "to": "thistlecombe_node_2_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_2",
+              "to": "thistlecombe_node_2_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_2",
+              "to": "thistlecombe_node_2_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_2_3",
+              "to": "thistlecombe_node_2_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_0",
+              "to": "thistlecombe_node_3_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_1",
+              "to": "thistlecombe_node_3_0",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_1",
+              "to": "thistlecombe_node_3_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_2",
+              "to": "thistlecombe_node_3_1",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_2",
+              "to": "thistlecombe_node_3_3",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_3_3",
+              "to": "thistlecombe_node_3_2",
+              "mode": "walk",
+              "cost": 50
+            },
+            {
+              "from": "thistlecombe_node_0_0",
+              "to": "n1_queen_street",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n1_queen_street",
+              "to": "thistlecombe_node_0_0",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_0_0",
+              "to": "n2_queen_street",
+              "mode": "jump",
+              "cost": 29,
+              "geometric": true
+            },
+            {
+              "from": "n2_queen_street",
+              "to": "thistlecombe_node_0_0",
+              "mode": "walk",
+              "cost": 29
+            },
+            {
+              "from": "thistlecombe_node_0_1",
+              "to": "n3_queen_street",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n3_queen_street",
+              "to": "thistlecombe_node_0_1",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_1_0",
+              "to": "n4_forge_lane",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n4_forge_lane",
+              "to": "thistlecombe_node_1_0",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_1_0",
+              "to": "n5_forge_lane",
+              "mode": "jump",
+              "cost": 29,
+              "geometric": true
+            },
+            {
+              "from": "n5_forge_lane",
+              "to": "thistlecombe_node_1_0",
+              "mode": "walk",
+              "cost": 29
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "n6_forge_lane",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n6_forge_lane",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_1_0",
+              "to": "n7_forge_lane",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n7_forge_lane",
+              "to": "thistlecombe_node_1_0",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_1_0",
+              "to": "n8_forge_lane",
+              "mode": "jump",
+              "cost": 29,
+              "geometric": true
+            },
+            {
+              "from": "n8_forge_lane",
+              "to": "thistlecombe_node_1_0",
+              "mode": "walk",
+              "cost": 29
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "n9_forge_lane",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n9_forge_lane",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_2_0",
+              "to": "n10_mill_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n10_mill_road",
+              "to": "thistlecombe_node_2_0",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_2_0",
+              "to": "n11_mill_road",
+              "mode": "jump",
+              "cost": 29,
+              "geometric": true
+            },
+            {
+              "from": "n11_mill_road",
+              "to": "thistlecombe_node_2_0",
+              "mode": "walk",
+              "cost": 29
+            },
+            {
+              "from": "thistlecombe_node_2_1",
+              "to": "n12_mill_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n12_mill_road",
+              "to": "thistlecombe_node_2_1",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_2_0",
+              "to": "n13_mill_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n13_mill_road",
+              "to": "thistlecombe_node_2_0",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_2_0",
+              "to": "n14_mill_road",
+              "mode": "jump",
+              "cost": 29,
+              "geometric": true
+            },
+            {
+              "from": "n14_mill_road",
+              "to": "thistlecombe_node_2_0",
+              "mode": "walk",
+              "cost": 29
+            },
+            {
+              "from": "thistlecombe_node_2_1",
+              "to": "n15_mill_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n15_mill_road",
+              "to": "thistlecombe_node_2_1",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_3_0",
+              "to": "n16_castle_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n16_castle_road",
+              "to": "thistlecombe_node_3_0",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_3_0",
+              "to": "n17_castle_road",
+              "mode": "jump",
+              "cost": 29,
+              "geometric": true
+            },
+            {
+              "from": "n17_castle_road",
+              "to": "thistlecombe_node_3_0",
+              "mode": "walk",
+              "cost": 29
+            },
+            {
+              "from": "thistlecombe_node_3_1",
+              "to": "n18_castle_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n18_castle_road",
+              "to": "thistlecombe_node_3_1",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_0_1",
+              "to": "n19_queen_street",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n19_queen_street",
+              "to": "thistlecombe_node_0_1",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_0_1",
+              "to": "n20_queen_street",
+              "mode": "jump",
+              "cost": 29,
+              "geometric": true
+            },
+            {
+              "from": "n20_queen_street",
+              "to": "thistlecombe_node_0_1",
+              "mode": "walk",
+              "cost": 29
+            },
+            {
+              "from": "thistlecombe_node_0_2",
+              "to": "n21_queen_street",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n21_queen_street",
+              "to": "thistlecombe_node_0_2",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "n22_forge_lane",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n22_forge_lane",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "n23_forge_lane",
+              "mode": "jump",
+              "cost": 29,
+              "geometric": true
+            },
+            {
+              "from": "n23_forge_lane",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 29
+            },
+            {
+              "from": "thistlecombe_node_1_2",
+              "to": "n24_forge_lane",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n24_forge_lane",
+              "to": "thistlecombe_node_1_2",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_2_1",
+              "to": "n25_mill_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n25_mill_road",
+              "to": "thistlecombe_node_2_1",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_2_1",
+              "to": "n26_mill_road",
+              "mode": "jump",
+              "cost": 29,
+              "geometric": true
+            },
+            {
+              "from": "n26_mill_road",
+              "to": "thistlecombe_node_2_1",
+              "mode": "walk",
+              "cost": 29
+            },
+            {
+              "from": "thistlecombe_node_2_2",
+              "to": "n27_mill_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n27_mill_road",
+              "to": "thistlecombe_node_2_2",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_1_2",
+              "to": "n34_forge_lane",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n34_forge_lane",
+              "to": "thistlecombe_node_1_2",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_1_2",
+              "to": "n37_forge_lane",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n37_forge_lane",
+              "to": "thistlecombe_node_1_2",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_2_2",
+              "to": "n40_mill_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n40_mill_road",
+              "to": "thistlecombe_node_2_2",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_2_2",
+              "to": "n43_mill_road",
+              "mode": "jump",
+              "cost": 19,
+              "geometric": true
+            },
+            {
+              "from": "n43_mill_road",
+              "to": "thistlecombe_node_2_2",
+              "mode": "walk",
+              "cost": 19
+            },
+            {
+              "from": "thistlecombe_node_1_2",
+              "to": "n49_forge_lane",
+              "mode": "jump",
+              "cost": 17,
+              "geometric": true
+            },
+            {
+              "from": "n49_forge_lane",
+              "to": "thistlecombe_node_1_2",
+              "mode": "walk",
+              "cost": 17
+            },
+            {
+              "from": "thistlecombe_node_1_2",
+              "to": "n50_forge_lane",
+              "mode": "jump",
+              "cost": 24,
+              "geometric": true
+            },
+            {
+              "from": "n50_forge_lane",
+              "to": "thistlecombe_node_1_2",
+              "mode": "walk",
+              "cost": 24
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "n51_forge_lane",
+              "mode": "jump",
+              "cost": 32,
+              "geometric": true
+            },
+            {
+              "from": "n51_forge_lane",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 32
+            },
+            {
+              "from": "thistlecombe_node_1_1",
+              "to": "n52_forge_lane",
+              "mode": "jump",
+              "cost": 39,
+              "geometric": true
+            },
+            {
+              "from": "n52_forge_lane",
+              "to": "thistlecombe_node_1_1",
+              "mode": "walk",
+              "cost": 39
+            }
+          ],
+          "levels": [
+            {
+              "id": "level_1",
+              "order": 1,
+              "start": "thistlecombe_node_1_1",
+              "goal": "n22_forge_lane",
+              "goalKind": "home",
+              "subject": "linn_oakfield",
+              "checkpoints": [],
+              "par": 38
+            },
+            {
+              "id": "level_2",
+              "order": 2,
+              "start": "n22_forge_lane",
+              "goal": "n17_castle_road",
+              "goalKind": "home",
+              "subject": "galen_ashford",
+              "checkpoints": [
+                "thistlecombe_node_1_1",
+                "thistlecombe_node_1_0",
+                "thistlecombe_node_2_0",
+                "thistlecombe_node_3_0"
+              ],
+              "par": 227
+            }
+          ],
+          "runnerModes": [
+            "walk",
+            "jump"
+          ],
+          "tuning": {
+            "defaultCost": 5,
+            "modeCost": {
+              "walk": 1,
+              "climb": 3,
+              "swim": 2.5,
+              "jump": 2,
+              "ride": 0.2,
+              "boat": 0.2
+            },
+            "modeAction": {
+              "walk": "walk",
+              "climb": "climb",
+              "swim": "swim",
+              "jump": "jump",
+              "ride": "ride",
+              "boat": "row"
+            },
+            "defaultAction": "traverse"
+          },
+          "source": "generated",
+          "notes": []
+        },
+        "steps": [
+          {
+            "step": "enter",
+            "level": "level_1"
+          },
+          {
+            "step": "step",
+            "to": "n22_forge_lane"
+          },
+          {
+            "step": "enter",
+            "level": "level_2"
+          },
+          {
+            "step": "hint"
+          },
+          {
+            "step": "step",
+            "to": "thistlecombe_node_1_1"
+          },
+          {
+            "step": "step",
+            "to": "thistlecombe_node_1_0"
+          },
+          {
+            "step": "step",
+            "to": "thistlecombe_node_2_0"
+          },
+          {
+            "step": "step",
+            "to": "thistlecombe_node_3_0"
+          },
+          {
+            "step": "step",
+            "to": "n17_castle_road"
+          },
+          {
+            "step": "progress"
+          }
+        ]
+      },
+      "expected": {
+        "published": 252,
+        "steps": [
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, level_1).",
+              "platformer_run_cost(player, level_1, 0)."
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, level_1, 0).",
+              "platformer_run_cost(player, level_1, 38).",
+              "platformer_running(player, level_1).",
+              "platformer_run_cost(player, level_1, 38).",
+              "platformer_cleared(player, level_1, 3)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "thistlecombe_node_1_1>n22_forge_lane:jump",
+              "cost": 38,
+              "location": "n22_forge_lane"
+            },
+            "location": "n22_forge_lane",
+            "runCost": 38,
+            "cleared": {
+              "level": "level_1",
+              "stars": 3,
+              "best": 3
+            },
+            "probed": [
+              "thistlecombe_node_1_1>n6_forge_lane:jump",
+              "thistlecombe_node_1_1>n9_forge_lane:jump",
+              "thistlecombe_node_1_1>n22_forge_lane:jump",
+              "thistlecombe_node_1_1>n23_forge_lane:jump",
+              "thistlecombe_node_1_1>n51_forge_lane:jump",
+              "thistlecombe_node_1_1>n52_forge_lane:jump"
+            ]
+          },
+          {
+            "step": "enter",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_running(player, level_2).",
+              "platformer_run_cost(player, level_2, 0)."
+            ]
+          },
+          {
+            "step": "hint",
+            "route": {
+              "from": "n22_forge_lane",
+              "to": "n17_castle_road",
+              "steps": [
+                {
+                  "id": "n22_forge_lane>thistlecombe_node_1_1:walk",
+                  "from": "n22_forge_lane",
+                  "to": "thistlecombe_node_1_1",
+                  "mode": "walk",
+                  "cost": 19,
+                  "requires": []
+                },
+                {
+                  "id": "thistlecombe_node_1_1>thistlecombe_node_1_0:walk",
+                  "from": "thistlecombe_node_1_1",
+                  "to": "thistlecombe_node_1_0",
+                  "mode": "walk",
+                  "cost": 50,
+                  "requires": []
+                },
+                {
+                  "id": "thistlecombe_node_1_0>thistlecombe_node_2_0:walk",
+                  "from": "thistlecombe_node_1_0",
+                  "to": "thistlecombe_node_2_0",
+                  "mode": "walk",
+                  "cost": 50,
+                  "requires": []
+                },
+                {
+                  "id": "thistlecombe_node_2_0>thistlecombe_node_3_0:walk",
+                  "from": "thistlecombe_node_2_0",
+                  "to": "thistlecombe_node_3_0",
+                  "mode": "walk",
+                  "cost": 50,
+                  "requires": []
+                },
+                {
+                  "id": "thistlecombe_node_3_0>n17_castle_road:jump",
+                  "from": "thistlecombe_node_3_0",
+                  "to": "n17_castle_road",
+                  "mode": "jump",
+                  "cost": 58,
+                  "requires": []
+                }
+              ],
+              "cost": 227,
+              "conditional": false
+            }
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, level_2, 0).",
+              "platformer_run_cost(player, level_2, 19).",
+              "platformer_checkpoint_reached(player, level_2, 1)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "n22_forge_lane>thistlecombe_node_1_1:walk",
+              "cost": 19,
+              "location": "thistlecombe_node_1_1"
+            },
+            "location": "thistlecombe_node_1_1",
+            "checkpoint": 1,
+            "runCost": 19,
+            "probed": []
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, level_2, 19).",
+              "platformer_run_cost(player, level_2, 69).",
+              "platformer_checkpoint_reached(player, level_2, 2)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "thistlecombe_node_1_1>thistlecombe_node_1_0:walk",
+              "cost": 50,
+              "location": "thistlecombe_node_1_0"
+            },
+            "location": "thistlecombe_node_1_0",
+            "checkpoint": 2,
+            "runCost": 69,
+            "probed": [
+              "thistlecombe_node_1_1>n6_forge_lane:jump",
+              "thistlecombe_node_1_1>n9_forge_lane:jump",
+              "thistlecombe_node_1_1>n22_forge_lane:jump",
+              "thistlecombe_node_1_1>n23_forge_lane:jump",
+              "thistlecombe_node_1_1>n51_forge_lane:jump",
+              "thistlecombe_node_1_1>n52_forge_lane:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, level_2, 69).",
+              "platformer_run_cost(player, level_2, 119).",
+              "platformer_checkpoint_reached(player, level_2, 3)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "thistlecombe_node_1_0>thistlecombe_node_2_0:walk",
+              "cost": 50,
+              "location": "thistlecombe_node_2_0"
+            },
+            "location": "thistlecombe_node_2_0",
+            "checkpoint": 3,
+            "runCost": 119,
+            "probed": [
+              "thistlecombe_node_1_0>n4_forge_lane:jump",
+              "thistlecombe_node_1_0>n5_forge_lane:jump",
+              "thistlecombe_node_1_0>n7_forge_lane:jump",
+              "thistlecombe_node_1_0>n8_forge_lane:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, level_2, 119).",
+              "platformer_run_cost(player, level_2, 169).",
+              "platformer_checkpoint_reached(player, level_2, 4)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "walk",
+              "link": "thistlecombe_node_2_0>thistlecombe_node_3_0:walk",
+              "cost": 50,
+              "location": "thistlecombe_node_3_0"
+            },
+            "location": "thistlecombe_node_3_0",
+            "checkpoint": 4,
+            "runCost": 169,
+            "probed": [
+              "thistlecombe_node_2_0>n10_mill_road:jump",
+              "thistlecombe_node_2_0>n11_mill_road:jump",
+              "thistlecombe_node_2_0>n13_mill_road:jump",
+              "thistlecombe_node_2_0>n14_mill_road:jump"
+            ]
+          },
+          {
+            "step": "step",
+            "ok": true,
+            "reason": null,
+            "applied": [
+              "platformer_run_cost(player, level_2, 169).",
+              "platformer_run_cost(player, level_2, 227).",
+              "platformer_running(player, level_2).",
+              "platformer_run_cost(player, level_2, 227).",
+              "platformer_checkpoint_reached(player, level_2, 1).",
+              "platformer_checkpoint_reached(player, level_2, 2).",
+              "platformer_checkpoint_reached(player, level_2, 3).",
+              "platformer_checkpoint_reached(player, level_2, 4).",
+              "platformer_cleared(player, level_2, 3)."
+            ],
+            "movement": {
+              "performed": true,
+              "mode": "jump",
+              "link": "thistlecombe_node_3_0>n17_castle_road:jump",
+              "cost": 58,
+              "location": "n17_castle_road"
+            },
+            "location": "n17_castle_road",
+            "runCost": 227,
+            "cleared": {
+              "level": "level_2",
+              "stars": 3,
+              "best": 3
+            },
+            "probed": [
+              "thistlecombe_node_3_0>n16_castle_road:jump",
+              "thistlecombe_node_3_0>n17_castle_road:jump"
+            ]
+          },
+          {
+            "step": "progress",
+            "progress": {
+              "levelsCleared": 2,
+              "levelsTotal": 2,
+              "checkpointsReached": 4,
+              "checkpointsTotal": 4,
+              "stars": 6,
+              "goalReached": true,
+              "runCost": 227,
+              "par": 227,
+              "courseComplete": true
+            }
+          }
+        ],
+        "state": {
+          "runners": [
+            {
+              "runner": "player",
+              "level": null,
+              "location": "n17_castle_road",
+              "runCost": 227,
+              "checkpoints": [],
+              "cleared": [
+                [
+                  "level_1",
+                  3
+                ],
+                [
+                  "level_2",
+                  3
+                ]
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

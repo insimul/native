@@ -922,8 +922,19 @@
   member by member (`declared()` in entry.js: present and typed, optional may be absent,
   null only where core declares `| null`, own keys only). `genre.world.of` (core's
   `worldOf`) is the ONE import of `genre-systems/systems-corpus` (core's runner): no row runs
-  `runGenreSystemsOp`. The platformer, strategy and genre pieces are later slices;
-  `conformance/prolog/mechanic-puzzle.json` stays with PL.native-prolog-mirror-full (U120(9)).
+  `runGenreSystemsOp`. Slice 2 adds the platformer the same way
+  (`platformer/{course,run,save}.json`, 32 cases, transcribed as
+  `core-genre-platformer-<file>.json`; `core_vendor_genre_negative` then names sixteen
+  perturbations): the course rows are stateless, `platformer.director.*` is a session whose KB
+  is its own (`GamePrologEngine` genre `platformer`, which selects traversal; movement is
+  core's `TraversalPlanner` inside the director), and its probe and locomotion hosts are
+  stated as data (`probe { <link>: passable }`, `locomotion { stuck? }`, restated with
+  `platformer.director.host`), as `traversal.session.create` states them. A `step` answers
+  `{ outcome, probed, orders }` with core's whole `StepOutcome`; core's runner shows only
+  `movementView` of its movement, so the transcription holds the movement as a subset and the
+  guard reads the view back. The strategy game and the genre pieces are later slices;
+  `conformance/prolog/mechanic-{puzzle,platformer}.json` stay with PL.native-prolog-mirror-full
+  (U120(9)).
 - **The bundle carries one npm package, `zod`** (core's `system-packs/schema`
   builds its schemas with it at module scope, and the composer imports that
   module). npm imports resolve along the core checkout's `node_modules` chain

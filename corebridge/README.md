@@ -312,6 +312,30 @@ game; **meta** = about the bridge itself.
 | `puzzle.save.read` | `{ block? }` → `{ ok: true, value }` (null: no block) or `{ ok: false, keys }` | `puzzle/puzzle-save` `readPuzzleBlock` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
 | `puzzle.save.block` | `{ state? }` → `{ block }` (null for no state) | `puzzle/puzzle-save` `puzzleSaveBlock` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
 | `puzzle.save.blockOf` | `{ block }` → `{ block }` (rows by actor, lists in canonical order) | `puzzle/puzzle-save` `puzzleBlockOf` | P9j puzzle (PL.native-genre-rows slice 1; core's P9j.core) |
+| `platformer.contract` | `{}` → `{ area, authoredPredicates, runtimePredicates, writtenPredicates, defaultLevelCount, defaultRunnerModes, tuning, compassWords, junctionSideMinM, extensionKey, blockMembers, runnerKeys }` | `platformer/course`, `platformer/platformer-predicates`, `platformer/platformer-save`, `PlatformerDirector` constants | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.junctionAtom` | `{ settlement, node }` → `{ atom }` | `platformer/course` `junctionAtom` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.junctionLabel` | `{ settlement: { name, streetNetwork? }, node, northYaw? }` → `{ label }` (`northYaw` absent: core's north; null: refused, no side) | `platformer/course` `junctionLabel` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.courseGraph` | `{ world }` → `{ places, links }` | `platformer/course` `courseGraph` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.route` | `{ links, from, to, modes?, tuning? }` → `{ route }` (null: none; `modes`/`tuning` absent or null: core's defaults) | `platformer/course` `courseRoute` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.generate` | `{ world, levelCount?, runnerModes? }` → `{ course }` | `platformer/course` `generateCourse` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.fromIR` | `{ platformer, traversal?, world }` → `{ course }` | `platformer/course` `courseFromIR` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.forWorld` | `{ world, platformer?, traversal?, levelCount? }` → `{ course }` (`platformer`/`traversal`, or null for none, over the world's own sections) | `platformer/course` `courseForWorld` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.levelFacts` | `{ course }` → `{ facts }` | `platformer/course` `courseLevelFacts` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.stars` | `{ par, cost }` → `{ stars }` | `platformer/course` `starsFor` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.create` | `{ course, probe?, locomotion?, kb? }` → `{ session, published }` (a KB of its own: `GamePrologEngine` genre `platformer`; `probe { <link>: passable }`, `locomotion { stuck? }` the hosts as data) | `game-engine/logic/PlatformerDirector` (`publish`), `GamePrologEngine` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.host` | `{ session, probe?, stuck? }` → `{}` (restates the hosts' answers) | the director's `ITraversalProbe` / `ILocomotionHost` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.isUnlocked` | `{ session, runner, level }` → `{ unlocked }` | `PlatformerDirector.isUnlocked` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.enter` | `{ session, runner, level }` → `{ ok, refusal?, reason, applied }` | `PlatformerDirector.enter` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.step` | `{ session, runner, to }` → `{ outcome, probed, orders }` (`outcome` core's `StepOutcome`; the links probed and movements ordered) | `PlatformerDirector.step` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.respawn` | `{ session, runner }` → the outcome with `location` | `PlatformerDirector.respawn` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.hint` | `{ session, runner }` → `{ route }` (null: none) | `PlatformerDirector.hint` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.progress` | `{ session, runner }` → `{ progress }` | `PlatformerDirector.progress` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.locationOf` | `{ session, runner }` → `{ location }` (null: never put on a level) | `PlatformerDirector.traversal.locationOf` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.serialize` | `{ session }` → `{ state }` | `PlatformerDirector.serialize` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.director.restore` | `{ session, state }` → the outcome (`schema` once the director has runners) | `PlatformerDirector.restore` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.save.read` | `{ block? }` → `{ ok: true, value }` (null: no block) or `{ ok: false, keys }` | `platformer/platformer-save` `readPlatformerBlock` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.save.block` | `{ state? }` → `{ block }` (null for no state) | `platformer/platformer-save` `platformerSaveBlock` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
+| `platformer.save.blockOf` | `{ block }` → `{ block }` (rows by runner, checkpoints ascending, clears by level) | `platformer/platformer-save` `platformerBlockOf` | P9j platformer (PL.native-genre-rows slice 2; core's P9j.core) |
 | `ui.saveSlots` | `{ slots: [{ index, envelope } or { index, outcome }, summary?] }` → `{ slots, hasAnyLoadable }` | `ui/save-slot-model` `SaveSlotModel` | P1 |
 | `ui.loadRefusal` | `{ refusal }` → `{ outcome, message }`: every string `invalid_format` with its message; any other value `{ outcome: null, message: '' }` | `ui/save-slot-model` `slotOutcomeOfLoadRefusal`, `loadRefusalMessage` | P1 refused Load (PL.native-bundle-core-r2; core's PL.core-load-refusal-codes, U124(1), U126(2)) |
 | `saves.slots.create` | `{ config?, slots?: [{ index, outcome, summary? }], activeSlot? }` → `{ session, config, view }` (`config` as core resolved it) | `save-slots` `SaveSlotsSession` (`resolveSaveSlotsConfig`) | P1 slots (PL.native-catchup; core's P1.core-slots, U83(1)) |
@@ -2296,8 +2320,8 @@ type's completion check, a quest word naming an `Object.prototype` member), ever
 Core's P9j genre systems (`docs/genre-systems.md`) are rows (U115, U128), so an engine binds
 them instead of keeping a copy (Unreal's interim `Portable/InsimulPuzzle.{h,cpp}`, which
 `P9j.unreal.retire-puzzle-copy` retires). Slice 1 binds the puzzle (catalog
-`puzzle-rule-module`); the platformer, the strategy game and the genre pieces are later slices
-of the row.
+`puzzle-rule-module`); slice 2 binds the platformer (below), and the strategy game and the
+genre pieces are later slices of the row.
 
 - **The definition** (`puzzle/puzzle.ts`, pure): `puzzle.forWorld` (the world's authored
   section when it has riddles, else one generated from the world; the row's `puzzle`, or null
@@ -2348,6 +2372,69 @@ exactly where a case reaches the KB, and with every answer stated) and
 naming `Object.prototype` members, stateFacts and the save block's defaults, `worldOf`'s forms,
 the `[invalid-input]` boundary of every argument, and a director over its own KB with a host
 program), every expectation computed by core's own functions at the pin.
+
+### The genre systems rows: the platformer (PL.native-genre-rows, slice 2)
+
+Slice 2 binds core's platformer (catalog `genre-platformer`) the way slice 1 binds the
+puzzle, so Unreal's interim `Portable/InsimulPlatformer.{h,cpp}` can go
+(`P9j.unreal.retire-platformer-copy`).
+
+- **The course** (`platformer/course.ts`, pure): `platformer.forWorld` (the world's authored
+  levels when its `platformer` section has them, else a course generated over its streets,
+  homes and workplaces; the row's `platformer` and `traversal`, each a section or null for
+  none, stand over the world's own when given; `levelCount` is the pack tunable, which an
+  authored level count beats), `platformer.generate` (`generateCourse`, the world's own
+  section unread), `platformer.fromIR` (authored levels over the traversal section's links,
+  or over the world's streets when it has none), `platformer.courseGraph`,
+  `platformer.junctionAtom` and `platformer.junctionLabel` (the player-facing name a host shows
+  as it is, never the node id), `platformer.route` (the cheapest route; `modes` and `tuning`
+  absent or null are core's defaults, as a function default is), `platformer.levelFacts` (the
+  pack's authored facts) and `platformer.stars`. `platformer.contract` states core's constants.
+  `levelCount` and `runnerModes` are members of core's `CourseOptions`, not `| null`: a null
+  is refused.
+- **The director** (`game-engine/logic/PlatformerDirector.ts`): `platformer.director.create`
+  opens a session holding a KB of its own, built as core's runner builds it — `GamePrologEngine`
+  with genre `platformer`, whose module activation consults the platformer and traversal packs
+  — on the native Trealla seam, then `kb` (a host program) and the director, whose `publish()`
+  writes the link graph and the levels. Movement is core's `TraversalPlanner` inside the
+  director. Its hosts are callbacks core calls mid-decision, which cannot cross this ABI, so
+  the host states their answers as data, exactly as `traversal.session.create` does: `probe
+  { <link id>: passable }` (a link not listed is unanswered, so passable) and `locomotion
+  { stuck? }` (an order to a destination in `stuck` leaves the runner where it says); a host
+  restates them with `platformer.director.host` (before a step, say, once its geometry
+  changed). Each further row is one method: `.isUnlocked`, `.enter`, `.step` (`{ outcome,
+  probed, orders }`: core's `StepOutcome` whole, its `movement` the full `TraversalReport`, and
+  what the hosts were asked during the step), `.respawn`, `.hint`, `.progress`, `.locationOf`
+  (`director.traversal.locationOf`), `.serialize` and `.restore`. Every verdict is the KB's; a
+  refusal (`unknown_level`, `locked`, `not_running`, `movement`, `schema`) is a VALUE.
+  `session.dispose` destroys the KB.
+- **The save block** (`platformer/platformer-save.ts`): `platformer.save.read`,
+  `platformer.save.block` and `platformer.save.blockOf`, as the puzzle's. A load builds the
+  course again from the same world and restores the READ value into a fresh director.
+- **The bundle** grows 2,553,569 → 2,597,665 bytes: the platformer modules were already in its
+  module list (through `worldOf`'s runner module), but esbuild left their code out while no row
+  reached it; it comes in now (about 21 KB) with the rows (about 23 KB).
+- **The boundary.** As slice 1's, member for member: `Course` (with `CoursePlace`,
+  `CourseLevel`, `TraversalLink`, `TraversalTuning`), `PlatformerIR`, `TraversalIR` (its links
+  and numbers; `vehicles` and `fastTravel` objects when present), `PlatformerDirectorState`,
+  `JunctionLabelSettlement`. Anything else is `[invalid-input]`.
+
+Gates: `genre_systems_corpus` (+ `_negative`) also drives every case of core's
+`conformance/platformer/{course,run,save}.json` (17 + 6 + 9), copied byte for byte at the pin,
+each op as core's runner composes it (a run's host probe answers every `impassable` link id
+false and leaves every other link unanswered, as core's runner's probe answers; a step's
+movement is reduced to core's `movementView`). `emit-bridge-cases.mjs` transcribes them into
+`cases/core-genre-platformer-{course,run,save}.json`, where a `step`'s outcome is stated
+exactly but for its `movement`, held as a subset (performed, refusal, cost, location, the
+affordance's mode and id); `core_vendor` reads core's view back out of each such expectation
+and requires it to be the corpus's answer, holds the stars in place, and
+`core_vendor_genre_negative` names sixteen perturbations. Hand cases:
+`tests/cases/bridge-platformer.json` (the contract, junction atoms and labels, the graph,
+generate and fromIR alone, the row's sections over the world's own, routes with modes and
+tuning, the stars at their edges, the save block's defaults and refusals, ids naming
+`Object.prototype` members, the `[invalid-input]` boundary of every argument, and directors
+over their own KB with and without the hosts), every expectation computed by core's own
+functions at the pin.
 
 ### The extension keys `save.rules` answers (PL.native-save-extension-keys, U110)
 

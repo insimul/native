@@ -1,0 +1,810 @@
+{
+  "schema": "insimul.conformance.genre-systems/1",
+  "area": "platformer",
+  "file": "platformer/save",
+  "phase": "P9j",
+  "description": "The platformer save block (currentState.extensions.platformer, src/platformer/platformer-save.ts): block, read and restore as puzzle/save.json, over PlatformerDirector.",
+  "sources": [
+    "Rules: core's puzzle, platformer and strategy modules (src/puzzle, src/platformer, src/strategy) and their directors (src/game-engine/logic/{Puzzle,Platformer,Strategy}Director.ts), unchanged by this corpus; their predicate packs are pinned clause by clause by conformance/prolog/mechanic-{puzzle,platformer,strategy}.json.",
+    "Worlds: the committed slice of Thistlecombe (Unity closing-wave export, conformance/genre-mechanics/thistlecombe.world-slice.json) and synthetic worlds written in src/genre-systems/systems-corpus-cases.ts."
+  ],
+  "runner": "src/genre-systems/systems-corpus.ts (runGenreSystemsOp)",
+  "comparison": "exact, object key sets included (a key TypeScript leaves undefined is absent); an unknown op or step is an error, never a skip",
+  "catalog": [
+    "genre-platformer"
+  ],
+  "ops": [
+    "block",
+    "read",
+    "restore"
+  ],
+  "steps": [
+    "restore",
+    "enter",
+    "step",
+    "respawn",
+    "hint",
+    "unlocked",
+    "progress",
+    "state"
+  ],
+  "cases": [
+    {
+      "name": "block: the director's state, rows by runner and clears by level",
+      "op": "block",
+      "input": {
+        "state": {
+          "runners": [
+            {
+              "runner": "zed",
+              "level": "climb",
+              "location": "yard",
+              "runCost": 10,
+              "checkpoints": [
+                1
+              ],
+              "cleared": []
+            },
+            {
+              "runner": "ana",
+              "level": null,
+              "location": "gate",
+              "runCost": 18,
+              "checkpoints": [],
+              "cleared": [
+                [
+                  "descent",
+                  3
+                ],
+                [
+                  "climb",
+                  2
+                ]
+              ]
+            }
+          ]
+        }
+      },
+      "expected": {
+        "runners": [
+          {
+            "runner": "ana",
+            "level": null,
+            "location": "gate",
+            "runCost": 18,
+            "checkpoints": [],
+            "cleared": [
+              [
+                "climb",
+                2
+              ],
+              [
+                "descent",
+                3
+              ]
+            ]
+          },
+          {
+            "runner": "zed",
+            "level": "climb",
+            "location": "yard",
+            "runCost": 10,
+            "checkpoints": [
+              1
+            ],
+            "cleared": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "read: a block as written reads back unchanged",
+      "op": "read",
+      "input": {
+        "block": {
+          "runners": [
+            {
+              "runner": "zed",
+              "level": "climb",
+              "location": "yard",
+              "runCost": 10,
+              "checkpoints": [
+                1
+              ],
+              "cleared": []
+            },
+            {
+              "runner": "ana",
+              "level": null,
+              "location": "gate",
+              "runCost": 18,
+              "checkpoints": [],
+              "cleared": [
+                [
+                  "descent",
+                  3
+                ],
+                [
+                  "climb",
+                  2
+                ]
+              ]
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "runners": [
+            {
+              "runner": "ana",
+              "level": null,
+              "location": "gate",
+              "runCost": 18,
+              "checkpoints": [],
+              "cleared": [
+                [
+                  "climb",
+                  2
+                ],
+                [
+                  "descent",
+                  3
+                ]
+              ]
+            },
+            {
+              "runner": "zed",
+              "level": "climb",
+              "location": "yard",
+              "runCost": 10,
+              "checkpoints": [
+                1
+              ],
+              "cleared": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "read: absent members read as a runner never put on a level",
+      "op": "read",
+      "input": {
+        "block": {
+          "runners": [
+            {
+              "runner": "player"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "ok": true,
+        "value": {
+          "runners": [
+            {
+              "runner": "player",
+              "level": null,
+              "location": "",
+              "runCost": 0,
+              "checkpoints": [],
+              "cleared": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "read: no block (absent or null) is no runner",
+      "op": "read",
+      "input": {
+        "block": null
+      },
+      "expected": {
+        "ok": true,
+        "value": null
+      }
+    },
+    {
+      "name": "read refused: a block that is not an object",
+      "op": "read",
+      "input": {
+        "block": 7
+      },
+      "expected": {
+        "ok": false,
+        "keys": []
+      }
+    },
+    {
+      "name": "read refused: every unreadable member, in ascending order",
+      "op": "read",
+      "input": {
+        "block": {
+          "runners": [
+            {
+              "runner": "a",
+              "level": 3,
+              "location": "gate",
+              "runCost": -1,
+              "checkpoints": [
+                2,
+                1
+              ],
+              "cleared": [
+                [
+                  "climb",
+                  4
+                ]
+              ]
+            },
+            {
+              "runner": "b",
+              "level": "climb",
+              "location": "",
+              "checkpoints": [
+                0
+              ]
+            },
+            {
+              "runner": "c",
+              "level": null,
+              "location": "gate",
+              "checkpoints": [
+                1
+              ],
+              "cleared": [
+                [
+                  "climb",
+                  3
+                ],
+                [
+                  "climb",
+                  2
+                ]
+              ]
+            },
+            {
+              "runner": "a"
+            },
+            null
+          ]
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "runners[0].cleared",
+          "runners[0].level",
+          "runners[0].runCost",
+          "runners[1].checkpoints",
+          "runners[1].location",
+          "runners[2].checkpoints",
+          "runners[2].cleared",
+          "runners[3]",
+          "runners[4]"
+        ]
+      }
+    },
+    {
+      "name": "read refused: runners that is not a list",
+      "op": "read",
+      "input": {
+        "block": {
+          "runners": {}
+        }
+      },
+      "expected": {
+        "ok": false,
+        "keys": [
+          "runners"
+        ]
+      }
+    },
+    {
+      "name": "restore: a runner mid-climb comes back at the yard and finishes",
+      "op": "restore",
+      "input": {
+        "course": {
+          "places": [],
+          "links": [
+            {
+              "from": "gate",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "gate",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "ledge",
+              "mode": "jump",
+              "cost": 6,
+              "geometric": true
+            },
+            {
+              "from": "ledge",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "ledge",
+              "to": "tower",
+              "mode": "jump",
+              "cost": 8,
+              "geometric": true
+            },
+            {
+              "from": "tower",
+              "to": "ledge",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "yard",
+              "to": "tower",
+              "mode": "walk",
+              "cost": 30
+            },
+            {
+              "from": "tower",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 30
+            }
+          ],
+          "levels": [
+            {
+              "id": "climb",
+              "order": 1,
+              "start": "gate",
+              "goal": "tower",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "yard"
+              ],
+              "par": 38
+            },
+            {
+              "id": "descent",
+              "order": 2,
+              "start": "tower",
+              "goal": "gate",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "ledge",
+                "yard"
+              ],
+              "par": 18
+            }
+          ],
+          "runnerModes": [
+            "walk",
+            "jump"
+          ],
+          "tuning": {
+            "defaultCost": 5,
+            "modeCost": {
+              "walk": 1,
+              "climb": 3,
+              "swim": 2.5,
+              "jump": 2,
+              "ride": 0.2,
+              "boat": 0.2
+            },
+            "modeAction": {
+              "walk": "walk",
+              "climb": "climb",
+              "swim": "swim",
+              "jump": "jump",
+              "ride": "ride",
+              "boat": "row"
+            },
+            "defaultAction": "traverse"
+          },
+          "source": "authored",
+          "notes": []
+        },
+        "block": {
+          "runners": [
+            {
+              "runner": "zed",
+              "level": "climb",
+              "location": "yard",
+              "runCost": 10,
+              "checkpoints": [
+                1
+              ],
+              "cleared": []
+            },
+            {
+              "runner": "ana",
+              "level": null,
+              "location": "gate",
+              "runCost": 18,
+              "checkpoints": [],
+              "cleared": [
+                [
+                  "descent",
+                  3
+                ],
+                [
+                  "climb",
+                  2
+                ]
+              ]
+            }
+          ]
+        },
+        "steps": [
+          {
+            "step": "progress",
+            "runner": "zed"
+          },
+          {
+            "step": "step",
+            "runner": "zed",
+            "to": "ledge"
+          },
+          {
+            "step": "step",
+            "runner": "zed",
+            "to": "tower"
+          },
+          {
+            "step": "progress",
+            "runner": "ana"
+          },
+          {
+            "step": "state"
+          }
+        ]
+      },
+      "expected": {
+        "read": {
+          "ok": true,
+          "value": {
+            "runners": [
+              {
+                "runner": "ana",
+                "level": null,
+                "location": "gate",
+                "runCost": 18,
+                "checkpoints": [],
+                "cleared": [
+                  [
+                    "climb",
+                    2
+                  ],
+                  [
+                    "descent",
+                    3
+                  ]
+                ]
+              },
+              {
+                "runner": "zed",
+                "level": "climb",
+                "location": "yard",
+                "runCost": 10,
+                "checkpoints": [
+                  1
+                ],
+                "cleared": []
+              }
+            ]
+          }
+        },
+        "run": {
+          "published": 29,
+          "steps": [
+            {
+              "step": "restore",
+              "ok": true,
+              "reason": null,
+              "applied": [
+                "platformer_running(zed, climb).",
+                "platformer_run_cost(zed, climb, 10).",
+                "platformer_checkpoint_reached(zed, climb, 1).",
+                "platformer_cleared(ana, descent, 3).",
+                "platformer_cleared(ana, climb, 2)."
+              ]
+            },
+            {
+              "step": "progress",
+              "progress": {
+                "levelsCleared": 0,
+                "levelsTotal": 2,
+                "checkpointsReached": 1,
+                "checkpointsTotal": 1,
+                "stars": 0,
+                "goalReached": false,
+                "runCost": 10,
+                "par": 38,
+                "courseComplete": false
+              }
+            },
+            {
+              "step": "step",
+              "ok": true,
+              "reason": null,
+              "applied": [
+                "platformer_run_cost(zed, climb, 10).",
+                "platformer_run_cost(zed, climb, 22)."
+              ],
+              "movement": {
+                "performed": true,
+                "mode": "jump",
+                "link": "yard>ledge:jump",
+                "cost": 12,
+                "location": "ledge"
+              },
+              "location": "ledge",
+              "runCost": 22,
+              "probed": [
+                "yard>ledge:jump"
+              ]
+            },
+            {
+              "step": "step",
+              "ok": true,
+              "reason": null,
+              "applied": [
+                "platformer_run_cost(zed, climb, 22).",
+                "platformer_run_cost(zed, climb, 38).",
+                "platformer_running(zed, climb).",
+                "platformer_run_cost(zed, climb, 38).",
+                "platformer_checkpoint_reached(zed, climb, 1).",
+                "platformer_cleared(zed, climb, 3)."
+              ],
+              "movement": {
+                "performed": true,
+                "mode": "jump",
+                "link": "ledge>tower:jump",
+                "cost": 16,
+                "location": "tower"
+              },
+              "location": "tower",
+              "runCost": 38,
+              "cleared": {
+                "level": "climb",
+                "stars": 3,
+                "best": 3
+              },
+              "probed": [
+                "ledge>tower:jump"
+              ]
+            },
+            {
+              "step": "progress",
+              "progress": {
+                "levelsCleared": 2,
+                "levelsTotal": 2,
+                "checkpointsReached": 0,
+                "checkpointsTotal": 0,
+                "stars": 5,
+                "goalReached": false,
+                "runCost": 18,
+                "par": null,
+                "courseComplete": true
+              }
+            },
+            {
+              "step": "state",
+              "state": {
+                "runners": [
+                  {
+                    "runner": "ana",
+                    "level": null,
+                    "location": "gate",
+                    "runCost": 18,
+                    "checkpoints": [],
+                    "cleared": [
+                      [
+                        "climb",
+                        2
+                      ],
+                      [
+                        "descent",
+                        3
+                      ]
+                    ]
+                  },
+                  {
+                    "runner": "zed",
+                    "level": null,
+                    "location": "tower",
+                    "runCost": 38,
+                    "checkpoints": [],
+                    "cleared": [
+                      [
+                        "climb",
+                        3
+                      ]
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "state": {
+            "runners": [
+              {
+                "runner": "ana",
+                "level": null,
+                "location": "gate",
+                "runCost": 18,
+                "checkpoints": [],
+                "cleared": [
+                  [
+                    "climb",
+                    2
+                  ],
+                  [
+                    "descent",
+                    3
+                  ]
+                ]
+              },
+              {
+                "runner": "zed",
+                "level": null,
+                "location": "tower",
+                "runCost": 38,
+                "checkpoints": [],
+                "cleared": [
+                  [
+                    "climb",
+                    3
+                  ]
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "restore refused: an unreadable block restores nothing",
+      "op": "restore",
+      "input": {
+        "course": {
+          "places": [],
+          "links": [
+            {
+              "from": "gate",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "gate",
+              "mode": "walk",
+              "cost": 10
+            },
+            {
+              "from": "yard",
+              "to": "ledge",
+              "mode": "jump",
+              "cost": 6,
+              "geometric": true
+            },
+            {
+              "from": "ledge",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "ledge",
+              "to": "tower",
+              "mode": "jump",
+              "cost": 8,
+              "geometric": true
+            },
+            {
+              "from": "tower",
+              "to": "ledge",
+              "mode": "walk",
+              "cost": 4
+            },
+            {
+              "from": "yard",
+              "to": "tower",
+              "mode": "walk",
+              "cost": 30
+            },
+            {
+              "from": "tower",
+              "to": "yard",
+              "mode": "walk",
+              "cost": 30
+            }
+          ],
+          "levels": [
+            {
+              "id": "climb",
+              "order": 1,
+              "start": "gate",
+              "goal": "tower",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "yard"
+              ],
+              "par": 38
+            },
+            {
+              "id": "descent",
+              "order": 2,
+              "start": "tower",
+              "goal": "gate",
+              "goalKind": "place",
+              "subject": null,
+              "checkpoints": [
+                "ledge",
+                "yard"
+              ],
+              "par": 18
+            }
+          ],
+          "runnerModes": [
+            "walk",
+            "jump"
+          ],
+          "tuning": {
+            "defaultCost": 5,
+            "modeCost": {
+              "walk": 1,
+              "climb": 3,
+              "swim": 2.5,
+              "jump": 2,
+              "ride": 0.2,
+              "boat": 0.2
+            },
+            "modeAction": {
+              "walk": "walk",
+              "climb": "climb",
+              "swim": "swim",
+              "jump": "jump",
+              "ride": "ride",
+              "boat": "row"
+            },
+            "defaultAction": "traverse"
+          },
+          "source": "authored",
+          "notes": []
+        },
+        "block": {
+          "runners": [
+            {
+              "runner": "zed",
+              "level": "climb",
+              "location": ""
+            }
+          ]
+        },
+        "steps": []
+      },
+      "expected": {
+        "read": {
+          "ok": false,
+          "keys": [
+            "runners[0].location"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1750,16 +1750,22 @@ function language(root, coreCommit) {
 	return out;
 }
 
-// ── genre systems: conformance/puzzle/ (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) ──
-// PL.native-genre-rows slice 1. Each case is its op composed from the rows as core's runner
+// ── genre systems: conformance/{puzzle,platformer}/ (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) ──
+// PL.native-genre-rows slices 1 (the puzzle) and 2 (the platformer). Each case is its op composed from the rows as core's runner
 // composes core's functions. A `world` input goes through genre.world.of (core's worldOf) over
 // the committed slices, which every case names by `$file` (the vendored slice beside these
 // cases) instead of copying 181 KB into each one. The runner's steps are `{ step, ...outcome }`;
 // each is the matching director row's answer, stated exactly. A run reaches core's
 // PuzzleDirector over a KB (module activation's puzzle pack on the native Prolog seam), which
-// the JS leg does not have, so those cases are C-only; everything else runs on both legs.
+// the JS leg does not have, so those cases are C-only; everything else runs on both legs. A
+// platformer run likewise reaches core's PlatformerDirector over a KB; its `step` answers are
+// the row's (`{ outcome, probed, orders }`), whose outcome is core's StepOutcome with the whole
+// TraversalReport as `movement`, where core's runner shows only movementView of it
+// ({ performed, refusal?, mode, link, cost, location }): that step's outcome is stated exactly
+// but for `movement`, which is held as a subset (performed, refusal, cost, location, and the
+// affordance's mode and id), and the guard in vendor-core-bundle.mjs reads the view back.
 
-export const GENRE_CASE_FILES = ['puzzle/definition', 'puzzle/run', 'puzzle/save'];
+export const GENRE_CASE_FILES = ['puzzle/definition', 'puzzle/run', 'puzzle/save', 'platformer/course', 'platformer/run', 'platformer/save'];
 
 /** The committed world slices core's runner is handed, as the case reads them: `$file`s beside the case files. */
 export const GENRE_SLICES = { thistlecombe: 'conformance/genre-mechanics/thistlecombe.world-slice.json' };
@@ -1768,6 +1774,10 @@ const genreSlicesArg = () => Object.fromEntries(Object.entries(GENRE_SLICES).map
 const GENRE_KB_LEGS = {
 	legs: ['c'],
 	why: "it drives core's PuzzleDirector over a KB (GamePrologEngine's puzzle pack on the native Prolog seam), which the JS leg does not have",
+};
+const PLATFORMER_KB_LEGS = {
+	legs: ['c'],
+	why: "it drives core's PlatformerDirector over a KB (GamePrologEngine's platformer and traversal packs on the native Prolog seam), which the JS leg does not have",
 };
 
 /** The director row each puzzle run step calls, and the args it takes from the step (actor `player` unless named). */
@@ -1892,7 +1902,138 @@ function puzzleCase(file, c, where) {
 	throw new Error(`emit-bridge-cases: ${where}: ${file} op ${c.op} has no transcription`);
 }
 
-/** One case file per puzzle corpus file: `core-genre-puzzle-<file>.json`. */
+/** A platformer run step's `{ step, ...outcome, movement: movementView, probed }` as the step row's expectation. */
+function platformerStepExpect(x) {
+	const { step: _step, movement, probed, ...rest } = x;
+	const outcome = { ...rest };
+	if (movement !== undefined) {
+		const { performed, refusal, mode, link, cost, location } = movement;
+		outcome.movement = {
+			$subset: {
+				performed,
+				...(refusal !== undefined ? { refusal } : {}),
+				...(mode !== undefined ? { affordance: { $subset: { mode, id: link } } } : {}),
+				cost,
+				location,
+			},
+		};
+	}
+	return { outcome, probed, orders: [] };
+}
+
+/** The director row each platformer run step calls, and the args it takes from the step (runner `player` unless named). */
+const PLATFORMER_STEP_ROWS = {
+	enter: ['platformer.director.enter', ['level']],
+	step: ['platformer.director.step', ['to']],
+	respawn: ['platformer.director.respawn', []],
+	hint: ['platformer.director.hint', []],
+	unlocked: ['platformer.director.isUnlocked', ['level']],
+	progress: ['platformer.director.progress', []],
+};
+
+/** core's platformerRun: create over the course with the host's probe (published), restore the read value first when given, the steps, serialize, dispose. */
+function platformerRunSteps(S, input, expected, restoreFrom) {
+	const where = S.where;
+	const sess = { $ref: 's.session' };
+	const probe = Object.fromEntries((input.impassable ?? []).map((link) => [link, false]));
+	const steps = [{ call: 'platformer.director.create', args: { course: input.course, probe }, expect: { session: { $type: 'number' }, published: expected.published }, bind: 's' }];
+	const results = expected.steps;
+	let k = 0;
+	if (restoreFrom) {
+		genreCheck(results[0]?.step === 'restore', where, 'a restored run starts with its restore');
+		steps.push({ call: 'platformer.director.restore', args: { session: sess, state: restoreFrom }, expect: withoutStep(results[0]) });
+		k = 1;
+	}
+	const given = input.steps ?? [];
+	genreCheck(results.length === given.length + k, where, 'one answer per step');
+	given.forEach((st, i) => {
+		const x = results[i + k];
+		genreCheck(x.step === st.step, where, `step ${i} answers ${x.step}, not ${st.step}`);
+		if (st.step === 'restore') {
+			steps.push({ call: 'platformer.director.restore', args: { session: sess, state: st.state }, expect: withoutStep(x) });
+			return;
+		}
+		if (st.step === 'state') {
+			steps.push({ call: 'platformer.director.serialize', args: { session: sess }, expect: { state: x.state } });
+			return;
+		}
+		const row = PLATFORMER_STEP_ROWS[st.step];
+		genreCheck(row !== undefined, where, `platformer run step ${st.step} has no transcription`);
+		const args = { session: sess, runner: st.runner === undefined ? 'player' : st.runner };
+		for (const key of row[1]) args[key] = st[key];
+		const expect =
+			st.step === 'step' ? platformerStepExpect(x)
+			: st.step === 'hint' ? { route: x.route }
+			: st.step === 'unlocked' ? { unlocked: x.unlocked }
+			: st.step === 'progress' ? { progress: x.progress }
+			: withoutStep(x);
+		steps.push({ call: row[0], args, expect });
+	});
+	steps.push({ call: 'platformer.director.serialize', args: { session: sess }, expect: { state: expected.state } });
+	steps.push({ call: 'session.dispose', args: { session: sess }, expect: { disposed: true } });
+	return steps;
+}
+
+/** One case of conformance/platformer/<file>.json as bridge steps, and whether it reaches the KB. */
+function platformerCase(file, c, where) {
+	const i = c.input;
+	const e = c.expected;
+	const S = { where };
+	if (file === 'platformer/course') {
+		if (c.op === 'generate') {
+			return [[
+				{ call: 'genre.world.of', args: { world: i.world, slices: genreSlicesArg() }, bind: 'w' },
+				{
+					call: 'platformer.forWorld',
+					args: { world: { $ref: 'w.world' }, platformer: i.platformer ?? null, traversal: i.traversal ?? null, ...('levelCount' in i ? { levelCount: i.levelCount } : {}) },
+					expect: { course: e.course },
+					bind: 'c',
+				},
+				{ call: 'platformer.levelFacts', args: { course: { $ref: 'c.course' } }, expect: { facts: e.levelFacts } },
+			], false];
+		}
+		if (c.op === 'route') {
+			return [[{ call: 'platformer.route', args: { links: i.links, from: i.from, to: i.to, ...('modes' in i ? { modes: i.modes } : {}) }, expect: { route: e } }], false];
+		}
+		if (c.op === 'stars') {
+			genreCheck(i.runs.length === e.length, where, 'one star count per run');
+			return [i.runs.map(([par, cost], k) => ({ call: 'platformer.stars', args: { par, cost }, expect: { stars: e[k] } })), false];
+		}
+	}
+	if (file === 'platformer/run') {
+		genreCheck(c.op === 'run', where, `platformer run op ${c.op} has no transcription`);
+		return [platformerRunSteps(S, i, e, null), true];
+	}
+	if (file === 'platformer/save') {
+		if (c.op === 'block') {
+			return [[
+				{ call: 'platformer.save.block', args: { state: i.state }, expect: { block: { $type: 'object' } }, bind: 'b' },
+				{ call: 'platformer.save.blockOf', args: { block: { $ref: 'b.block' } }, expect: { block: e } },
+			], false];
+		}
+		const read = { call: 'platformer.save.read', args: 'block' in i ? { block: i.block } : {} };
+		const readOf = (r) => {
+			if (!r.ok) return [{ ...read, expect: r }];
+			if (r.value === null) return [{ ...read, expect: { ok: true, value: null } }];
+			return [
+				{ ...read, expect: { ok: true, value: { $type: 'object' } }, bind: 'r' },
+				{ call: 'platformer.save.blockOf', args: { block: { $ref: 'r.value' } }, expect: { block: r.value } },
+			];
+		};
+		if (c.op === 'read') return [readOf(e), false];
+		if (c.op === 'restore') {
+			const steps = readOf(e.read);
+			if (!e.read.ok || e.read.value === null) {
+				genreCheck(!('run' in e), where, 'nothing runs without a read block');
+				return [steps, false];
+			}
+			return [[...steps, ...platformerRunSteps(S, i, e.run, { $ref: 'r.value' })], true];
+		}
+	}
+	throw new Error(`emit-bridge-cases: ${where}: ${file} op ${c.op} has no transcription`);
+}
+
+/** One case file per genre corpus file: `core-genre-<genre>-<file>.json`. */
 function genreSystems(root, coreCommit) {
 	const out = {};
 	for (const file of GENRE_CASE_FILES) {
@@ -1902,12 +2043,13 @@ function genreSystems(root, coreCommit) {
 		if (doc.schema !== 'insimul.conformance.genre-systems/1' || doc.file !== file) throw new Error(`emit-bridge-cases: conformance/${file}.json is not core's ${file} corpus`);
 		const cases = doc.cases.map((c) => {
 			const name = `${file} ${c.op}: ${c.name}`;
-			const [steps, kb] = puzzleCase(file, c, name);
-			return { name, ...(kb ? GENRE_KB_LEGS : {}), steps };
+			const platformer = file.startsWith('platformer/');
+			const [steps, kb] = (platformer ? platformerCase : puzzleCase)(file, c, name);
+			return { name, ...(kb ? (platformer ? PLATFORMER_KB_LEGS : GENRE_KB_LEGS) : {}), steps };
 		});
 		out[`core-genre-${file.replace('/', '-')}.json`] = caseFile(
 			`genre-${file.replace('/', '-')}`,
-			`core's genre systems corpus conformance/${file}.json (P9j.core) through the genre.world.of and puzzle.* rows, each op as ` +
+			`core's genre systems corpus conformance/${file}.json (P9j.core) through the genre.world.of and ${file.split('/')[0]}.* rows, each op as ` +
 				"core's reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it.",
 			coreCommit,
 			r.files,

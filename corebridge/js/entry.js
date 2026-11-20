@@ -909,6 +909,40 @@ import { PUZZLE_WRITTEN_PREDICATES, PuzzleDirector } from '@insimul/core/game-en
 import { GamePrologEngine } from '@insimul/core/game-engine/logic/GamePrologEngine';
 import { worldOf } from '@insimul/core/genre-systems/systems-corpus';
 
+// ── the genre systems (P9j): the platformer (PL.native-genre-rows slice 2, U128, U115) ──
+// The platformer module's pure half (course.ts: the course a world gives, authored or
+// generated over its streets, homes and workplaces, the junction atoms and labels, the
+// cheapest route, the level facts and the stars), its decision layer (PlatformerDirector,
+// over a KB module activation builds: GamePrologEngine with genre 'platformer', which
+// selects traversal too; movement is core's TraversalPlanner inside the director), and its
+// save block (platformer-save.ts).
+import {
+	COMPASS_WORDS,
+	DEFAULT_LEVEL_COUNT,
+	DEFAULT_RUNNER_MODES,
+	JUNCTION_SIDE_MIN_M,
+	PLATFORMER_TUNING,
+	courseForWorld,
+	courseFromIR,
+	courseGraph,
+	courseLevelFacts,
+	courseRoute,
+	generateCourse,
+	junctionAtom,
+	junctionLabel,
+	starsFor,
+} from '@insimul/core/platformer/course';
+import { PLATFORMER_AREA, PLATFORMER_AUTHORED_PREDICATES, PLATFORMER_RUNTIME_PREDICATES } from '@insimul/core/platformer/platformer-predicates';
+import {
+	PLATFORMER_BLOCK_MEMBERS,
+	PLATFORMER_EXTENSION_KEY,
+	PLATFORMER_RUNNER_KEYS,
+	platformerBlockOf,
+	platformerSaveBlock,
+	readPlatformerBlock,
+} from '@insimul/core/platformer/platformer-save';
+import { PLATFORMER_WRITTEN_PREDICATES, PlatformerDirector } from '@insimul/core/game-engine/logic/PlatformerDirector';
+
 // ── system packs (U50, U62(1): SP.composer-native) ────────────────────────────
 // Core's composer: a game's recipe, world, pack choices and engine → its packs,
 // settings and activation, over the pack catalog the caller sends.
@@ -3046,6 +3080,11 @@ const tOneOf = (allowed) => (m, v, n) => oneOf(m, v, allowed, n);
 const GENRE_VEC3 = [['x', tNum, REQ], ['y', tNum, OPT], ['z', tNum, REQ]];
 const GENRE_XZ = [['x', tNum, REQ], ['z', tNum, REQ]];
 const GENRE_PLAYER = [['startPosition', tObj(GENRE_VEC3), OPT_NULL]];
+// A settlement's street network (GenreWorldSource's, which the platformer's junction label reads too).
+const GENRE_STREET_NETWORK = [
+	['nodes', tList(tObj([['id', tStr, REQ], ['position', tObj(GENRE_XZ), OPT_NULL]])), OPT_NULL],
+	['segments', tList(tObj([['id', tStr, REQ], ['name', tStr, OPT_NULL], ['nodeIds', tList(tStr), OPT_NULL]])), OPT_NULL],
+];
 
 /** core's `GenreWorldSource` (genre-mechanics/world-facts.ts), member for member. */
 const GENRE_WORLD_SOURCE = [
@@ -3065,10 +3104,7 @@ const GENRE_WORLD_SOURCE = [
 				['position', tObj(GENRE_VEC3), OPT_NULL],
 				['streetEdgeId', tStr, OPT_NULL],
 			])), OPT_NULL],
-			['streetNetwork', tObj([
-				['nodes', tList(tObj([['id', tStr, REQ], ['position', tObj(GENRE_XZ), OPT_NULL]])), OPT_NULL],
-				['segments', tList(tObj([['id', tStr, REQ], ['name', tStr, OPT_NULL], ['nodeIds', tList(tStr), OPT_NULL]])), OPT_NULL],
-			]), OPT_NULL],
+			['streetNetwork', tObj(GENRE_STREET_NETWORK), OPT_NULL],
 		])), OPT_NULL],
 	]), OPT_NULL],
 	['entities', tObj([
@@ -3182,6 +3218,151 @@ function puzzleWorldArg(method, args) {
 function puzzleActorArgs(method, args, key) {
 	coded('invalid-input', () => {
 		needString(method, args.actor, 'actor');
+		if (key) needString(method, args[key], key);
+	});
+}
+
+// core's platformer types (platformer/course.ts, traversal/traversal.ts, game-engine/ir-types.ts,
+// PlatformerDirector.ts), member for member, under the same rule as the puzzle's.
+
+/** `{ <key>: <check> }`: a record whose every own value holds `check` (core's `Record<string, T>`). */
+const tRecord = (check) => (m, v, n) => {
+	needObject(m, v, n);
+	for (const [k, x] of Object.entries(v)) check(m, x, `${n}.${k}`);
+};
+
+/** core's `TraversalLink` (traversal.ts), which `TraversalLinkIR` (ir-types.ts) mirrors member for member. */
+const TRAVERSAL_LINK = [
+	['id', tStr, OPT],
+	['from', tStr, REQ],
+	['to', tStr, REQ],
+	['mode', tStr, REQ],
+	['cost', tNum, OPT],
+	['requires', tList(tStr), OPT],
+	['action', tStr, OPT],
+	['geometric', tBool, OPT],
+];
+
+/** core's resolved `TraversalTuning` (traversal.ts): every member required. */
+const TRAVERSAL_TUNING = [
+	['defaultCost', tNum, REQ],
+	['modeCost', tRecord(tNum), REQ],
+	['modeAction', tRecord(tStr), REQ],
+	['defaultAction', tStr, REQ],
+];
+
+/**
+ * core's `TraversalIR` (ir-types.ts) as the course reads it (`traversalLinksFromIR`,
+ * `traversalTuningFromIR`): its links and numbers. `vehicles` and `fastTravel` are
+ * objects when present; their members are the traversal rows' to read, not the course's.
+ */
+const TRAVERSAL_IR = [
+	['links', tList(tObj(TRAVERSAL_LINK)), OPT],
+	['defaultCost', tNum, OPT],
+	['modeCost', tRecord(tNum), OPT],
+	['modeAction', tRecord(tStr), OPT],
+	['defaultAction', tStr, OPT],
+	['vehicles', tList(tObj([])), OPT],
+	['fastTravel', tObj([]), OPT],
+];
+
+// core's GoalKind and PlaceKind (course.ts, type-only unions) and Course's `source`.
+const PLATFORMER_GOAL_KINDS = ['home', 'work', 'place'];
+const PLATFORMER_PLACE_KINDS = ['junction', 'lot'];
+const PLATFORMER_COURSE_SOURCES = ['authored', 'generated', 'empty'];
+
+/** core's `PlatformerIR` (ir-types.ts): every member optional, and a level's `PlatformerLevelIR`. */
+const PLATFORMER_IR = [
+	['levels', tList(tObj([
+		['id', tStr, REQ],
+		['start', tStr, REQ],
+		['goal', tStr, REQ],
+		['goalKind', tOneOf(PLATFORMER_GOAL_KINDS), OPT],
+		['subject', tStr, OPT],
+		['checkpoints', tList(tStr), OPT],
+		['par', tNum, OPT],
+	])), OPT],
+	['levelCount', tNum, OPT],
+	['runnerModes', tList(tStr), OPT],
+];
+
+/** core's `Course` (course.ts), every member declared and required, with its `CoursePlace`s and `CourseLevel`s. */
+const PLATFORMER_COURSE = [
+	['places', tList(tObj([
+		['id', tStr, REQ],
+		['kind', tOneOf(PLATFORMER_PLACE_KINDS), REQ],
+		['label', tStr, REQ],
+		['position', tObj(GENRE_XZ), REQ],
+	])), REQ],
+	['links', tList(tObj(TRAVERSAL_LINK)), REQ],
+	['levels', tList(tObj([
+		['id', tStr, REQ],
+		['order', tNum, REQ],
+		['start', tStr, REQ],
+		['goal', tStr, REQ],
+		['goalKind', tOneOf(PLATFORMER_GOAL_KINDS), REQ],
+		['subject', tStr, REQ_NULL],
+		['checkpoints', tList(tStr), REQ],
+		['par', tNum, REQ],
+	])), REQ],
+	['runnerModes', tList(tStr), REQ],
+	['tuning', tObj(TRAVERSAL_TUNING), REQ],
+	['source', tOneOf(PLATFORMER_COURSE_SOURCES), REQ],
+	['notes', tList(tStr), REQ],
+];
+
+/** One `[level, best stars]` row of a `RunnerState`'s `cleared`. */
+function platformerClearArg(method, value, name) {
+	if (needArray(method, value, name).length !== 2) throw refuse(method, `\`${name}\` must be a [level, stars] pair`);
+	needString(method, value[0], `${name}[0]`);
+	needNumber(method, value[1], `${name}[1]`);
+}
+
+/** core's `PlatformerDirectorState` (PlatformerDirector.ts), which is also the save block (`SavedPlatformer`). */
+const PLATFORMER_DIRECTOR_STATE = [
+	['runners', tList(tObj([
+		['runner', tStr, REQ],
+		['level', tStr, REQ_NULL],
+		['location', tStr, REQ],
+		['runCost', tNum, REQ],
+		['checkpoints', tList(tNum), REQ],
+		['cleared', tList(platformerClearArg), REQ],
+	])), REQ],
+];
+
+/** core's `JunctionLabelSettlement` (course.ts): a settlement's `name` and `streetNetwork`, as `GenreWorldSource` declares them. */
+const PLATFORMER_LABEL_SETTLEMENT = [['name', tStr, REQ], ['streetNetwork', tObj(GENRE_STREET_NETWORK), OPT_NULL]];
+
+/** The world a course row reads: `world`, with `platformer` and `traversal` (each a section, or null for none) over its own when the row is given them. */
+function platformerWorldArg(method, args) {
+	const world = genreWorldArg(method, args.world, 'world');
+	const out = { ...world };
+	for (const [key, spec] of [['platformer', PLATFORMER_IR], ['traversal', TRAVERSAL_IR]]) {
+		if (hasOwn(args, key)) {
+			if (args[key] !== null) declared(method, args[key], key, spec);
+			out[key] = args[key];
+		} else if (hasOwn(world, key) && world[key] !== null) declared(method, world[key], `world.${key}`, spec);
+	}
+	return out;
+}
+
+/** `CourseOptions` (course.ts) from the row's own `keys`: each passed when present; null is refused (core declares neither `| null`). */
+function platformerOptionsArg(method, args, keys) {
+	const checks = { levelCount: tNum, runnerModes: tList(tStr) };
+	const options = {};
+	for (const k of keys) {
+		if (!hasOwn(args, k)) continue;
+		if (args[k] === null) throw refuse(method, `\`${k}\` must not be null`);
+		checks[k](method, args[k], k);
+		options[k] = args[k];
+	}
+	return options;
+}
+
+/** A platformer director session's runner, and one more id (`level` or `to`). */
+function platformerRunnerArgs(method, args, key) {
+	coded('invalid-input', () => {
+		needString(method, args.runner, 'runner');
 		if (key) needString(method, args[key], key);
 	});
 }
@@ -5219,6 +5400,305 @@ const METHODS = {
 	'puzzle.save.blockOf': (args) => {
 		coded('invalid-input', () => declared('puzzle.save.blockOf', args.block, 'block', PUZZLE_DIRECTOR_STATE));
 		return { block: plain(puzzleBlockOf(args.block)) };
+	},
+
+	/**
+	 * `platformer.contract {}` → core's platformer constants: the pack's area and its authored,
+	 * runtime and written predicates, the default level count and runner modes, the pack tuning,
+	 * the junction label's compass words and side threshold, and the save block's key, members
+	 * and runner keys.
+	 */
+	'platformer.contract': () => ({
+		area: PLATFORMER_AREA,
+		authoredPredicates: [...PLATFORMER_AUTHORED_PREDICATES],
+		runtimePredicates: [...PLATFORMER_RUNTIME_PREDICATES],
+		writtenPredicates: [...PLATFORMER_WRITTEN_PREDICATES],
+		defaultLevelCount: DEFAULT_LEVEL_COUNT,
+		defaultRunnerModes: [...DEFAULT_RUNNER_MODES],
+		tuning: plain(PLATFORMER_TUNING),
+		compassWords: plain(COMPASS_WORDS),
+		junctionSideMinM: JUNCTION_SIDE_MIN_M,
+		extensionKey: PLATFORMER_EXTENSION_KEY,
+		blockMembers: [...PLATFORMER_BLOCK_MEMBERS],
+		runnerKeys: [...PLATFORMER_RUNNER_KEYS],
+	}),
+
+	/** `platformer.junctionAtom { settlement, node }` → `{ atom }` — core's `junctionAtom` (a settlement's name and a street node id as the junction's place atom). */
+	'platformer.junctionAtom': (args) => {
+		const m = 'platformer.junctionAtom';
+		coded('invalid-input', () => {
+			needString(m, args.settlement, 'settlement');
+			needString(m, args.node, 'node');
+		});
+		return { atom: junctionAtom(args.settlement, args.node) };
+	},
+
+	/**
+	 * `platformer.junctionLabel { settlement, node, northYaw? }` → `{ label }` — core's
+	 * `junctionLabel`: the player-facing name of a street junction, which a host shows as it
+	 * is. `settlement` is a settlement's `name` and `streetNetwork`; `northYaw` absent is
+	 * core's default north, null a refused north (no side).
+	 */
+	'platformer.junctionLabel': (args) => {
+		const m = 'platformer.junctionLabel';
+		coded('invalid-input', () => {
+			declared(m, args.settlement, 'settlement', PLATFORMER_LABEL_SETTLEMENT);
+			needString(m, args.node, 'node');
+			if (hasOwn(args, 'northYaw') && args.northYaw !== null) needNumber(m, args.northYaw, 'northYaw');
+		});
+		return { label: hasOwn(args, 'northYaw') ? junctionLabel(args.settlement, args.node, args.northYaw) : junctionLabel(args.settlement, args.node) };
+	},
+
+	/** `platformer.courseGraph { world }` → `{ places, links }` — core's `courseGraph`: every settlement's junctions and built lots, and the walk and jump links between them. */
+	'platformer.courseGraph': (args) => {
+		const world = coded('invalid-input', () => genreWorldArg('platformer.courseGraph', args.world, 'world'));
+		return plain(courseGraph(world));
+	},
+
+	/**
+	 * `platformer.route { links, from, to, modes?, tuning? }` → `{ route }` — core's
+	 * `courseRoute`: the cheapest route a runner with these modes has (null: none). `modes`
+	 * and `tuning` absent or null are core's defaults (`walk` and `jump`; core's traversal
+	 * tuning).
+	 */
+	'platformer.route': (args) => {
+		const m = 'platformer.route';
+		coded('invalid-input', () => {
+			needArray(m, args.links, 'links').forEach((l, i) => declared(m, l, `links[${i}]`, TRAVERSAL_LINK));
+			needString(m, args.from, 'from');
+			needString(m, args.to, 'to');
+			optionalArg(args.modes, (v) => stringList(m, v, 'modes'));
+			optionalArg(args.tuning, (v) => declared(m, v, 'tuning', TRAVERSAL_TUNING));
+		});
+		return { route: plain(courseRoute(args.links, args.from, args.to, orUndefined(args.modes), orUndefined(args.tuning))) };
+	},
+
+	/** `platformer.generate { world, levelCount?, runnerModes? }` → `{ course }` — core's `generateCourse` (the world's own `platformer` section unread). */
+	'platformer.generate': (args) => {
+		const m = 'platformer.generate';
+		const [world, options] = coded('invalid-input', () => [genreWorldArg(m, args.world, 'world'), platformerOptionsArg(m, args, ['levelCount', 'runnerModes'])]);
+		return { course: plain(generateCourse(world, options)) };
+	},
+
+	/** `platformer.fromIR { platformer, traversal?, world }` → `{ course }` — core's `courseFromIR`: authored levels over the traversal section's links (absent or null: the world's own streets). */
+	'platformer.fromIR': (args) => {
+		const m = 'platformer.fromIR';
+		coded('invalid-input', () => {
+			declared(m, args.platformer, 'platformer', PLATFORMER_IR);
+			optionalArg(args.traversal, (v) => declared(m, v, 'traversal', TRAVERSAL_IR));
+			genreWorldArg(m, args.world, 'world');
+		});
+		return { course: plain(courseFromIR(args.platformer, args.traversal, args.world)) };
+	},
+
+	/**
+	 * `platformer.forWorld { world, platformer?, traversal?, levelCount? }` → `{ course }` —
+	 * core's `courseForWorld`: the authored levels when the world's `platformer` section has
+	 * them, else a course generated from the world. `platformer` and `traversal` (a section,
+	 * or null for none) stand over the world's own when given; `levelCount` is the pack
+	 * tunable (absent: core's default; an authored level count wins).
+	 */
+	'platformer.forWorld': (args) => {
+		const m = 'platformer.forWorld';
+		const [world, options] = coded('invalid-input', () => [platformerWorldArg(m, args), platformerOptionsArg(m, args, ['levelCount'])]);
+		return { course: plain(courseForWorld(world, options)) };
+	},
+
+	/** `platformer.levelFacts { course }` → `{ facts }` — core's `courseLevelFacts` (the course's levels as the pack's authored facts). */
+	'platformer.levelFacts': (args) => {
+		coded('invalid-input', () => declared('platformer.levelFacts', args.course, 'course', PLATFORMER_COURSE));
+		return { facts: courseLevelFacts(args.course) };
+	},
+
+	/** `platformer.stars { par, cost }` → `{ stars }` — core's `starsFor` (3 within par, 2 within half as much again, else 1). */
+	'platformer.stars': (args) => {
+		const m = 'platformer.stars';
+		coded('invalid-input', () => {
+			needNumber(m, args.par, 'par');
+			needNumber(m, args.cost, 'cost');
+		});
+		return { stars: starsFor(args.par, args.cost) };
+	},
+
+	/**
+	 * `platformer.director.create { course, probe?, locomotion?, kb? }` → `{ session,
+	 * published }` — core's `PlatformerDirector` over a KB of its own, built as core's runner
+	 * builds it: `GamePrologEngine` with genre `platformer` (module activation consults the
+	 * platformer and traversal packs) on a native KB, then `kb` (a program, or a list of
+	 * clauses; refused: `[invalid-input]`), then the director, whose `publish()` writes the
+	 * link graph and the levels (`published`). Movement is core's `TraversalPlanner` over the
+	 * course's links, inside the director. Its two hosts are callbacks core calls
+	 * mid-decision, which cannot cross this ABI, so the host states its answers as data, as
+	 * `traversal.session.create` does:
+	 *  - `probe { <link id>: passable }`: the geometry answer for a geometric link; a link not
+	 *    listed is unanswered, so passable (core's rule). Absent: no probe, every jump makeable.
+	 *  - `locomotion { stuck? }`: every movement core orders is recorded (a step's `orders`)
+	 *    and arrives, except one to a destination in `stuck`, which leaves the runner where
+	 *    `stuck` says. Absent: no locomotion host (every order arrives, none recorded).
+	 * `platformer.director.host` restates either. The KB lives as long as the session:
+	 * `session.dispose` destroys it.
+	 */
+	'platformer.director.create': async (args) => {
+		const m = 'platformer.director.create';
+		const input = coded('invalid-input', () => ({
+			course: declared(m, args.course, 'course', PLATFORMER_COURSE),
+			probe: optionalArg(args.probe, (v) => probeTableArg(m, v, 'probe')),
+			locomotion: optionalArg(args.locomotion, (v) => {
+				needObject(m, v, 'locomotion');
+				return optionalArg(v.stuck, (st) => stuckTableArg(m, st, 'locomotion.stuck')) ?? {};
+			}),
+			kb: optionalArg(args.kb, (v) => (Array.isArray(v) ? stringList(m, v, 'kb').join('\n') : needString(m, v, 'kb'))),
+		}));
+		// What the hosts were asked during one step, and the answers they give (shared with the session).
+		const hosts = { probe: input.probe ?? null, stuck: input.locomotion ?? null, probed: [], orders: [] };
+		const probe =
+			hosts.probe === null
+				? undefined
+				: {
+						query: (q) => {
+							hosts.probed.push(q.link);
+							return hasOwn(hosts.probe, q.link) ? { passable: hosts.probe[q.link] } : null;
+						},
+					};
+		const locomotion =
+			hosts.stuck === null
+				? undefined
+				: {
+						travel: (order) => {
+							hosts.orders.push(plain(order));
+							return hasOwn(hosts.stuck, order.to) ? { arrived: false, location: hosts.stuck[order.to], reason: 'stuck' } : { arrived: true };
+						},
+					};
+		const engine = await createPrologEngine();
+		try {
+			// core's runner: genreEngine('platformer') = GamePrologEngine.create({ genre: 'platformer' }).
+			await GamePrologEngine.create({ genre: 'platformer', engine });
+			if (input.kb !== undefined) {
+				const consulted = await engine.consult(input.kb);
+				if (!consulted.success) {
+					const err = refuse(m, `the KB refused \`kb\`: ${consulted.error}`);
+					err.code = 'invalid-input';
+					throw err;
+				}
+			}
+			const director = new PlatformerDirector({ course: input.course, engine, ...(probe ? { probe } : {}), ...(locomotion ? { locomotion } : {}) });
+			const published = await director.publish();
+			return { session: openSession('platformer.director', { director, hosts, onDispose: () => engine.destroy() }), published };
+		} catch (err) {
+			engine.destroy();
+			throw err;
+		}
+	},
+
+	/** `platformer.director.host { session, probe?, stuck? }` → `{}`: replace the probe's answers or the `stuck` table (only for a director created with that host). */
+	'platformer.director.host': (args) => {
+		const m = 'platformer.director.host';
+		const s = session(m, args, 'platformer.director');
+		const [probe, stuck] = coded('invalid-input', () => {
+			const p = optionalArg(args.probe, (v) => probeTableArg(m, v, 'probe'));
+			const k = optionalArg(args.stuck, (v) => stuckTableArg(m, v, 'stuck'));
+			if (p !== undefined && s.hosts.probe === null) throw refuse(m, '`probe`: the director was created with no probe');
+			if (k !== undefined && s.hosts.stuck === null) throw refuse(m, '`stuck`: the director was created with no locomotion host');
+			return [p, k];
+		});
+		if (probe !== undefined) s.hosts.probe = probe;
+		if (stuck !== undefined) s.hosts.stuck = stuck;
+		return {};
+	},
+
+	/** `platformer.director.isUnlocked { session, runner, level }` → `{ unlocked }` — core's `isUnlocked` (`platformer_unlocked/2`). */
+	'platformer.director.isUnlocked': async (args) => {
+		const m = 'platformer.director.isUnlocked';
+		const s = session(m, args, 'platformer.director');
+		platformerRunnerArgs(m, args, 'level');
+		return { unlocked: await s.director.isUnlocked(args.runner, args.level) };
+	},
+
+	/** `platformer.director.enter { session, runner, level }` → core's `enter` outcome (`{ ok, refusal?, reason, applied }`; `unknown_level` and `locked` are values). */
+	'platformer.director.enter': async (args) => {
+		const m = 'platformer.director.enter';
+		const s = session(m, args, 'platformer.director');
+		platformerRunnerArgs(m, args, 'level');
+		return plain(await s.director.enter(args.runner, args.level));
+	},
+
+	/**
+	 * `platformer.director.step { session, runner, to }` → `{ outcome, probed, orders }` —
+	 * core's `step`: `outcome` is its `StepOutcome` (the movement as traversal reported it,
+	 * where the runner is, the checkpoint touched, the run's cost and, when the step finished
+	 * the level, the clear and its stars; `not_running` and `movement` are values); `probed`
+	 * the geometric link ids the probe was asked, in order, and `orders` the movements core
+	 * ordered the locomotion host (each empty without that host).
+	 */
+	'platformer.director.step': async (args) => {
+		const m = 'platformer.director.step';
+		const s = session(m, args, 'platformer.director');
+		platformerRunnerArgs(m, args, 'to');
+		s.hosts.probed.length = 0;
+		s.hosts.orders.length = 0;
+		const outcome = plain(await s.director.step(args.runner, args.to));
+		return { outcome, probed: [...s.hosts.probed], orders: [...s.hosts.orders] };
+	},
+
+	/** `platformer.director.respawn { session, runner }` → core's `respawn` outcome (with `location`: the furthest checkpoint this run touched, or the level's start). */
+	'platformer.director.respawn': async (args) => {
+		const m = 'platformer.director.respawn';
+		const s = session(m, args, 'platformer.director');
+		platformerRunnerArgs(m, args);
+		return plain(await s.director.respawn(args.runner));
+	},
+
+	/** `platformer.director.hint { session, runner }` → `{ route }` — core's `hint`: the cheapest way from where the runner stands to the current goal (null: none). */
+	'platformer.director.hint': (args) => {
+		const m = 'platformer.director.hint';
+		const s = session(m, args, 'platformer.director');
+		platformerRunnerArgs(m, args);
+		return { route: plain(s.director.hint(args.runner)) };
+	},
+
+	/** `platformer.director.progress { session, runner }` → `{ progress }` — core's `progress` (a quest tracker's counts). */
+	'platformer.director.progress': async (args) => {
+		const m = 'platformer.director.progress';
+		const s = session(m, args, 'platformer.director');
+		platformerRunnerArgs(m, args);
+		return { progress: plain(await s.director.progress(args.runner)) };
+	},
+
+	/** `platformer.director.locationOf { session, runner }` → `{ location }` — where core's traversal last put the runner (`director.traversal.locationOf`; null: never put on a level). */
+	'platformer.director.locationOf': (args) => {
+		const m = 'platformer.director.locationOf';
+		const s = session(m, args, 'platformer.director');
+		platformerRunnerArgs(m, args);
+		return { location: plain(s.director.traversal.locationOf(args.runner)) };
+	},
+
+	/** `platformer.director.serialize { session }` → `{ state }` — core's `serialize` (the save block's value). */
+	'platformer.director.serialize': (args) => {
+		const s = session('platformer.director.serialize', args, 'platformer.director');
+		return { state: plain(s.director.serialize()) };
+	},
+
+	/** `platformer.director.restore { session, state }` → core's `restore` outcome (a director that has runners refuses: `schema`). */
+	'platformer.director.restore': async (args) => {
+		const m = 'platformer.director.restore';
+		const s = session(m, args, 'platformer.director');
+		coded('invalid-input', () => declared(m, args.state, 'state', PLATFORMER_DIRECTOR_STATE));
+		return plain(await s.director.restore(args.state));
+	},
+
+	/** `platformer.save.read { block? }` → core's `readPlatformerBlock` (`{ ok: true, value }`, null for no block; `{ ok: false, keys }`). */
+	'platformer.save.read': (args) => plain(readPlatformerBlock(args.block)),
+
+	/** `platformer.save.block { state? }` → `{ block }` — core's `platformerSaveBlock` (absent or null state: null). */
+	'platformer.save.block': (args) => {
+		coded('invalid-input', () => optionalArg(args.state, (v) => declared('platformer.save.block', v, 'state', PLATFORMER_DIRECTOR_STATE)));
+		return { block: plain(platformerSaveBlock(orUndefined(args.state))) };
+	},
+
+	/** `platformer.save.blockOf { block }` → `{ block }` — core's `platformerBlockOf` (only its member, each row with only its keys, rows by runner, clears by level). */
+	'platformer.save.blockOf': (args) => {
+		coded('invalid-input', () => declared('platformer.save.blockOf', args.block, 'block', PLATFORMER_DIRECTOR_STATE));
+		return { block: plain(platformerBlockOf(args.block)) };
 	},
 
 	// ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────

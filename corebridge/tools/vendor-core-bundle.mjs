@@ -86,11 +86,14 @@
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-genre-transcription-negative
 //       The genre systems transcription guard's negative control (PL.native-genre-rows):
-//       perturbs the vendored cases/core-genre-puzzle-*.json in memory (a dropped case, a
-//       case no corpus case names, a run's answer dropped, a read's first call changed, a
-//       riddle's choices dropped, an answer key expected nowhere, an unlock outcome weakened
-//       to a subset, a restored run's states expected nowhere, a KB run put on both
-//       legs) and requires the guard to name each one.
+//       perturbs the vendored cases/core-genre-{puzzle,platformer}-*.json in memory (a
+//       dropped case, a case no corpus case names, a run's answer dropped, a read's first
+//       call changed, a riddle's choices dropped, an answer key expected nowhere, an unlock
+//       outcome weakened to a subset, a restored run's states expected nowhere, a KB run put
+//       on both legs; a platformer step call dropped, a step's movement weakened, its probed
+//       links changed, its outcome weakened to a subset, two runs' stars swapped, a course
+//       case put on the C leg only, a restored platformer run put on both legs) and requires
+//       the guard to name each one.
 //
 //   node corebridge/tools/vendor-core-bundle.mjs --check-language-transcription-negative
 //       The language transcription guard's negative control: perturbs the vendored
@@ -321,20 +324,23 @@ const LANGUAGE_CORPUS_FILES = [
   'conformance/language/writing.json',
 ];
 
-// core's P9j genre systems corpora that the genre.* and puzzle.* rows answer
+// core's P9j genre systems corpora that the genre.*, puzzle.* and platformer.* rows answer
 // (PL.native-genre-rows, U128, U115; core's P9j.core), copied verbatim the same way and
 // driven through the rows by tests/genre_systems_corpus.cpp, each op composed as core's
 // reference runner (src/genre-systems/systems-corpus.ts, runGenreSystemsOp) composes it;
 // emit-bridge-cases.mjs also transcribes each into cases/core-genre-<area>-<file>.json.
 // The committed world slice (conformance/genre-mechanics/thistlecombe.world-slice.json) is
 // the corpora's `"thistlecombe"` world, which the runner hands core's `worldOf` as its
-// slices. Slice 1 copies the puzzle's three files (definition, run, save); the platformer
-// (conformance/platformer/), the strategy game (conformance/strategy/) and the genre pieces
-// (conformance/genre-pieces/) are later slices of the row. conformance/prolog/
-// mechanic-puzzle.json stays with PL.native-prolog-mirror-full (U120(9)). Each directory
-// is this set's alone, so a file an earlier pin left there is seen, hashed and removed.
+// slices. Slice 1 copies the puzzle's three files (definition, run, save) and slice 2 the
+// platformer's (course, run, save); the strategy game (conformance/strategy/) and the genre
+// pieces (conformance/genre-pieces/) are later slices of the row. conformance/prolog/
+// mechanic-{puzzle,platformer}.json stay with PL.native-prolog-mirror-full (U120(9)). Each
+// directory is this set's alone, so a file an earlier pin left there is seen, hashed and removed.
 const GENRE_SYSTEMS_CORPUS_FILES = [
   'conformance/genre-mechanics/thistlecombe.world-slice.json',
+  'conformance/platformer/course.json',
+  'conformance/platformer/run.json',
+  'conformance/platformer/save.json',
   'conformance/puzzle/definition.json',
   'conformance/puzzle/run.json',
   'conformance/puzzle/save.json',
@@ -969,12 +975,90 @@ function languageTranscriptionProblems(load = (base) => {
 }
 
 // ── the genre systems transcription guard (PL.native-genre-rows) ──────────────
-// cases/core-genre-puzzle-<file>.json must transcribe every case of the vendored
-// conformance/puzzle/<file>.json: by name, by the calls core's runner (systems-corpus.ts,
+// cases/core-genre-<genre>-<file>.json must transcribe every case of the vendored
+// conformance/<genre>/<file>.json: by name, by the calls core's runner (systems-corpus.ts,
 // runGenreSystemsOp) makes for its op in that order, C-only exactly when it reaches the
-// KB (puzzle.director.create), and with every answer of the corpus stated in some
-// expectation. `--check-genre-transcription-negative` proves each kind of drift is named.
-const GENRE_GUARD_FILES = ['puzzle/definition', 'puzzle/run', 'puzzle/save'];
+// KB (puzzle.director.create, platformer.director.create), and with every answer of the
+// corpus stated in some expectation (compared with object keys in canonical order). A
+// platformer `step` answer is core's runner's view (`{ ...outcome, movement:
+// movementView, probed }`), which the step row's expectation states as its outcome with the
+// movement held as a subset: the guard reads the view back out of that expectation
+// (`platformerStepView`) and requires it to BE the corpus's answer, and the host's `orders`
+// to be stated empty. The stars are held in place: the k-th platformer.stars call takes the
+// k-th run and expects its stars. `--check-genre-transcription-negative` proves each kind of
+// drift is named.
+const GENRE_GUARD_FILES = ['puzzle/definition', 'puzzle/run', 'puzzle/save', 'platformer/course', 'platformer/run', 'platformer/save'];
+const PLATFORMER_STEP_CALL = {
+  restore: 'platformer.director.restore',
+  enter: 'platformer.director.enter',
+  step: 'platformer.director.step',
+  respawn: 'platformer.director.respawn',
+  hint: 'platformer.director.hint',
+  unlocked: 'platformer.director.isUnlocked',
+  progress: 'platformer.director.progress',
+  state: 'platformer.director.serialize',
+};
+const KB_CREATES = ['puzzle.director.create', 'platformer.director.create'];
+
+/** JSON with every object's keys in code-unit order: two values are equal exactly when these are. */
+function canonJson(v) {
+  if (Array.isArray(v)) return `[${v.map(canonJson).join(',')}]`;
+  if (v !== null && typeof v === 'object') return `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${canonJson(v[k])}`).join(',')}}`;
+  return JSON.stringify(v);
+}
+
+/** Core's runner's view of a platformer step, read back out of a step row's expectation (null: it states none). */
+function platformerStepView(expect) {
+  const isPlain = (v) => v !== null && typeof v === 'object' && !Array.isArray(v) && !Object.keys(v).some((k) => k.startsWith('$'));
+  if (!isPlain(expect) || !isPlain(expect.outcome) || !Array.isArray(expect.probed) || canonJson(expect.orders) !== '[]') return null;
+  if (Object.keys(expect).length !== 3) return null;
+  const { movement, ...rest } = expect.outcome;
+  if (Object.values(rest).some((v) => v !== null && typeof v === 'object' && Object.keys(v).some((k) => k.startsWith('$')))) return null;
+  const view = { ...rest, probed: expect.probed };
+  if (movement === undefined) return view;
+  const m = movement?.$subset;
+  if (!m || Object.keys(movement).length !== 1) return null;
+  const a = m.affordance?.$subset;
+  const known = ['performed', 'refusal', 'affordance', 'cost', 'location'];
+  if (Object.keys(m).some((k) => !known.includes(k)) || (m.affordance !== undefined && (!a || Object.keys(a).join() !== 'mode,id'))) return null;
+  view.movement = {
+    performed: m.performed,
+    ...('refusal' in m ? { refusal: m.refusal } : {}),
+    ...(a ? { mode: a.mode, link: a.id } : {}),
+    cost: m.cost,
+    location: m.location,
+  };
+  return view;
+}
+
+/** Every value a genre case's expectations state, as canonical JSON (operators' `$subset` read through), with each platformer step's view. */
+function genreStatedValues(kase) {
+  const out = new Set();
+  const walk = (v) => {
+    if (Array.isArray(v)) {
+      out.add(canonJson(v));
+      v.forEach(walk);
+    } else if (v !== null && typeof v === 'object') {
+      const keys = Object.keys(v);
+      if (keys.length && keys.every((k) => k.startsWith('$'))) {
+        if (v.$subset) walk(v.$subset);
+        return;
+      }
+      out.add(canonJson(v));
+      keys.forEach((k) => walk(v[k]));
+    } else out.add(canonJson(v));
+  };
+  for (const st of kase.steps ?? []) {
+    if (!('expect' in st)) continue;
+    if (st.call === 'platformer.director.step') {
+      const view = platformerStepView(st.expect);
+      if (view) out.add(canonJson(view));
+      continue;
+    }
+    walk(st.expect);
+  }
+  return out;
+}
 const PUZZLE_STEP_CALL = {
   restore: 'puzzle.director.restore',
   clue: 'puzzle.director.findClue',
@@ -1017,6 +1101,38 @@ function genreCallsOf(file, c) {
     if (c.op === 'restore' && held) return { calls: [...calls, ...runCalls(c.input, e.run, true)], answers: [...answers, ...runAnswers(e.run)] };
     return { calls, answers };
   }
+  const pRunCalls = (input, restoring) => [
+    'platformer.director.create',
+    ...(restoring ? ['platformer.director.restore'] : []),
+    ...(input.steps ?? []).map((st) => PLATFORMER_STEP_CALL[st.step] ?? `(no row for step ${st.step})`),
+    'platformer.director.serialize',
+    'session.dispose',
+  ];
+  const pRunAnswers = (run) => [run.published, ...run.steps.map((x) => {
+    const { step, ...rest } = x;
+    return step === 'hint' ? rest.route : step === 'unlocked' ? rest.unlocked : step === 'progress' ? rest.progress : step === 'state' ? rest.state : rest;
+  }), run.state];
+  if (file === 'platformer/course') {
+    if (c.op === 'generate') return { calls: ['genre.world.of', 'platformer.forWorld', 'platformer.levelFacts'], answers: [e.course, e.levelFacts] };
+    if (c.op === 'route') return { calls: ['platformer.route'], answers: [e] };
+    if (c.op === 'stars') {
+      return {
+        calls: c.input.runs.map(() => 'platformer.stars'),
+        answers: [],
+        positional: c.input.runs.map(([par, cost], k) => [k, { par, cost }, { stars: e[k] }]),
+      };
+    }
+  }
+  if (file === 'platformer/run') return { calls: pRunCalls(c.input, false), answers: pRunAnswers(e) };
+  if (file === 'platformer/save') {
+    if (c.op === 'block') return { calls: ['platformer.save.block', 'platformer.save.blockOf'], answers: [e] };
+    const read = c.op === 'read' ? e : e.read;
+    const held = read.ok && read.value !== null;
+    const calls = ['platformer.save.read', ...(held ? ['platformer.save.blockOf'] : [])];
+    const answers = [held ? read.value : read];
+    if (c.op === 'restore' && held) return { calls: [...calls, ...pRunCalls(c.input, true)], answers: [...answers, ...pRunAnswers(e.run)] };
+    return { calls, answers };
+  }
   return { calls: [`(no op ${c.op} for ${file})`], answers: [] };
 }
 
@@ -1042,14 +1158,19 @@ function genreTranscriptionProblems(load = (file) => JSON.parse(fs.readFileSync(
         missing.push(name);
         continue;
       }
-      const { calls, answers } = genreCallsOf(file, c);
+      const { calls, answers, positional = [] } = genreCallsOf(file, c);
       const got = (kase.steps ?? []).map((st) => st.call);
       if (JSON.stringify(got) !== JSON.stringify(calls)) miscalled.push(name);
-      const kb = calls.includes('puzzle.director.create');
+      const kb = calls.some((call) => KB_CREATES.includes(call));
       const cOnly = Array.isArray(kase.legs) && kase.legs.length === 1 && kase.legs[0] === 'c';
       if (kb !== cOnly) legs.push(name);
-      const stated = statedValues(kase);
-      for (const [k, v] of answers.entries()) if (!stated.has(JSON.stringify(v))) unstated.push(`${name} (answer ${k})`);
+      const stated = genreStatedValues(kase);
+      for (const [k, v] of answers.entries()) if (!stated.has(canonJson(v))) unstated.push(`${name} (answer ${k})`);
+      for (const [k, args, expect] of positional) {
+        const st = (kase.steps ?? [])[k];
+        if (!st || canonJson(st.args) !== canonJson(args)) miscalled.push(`${name} (call ${k})`);
+        else if (!('expect' in st) || canonJson(st.expect) !== canonJson(expect)) unstated.push(`${name} (answer ${k})`);
+      }
     }
     const extra = doc.cases.filter((k) => !names.has(k.name)).map((k) => k.name);
     if (missing.length) problems.push(`${label}: ${missing.length} corpus case(s) not transcribed: ${missing.join(', ')}`);
@@ -1092,6 +1213,33 @@ function genreTranscriptionNegative() {
     }, 'answer(s) of the corpus expected nowhere'],
     ['a KB run put on both legs', 'puzzle/run', (d) => {
       delete d.cases[1].legs;
+    }, 'C-only when they do not reach the KB'],
+    ['a platformer run\'s step call dropped', 'platformer/run', (d) => {
+      d.cases[0].steps.splice(d.cases[0].steps.findIndex((st) => st.call === 'platformer.director.step'), 1);
+    }, "not transcribed as core's runner calls their op"],
+    ['a step\'s movement weakened (its cost dropped from the subset)', 'platformer/run', (d) => {
+      const st = steps(d).find((x) => x.call === 'platformer.director.step' && x.expect.outcome.movement);
+      delete st.expect.outcome.movement.$subset.cost;
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a step\'s probed links changed', 'platformer/run', (d) => {
+      const st = d.cases.flatMap((c) => c.steps).find((x) => x.call === 'platformer.director.step' && x.expect.probed.length > 0);
+      st.expect.probed = [];
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a step\'s outcome weakened to a subset', 'platformer/run', (d) => {
+      const st = steps(d).find((x) => x.call === 'platformer.director.step');
+      st.expect.outcome = { $subset: { ok: st.expect.outcome.ok } };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['two runs\' stars swapped', 'platformer/course', (d) => {
+      const kase = d.cases.find((c) => c.name.startsWith('platformer/course stars'));
+      const [a, b] = [kase.steps[1].expect, kase.steps[2].expect];
+      [kase.steps[1].expect, kase.steps[2].expect] = [b, a];
+      if (canonJson(a) === canonJson(b)) kase.steps[1].expect = { stars: a.stars === 3 ? 1 : 3 };
+    }, 'answer(s) of the corpus expected nowhere'],
+    ['a course case put on the C leg only', 'platformer/course', (d) => {
+      Object.assign(d.cases[0], { legs: ['c'], why: 'perturbed' });
+    }, 'C-only when they do not reach the KB'],
+    ['a restored platformer run put on both legs', 'platformer/save', (d) => {
+      delete d.cases.find((c) => c.legs).legs;
     }, 'C-only when they do not reach the KB'],
   ];
   let named = 0;
@@ -1554,7 +1702,7 @@ function genreFilesOnDisk() {
 
 /** core's P9j genre systems corpora and world slice at the pin, as { 'vendor/core/<path>': Buffer }. */
 function genreFilesAtPin(src) {
-  return filesAtPin(src, GENRE_SYSTEMS_CORPUS_FILES, 'the genre.* and puzzle.* rows');
+  return filesAtPin(src, GENRE_SYSTEMS_CORPUS_FILES, 'the genre.*, puzzle.* and platformer.* rows');
 }
 
 /** The vendored headless build corpus on disk: the camera set's rule (no other set copies into `conformance/build/`). */
@@ -2261,8 +2409,8 @@ async function check(coreDir) {
   const genreGuard = genreTranscriptionProblems();
   if (genreGuard.problems.length) fail(`the genre transcription does not hold the vendored genre systems corpora: ${genreGuard.problems.join('; ')}`);
   console.log(
-    `vendor-core-bundle: genre systems — cases/core-genre-puzzle-{definition,run,save}.json transcribe all ${genreGuard.count} case(s) of ` +
-      "the vendored conformance/puzzle/ files, by name, by the calls core's runner makes, C-only exactly where they reach the KB, " +
+    `vendor-core-bundle: genre systems — cases/core-genre-{puzzle-{definition,run,save},platformer-{course,run,save}}.json transcribe all ${genreGuard.count} case(s) of ` +
+      "the vendored conformance/{puzzle,platformer}/ files, by name, by the calls core's runner makes, C-only exactly where they reach the KB, " +
       'and with every answer stated',
   );
 

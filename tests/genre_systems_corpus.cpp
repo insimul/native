@@ -1,5 +1,5 @@
 // genre_systems_corpus.cpp — core's P9j genre systems corpora, driven through
-// libinsimulcore's `genre.*` and `puzzle.*` rows.
+// libinsimulcore's `genre.*`, `puzzle.*` and `platformer.*` rows.
 //
 // PL.native-genre-rows, slice 1: the puzzle (rulings U128, U115, U101(1), U49(3),
 // U36). Core's puzzle module (src/puzzle/puzzle.ts: the definition a world gives,
@@ -36,7 +36,32 @@
 //                              puzzle.save.blockOf, and the run (as run's, with the READ
 //                              value restored first, as core's runner restores it)
 //
-// The step's actor is `player` unless the step names one. Comparison is the corpora's
+// PL.native-genre-rows, slice 2: the platformer. Core's platformer module
+// (src/platformer/course.ts: the course a world gives, authored or generated over its
+// streets, homes and workplaces, its route and its stars), its decision layer
+// (src/game-engine/logic/PlatformerDirector.ts, over a KB module activation builds:
+// GamePrologEngine with genre `platformer`; movement is core's TraversalPlanner inside the
+// director) and its save block (src/platformer/platformer-save.ts), held to
+// conformance/platformer/{course,run,save}.json the same way:
+//
+//   platformer/course generate genre.world.of, then platformer.forWorld (platformer ??
+//                              null, traversal ?? null; levelCount when the input has the
+//                              key), then platformer.levelFacts
+//                     route    platformer.route (modes when the input has the key)
+//                     stars    platformer.stars per [par, cost] run
+//   platformer/run    run      platformer.director.create (the course, and the host's
+//                              probe: every impassable link id answered false, every other
+//                              geometric link unanswered, so passable, as core's runner's
+//                              probe answers), then per step: restore, enter, step (the
+//                              row's outcome with its movement reduced to core's
+//                              movementView, and the links the probe was asked), respawn,
+//                              hint, unlocked (isUnlocked), progress, state (serialize);
+//                              then serialize; then session.dispose
+//   platformer/save   block, read, restore as puzzle/save, over the platformer.save.* rows
+//                              and the platformer run
+//
+// A puzzle step's actor is `player` unless the step names one; a platformer step's runner
+// likewise. Comparison is the corpora's
 // own rule: exact, object key sets included. Each file's declared `ops` (and the run
 // and save files' `steps`) must be exactly the ones this runner drives (core's
 // GENRE_SYSTEMS_CORPUS_OPS and _STEPS), so an op or step core adds is a failure here,
@@ -87,10 +112,14 @@ struct FileSpec {
 	std::vector<std::string> steps; // the file's `steps` (empty: the file declares none)
 };
 const std::vector<std::string> kPuzzleSteps = {"restore", "clue", "answer", "unlock", "take", "view", "progress", "complete", "state"};
+const std::vector<std::string> kPlatformerSteps = {"restore", "enter", "step", "respawn", "hint", "unlocked", "progress", "state"};
 const std::vector<FileSpec> kFiles = {
     {"puzzle/definition", {"generate", "authored", "choices"}, {}},
     {"puzzle/run", {"run"}, kPuzzleSteps},
     {"puzzle/save", {"block", "read", "restore"}, kPuzzleSteps},
+    {"platformer/course", {"generate", "route", "stars"}, {}},
+    {"platformer/run", {"run"}, kPlatformerSteps},
+    {"platformer/save", {"block", "read", "restore"}, kPlatformerSteps},
 };
 
 // Every row this runner calls.
@@ -100,7 +129,11 @@ const char *const kRows[] = {
     "puzzle.director.create",  "puzzle.director.findClue", "puzzle.director.answer", "puzzle.director.unlock",
     "puzzle.director.take",    "puzzle.director.view",   "puzzle.director.progress", "puzzle.director.isComplete",
     "puzzle.director.serialize", "puzzle.director.restore", "puzzle.save.read",     "puzzle.save.block",
-    "puzzle.save.blockOf",     "session.dispose"};
+    "puzzle.save.blockOf",     "platformer.forWorld",    "platformer.levelFacts",  "platformer.route",
+    "platformer.stars",        "platformer.director.create", "platformer.director.restore", "platformer.director.enter",
+    "platformer.director.step", "platformer.director.respawn", "platformer.director.hint", "platformer.director.isUnlocked",
+    "platformer.director.progress", "platformer.director.serialize", "platformer.save.read", "platformer.save.block",
+    "platformer.save.blockOf", "session.dispose"};
 
 std::string read_file(const std::string &path, bool &ok) {
 	std::ifstream in(path, std::ios::binary);
@@ -463,7 +496,7 @@ struct Run {
 				return;
 			}
 		}
-		throw DriveError("genre corpus: unknown puzzle step " + s);
+		throw DriveError("genre corpus: unknown " + std::string(spec.file).substr(0, std::string(spec.file).find('/')) + " step " + s);
 	}
 };
 
@@ -615,6 +648,151 @@ JsonValuePtr puzzle_save(Run &r, const std::string &op, const JsonValue &input) 
 	return Obj().put("read", shown).put("run", puzzle_run(r, input, value)).v;
 }
 
+// ── the platformer ────────────────────────────────────────────────────────────
+
+// `input.<key> ?? null`.
+JsonValuePtr or_null(const JsonValue &input, const char *key) {
+	const JsonValue *p = input.find(key);
+	return p ? deep_copy(*p) : make_null();
+}
+
+JsonValuePtr platformer_course(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "generate") {
+		Obj a;
+		a.put("world", r.world_of(input)).put("platformer", or_null(input, "platformer")).put("traversal", or_null(input, "traversal"));
+		if (const JsonValue *n = input.find("levelCount")) a.put("levelCount", *n);
+		JsonValuePtr course = member(c.call("platformer.forWorld", a), "course", "platformer.forWorld");
+		return Obj().put("course", course).put("levelFacts", member(c.call("platformer.levelFacts", Obj().put("course", course)), "facts", "platformer.levelFacts")).v;
+	}
+	if (op == "route") {
+		const JsonValue *links = input.find("links");
+		if (!links || !links->is_array()) throw DriveError("genre corpus: links must be a list");
+		Obj a;
+		a.put("links", *links).put("from", str_of(input, "from")).put("to", str_of(input, "to"));
+		if (const JsonValue *m = input.find("modes")) {
+			if (!m->is_array()) throw DriveError("genre corpus: modes must be a list");
+			a.put("modes", *m);
+		}
+		return member(c.call("platformer.route", a), "route", "platformer.route");
+	}
+	if (op == "stars") {
+		const JsonValue *runs = input.find("runs");
+		if (!runs || !runs->is_array()) throw DriveError("genre corpus: runs must be a list");
+		std::vector<JsonValuePtr> out;
+		for (const auto &run : runs->array_items) {
+			const auto &pc = items(*run, "runs[]");
+			if (pc.size() < 2) throw DriveError("genre corpus: a run is a [par, cost] pair");
+			out.push_back(member(c.call("platformer.stars", Obj().put("par", *pc[0]).put("cost", *pc[1])), "stars", "platformer.stars"));
+		}
+		return make_array(out);
+	}
+	throw DriveError("genre corpus: unknown op " + op + " for platformer/course");
+}
+
+// core's runner's movementView: whether traversal moved the runner, how, at what cost, and where they are.
+JsonValuePtr movement_view(const JsonValue &m) {
+	Obj v;
+	v.put("performed", need(m, "performed", "a movement"));
+	const JsonValue *refusal = m.find("refusal");
+	if (refusal && refusal->is_string() && !refusal->string_value.empty()) v.put("refusal", *refusal);
+	const JsonValue *aff = m.find("affordance");
+	if (aff && aff->is_object()) v.put("mode", need(*aff, "mode", "an affordance")).put("link", need(*aff, "id", "an affordance"));
+	v.put("cost", need(m, "cost", "a movement")).put("location", need(m, "location", "a movement"));
+	return v.v;
+}
+
+// core's `platformerRun(input, steps, restoreFrom?)`: a fresh director over the case's
+// course and the host's probe, published, then the steps; the session always disposed.
+JsonValuePtr platformer_run(Run &r, const JsonValue &input, const JsonValuePtr &restore_from) {
+	Caller &c = r.c;
+	std::vector<JsonValuePtr> none;
+	Obj probe;
+	for (const auto &link : list_or_empty(input, "impassable", none)) {
+		if (!link->is_string()) throw DriveError("genre corpus: impassable[] must be a string");
+		probe.put(link->string_value, make_bool(false));
+	}
+	auto created = c.call("platformer.director.create", Obj().put("course", need(input, "course", "the input")).put("probe", probe.v));
+	JsonValuePtr session = member(created, "session", "platformer.director.create");
+	struct Dispose {
+		Caller &c;
+		JsonValuePtr session;
+		~Dispose() { c.try_call("session.dispose", Obj().put("session", session).text()), c.calls["session.dispose"]++; }
+	} dispose{c, session};
+	auto with = [&](const std::string &runner) { return Obj().put("session", session).put("runner", runner); };
+	std::vector<JsonValuePtr> results;
+	if (restore_from) {
+		results.push_back(stepped("restore", c.call("platformer.director.restore", Obj().put("session", session).put("state", restore_from))));
+	}
+	for (const auto &raw : list_or_empty(input, "steps", none)) {
+		const JsonValue &s = *raw;
+		const JsonValue *name = s.find("step");
+		if (!s.is_object() || !name || !name->is_string()) throw DriveError("genre corpus: platformer step has no step");
+		const std::string step = name->string_value;
+		r.step_known(step);
+		const std::string runner = s.find("runner") ? str_of(s, "runner") : "player";
+		if (step == "restore") {
+			results.push_back(stepped("restore", c.call("platformer.director.restore", Obj().put("session", session).put("state", need(s, "state", "a restore step")))));
+		} else if (step == "enter") {
+			results.push_back(stepped("enter", c.call("platformer.director.enter", with(runner).put("level", str_of(s, "level")))));
+		} else if (step == "step") {
+			auto v = c.call("platformer.director.step", with(runner).put("to", str_of(s, "to")));
+			JsonValuePtr outcome = member(v, "outcome", "platformer.director.step");
+			Obj o(*stepped("step", outcome));
+			if (const JsonValue *m = outcome->find("movement")) o.put("movement", movement_view(*m));
+			o.put("probed", member(v, "probed", "platformer.director.step"));
+			results.push_back(o.v);
+		} else if (step == "respawn") {
+			results.push_back(stepped("respawn", c.call("platformer.director.respawn", with(runner))));
+		} else if (step == "hint") {
+			auto v = c.call("platformer.director.hint", with(runner));
+			results.push_back(Obj().put("step", "hint").put("route", member(v, "route", "platformer.director.hint")).v);
+		} else if (step == "unlocked") {
+			auto v = c.call("platformer.director.isUnlocked", with(runner).put("level", str_of(s, "level")));
+			results.push_back(Obj().put("step", "unlocked").put("unlocked", member(v, "unlocked", "platformer.director.isUnlocked")).v);
+		} else if (step == "progress") {
+			auto v = c.call("platformer.director.progress", with(runner));
+			results.push_back(Obj().put("step", "progress").put("progress", member(v, "progress", "platformer.director.progress")).v);
+		} else if (step == "state") {
+			auto v = c.call("platformer.director.serialize", Obj().put("session", session));
+			results.push_back(Obj().put("step", "state").put("state", member(v, "state", "platformer.director.serialize")).v);
+		} else {
+			throw DriveError("genre corpus: platformer step " + step + " has no drive");
+		}
+	}
+	auto st = c.call("platformer.director.serialize", Obj().put("session", session));
+	return Obj().put("published", member(created, "published", "platformer.director.create")).put("steps", make_array(results)).put("state", member(st, "state", "platformer.director.serialize")).v;
+}
+
+JsonValuePtr platformer_block_of(Caller &c, const JsonValuePtr &block) {
+	return member(c.call("platformer.save.blockOf", Obj().put("block", block)), "block", "platformer.save.blockOf");
+}
+
+JsonValuePtr platformer_save(Run &r, const std::string &op, const JsonValue &input) {
+	Caller &c = r.c;
+	if (op == "block") {
+		Obj a;
+		if (const JsonValue *s = input.find("state")) a.put("state", *s);
+		JsonValuePtr block = member(c.call("platformer.save.block", a), "block", "platformer.save.block");
+		if (block->is_null()) throw DriveError("genre corpus: platformerSaveBlock gave no block to write");
+		return platformer_block_of(c, block);
+	}
+	if (op != "read" && op != "restore") throw DriveError("genre corpus: unknown op " + op + " for platformer/save");
+	Obj a;
+	if (const JsonValue *b = input.find("block")) a.put("block", *b);
+	JsonValuePtr read = c.call("platformer.save.read", a);
+	const bool ok = ok_of(read, "platformer.save.read");
+	JsonValuePtr value = ok ? member(read, "value", "platformer.save.read") : nullptr;
+	if (op == "read") {
+		if (!ok) return read;
+		return Obj().put("ok", make_bool(true)).put("value", value->is_null() ? make_null() : platformer_block_of(c, value)).v;
+	}
+	if (!ok) return Obj().put("read", read).v;
+	if (value->is_null()) return Obj().put("read", Obj().put("ok", make_bool(true)).put("value", make_null()).v).v;
+	JsonValuePtr shown = Obj().put("ok", make_bool(true)).put("value", platformer_block_of(c, value)).v;
+	return Obj().put("read", shown).put("run", platformer_run(r, input, value)).v;
+}
+
 JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	bool known = false;
 	for (const auto &o : r.spec.ops) known = known || o == op;
@@ -623,6 +801,9 @@ JsonValuePtr drive(Run &r, const std::string &op, const JsonValue &input) {
 	if (file == "puzzle/definition") return puzzle_definition(r, op, input);
 	if (file == "puzzle/run") return puzzle_run(r, input, nullptr);
 	if (file == "puzzle/save") return puzzle_save(r, op, input);
+	if (file == "platformer/course") return platformer_course(r, op, input);
+	if (file == "platformer/run") return platformer_run(r, input, nullptr);
+	if (file == "platformer/save") return platformer_save(r, op, input);
 	throw DriveError("genre corpus: unknown file " + file);
 }
 
@@ -687,6 +868,49 @@ void refusal_probes(Caller &c, const JsonValuePtr &slices, std::map<std::string,
 	probe(p, fails_as(c, "puzzle.director.create", "{\"definition\":{\"riddles\":[]}}", "[invalid-input]"), "a definition missing its members is not [invalid-input]");
 	probe(p, fails_as(c, "puzzle.save.blockOf", "{\"block\":{\"actors\":[{\"actor\":\"p\"}]}}", "[invalid-input]"), "a state row missing its lists is not [invalid-input]");
 	probe(p, fails_as(c, "puzzle.no.such.row", "{}", "unknown method"), "an unknown row is not the method table's error");
+
+	// The platformer: the same three kinds of drive failure, its refusals as values, its boundary as errors.
+	const std::string course =
+	    "{\"places\":[],\"links\":[{\"from\":\"a\",\"to\":\"b\",\"mode\":\"walk\",\"cost\":2},{\"from\":\"b\",\"to\":\"c\",\"mode\":\"jump\",\"cost\":3,"
+	    "\"geometric\":true}],\"levels\":[{\"id\":\"l1\",\"order\":1,\"start\":\"a\",\"goal\":\"c\",\"goalKind\":\"place\",\"subject\":null,"
+	    "\"checkpoints\":[\"b\"],\"par\":5},{\"id\":\"l2\",\"order\":2,\"start\":\"c\",\"goal\":\"a\",\"goalKind\":\"place\",\"subject\":null,"
+	    "\"checkpoints\":[],\"par\":1}],\"runnerModes\":[\"walk\",\"jump\"],\"tuning\":{\"defaultCost\":5,\"modeCost\":{},\"modeAction\":{},"
+	    "\"defaultAction\":\"traverse\"},\"source\":\"authored\",\"notes\":[]}";
+	probe(p, fails_drive(kFiles[3], "nope", "{}"), "an unknown course op is driven");
+	probe(p, fails_drive(kFiles[5], "nope", "{}"), "an unknown platformer save op is driven");
+	probe(p, fails_drive(kFiles[4], "run", ("{\"course\":" + course + ",\"steps\":[{\"step\":\"clue\"}]}").c_str()), "an unknown platformer run step is driven");
+	probe(p, fails_drive(kFiles[4], "run", ("{\"course\":" + course + ",\"steps\":[{\"to\":\"b\"}]}").c_str()), "a platformer run step with no name is driven");
+	{
+		auto s = c.try_call("platformer.director.create", "{\"course\":" + course + ",\"probe\":{\"b>c:jump\":false}}");
+		const JsonValue *h = s ? s->find("session") : nullptr;
+		if (h) {
+			const std::string sess = json_of(*h);
+			auto u = c.try_call("platformer.director.enter", "{\"session\":" + sess + ",\"runner\":\"player\",\"level\":\"nope\"}");
+			probe(p, u && u->get_string("refusal") == "unknown_level", "an unknown level is not the value refusal unknown_level");
+			auto l = c.try_call("platformer.director.enter", "{\"session\":" + sess + ",\"runner\":\"player\",\"level\":\"l2\"}");
+			probe(p, l && l->get_string("refusal") == "locked", "a level whose previous level is not cleared is not the value refusal locked");
+			auto n = c.try_call("platformer.director.step", "{\"session\":" + sess + ",\"runner\":\"player\",\"to\":\"b\"}");
+			const JsonValue *no = n ? n->find("outcome") : nullptr;
+			probe(p, no && no->get_string("refusal") == "not_running", "a step off any level is not the value refusal not_running");
+			c.try_call("platformer.director.enter", "{\"session\":" + sess + ",\"runner\":\"player\",\"level\":\"l1\"}");
+			c.try_call("platformer.director.step", "{\"session\":" + sess + ",\"runner\":\"player\",\"to\":\"b\"}");
+			auto j = c.try_call("platformer.director.step", "{\"session\":" + sess + ",\"runner\":\"player\",\"to\":\"c\"}");
+			const JsonValue *jo = j ? j->find("outcome") : nullptr;
+			probe(p, jo && jo->get_string("refusal") == "movement" && j->find("probed") && json_of(*j->find("probed")) == "[\"b>c:jump\"]",
+			      "a jump the probe answers impassable is not the value refusal movement, with the link it asked");
+			c.try_call("session.dispose", "{\"session\":" + sess + "}");
+		} else {
+			probe(p, false, "platformer.director.create refused a course: " + c.last_error);
+		}
+	}
+	{
+		auto rd = c.try_call("platformer.save.read", "{\"block\":{\"runners\":{}}}");
+		probe(p, rd && !rd->get_bool("ok", true) && rd->find("keys") && json_of(*rd->find("keys")) == "[\"runners\"]", "an unreadable platformer block is not the value { ok: false, keys: [runners] }");
+	}
+	probe(p, fails_as(c, "platformer.forWorld", "{\"world\":5}", "[invalid-input]"), "a course world that is not an object is not [invalid-input]");
+	probe(p, fails_as(c, "platformer.director.create", "{\"course\":{\"places\":[]}}", "[invalid-input]"), "a course missing its members is not [invalid-input]");
+	probe(p, fails_as(c, "platformer.route", "{\"links\":[{\"from\":\"a\",\"mode\":\"walk\"}],\"from\":\"a\",\"to\":\"b\"}", "[invalid-input]"), "a link with no `to` is not [invalid-input]");
+	probe(p, fails_as(c, "platformer.save.blockOf", "{\"block\":{\"runners\":[{\"runner\":\"p\"}]}}", "[invalid-input]"), "a runner row missing its members is not [invalid-input]");
 }
 
 } // namespace
@@ -752,10 +976,11 @@ int main(int argc, char **argv) {
 	Probes probes;
 	refusal_probes(c, slices.v, probe_steps, probes);
 	if (probes.passed != probes.total) failed++;
-	std::printf("refusals: %d of %d probe(s) as core answers (an unknown op, an unknown step and a nameless step fail their case; "
-	            "values: unknown_riddle, unknown_lock, unknown_clue, an unreadable block's keys; errors: [invalid-input] for a "
-	            "world that is not an object, a slice name that is no own key, a definition and a state row missing members; an "
-	            "unknown row)\n",
+	std::printf("refusals: %d of %d probe(s) as core answers (an unknown op, an unknown step and a nameless step fail their case, "
+	            "for the puzzle and the platformer; values: unknown_riddle, unknown_lock, unknown_clue, unknown_level, locked, "
+	            "not_running, movement with the probed link, an unreadable block's keys (both); errors: [invalid-input] for a "
+	            "world that is not an object (both), a slice name that is no own key, a definition, a course, a link and a state "
+	            "row missing members; an unknown row)\n",
 	            probes.passed, probes.total);
 
 	int total_cases = 0, total_driven = 0, refused = 0, accepted = 0;
@@ -854,7 +1079,7 @@ int main(int argc, char **argv) {
 		}
 		// Every step the run file declares is driven by one of its cases (the save file's
 		// restore runs drive a subset; the run file is where each step is held).
-		if (file == "puzzle/run") {
+		if (file == "puzzle/run" || file == "platformer/run") {
 			for (const auto &s : spec->steps) {
 				const int n = steps_driven.count(s) ? steps_driven[s] : 0;
 				by_step += (by_step.empty() ? "" : ", ") + s + " " + std::to_string(n);

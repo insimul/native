@@ -6085,6 +6085,10 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
   function canonical(a, b) {
     return a === b ? 0 : a < b ? -1 : 1;
   }
+  function planeDistance(a, b) {
+    const d = Math.sqrt((a.x - b.x) ** 2 + (a.z - b.z) ** 2);
+    return Math.round(d);
+  }
 
   // @insimul/core/src/puzzle/puzzle-save.ts
   var PUZZLE_EXTENSION_KEY = "puzzle";
@@ -6207,6 +6211,9 @@ radiant_exclusion(rt_visit, radiant_generated(_, rt_visit, _)).
     });
     if (bad3.length > 0) return { ok: false, keys: [...new Set(bad3)].sort() };
     return { ok: true, value: { runners } };
+  }
+  function platformerSaveBlock(state) {
+    return state ? { runners: state.runners.map((r) => ({ ...r })) } : null;
   }
   function platformerBlockOf(b) {
     return {
@@ -31701,8 +31708,30 @@ scaffold_outcome(S, Outcome) :- scaffold_ending_reached(S, _, Outcome).
     if (r >= 360 || r === 0) r = 0;
     return r;
   }
+  function yawOfDirection(dx, dz) {
+    return Math.atan2(dx, dz);
+  }
+  function compassHeading(yaw, northYaw) {
+    return wrapDegrees((yaw - northYaw) * RAD_TO_DEG);
+  }
   function compassCardinal(degrees) {
     return COMPASS_POINTS[Math.round(wrapDegrees(degrees) / 45) % 8];
+  }
+  var DEFAULT_NORTH_YAW = 0;
+  function worldNorth(facts) {
+    const geo = facts?.georeference;
+    if (geo === void 0 || geo === null) {
+      return { ok: true, value: { northYaw: DEFAULT_NORTH_YAW, source: "default" } };
+    }
+    const r = geo.rotationRad;
+    if (r === void 0) return { ok: true, value: { northYaw: 0, source: "georeference" } };
+    if (typeof r !== "number" || !Number.isFinite(r)) {
+      return {
+        ok: false,
+        refusal: { code: "not_finite", field: "georeference.rotationRad", message: `georeference.rotationRad must be a finite number, got ${r}` }
+      };
+    }
+    return { ok: true, value: { northYaw: r === 0 ? 0 : r, source: "georeference" } };
   }
 
   // @insimul/core/src/ui/genre-hud-model.ts
@@ -44101,6 +44130,12 @@ Return JSON format:
     const result2 = await engine.query(goal, 1);
     return result2.success && result2.bindings.length > 0;
   }
+  async function solutions(engine, goal, variable, max = 256) {
+    if (!engine) return [];
+    const result2 = await engine.query(goal, max);
+    if (!result2.success) return [];
+    return result2.bindings.map((b) => String(b[variable]));
+  }
 
   // @insimul/core/src/game-engine/logic/PuzzleDirector.ts
   var PUZZLE_WRITTEN_PREDICATES = Object.freeze([
@@ -44728,6 +44763,9 @@ Return JSON format:
   var DEFAULT_LEVEL_COUNT = 5;
   var PLATFORMER_TUNING = Object.freeze({ levelCount: DEFAULT_LEVEL_COUNT });
   var DEFAULT_RUNNER_MODES = Object.freeze(["walk", "jump"]);
+  function junctionAtom(settlementName, nodeId) {
+    return `${worldAtom(settlementName)}_${worldAtom(nodeId)}`;
+  }
   var COMPASS_WORDS = Object.freeze({
     N: "north",
     NE: "north-east",
@@ -44738,6 +44776,494 @@ Return JSON format:
     W: "west",
     NW: "north-west"
   });
+  var JUNCTION_SIDE_MIN_M = 0.5;
+  function junctionLabel(settlement, nodeId, northYaw = DEFAULT_NORTH_YAW) {
+    const nodes = settlement.streetNetwork?.nodes ?? [];
+    const segments = settlement.streetNetwork?.segments ?? [];
+    const positionOf = /* @__PURE__ */ new Map();
+    for (const n of nodes) {
+      if (n.position && Number.isFinite(n.position.x) && Number.isFinite(n.position.z) && !positionOf.has(n.id)) {
+        positionOf.set(n.id, { x: n.position.x, z: n.position.z });
+      }
+    }
+    const nameOf = (seg) => typeof seg.name === "string" ? seg.name.trim() : "";
+    const holding = segments.filter((seg) => (seg.nodeIds ?? []).includes(nodeId));
+    const names = [...new Set(holding.map(nameOf).filter((n) => n.length > 0))].sort(canonical);
+    const sideFrom = (ids) => {
+      const at = positionOf.get(nodeId);
+      if (!at || northYaw === null || !Number.isFinite(northYaw)) return null;
+      let sx = 0;
+      let sz = 0;
+      let count = 0;
+      for (const id4 of new Set(ids)) {
+        const p = positionOf.get(id4);
+        if (!p) continue;
+        sx += p.x;
+        sz += p.z;
+        count += 1;
+      }
+      if (count === 0) return null;
+      const dx = at.x - sx / count;
+      const dz = at.z - sz / count;
+      if (Math.hypot(dx, dz) < JUNCTION_SIDE_MIN_M) return null;
+      return COMPASS_WORDS[compassCardinal(compassHeading(yawOfDirection(dx, dz), northYaw))];
+    };
+    if (names.length >= 2) {
+      return `Corner of ${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+    }
+    if (names.length === 1) {
+      const name = names[0];
+      const street = segments.filter((seg) => nameOf(seg) === name);
+      const side2 = sideFrom(street.flatMap((seg) => seg.nodeIds ?? []));
+      const ofName = holding.filter((seg) => nameOf(seg) === name);
+      if (ofName.length >= 2) return side2 ? `${name}, ${side2} corner` : `Corner of ${name}`;
+      const ends = holding.every((seg) => {
+        const ids = seg.nodeIds ?? [];
+        return ids[0] === nodeId || ids[ids.length - 1] === nodeId;
+      });
+      if (ends) return side2 ? `${name}, ${side2} end` : `End of ${name}`;
+      return side2 ? `${name}, ${side2} stretch` : name;
+    }
+    const side = sideFrom(positionOf.keys());
+    const place = typeof settlement.name === "string" ? settlement.name.trim() : "";
+    if (place.length > 0) return side ? `${place}, ${side} junction` : `${place} junction`;
+    return side ? `Street junction, ${side}` : "Street junction";
+  }
+  function courseGraph(world2) {
+    const places = [];
+    const links = [];
+    const builtLots = new Set((world2.entities?.buildings ?? []).map((b) => b.lotId).filter((l) => !!l));
+    const seenLink = /* @__PURE__ */ new Set();
+    const addLink = (link) => {
+      const key = `${link.from}>${link.to}:${link.mode}`;
+      if (seenLink.has(key)) return;
+      seenLink.add(key);
+      links.push(link);
+    };
+    const north = worldNorth(world2.geography ?? null);
+    const northYaw = north.ok ? north.value.northYaw : null;
+    for (const s of world2.geography?.settlements ?? []) {
+      const nodes = /* @__PURE__ */ new Map();
+      for (const n of s.streetNetwork?.nodes ?? []) {
+        if (!n.position) continue;
+        const atom4 = junctionAtom(s.name, n.id);
+        nodes.set(n.id, { atom: atom4, position: { x: n.position.x, z: n.position.z } });
+        places.push({ id: atom4, kind: "junction", label: junctionLabel(s, n.id, northYaw), position: { x: n.position.x, z: n.position.z } });
+      }
+      const segments = /* @__PURE__ */ new Map();
+      for (const seg of s.streetNetwork?.segments ?? []) {
+        const ids = (seg.nodeIds ?? []).filter((id4) => nodes.has(id4));
+        segments.set(seg.id, ids);
+        for (let i = 0; i + 1 < ids.length; i += 1) {
+          const a = nodes.get(ids[i]);
+          const b = nodes.get(ids[i + 1]);
+          const cost = Math.max(1, planeDistance(a.position, b.position));
+          addLink({ from: a.atom, to: b.atom, mode: "walk", cost });
+          addLink({ from: b.atom, to: a.atom, mode: "walk", cost });
+        }
+      }
+      for (const lot of s.lots ?? []) {
+        if (!lot.address || !lot.position || !builtLots.has(lot.id)) continue;
+        const atom4 = worldAtom(lot.address);
+        const position = { x: lot.position.x, z: lot.position.z };
+        const street = lot.streetEdgeId && segments.get(lot.streetEdgeId) || [...nodes.keys()];
+        let nearest = null;
+        for (const id4 of street) {
+          const n = nodes.get(id4);
+          if (!n) continue;
+          const d = planeDistance(n.position, position);
+          if (!nearest || d < nearest.d || d === nearest.d && canonical(n.atom, nearest.atom) < 0) {
+            nearest = { atom: n.atom, d };
+          }
+        }
+        if (!nearest) continue;
+        places.push({ id: atom4, kind: "lot", label: lot.address, position });
+        const cost = Math.max(1, nearest.d);
+        addLink({ from: nearest.atom, to: atom4, mode: "jump", cost, geometric: true });
+        addLink({ from: atom4, to: nearest.atom, mode: "walk", cost });
+      }
+    }
+    places.sort((a, b) => canonical(a.id, b.id));
+    return { places, links };
+  }
+  function courseRoute(links, from, to, modes = DEFAULT_RUNNER_MODES, tuning = DEFAULT_TRAVERSAL_TUNING) {
+    const places = new Set(links.flatMap((l) => [l.from, l.to]));
+    return findRoute({ actor: "runner", from, to, links, modes, tuning, maxSteps: Math.max(1, places.size) });
+  }
+  function routeCheckpoints(route, junctions) {
+    return route.steps.slice(0, -1).map((s) => s.to).filter((p) => junctions.has(p));
+  }
+  function spread(items, count) {
+    if (count <= 0 || items.length === 0) return [];
+    if (items.length <= count) return [...items];
+    if (count === 1) return [items[0]];
+    const out = [];
+    for (let i = 0; i < count; i += 1) out.push(items[Math.floor(i * (items.length - 1) / (count - 1))]);
+    return out;
+  }
+  function generateCourse(world2, options = {}) {
+    const tuning = { ...DEFAULT_TRAVERSAL_TUNING };
+    const runnerModes = [...options.runnerModes ?? DEFAULT_RUNNER_MODES];
+    const levelCount = options.levelCount ?? DEFAULT_LEVEL_COUNT;
+    const notes = [];
+    const { places, links } = courseGraph(world2);
+    const empty = (why) => ({ places, links, levels: [], runnerModes, tuning, source: "empty", notes: [...notes, why] });
+    const junctions = places.filter((p) => p.kind === "junction");
+    if (junctions.length === 0) return empty("no settlement has a street network, so there is nowhere to run");
+    const junctionSet = new Set(junctions.map((j) => j.id));
+    const start = world2.player?.startPosition ?? null;
+    let startJunction = junctions[0];
+    if (start) {
+      let best = Number.POSITIVE_INFINITY;
+      for (const j of junctions) {
+        const d = planeDistance(j.position, { x: start.x, z: start.z });
+        if (d < best) {
+          best = d;
+          startJunction = j;
+        }
+      }
+    } else {
+      notes.push("the world places no player start, so the course starts at the first junction");
+    }
+    const lotAddress = /* @__PURE__ */ new Map();
+    for (const s of world2.geography?.settlements ?? []) {
+      for (const lot of s.lots ?? []) if (lot.address) lotAddress.set(lot.id, lot.address);
+    }
+    const placeOfBuilding = /* @__PURE__ */ new Map();
+    for (const b of world2.entities?.buildings ?? []) {
+      const address = b.lotId ? lotAddress.get(b.lotId) : void 0;
+      if (address) placeOfBuilding.set(b.id, worldAtom(address));
+    }
+    const placeIds = new Set(places.map((p) => p.id));
+    const characterAtom = /* @__PURE__ */ new Map();
+    for (const c of world2.entities?.characters ?? []) {
+      const name = [c.firstName, c.lastName].filter((p) => !!p).join(" ");
+      if (name) characterAtom.set(c.id, worldAtom(name));
+    }
+    const byGoal = /* @__PURE__ */ new Map();
+    const npcs = [...world2.entities?.npcs ?? []].sort(
+      (a, b) => canonical(characterAtom.get(a.characterId) ?? a.characterId, characterAtom.get(b.characterId) ?? b.characterId)
+    );
+    for (const npc of npcs) {
+      const subject = characterAtom.get(npc.characterId) ?? null;
+      for (const [kind, buildingId] of [
+        ["home", npc.schedule?.homeBuildingId],
+        ["work", npc.schedule?.workBuildingId]
+      ]) {
+        if (!buildingId) continue;
+        const goal = placeOfBuilding.get(buildingId);
+        if (!goal || !placeIds.has(goal) || byGoal.has(goal)) continue;
+        const route = courseRoute(links, startJunction.id, goal, runnerModes, tuning);
+        if (!route) continue;
+        byGoal.set(goal, { goal, goalKind: kind, subject, cost: route.cost });
+      }
+    }
+    const ranked = [...byGoal.values()].sort((a, b) => a.cost - b.cost || canonical(a.goal, b.goal));
+    if (ranked.length === 0) return empty("nobody in the world has a home or workplace the streets reach");
+    const picked = spread(ranked, levelCount);
+    if (picked.length < levelCount) notes.push(`only ${picked.length} reachable homes and workplaces, so the course has ${picked.length} levels`);
+    const levels = [];
+    let from = startJunction.id;
+    for (const [i, c] of picked.entries()) {
+      const route = courseRoute(links, from, c.goal, runnerModes, tuning);
+      if (!route) {
+        notes.push(`level ${i + 1}'s goal ${c.goal} cannot be reached from ${from}; the course stops there`);
+        break;
+      }
+      levels.push({
+        id: `level_${i + 1}`,
+        order: i + 1,
+        start: from,
+        goal: c.goal,
+        goalKind: c.goalKind,
+        subject: c.subject,
+        checkpoints: routeCheckpoints(route, junctionSet),
+        par: route.cost
+      });
+      from = c.goal;
+    }
+    return { places, links, levels, runnerModes, tuning, source: "generated", notes };
+  }
+  function courseFromIR(platformer, traversal, world2) {
+    const tuning = traversalTuningFromIR(traversal);
+    const authoredLinks = traversalLinksFromIR(traversal);
+    const graph = authoredLinks.length > 0 ? { places: [], links: authoredLinks } : courseGraph(world2);
+    const runnerModes = [...platformer.runnerModes ?? DEFAULT_RUNNER_MODES];
+    const notes = [];
+    const levels = (platformer.levels ?? []).map((l, i) => {
+      const route = courseRoute(graph.links, l.start, l.goal, runnerModes, tuning);
+      if (!route) notes.push(`level ${l.id}: ${l.goal} cannot be reached from ${l.start}`);
+      return {
+        id: l.id,
+        order: i + 1,
+        start: l.start,
+        goal: l.goal,
+        goalKind: l.goalKind ?? "place",
+        subject: l.subject ?? null,
+        checkpoints: [...l.checkpoints ?? []],
+        par: l.par ?? route?.cost ?? 0
+      };
+    });
+    return { places: graph.places, links: graph.links, levels, runnerModes, tuning, source: "authored", notes };
+  }
+  function courseForWorld(world2, options = {}) {
+    const p = world2.platformer;
+    if (p && (p.levels ?? []).length > 0) return courseFromIR(p, world2.traversal, world2);
+    return generateCourse(world2, {
+      ...options,
+      ...p?.levelCount !== void 0 ? { levelCount: p.levelCount } : {},
+      ...p?.runnerModes ? { runnerModes: p.runnerModes } : {}
+    });
+  }
+  function courseLevelFacts(course) {
+    const facts = [];
+    for (const l of course.levels) {
+      const L = prologAtom(l.id);
+      facts.push(`platformer_level(${L}, ${l.order}).`);
+      facts.push(`platformer_level_start(${L}, ${prologAtom(l.start)}).`);
+      facts.push(`platformer_level_goal(${L}, ${prologAtom(l.goal)}).`);
+      facts.push(`platformer_level_goal_kind(${L}, ${l.goalKind}).`);
+      if (l.subject) facts.push(`platformer_level_subject(${L}, ${prologAtom(l.subject)}).`);
+      l.checkpoints.forEach((c, i) => facts.push(`platformer_level_checkpoint(${L}, ${prologAtom(c)}, ${i + 1}).`));
+      facts.push(`platformer_level_par(${L}, ${Math.trunc(l.par)}).`);
+    }
+    return facts;
+  }
+  function starsFor(par, cost) {
+    if (cost <= par) return 3;
+    if (2 * cost <= 3 * par) return 2;
+    return 1;
+  }
+
+  // @insimul/core/src/game-engine/logic/PlatformerDirector.ts
+  var PLATFORMER_WRITTEN_PREDICATES = PLATFORMER_RUNTIME_PREDICATES;
+  var PlatformerDirector = class {
+    constructor(config) {
+      __publicField(this, "course");
+      __publicField(this, "traversal");
+      __publicField(this, "engine");
+      __publicField(this, "runners", /* @__PURE__ */ new Map());
+      this.course = config.course;
+      this.engine = config.engine;
+      this.traversal = config.traversal ?? new TraversalPlanner({
+        engine: config.engine,
+        links: config.course.links,
+        tuning: config.course.tuning,
+        ...config.probe ? { probe: config.probe } : {},
+        ...config.locomotion ? { locomotion: config.locomotion } : {}
+      });
+    }
+    /**
+     * Push the link graph and the levels into the KB. The graph is exactly what
+     * `TraversalPlanner.publishGraph` writes (`traversalGraphFacts` over the
+     * planner's own links and tuning), asserted in one batch.
+     */
+    async publish() {
+      const graph = traversalGraphFacts(this.traversal.getLinks(), this.traversal.getTuning());
+      return publishFacts(this.engine, [...graph, ...courseLevelFacts(this.course)]);
+    }
+    level(id4) {
+      return this.course.levels.find((l) => l.id === id4);
+    }
+    runner(id4) {
+      let r = this.runners.get(id4);
+      if (!r) {
+        r = { level: null, runCost: 0, checkpoints: /* @__PURE__ */ new Set(), cleared: /* @__PURE__ */ new Map(), lastCleared: null };
+        this.runners.set(id4, r);
+      }
+      return r;
+    }
+    async write(delta) {
+      const result2 = await applyGenreDelta(this.engine, delta, PLATFORMER_WRITTEN_PREDICATES, "platformer");
+      if (!result2.ok) return { ok: false, refusal: "schema", reason: result2.reason, applied: [] };
+      return { ok: true, reason: null, applied: result2.applied };
+    }
+    /** The facts of the run a runner is on, for retracting it. */
+    runFacts(runnerId, r) {
+      if (!r.level) return [];
+      const R = prologAtom(runnerId);
+      const L = prologAtom(r.level);
+      return [
+        `platformer_running(${R}, ${L}).`,
+        `platformer_run_cost(${R}, ${L}, ${r.runCost}).`,
+        ...[...r.checkpoints].sort((a, b) => a - b).map((n) => `platformer_checkpoint_reached(${R}, ${L}, ${n}).`)
+      ];
+    }
+    /** Whether `platformer_unlocked/2` lets this runner onto that level. */
+    async isUnlocked(runnerId, levelId) {
+      return holds(this.engine, `platformer_unlocked(${prologAtom(runnerId)}, ${prologAtom(levelId)})`);
+    }
+    /**
+     * Put a runner on a level: at its start, cost zero, no checkpoints. Abandons
+     * whatever run they were on.
+     */
+    async enter(runnerId, levelId) {
+      const level = this.level(levelId);
+      if (!level) return { ok: false, refusal: "unknown_level", reason: `"${levelId}" is not a level of this course`, applied: [] };
+      if (!await this.isUnlocked(runnerId, levelId)) {
+        return { ok: false, refusal: "locked", reason: `${levelId} opens when the level before it is cleared`, applied: [] };
+      }
+      const r = this.runner(runnerId);
+      const R = prologAtom(runnerId);
+      const L = prologAtom(levelId);
+      const out = await this.write({
+        retract: this.runFacts(runnerId, r),
+        assert: [`platformer_running(${R}, ${L}).`, `platformer_run_cost(${R}, ${L}, 0).`]
+      });
+      if (!out.ok) return out;
+      r.level = levelId;
+      r.runCost = 0;
+      r.checkpoints = /* @__PURE__ */ new Set();
+      await this.traversal.register({ id: runnerId, location: level.start, modes: this.course.runnerModes });
+      return out;
+    }
+    /**
+     * One movement to an adjacent place, through traversal. Counts its cost,
+     * touches a checkpoint, and — when `platformer_level_complete/2` says the run
+     * is done — records the clear and its stars.
+     */
+    async step(runnerId, to) {
+      const r = this.runner(runnerId);
+      const here = this.traversal.locationOf(runnerId) ?? "";
+      if (!r.level) {
+        return { ok: false, refusal: "not_running", reason: `${runnerId} is not on a level`, applied: [], location: here, runCost: r.runCost };
+      }
+      const level = this.level(r.level);
+      const movement = await this.traversal.traverse(runnerId, to);
+      if (!movement.performed) {
+        return {
+          ok: false,
+          refusal: "movement",
+          reason: `traversal refused the step (${movement.refusal ?? "not performed"})`,
+          applied: [],
+          movement,
+          location: movement.location,
+          runCost: r.runCost
+        };
+      }
+      const R = prologAtom(runnerId);
+      const L = prologAtom(level.id);
+      const cost = r.runCost + movement.cost;
+      const delta = {
+        retract: [`platformer_run_cost(${R}, ${L}, ${r.runCost}).`],
+        assert: [`platformer_run_cost(${R}, ${L}, ${cost}).`]
+      };
+      const index = level.checkpoints.indexOf(movement.location);
+      const checkpoint = index >= 0 && !r.checkpoints.has(index + 1) ? index + 1 : void 0;
+      if (checkpoint !== void 0) delta.assert.push(`platformer_checkpoint_reached(${R}, ${L}, ${checkpoint}).`);
+      const out = await this.write(delta);
+      if (!out.ok) return { ...out, movement, location: movement.location, runCost: r.runCost };
+      r.runCost = cost;
+      if (checkpoint !== void 0) r.checkpoints.add(checkpoint);
+      const applied = [...out.applied];
+      let cleared;
+      if (await holds(this.engine, `platformer_level_complete(${R}, ${L})`)) {
+        const stars = Number((await solutions(this.engine, `platformer_run_stars(${R}, ${L}, S)`, "S"))[0] ?? 1);
+        const previous = r.cleared.get(level.id);
+        const best = previous === void 0 ? stars : Math.max(previous, stars);
+        const finish = {
+          retract: [
+            ...this.runFacts(runnerId, r),
+            ...previous !== void 0 && best !== previous ? [`platformer_cleared(${R}, ${L}, ${previous}).`] : []
+          ],
+          assert: previous === void 0 || best !== previous ? [`platformer_cleared(${R}, ${L}, ${best}).`] : []
+        };
+        const done = await this.write(finish);
+        if (!done.ok) return { ...done, movement, location: movement.location, runCost: r.runCost };
+        applied.push(...done.applied);
+        r.cleared.set(level.id, best);
+        r.lastCleared = level.id;
+        r.level = null;
+        r.checkpoints = /* @__PURE__ */ new Set();
+        cleared = { level: level.id, stars, best };
+      }
+      return {
+        ok: true,
+        reason: null,
+        applied,
+        movement,
+        location: movement.location,
+        ...checkpoint !== void 0 ? { checkpoint } : {},
+        runCost: cost,
+        ...cleared ? { cleared } : {}
+      };
+    }
+    /**
+     * The runner fell: put them back where `platformer_respawn/3` says — the
+     * furthest checkpoint this run touched, or the level's start. The run's cost
+     * stands.
+     */
+    async respawn(runnerId) {
+      const r = this.runner(runnerId);
+      if (!r.level) return { ok: false, refusal: "not_running", reason: `${runnerId} is not on a level`, applied: [] };
+      const [place] = await solutions(this.engine, `platformer_respawn(${prologAtom(runnerId)}, ${prologAtom(r.level)}, P)`, "P");
+      if (!place) return { ok: false, refusal: "not_running", reason: `the KB has no run for ${runnerId}`, applied: [] };
+      const delta = await this.traversal.arrive(runnerId, place);
+      return { ok: true, reason: null, applied: [...delta.retract, ...delta.assert], location: place };
+    }
+    /** The cheapest way from where the runner stands to the current goal — a hint, not a rule. */
+    hint(runnerId) {
+      const r = this.runner(runnerId);
+      const level = r.level ? this.level(r.level) : void 0;
+      const here = this.traversal.locationOf(runnerId);
+      if (!level || !here) return void 0;
+      return courseRoute(this.course.links, here, level.goal, this.course.runnerModes, this.course.tuning);
+    }
+    /** Counts for a quest tracker. */
+    async progress(runnerId) {
+      const r = this.runner(runnerId);
+      const level = r.level ? this.level(r.level) : r.lastCleared ? this.level(r.lastCleared) : void 0;
+      const stars = [...r.cleared.values()].reduce((a, b) => a + b, 0);
+      return {
+        levelsCleared: r.cleared.size,
+        levelsTotal: this.course.levels.length,
+        checkpointsReached: r.level ? r.checkpoints.size : level ? level.checkpoints.length : 0,
+        checkpointsTotal: level ? level.checkpoints.length : 0,
+        stars,
+        goalReached: !r.level && r.lastCleared !== null,
+        runCost: r.runCost,
+        par: level ? level.par : null,
+        courseComplete: await holds(this.engine, `platformer_course_complete(${prologAtom(runnerId)})`)
+      };
+    }
+    serialize() {
+      return {
+        runners: [...this.runners.entries()].sort(([a], [b]) => canonical(a, b)).map(([runner, r]) => ({
+          runner,
+          level: r.level,
+          location: this.traversal.locationOf(runner) ?? "",
+          runCost: r.runCost,
+          checkpoints: [...r.checkpoints].sort((a, b) => a - b),
+          cleared: [...r.cleared.entries()].sort(([a], [b]) => canonical(a, b))
+        }))
+      };
+    }
+    /** Load a saved state into a fresh director and its KB (published first). */
+    async restore(state) {
+      if (this.runners.size > 0) return { ok: false, refusal: "schema", reason: "restore() is for a fresh director", applied: [] };
+      const facts = [];
+      for (const s of state.runners) {
+        const R = prologAtom(s.runner);
+        for (const [l, stars] of s.cleared) facts.push(`platformer_cleared(${R}, ${prologAtom(l)}, ${Math.trunc(stars)}).`);
+        if (s.level) {
+          const L = prologAtom(s.level);
+          facts.push(`platformer_running(${R}, ${L}).`, `platformer_run_cost(${R}, ${L}, ${Math.trunc(s.runCost)}).`);
+          for (const n of s.checkpoints) facts.push(`platformer_checkpoint_reached(${R}, ${L}, ${Math.trunc(n)}).`);
+        }
+      }
+      const out = await this.write({ retract: [], assert: facts });
+      if (!out.ok) return out;
+      for (const s of state.runners) {
+        const r = this.runner(s.runner);
+        r.level = s.level;
+        r.runCost = s.runCost;
+        r.checkpoints = new Set(s.checkpoints);
+        for (const [l, stars] of s.cleared) r.cleared.set(l, stars);
+        if (s.location) await this.traversal.register({ id: s.runner, location: s.location, modes: this.course.runnerModes });
+      }
+      return out;
+    }
+  };
 
   // @insimul/core/src/strategy/strategy.ts
   var DEFAULT_STRATEGY_RESOURCES = Object.freeze([
@@ -51808,6 +52334,10 @@ Return JSON format:
   var GENRE_VEC3 = [["x", tNum, REQ], ["y", tNum, OPT], ["z", tNum, REQ]];
   var GENRE_XZ = [["x", tNum, REQ], ["z", tNum, REQ]];
   var GENRE_PLAYER = [["startPosition", tObj(GENRE_VEC3), OPT_NULL]];
+  var GENRE_STREET_NETWORK = [
+    ["nodes", tList(tObj([["id", tStr, REQ], ["position", tObj(GENRE_XZ), OPT_NULL]])), OPT_NULL],
+    ["segments", tList(tObj([["id", tStr, REQ], ["name", tStr, OPT_NULL], ["nodeIds", tList(tStr), OPT_NULL]])), OPT_NULL]
+  ];
   var GENRE_WORLD_SOURCE = [
     ["meta", tObj([["worldId", tStr, OPT], ["worldName", tStr, OPT], ["genreConfig", tObj([["id", tStr, OPT]]), OPT_NULL]]), OPT_NULL],
     ["geography", tObj([
@@ -51825,10 +52355,7 @@ Return JSON format:
           ["position", tObj(GENRE_VEC3), OPT_NULL],
           ["streetEdgeId", tStr, OPT_NULL]
         ])), OPT_NULL],
-        ["streetNetwork", tObj([
-          ["nodes", tList(tObj([["id", tStr, REQ], ["position", tObj(GENRE_XZ), OPT_NULL]])), OPT_NULL],
-          ["segments", tList(tObj([["id", tStr, REQ], ["name", tStr, OPT_NULL], ["nodeIds", tList(tStr), OPT_NULL]])), OPT_NULL]
-        ]), OPT_NULL]
+        ["streetNetwork", tObj(GENRE_STREET_NETWORK), OPT_NULL]
       ])), OPT_NULL]
     ]), OPT_NULL],
     ["entities", tObj([
@@ -51918,6 +52445,118 @@ Return JSON format:
   function puzzleActorArgs(method, args, key) {
     coded("invalid-input", () => {
       needString(method, args.actor, "actor");
+      if (key) needString(method, args[key], key);
+    });
+  }
+  var tRecord = (check) => (m, v, n) => {
+    needObject(m, v, n);
+    for (const [k, x] of Object.entries(v)) check(m, x, `${n}.${k}`);
+  };
+  var TRAVERSAL_LINK = [
+    ["id", tStr, OPT],
+    ["from", tStr, REQ],
+    ["to", tStr, REQ],
+    ["mode", tStr, REQ],
+    ["cost", tNum, OPT],
+    ["requires", tList(tStr), OPT],
+    ["action", tStr, OPT],
+    ["geometric", tBool, OPT]
+  ];
+  var TRAVERSAL_TUNING = [
+    ["defaultCost", tNum, REQ],
+    ["modeCost", tRecord(tNum), REQ],
+    ["modeAction", tRecord(tStr), REQ],
+    ["defaultAction", tStr, REQ]
+  ];
+  var TRAVERSAL_IR = [
+    ["links", tList(tObj(TRAVERSAL_LINK)), OPT],
+    ["defaultCost", tNum, OPT],
+    ["modeCost", tRecord(tNum), OPT],
+    ["modeAction", tRecord(tStr), OPT],
+    ["defaultAction", tStr, OPT],
+    ["vehicles", tList(tObj([])), OPT],
+    ["fastTravel", tObj([]), OPT]
+  ];
+  var PLATFORMER_GOAL_KINDS = ["home", "work", "place"];
+  var PLATFORMER_PLACE_KINDS = ["junction", "lot"];
+  var PLATFORMER_COURSE_SOURCES = ["authored", "generated", "empty"];
+  var PLATFORMER_IR = [
+    ["levels", tList(tObj([
+      ["id", tStr, REQ],
+      ["start", tStr, REQ],
+      ["goal", tStr, REQ],
+      ["goalKind", tOneOf(PLATFORMER_GOAL_KINDS), OPT],
+      ["subject", tStr, OPT],
+      ["checkpoints", tList(tStr), OPT],
+      ["par", tNum, OPT]
+    ])), OPT],
+    ["levelCount", tNum, OPT],
+    ["runnerModes", tList(tStr), OPT]
+  ];
+  var PLATFORMER_COURSE = [
+    ["places", tList(tObj([
+      ["id", tStr, REQ],
+      ["kind", tOneOf(PLATFORMER_PLACE_KINDS), REQ],
+      ["label", tStr, REQ],
+      ["position", tObj(GENRE_XZ), REQ]
+    ])), REQ],
+    ["links", tList(tObj(TRAVERSAL_LINK)), REQ],
+    ["levels", tList(tObj([
+      ["id", tStr, REQ],
+      ["order", tNum, REQ],
+      ["start", tStr, REQ],
+      ["goal", tStr, REQ],
+      ["goalKind", tOneOf(PLATFORMER_GOAL_KINDS), REQ],
+      ["subject", tStr, REQ_NULL],
+      ["checkpoints", tList(tStr), REQ],
+      ["par", tNum, REQ]
+    ])), REQ],
+    ["runnerModes", tList(tStr), REQ],
+    ["tuning", tObj(TRAVERSAL_TUNING), REQ],
+    ["source", tOneOf(PLATFORMER_COURSE_SOURCES), REQ],
+    ["notes", tList(tStr), REQ]
+  ];
+  function platformerClearArg(method, value, name) {
+    if (needArray(method, value, name).length !== 2) throw refuse2(method, `\`${name}\` must be a [level, stars] pair`);
+    needString(method, value[0], `${name}[0]`);
+    needNumber(method, value[1], `${name}[1]`);
+  }
+  var PLATFORMER_DIRECTOR_STATE = [
+    ["runners", tList(tObj([
+      ["runner", tStr, REQ],
+      ["level", tStr, REQ_NULL],
+      ["location", tStr, REQ],
+      ["runCost", tNum, REQ],
+      ["checkpoints", tList(tNum), REQ],
+      ["cleared", tList(platformerClearArg), REQ]
+    ])), REQ]
+  ];
+  var PLATFORMER_LABEL_SETTLEMENT = [["name", tStr, REQ], ["streetNetwork", tObj(GENRE_STREET_NETWORK), OPT_NULL]];
+  function platformerWorldArg(method, args) {
+    const world2 = genreWorldArg(method, args.world, "world");
+    const out = { ...world2 };
+    for (const [key, spec] of [["platformer", PLATFORMER_IR], ["traversal", TRAVERSAL_IR]]) {
+      if (hasOwn3(args, key)) {
+        if (args[key] !== null) declared(method, args[key], key, spec);
+        out[key] = args[key];
+      } else if (hasOwn3(world2, key) && world2[key] !== null) declared(method, world2[key], `world.${key}`, spec);
+    }
+    return out;
+  }
+  function platformerOptionsArg(method, args, keys) {
+    const checks = { levelCount: tNum, runnerModes: tList(tStr) };
+    const options = {};
+    for (const k of keys) {
+      if (!hasOwn3(args, k)) continue;
+      if (args[k] === null) throw refuse2(method, `\`${k}\` must not be null`);
+      checks[k](method, args[k], k);
+      options[k] = args[k];
+    }
+    return options;
+  }
+  function platformerRunnerArgs(method, args, key) {
+    coded("invalid-input", () => {
+      needString(method, args.runner, "runner");
       if (key) needString(method, args[key], key);
     });
   }
@@ -53700,6 +54339,273 @@ Return JSON format:
     "puzzle.save.blockOf": (args) => {
       coded("invalid-input", () => declared("puzzle.save.blockOf", args.block, "block", PUZZLE_DIRECTOR_STATE));
       return { block: plain(puzzleBlockOf(args.block)) };
+    },
+    /**
+     * `platformer.contract {}` → core's platformer constants: the pack's area and its authored,
+     * runtime and written predicates, the default level count and runner modes, the pack tuning,
+     * the junction label's compass words and side threshold, and the save block's key, members
+     * and runner keys.
+     */
+    "platformer.contract": () => ({
+      area: PLATFORMER_AREA,
+      authoredPredicates: [...PLATFORMER_AUTHORED_PREDICATES],
+      runtimePredicates: [...PLATFORMER_RUNTIME_PREDICATES],
+      writtenPredicates: [...PLATFORMER_WRITTEN_PREDICATES],
+      defaultLevelCount: DEFAULT_LEVEL_COUNT,
+      defaultRunnerModes: [...DEFAULT_RUNNER_MODES],
+      tuning: plain(PLATFORMER_TUNING),
+      compassWords: plain(COMPASS_WORDS),
+      junctionSideMinM: JUNCTION_SIDE_MIN_M,
+      extensionKey: PLATFORMER_EXTENSION_KEY,
+      blockMembers: [...PLATFORMER_BLOCK_MEMBERS],
+      runnerKeys: [...PLATFORMER_RUNNER_KEYS]
+    }),
+    /** `platformer.junctionAtom { settlement, node }` → `{ atom }` — core's `junctionAtom` (a settlement's name and a street node id as the junction's place atom). */
+    "platformer.junctionAtom": (args) => {
+      const m = "platformer.junctionAtom";
+      coded("invalid-input", () => {
+        needString(m, args.settlement, "settlement");
+        needString(m, args.node, "node");
+      });
+      return { atom: junctionAtom(args.settlement, args.node) };
+    },
+    /**
+     * `platformer.junctionLabel { settlement, node, northYaw? }` → `{ label }` — core's
+     * `junctionLabel`: the player-facing name of a street junction, which a host shows as it
+     * is. `settlement` is a settlement's `name` and `streetNetwork`; `northYaw` absent is
+     * core's default north, null a refused north (no side).
+     */
+    "platformer.junctionLabel": (args) => {
+      const m = "platformer.junctionLabel";
+      coded("invalid-input", () => {
+        declared(m, args.settlement, "settlement", PLATFORMER_LABEL_SETTLEMENT);
+        needString(m, args.node, "node");
+        if (hasOwn3(args, "northYaw") && args.northYaw !== null) needNumber(m, args.northYaw, "northYaw");
+      });
+      return { label: hasOwn3(args, "northYaw") ? junctionLabel(args.settlement, args.node, args.northYaw) : junctionLabel(args.settlement, args.node) };
+    },
+    /** `platformer.courseGraph { world }` → `{ places, links }` — core's `courseGraph`: every settlement's junctions and built lots, and the walk and jump links between them. */
+    "platformer.courseGraph": (args) => {
+      const world2 = coded("invalid-input", () => genreWorldArg("platformer.courseGraph", args.world, "world"));
+      return plain(courseGraph(world2));
+    },
+    /**
+     * `platformer.route { links, from, to, modes?, tuning? }` → `{ route }` — core's
+     * `courseRoute`: the cheapest route a runner with these modes has (null: none). `modes`
+     * and `tuning` absent or null are core's defaults (`walk` and `jump`; core's traversal
+     * tuning).
+     */
+    "platformer.route": (args) => {
+      const m = "platformer.route";
+      coded("invalid-input", () => {
+        needArray(m, args.links, "links").forEach((l, i) => declared(m, l, `links[${i}]`, TRAVERSAL_LINK));
+        needString(m, args.from, "from");
+        needString(m, args.to, "to");
+        optionalArg(args.modes, (v) => stringList(m, v, "modes"));
+        optionalArg(args.tuning, (v) => declared(m, v, "tuning", TRAVERSAL_TUNING));
+      });
+      return { route: plain(courseRoute(args.links, args.from, args.to, orUndefined(args.modes), orUndefined(args.tuning))) };
+    },
+    /** `platformer.generate { world, levelCount?, runnerModes? }` → `{ course }` — core's `generateCourse` (the world's own `platformer` section unread). */
+    "platformer.generate": (args) => {
+      const m = "platformer.generate";
+      const [world2, options] = coded("invalid-input", () => [genreWorldArg(m, args.world, "world"), platformerOptionsArg(m, args, ["levelCount", "runnerModes"])]);
+      return { course: plain(generateCourse(world2, options)) };
+    },
+    /** `platformer.fromIR { platformer, traversal?, world }` → `{ course }` — core's `courseFromIR`: authored levels over the traversal section's links (absent or null: the world's own streets). */
+    "platformer.fromIR": (args) => {
+      const m = "platformer.fromIR";
+      coded("invalid-input", () => {
+        declared(m, args.platformer, "platformer", PLATFORMER_IR);
+        optionalArg(args.traversal, (v) => declared(m, v, "traversal", TRAVERSAL_IR));
+        genreWorldArg(m, args.world, "world");
+      });
+      return { course: plain(courseFromIR(args.platformer, args.traversal, args.world)) };
+    },
+    /**
+     * `platformer.forWorld { world, platformer?, traversal?, levelCount? }` → `{ course }` —
+     * core's `courseForWorld`: the authored levels when the world's `platformer` section has
+     * them, else a course generated from the world. `platformer` and `traversal` (a section,
+     * or null for none) stand over the world's own when given; `levelCount` is the pack
+     * tunable (absent: core's default; an authored level count wins).
+     */
+    "platformer.forWorld": (args) => {
+      const m = "platformer.forWorld";
+      const [world2, options] = coded("invalid-input", () => [platformerWorldArg(m, args), platformerOptionsArg(m, args, ["levelCount"])]);
+      return { course: plain(courseForWorld(world2, options)) };
+    },
+    /** `platformer.levelFacts { course }` → `{ facts }` — core's `courseLevelFacts` (the course's levels as the pack's authored facts). */
+    "platformer.levelFacts": (args) => {
+      coded("invalid-input", () => declared("platformer.levelFacts", args.course, "course", PLATFORMER_COURSE));
+      return { facts: courseLevelFacts(args.course) };
+    },
+    /** `platformer.stars { par, cost }` → `{ stars }` — core's `starsFor` (3 within par, 2 within half as much again, else 1). */
+    "platformer.stars": (args) => {
+      const m = "platformer.stars";
+      coded("invalid-input", () => {
+        needNumber(m, args.par, "par");
+        needNumber(m, args.cost, "cost");
+      });
+      return { stars: starsFor(args.par, args.cost) };
+    },
+    /**
+     * `platformer.director.create { course, probe?, locomotion?, kb? }` → `{ session,
+     * published }` — core's `PlatformerDirector` over a KB of its own, built as core's runner
+     * builds it: `GamePrologEngine` with genre `platformer` (module activation consults the
+     * platformer and traversal packs) on a native KB, then `kb` (a program, or a list of
+     * clauses; refused: `[invalid-input]`), then the director, whose `publish()` writes the
+     * link graph and the levels (`published`). Movement is core's `TraversalPlanner` over the
+     * course's links, inside the director. Its two hosts are callbacks core calls
+     * mid-decision, which cannot cross this ABI, so the host states its answers as data, as
+     * `traversal.session.create` does:
+     *  - `probe { <link id>: passable }`: the geometry answer for a geometric link; a link not
+     *    listed is unanswered, so passable (core's rule). Absent: no probe, every jump makeable.
+     *  - `locomotion { stuck? }`: every movement core orders is recorded (a step's `orders`)
+     *    and arrives, except one to a destination in `stuck`, which leaves the runner where
+     *    `stuck` says. Absent: no locomotion host (every order arrives, none recorded).
+     * `platformer.director.host` restates either. The KB lives as long as the session:
+     * `session.dispose` destroys it.
+     */
+    "platformer.director.create": async (args) => {
+      const m = "platformer.director.create";
+      const input = coded("invalid-input", () => ({
+        course: declared(m, args.course, "course", PLATFORMER_COURSE),
+        probe: optionalArg(args.probe, (v) => probeTableArg(m, v, "probe")),
+        locomotion: optionalArg(args.locomotion, (v) => {
+          needObject(m, v, "locomotion");
+          return optionalArg(v.stuck, (st) => stuckTableArg(m, st, "locomotion.stuck")) ?? {};
+        }),
+        kb: optionalArg(args.kb, (v) => Array.isArray(v) ? stringList(m, v, "kb").join("\n") : needString(m, v, "kb"))
+      }));
+      const hosts = { probe: input.probe ?? null, stuck: input.locomotion ?? null, probed: [], orders: [] };
+      const probe = hosts.probe === null ? void 0 : {
+        query: (q) => {
+          hosts.probed.push(q.link);
+          return hasOwn3(hosts.probe, q.link) ? { passable: hosts.probe[q.link] } : null;
+        }
+      };
+      const locomotion = hosts.stuck === null ? void 0 : {
+        travel: (order2) => {
+          hosts.orders.push(plain(order2));
+          return hasOwn3(hosts.stuck, order2.to) ? { arrived: false, location: hosts.stuck[order2.to], reason: "stuck" } : { arrived: true };
+        }
+      };
+      const engine = await createPrologEngine();
+      try {
+        await GamePrologEngine.create({ genre: "platformer", engine });
+        if (input.kb !== void 0) {
+          const consulted = await engine.consult(input.kb);
+          if (!consulted.success) {
+            const err = refuse2(m, `the KB refused \`kb\`: ${consulted.error}`);
+            err.code = "invalid-input";
+            throw err;
+          }
+        }
+        const director = new PlatformerDirector({ course: input.course, engine, ...probe ? { probe } : {}, ...locomotion ? { locomotion } : {} });
+        const published = await director.publish();
+        return { session: openSession("platformer.director", { director, hosts, onDispose: () => engine.destroy() }), published };
+      } catch (err) {
+        engine.destroy();
+        throw err;
+      }
+    },
+    /** `platformer.director.host { session, probe?, stuck? }` → `{}`: replace the probe's answers or the `stuck` table (only for a director created with that host). */
+    "platformer.director.host": (args) => {
+      const m = "platformer.director.host";
+      const s = session(m, args, "platformer.director");
+      const [probe, stuck] = coded("invalid-input", () => {
+        const p = optionalArg(args.probe, (v) => probeTableArg(m, v, "probe"));
+        const k = optionalArg(args.stuck, (v) => stuckTableArg(m, v, "stuck"));
+        if (p !== void 0 && s.hosts.probe === null) throw refuse2(m, "`probe`: the director was created with no probe");
+        if (k !== void 0 && s.hosts.stuck === null) throw refuse2(m, "`stuck`: the director was created with no locomotion host");
+        return [p, k];
+      });
+      if (probe !== void 0) s.hosts.probe = probe;
+      if (stuck !== void 0) s.hosts.stuck = stuck;
+      return {};
+    },
+    /** `platformer.director.isUnlocked { session, runner, level }` → `{ unlocked }` — core's `isUnlocked` (`platformer_unlocked/2`). */
+    "platformer.director.isUnlocked": async (args) => {
+      const m = "platformer.director.isUnlocked";
+      const s = session(m, args, "platformer.director");
+      platformerRunnerArgs(m, args, "level");
+      return { unlocked: await s.director.isUnlocked(args.runner, args.level) };
+    },
+    /** `platformer.director.enter { session, runner, level }` → core's `enter` outcome (`{ ok, refusal?, reason, applied }`; `unknown_level` and `locked` are values). */
+    "platformer.director.enter": async (args) => {
+      const m = "platformer.director.enter";
+      const s = session(m, args, "platformer.director");
+      platformerRunnerArgs(m, args, "level");
+      return plain(await s.director.enter(args.runner, args.level));
+    },
+    /**
+     * `platformer.director.step { session, runner, to }` → `{ outcome, probed, orders }` —
+     * core's `step`: `outcome` is its `StepOutcome` (the movement as traversal reported it,
+     * where the runner is, the checkpoint touched, the run's cost and, when the step finished
+     * the level, the clear and its stars; `not_running` and `movement` are values); `probed`
+     * the geometric link ids the probe was asked, in order, and `orders` the movements core
+     * ordered the locomotion host (each empty without that host).
+     */
+    "platformer.director.step": async (args) => {
+      const m = "platformer.director.step";
+      const s = session(m, args, "platformer.director");
+      platformerRunnerArgs(m, args, "to");
+      s.hosts.probed.length = 0;
+      s.hosts.orders.length = 0;
+      const outcome = plain(await s.director.step(args.runner, args.to));
+      return { outcome, probed: [...s.hosts.probed], orders: [...s.hosts.orders] };
+    },
+    /** `platformer.director.respawn { session, runner }` → core's `respawn` outcome (with `location`: the furthest checkpoint this run touched, or the level's start). */
+    "platformer.director.respawn": async (args) => {
+      const m = "platformer.director.respawn";
+      const s = session(m, args, "platformer.director");
+      platformerRunnerArgs(m, args);
+      return plain(await s.director.respawn(args.runner));
+    },
+    /** `platformer.director.hint { session, runner }` → `{ route }` — core's `hint`: the cheapest way from where the runner stands to the current goal (null: none). */
+    "platformer.director.hint": (args) => {
+      const m = "platformer.director.hint";
+      const s = session(m, args, "platformer.director");
+      platformerRunnerArgs(m, args);
+      return { route: plain(s.director.hint(args.runner)) };
+    },
+    /** `platformer.director.progress { session, runner }` → `{ progress }` — core's `progress` (a quest tracker's counts). */
+    "platformer.director.progress": async (args) => {
+      const m = "platformer.director.progress";
+      const s = session(m, args, "platformer.director");
+      platformerRunnerArgs(m, args);
+      return { progress: plain(await s.director.progress(args.runner)) };
+    },
+    /** `platformer.director.locationOf { session, runner }` → `{ location }` — where core's traversal last put the runner (`director.traversal.locationOf`; null: never put on a level). */
+    "platformer.director.locationOf": (args) => {
+      const m = "platformer.director.locationOf";
+      const s = session(m, args, "platformer.director");
+      platformerRunnerArgs(m, args);
+      return { location: plain(s.director.traversal.locationOf(args.runner)) };
+    },
+    /** `platformer.director.serialize { session }` → `{ state }` — core's `serialize` (the save block's value). */
+    "platformer.director.serialize": (args) => {
+      const s = session("platformer.director.serialize", args, "platformer.director");
+      return { state: plain(s.director.serialize()) };
+    },
+    /** `platformer.director.restore { session, state }` → core's `restore` outcome (a director that has runners refuses: `schema`). */
+    "platformer.director.restore": async (args) => {
+      const m = "platformer.director.restore";
+      const s = session(m, args, "platformer.director");
+      coded("invalid-input", () => declared(m, args.state, "state", PLATFORMER_DIRECTOR_STATE));
+      return plain(await s.director.restore(args.state));
+    },
+    /** `platformer.save.read { block? }` → core's `readPlatformerBlock` (`{ ok: true, value }`, null for no block; `{ ok: false, keys }`). */
+    "platformer.save.read": (args) => plain(readPlatformerBlock(args.block)),
+    /** `platformer.save.block { state? }` → `{ block }` — core's `platformerSaveBlock` (absent or null state: null). */
+    "platformer.save.block": (args) => {
+      coded("invalid-input", () => optionalArg(args.state, (v) => declared("platformer.save.block", v, "state", PLATFORMER_DIRECTOR_STATE)));
+      return { block: plain(platformerSaveBlock(orUndefined(args.state))) };
+    },
+    /** `platformer.save.blockOf { block }` → `{ block }` — core's `platformerBlockOf` (only its member, each row with only its keys, rows by runner, clears by level). */
+    "platformer.save.blockOf": (args) => {
+      coded("invalid-input", () => declared("platformer.save.blockOf", args.block, "block", PLATFORMER_DIRECTOR_STATE));
+      return { block: plain(platformerBlockOf(args.block)) };
     },
     // ── in-game UI (P2, P3, P6, P8) ─────────────────────────────────────────────
     /** `ui.notifications.create {}` → `{ session, view }` — core's `Notifications` toast queue. */
