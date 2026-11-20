@@ -54688,7 +54688,7 @@ Return JSON format:
     return coded("invalid-input", () => declared(method, args, "args", [["section", tChatCefrSection, REQ], ...spec]));
   }
   function chatWordKey(text4) {
-    return wordKey(String(text4).normalize("NFC").replace(/[‘’]/g, "'").replace(/\s+/g, " ").trim());
+    return wordKey(String(text4).normalize("NFC").replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, " ").trim());
   }
   function chatLexiconOf(section) {
     const byKey = /* @__PURE__ */ new Map();

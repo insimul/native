@@ -332,7 +332,7 @@
   },
   {
    "name": "spanish-real",
-   "note": "A real language with homographs: `once` (eleven), `sin` (without) and `red` (net) are English words too (`alsoEnglish`); accented keys (`dónde`, `mañana` with an alternative), a two-word phrase (`buenos días`), and the three difficulties.",
+   "note": "A real language with homographs: `once` (eleven), `sin` (without) and `red` (net) are English words too (`alsoEnglish`); accented keys (`dónde`, `mañana` with an alternative), a two-word phrase (`buenos días`), a two-letter gloss (`en`, in), and the three difficulties.",
    "chatCefr": {
     "version": 1,
     "baseLanguage": "English",
@@ -534,6 +534,17 @@
        "translation": "where",
        "alternatives": [],
        "partOfSpeech": "adverb",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
+       "word": "en",
+       "key": "en",
+       "translation": "in",
+       "alternatives": [],
+       "partOfSpeech": "preposition",
        "difficulty": "beginner",
        "context": null,
        "source": "wordTranslationCache",
@@ -4032,6 +4043,70 @@
    "nextState": {
     "seen": [],
     "newWordIndex": 0
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss word shorter than three letters (`in`, the gloss of `en`) is no English evidence: the nearest evidence to `red` is `calle`, two units on, so `red` is Spanish.",
+   "level": "A1",
+   "line": "Red in calle",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "calle",
+     "translation": "street",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "calle",
+     "red"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A token that keys to nothing (`—`) ends a clause: `once` takes the evidence of its own clause (`calle`, two units on), not the English `friend` just before the dash.",
+   "level": "A1",
+   "line": "Good friend — once mi calle",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "once",
+     "translation": "eleven",
+     "partOfSpeech": "number",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "calle",
+     "translation": "street",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "calle",
+     "once"
+    ],
+    "newWordIndex": 2
    }
   },
   {

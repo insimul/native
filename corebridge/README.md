@@ -2718,10 +2718,10 @@ half; the grammar check, the strips and the speech steps (the section's `grammar
 
 Evidence: the corpus `tests/chat-cefr/chat-cefr-corpus.json` is replayable data in the
 section's own conformance families (9 hand-written sections; `levelCases` 6,
-`npcModeCases` 21, `lookupCases` 38, `lineCases` 39, `lineLanguageRule`,
+`npcModeCases` 21, `lookupCases` 38, `lineCases` 41, `lineLanguageRule`,
 `messageKindCases` 18, `messageHintCases` 10), every expectation computed by the export's
 own rule. `tools/chat-cefr-cases.mjs --write` transcribes it into
-`tests/cases/chat-cefr-corpus.json` (133 cases, each section named by `$file`), which both
+`tests/cases/chat-cefr-corpus.json` (135 cases, each section named by `$file`), which both
 case legs run and `corebridge_cases_parity` diffs byte for byte; `chat_cefr_cases` holds the
 transcription to the corpus and `chat_cefr_cases_negative` names sixteen perturbations.
 Hand cases: `tests/cases/bridge-chat-cefr.json` (every declared member of the section answered

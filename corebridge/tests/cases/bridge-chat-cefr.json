@@ -47,7 +47,7 @@
       },
       "targetLanguageName": "Spanish",
       "lexiconReason": null,
-      "lexiconSize": 12,
+      "lexiconSize": 13,
       "hasMessages": true
      }
     },
@@ -7464,6 +7464,1427 @@
      },
      "expect": {
       "show": true
+     }
+    }
+   ]
+  },
+  {
+   "name": "chatCefr.shouldShowVocabHint / vocabHintsForLine: a level whose own row says advancedVocabOnly with a frequency above 0 shows advanced words only",
+   "steps": [
+    {
+     "call": "chatCefr.shouldShowVocabHint",
+     "args": {
+      "section": {
+       "version": 1,
+       "baseLanguage": "English",
+       "levels": {
+        "A1": {
+         "npcLanguageModes": {
+          "bilingual": 60,
+          "simplified": 40,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 2,
+          "newWordHintFrequency": 1,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 200,
+          "label": "top 200 most common words"
+         }
+        },
+        "A2": {
+         "npcLanguageModes": {
+          "bilingual": 30,
+          "simplified": 70,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 1,
+          "newWordHintFrequency": 3,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 500,
+          "label": "top 500 most common words"
+         }
+        },
+        "B1": {
+         "npcLanguageModes": {
+          "bilingual": 10,
+          "simplified": 0,
+          "natural": 90
+         },
+         "hints": {
+          "translationMode": "hover",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 1500,
+          "label": "top 1500 most common words"
+         }
+        },
+        "B2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary"
+         }
+        },
+        "C1": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary with sophisticated register"
+         }
+        },
+        "C2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "native-level unrestricted vocabulary"
+         }
+        }
+       },
+       "lexicon": {
+        "targetLanguage": {
+         "id": "tongue-1",
+         "name": "Ostrari",
+         "code": null,
+         "kind": "constructed"
+        },
+        "reason": null,
+        "maxPhraseWords": 2,
+        "entries": [
+         {
+          "word": "dor'ath",
+          "key": "dor'ath",
+          "translation": "gate",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "ilo",
+          "key": "ilo",
+          "translation": "friend",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "kesh",
+          "key": "kesh",
+          "translation": "drink",
+          "alternatives": [
+           "water"
+          ],
+          "partOfSpeech": "verb",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "lune",
+          "key": "lune",
+          "translation": "bread",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": "the daily loaf",
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "tesh mira",
+          "key": "tesh mira",
+          "translation": "good day",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "varenn",
+          "key": "varenn",
+          "translation": "harbour",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "intermediate",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "Varo",
+          "key": "varo",
+          "translation": "market",
+          "alternatives": [],
+          "partOfSpeech": "noun",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "zhaltor",
+          "key": "zhaltor",
+          "translation": "thousand",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "advanced",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         }
+        ]
+       }
+      },
+      "level": "A1",
+      "newWordIndex": 0,
+      "difficulty": "beginner",
+      "mastered": false
+     },
+     "expect": {
+      "show": false
+     }
+    },
+    {
+     "call": "chatCefr.shouldShowVocabHint",
+     "args": {
+      "section": {
+       "version": 1,
+       "baseLanguage": "English",
+       "levels": {
+        "A1": {
+         "npcLanguageModes": {
+          "bilingual": 60,
+          "simplified": 40,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 2,
+          "newWordHintFrequency": 1,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 200,
+          "label": "top 200 most common words"
+         }
+        },
+        "A2": {
+         "npcLanguageModes": {
+          "bilingual": 30,
+          "simplified": 70,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 1,
+          "newWordHintFrequency": 3,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 500,
+          "label": "top 500 most common words"
+         }
+        },
+        "B1": {
+         "npcLanguageModes": {
+          "bilingual": 10,
+          "simplified": 0,
+          "natural": 90
+         },
+         "hints": {
+          "translationMode": "hover",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 1500,
+          "label": "top 1500 most common words"
+         }
+        },
+        "B2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary"
+         }
+        },
+        "C1": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary with sophisticated register"
+         }
+        },
+        "C2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "native-level unrestricted vocabulary"
+         }
+        }
+       },
+       "lexicon": {
+        "targetLanguage": {
+         "id": "tongue-1",
+         "name": "Ostrari",
+         "code": null,
+         "kind": "constructed"
+        },
+        "reason": null,
+        "maxPhraseWords": 2,
+        "entries": [
+         {
+          "word": "dor'ath",
+          "key": "dor'ath",
+          "translation": "gate",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "ilo",
+          "key": "ilo",
+          "translation": "friend",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "kesh",
+          "key": "kesh",
+          "translation": "drink",
+          "alternatives": [
+           "water"
+          ],
+          "partOfSpeech": "verb",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "lune",
+          "key": "lune",
+          "translation": "bread",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": "the daily loaf",
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "tesh mira",
+          "key": "tesh mira",
+          "translation": "good day",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "varenn",
+          "key": "varenn",
+          "translation": "harbour",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "intermediate",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "Varo",
+          "key": "varo",
+          "translation": "market",
+          "alternatives": [],
+          "partOfSpeech": "noun",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "zhaltor",
+          "key": "zhaltor",
+          "translation": "thousand",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "advanced",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         }
+        ]
+       }
+      },
+      "level": "A1",
+      "newWordIndex": 0,
+      "difficulty": "advanced",
+      "mastered": false
+     },
+     "expect": {
+      "show": true
+     }
+    },
+    {
+     "call": "chatCefr.shouldShowVocabHint",
+     "args": {
+      "section": {
+       "version": 1,
+       "baseLanguage": "English",
+       "levels": {
+        "A1": {
+         "npcLanguageModes": {
+          "bilingual": 60,
+          "simplified": 40,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 2,
+          "newWordHintFrequency": 1,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 200,
+          "label": "top 200 most common words"
+         }
+        },
+        "A2": {
+         "npcLanguageModes": {
+          "bilingual": 30,
+          "simplified": 70,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 1,
+          "newWordHintFrequency": 3,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 500,
+          "label": "top 500 most common words"
+         }
+        },
+        "B1": {
+         "npcLanguageModes": {
+          "bilingual": 10,
+          "simplified": 0,
+          "natural": 90
+         },
+         "hints": {
+          "translationMode": "hover",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 1500,
+          "label": "top 1500 most common words"
+         }
+        },
+        "B2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary"
+         }
+        },
+        "C1": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary with sophisticated register"
+         }
+        },
+        "C2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "native-level unrestricted vocabulary"
+         }
+        }
+       },
+       "lexicon": {
+        "targetLanguage": {
+         "id": "tongue-1",
+         "name": "Ostrari",
+         "code": null,
+         "kind": "constructed"
+        },
+        "reason": null,
+        "maxPhraseWords": 2,
+        "entries": [
+         {
+          "word": "dor'ath",
+          "key": "dor'ath",
+          "translation": "gate",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "ilo",
+          "key": "ilo",
+          "translation": "friend",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "kesh",
+          "key": "kesh",
+          "translation": "drink",
+          "alternatives": [
+           "water"
+          ],
+          "partOfSpeech": "verb",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "lune",
+          "key": "lune",
+          "translation": "bread",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": "the daily loaf",
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "tesh mira",
+          "key": "tesh mira",
+          "translation": "good day",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "varenn",
+          "key": "varenn",
+          "translation": "harbour",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "intermediate",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "Varo",
+          "key": "varo",
+          "translation": "market",
+          "alternatives": [],
+          "partOfSpeech": "noun",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "zhaltor",
+          "key": "zhaltor",
+          "translation": "thousand",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "advanced",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         }
+        ]
+       }
+      },
+      "level": "A1",
+      "newWordIndex": 0,
+      "difficulty": null,
+      "mastered": false
+     },
+     "expect": {
+      "show": false
+     }
+    },
+    {
+     "call": "chatCefr.shouldShowVocabHint",
+     "args": {
+      "section": {
+       "version": 1,
+       "baseLanguage": "English",
+       "levels": {
+        "A1": {
+         "npcLanguageModes": {
+          "bilingual": 60,
+          "simplified": 40,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 2,
+          "newWordHintFrequency": 1,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 200,
+          "label": "top 200 most common words"
+         }
+        },
+        "A2": {
+         "npcLanguageModes": {
+          "bilingual": 30,
+          "simplified": 70,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 1,
+          "newWordHintFrequency": 3,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 500,
+          "label": "top 500 most common words"
+         }
+        },
+        "B1": {
+         "npcLanguageModes": {
+          "bilingual": 10,
+          "simplified": 0,
+          "natural": 90
+         },
+         "hints": {
+          "translationMode": "hover",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 1500,
+          "label": "top 1500 most common words"
+         }
+        },
+        "B2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary"
+         }
+        },
+        "C1": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary with sophisticated register"
+         }
+        },
+        "C2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "native-level unrestricted vocabulary"
+         }
+        }
+       },
+       "lexicon": {
+        "targetLanguage": {
+         "id": "tongue-1",
+         "name": "Ostrari",
+         "code": null,
+         "kind": "constructed"
+        },
+        "reason": null,
+        "maxPhraseWords": 2,
+        "entries": [
+         {
+          "word": "dor'ath",
+          "key": "dor'ath",
+          "translation": "gate",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "ilo",
+          "key": "ilo",
+          "translation": "friend",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "kesh",
+          "key": "kesh",
+          "translation": "drink",
+          "alternatives": [
+           "water"
+          ],
+          "partOfSpeech": "verb",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "lune",
+          "key": "lune",
+          "translation": "bread",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": "the daily loaf",
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "tesh mira",
+          "key": "tesh mira",
+          "translation": "good day",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "varenn",
+          "key": "varenn",
+          "translation": "harbour",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "intermediate",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "Varo",
+          "key": "varo",
+          "translation": "market",
+          "alternatives": [],
+          "partOfSpeech": "noun",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "zhaltor",
+          "key": "zhaltor",
+          "translation": "thousand",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "advanced",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         }
+        ]
+       }
+      },
+      "level": "A1",
+      "newWordIndex": 3,
+      "difficulty": "intermediate",
+      "mastered": false
+     },
+     "expect": {
+      "show": false
+     }
+    },
+    {
+     "call": "chatCefr.shouldShowVocabHint",
+     "args": {
+      "section": {
+       "version": 1,
+       "baseLanguage": "English",
+       "levels": {
+        "A1": {
+         "npcLanguageModes": {
+          "bilingual": 60,
+          "simplified": 40,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 2,
+          "newWordHintFrequency": 1,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 200,
+          "label": "top 200 most common words"
+         }
+        },
+        "A2": {
+         "npcLanguageModes": {
+          "bilingual": 30,
+          "simplified": 70,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 1,
+          "newWordHintFrequency": 3,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 500,
+          "label": "top 500 most common words"
+         }
+        },
+        "B1": {
+         "npcLanguageModes": {
+          "bilingual": 10,
+          "simplified": 0,
+          "natural": 90
+         },
+         "hints": {
+          "translationMode": "hover",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 1500,
+          "label": "top 1500 most common words"
+         }
+        },
+        "B2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary"
+         }
+        },
+        "C1": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary with sophisticated register"
+         }
+        },
+        "C2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "native-level unrestricted vocabulary"
+         }
+        }
+       },
+       "lexicon": {
+        "targetLanguage": {
+         "id": "tongue-1",
+         "name": "Ostrari",
+         "code": null,
+         "kind": "constructed"
+        },
+        "reason": null,
+        "maxPhraseWords": 2,
+        "entries": [
+         {
+          "word": "dor'ath",
+          "key": "dor'ath",
+          "translation": "gate",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "ilo",
+          "key": "ilo",
+          "translation": "friend",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "kesh",
+          "key": "kesh",
+          "translation": "drink",
+          "alternatives": [
+           "water"
+          ],
+          "partOfSpeech": "verb",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "lune",
+          "key": "lune",
+          "translation": "bread",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": "the daily loaf",
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "tesh mira",
+          "key": "tesh mira",
+          "translation": "good day",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "varenn",
+          "key": "varenn",
+          "translation": "harbour",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "intermediate",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "Varo",
+          "key": "varo",
+          "translation": "market",
+          "alternatives": [],
+          "partOfSpeech": "noun",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "zhaltor",
+          "key": "zhaltor",
+          "translation": "thousand",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "advanced",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         }
+        ]
+       }
+      },
+      "level": "A1",
+      "newWordIndex": 1,
+      "difficulty": "advanced",
+      "mastered": false
+     },
+     "expect": {
+      "show": true
+     }
+    },
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "version": 1,
+       "baseLanguage": "English",
+       "levels": {
+        "A1": {
+         "npcLanguageModes": {
+          "bilingual": 60,
+          "simplified": 40,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 2,
+          "newWordHintFrequency": 1,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 200,
+          "label": "top 200 most common words"
+         }
+        },
+        "A2": {
+         "npcLanguageModes": {
+          "bilingual": 30,
+          "simplified": 70,
+          "natural": 0
+         },
+         "hints": {
+          "translationMode": "inline",
+          "showTranslateButton": true,
+          "translateButtonProminence": 1,
+          "newWordHintFrequency": 3,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 500,
+          "label": "top 500 most common words"
+         }
+        },
+        "B1": {
+         "npcLanguageModes": {
+          "bilingual": 10,
+          "simplified": 0,
+          "natural": 90
+         },
+         "hints": {
+          "translationMode": "hover",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": 1500,
+          "label": "top 1500 most common words"
+         }
+        },
+        "B2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": true
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary"
+         }
+        },
+        "C1": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "unrestricted vocabulary with sophisticated register"
+         }
+        },
+        "C2": {
+         "npcLanguageModes": {
+          "bilingual": 0,
+          "simplified": 0,
+          "natural": 100
+         },
+         "hints": {
+          "translationMode": "click",
+          "showTranslateButton": false,
+          "translateButtonProminence": 0,
+          "newWordHintFrequency": 0,
+          "advancedVocabOnly": false
+         },
+         "vocabularyFrequency": {
+          "min": 1,
+          "max": null,
+          "label": "native-level unrestricted vocabulary"
+         }
+        }
+       },
+       "lexicon": {
+        "targetLanguage": {
+         "id": "tongue-1",
+         "name": "Ostrari",
+         "code": null,
+         "kind": "constructed"
+        },
+        "reason": null,
+        "maxPhraseWords": 2,
+        "entries": [
+         {
+          "word": "dor'ath",
+          "key": "dor'ath",
+          "translation": "gate",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "ilo",
+          "key": "ilo",
+          "translation": "friend",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": null,
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "kesh",
+          "key": "kesh",
+          "translation": "drink",
+          "alternatives": [
+           "water"
+          ],
+          "partOfSpeech": "verb",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "lune",
+          "key": "lune",
+          "translation": "bread",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": "the daily loaf",
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "tesh mira",
+          "key": "tesh mira",
+          "translation": "good day",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "beginner",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "varenn",
+          "key": "varenn",
+          "translation": "harbour",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "intermediate",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         },
+         {
+          "word": "Varo",
+          "key": "varo",
+          "translation": "market",
+          "alternatives": [],
+          "partOfSpeech": "noun",
+          "difficulty": "beginner",
+          "context": null,
+          "source": "wordTranslationCache",
+          "alsoEnglish": false
+         },
+         {
+          "word": "zhaltor",
+          "key": "zhaltor",
+          "translation": "thousand",
+          "alternatives": [],
+          "partOfSpeech": null,
+          "difficulty": "advanced",
+          "context": null,
+          "source": "sampleWords",
+          "alsoEnglish": false
+         }
+        ]
+       }
+      },
+      "line": "Lune zhaltor varenn",
+      "level": "A1"
+     },
+     "expect": {
+      "hints": [
+       {
+        "word": "zhaltor",
+        "translation": "thousand",
+        "difficulty": "advanced"
+       }
+      ],
+      "state": {
+       "seen": [
+        "lune",
+        "varenn",
+        "zhaltor"
+       ],
+       "newWordIndex": 3
+      }
      }
     }
    ]

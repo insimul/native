@@ -3902,7 +3902,7 @@ const CHAT_MESSAGE_ROLES = ['user', 'assistant', 'system'];
 /** The line rule's three constants (the corpus's `lineLanguageRule`). */
 const CHAT_ENGLISH_EVIDENCE_MIN_LENGTH = 3;
 const CHAT_GLOSS_ARTICLES = ['the', 'a', 'an'];
-const CHAT_CLAUSE_END_PATTERN = '[.!?;:…][)\\]»”"\']*$';
+const CHAT_CLAUSE_END_PATTERN = '[.!?;:\u2026][)\\]\u00bb\u201d"\']*$';
 const CHAT_CLAUSE_END = new RegExp(CHAT_CLAUSE_END_PATTERN);
 const CHAT_NON_ASCII = /[^\x00-\x7F]/;
 
@@ -3994,7 +3994,7 @@ function chatCefrArgs(method, args, spec) {
  * characters that are not a letter, mark, number or `_` stripped, then lower case).
  */
 function chatWordKey(text) {
-	return wordKey(String(text).normalize('NFC').replace(/[‘’]/g, "'").replace(/\s+/g, ' ').trim());
+	return wordKey(String(text).normalize('NFC').replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, ' ').trim());
 }
 
 /** The section's lexicon read for lookups: the FIRST entry of each key (entries are one per key, in key order). */

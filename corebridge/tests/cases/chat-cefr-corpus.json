@@ -4648,7 +4648,95 @@
    ]
   },
   {
-   "name": "lineCases[25] spanish-real A2: A homograph judged English (its clause holds the English `friend`) takes no index and is not marked seen; `amigo` after the `;` takes index 0 and, at A2, its card.",
+   "name": "lineCases[25] spanish-real A1: A gloss word shorter than three letters (`in`, the gloss of `en`) is no English evidence: the nearest evidence to `red` is `calle`, two units on, so `red` is Spanish.",
+   "steps": [
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "$file": "../chat-cefr/chat-cefr-corpus.json",
+       "$path": "worlds.1.chatCefr"
+      },
+      "line": "Red in calle",
+      "level": "A1",
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      },
+      "mastered": []
+     },
+     "expect": {
+      "hints": [
+       {
+        "word": "red",
+        "translation": "net",
+        "partOfSpeech": "noun",
+        "difficulty": "beginner"
+       },
+       {
+        "word": "calle",
+        "translation": "street",
+        "partOfSpeech": "noun",
+        "difficulty": "beginner"
+       }
+      ],
+      "state": {
+       "seen": [
+        "calle",
+        "red"
+       ],
+       "newWordIndex": 2
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "lineCases[26] spanish-real A1: A token that keys to nothing (`—`) ends a clause: `once` takes the evidence of its own clause (`calle`, two units on), not the English `friend` just before the dash.",
+   "steps": [
+    {
+     "call": "chatCefr.vocabHintsForLine",
+     "args": {
+      "section": {
+       "$file": "../chat-cefr/chat-cefr-corpus.json",
+       "$path": "worlds.1.chatCefr"
+      },
+      "line": "Good friend — once mi calle",
+      "level": "A1",
+      "state": {
+       "seen": [],
+       "newWordIndex": 0
+      },
+      "mastered": []
+     },
+     "expect": {
+      "hints": [
+       {
+        "word": "once",
+        "translation": "eleven",
+        "partOfSpeech": "number",
+        "difficulty": "beginner"
+       },
+       {
+        "word": "calle",
+        "translation": "street",
+        "partOfSpeech": "noun",
+        "difficulty": "beginner"
+       }
+      ],
+      "state": {
+       "seen": [
+        "calle",
+        "once"
+       ],
+       "newWordIndex": 2
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "lineCases[27] spanish-real A2: A homograph judged English (its clause holds the English `friend`) takes no index and is not marked seen; `amigo` after the `;` takes index 0 and, at A2, its card.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4685,7 +4773,7 @@
    ]
   },
   {
-   "name": "lineCases[26] spanish-real A1: A1 with a mastered accented word given decomposed: keyed through NFC it matches `mañana`.",
+   "name": "lineCases[28] spanish-real A1: A1 with a mastered accented word given decomposed: keyed through NFC it matches `mañana`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4725,7 +4813,7 @@
    ]
   },
   {
-   "name": "lineCases[27] spanish-real C2: C2 (frequency 0): only the advanced `desafortunadamente`.",
+   "name": "lineCases[29] spanish-real C2: C2 (frequency 0): only the advanced `desafortunadamente`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4763,7 +4851,7 @@
    ]
   },
   {
-   "name": "lineCases[28] french-real A1: An English line with four homographs and English glosses: no target evidence, nothing hinted.",
+   "name": "lineCases[30] french-real A1: An English line with four homographs and English glosses: no target evidence, nothing hinted.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4791,7 +4879,7 @@
    ]
   },
   {
-   "name": "lineCases[29] french-real A1: A mixed line: the English `chance` is passed over; the French clause after the dash hints its words.",
+   "name": "lineCases[31] french-real A1: A mixed line: the English `chance` is passed over; the French clause after the dash hints its words.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4842,7 +4930,7 @@
    ]
   },
   {
-   "name": "lineCases[30] french-real A1: Evidence words: `bonne` speaks for `chance`.",
+   "name": "lineCases[32] french-real A1: Evidence words: `bonne` speaks for `chance`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4879,7 +4967,7 @@
    ]
   },
   {
-   "name": "lineCases[31] french-real A1: A three-word phrase is one match (`il y a`), then `un an` makes `an` French by the evidence word `un`.",
+   "name": "lineCases[33] french-real A1: A three-word phrase is one match (`il y a`), then `un an` makes `an` French by the evidence word `un`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4922,7 +5010,7 @@
    ]
   },
   {
-   "name": "lineCases[32] french-real A1: With no evidence in its own clause, a homograph takes the nearest in the whole line: the first sentence holds none for `pain` (`no` and `gain` are no evidence), and the nearest in the line is the evidence word `La`, so `pain` is hinted; `place` is French by its own clause.",
+   "name": "lineCases[34] french-real A1: With no evidence in its own clause, a homograph takes the nearest in the whole line: the first sentence holds none for `pain` (`no` and `gain` are no evidence), and the nearest in the line is the evidence word `La`, so `pain` is hinted; `place` is French by its own clause.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -4973,7 +5061,7 @@
    ]
   },
   {
-   "name": "lineCases[33] french-real A1: A gloss with an article read past: `pain — the bread —` glosses `pain`.",
+   "name": "lineCases[35] french-real A1: A gloss with an article read past: `pain — the bread —` glosses `pain`.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5010,7 +5098,7 @@
    ]
   },
   {
-   "name": "lineCases[34] french-real A2: A2 hints every third new word: `mon` (index 0) gets its card, `ami` (1) and `grand` (2) do not; the bracketed gloss after a target word changes nothing.",
+   "name": "lineCases[36] french-real A2: A2 hints every third new word: `mon` (index 0) gets its card, `ami` (1) and `grand` (2) do not; the bracketed gloss after a target word changes nothing.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5049,7 +5137,7 @@
    ]
   },
   {
-   "name": "lineCases[35] cyrillic-real A1: Cyrillic words keep their letters; the phrase matches first.",
+   "name": "lineCases[37] cyrillic-real A1: Cyrillic words keep their letters; the phrase matches first.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5099,7 +5187,7 @@
    ]
   },
   {
-   "name": "lineCases[36] vietnamese-real A1: A decomposed line finds the composed keys (NFC); the phrase `cà phê` is one match.",
+   "name": "lineCases[38] vietnamese-real A1: A decomposed line finds the composed keys (NFC); the phrase `cà phê` is one match.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5150,7 +5238,7 @@
    ]
   },
   {
-   "name": "lineCases[37] no-language-system A1: A world with nothing to learn: no hints, the state unchanged.",
+   "name": "lineCases[39] no-language-system A1: A world with nothing to learn: no hints, the state unchanged.",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",
@@ -5182,7 +5270,7 @@
    ]
   },
   {
-   "name": "lineCases[38] earlier-shape A1: An entry with no alsoEnglish is no homograph: `once` is hinted even in an English line (the earlier rule).",
+   "name": "lineCases[40] earlier-shape A1: An entry with no alsoEnglish is no homograph: `once` is hinted even in an English line (the earlier rule).",
    "steps": [
     {
      "call": "chatCefr.vocabHintsForLine",

@@ -372,11 +372,11 @@
   "passByCorpus": [
     "conformance/villagers/pass-by.json"
   ],
-  "bundleBytes": 2735152,
-  "bundleSha256": "3a865f93d44ae402b12ddf0cefd0c1ef0fa65e13a9eeb21cdb9da4224b042270",
+  "bundleBytes": 2735158,
+  "bundleSha256": "f8025e3ad53b8a0f8f362bd6308e3f2698535347079a538a58c39cfa08438c26",
   "files": {
-    "vendor/core/insimul-core-bundle.js": "3a865f93d44ae402b12ddf0cefd0c1ef0fa65e13a9eeb21cdb9da4224b042270",
-    "vendor/core/insimul_core_bundle.c": "ba232b5b74bba7df8e4573ff4b31433ea6a35fb64615ce77c48bf476ee8627e8",
+    "vendor/core/insimul-core-bundle.js": "f8025e3ad53b8a0f8f362bd6308e3f2698535347079a538a58c39cfa08438c26",
+    "vendor/core/insimul_core_bundle.c": "ed8ff2001054767773896e2e58d9c0dee9967161e22f72eb40fb351d5998454a",
     "vendor/core/insimul_core_bundle.h": "018ad9ea2e1b2693e6bb224bf845ed63a6b01d26249d93ced1b7e04162cbbd08",
     "vendor/core/cases/core-genre-genre-pieces-build-plan.json": "60388e9cb5652085356059a515382be7ba5d98dd172677c025136c4f640d06ca",
     "vendor/core/cases/core-genre-genre-pieces-kinds.json": "07082aa01cf17b5ecf6154cbb738842e344c40fd5a6f256d3ca81d078f281c83",
@@ -522,7 +522,7 @@
     "vendor/core/conformance/strategy/run.json": "fa4765abfbe38e68a0750f20d40e959a1c0d9c82c6fba18d9f453b11e353ef87",
     "vendor/core/conformance/strategy/save.json": "f093109d3f5173c2b9fd0666056bb03a8f1105ef987f0570be382da5d5a68065",
     "vendor/core/conformance/villagers/pass-by.json": "194463874417691c766a6d3a85d91ce3a347396b4793013518906c32219454af",
-    "js/entry.js": "2d49f6e95e8ee1d16bb0b10c022295c4fa1ad8ecbc2fdeaae4d96c530f259f12",
+    "js/entry.js": "deefe1cfc636e0a3b63a8e5d6153ba1da47f5a6e71fc1c1e428c318c03491b65",
     "js/host-console.js": "f123ce4a4728838d5d1b0e8a29aacbf39f13d75b31468516fa5b6bcd36341fa3",
     "js/host-crypto.js": "3768d0976c2a3793524c3ba94ec4ce90ba2e1e280b361d6f05dbd44bf228ea03",
     "js/host-prolog-engine.js": "a6bfb9fcd60c24be8c0e8a6b7a6a3e27ff45352873c384e2711a90e26c781ab6",
