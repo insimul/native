@@ -332,7 +332,7 @@
   },
   {
    "name": "spanish-real",
-   "note": "A real language with homographs: `once` (eleven), `sin` (without) and `red` (net) are English words too (`alsoEnglish`); accented keys (`dónde`, `mañana` with an alternative), a two-word phrase (`buenos días`), a two-letter gloss (`en`, in), and the three difficulties.",
+   "note": "A real language with homographs: `once` (eleven), `sin` (without) and `red` (net) are English words too (`alsoEnglish`); accented keys (`dónde`, `mañana` with an alternative), a two-word phrase (`buenos días`), a two-letter gloss (`en`, in), a one-word key that also starts a phrase key (`buenos`, `buenos días`), a homograph with an English alternative (`fin`, end or finish), and the three difficulties.",
    "chatCefr": {
     "version": 1,
     "baseLanguage": "English",
@@ -496,6 +496,17 @@
        "alsoEnglish": false
       },
       {
+       "word": "buenos",
+       "key": "buenos",
+       "translation": "good",
+       "alternatives": [],
+       "partOfSpeech": "adjective",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": false
+      },
+      {
        "word": "buenos días",
        "key": "buenos días",
        "translation": "good morning",
@@ -549,6 +560,19 @@
        "context": null,
        "source": "wordTranslationCache",
        "alsoEnglish": false
+      },
+      {
+       "word": "fin",
+       "key": "fin",
+       "translation": "end",
+       "alternatives": [
+        "finish"
+       ],
+       "partOfSpeech": "noun",
+       "difficulty": "beginner",
+       "context": null,
+       "source": "wordTranslationCache",
+       "alsoEnglish": true
       },
       {
        "word": "mañana",
@@ -3933,6 +3957,126 @@
   },
   {
    "world": "spanish-real",
+   "why": "A homograph glossed in square brackets (a token opening with `[`, no separator token needed) is target-language: without the gloss, `net` (English, one unit on) would make `red` English.",
+   "level": "A1",
+   "line": "We fish with a red [net] here",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "red",
+     "translation": "net",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "red"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A gloss is compared with the alternatives too: `fin — finish —` glosses `fin` by its alternative, though its translation is `end`; unglossed, the English `finish` one unit on would make it English.",
+   "level": "A1",
+   "line": "We reach the fin — finish — today",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "fin",
+     "translation": "end",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "fin"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "A clause end may carry closing quotes: `friend.\"` ends the clause, so `once` takes the evidence of its own (`amigo`), not the English `friend` just before.",
+   "level": "A1",
+   "line": "\"Good morning, friend.\" once amigo",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "once",
+     "translation": "eleven",
+     "partOfSpeech": "number",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "amigo",
+     "translation": "friend",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "amigo",
+     "once"
+    ],
+    "newWordIndex": 2
+   }
+  },
+  {
+   "world": "spanish-real",
+   "why": "Longest first: `Buenos días` is one match though `buenos` alone is a key too; the later `buenos` alone is its own match and new.",
+   "level": "A1",
+   "line": "Buenos días, amigo; buenos amigos.",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "buenos días",
+     "translation": "good morning",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "amigo",
+     "translation": "friend",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "buenos",
+     "translation": "good",
+     "partOfSpeech": "adjective",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "amigo",
+     "buenos",
+     "buenos días"
+    ],
+    "newWordIndex": 3
+   }
+  },
+  {
+   "world": "spanish-real",
    "why": "No separator and no bracket between `red` and `net`: no gloss; `net`, an English gloss word of the lexicon, is the nearest evidence, so `red` is English.",
    "level": "A1",
    "line": "The red net is old",
@@ -4266,6 +4410,70 @@
      "chance"
     ],
     "newWordIndex": 1
+   }
+  },
+  {
+   "world": "french-real",
+   "why": "English evidence counts the alternatives too: `tall` (an alternative of `grand`, no translation) before `pain` is as near as the evidence word `la` after, and the one before decides, so `pain` is English; `ville` is hinted.",
+   "level": "A1",
+   "line": "Tall pain la ville",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "ville",
+     "translation": "town",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ville"
+    ],
+    "newWordIndex": 1
+   }
+  },
+  {
+   "world": "french-real",
+   "why": "A clause end may carry a closing guillemet: `friend!»` ends the clause, so `chance` takes the evidence of its own (`mon`), not the English `friend` just before.",
+   "level": "A1",
+   "line": "Good luck, friend!» chance mon ami",
+   "state": {
+    "seen": [],
+    "newWordIndex": 0
+   },
+   "mastered": [],
+   "hints": [
+    {
+     "word": "chance",
+     "translation": "luck",
+     "partOfSpeech": "noun",
+     "difficulty": "intermediate"
+    },
+    {
+     "word": "mon",
+     "translation": "my",
+     "partOfSpeech": "determiner",
+     "difficulty": "beginner"
+    },
+    {
+     "word": "ami",
+     "translation": "friend",
+     "partOfSpeech": "noun",
+     "difficulty": "beginner"
+    }
+   ],
+   "nextState": {
+    "seen": [
+     "ami",
+     "chance",
+     "mon"
+    ],
+    "newWordIndex": 3
    }
   },
   {
